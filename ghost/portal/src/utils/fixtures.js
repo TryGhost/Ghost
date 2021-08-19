@@ -26,7 +26,7 @@ const prices = [
 const products = [
     {
         id: 'product_1',
-        name: 'Ball is life membership',
+        name: 'Gold',
         description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
         monthlyPrice: {
             id: '6085adc776909b1a2382369a',
@@ -137,17 +137,17 @@ const products = [
             type: 'recurring',
             interval: 'year'
         },
-        benefits: []
-        // benefits: [
-        //     {
-        //         id: 'c1',
-        //         name: 'Latest gear reviews'
-        //     },
-        //     {
-        //         id: 'c2',
-        //         name: 'Weekly email newsletter'
-        //     }
-        // ]
+        // benefits: []
+        benefits: [
+            {
+                id: 'c1',
+                name: 'Latest gear reviews'
+            },
+            {
+                id: 'c2',
+                name: 'Weekly email newsletter'
+            }
+        ]
     }
 ];
 
