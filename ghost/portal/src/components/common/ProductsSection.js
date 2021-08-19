@@ -310,6 +310,14 @@ export const ProductsSectionStyles = ({site}) => {
                 width: 100%;
             }
 
+            .gh-portal-priceoption-label {
+                font-size: 1.25rem;
+            }
+
+            .gh-portal-products-priceswitch .gh-portal-discount-label {
+                display: none;
+            }
+
             .gh-portal-products-priceswitch {
                 padding-top: 18px;
             }
@@ -333,6 +341,7 @@ export const ProductsSectionStyles = ({site}) => {
             }
 
             .gh-portal-product-name {
+                font-size: 1.25rem;
                 margin: 4px 0;
                 padding: 0;
                 text-align: left;
@@ -352,15 +361,15 @@ export const ProductsSectionStyles = ({site}) => {
             }
 
             .gh-portal-popup-container.multiple-products .gh-portal-product-description {
-                margin-bottom: 0;
-                padding-bottom: 0;
-                padding-left: 0;
+                margin: 0 !important;
+                padding: 2px 0 0 !important;
             }
 
             .gh-portal-product-price {
                 position: relative;
                 justify-content: flex-end;
                 width: 100%;
+                margin-top: 3px;
             }
 
             .gh-portal-product-price .currency-sign {
@@ -374,7 +383,7 @@ export const ProductsSectionStyles = ({site}) => {
             .gh-portal-product-price .billing-period {
                 position: absolute;
                 right: 0;
-                top: 24px;
+                top: 25px;
                 font-size: 1.2rem;
             }
 
@@ -392,8 +401,8 @@ export const ProductsSectionStyles = ({site}) => {
 
             .gh-portal-product-benefits.vertical {
                 grid-column: 2;
-                padding: 12px 20px;
-                margin-top: 0px;
+                padding: 0 20px;
+                margin: 8px 0 12px;
                 display: block !important;
                 grid-row: 2;
                 grid-column: 1 / 3;
@@ -456,8 +465,10 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-upgrade-product .gh-portal-product-description {
             grid-column: 2 / 3;
             grid-row: 2;
-            margin-bottom: 0px;
+            font-weight: 400;
             text-align: left;
+            padding: 0 !important;
+            margin: 0 !important;
         }
 
         .gh-portal-upgrade-product .gh-portal-product-price {
@@ -495,8 +506,8 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-upgrade-product .gh-portal-product-benefits.vertical {
             grid-column: 2;
-            padding: 12px 20px;
-            margin-top: 0px;
+            padding: 0 20px;
+            margin: 4px 0 12px;
             display: block !important;
             grid-row: 2;
             grid-column: 1 / 3;
@@ -504,6 +515,28 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-upgrade-product .gh-portal-product-benefit:last-of-type {
             margin-bottom: 0;
+        }
+
+        .gh-portal-upgrade-product .gh-portal-plan-current {
+            display: inline-block;
+            position: relative;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.25px;
+            text-transform: uppercase;
+            padding: 2px 4px;
+        }
+
+        .gh-portal-upgrade-product .gh-portal-plan-current::before {
+            position: absolute;
+            content: "";
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            border-radius: 2px;
+            background: var(--brandcolor);
+            opacity: 0.15;
         }
 
         .gh-portal-products-grid.change-plan .gh-portal-product-card-header {
@@ -880,17 +913,10 @@ export function ChangeProductSection({onPlanSelect, selectedPlan, products, type
 }
 
 function CurrentPlanLabel({selectedPrice, activePrice}) {
-    const {brandColor} = useContext(AppContext);
     if (selectedPrice.id === activePrice.id) {
         return (
-            <div style={{marginTop: '6px'}}>
-                <span style={{
-                    color: 'black',
-                    border: `1px solid ${brandColor}`,
-                    background: brandColor,
-                    borderRadius: '6px',
-                    padding: '3px'
-                }}>Current Plan</span>
+            <div className="mt1">
+                <span className="gh-portal-plan-current">Current Plan</span>
             </div>
         );
     }
@@ -930,10 +956,9 @@ function ChangeProductCard({product}) {
                 }} />
                 <h4 className="gh-portal-product-name">{product.name}</h4>
                 <ProductDescription product={product} selectedPrice={selectedPrice} activePrice={memberActivePrice} />
-                <ProductBenefitsContainer product={product} hide={selectedProduct !== product.id} />
             </div>
             <ProductCardFooter product={product} />
-            <ProductBenefitsContainer product={product} showVertical={true} hide={selectedProduct !== product.id} />
+            <ProductBenefitsContainer product={product} showVertical={true} />
         </div>
     );
 }

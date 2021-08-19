@@ -60,6 +60,7 @@ const Header = ({onBack, showConfirmation, confirmationType}) => {
 };
 
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
+    const {site} = useContext(AppContext);
     if (!member.paid) {
         return null;
     }
@@ -91,6 +92,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
                 disabled={disabled}
                 isPrimary={isPrimary}
                 isDestructive={isDestructive}
+                classes={hasMultipleProductsFeature({site}) ? 'gh-portal-btn-text mt2 mb4' : ''}
                 brandColor={brandColor}
                 label={label}
                 style={{
