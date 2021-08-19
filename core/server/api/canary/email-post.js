@@ -12,7 +12,7 @@ module.exports = {
             'include'
         ],
         data: [
-            'slug'
+            'uuid'
         ],
         validation: {
             options: {
@@ -21,7 +21,7 @@ module.exports = {
                 }
             },
             data: {
-                slug: {
+                uuid: {
                     required: true
                 }
             }
