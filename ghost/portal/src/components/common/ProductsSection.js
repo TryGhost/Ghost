@@ -450,14 +450,17 @@ export const ProductsSectionStyles = ({site}) => {
 
         /* Upgrade and change plan*/
         .gh-portal-upgrade-product {
+            margin-top: -70px;
             margin-bottom: 32px;
+            padding-top: 60px;
+            padding-bottom: 32px;
         }
 
         .gh-portal-upgrade-product .gh-portal-products-grid {
             grid-template-columns: unset;
             grid-gap: 20px;
             width: 100%;
-            padding: 32px 0;
+            padding: 32px 0 0;
         }
 
         .gh-portal-upgrade-product .gh-portal-product-card {
