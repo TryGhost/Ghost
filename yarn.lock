@@ -898,10 +898,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.24.1":
-  version "1.24.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.24.1.tgz#034a40c755ce2f73bee0b3b982e55062ddd0ad97"
-  integrity sha512-bcYt2qFPGBHB5QO5c034quqPSvEFZPIAcfCCVfO7Y9d6h5dykGuS/ZDg5TMMv0E5u2o9Nf+MIWrcRk0mqumPUQ==
+"@tryghost/members-api@1.25.0":
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.25.0.tgz#5d6a53f91908281b10d3afe0d570246bf75a31b9"
+  integrity sha512-0eSvPZxrqIL9lyRiYh1Fd2KzBqh1ngTzsQ7qU4dbTgjlD4TRAiXn2EscKIZfF4FKnhFWjc4UV3ejHUNQZB9qXQ==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
@@ -911,6 +911,7 @@
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
     body-parser "^1.19.0"
+    bson-objectid "^2.0.1"
     cookies "^0.8.0"
     express "^4.16.4"
     got "^9.6.0"
@@ -1899,7 +1900,7 @@ brute-knex@4.0.1:
     express-brute "^1.0.1"
     knex "^0.20"
 
-bson-objectid@2.0.1:
+bson-objectid@2.0.1, bson-objectid@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.1.tgz#226a9ffecd3a8d52f565d71012dd5b176560fef1"
   integrity sha512-b4D1/G4uP9Yks4rv+nDVsZ4ybT1W5nQYw4lfpfaRP2Q18azlR6Oe2BAuirG1lzrwQFtHnJ0nrK5kWKKZVEMUng==
