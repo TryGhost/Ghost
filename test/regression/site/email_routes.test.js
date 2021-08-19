@@ -56,7 +56,7 @@ describe('Frontend Routing: Email Routes', function () {
     });
 
     it('should display email_only post', async function () {
-        const res = await request.get(`/email/${emailPosts[0].get('slug')}/`)
+        const res = await request.get(`/email/${emailPosts[0].get('uuid')}/`)
             .expect('Content-Type', /html/)
             .expect(200);
 
@@ -71,7 +71,12 @@ describe('Frontend Routing: Email Routes', function () {
     });
 
     it('404s for draft email only post', function () {
-        return request.get(`/email/${emailPosts[1].get('slug')}/`)
+        return request.get(`/email/${emailPosts[1].get('uuid')}/`)
+            .expect(404);
+    });
+
+    it('404s known slug', function () {
+        return request.get(`/email/${emailPosts[0].get('slug')}/`)
             .expect(404);
     });
 
