@@ -35,6 +35,7 @@ export default Component.extend({
     twitterDescriptionScratch: alias('post.twitterDescriptionScratch'),
     twitterTitleScratch: alias('post.twitterTitleScratch'),
     slugValue: boundOneWay('post.slug'),
+    uuidValue: boundOneWay('post.uuid'),
 
     seoDescription: or('metaDescriptionScratch', 'customExcerptScratch', 'post.excerpt'),
     facebookDescription: or('ogDescriptionScratch', 'customExcerptScratch', 'seoDescription', 'post.excerpt', 'settings.description', ''),

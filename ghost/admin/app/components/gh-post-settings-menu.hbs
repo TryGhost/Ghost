@@ -37,7 +37,7 @@
                             @stopEnterKeyDownPropagation={{true}} />
                     </div>
                     {{#if this.post.isSent}}
-                        <GhUrlPreview @prefix="email" @slug={{this.slugValue}} @tagName="p" @classNames="description" />
+                        <GhUrlPreview @prefix="email" @slug={{this.uuidValue}} @tagName="p" @classNames="description" />
                     {{else}}
                         <GhUrlPreview @slug={{this.slugValue}} @tagName="p" @classNames="description" />
                     {{/if}}
