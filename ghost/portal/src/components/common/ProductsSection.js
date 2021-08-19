@@ -230,6 +230,7 @@ export const ProductsSectionStyles = ({site}) => {
             font-size: 3.3rem;
             font-weight: 500;
             line-height: 1em;
+            color: var(--grey2);
         }
 
         .gh-portal-product-price .billing-period {
@@ -244,7 +245,7 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-product-alternative-price {
             font-size: 1.2rem;
             line-height: 1.6em;
-            color: var(--grey3);
+            color: var(--grey8);
             text-align: center;
             margin-top: 4px;
             letter-spacing: 0.3px;
@@ -289,18 +290,103 @@ export const ProductsSectionStyles = ({site}) => {
             color: var(--grey5);
         }
 
-        .gh-portal-product-benefits.vertical {
-            display: none !important;
-        }
-
         .gh-portal-products-grid.change-plan {
             padding: 0;
         }
 
+        /* Vertical card style - for smaller screens sizes*/
+        .gh-portal-product-card.vertical {
+            display: none !important;
+            grid-template-columns: 16px auto minmax(0, 300px);
+            column-gap: 12px;
+            row-gap: 8px;
+            align-items: center;
+            min-height: 68px;
+            padding: 12px 20px;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-plan-checkbox {
+            grid-row: 1;
+            grid-column: 1 / 2;
+            height: unset;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-plan-checkbox .checkmark {
+            top: -9px;
+            left: -5px;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-name {
+            grid-row: 1;
+            grid-column: 2 / 3;
+            font-size: 1.7rem;
+            letter-spacing: 0.3px;
+            line-height: 1.3em;
+            font-weight: 500;
+            text-transform: none;
+            text-align: left;
+            margin: 4px 0;
+            padding: 0;
+            border-bottom: none;
+            min-height: unset;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-pricecontainer {
+            grid-row: 1;
+            grid-column: 3 / 4;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-price {
+            justify-content: flex-end;
+            margin-top: -1px;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-price .billing-period {
+            line-height: 1.3em;
+            font-size: 1.1rem;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-alternative-price {
+            display: none;
+            text-align: right;
+            margin-top: 1px;
+            font-size: 1.1rem;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-description {
+            grid-row: 2;
+            grid-column: 2 / 4;
+            margin-bottom: 0px;
+            padding-top: 12px;
+            padding-bottom: 8px;
+            padding-left: 0;
+            margin-top: 2px;
+            border-top: 1px solid var(--grey12);
+            text-align: left;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-benefits {
+            grid-row: 3;
+            grid-column: 2 / 4;
+            margin: 0;
+            padding-top: 0;
+            padding-left: 2px;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-benefit {
+            margin-bottom: 8px;
+        }
+
+        .gh-portal-product-card.vertical .gh-portal-product-description + .gh-portal-product-benefits {
+            border-top: none;
+            padding-top: 0;
+            margin-top: -2px;
+        }
+
         @media (max-width: 480px) {
             .gh-portal-products {
-                margin: 0 -32px;
-                background: none;
+                margin: 24px -32px 0 -32px;
+                padding: 12px 32px 20px 32px;
             }
 
             .gh-portal-products-grid {
@@ -322,54 +408,17 @@ export const ProductsSectionStyles = ({site}) => {
                 padding-top: 18px;
             }
 
-            .gh-portal-product-card {
-                display: grid;
-                grid-template-columns: 1fr minmax(60px, auto);
-                grid-gap: 8px;
-                align-items: start;
-                min-height: 68px;
-                padding: 12px 20px;
-                background: none;
-                border: 1px solid var(--grey12);
-                box-shadow: none;
+            .gh-portal-product-card:not(.vertical) {
+                display: none !important;
             }
 
-            .gh-portal-product-card-header {
-                grid-row: 1;
-                display: grid;
-                grid-template-columns: 20px auto;
-            }
-
-            .gh-portal-product-name {
-                font-size: 1.25rem;
-                margin: 4px 0;
-                padding: 0;
-                text-align: left;
-                border-bottom: none;
-                min-height: unset;
-            }
-
-            .gh-portal-product-description {
-                grid-column: 2 / 3;
-                margin-bottom: 0px;
-                text-align: left;
+            .gh-portal-product-card.vertical {
+                display: grid !important;
             }
 
             .gh-portal-singleproduct-benefits .gh-portal-product-description {
                 text-align: center;
                 padding-bottom: 12px;
-            }
-
-            .gh-portal-popup-container.multiple-products .gh-portal-product-description {
-                margin: 0 !important;
-                padding: 2px 0 0 !important;
-            }
-
-            .gh-portal-product-price {
-                position: relative;
-                justify-content: flex-end;
-                width: 100%;
-                margin-top: 3px;
             }
 
             .gh-portal-product-price .currency-sign {
@@ -380,178 +429,64 @@ export const ProductsSectionStyles = ({site}) => {
                 font-size: 2.6rem;
             }
 
-            .gh-portal-product-price .billing-period {
-                position: absolute;
-                right: 0;
-                top: 25px;
-                font-size: 1.2rem;
-            }
-
-            .gh-portal-product-card-footer {
-                grid-row: 1;
-            }
-
-            .gh-portal-product-alternative-price {
-                display: none;
-            }
-
-            .gh-portal-product-benefits {
-                display: none;
-            }
-
-            .gh-portal-product-benefits.vertical {
-                grid-column: 2;
-                padding: 0 20px;
-                margin: 8px 0 12px;
-                display: block !important;
-                grid-row: 2;
-                grid-column: 1 / 3;
-            }
-
             .gh-portal-product-benefit:last-of-type {
                 margin-bottom: 0;
             }
         }
 
-        .gh-portal-upgrade-product.gh-portal-products {
-            margin: 0 -32px;
-            background: none;
+        @media (max-width: 390px) {
+            .gh-portal-product-card.vertical {
+                padding: 12px;
+            }
+
+            .gh-portal-product-card.vertical .gh-portal-plan-checkbox {
+                margin: 0 5px;
+            }
+        }
+
+        /* Upgrade and change plan*/
+        .gh-portal-upgrade-product {
+            margin-bottom: 32px;
         }
 
         .gh-portal-upgrade-product .gh-portal-products-grid {
             grid-template-columns: unset;
             grid-gap: 20px;
             width: 100%;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-products-grid:not(.change-plan) {
-            padding: 32px 0 0;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-products-grid.change-plan .gh-portal-product-card {
-            cursor: auto;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-products-priceswitch {
-            padding-top: 18px;
+            padding: 32px 0;
         }
 
         .gh-portal-upgrade-product .gh-portal-product-card {
-            display: grid;
-            grid-template-columns: 1fr minmax(60px,auto);
-            grid-gap: 12px;
-            align-items: start;
-            min-height: 68px;
-            padding: 12px 20px;
-            background: none;
-            border: 1px solid var(--grey11);
-            box-shadow: none;
+            display: none !important;
         }
 
-        .gh-portal-upgrade-product .gh-portal-product-card-header {
-            grid-row: 1;
-            display: grid;
-            grid-template-columns: 20px auto;
+        .gh-portal-upgrade-product .gh-portal-product-card.vertical {
+            display: grid !important;
         }
 
-        .gh-portal-upgrade-product .gh-portal-product-name {
-            margin: 4px 0;
-            padding: 0;
-            text-align: left;
-            border-bottom: none;
-            min-height: unset;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-description {
-            grid-column: 2 / 3;
-            grid-row: 2;
-            font-weight: 400;
-            text-align: left;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-price {
-            position: relative;
-            justify-content: flex-end;
-            width: 100%;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-price .currency-sign {
-            font-size: 1.5rem;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-price .amount {
-            font-size: 2.6rem;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-price .billing-period {
-            position: absolute;
-            right: 0;
-            top: 24px;
-            font-size: 1.2rem;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-card-footer {
-            grid-row: 1;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-alternative-price {
+        .gh-portal-upgrade-product .gh-portal-discount-label {
             display: none;
         }
 
-        .gh-portal-upgrade-product .gh-portal-product-benefits {
-            display: none;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-benefits.vertical {
-            grid-column: 2;
-            padding: 0 20px;
-            margin: 4px 0 12px;
-            display: block !important;
-            grid-row: 2;
-            grid-column: 1 / 3;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-product-benefit:last-of-type {
-            margin-bottom: 0;
-        }
-
-        .gh-portal-upgrade-product .gh-portal-plan-current {
+        .gh-portal-upgrade-product .gh-portal-product-card .gh-portal-plan-current {
             display: inline-block;
             position: relative;
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.25px;
+            padding: 2px 8px;
+            font-size: 1.2rem;
+            letter-spacing: 0.3px;
             text-transform: uppercase;
-            padding: 2px 4px;
         }
 
-        .gh-portal-upgrade-product .gh-portal-plan-current::before {
+        .gh-portal-upgrade-product .gh-portal-product-card .gh-portal-plan-current::before {
             position: absolute;
             content: "";
             top: 0;
             right: 0;
             bottom: 0;
             left: 0;
-            border-radius: 2px;
+            border-radius: 999px;
             background: var(--brandcolor);
             opacity: 0.15;
-        }
-
-        .gh-portal-products-grid.change-plan .gh-portal-product-card-header {
-            grid-template-columns: auto;
-            grid-column: 1 / 3;
-        }
-
-        .gh-portal-products-grid.change-plan .gh-portal-product-name {
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .gh-portal-products-grid.change-plan .gh-portal-product-description {
-            text-align: center;
-            grid-column: 1;
         }
     `;
 };
@@ -625,7 +560,7 @@ function ProductBenefitsContainer({product, showVertical = false, hide = false})
     );
 }
 
-function ProductCardFooterAlternatePrice({price}) {
+function ProductCardAlternatePrice({price}) {
     const {site} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
     if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
@@ -639,7 +574,7 @@ function ProductCardFooterAlternatePrice({price}) {
     );
 }
 
-function ProductCardFooter({product}) {
+function ProductCardPrice({product}) {
     const {selectedInterval} = useContext(ProductsContext);
     const monthlyPrice = product.monthlyPrice;
     const yearlyPrice = product.yearlyPrice;
@@ -649,13 +584,13 @@ function ProductCardFooter({product}) {
         return null;
     }
     return (
-        <div className="gh-portal-product-card-footer">
+        <div className="gh-portal-product-card-pricecontainer">
             <div className="gh-portal-product-price">
                 <span className="currency-sign">{getCurrencySymbol(activePrice.currency)}</span>
                 <span className="amount">{getStripeAmount(activePrice.amount)}</span>
                 <span className="billing-period">/{activePrice.interval}</span>
             </div>
-            <ProductCardFooterAlternatePrice price={alternatePrice} />
+            <ProductCardAlternatePrice price={alternatePrice} />
         </div>
     );
 }
@@ -664,22 +599,39 @@ function ProductCard({product}) {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
 
+    // Product cards are duplicated because their design is too different for mobile devices to handle it purely in CSS
     return (
-        <div className={cardClass} key={product.id} onClick={(e) => {
-            e.stopPropagation();
-            setSelectedProduct(product.id);
-        }}>
-            <div className="gh-portal-product-card-header">
+        <>
+            {/* Standard, desktop card */}
+            <div className={cardClass} key={product.id} onClick={(e) => {
+                e.stopPropagation();
+                setSelectedProduct(product.id);
+            }}>
+                <div className="gh-portal-product-card-header">
+                    <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
+                        setSelectedProduct(product.id);
+                    }} />
+                    <h4 className="gh-portal-product-name">{product.name}</h4>
+                    {product.description ? <div className="gh-portal-product-description">{product.description}</div> : ''}
+                    <ProductBenefitsContainer product={product} />
+                </div>
+                <ProductCardPrice product={product} />
+            </div>
+
+            {/* Vertical version */}
+            <div className={cardClass + ' vertical'} key={product.id} onClick={(e) => {
+                e.stopPropagation();
+                setSelectedProduct(product.id);
+            }}>
                 <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
                     setSelectedProduct(product.id);
                 }} />
                 <h4 className="gh-portal-product-name">{product.name}</h4>
+                <ProductCardPrice product={product} />
                 {product.description ? <div className="gh-portal-product-description">{product.description}</div> : ''}
                 <ProductBenefitsContainer product={product} />
             </div>
-            <ProductCardFooter product={product} />
-            <ProductBenefitsContainer product={product} showVertical={true} />
-        </div>
+        </>
     );
 }
 
@@ -698,30 +650,51 @@ function ProductCards({products}) {
 
 function FreeProductCard() {
     const {site} = useContext(AppContext);
-    const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
+    const {selectedProduct, selectedInterval, setSelectedProduct} = useContext(ProductsContext);
 
     const cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
 
+    // Product cards are duplicated because their design is too different for mobile devices to handle it purely in CSS
     return (
-        <div className={cardClass} onClick={(e) => {
-            e.stopPropagation();
-            setSelectedProduct('free');
-        }}>
-            <div className="gh-portal-product-card-header">
+        <>
+            {/* Standard, desktop card */}
+            <div className={cardClass} onClick={(e) => {
+                e.stopPropagation();
+                setSelectedProduct('free');
+            }}>
+                <div className="gh-portal-product-card-header">
+                    <Checkbox name='x' id='x' isChecked={selectedProduct === 'free'} onProductSelect={() => {
+                        setSelectedProduct('free');
+                    }} />
+                    <h4 className="gh-portal-product-name">Free</h4>
+                    <div className="gh-portal-product-description">Free preview of {(site.title)}</div>
+                </div>
+                <div className="gh-portal-product-card-pricecontainer">
+                    <div className="gh-portal-product-price">
+                        <span className="currency-sign">$</span>
+                        <span className="amount">0</span>
+                    </div>
+                    <div className="gh-portal-product-alternative-price"></div>
+                </div>
+            </div>
+
+            {/* Vertical version */}
+            <div className={cardClass + ' vertical'} onClick={(e) => {
+                e.stopPropagation();
+                setSelectedProduct('free');
+            }}>
                 <Checkbox name='x' id='x' isChecked={selectedProduct === 'free'} onProductSelect={() => {
                     setSelectedProduct('free');
                 }} />
                 <h4 className="gh-portal-product-name">Free</h4>
-                <div className="gh-portal-product-description">Free preview of {(site.title)}</div>
-            </div>
-            <div className="gh-portal-product-card-footer">
                 <div className="gh-portal-product-price">
                     <span className="currency-sign">$</span>
                     <span className="amount">0</span>
+                    <span className="billing-period">/{selectedInterval}</span>
                 </div>
-                <div className="gh-portal-product-alternative-price"></div>
+                <div className="gh-portal-product-description">Free preview of {(site.title)}</div>
             </div>
-        </div>
+        </>
     );
 }
 
@@ -938,7 +911,7 @@ function ProductDescription({product, selectedPrice, activePrice}) {
 function ChangeProductCard({product}) {
     const {member} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct, selectedInterval} = useContext(ProductsContext);
-    const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
+    const cardClass = selectedProduct === product.id ? 'gh-portal-product-card vertical checked' : 'gh-portal-product-card vertical';
     const monthlyPrice = product.monthlyPrice;
     const yearlyPrice = product.yearlyPrice;
     const memberActivePrice = getMemberActivePrice({member});
@@ -950,15 +923,14 @@ function ChangeProductCard({product}) {
             e.stopPropagation();
             setSelectedProduct(product.id);
         }}>
-            <div className="gh-portal-product-card-header">
-                <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
-                    setSelectedProduct(product.id);
-                }} />
-                <h4 className="gh-portal-product-name">{product.name}</h4>
-                <ProductDescription product={product} selectedPrice={selectedPrice} activePrice={memberActivePrice} />
-            </div>
-            <ProductCardFooter product={product} />
-            <ProductBenefitsContainer product={product} showVertical={true} />
+            <Checkbox name={product.id} id={`${product.id}-checkbox`} isChecked={selectedProduct === product.id} onProductSelect={() => {
+                setSelectedProduct(product.id);
+            }} />
+            <h4 className="gh-portal-product-name">{product.name}</h4>
+            <ProductCardPrice product={product} />
+            {/* {product.description ? <div className="gh-portal-product-description">{product.description}</div> : ''} */}
+            <ProductDescription product={product} selectedPrice={selectedPrice} activePrice={memberActivePrice} />
+            <ProductBenefitsContainer product={product} />
         </div>
     );
 }
