@@ -137,16 +137,17 @@ const products = [
             type: 'recurring',
             interval: 'year'
         },
-        benefits: [
-            {
-                id: 'c1',
-                name: 'Latest gear reviews'
-            },
-            {
-                id: 'c2',
-                name: 'Weekly email newsletter'
-            }
-        ]
+        benefits: []
+        // benefits: [
+        //     {
+        //         id: 'c1',
+        //         name: 'Latest gear reviews'
+        //     },
+        //     {
+        //         id: 'c2',
+        //         name: 'Weekly email newsletter'
+        //     }
+        // ]
     }
 ];
 

@@ -431,12 +431,6 @@ export const PlanSectionStyles = `
         padding-bottom: 20px;
         margin-bottom: 16px;
     }
-
-    @media (max-width: 480px) {
-        .gh-portal-singleproduct-benefits {
-            display: flex !important;
-        }
-    }
 `;
 
 function Checkbox({name, id, onPlanSelect, isChecked, disabled = false}) {
