@@ -29,6 +29,7 @@ export default ModalComponent.extend({
     errorMessage: null,
     errorHeader: null,
     showMappingErrors: false,
+    showTryAgainButton: true,
 
     // Allowed actions
     confirm: () => {},
@@ -88,6 +89,7 @@ export default ModalComponent.extend({
             this.set('file', null);
             this.set('mapping', null);
             this.set('state', 'INIT');
+            this.set('showTryAgainButton', true);
         },
 
         closeModal() {
@@ -211,6 +213,9 @@ export default ModalComponent.extend({
 
             if (error.payload.errors[0].message.match(/list of that size/gi)) {
                 header = 'Woah there cowboy, that\'s a big list';
+                this.set('showTryAgainButton', false);
+                // NOTE: confirm makes sure to refresh the members data in the background
+                this.confirm();
             }
         } else {
             console.error(error); // eslint-disable-line

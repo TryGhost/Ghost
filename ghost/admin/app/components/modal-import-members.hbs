@@ -183,9 +183,11 @@
         {{/if}}
 
         {{#if (eq this.state 'ERROR')}}
-            <button {{action "reset"}} class="gh-btn" data-test-button="restart-import-members">
-                <span>Try again</span>
-            </button>
+            {{#if showTryAgainButton}}
+                <button {{action "reset"}} class="gh-btn" data-test-button="restart-import-members">
+                    <span>Try again</span>
+                </button>
+            {{/if}}
             <button {{action "closeModal"}} class="gh-btn gh-btn-black" data-test-button="close-import-members">
                 <span>OK</span>
             </button>
