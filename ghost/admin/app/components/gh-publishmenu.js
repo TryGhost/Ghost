@@ -249,7 +249,9 @@ export default Component.extend({
     },
 
     setDefaultSendEmailWhenPublished() {
-        if (this.postStatus === 'draft' && this.canSendEmail) {
+        if (this.get('isSendingEmailLimited')) {
+            this.set('sendEmailWhenPublished', false);
+        } else if (this.postStatus === 'draft' && this.canSendEmail) {
             // Set default newsletter recipients
             this.set('sendEmailWhenPublished', this.defaultEmailRecipients);
         } else {
@@ -260,6 +262,9 @@ export default Component.extend({
     checkIsSendingEmailLimited: action(function () {
         if (this.limit.limiter && this.limit.limiter.isLimited('emails')) {
             this.checkIsSendingEmailLimitedTask.perform();
+        } else if (this.settings.get('emailVerificationRequired')) {
+            this.set('isSendingEmailLimited', true);
+            this.set('sendingEmailLimitError', 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.');
         } else {
             this.set('isSendingEmailLimited', false);
             this.set('sendingEmailLimitError', null);

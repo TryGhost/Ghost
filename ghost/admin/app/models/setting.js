@@ -96,6 +96,7 @@ export default Model.extend(ValidationEngine, {
      */
     editorDefaultEmailRecipients: attr('string'),
     editorDefaultEmailRecipientsFilter: attr('members-segment-string'),
+    emailVerificationRequired: attr('boolean'),
 
     mailgunIsConfigured: and('mailgunApiKey', 'mailgunDomain', 'mailgunBaseUrl')
 });
