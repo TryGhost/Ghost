@@ -17,7 +17,7 @@ module.exports = function emailPostController(req, res, next) {
     const api = require('../../proxy').api[res.locals.apiVersion];
 
     const params = {
-        slug: req.params.slug,
+        uuid: req.params.uuid,
         include: 'authors,tags',
         context: {
             member: res.locals.member
