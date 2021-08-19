@@ -30,6 +30,14 @@ export const ActionButtonStyles = `
         border-color: var(--red);
     }
 
+    .gh-portal-btn-text {
+        padding: 0;
+        font-weight: 500;
+        height: unset;
+        border: none;
+        box-shadow: none;
+    }
+
     .gh-portal-loadingicon {
         position: absolute;
         left: 50%;
@@ -71,7 +79,7 @@ const Styles = ({brandColor, retry, disabled, style = {}, isPrimary}) => {
     };
 };
 
-function ActionButton({label, type = undefined, onClick, disabled = false, retry = false, brandColor, isRunning, isPrimary = true, isDestructive = false, style = {}, tabindex = undefined}) {
+function ActionButton({label, type = undefined, onClick, disabled = false, retry = false, brandColor, isRunning, isPrimary = true, isDestructive = false, classes, style = {}, tabindex = undefined}) {
     let Style = Styles({disabled, retry, brandColor, style, isPrimary});
 
     let className = 'gh-portal-btn';
@@ -80,6 +88,9 @@ function ActionButton({label, type = undefined, onClick, disabled = false, retry
     }
     if (isDestructive) {
         className += ' gh-portal-btn-destructive';
+    }
+    if (classes) {
+        className += (' ' + classes);
     }
     if (isCookiesDisabled()) {
         disabled = true;
