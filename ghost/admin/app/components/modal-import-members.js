@@ -211,7 +211,7 @@ export default ModalComponent.extend({
         } else if (error.payload && error.payload.errors && !isBlank(error.payload.errors[0].message)) {
             message = htmlSafe(error.payload.errors[0].message);
 
-            if (error.payload.errors[0].message.match(/list of that size/gi)) {
+            if (error.payload.errors[0].message.match(/great deliverability/gi)) {
                 header = 'Woah there cowboy, that\'s a big list';
                 this.set('showTryAgainButton', false);
                 // NOTE: confirm makes sure to refresh the members data in the background
