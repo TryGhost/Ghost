@@ -76,5 +76,13 @@ export default Service.extend(_ProxyMixin, {
             return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
         }
         return domain;
-    })
+    }),
+
+    getSiteUrl(path) {
+        const siteUrl = new URL(this.get('blogUrl'));
+        const subdir = siteUrl.pathname.endsWith('/') ? siteUrl.pathname : `${siteUrl.pathname}/`;
+        const fullPath = `${subdir}${path.replace(/^\//, '')}`;
+
+        return `${siteUrl.origin}${fullPath}`;
+    }
 });

@@ -9,6 +9,7 @@ import {set} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 export default class KoenigCardEmailCtaComponent extends Component {
+    @service config;
     @service ui;
 
     @tracked buttonFocused = false;
@@ -69,6 +70,19 @@ export default class KoenigCardEmailCtaComponent extends Component {
         };
     }
 
+    get suggestedUrls() {
+        return [{
+            name: `Link to ${this.config.get('blogTitle')}`,
+            url: this.config.getSiteUrl('/')
+        }, {
+            name: 'Signup',
+            url: this.config.getSiteUrl('/#/portal/signup')
+        }, {
+            name: 'Upgrade or change plan',
+            url: this.config.getSiteUrl('/#/portal/account/plans')
+        }];
+    }
+
     constructor() {
         super(...arguments);
         this.args.registerComponent(this);
@@ -96,8 +110,8 @@ export default class KoenigCardEmailCtaComponent extends Component {
     }
 
     @action
-    setButtonUrl(event) {
-        this._updatePayloadAttr('buttonUrl', event.target.value);
+    setButtonUrl(url) {
+        this._updatePayloadAttr('buttonUrl', url);
     }
 
     @action
