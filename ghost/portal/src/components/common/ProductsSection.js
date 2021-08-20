@@ -115,21 +115,15 @@ export const ProductsSectionStyles = ({site}) => {
             padding: 32px 2vw;
         }
 
-        @media (max-width: 1080px) {
+        @media (max-width: 1280px) {
             .gh-portal-products-grid {
                 grid-template-columns: repeat(${((productColumns(noOfProducts) >= 3) ? 3 : productColumns(noOfProducts))}, minmax(0, 300px));
             }
         }
 
-        @media (max-width: 800px) {
+        @media (max-width: 960px) {
             .gh-portal-products-grid {
                 grid-template-columns: repeat(${((productColumns(noOfProducts) >= 2) ? 2 : productColumns(noOfProducts))}, minmax(0, 300px));
-            }
-        }
-
-        @media (max-width: 600px) {
-            .gh-portal-products-grid {
-                grid-template-columns: repeat(1, minmax(0, 1fr));
             }
         }
 
@@ -387,7 +381,7 @@ export const ProductsSectionStyles = ({site}) => {
             margin-top: -2px;
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 670px) {
             .gh-portal-products {
                 margin: 24px -32px 0 -32px;
                 padding: 12px 32px 20px 32px;
@@ -398,6 +392,7 @@ export const ProductsSectionStyles = ({site}) => {
                 grid-gap: 20px;
                 padding: 32px 0 0;
                 width: 100%;
+                max-width: 420px;
             }
 
             .gh-portal-priceoption-label {
