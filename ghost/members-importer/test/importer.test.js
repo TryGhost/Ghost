@@ -61,16 +61,12 @@ describe('Importer', function () {
                 findOne: sinon.stub().resolves(null)
             };
 
-            const isSetStub = sinon.stub()
-                .withArgs('checkEmailList')
-                .returns('true');
-
             const importer = new MembersCSVImporter({
                 storagePath: csvPath,
                 getTimezone: sinon.stub().returns('UTC'),
                 getMembersApi: () => membersApi,
                 sendEmail: sinon.stub(),
-                isSet: isSetStub,
+                isSet: sinon.stub(),
                 addJob: sinon.stub(),
                 knex: knexStub,
                 urlFor: sinon.stub(),
@@ -141,16 +137,12 @@ describe('Importer', function () {
                 findOne: sinon.stub().resolves(null)
             };
 
-            const isSetStub = sinon.stub()
-                .withArgs('checkEmailList')
-                .returns('true');
-
             const importer = new MembersCSVImporter({
                 storagePath: csvPath,
                 getTimezone: sinon.stub().returns('UTC'),
                 getMembersApi: () => membersApi,
                 sendEmail: sinon.stub(),
-                isSet: isSetStub,
+                isSet: sinon.stub(),
                 addJob: sinon.stub(),
                 knex: knexStub,
                 urlFor: sinon.stub(),
