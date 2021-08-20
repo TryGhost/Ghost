@@ -444,7 +444,7 @@ module.exports = {
         product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id', cascadeDelete: false},
         action: {
             type: 'string', maxlength: 50, nullable: true, validations: {
-                isIn: [['add', 'remove']]
+                isIn: [['added', 'removed']]
             }
         },
         created_at: {type: 'dateTime', nullable: false}
