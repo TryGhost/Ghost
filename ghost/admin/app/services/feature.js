@@ -59,7 +59,6 @@ export default Service.extend({
     savedIndicator: feature('savedIndicator', {developer: true}),
     featureImgDragDrop: feature('featureImgDragDrop', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
-    checkEmailList: feature('checkEmailList', {developer: true}),
     emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
     dashboardTwo: feature('dashboardTwo', {developer: true}),
     snippetReplacements: feature('snippetReplacements', {developer: true}),
