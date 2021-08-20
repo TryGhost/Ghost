@@ -17,7 +17,7 @@ const {Handlebars} = Ember;
 const BACKSPACE = 8;
 const TAB = 9;
 
-class GhTokenInput extends Component {
+export default class GhTokenInput extends Component {
     get matcher() {
         return this.args.matcher || defaultMatcher;
     }
@@ -237,5 +237,3 @@ class GhTokenInput extends Component {
         return htmlSafe(`Add <strong>"${Handlebars.Utils.escapeExpression(term)}"...</strong>`);
     }
 }
-
-export default GhTokenInput;

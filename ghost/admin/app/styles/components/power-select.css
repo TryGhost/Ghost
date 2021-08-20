@@ -329,3 +329,16 @@
 .ember-power-select-inline.ember-power-select-trigger:focus {
     border: 0;
 }
+
+/* Input with power select */
+.gh-input-with-select-input {
+    border: none;
+    width: 100%;
+    line-height: normal;
+}
+
+.gh-input-with-select-input:active,
+.gh-input-with-select-input:focus {
+    border: none;
+    outline: 0;
+}
