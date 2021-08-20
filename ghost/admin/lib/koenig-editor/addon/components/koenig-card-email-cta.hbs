@@ -69,16 +69,23 @@
             >
 
             <label for="button-url-input" class="sr-only">CTA URL</label>
-            <input
-                type="text"
-                class="gh-input email-cta-button-url-input"
-                id="button-url-input"
-                name="button-url"
-                value={{@payload.buttonUrl}}
-                placeholder="https://yoursite.com/#/portal/signup/"
-                {{on "input" this.setButtonUrl}}
-                {{on-key "Enter" this.blurElement}}
+            <GhInputWithSelect
+                @value={{@payload.buttonUrl}}
+                @options={{this.suggestedUrls}}
+                @valueField="url"
+                @searchField="url"
+                @placeholder="https://yoursite.com/#/portal/signup/"
+                @searchMessage={{null}}
+                @onInput={{this.setButtonUrl}}
+                @openOnFocus={{true}}
+                @closeWhenEmpty={{true}}
+                @triggerClass="email-cta-button-url-input"
+                @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
+                as |suggestion|
             >
+                <span class="db b">{{suggestion.name}}</span>
+                {{suggestion.url}}
+            </GhInputWithSelect>
 
             <div class="gh-btn-group icons">
                 <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
