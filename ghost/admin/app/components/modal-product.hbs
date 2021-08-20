@@ -98,7 +98,9 @@
                                 <DraggableObject @content={{benefitItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
                                     <GhBenefitItem
                                         @benefitItem={{benefitItem}}
+                                        @id={{index}}
                                         @addItem={{action "addBenefit"}}
+                                        @focusItem={{action "focusItem"}}
                                         @deleteItem={{action "deleteBenefit"}}
                                         @updateLabel={{action "updateLabel"}}
                                         data-test-navitem={{index}} />

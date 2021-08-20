@@ -29,7 +29,7 @@ export default class ModalProductPrice extends ModalBase {
     @tracked currency = 'usd';
     @tracked errors = EmberObject.create();
     @tracked stripePlanError = '';
-    @tracked benefits = [];
+    @tracked benefits = emberA([]);
     @tracked newBenefit = null;
 
     confirm() {}
@@ -70,12 +70,6 @@ export default class ModalProductPrice extends ModalBase {
 
     get isExistingProduct() {
         return !this.model.product.isNew;
-    }
-
-    // TODO: rename to confirm() when modals have full Glimmer support
-    @action
-    confirmAction() {
-        this.saveProduct.perform();
     }
 
     @action
@@ -163,6 +157,9 @@ export default class ModalProductPrice extends ModalBase {
                 this.addNewBenefitItem(item);
             });
         },
+        focusItem() {
+            // Focus on next benefit on enter
+        },
         deleteBenefit(item) {
             if (!item) {
                 return;
@@ -181,9 +178,8 @@ export default class ModalProductPrice extends ModalBase {
                 benefitItem.set('name', label);
             }
         },
-        confirm() {
-            this.confirmAction(...arguments);
-        },
+        // noop - we don't want the enter key doing anything
+        confirm() {},
         setAmount(amount) {
             this.price.amount = !isNaN(amount) ? parseInt(amount) : 0;
         },

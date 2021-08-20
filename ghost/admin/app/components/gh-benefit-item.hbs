@@ -19,6 +19,7 @@
             @value={{readonly this.name}}
             @input={{action "updateLabel" value="target.value"}}
             @keyPress={{action "clearLabelErrors"}}
+            @stopEnterKeyDownPropagation={{true}}
             @focus-out={{action "updateLabel" this.name}} data-test-input="name" />
         <GhErrorMessage
             @errors={{this.benefitItem.errors}}
