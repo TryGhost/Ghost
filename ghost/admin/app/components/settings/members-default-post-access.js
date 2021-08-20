@@ -30,7 +30,7 @@ export default class SettingsMembersDefaultPostAccess extends Component {
         }];
         if (this.feature.get('multipleProducts')) {
             defaultOptions.push({
-                name: 'A segment',
+                name: 'Specific tier(s)',
                 description: 'Members with any of the selected tiers',
                 value: 'filter',
                 icon: 'members-segment',
