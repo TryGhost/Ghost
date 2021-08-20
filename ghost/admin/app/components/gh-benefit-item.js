@@ -52,9 +52,13 @@ export default Component.extend(ValidationState, {
 
     keyPress(event) {
         // enter key
-        if (event.keyCode === 13 && this.get('benefitItem.isNew')) {
+        if (event.keyCode === 13) {
             event.preventDefault();
-            run.scheduleOnce('actions', this, this.send, 'addItem', this.benefitItem);
+            if (this.get('benefitItem.isNew')) {
+                run.scheduleOnce('actions', this, this.send, 'addItem', this.benefitItem);
+            } else {
+                run.scheduleOnce('actions', this, this.send, 'focusItem', this.benefitItem);
+            }
         }
     }
 });
