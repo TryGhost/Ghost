@@ -90,14 +90,30 @@ export const SignupPageStyles = `
 
     footer.gh-portal-signup-footer,
     footer.gh-portal-signin-footer {
+        position: relative;
         padding-top: 24px;
         height: 132px;
+    }
+
+    /* Needed to cover small horizontal line glitch by the scroll shadow */
+    footer.gh-portal-signup-footer::before {
+        position: absolute;
+        content: "";
+        top: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #fff;
     }
 
     .gh-portal-content.signup,
     .gh-portal-content.signin {
         max-height: calc(100vh - 12vw - 140px);
         padding-bottom: 0;
+    }
+
+    .gh-portal-content.signin {
+        padding-bottom: 4px;
     }
 
     .gh-portal-content.signup .gh-portal-section {
@@ -109,7 +125,7 @@ export const SignupPageStyles = `
     }
 
     .gh-portal-content.signup.single-field {
-        margin-bottom: 0;
+        margin-bottom: 4px;
     }
 
     .gh-portal-content.signup.single-field .gh-portal-input,
