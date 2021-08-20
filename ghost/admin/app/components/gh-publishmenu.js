@@ -187,7 +187,7 @@ export default Component.extend({
 
         this._postStatus = this.postStatus;
         this.setDefaultSendEmailWhenPublished();
-        this.checkIsSendingEmailLimited();
+        this.checkIsSendingEmailLimitedTask.perform();
     },
 
     actions: {
@@ -259,21 +259,18 @@ export default Component.extend({
         }
     },
 
-    checkIsSendingEmailLimited: action(function () {
-        if (this.limit.limiter && this.limit.limiter.isLimited('emails')) {
-            this.checkIsSendingEmailLimitedTask.perform();
-        } else if (this.settings.get('emailVerificationRequired')) {
-            this.set('isSendingEmailLimited', true);
-            this.set('sendingEmailLimitError', 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.');
-        } else {
-            this.set('isSendingEmailLimited', false);
-            this.set('sendingEmailLimitError', null);
-        }
-    }),
-
     checkIsSendingEmailLimitedTask: task(function* () {
         try {
-            yield this.limit.limiter.errorIfWouldGoOverLimit('emails');
+            yield this.reloadSettingsTask.perform();
+
+            if (this.limit.limiter && this.limit.limiter.isLimited('emails')) {
+                yield this.limit.limiter.errorIfWouldGoOverLimit('emails');
+            } else if (this.settings.get('emailVerificationRequired')) {
+                this.set('isSendingEmailLimited', true);
+                this.set('sendingEmailLimitError', 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.');
+                this.set('sendEmailWhenPublished', 'none');
+                return;
+            }
 
             this.set('isSendingEmailLimited', false);
             this.set('sendingEmailLimitError', null);
@@ -357,6 +354,10 @@ export default Component.extend({
     closeEmailConfirmationModal: action(function () {
         this.set('showEmailConfirmationModal', false);
         this._cleanup();
+    }),
+
+    reloadSettingsTask: task(function* () {
+        yield this.settings.reload();
     }),
 
     save: task(function* ({dropdown} = {}) {
