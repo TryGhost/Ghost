@@ -26,7 +26,6 @@ const ALPHA_FEATURES = [
     'multipleProducts',
     'savedIndicator',
     'featureImgDragDrop',
-    'checkEmailList',
     'oauthLogin',
     'membersFiltering',
     'emailOnlyPosts',
