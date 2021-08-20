@@ -462,7 +462,12 @@ const fixtures = {
             return models.Label.add(label, context.internal);
         }).then(function () {
             let productsToInsert = fixtureUtils.findModelFixtures('Product').entries;
-            return Promise.map(productsToInsert, product => models.Product.add(product, context.internal));
+            return Promise.map(productsToInsert, async (product) => {
+                const found = await models.Product.findOne(product, context.internal);
+                if (!found) {
+                    await models.Product.add(product, context.internal);
+                }
+            });
         }).then(function () {
             return models.Product.findOne({}, context.internal);
         }).then(function (product) {
