@@ -993,7 +993,9 @@ figure {
 }
 
 .email-cta-button-url-input {
+    width: 100%;
     margin-right: 1.2rem;
+    line-height: normal;
 }
 
 .kg-card-help-labs {
