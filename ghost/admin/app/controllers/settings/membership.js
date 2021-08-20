@@ -338,7 +338,7 @@ export default class MembersAccessController extends Controller {
             if (this.settings.get('errors').length !== 0) {
                 return;
             }
-            // When no filer is selected in `A Segment` option
+            // When no filer is selected in `Specific tier(s)` option
             if (!this.settings.get('defaultContentVisibility')) {
                 return;
             }
