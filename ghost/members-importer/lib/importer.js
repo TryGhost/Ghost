@@ -271,15 +271,10 @@ module.exports = class MembersCSVImporter {
     async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel}) {
         const meta = {};
         const job = await this.prepare(pathToCSV, headerMapping, globalLabels);
+        const threshold = await this._fetchThreshold();
 
         meta.originalImportSize = job.batches;
-
-        if (this._isSet('checkEmailList')) {
-            const threshold = await this._fetchThreshold();
-            meta.freeze = job.batches > threshold;
-        } else {
-            meta.freeze = false;
-        }
+        meta.freeze = job.batches > threshold;
 
         if (job.batches <= 500 && !job.metadata.hasStripeData) {
             const result = await this.perform(job.id);
