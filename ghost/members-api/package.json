@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing mocha --reporter dot './test/**/*.test.js'",
+    "test": "NODE_ENV=testing c8 mocha --reporter dot './test/**/*.test.js'",
     "lint": "eslint '**/*.js'",
     "posttest": "yarn lint"
   },
@@ -19,6 +19,7 @@
   ],
   "devDependencies": {
     "@types/node-jose": "1.1.6",
+    "c8": "7.8.0",
     "mocha": "9.0.3",
     "nock": "13.1.0",
     "should": "13.2.3",
