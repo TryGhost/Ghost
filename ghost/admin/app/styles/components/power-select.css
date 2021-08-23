@@ -250,6 +250,11 @@
     max-height: 172px; /* 5.5 options */
 }
 
+/* Recipient Token input with groups */
+.gh-token-input.select-members-recipient .ember-power-select-options[role="group"] {
+    max-height: unset;
+}
+
 .ember-power-select-options[role="listbox"] {
     overflow-x: hidden;
 }
