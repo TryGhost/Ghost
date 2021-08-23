@@ -527,7 +527,7 @@ describe('Members API', function () {
         should.ok(allMembersUnsubscribed);
     });
 
-    it.only('Can bulk add and remove labels to members with filter', async function () {
+    it('Can bulk add and remove labels to members with filter', async function () {
         // import our dummy data for deletion
         await request
             .post(localUtils.API.getApiQuery('members/upload/'))
@@ -564,7 +564,7 @@ describe('Members API', function () {
         should.exist(bulkAddLabelResponse.body.bulk.meta);
         should.exist(bulkAddLabelResponse.body.bulk.meta.stats);
         should.exist(bulkAddLabelResponse.body.bulk.meta.stats.successful);
-        //should.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
+        should.equal(bulkAddLabelResponse.body.bulk.meta.stats.successful, 8);
 
         const postLabelAddBrowseResponse = await request
             .get(localUtils.API.getApiQuery(`members/?filter=label:${labelToAdd.slug}`))
