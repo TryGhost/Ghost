@@ -390,6 +390,28 @@ export default Controller.extend({
         });
     }),
 
+    updateSnippet: action(function (snippetRecord, {mobiledoc}) {
+        snippetRecord.set('mobiledoc', mobiledoc);
+
+        return snippetRecord.save().then(() => {
+            this.notifications.closeAlerts('snippet.save');
+            this.notifications.showNotification(
+                `Snippet "${snippetRecord.name}" updated`,
+                {type: 'success'}
+            );
+            return snippetRecord;
+        }).catch((error) => {
+            if (!snippetRecord.errors.isEmpty) {
+                this.notifications.showAlert(
+                    `Snippet save failed: ${snippetRecord.errors.messages.join('. ')}`,
+                    {type: 'error', key: 'snippet.save'}
+                );
+            }
+            snippetRecord.rollbackAttributes();
+            throw error;
+        });
+    }),
+
     toggleDeleteSnippetModal: action(function (snippet) {
         this.set('snippetToDelete', snippet);
     }),

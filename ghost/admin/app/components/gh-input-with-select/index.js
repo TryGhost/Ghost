@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import RSVP, {resolve} from 'rsvp';
 import {action, get} from '@ember/object';
 import {defaultMatcher, filterOptions} from 'ember-power-select/utils/group-utils';
+import {isArray} from '@ember/array';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhInputWithSelectComponent extends Component {
@@ -11,7 +12,14 @@ export default class GhInputWithSelectComponent extends Component {
         return this.args.matcher || defaultMatcher;
     }
 
+    get valueField() {
+        return this.args.valueField || 'name';
+    }
+
     shouldShowCreateOption(term, options) {
+        if (this.args.showCreate) {
+            return true;
+        }
         return this.args.showCreateWhen ? this.args.showCreateWhen(term, options) : false;
     }
 
@@ -51,13 +59,19 @@ export default class GhInputWithSelectComponent extends Component {
     }
 
     @action
-    selectOrCreate(selection, select) {
+    selectOrCreate(selection, select, keyboardEvent) {
         // don't randomly select an option whilst typing in the input
         if (select && !select.isOpen) {
             return;
         }
 
-        this.args.onInput(get(selection, this.args.valueField || 'name'));
+        const value = selection.__value__ || get(selection, this.valueField);
+
+        if (this.args.onChange) {
+            return this.args.onChange(value, select, keyboardEvent);
+        } else {
+            return this.args.onInput(value, select, keyboardEvent);
+        }
     }
 
     // Methods

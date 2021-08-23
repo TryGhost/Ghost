@@ -9,6 +9,10 @@ export default class GhSearchInputTrigger extends Component {
     @action
     registerInput(elem) {
         this.inputElem = elem;
+
+        if (this.args.extra?.autofocus) {
+            this.inputElem.focus();
+        }
     }
 
     @action
