@@ -400,7 +400,7 @@ module.exports = class MemberRepository {
                 return {
                     member_id: id,
                     label_id: data.meta.label.id,
-                    id: ObjectId()
+                    id: ObjectId().toHexString()
                 };
             });
 
