@@ -68,12 +68,15 @@
             {{#if @post.isPublished}}
             <span class="gh-content-status-published nowrap">
                 Published
+                {{#if @post.hasEmail}}
+                <span>{{svg-jar "email-unread"}}</span>
+                {{/if}}
             </span>
             {{/if}}
 
             {{#if @post.isSent}}
-            <span class="gh-content-status-published nowrap">
-                Sent
+            <span class="gh-content-status-emailed nowrap">
+                <span>{{svg-jar "email-unread"}}</span>
             </span>
             {{/if}}
         </div>

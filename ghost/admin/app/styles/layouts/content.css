@@ -273,14 +273,16 @@
 .gh-content-status-emailed {
     display: inline-block;
     margin: 0px 6px;
-    background: var(--lightgrey);
-    padding-right: 5px;
+    color: var(--midgrey);
+    background: var(--whitegrey);
     border-radius: 3px;
 }
 
-.gh-content-status-emailed svg {
+.gh-content-status-emailed svg,
+.gh-content-status-published svg {
     width: 12px;
     height: 12px;
+    fill: var(--midgrey);
 }
 
 .gh-content-status-emailed.error {
