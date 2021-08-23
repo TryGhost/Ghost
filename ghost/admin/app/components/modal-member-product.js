@@ -17,7 +17,7 @@ export default class ModalMemberProduct extends ModalComponent {
 
     @task({drop: true})
     *fetchProducts() {
-        this.products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
+        this.products = yield this.store.query('product', {include: 'monthly_price,yearly_price,benefits'});
         this.loadingProducts = false;
         if (this.products.length > 0) {
             this.selectedProduct = this.products.firstObject.id;
