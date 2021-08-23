@@ -390,10 +390,24 @@ export default Controller.extend({
         });
     }),
 
-    updateSnippet: action(function (snippetRecord, {mobiledoc}) {
+    toggleUpdateSnippetModal: action(function (snippetRecord, updatedProperties = {}) {
+        if (snippetRecord) {
+            this.set('snippetToUpdate', {snippetRecord, updatedProperties});
+        } else {
+            this.set('snippetToUpdate', null);
+        }
+    }),
+
+    updateSnippet: action(function () {
+        if (!this.snippetToUpdate) {
+            return Promise.reject();
+        }
+
+        const {snippetRecord, updatedProperties: {mobiledoc}} = this.snippetToUpdate;
         snippetRecord.set('mobiledoc', mobiledoc);
 
         return snippetRecord.save().then(() => {
+            this.set('snippetToUpdate', null);
             this.notifications.closeAlerts('snippet.save');
             this.notifications.showNotification(
                 `Snippet "${snippetRecord.name}" updated`,
