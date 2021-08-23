@@ -2,7 +2,6 @@ import Component from '@glimmer/component';
 import RSVP, {resolve} from 'rsvp';
 import {action, get} from '@ember/object';
 import {defaultMatcher, filterOptions} from 'ember-power-select/utils/group-utils';
-import {isArray} from '@ember/array';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhInputWithSelectComponent extends Component {
