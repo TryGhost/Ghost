@@ -8,7 +8,7 @@ const config = require('../../../core/shared/config');
 const labs = require('../../../core/shared/labs');
 const Papa = require('papaparse');
 
-describe('Members API', function () {
+describe.only('Members API', function () {
     let request;
 
     afterEach(function () {
@@ -568,6 +568,11 @@ describe('Members API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
+        // eslint-disable-next-line
+        console.log(postLabelAddBrowseResponse.body.bulk.meta.stats);
+        // eslint-disable-next-line
+        console.log(JSON.stringify(postLabelAddBrowseResponse.body.bulk.meta.errors, null, 4));
+
         should.exist(bulkAddLabelResponse.body.bulk);
         should.exist(bulkAddLabelResponse.body.bulk.meta);
         should.exist(bulkAddLabelResponse.body.bulk.meta.stats);
@@ -580,6 +585,9 @@ describe('Members API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
+
+        // eslint-disable-next-line
+        console.log(postLabelAddBrowseResponse.body);
 
         postLabelAddBrowseResponse.body.members.should.have.length(8);
 
