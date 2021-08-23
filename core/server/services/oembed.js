@@ -155,7 +155,7 @@ class OEmbed {
 
     /**
      * @param {string} _url
-     * @param {string} cardType
+     * @param {string} [cardType]
      *
      * @returns {Promise<Object>}
      */
@@ -267,22 +267,27 @@ class OEmbed {
      * @returns {Promise<Object>}
      */
     async fetchOembedDataFromUrl(url, type) {
-        if (type === 'bookmark') {
-            return this.fetchBookmarkData(url)
-                .catch(this.errorHandler(url));
-        }
+        let data;
 
-        return this.fetchOembedData(url).then((response) => {
-            if (!response && !type) {
+        try {
+            if (type === 'bookmark') {
                 return this.fetchBookmarkData(url);
             }
-            return response;
-        }).then((response) => {
-            if (!response) {
-                return this.unknownProvider(url);
+
+            data = await this.fetchOembedData(url);
+
+            if (!data && !type) {
+                data = await this.fetchBookmarkData(url);
             }
-            return response;
-        }).catch(this.errorHandler(url));
+
+            if (!data) {
+                data = await this.unknownProvider(url);
+            }
+
+            return data;
+        } catch (e) {
+            return this.errorHandler(url);
+        }
     }
 }
 
