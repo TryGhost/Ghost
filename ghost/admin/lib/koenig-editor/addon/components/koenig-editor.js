@@ -415,7 +415,7 @@ export default Component.extend({
                 this.componentAtoms.removeObject(atom);
             }
         };
-        editorOptions.cardOptions = componentHooks;
+        editorOptions.cardOptions = Object.assign({}, this.cardOptions, componentHooks);
 
         editor = new Editor(editorOptions);
 
