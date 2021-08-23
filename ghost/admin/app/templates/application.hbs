@@ -48,20 +48,16 @@
                 border-left: 0.25rem solid var(--adjusted-accent-color);
             }
 
-            .email-cta-button-text-input,
             .gh-btn-accent {
                 color: var(--text-color-for-adjusted-accent-background);
                 background-color: var(--adjusted-accent-color)
             }
-            .email-cta-button-text-input:hover,
+
             .gh-btn-accent:hover {
                 color: {{hex-contrast this.ui.adjustedAccentColor}};
                 background-color: {{hex-adjust this.ui.adjustedAccentColor l=-15}}
             }
-            .email-cta-button-text-input::placeholder {
-                {{!-- TODO: saturation adjustment for white/black doesn't work --}}
-                color: {{hex-adjust this.ui.textColorForAdjustedAccentBackground s=-15}}
-            }
+
         </style>
     {{/if}}
 </GhApp>

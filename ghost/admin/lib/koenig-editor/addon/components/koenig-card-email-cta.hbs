@@ -53,11 +53,26 @@
             @onBlur={{fn (mut this.contentFocused) false}}
             @didCreateEditor={{this.registerEditor}}
         />
-        <form class="flex mt6">
+
+        {{#if @payload.buttonText}}
+        <button type="button" class="gh-btn gh-btn-accent">
+            <span>{{@payload.buttonText}}</span>
+        </button>
+        {{/if}}
+
+
+        <form class="email-cta-toolbar">
+            <div class="gh-btn-group icons email-cta-align">
+                <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
+            </div>
+
+            <button type="button" class="gh-btn gh-btn-white gh-btn-icon email-cta-add-button"><span>{{svg-jar "align-left"}}</span></button>
+
             <label for="button-text-input" class="sr-only">CTA button text</label>
             <input
                 type="text"
-                class="gh-btn email-cta-button-text-input"
+                class="gh-input email-cta-button-text-input"
                 id="button-text-input"
                 name="button-text"
                 value={{@payload.buttonText}}
@@ -86,11 +101,6 @@
                 <span class="db b">{{suggestion.name}}</span>
                 {{suggestion.url}}
             </GhInputWithSelect>
-
-            <div class="gh-btn-group icons">
-                <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
-                <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
-            </div>
         </form>
     {{else}}
         <div class="gh-email-cta-segment-indicator">
@@ -107,7 +117,7 @@
         {{/if}}
 
         {{#if (and @payload.buttonText @payload.buttonUrl)}}
-            <div class="{{if @payload.html "mt6"}} {{if (eq @payload.buttonAlignment "center") "tc"}}"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
+            <div class="{{if (eq @payload.buttonAlignment "center") "tc"}}"><a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a></div>
         {{/if}}
 
         {{#if this.hasBottomDivider}}<hr class="border-bottom">{{/if}}
