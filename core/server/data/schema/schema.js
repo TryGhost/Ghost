@@ -438,6 +438,17 @@ module.exports = {
         },
         created_at: {type: 'dateTime', nullable: false}
     },
+    members_product_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id', cascadeDelete: false},
+        action: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
+                isIn: [['added', 'removed']]
+            }
+        },
+        created_at: {type: 'dateTime', nullable: false}
+    },
     members_paid_subscription_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
