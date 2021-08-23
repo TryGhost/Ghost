@@ -43,6 +43,8 @@
             </p>
         </div>
 
+        {{#if this.hasTopDivider}}<hr class="border-top edit-mode">{{/if}}
+
         <div class="{{if (eq @payload.buttonAlignment "center") "tc"}}">
             <KoenigTextReplacementHtmlInput
                 @html={{@payload.html}}
@@ -55,20 +57,28 @@
                 @didCreateEditor={{this.registerEditor}}
             />
 
-            {{#if @payload.buttonText}}
             <button type="button" class="gh-btn gh-btn-accent">
-                <span>{{@payload.buttonText}}</span>
+                {{#if @payload.buttonText}}
+                    <span>{{@payload.buttonText}}</span>
+                {{else}}
+                    <span>Subscribe now</span>
+                {{/if}}
             </button>
-            {{/if}}
         </div>
 
+        {{#if this.hasBottomDivider}}<hr class="border-bottom">{{/if}}
+
         <form class="email-cta-toolbar">
+            <div class="borders">
+                <button type="button" title="Add dividers" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item"><span>{{svg-jar "dividers"}}</span></button>
+            </div>
+
             <div class="gh-btn-group icons email-cta-align">
                 <button type="button" title="Left-align content" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
                 <button type="button" title="Center-align content" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
             </div>
 
-            <button type="button" title="Add button" class="gh-btn gh-btn-white gh-btn-icon email-cta-add-button" ><span>{{svg-jar "button"}}</span></button>
+            <button type="button" title="Add button" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item" ><span>{{svg-jar "button"}}</span></button>
 
             <label for="button-text-input" class="sr-only">CTA button text</label>
             <input
@@ -110,7 +120,7 @@
 
         {{#if this.hasTopDivider}}<hr class="border-top">{{/if}}
 
-        <div class="pb2 {{if (eq @payload.buttonAlignment "center") "tc"}}">
+        <div class="{{if (not this.hasBottomDivider) "pb2"}} {{if (eq @payload.buttonAlignment "center") "tc"}}">
             {{#if @payload.html}}
                 <div class="relative">
                     <p>{{{this.formattedHtml}}}</p>
