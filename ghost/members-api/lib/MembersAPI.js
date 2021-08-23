@@ -43,6 +43,7 @@ module.exports = function MembersAPI({
         MemberPaidSubscriptionEvent,
         MemberPaymentEvent,
         MemberStatusEvent,
+        MemberProductEvent,
         MemberEmailChangeEvent,
         StripeProduct,
         StripePrice,
@@ -93,6 +94,7 @@ module.exports = function MembersAPI({
         MemberPaidSubscriptionEvent,
         MemberEmailChangeEvent,
         MemberStatusEvent,
+        MemberProductEvent,
         StripeCustomer,
         StripeCustomerSubscription
     });

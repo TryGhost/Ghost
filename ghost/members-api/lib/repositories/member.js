@@ -20,6 +20,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.MemberEmailChangeEvent
      * @param {any} deps.MemberPaidSubscriptionEvent
      * @param {any} deps.MemberStatusEvent
+     * @param {any} deps.MemberProductEvent
      * @param {any} deps.StripeCustomer
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.productRepository
@@ -32,6 +33,7 @@ module.exports = class MemberRepository {
         MemberEmailChangeEvent,
         MemberPaidSubscriptionEvent,
         MemberStatusEvent,
+        MemberProductEvent,
         StripeCustomer,
         StripeCustomerSubscription,
         stripeAPIService,
@@ -43,6 +45,7 @@ module.exports = class MemberRepository {
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberStatusEvent = MemberStatusEvent;
+        this._MemberProductEvent = MemberProductEvent;
         this._StripeCustomer = StripeCustomer;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
@@ -100,6 +103,14 @@ module.exports = class MemberRepository {
             labels
         }, options);
 
+        for (const product of member.related('products').models) {
+            await this._MemberProductEvent.add({
+                member_id: member.id,
+                product_id: product.id,
+                action: 'added'
+            }, options);
+        }
+
         const context = options && options.context || {};
         let source;
 
@@ -149,6 +160,8 @@ module.exports = class MemberRepository {
 
         const memberStatusData = {};
 
+        let productsToAdd = [];
+        let productsToRemove = [];
         if (this._stripeAPIService.configured && data.products) {
             const member = await this._Member.findOne({
                 id: options.id
@@ -163,8 +176,8 @@ module.exports = class MemberRepository {
                 throw new errors.BadRequestError(tpl(messages.moreThanOneProduct));
             }
 
-            const productsToAdd = _.differenceWith(incomingProductIds, existingProductIds);
-            const productsToRemove = _.differenceWith(existingProductIds, incomingProductIds);
+            productsToAdd = _.differenceWith(incomingProductIds, existingProductIds);
+            productsToRemove = _.differenceWith(existingProductIds, incomingProductIds);
             const productsToModify = productsToAdd.concat(productsToRemove);
 
             if (productsToModify.length !== 0) {
@@ -195,6 +208,22 @@ module.exports = class MemberRepository {
             ...memberData,
             ...memberStatusData
         }, options);
+
+        for (const productToAdd of productsToAdd) {
+            await this._MemberProductEvent.add({
+                member_id: member.id,
+                product_id: productToAdd,
+                action: 'added'
+            }, options);
+        }
+
+        for (const productToRemove of productsToRemove) {
+            await this._MemberProductEvent.add({
+                member_id: member.id,
+                product_id: productToRemove,
+                action: 'removed'
+            }, options);
+        }
 
         // member._changed.subscribed has a value if the `subscribed` attribute is passed in the update call, regardless of the previous value
         if (member.attributes.subscribed !== member._previousAttributes.subscribed) {
@@ -568,6 +597,7 @@ module.exports = class MemberRepository {
         }
 
         let memberProducts = (await member.related('products').fetch(options)).toJSON();
+        const oldMemberProducts = member.related('products').toJSON();
         let status = memberProducts.length === 0 ? 'free' : 'comped';
         if (this.isActiveSubscriptionStatus(subscription.status)) {
             status = 'paid';
@@ -602,6 +632,7 @@ module.exports = class MemberRepository {
                 status = 'free';
             }
         }
+
         let updatedMember;
         try {
             // Remove duplicate products from the list
@@ -615,6 +646,29 @@ module.exports = class MemberRepository {
             this._logging.error(e);
             updatedMember = await this._Member.edit({status: status}, {...options, id: data.id});
         }
+
+        const newMemberProductIds = memberProducts.map(product => product.id);
+        const oldMemberProductIds = oldMemberProducts.map(product => product.id);
+
+        const productsToAdd = _.differenceWith(newMemberProductIds, oldMemberProductIds);
+        const productsToRemove = _.differenceWith(oldMemberProductIds, newMemberProductIds);
+
+        for (const productToAdd of productsToAdd) {
+            await this._MemberProductEvent.add({
+                member_id: member.id,
+                product_id: productToAdd,
+                action: 'added'
+            }, options);
+        }
+
+        for (const productToRemove of productsToRemove) {
+            await this._MemberProductEvent.add({
+                member_id: member.id,
+                product_id: productToRemove,
+                action: 'removed'
+            }, options);
+        }
+
         if (updatedMember.attributes.status !== updatedMember._previousAttributes.status) {
             await this._MemberStatusEvent.add({
                 member_id: data.id,
