@@ -10,6 +10,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class KoenigCardEmailCtaComponent extends Component {
     @service config;
+    @service membersUtils;
     @service ui;
 
     @tracked buttonFocused = false;
@@ -71,16 +72,35 @@ export default class KoenigCardEmailCtaComponent extends Component {
     }
 
     get suggestedUrls() {
-        return [{
+        const {post} = this.args.options;
+        const urls = [];
+
+        if (post?.uuid) {
+            urls.push({
+                name: `Link to this post`,
+                url: this.config.getSiteUrl(`/p/${post.uuid}/`)
+            });
+        }
+
+        urls.push(...[{
             name: `Link to ${this.config.get('blogTitle')}`,
             url: this.config.getSiteUrl('/')
         }, {
-            name: 'Signup',
-            url: this.config.getSiteUrl('/#/portal/signup')
-        }, {
-            name: 'Upgrade or change plan',
-            url: this.config.getSiteUrl('/#/portal/account/plans')
-        }];
+            name: 'Free email signup',
+            url: this.config.getSiteUrl('/#/portal/signup/free')
+        }]);
+
+        if (this.membersUtils.isStripeEnabled) {
+            urls.push(...[{
+                name: 'Paid subscription',
+                url: this.config.getSiteUrl('/#/portal/signup')
+            }, {
+                name: 'Upgrade or change plan',
+                url: this.config.getSiteUrl('/#/portal/account/plans')
+            }]);
+        }
+
+        return urls;
     }
 
     constructor() {
