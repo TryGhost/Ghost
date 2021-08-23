@@ -483,7 +483,6 @@ describe('Members API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private);
 
-        // eslint-disable-next-line
         console.log(importResult.body);
 
         const browseResponse = await request
@@ -541,7 +540,6 @@ describe('Members API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private);
 
-        // eslint-disable-next-line
         console.log(importRequest.body);
 
         const newLabelResponse = await request
