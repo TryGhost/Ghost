@@ -158,6 +158,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     isPost: equal('displayName', 'post'),
     isPage: equal('displayName', 'page'),
 
+    hasEmail: computed('email', 'emailOnly', function () {
+        return this.email !== null || this.emailOnly;
+    }),
     willEmail: computed('emailRecipientFilter', function () {
         return this.emailRecipientFilter !== null;
     }),
