@@ -743,7 +743,8 @@
 .kg-link-input {
     min-width: 225px; /* Same width as text toolbar */
     caret-color: auto;
-    background-color: var(--white) !important;
+    border: 1px solid var(--green);
+    background-color: var(--white);
 }
 
 .kg-input-bar-close {
