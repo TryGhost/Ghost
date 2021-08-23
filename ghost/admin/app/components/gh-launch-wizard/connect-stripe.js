@@ -14,6 +14,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
     @service ghostPaths;
     @service settings;
     @service store;
+    @service settings;
 
     @tracked hasActiveStripeSubscriptions = false;
     @tracked showDisconnectStripeConnectModal = false;
@@ -89,6 +90,12 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
 
             try {
                 const updatedProduct = yield this.product.save();
+                const existingPortalProducts = this.settings.get('portalProducts');
+                if (!existingPortalProducts?.length) {
+                    this.settings.set('portalProducts', [updatedProduct.id]);
+                }
+                yield this.settings.save();
+
                 return updatedProduct;
             } catch (error) {
                 if (error.payload?.errors && error.payload.errors[0].code === 'STRIPE_NOT_CONFIGURED') {
