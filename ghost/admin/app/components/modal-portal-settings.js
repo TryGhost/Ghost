@@ -85,6 +85,10 @@ export default ModalComponent.extend({
         return products;
     }),
 
+    showPortalTiers: computed('products', function () {
+        return this.get('products')?.length > 1;
+    }),
+
     init() {
         this._super(...arguments);
         this.buttonStyleOptions = [

@@ -34,7 +34,7 @@
                         </GhFormGroup>
                         {{#if this.membersUtils.isStripeEnabled}}
                             <div {{did-insert this.refreshAfterStripeConnected}}>
-                                {{#if (feature "multipleProducts")}}
+                                {{#if (and (feature "multipleProducts") this.showPortalTiers)}}
                                     <div class="mb3">
                                         <h4 class="gh-portal-setting-title">Tiers available at signup</h4>
                                     </div>
