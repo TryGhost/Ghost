@@ -982,8 +982,53 @@ figure {
     border-left: none;
 }
 
-.email-cta-button-text-input {
+.email-cta-toolbar {
+    display: flex;
+    margin: 24px -13px 0;
+    padding: 1rem 1.2rem;
+    border-top: 1px solid var(--whitegrey);
+}
+
+.gh-btn-group.email-cta-align {
+    background: none;
     margin-right: 1.2rem;
+    padding-right: 1.2rem;
+    border-right: 1px solid var(--whitegrey-d2);
+}
+
+.gh-btn-group.email-cta-align .gh-btn span {
+    padding: 0 4px;
+}
+
+.gh-btn-group.email-cta-align .gh-btn-group-selected span {
+    box-shadow: none;
+}
+
+.gh-btn-group.email-cta-align .gh-btn-group-selected svg {
+    fill: var(--green);
+}
+
+.gh-btn.email-cta-add-button {
+    margin-right: 1.2rem;
+    box-shadow: none;
+}
+
+.gh-btn.email-cta-add-button svg {
+    width: 18px;
+    height: 18px;
+    margin-right: 0;
+}
+
+.gh-btn.email-cta-add-button span {
+    padding: 8px;
+}
+
+.gh-btn.email-cta-add-button svg path {
+    stroke: none;
+}
+
+.email-cta-button {
+    margin-top: 2rem;
     padding: 4px;
     border: 0;
     font-size: 1.5rem;
@@ -992,10 +1037,21 @@ figure {
     user-select: auto;
 }
 
+.email-cta-button-text-input {
+    width: auto;
+    margin-right: .8rem;
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 400;
+    user-select: auto;
+}
+
 .email-cta-button-url-input {
     width: 100%;
-    margin-right: 1.2rem;
-    line-height: normal;
+    padding: 4px 12px;
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 400;
 }
 
 .kg-card-help-labs {
@@ -1035,6 +1091,7 @@ figure {
 
 .gh-btn-accent {
     height: 38px;
+    margin-top: 2.4rem;
 }
 
 .gh-btn-accent span {
@@ -1044,7 +1101,7 @@ figure {
 }
 
 .gh-email-cta-segment-indicator p {
-    padding: 6px 0 24px !important;
+    padding: 6px 0 29px !important;
     color: var(--midlightgrey-d1);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     text-transform: uppercase;

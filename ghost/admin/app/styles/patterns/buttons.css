@@ -261,7 +261,11 @@ fieldset[disabled] .gh-btn {
     width: 1em;
     height: 1em;
     margin-right: 0.6em;
-    fill: #fff;
+    fill: var(--white);
+}
+
+.gh-btn-white svg {
+    fill: var(--midgrey);
 }
 
 .gh-btn-icon svg.gh-spinner {
