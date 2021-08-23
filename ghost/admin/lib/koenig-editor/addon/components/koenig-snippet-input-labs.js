@@ -93,9 +93,10 @@ export default class KoenigSnippetInputLabsComponent extends Component {
         this.args.update(
             snippet,
             {mobiledoc: this.snippetMobiledoc}
-        ).then(() => {
-            this.args.cancel();
-        });
+        );
+
+        // close the snippet input
+        this.args.cancel();
     }
 
     @action

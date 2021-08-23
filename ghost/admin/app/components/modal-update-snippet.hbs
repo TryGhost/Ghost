@@ -1,0 +1,19 @@
+<header class="modal-header">
+    <h1>Update this snippet?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        Previous content for "<strong>{{this.snippet.name}}</strong>" will be overwritten.
+    </p>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    <GhTaskButton
+        @buttonText="Update"
+        @successText="Updated"
+        @task={{this.updateSnippet}}
+        @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>
