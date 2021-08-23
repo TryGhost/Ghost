@@ -8,7 +8,6 @@ const config = require('../../../core/shared/config');
 const labs = require('../../../core/shared/labs');
 const Papa = require('papaparse');
 
-// eslint-disable-next-line
 describe.only('Members API', function () {
     let request;
 
@@ -570,9 +569,9 @@ describe.only('Members API', function () {
             .expect(200);
 
         // eslint-disable-next-line
-        console.log(bulkAddLabelResponse.body.bulk.meta.stats);
+        console.log(postLabelAddBrowseResponse.body.bulk.meta.stats);
         // eslint-disable-next-line
-        console.log(JSON.stringify(bulkAddLabelResponse.body.bulk.meta.errors, null, 4));
+        console.log(JSON.stringify(postLabelAddBrowseResponse.body.bulk.meta.errors, null, 4));
 
         should.exist(bulkAddLabelResponse.body.bulk);
         should.exist(bulkAddLabelResponse.body.bulk.meta);
