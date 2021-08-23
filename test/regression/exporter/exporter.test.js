@@ -39,6 +39,7 @@ describe('Exporter', function () {
                 'members_payment_events',
                 'members_products',
                 'members_status_events',
+                'members_product_events',
                 'members_stripe_customers',
                 'members_stripe_customers_subscriptions',
                 'members_subscribe_events',
