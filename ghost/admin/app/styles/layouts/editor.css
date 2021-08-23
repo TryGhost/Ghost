@@ -1050,6 +1050,7 @@ figure {
 
 .email-cta-button-text-input {
     width: auto;
+    max-width: 200px;
     margin-right: .8rem;
     color: var(--black);
     font-size: 1.5rem;
