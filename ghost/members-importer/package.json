@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-importer",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-importer",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@tryghost/errors": "^0.2.13",
-    "@tryghost/members-csv": "^1.1.4",
+    "@tryghost/members-csv": "^1.1.5",
     "@tryghost/tpl": "^0.1.3",
     "moment-timezone": "0.5.23"
   }
