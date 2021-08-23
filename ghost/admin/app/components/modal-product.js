@@ -86,7 +86,7 @@ export default class ModalProductPrice extends ModalBase {
 
     reset() {
         this.newBenefit = ProductBenefitItem.create({isNew: true, name: ''});
-        const savedBenefits = this.product.benefits.filter(benefit => !!benefit.id);
+        const savedBenefits = this.product.benefits?.filter(benefit => !!benefit.id) || emberA([]);
         this.product.set('benefits', savedBenefits);
     }
 
