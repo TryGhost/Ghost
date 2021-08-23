@@ -265,7 +265,7 @@ fieldset[disabled] .gh-btn {
 }
 
 .gh-btn-white svg {
-    fill: var(--midgrey);
+    fill: var(--darkgrey);
 }
 
 .gh-btn-icon svg.gh-spinner {
@@ -478,7 +478,7 @@ Usage: CTA buttons grouped together horizontally.
     width: 18px;
     height: 18px;
     margin-right: 0;
-    fill: var(--midgrey);
+    fill: var(--darkgrey);
 }
 
 .gh-btn-group.icons .gh-btn-group-selected svg {
