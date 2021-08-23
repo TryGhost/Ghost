@@ -974,6 +974,10 @@ figure {
     margin: -1.6rem 0 5rem;
 }
 
+.kg-email-card .border-top.edit-mode {
+    margin: 2.4rem 0 5rem;
+}
+
 .kg-email-card .border-bottom {
     margin: 5rem 0 1.6rem;
 }
@@ -987,6 +991,12 @@ figure {
     margin: 24px -13px 0;
     padding: .8rem 1rem;
     border-top: 1px solid var(--whitegrey);
+}
+
+.email-cta-toolbar .borders {
+    margin-right: 1.2rem;
+    border-right: 1px solid var(--whitegrey-d2);
+    border-radius: 0;
 }
 
 .gh-btn-group.email-cta-align {
@@ -1008,23 +1018,23 @@ figure {
     fill: var(--green);
 }
 
-.gh-btn.email-cta-add-button {
+.gh-btn.email-cta-toolbar-item {
     margin-right: 1.2rem;
     box-shadow: none;
 }
 
-.gh-btn.email-cta-add-button svg {
+.gh-btn.email-cta-toolbar-item svg {
     width: 18px;
     height: 18px;
     margin-right: 0;
 }
 
-.gh-btn.email-cta-add-button span {
+.gh-btn.email-cta-toolbar-item span {
     margin-top: 2px;
     padding: 0 8px;
 }
 
-.gh-btn.email-cta-add-button svg path {
+.gh-btn.email-cta-toolbar-item svg path {
     stroke: none;
 }
 
