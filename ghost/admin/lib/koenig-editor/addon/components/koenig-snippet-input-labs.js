@@ -50,6 +50,14 @@ export default class KoenigSnippetInputLabsComponent extends Component {
         // watch for keydown events so that we can close the menu on Escape
         this._onKeydownHandler = run.bind(this, this._handleKeydown);
         window.addEventListener('keydown', this._onKeydownHandler);
+
+        this.scrollParent = getScrollParent(editor.element);
+        this.scrollTop = this.scrollParent.scrollTop;
+    }
+
+    get snippetMobiledoc() {
+        let {snippetRange, editor} = this.args;
+        return editor.serializePost(editor.post.trimTo(snippetRange), 'mobiledoc');
     }
 
     willDestroy() {
@@ -61,15 +69,33 @@ export default class KoenigSnippetInputLabsComponent extends Component {
     }
 
     @action
-    focusInput(element) {
-        let scrollParent = getScrollParent(element);
-        let scrollTop = scrollParent.scrollTop;
+    selectSnippet(snippetName) {
+        const snippetNameLC = snippetName.trim().toLowerCase();
+        const existingSnippet = this.args.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
 
-        element.focus();
+        if (existingSnippet) {
+            this.replaceSnippet(existingSnippet);
+        } else {
+            this.createSnippet(snippetName);
+        }
+    }
 
-        // reset the scroll position to avoid jumps
-        // TODO: why does the input focus cause a scroll to the bottom of the doc?
-        scrollParent.scrollTop = scrollTop;
+    createSnippet(name) {
+        this.args.save({
+            name,
+            mobiledoc: this.snippetMobiledoc
+        }).then(() => {
+            this.args.cancel();
+        });
+    }
+
+    replaceSnippet(snippet) {
+        this.args.update(
+            snippet,
+            {mobiledoc: this.snippetMobiledoc}
+        ).then(() => {
+            this.args.cancel();
+        });
     }
 
     @action
@@ -92,13 +118,15 @@ export default class KoenigSnippetInputLabsComponent extends Component {
     }
 
     @action
-    nameInput(event) {
-        this.name = event.target.value;
+    nameInput(name) {
+        this.name = name;
     }
 
     // TODO: largely shared with {{koenig-toolbar}} and {{koenig-link-input}} - extract to a shared util?
     @action
     registerAndPositionElement(element) {
+        this.scrollParent.scrollTop = this.scrollTop;
+
         element.id = guidFor(element);
         this.element = element;
 
