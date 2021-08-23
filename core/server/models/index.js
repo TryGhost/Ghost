@@ -38,6 +38,7 @@ const models = [
     'member-email-change-event',
     'member-payment-event',
     'member-status-event',
+    'member-product-event',
     'posts-meta',
     'member-stripe-customer',
     'stripe-customer-subscription',

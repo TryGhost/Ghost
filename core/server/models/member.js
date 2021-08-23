@@ -78,6 +78,11 @@ const Member = ghostBookshelf.Model.extend({
         email_recipients: 'email_recipients'
     },
 
+    productEvents() {
+        return this.hasMany('MemberProductEvent', 'member_id', 'id')
+            .query('orderBy', 'created_at', 'DESC');
+    },
+
     products() {
         return this.belongsToMany('Product', 'members_products', 'member_id', 'product_id')
             .withPivot('sort_order')
