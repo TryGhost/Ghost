@@ -985,7 +985,7 @@ figure {
 .email-cta-toolbar {
     display: flex;
     margin: 24px -13px 0;
-    padding: 1rem 1.2rem;
+    padding: .8rem 1rem;
     border-top: 1px solid var(--whitegrey);
 }
 
@@ -1020,7 +1020,8 @@ figure {
 }
 
 .gh-btn.email-cta-add-button span {
-    padding: 8px;
+    margin-top: 2px;
+    padding: 0 8px;
 }
 
 .gh-btn.email-cta-add-button svg path {
