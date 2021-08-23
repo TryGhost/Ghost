@@ -476,14 +476,12 @@ describe('Members API', function () {
     it('Can bulk unsubscribe members with filter', async function () {
         // import our dummy data for deletion
         sinon.stub(Date, 'now').returns(new Date('2021-03-30T17:22:00.000Z'));
-        const importResult = await request
+        await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-unsubscribe.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private);
-
-        console.log(importResult.body);
 
         const browseResponse = await request
             .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
@@ -533,14 +531,12 @@ describe('Members API', function () {
     it('Can bulk add and remove labels to members with filter', async function () {
         // import our dummy data for deletion
         sinon.stub(Date, 'now').returns(new Date('2021-03-30T17:23:00.000Z'));
-        const importRequest = await request
+        await request
             .post(localUtils.API.getApiQuery('members/upload/'))
             .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/members-for-bulk-add-labels.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private);
-
-        console.log(importRequest.body);
 
         const newLabelResponse = await request
             .post(localUtils.API.getApiQuery('labels'))
