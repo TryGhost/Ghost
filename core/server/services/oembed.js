@@ -153,6 +153,12 @@ class OEmbed {
         }
     }
 
+    /**
+     * @param {string} _url
+     * @param {string} cardType
+     *
+     * @returns {Promise<Object>}
+     */
     fetchOembedData(_url, cardType) {
         // parse the url then validate the protocol and host to make sure it's
         // http(s) and not an IP address or localhost to avoid potential access to
@@ -252,6 +258,31 @@ class OEmbed {
                 }).catch(() => {});
             }
         });
+    }
+
+    /**
+     * @param {string} url - oembed URL
+     * @param {string} type - card type
+     *
+     * @returns {Promise<Object>}
+     */
+    async fetchOembedDataFromUrl(url, type) {
+        if (type === 'bookmark') {
+            return this.fetchBookmarkData(url)
+                .catch(this.errorHandler(url));
+        }
+
+        return this.fetchOembedData(url).then((response) => {
+            if (!response && !type) {
+                return this.fetchBookmarkData(url);
+            }
+            return response;
+        }).then((response) => {
+            if (!response) {
+                return this.unknownProvider(url);
+            }
+            return response;
+        }).catch(this.errorHandler(url));
     }
 }
 
