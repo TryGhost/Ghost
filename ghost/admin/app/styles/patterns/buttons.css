@@ -475,8 +475,8 @@ Usage: CTA buttons grouped together horizontally.
 }
 
 .gh-btn-group.icons .gh-btn-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     margin-right: 0;
     fill: var(--darkgrey);
 }
