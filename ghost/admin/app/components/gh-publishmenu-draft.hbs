@@ -1,5 +1,14 @@
 <div {{did-insert (fn this.setSaveType "publish")}} ...attributes>
-    <header class="gh-publishmenu-heading">Ready to {{this.nextActionName}} this {{@post.displayName}}?</header>
+    <header class="gh-publishmenu-heading">Ready to
+        {{#if this.showEmailOnlyInput}}
+            <GhDistributionActionSelect
+                @post={{@post}}
+            />
+        {{else}}
+            {{this.nextActionName}}
+        {{/if}}
+        this {{@post.displayName}}?
+    </header>
     <section class="gh-publishmenu-content">
         <div class="gh-publishmenu-section">
             <div class="gh-publishmenu-radio {{if (eq @saveType "publish") "active"}}" {{on "click" (fn this.setSaveType "publish")}}>
@@ -30,7 +39,7 @@
             </div>
         </div>
 
-        {{#if @canSendEmail}}
+        {{#if this.showEmailSection}}
             <div class="gh-publishmenu-section" {{did-insert (perform this.countTotalMembersTask)}}>
                 <div class="gh-publishmenu-email">
                     {{#if @isSendingEmailLimited}}
