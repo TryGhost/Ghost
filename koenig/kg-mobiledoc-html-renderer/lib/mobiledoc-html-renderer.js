@@ -117,35 +117,6 @@ class MobiledocHtmlRenderer {
             }
         }
 
-        // avoid a HR as the first or last element in a post when emailing
-        if (cardOptions.target === 'email') {
-            const hrFirstChild = rendered.result.firstChild;
-
-            if (hrFirstChild && hrFirstChild.tagName === 'HR') {
-                rendered.result.removeChild(hrFirstChild);
-            }
-
-            if (hrFirstChild && hrFirstChild.tagName === 'DIV') {
-                const divFirstChild = hrFirstChild.firstChild;
-                if (divFirstChild && divFirstChild.tagName === 'HR') {
-                    hrFirstChild.removeChild(divFirstChild);
-                }
-            }
-
-            const hrLastChild = rendered.result.lastChild;
-
-            if (hrLastChild && hrLastChild.tagName === 'HR') {
-                rendered.result.removeChild(hrLastChild);
-            }
-
-            if (hrLastChild && hrLastChild.tagName === 'DIV') {
-                const divLastChild = hrLastChild.lastChild;
-                if (divLastChild && divLastChild.tagName === 'HR') {
-                    hrLastChild.removeChild(divLastChild);
-                }
-            }
-        }
-
         // Walk the DOM output and modify nodes as needed
         // eg. to add ID attributes to heading elements
         const modifier = new DomModifier({ghostVersion});
