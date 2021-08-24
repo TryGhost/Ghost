@@ -106,12 +106,18 @@ export default class KoenigCardEmailCtaComponent extends Component {
     constructor() {
         super(...arguments);
         this.args.registerComponent(this);
-        if (!this.args.payload.segment) {
-            this._updatePayloadAttr('segment', 'status:free');
-        }
-        if (!this.args.payload.buttonAlignment) {
-            this._updatePayloadAttr('buttonAlignment', 'left');
-        }
+
+        const payloadDefaults = {
+            showButton: false,
+            segment: 'status:free',
+            buttonAlignment: 'left'
+        };
+
+        Object.entries(payloadDefaults).forEach(([key, value]) => {
+            if (this.args.payload[key] === undefined) {
+                this._updatePayloadAttr(key, value);
+            }
+        });
     }
 
     // required for snippet rects to be calculated - editor reaches in to component,
@@ -129,6 +135,11 @@ export default class KoenigCardEmailCtaComponent extends Component {
     @action
     setSegment(segment) {
         this._updatePayloadAttr('segment', segment.filter);
+    }
+
+    @action
+    toggleButton() {
+        this._updatePayloadAttr('showButton', !this.args.payload.showButton);
     }
 
     @action
