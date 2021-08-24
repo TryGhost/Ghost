@@ -58,13 +58,15 @@
                 @didCreateEditor={{this.registerEditor}}
             />
 
-            <button type="button" class="gh-btn gh-btn-accent">
-                {{#if @payload.buttonText}}
-                    <span>{{@payload.buttonText}}</span>
-                {{else}}
-                    <span>Subscribe now</span>
-                {{/if}}
-            </button>
+            {{#if @payload.showButton}}
+                <button type="button" class="gh-btn gh-btn-accent" disabled={{not @payload.buttonText}}>
+                    {{#if @payload.buttonText}}
+                        <span>{{@payload.buttonText}}</span>
+                    {{else}}
+                        <span>Add button text</span>
+                    {{/if}}
+                </button>
+            {{/if}}
         </div>
 
         {{#if this.hasBottomDivider}}<hr class="border-bottom">{{/if}}
@@ -79,40 +81,42 @@
                 <button type="button" title="Center-align content" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
             </div>
 
-            <button type="button" title="Add button" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item" ><span>{{svg-jar "button"}}</span></button>
+            <button type="button" title="Add button" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showButton "fill-green-l2"}}" {{on "click" this.toggleButton}}><span>{{svg-jar "button"}}</span></button>
 
-            <label for="button-text-input" class="sr-only">CTA button text</label>
-            <input
-                type="text"
-                class="gh-input email-cta-button-text-input"
-                id="button-text-input"
-                name="button-text"
-                value={{@payload.buttonText}}
-                placeholder={{if this.buttonFocused "" "Add button text"}}
-                {{on "input" this.setButtonText}}
-                {{on "focus" (fn (mut this.buttonFocused) true)}}
-                {{on "blur" (fn (mut this.buttonFocused) false)}}
-                {{on-key "Enter" (fn this.focusElement "#button-url-input")}}
-            >
+            {{#if @payload.showButton}}
+                <label for="button-text-input" class="sr-only">CTA button text</label>
+                <input
+                    type="text"
+                    class="gh-input email-cta-button-text-input"
+                    id="button-text-input"
+                    name="button-text"
+                    value={{@payload.buttonText}}
+                    placeholder={{if this.buttonFocused "" "Add button text"}}
+                    {{on "input" this.setButtonText}}
+                    {{on "focus" (fn (mut this.buttonFocused) true)}}
+                    {{on "blur" (fn (mut this.buttonFocused) false)}}
+                    {{on-key "Enter" (fn this.focusElement "#button-url-input")}}
+                >
 
-            <label for="button-url-input" class="sr-only">CTA URL</label>
-            <GhInputWithSelect
-                @value={{@payload.buttonUrl}}
-                @options={{this.suggestedUrls}}
-                @valueField="url"
-                @searchField="url"
-                @placeholder="https://yoursite.com/#/portal/signup/"
-                @searchMessage={{null}}
-                @onInput={{this.setButtonUrl}}
-                @openOnFocus={{true}}
-                @closeWhenEmpty={{true}}
-                @triggerClass="email-cta-button-url-input"
-                @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
-                as |suggestion|
-            >
-                <span class="db b">{{suggestion.name}}</span>
-                {{suggestion.url}}
-            </GhInputWithSelect>
+                <label for="button-url-input" class="sr-only">CTA URL</label>
+                <GhInputWithSelect
+                    @value={{@payload.buttonUrl}}
+                    @options={{this.suggestedUrls}}
+                    @valueField="url"
+                    @searchField="url"
+                    @placeholder="https://yoursite.com/#/portal/signup/"
+                    @searchMessage={{null}}
+                    @onInput={{this.setButtonUrl}}
+                    @openOnFocus={{true}}
+                    @closeWhenEmpty={{true}}
+                    @triggerClass="email-cta-button-url-input"
+                    @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
+                    as |suggestion|
+                >
+                    <span class="db b">{{suggestion.name}}</span>
+                    {{suggestion.url}}
+                </GhInputWithSelect>
+            {{/if}}
         </form>
     {{else}}
         <div class="gh-email-cta-segment-indicator">
