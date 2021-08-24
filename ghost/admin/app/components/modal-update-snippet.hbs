@@ -5,7 +5,9 @@
 
 <div class="modal-body">
     <p>
-        Previous content for "<strong>{{this.snippet.name}}</strong>" will be overwritten.
+        "<strong>{{this.snippet.name}}</strong>" will be overwritten.
+        Don't worry, this will only affect using the snippet in the future.
+        Any older posts using this snippet will stay the same.
     </p>
 </div>
 
@@ -15,5 +17,5 @@
         @buttonText="Update"
         @successText="Updated"
         @task={{this.updateSnippet}}
-        @class="gh-btn gh-btn-red gh-btn-icon" />
+        @class="gh-btn gh-btn-black gh-btn-icon" />
 </div>
