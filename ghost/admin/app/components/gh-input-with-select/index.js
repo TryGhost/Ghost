@@ -92,11 +92,12 @@ export default class GhInputWithSelectComponent extends Component {
         };
     }
 
+    
     buildSuggestionLabel(term) {
         if (this.args.buildSuggestion) {
             return this.args.buildSuggestion(term);
         }
 
-        return `Add "${term}"...`;
+        return `Create "${term}"...`;
     }
 }

@@ -15,8 +15,10 @@
         {{#if snippet.__isSuggestion__}}
             {{snippet}}
         {{else}}
+            <div class="flex justify-between items-center">
             {{snippet.name}}
-            <span class="dib w4 h4">{{svg-jar "reload"}}</span>
+            <span class="fill-darkgrey dib w4 h4">{{svg-jar "sync"}}</span>
+            </div>
         {{/if}}
     </GhInputWithSelect>
 </div>
