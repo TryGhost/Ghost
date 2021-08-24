@@ -1,16 +1,16 @@
 const {chunk} = require('lodash');
 const {createTransactionalMigration} = require('../../utils');
 const logging = require('@tryghost/logging');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 
 module.exports = createTransactionalMigration(
-    async function up(connection, deps) {
+    async function up(connection) {
         logging.info('Adding members_product_events rows for existing members_products relationships');
         const memberProductRelationships = await connection('members_products').select('*');
 
         const memberProductEvents = memberProductRelationships.map((row) => {
             return {
-                id: ObjectId().toHexString(),
+                id: Reflect.construct(ObjectId, []).toHexString(),
                 created_at: connection.raw('CURRENT_TIMESTAMP'),
                 member_id: row.member_id,
                 product_id: row.product_id,
@@ -26,7 +26,7 @@ module.exports = createTransactionalMigration(
                 .insert(memberProductEventChunk);
         }
     },
-    async function down(connection, deps) {
+    async function down(connection) {
         logging.info('Deleting all rows from members_product_events');
         await connection('members_product_events').del();
     }
