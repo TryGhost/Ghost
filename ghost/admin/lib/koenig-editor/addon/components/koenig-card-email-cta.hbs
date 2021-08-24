@@ -133,7 +133,7 @@
                 </div>
             {{/if}}
 
-            {{#if (and @payload.buttonText @payload.buttonUrl)}}
+            {{#if (and @payload.showButton @payload.buttonText @payload.buttonUrl)}}
                 <a class="gh-btn gh-btn-accent" href="javascript:void(0)" data-tooltip={{@payload.buttonUrl}}><span>{{@payload.buttonText}}</span></a>
             {{/if}}
         </div>
