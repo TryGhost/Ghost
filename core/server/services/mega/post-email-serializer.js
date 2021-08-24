@@ -218,6 +218,14 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
     }
 
     post.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(post.mobiledoc), {target: 'email'});
+
+    // perform any email specific adjustments to the mobiledoc->HTML render output
+    let _cheerio = cheerio.load(post.html);
+    // remove leading/trailing HRs
+    _cheerio(':root > hr:first-child, :root > div:first-child > hr:first-child').remove();
+    _cheerio(':root > hr:last-child, :root > div:last-child > hr:last-child').remove();
+    post.html = _cheerio.html();
+
     post.plaintext = htmlToPlaintext(post.html);
 
     // Outlook will render feature images at full-size breaking the layout.
@@ -268,7 +276,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
 
     // convert juiced HTML to a DOM-like interface for further manipulation
     // happens after inlining of CSS so we can change element types without worrying about styling
-    let _cheerio = cheerio.load(juicedHtml);
+    _cheerio = cheerio.load(juicedHtml);
     // force all links to open in new tab
     _cheerio('a').attr('target','_blank');
     // convert figure and figcaption to div so that Outlook applies margins
