@@ -54,8 +54,11 @@
     <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status">
         <div class="flex items-center">
             {{#if @post.isScheduled}}
-            <span class="gh-content-status-draft gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">
+            <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">
                 Scheduled
+                {{#if @post.emailRecipientFilter}}
+                {{svg-jar "email-stroke"}}
+                {{/if}}
             </span>
             {{/if}}
 
@@ -69,14 +72,14 @@
             <span class="gh-content-status-published nowrap">
                 Published
                 {{#if @post.hasEmail}}
-                <span>{{svg-jar "email-unread"}}</span>
+                {{svg-jar "email-stroke"}}
                 {{/if}}
             </span>
             {{/if}}
 
             {{#if @post.isSent}}
             <span class="gh-content-status-emailed nowrap">
-                <span>{{svg-jar "email-unread"}}</span>
+                {{svg-jar "email-stroke"}}
             </span>
             {{/if}}
         </div>
