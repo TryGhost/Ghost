@@ -114,6 +114,13 @@ export default class KoenigCardEmailCtaComponent extends Component {
         }
     }
 
+    // required for snippet rects to be calculated - editor reaches in to component,
+    // expecting a non-Glimmer component with a .element property
+    @action
+    registerElement(element) {
+        this.element = element;
+    }
+
     @action
     updateHtml(html) {
         this._updatePayloadAttr('html', html);
