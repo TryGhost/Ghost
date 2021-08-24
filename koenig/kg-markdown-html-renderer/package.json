@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-markdown-html-renderer",
-  "version": "5.0.3",
+  "version": "5.0.4",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-markdown-html-renderer",
   "author": "Ghost Foundation",
   "license": "MIT",
