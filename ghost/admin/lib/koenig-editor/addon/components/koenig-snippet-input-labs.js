@@ -185,7 +185,10 @@ export default class KoenigSnippetInputLabsComponent extends Component {
     }
 
     _handleMousedown(event) {
-        if (this.element && !event.target.closest(this.element.id)) {
+        const isOutsideElement = this.element && !event.target.closest(this.element.id);
+        const isOutsideDropdown = !event.target.closest('.ember-basic-dropdown-content');
+
+        if (isOutsideElement && isOutsideDropdown) {
             this.args.cancel();
         }
     }
