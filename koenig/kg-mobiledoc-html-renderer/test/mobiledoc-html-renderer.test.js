@@ -89,7 +89,25 @@ describe('Mobiledoc HTML renderer', function () {
         let renderer;
 
         before(function () {
-            renderer = new Renderer();
+            const hrCard = {
+                name: 'hr',
+                type: 'dom',
+                render({env}) {
+                    return env.dom.createElement('hr');
+                }
+            };
+
+            const divHrCard = {
+                name: 'divHr',
+                type: 'dom',
+                render({env}) {
+                    const div = env.dom.createElement('div');
+                    div.appendChild(env.dom.createElement('hr'));
+                    return div;
+                }
+            };
+
+            renderer = new Renderer({cards: [hrCard, divHrCard]});
         });
 
         it('removes final blank paragraph', function () {
@@ -249,6 +267,168 @@ describe('Mobiledoc HTML renderer', function () {
 
             // accents and non-latin chars
             output.should.match(/<h1 id="%C3%A3%C3%A0%C3%A1%C3%A4%C3%A2%C3%A5%C4%8D%C3%A7%C4%8F%E1%BA%BD%C3%A8%C3%A9%C3%AB%C3%AA%C3%AC%C3%AD%C3%AF%C3%AE%C3%B1%C3%B5%C3%B2%C3%B3%C3%B6%C3%B4%C5%99%C5%A1%C5%A5%C3%B9%C3%BA%C3%BC%C3%BB%C3%BD%C5%BE">ãàáäâåčçďẽèéëêìíïîñõòóöôřšťùúüûýž<\/h1>/);
+        });
+
+        it('does not remove HR at beginning', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['hr']],
+                markups: [],
+                sections: [
+                    [10, 0],
+                    [1, 'p', [
+                        [0, [], 0, 'Text']
+                    ]]
+                ]
+            };
+
+            renderer.render(mobiledoc).should.eql('<hr><p>Text</p>');
+        });
+
+        it('does not remove HR at beginning inside a DIV', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['divHr']],
+                markups: [],
+                sections: [
+                    [10, 0],
+                    [1, 'p', [
+                        [0, [], 0, 'Text']
+                    ]]
+                ]
+            };
+
+            renderer.render(mobiledoc).should.eql('<div><hr></div><p>Text</p>');
+        });
+
+        it('does not remove HR at end', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['hr']],
+                markups: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Text']
+                    ]],
+                    [10, 0]
+                ]
+            };
+
+            renderer.render(mobiledoc).should.eql('<p>Text</p><hr>');
+        });
+
+        it('does not remove HR at end inside a DIV', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['divHr']],
+                markups: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Text']
+                    ]],
+                    [10, 0]
+                ]
+            };
+
+            renderer.render(mobiledoc).should.eql('<p>Text</p><div><hr></div>');
+        });
+    });
+
+    describe('email behaviour', function () {
+        let renderer;
+
+        before(function () {
+            const hrCard = {
+                name: 'hr',
+                type: 'dom',
+                render({env}) {
+                    return env.dom.createElement('hr');
+                }
+            };
+
+            const divHrCard = {
+                name: 'divHr',
+                type: 'dom',
+                render({env}) {
+                    const div = env.dom.createElement('div');
+                    div.appendChild(env.dom.createElement('hr'));
+                    return div;
+                }
+            };
+
+            renderer = new Renderer({cards: [hrCard, divHrCard]});
+        });
+
+        it('removes HR at beginning', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['hr']],
+                markups: [],
+                sections: [
+                    [10, 0],
+                    [1, 'p', [
+                        [0, [], 0, 'Text']
+                    ]]
+                ]
+            };
+
+            renderer.render(mobiledoc, {target: 'email'}).should.eql('<p>Text</p>');
+        });
+
+        it('removes HR at beginning inside a DIV', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['divHr']],
+                markups: [],
+                sections: [
+                    [10, 0],
+                    [1, 'p', [
+                        [0, [], 0, 'Text']
+                    ]]
+                ]
+            };
+
+            renderer.render(mobiledoc, {target: 'email'}).should.eql('<div></div><p>Text</p>');
+        });
+
+        it('removes HR at end', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['hr']],
+                markups: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Text']
+                    ]],
+                    [10, 0]
+                ]
+            };
+
+            renderer.render(mobiledoc, {target: 'email'}).should.eql('<p>Text</p>');
+        });
+
+        it('removes HR at end inside a DIV', function () {
+            let mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['divHr']],
+                markups: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Text']
+                    ]],
+                    [10, 0]
+                ]
+            };
+
+            renderer.render(mobiledoc, {target: 'email'}).should.eql('<p>Text</p><div></div>');
         });
     });
 });
