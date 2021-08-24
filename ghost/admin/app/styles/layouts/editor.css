@@ -1018,6 +1018,11 @@ figure {
     fill: var(--green);
 }
 
+.gh-btn-group.email-cta-align .gh-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
 .gh-btn.email-cta-toolbar-item {
     margin-right: 1.2rem;
     box-shadow: none;
