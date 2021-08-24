@@ -46,7 +46,7 @@
 
         {{#if @payload.showDividers}}<hr class="border-top edit-mode">{{/if}}
 
-        <div class="{{if (eq @payload.buttonAlignment "center") "tc"}}">
+        <div class="{{if (eq @payload.alignment "center") "tc"}}">
             <KoenigTextReplacementHtmlInput
                 @html={{@payload.html}}
                 @placeholder="Email only text... (optional)"
@@ -77,8 +77,8 @@
             </div>
 
             <div class="gh-btn-group icons email-cta-align">
-                <button type="button" title="Left-align content" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
-                <button type="button" title="Center-align content" class="gh-btn gh-btn-icon {{if (eq @payload.buttonAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setButtonAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                <button type="button" title="Left-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                <button type="button" title="Center-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
             </div>
 
             <button type="button" title="Add button" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showButton "fill-green-l2"}}" {{on "click" this.toggleButton}}><span>{{svg-jar "button"}}</span></button>
@@ -125,7 +125,7 @@
 
         {{#if @payload.showDividers}}<hr class="border-top">{{/if}}
 
-        <div class="{{if (not @payload.showDividers) "pb2"}} {{if (eq @payload.buttonAlignment "center") "tc"}}">
+        <div class="{{if (not @payload.showDividers) "pb2"}} {{if (eq @payload.alignment "center") "tc"}}">
             {{#if @payload.html}}
                 <div class="relative">
                     <p>{{{this.formattedHtml}}}</p>
