@@ -51,6 +51,7 @@ describe('Email CTA card', function () {
             env: {dom: new SimpleDom.Document()},
             payload: {
                 html: undefined,
+                showButton: true,
                 buttonText: 'Click me!',
                 buttonUrl: 'https://example.com'
             },
@@ -66,11 +67,30 @@ describe('Email CTA card', function () {
             .should.not.containEql('undefined');
     });
 
+    it('does not render button with payload.showButton = false', function () {
+        let opts = {
+            env: {dom: new SimpleDom.Document()},
+            payload: {
+                html: undefined,
+                showButton: false,
+                buttonText: 'Click me!',
+                buttonUrl: 'https://example.com'
+            },
+            options: {
+                target: 'email'
+            }
+        };
+
+        serializer.serialize(card.render(opts))
+            .should.not.containEql('<a href="https://example.com"');
+    });
+
     it('does not render button if payload.buttonText is missing', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
             payload: {
                 html: '',
+                showButton: true,
                 buttonText: '',
                 buttonUrl: 'https://example.com'
             },
@@ -88,6 +108,7 @@ describe('Email CTA card', function () {
             env: {dom: new SimpleDom.Document()},
             payload: {
                 html: '',
+                showButton: true,
                 buttonText: 'Click me!',
                 buttonUrl: ''
             },
@@ -204,32 +225,10 @@ describe('Email CTA card', function () {
             .should.containEql('<p>Testing {foo invalid} in %%{bar}%%</p>');
     });
 
-    it('renders top divider', function () {
+    it('renders dividers', function () {
         let opts = {
             env: {dom: new SimpleDom.Document()},
-            payload: {html: '<p>Testing {foo invalid} in {bar}</p>', dividerTop: true},
-            options: {target: 'email'}
-        };
-
-        serializer.serialize(card.render(opts))
-            .should.containEql('<hr>');
-    });
-
-    it('renders bottom divider', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
-            payload: {html: '<p>Testing {foo invalid} in {bar}</p>', dividerBottom: true},
-            options: {target: 'email'}
-        };
-
-        serializer.serialize(card.render(opts))
-            .should.containEql('<hr>');
-    });
-
-    it('renders both dividers', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
-            payload: {html: '<p>Testing {foo invalid} in {bar}</p>', dividerTop: true, dividerBottom: true},
+            payload: {html: '<p>Testing {foo invalid} in {bar}</p>', showDividers: true},
             options: {target: 'email'}
         };
 

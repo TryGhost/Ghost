@@ -17,7 +17,7 @@ module.exports = {
 
     render({payload, env: {dom}, options = {}}) {
         const hasContent = !!payload.html;
-        const hasButton = !!payload.buttonText && !!payload.buttonUrl;
+        const hasButton = payload.showButton && !!payload.buttonText && !!payload.buttonUrl;
 
         if ((!hasContent && !hasButton) || options.target !== 'email') {
             return dom.createTextNode('');
@@ -29,7 +29,11 @@ module.exports = {
             container.setAttribute('data-gh-segment', payload.segment);
         }
 
-        if (payload.dividerTop) {
+        if (payload.alignment === 'center') {
+            container.setAttribute('class', 'align-center');
+        }
+
+        if (payload.showDividers) {
             container.appendChild(dom.createElement('hr'));
         }
 
@@ -44,11 +48,11 @@ module.exports = {
 
         container.appendChild(htmlSection);
 
-        if (payload.buttonText && payload.buttonUrl) {
+        if (payload.showButton && payload.buttonText && payload.buttonUrl) {
             const buttonTemplate = hbs`
                 <p>
                     <div class="btn btn-accent">
-                        <table border="0" cellspacing="0" cellpadding="0" align="{{buttonAlignment}}">
+                        <table border="0" cellspacing="0" cellpadding="0" align="{{alignment}}">
                             <tr>
                                 <td align="center">
                                     <a href="{{buttonUrl}}">{{buttonText}}</a>
@@ -65,7 +69,7 @@ module.exports = {
             container.appendChild(button);
         }
 
-        if (payload.dividerBottom) {
+        if (payload.showDividers) {
             container.appendChild(dom.createElement('hr'));
         }
 
