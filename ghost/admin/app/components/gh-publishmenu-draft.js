@@ -28,6 +28,14 @@ export default class GhPublishMenuDraftComponent extends Component {
         return this.args.post.get('emailOnly') ? 'send' : 'publish';
     }
 
+    get showEmailSection() {
+        return this.args.canSendEmail && this.args.post.get('emailRecipientFilter') !== 'none';
+    }
+
+    get showEmailOnlyInput() {
+        return this.feature.get('emailOnlyPosts') && this.args.post.get('isPost');
+    }
+
     constructor() {
         super(...arguments);
         this.args.post.set('publishedAtBlogTZ', this.args.post.publishedAtUTC);
