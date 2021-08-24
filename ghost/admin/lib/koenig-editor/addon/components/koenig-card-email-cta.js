@@ -52,15 +52,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
     }
 
     get suggestedUrls() {
-        const {post} = this.args.options;
         const urls = [];
-
-        if (post?.uuid) {
-            urls.push({
-                name: `Link to this post`,
-                url: this.config.getSiteUrl(`/p/${post.uuid}/`)
-            });
-        }
 
         urls.push(...[{
             name: `Link to ${this.config.get('blogTitle')}`,
