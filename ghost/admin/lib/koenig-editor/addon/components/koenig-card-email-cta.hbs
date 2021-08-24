@@ -44,7 +44,7 @@
             </p>
         </div>
 
-        {{#if this.hasTopDivider}}<hr class="border-top edit-mode">{{/if}}
+        {{#if @payload.showDividers}}<hr class="border-top edit-mode">{{/if}}
 
         <div class="{{if (eq @payload.buttonAlignment "center") "tc"}}">
             <KoenigTextReplacementHtmlInput
@@ -69,11 +69,11 @@
             {{/if}}
         </div>
 
-        {{#if this.hasBottomDivider}}<hr class="border-bottom">{{/if}}
+        {{#if @payload.showDividers}}<hr class="border-bottom">{{/if}}
 
         <form class="email-cta-toolbar">
             <div class="borders">
-                <button type="button" title="Add dividers" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item"><span>{{svg-jar "dividers"}}</span></button>
+                <button type="button" title="Add dividers" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showDividers "fill-green-l2"}}" {{on "click" this.toggleDividers}}><span>{{svg-jar "dividers"}}</span></button>
             </div>
 
             <div class="gh-btn-group icons email-cta-align">
@@ -123,9 +123,9 @@
             <p>{{capitalize this.selectedSegment.name}}</p>
         </div>
 
-        {{#if this.hasTopDivider}}<hr class="border-top">{{/if}}
+        {{#if @payload.showDividers}}<hr class="border-top">{{/if}}
 
-        <div class="{{if (not this.hasBottomDivider) "pb2"}} {{if (eq @payload.buttonAlignment "center") "tc"}}">
+        <div class="{{if (not @payload.showDividers) "pb2"}} {{if (eq @payload.buttonAlignment "center") "tc"}}">
             {{#if @payload.html}}
                 <div class="relative">
                     <p>{{{this.formattedHtml}}}</p>
@@ -138,7 +138,7 @@
             {{/if}}
         </div>
 
-        {{#if this.hasBottomDivider}}<hr class="border-bottom">{{/if}}
+        {{#if @payload.showDividers}}<hr class="border-bottom">{{/if}}
 
     {{/if}}
 
