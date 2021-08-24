@@ -236,18 +236,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 19px;
+    height: 20px;
     padding: 0 9px;
 }
 
 .gh-content-status-published {
-    color: var(--midgrey);
+    color: var(--midgrey-d1);
     background: var(--whitegrey);
-    display: inline-block;
     border-radius: 999px;
     text-transform: uppercase;
     font-size: 1.2rem;
-    padding: 0 9px;
     font-weight: 500;
 }
 
@@ -271,18 +269,33 @@
 }
 
 .gh-content-status-emailed {
-    display: inline-block;
     margin: 0px 6px;
-    color: var(--midgrey);
+    color: var(--midgrey-d1);
     background: var(--whitegrey);
-    border-radius: 3px;
+    border-radius: 999px;
 }
 
 .gh-content-status-emailed svg,
-.gh-content-status-published svg {
+.gh-content-status-published svg,
+.gh-content-status-scheduled svg {
     width: 12px;
     height: 12px;
-    fill: var(--midgrey);
+}
+
+.gh-content-status-emailed svg path,
+.gh-content-status-published svg path {
+    stroke: var(--midgrey-d1);
+    stroke-width: 2;
+}
+
+.gh-content-status-scheduled svg path {
+    stroke: var(--green-d2);
+    stroke-width: 2;
+}
+
+.gh-content-status-published svg,
+.gh-content-status-scheduled svg {
+    margin-left: 6px;
 }
 
 .gh-content-status-emailed.error {
