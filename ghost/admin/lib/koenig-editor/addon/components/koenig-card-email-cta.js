@@ -34,14 +34,6 @@ export default class KoenigCardEmailCtaComponent extends Component {
         return this.segments.find(segment => segment.filter === this.args.payload.segment);
     }
 
-    get hasTopDivider() {
-        return !!this.args.payload?.dividerTop;
-    }
-
-    get hasBottomDivider() {
-        return !!this.args.payload?.dividerBottom;
-    }
-
     get toolbar() {
         if (this.args.isEditing) {
             return false;
@@ -49,18 +41,6 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
         return {
             items: [{
-                title: 'Top divider',
-                icon: 'koenig/kg-cta-border',
-                iconClass: this.hasTopDivider ? 'fill-green-l2' : 'fill-white',
-                action: run.bind(this, this.toggleDivider, 'top')
-            }, {
-                title: 'Bottom divider',
-                icon: 'koenig/kg-cta-border',
-                iconClass: this.hasBottomDivider ? 'fill-green-l2' : 'fill-white',
-                action: run.bind(this, this.toggleDivider, 'bottom')
-            }, {
-                divider: true
-            }, {
                 buttonClass: 'fw4 flex items-center white',
                 icon: 'koenig/kg-edit',
                 iconClass: 'fill-white',
@@ -109,6 +89,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
         const payloadDefaults = {
             showButton: false,
+            showDividers: true,
             segment: 'status:free',
             buttonAlignment: 'left'
         };
@@ -159,13 +140,8 @@ export default class KoenigCardEmailCtaComponent extends Component {
     }
 
     @action
-    toggleDivider(border) {
-        if (border === 'top') {
-            this._updatePayloadAttr('dividerTop', !this.hasTopDivider);
-        }
-        if (border === 'bottom') {
-            this._updatePayloadAttr('dividerBottom', !this.hasBottomDivider);
-        }
+    toggleDividers() {
+        this._updatePayloadAttr('showDividers', !this.args.payload.showDividers);
     }
 
     @action
