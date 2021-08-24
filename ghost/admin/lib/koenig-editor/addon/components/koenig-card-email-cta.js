@@ -83,7 +83,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
             showButton: false,
             showDividers: true,
             segment: 'status:free',
-            buttonAlignment: 'left'
+            alignment: 'left'
         };
 
         Object.entries(payloadDefaults).forEach(([key, value]) => {
@@ -126,9 +126,9 @@ export default class KoenigCardEmailCtaComponent extends Component {
     }
 
     @action
-    setButtonAlignment(alignment, event) {
+    setAlignment(alignment, event) {
         event.preventDefault();
-        this._updatePayloadAttr('buttonAlignment', alignment);
+        this._updatePayloadAttr('alignment', alignment);
     }
 
     @action
