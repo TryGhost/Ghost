@@ -742,8 +742,10 @@
 /* Link input bar */
 .kg-link-input {
     min-width: 225px; /* Same width as text toolbar */
+    padding: 4px 8px;
     caret-color: auto;
     border: 1px solid var(--green);
+    font-size: 1.4rem;
     background-color: var(--white);
 }
 

@@ -347,3 +347,12 @@
     border: none;
     outline: 0;
 }
+
+.gh-snippet-dropdown {
+    margin-top: -1px;
+    border-top: 1px solid var(--input-border-color) !important;
+}
+
+.gh-snippet-dropdown li {
+    padding: 8px 12px;
+}
