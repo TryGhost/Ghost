@@ -1,0 +1,12 @@
+<span class="gh-select">
+    <OneWaySelect
+        @value={{this.distributionValue}}
+        @options={{this.availablePublishActions}}
+        @optionValuePath="value"
+        @optionLabelPath="name"
+        @includeBlank={{false}}
+        @update={{this.setPublishAction}}
+        @id="publish-action"
+        @name="publish-action" />
+    {{svg-jar "arrow-down-small"}}
+</span>
