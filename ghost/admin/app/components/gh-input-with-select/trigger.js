@@ -58,7 +58,17 @@ export default class GhSearchInputTrigger extends Component {
     }
 
     @action
-    handleBlur() {
+    handleBlur(event) {
+        if (event?.relatedTarget) {
+            const thisInputTrigger = this.inputElem.closest('.ember-basic-dropdown-trigger');
+            const relatedInputTrigger = event.relatedTarget.closest('.ember-basic-dropdown-trigger');
+
+            if (relatedInputTrigger !== thisInputTrigger) {
+                this.args.select.actions.search('');
+                this.close();
+            }
+        }
+
         if (this.args.extra.value && this.args.select.searchText === this.args.extra.value) {
             this.args.select.actions.search('');
             this.close();
