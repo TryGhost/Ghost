@@ -106,17 +106,17 @@ module.exports = function (Bookshelf) {
 
                     if (!withRelated) {
                         return _.map(objects, (object) => {
-                            object = Bookshelf._models[modelName].prototype.toJSON.bind({
+                            object = Bookshelf.registry.models[modelName].prototype.toJSON.bind({
                                 attributes: object,
                                 related: function (key) {
                                     return object[key];
                                 },
-                                serialize: Bookshelf._models[modelName].prototype.serialize,
-                                formatsToJSON: Bookshelf._models[modelName].prototype.formatsToJSON
+                                serialize: Bookshelf.registry.models[modelName].prototype.serialize,
+                                formatsToJSON: Bookshelf.registry.models[modelName].prototype.formatsToJSON
                             })();
 
-                            object = Bookshelf._models[modelName].prototype.fixBools(object);
-                            object = Bookshelf._models[modelName].prototype.fixDatesWhenFetch(object);
+                            object = Bookshelf.registry.models[modelName].prototype.fixBools(object);
+                            object = Bookshelf.registry.models[modelName].prototype.fixDatesWhenFetch(object);
                             return object;
                         });
                     }
@@ -180,7 +180,7 @@ module.exports = function (Bookshelf) {
                                     object[relation] = relationsToAttach[relation][object.id];
                                 });
 
-                                object = Bookshelf._models[modelName].prototype.toJSON.bind({
+                                object = Bookshelf.registry.models[modelName].prototype.toJSON.bind({
                                     attributes: object,
                                     _originalOptions: {
                                         withRelated: Object.keys(relationsToAttach)
@@ -188,12 +188,12 @@ module.exports = function (Bookshelf) {
                                     related: function (key) {
                                         return object[key];
                                     },
-                                    serialize: Bookshelf._models[modelName].prototype.serialize,
-                                    formatsToJSON: Bookshelf._models[modelName].prototype.formatsToJSON
+                                    serialize: Bookshelf.registry.models[modelName].prototype.serialize,
+                                    formatsToJSON: Bookshelf.registry.models[modelName].prototype.formatsToJSON
                                 })();
 
-                                object = Bookshelf._models[modelName].prototype.fixBools(object);
-                                object = Bookshelf._models[modelName].prototype.fixDatesWhenFetch(object);
+                                object = Bookshelf.registry.models[modelName].prototype.fixBools(object);
+                                object = Bookshelf.registry.models[modelName].prototype.fixDatesWhenFetch(object);
                                 return object;
                             });
 
