@@ -13,7 +13,12 @@
             <p>
                 Your post will be delivered to
                 <strong>{{this.memberCount}}</strong>
-                and will be published on your site{{#if this.model.isScheduled}} at the scheduled time{{/if}}. Sound good?
+                {{#if this.model.emailOnly}}
+                but it will <strong>not</strong>
+                {{else}}
+                and will
+                {{/if}}
+                be published on your site{{#if this.model.isScheduled}} at the scheduled time{{/if}}. Sound good?
             </p>
         {{/if}}
     </div>
