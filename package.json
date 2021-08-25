@@ -75,7 +75,7 @@
     "@tryghost/magic-link": "1.0.10",
     "@tryghost/members-api": "1.26.0",
     "@tryghost/members-csv": "1.1.5",
-    "@tryghost/members-importer": "0.3.0",
+    "@tryghost/members-importer": "0.3.1",
     "@tryghost/members-ssr": "1.0.11",
     "@tryghost/mw-session-from-token": "0.1.22",
     "@tryghost/package-json": "1.0.2",
