@@ -3,7 +3,6 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const commands = require('../schema').commands;
-const Promise = require('bluebird');
 
 const MIGRATION_USER = 1;
 
