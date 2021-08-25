@@ -7,6 +7,7 @@ const StripeAPIService = require('./services/stripe-api');
 const StripeWebhookService = require('./services/stripe-webhook');
 const TokenService = require('./services/token');
 const GeolocationSerice = require('./services/geolocation');
+const MemberBREADService = require('./services/member-bread');
 const MemberRepository = require('./repositories/member');
 const EventRepository = require('./repositories/event');
 const ProductRepository = require('./repositories/product');
@@ -106,6 +107,10 @@ module.exports = function MembersAPI({
         MemberPaymentEvent,
         MemberStatusEvent,
         MemberLoginEvent
+    });
+
+    const memberBREADService = new MemberBREADService({
+        memberRepository
     });
 
     const stripeWebhookService = new StripeWebhookService({
@@ -399,6 +404,7 @@ module.exports = function MembersAPI({
         getMagicLink,
         hasActiveStripeSubscriptions,
         members: users,
+        memberBREADService,
         events: eventRepository,
         productRepository
     };
