@@ -128,7 +128,7 @@ module.exports = function (Bookshelf) {
             }
         },
 
-        onCreated(model, attrs, options) {
+        onCreated(model, options) {
             this.addAction(model, 'added', options);
         },
 
@@ -189,7 +189,7 @@ module.exports = function (Bookshelf) {
                 });
         },
 
-        onUpdated(model, attrs, options) {
+        onUpdated(model, options) {
             this.addAction(model, 'edited', options);
         },
 
