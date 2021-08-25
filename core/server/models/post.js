@@ -301,7 +301,7 @@ Post = ghostBookshelf.Model.extend({
      * bookshelf-relations listens on `created` + `updated`.
      * We ensure that we are catching the event after bookshelf relations.
      */
-    onSaved: function onSaved(model, response, options) {
+    onSaved: function onSaved(model, options) {
         ghostBookshelf.Model.prototype.onSaved.apply(this, arguments);
 
         if (options.method !== 'insert') {
@@ -317,7 +317,7 @@ Post = ghostBookshelf.Model.extend({
         }
     },
 
-    onUpdated: function onUpdated(model, attrs, options) {
+    onUpdated: function onUpdated(model, options) {
         ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.statusChanging = model.get('status') !== model.previous('status');

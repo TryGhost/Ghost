@@ -36,7 +36,7 @@ const Integration = ghostBookshelf.Model.extend({
         }
     },
 
-    onCreated: function onCreated(model, response, options) {
+    onCreated: function onCreated(model, options) {
         ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
         model.emitChange('added', options);
