@@ -100,7 +100,7 @@ function exportCSV(page, _apiConfig, frame) {
  * @returns {SerializedMember}
  */
 function serializeMember(member, options) {
-    const json = member.toJSON(options);
+    const json = member.toJSON ? member.toJSON(options) : member;
 
     let comped = false;
     if (json.subscriptions) {
