@@ -84,11 +84,11 @@
             <button type="button" title="Add button" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showButton "fill-green-d1"}}" {{on "click" this.toggleButton}}><span>{{svg-jar "button"}}</span></button>
 
             {{#if @payload.showButton}}
-                <label for="button-text-input" class="sr-only">CTA button text</label>
+                <label for={{this.buttonTextInputId}} class="sr-only">CTA button text</label>
                 <input
                     type="text"
                     class="gh-input email-cta-button-text-input"
-                    id="button-text-input"
+                    id={{this.buttonTextInputId}}
                     name="button-text"
                     value={{@payload.buttonText}}
                     placeholder={{if this.buttonFocused "" "Add button text"}}
@@ -98,7 +98,7 @@
                     {{on-key "Enter" (fn this.focusElement "#button-url-input")}}
                 >
 
-                <label for="button-url-input" class="sr-only">CTA URL</label>
+                <label for={{this.urlInputId}} class="sr-only">CTA URL</label>
                 <GhInputWithSelect
                     @value={{@payload.buttonUrl}}
                     @options={{this.suggestedUrls}}
@@ -110,6 +110,7 @@
                     @openOnFocus={{true}}
                     @closeWhenEmpty={{true}}
                     @triggerClass="email-cta-button-url-input"
+                    @triggerId={{this.urlInputId}}
                     @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
                     as |suggestion|
                 >

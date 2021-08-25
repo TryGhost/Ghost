@@ -2,8 +2,10 @@ import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
+import {guidFor} from '@ember/object/internals';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {schedule} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
@@ -15,6 +17,9 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
     @tracked buttonFocused = false;
     @tracked contentFocused = false;
+
+    buttonTextInputId = 'button-text-input-' + guidFor(this);
+    urlInputId = 'url-input-' + guidFor(this);
 
     get formattedHtml() {
         return formatTextReplacementHtml(this.args.payload.html);
@@ -113,6 +118,12 @@ export default class KoenigCardEmailCtaComponent extends Component {
     @action
     toggleButton() {
         this._updatePayloadAttr('showButton', !this.args.payload.showButton);
+
+        if (this.args.payload.showButton) {
+            schedule('afterRender', this, function () {
+                document.getElementById(this.buttonTextInputId)?.focus();
+            });
+        }
     }
 
     @action
