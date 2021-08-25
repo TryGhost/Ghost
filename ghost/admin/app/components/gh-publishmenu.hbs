@@ -65,6 +65,7 @@
         @model={{hash
             sendEmailWhenPublished=this.sendEmailWhenPublished
             isScheduled=(eq this.saveType "schedule")
+            emailOnly=this.post.emailOnly
             retryEmailSend=this.retryEmailSend
         }}
         @confirm={{this.confirmEmailSend}}
