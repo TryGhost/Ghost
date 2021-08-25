@@ -59,6 +59,11 @@
     border-top: none;
 }
 
+.ember-power-select-dropdown.ember-basic-dropdown-content--above {
+    border-top: 1px solid var(--input-border-color);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
 .ember-power-select-option {
     margin: 0;
     padding: 6px 14px;
