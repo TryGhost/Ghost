@@ -15,7 +15,7 @@ module.exports = createTransactionalMigration(
 
         const memberProductEvents = memberProductRelationships.map((row) => {
             return {
-                id: new ObjectId().toHexString(),
+                id: ObjectId().toHexString(),
                 created_at: connection.raw('CURRENT_TIMESTAMP'),
                 member_id: row.member_id,
                 product_id: row.product_id,
