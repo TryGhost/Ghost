@@ -25,15 +25,15 @@ export default class GhPublishMenuDraftComponent extends Component {
     }
 
     get nextActionName() {
-        return this.args.post.get('emailOnly') ? 'send' : 'publish';
+        return this.args.post.emailOnly ? 'send' : 'publish';
     }
 
     get showEmailSection() {
-        return this.args.canSendEmail && this.args.post.get('emailRecipientFilter') !== 'none';
+        return this.args.canSendEmail && this.args.post.emailRecipientFilter !== 'none';
     }
 
     get showEmailOnlyInput() {
-        return this.feature.get('emailOnlyPosts') && this.args.post.get('isPost');
+        return this.feature.emailOnlyPosts && this.args.post.isPost;
     }
 
     constructor() {
