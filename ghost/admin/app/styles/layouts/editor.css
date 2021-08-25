@@ -994,15 +994,15 @@ figure {
 }
 
 .email-cta-toolbar .borders {
-    margin-right: 1.2rem;
+    margin-right: 1rem;
     border-right: 1px solid var(--whitegrey-d2);
     border-radius: 0;
 }
 
 .gh-btn-group.email-cta-align {
     background: none;
-    margin-right: 1.2rem;
-    padding-right: 1.2rem;
+    margin-right: 1rem;
+    padding-right: 1rem;
     border-right: 1px solid var(--whitegrey-d2);
 }
 
@@ -1015,7 +1015,7 @@ figure {
 }
 
 .gh-btn-group.email-cta-align .gh-btn-group-selected svg {
-    fill: var(--green);
+    fill: var(--green-d1);
 }
 
 .gh-btn-group.email-cta-align .gh-btn svg {
@@ -1024,7 +1024,7 @@ figure {
 }
 
 .gh-btn.email-cta-toolbar-item {
-    margin-right: 1.2rem;
+    margin-right: 1rem;
     box-shadow: none;
 }
 

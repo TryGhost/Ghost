@@ -73,7 +73,7 @@
 
         <form class="email-cta-toolbar">
             <div class="borders">
-                <button type="button" title="Add dividers" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showDividers "fill-green-l2"}}" {{on "click" this.toggleDividers}}><span>{{svg-jar "dividers"}}</span></button>
+                <button type="button" title="Add dividers" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showDividers "fill-green-d1"}}" {{on "click" this.toggleDividers}}><span>{{svg-jar "dividers"}}</span></button>
             </div>
 
             <div class="gh-btn-group icons email-cta-align">
@@ -81,7 +81,7 @@
                 <button type="button" title="Center-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
             </div>
 
-            <button type="button" title="Add button" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showButton "fill-green-l2"}}" {{on "click" this.toggleButton}}><span>{{svg-jar "button"}}</span></button>
+            <button type="button" title="Add button" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showButton "fill-green-d1"}}" {{on "click" this.toggleButton}}><span>{{svg-jar "button"}}</span></button>
 
             {{#if @payload.showButton}}
                 <label for="button-text-input" class="sr-only">CTA button text</label>
