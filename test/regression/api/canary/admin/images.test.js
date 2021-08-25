@@ -83,4 +83,29 @@ describe('Images API', function () {
                 done();
             });
     });
+
+    it('Correctly uploads multiple images with the same name in short period of time', async function () {
+        const favicon = fs.readFileSync(path.join(__dirname, '/../../../../utils/fixtures/images/favicon.png'));
+
+        const expectedImageNames = new Array(100)
+            .fill(null)
+            .map((_, i) => `image${i === 0 ? '' : `-${i}`}.png`);
+        const firstImageName = expectedImageNames[0];
+
+        const imageUploadRequests = new Array(100)
+            .fill(favicon)
+            .map(image => request.post(localUtils.API.getApiQuery('images/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('purpose', 'image')
+                .attach('file', image, {filename: firstImageName})
+                .expect(201)
+            );
+
+        const imageUploadResponses = await Promise.all(imageUploadRequests);
+        const uploadedImageNames = imageUploadResponses
+            .flatMap(response => response.body.images.map(image => image.url.split('/').slice(-1)[0]));
+
+        uploadedImageNames.slice().sort().should.eql(expectedImageNames.slice().sort());
+    });
 });

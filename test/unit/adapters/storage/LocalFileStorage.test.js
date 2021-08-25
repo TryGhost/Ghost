@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
+const nodeFS = require('fs').promises;
 const moment = require('moment');
 const Promise = require('bluebird');
 const path = require('path');
@@ -11,6 +12,7 @@ const configUtils = require('../../../utils/configUtils');
 
 describe('Local File System Storage', function () {
     let image;
+    let directory;
     let momentStub;
 
     function fakeDate(mm, yyyy) {
@@ -33,7 +35,13 @@ describe('Local File System Storage', function () {
 
     beforeEach(function () {
         sinon.stub(fs, 'mkdirs').resolves();
+        sinon.stub(nodeFS, 'copyFile').resolves();
         sinon.stub(fs, 'copy').resolves();
+        sinon.stub(nodeFS, 'stat').resolves({
+            isFile() {
+                return true;
+            }
+        });
         sinon.stub(fs, 'stat').rejects();
         sinon.stub(fs, 'unlink').resolves();
 
@@ -41,6 +49,11 @@ describe('Local File System Storage', function () {
             path: 'tmp/123456.jpg',
             name: 'IMAGE.jpg',
             type: 'image/jpeg'
+        };
+
+        directory = {
+            path: 'tmp/',
+            name: 'tmp'
         };
 
         localFileStore = new LocalFileStore();
@@ -95,12 +108,26 @@ describe('Local File System Storage', function () {
 
     it('should copy temp file to new location', function (done) {
         localFileStore.save(image).then(function () {
-            fs.copy.calledOnce.should.be.true();
-            fs.copy.args[0][0].should.equal('tmp/123456.jpg');
-            fs.copy.args[0][1].should.equal(path.resolve('./content/images/2013/09/IMAGE.jpg'));
+            nodeFS.copyFile.calledOnce.should.be.true();
+            nodeFS.copyFile.args[0][0].should.equal('tmp/123456.jpg');
+            nodeFS.copyFile.args[0][1].should.equal(path.resolve('./content/images/2013/09/IMAGE.jpg'));
 
             done();
         }).catch(done);
+    });
+
+    it('should copy temp directory to new location', async function () {
+        nodeFS.stat.resolves({
+            isFile() {
+                return false;
+            }
+        });
+
+        await localFileStore.save(directory);
+
+        fs.copy.calledOnce.should.be.true();
+        fs.copy.args[0][0].should.equal(directory.path);
+        fs.copy.args[0][1].should.equal(path.resolve('./content/images/2013/09', directory.path));
     });
 
     it('can upload two different images with the same name without overwriting the first', function (done) {

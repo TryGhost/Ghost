@@ -3,6 +3,7 @@
 const serveStatic = require('../../../shared/express').static;
 
 const fs = require('fs-extra');
+const nodeFS = require('fs').promises;
 const path = require('path');
 const Promise = require('bluebird');
 const moment = require('moment');
@@ -47,25 +48,33 @@ class LocalFileStore extends StorageBase {
     }
 
     /**
-     * Saves the image to storage (the file system)
-     * - image is the express image object
-     * - returns a promise which ultimately returns the full url to the uploaded image
+     * Saves the file or the directory from the temporary to permanent storage
+     * - returns a promise which ultimately returns the full url to the uploaded data
      *
-     * @param image
+     * @param {Object} source
+     * @param source.path - Path to the source data
+     * @param source.name - Name of the source data
      * @param targetDir
      * @returns {*}
      */
-    save(image, targetDir) {
+    save(source, targetDir) {
         let targetFilename;
 
         // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
         targetDir = targetDir || this.getTargetDir(this.storagePath);
 
-        return this.getUniqueFileName(image, targetDir).then((filename) => {
+        return this.getUniqueFileName(source, targetDir).then((filename) => {
             targetFilename = filename;
             return fs.mkdirs(targetDir);
         }).then(() => {
-            return fs.copy(image.path, targetFilename);
+            return nodeFS.stat(source.path);
+        }).then((sourceStats) => {
+            // "Native" fs module is used for files because it provides better error handling compared to fs-extra. fs-extra can silently overwrite files even if overwrite is disabled 
+            if (sourceStats.isFile()) {
+                return nodeFS.copyFile(source.path, targetFilename, fs.constants.COPYFILE_EXCL);
+            }
+
+            return fs.copy(source.path, targetFilename);
         }).then(() => {
             // The src for the image must be in URI format, not a file system path, which in Windows uses \
             // For local file system storage can use relative path so add a slash
@@ -77,6 +86,10 @@ class LocalFileStore extends StorageBase {
 
             return fullUrl;
         }).catch((e) => {
+            if (e && e.code === 'EEXIST') {
+                return this.save(source, targetDir);
+            }
+            
             return Promise.reject(e);
         });
     }
