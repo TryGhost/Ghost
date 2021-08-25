@@ -21,6 +21,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // Bookshelf `hasTimestamps` - handles created_at and updated_at properties
     hasTimestamps: true,
 
+    requireFetch: false,
+
     // https://github.com/bookshelf/bookshelf/commit/a55db61feb8ad5911adb4f8c3b3d2a97a45bd6db
     parsedIdAttribute: function () {
         return false;
