@@ -5,12 +5,17 @@ const ObjectId = require('bson-objectid').default;
 
 module.exports = createTransactionalMigration(
     async function up(connection) {
-        logging.info('Adding members_product_events rows for existing members_products relationships');
         const memberProductRelationships = await connection('members_products').select('*');
+
+        if (memberProductRelationships.length === 0) {
+            logging.warn('Skipping population of members_product_events rows - no members_products relationships found.');
+            return;
+        }
+        logging.info(`Adding ${memberProductRelationships.length} members_product_events rows for existing members_products relationships`);
 
         const memberProductEvents = memberProductRelationships.map((row) => {
             return {
-                id: Reflect.construct(ObjectId, []).toHexString(),
+                id: new ObjectId().toHexString(),
                 created_at: connection.raw('CURRENT_TIMESTAMP'),
                 member_id: row.member_id,
                 product_id: row.product_id,
