@@ -12,8 +12,8 @@
 <div class="gh-post-preview-email-footer">
     {{#if (feature "emailCardSegments")}}
     <div class="gh-btn-group mr3">
-        <button type="button" class="gh-btn {{if (eq this.memberSegment "status:free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:free")}}><span>free member</span></button>
-        <button type="button" class="gh-btn {{if (eq this.memberSegment "status:-free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:-free")}}><span>paid member</span></button>
+        <button type="button" class="gh-btn {{if (eq this.memberSegment "status:free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:free")}}><span>Free member</span></button>
+        <button type="button" class="gh-btn {{if (eq this.memberSegment "status:-free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:-free")}}><span>Paid member</span></button>
     </div>
     {{else}}
     <span class="mr3 nowrap fw6 f8 darkgrey">Send a test newsletter</span>
