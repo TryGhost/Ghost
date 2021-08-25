@@ -171,7 +171,7 @@ describe('Unit: models/settings', function () {
             tracker.install();
 
             tracker.on('query', (query) => {
-                query.response();
+                query.response([{}]);
             });
 
             const setting = models.Settings.forge({key, value, type, group});
