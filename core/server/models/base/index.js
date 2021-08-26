@@ -63,6 +63,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
 
         return true;
     }
+}, {
+    /**
+     * @template T
+     * @param {(transaction: import('knex').Transaction) => Promise<T>} fn
+     *
+     * @returns {Promise<T>}
+     */
+    transaction(fn) {
+        return ghostBookshelf.transaction(fn);
+    }
 });
 
 // Export ghostBookshelf for use elsewhere
