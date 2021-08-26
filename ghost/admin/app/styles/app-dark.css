@@ -357,6 +357,16 @@ input:focus,
     background-color: rgba(0,0,0,0.3);
 }
 
+.email-cta-toolbar,
+.email-cta-toolbar .borders,
+.email-cta-toolbar .email-cta-align {
+    border-color: var(--lightgrey);
+}
+
+.email-cta-toolbar .gh-btn {
+    background: var(--dark-main-bg-color) !important;
+}
+
 .gh-badge-black,
 .gh-badge.owner {
     color: var(--lightgrey);
