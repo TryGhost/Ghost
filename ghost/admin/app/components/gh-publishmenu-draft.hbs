@@ -3,6 +3,7 @@
         {{#if this.showEmailOnlyInput}}
             <GhDistributionActionSelect
                 @post={{@post}}
+                @setDistributionAction={{@setDistributionAction}}
             />
         {{else}}
             {{this.nextActionName}}

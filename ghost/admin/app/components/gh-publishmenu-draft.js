@@ -74,6 +74,11 @@ export default class GhPublishMenuDraftComponent extends Component {
     }
 
     @action
+    setDistributionAction(type) {
+        this.args.setDistributionAction(type);
+    }
+
+    @action
     setDate(date) {
         let post = this.args.post;
         let dateString = moment(date).format('YYYY-MM-DD');

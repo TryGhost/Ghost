@@ -31,20 +31,9 @@ export default class GhDistributionActionSelect extends Component {
     }
 
     @action
-    setPublishAction(newAction) {
+    setDistributionAction(newAction) {
         this.distributionValue = newAction;
-
-        if (newAction.value === 'publish_send') {
-            this.args.post.emailOnly = false;
-            this.args.post.emailRecipientFilter = null;
-        } else if (newAction.value === 'publish') {
-            this.args.post.emailOnly = false;
-            this.args.post.emailRecipientFilter = 'none';
-        } else if (newAction.value === 'send') {
-            this.args.post.emailOnly = true;
-            this.args.post.emailRecipientFilter = null;
-        }
-
-        this.args.post.save();
+        this.args.post.emailOnly = (newAction.value === 'send') ? true : false;
+        this.args.setDistributionAction(newAction.value);
     }
 }
