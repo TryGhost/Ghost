@@ -1,3 +1,6 @@
+{{#if (eq this.displayState "sent")}}
+<div class="gh-btn gh-btn-text green">Sent</div>
+{{else}}
 <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @onOpen={{action "open"}} @onClose={{action "close"}} as |dd|>
     <dd.Trigger class="gh-btn gh-btn-editor {{if (or (eq this.displayState "published") (eq this.displayState "scheduled") (eq this.uiContext "preview")) "green"}} gh-publishmenu-trigger">
         <span data-test-publishmenu-trigger>{{this.triggerText}} {{svg-jar "arrow-down"}}</span>
@@ -58,6 +61,7 @@
         </footer>
     </dd.Content>
 </GhBasicDropdown>
+{{/if}}
 
 {{#if this.showEmailConfirmationModal}}
     <GhFullscreenModal
