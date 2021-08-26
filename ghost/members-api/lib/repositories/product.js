@@ -173,7 +173,7 @@ class ProductRepository {
                         interval: 'month'
                     }, options);
 
-                    await this._Product.edit({monthly_price_id: stripePrice.id}, {id: product.id});
+                    await this._Product.edit({monthly_price_id: stripePrice.id}, {id: product.id, transacting: options.transacting});
                 }
 
                 if (data.yearly_price) {
@@ -198,7 +198,7 @@ class ProductRepository {
                         interval: 'year'
                     }, options);
 
-                    await this._Product.edit({yearly_price_id: stripePrice.id}, {id: product.id});
+                    await this._Product.edit({yearly_price_id: stripePrice.id}, {id: product.id, transacting: options.transacting});
                 }
             } else if (data.stripe_prices) {
                 for (const newPrice of data.stripe_prices) {
