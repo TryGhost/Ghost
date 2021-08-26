@@ -454,8 +454,6 @@ Usage: CTA buttons grouped together horizontally.
 
 .gh-btn-group .gh-btn-group-selected span {
     color: var(--black);
-    padding-left: 12px;
-    padding-right: 12px;
     background: var(--white) !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
