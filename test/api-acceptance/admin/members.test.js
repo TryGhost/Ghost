@@ -118,7 +118,7 @@ describe('Members API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
         jsonResponse.members.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', ['subscriptions', 'products']);
     });
 
     it('Can read and include email_recipients', async function () {
@@ -134,7 +134,7 @@ describe('Members API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
         jsonResponse.members.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.members[0], 'member', ['subscriptions', 'email_recipients']);
+        localUtils.API.checkResponse(jsonResponse.members[0], 'member', ['subscriptions', 'email_recipients', 'products']);
         jsonResponse.members[0].email_recipients.length.should.equal(1);
         localUtils.API.checkResponse(jsonResponse.members[0].email_recipients[0], 'email_recipient', ['email']);
         localUtils.API.checkResponse(jsonResponse.members[0].email_recipients[0].email, 'email');
