@@ -22,6 +22,7 @@ export default Component.extend({
     displayState: 'draft',
     post: null,
     postStatus: 'draft',
+    distributionAction: 'publish_send',
     runningText: null,
     saveTask: null,
     sendEmailWhenPublished: null,
@@ -95,17 +96,25 @@ export default Component.extend({
         return runningText || 'Publishing';
     }),
 
-    buttonText: computed('postState', 'saveType', 'post.emailOnly', function () {
+    buttonText: computed('postState', 'saveType', 'distributionAction', function () {
         let saveType = this.saveType;
         let postState = this.postState;
-        let emailOnly = this.get('post.emailOnly');
+        let distributionAction = this.get('distributionAction');
         let buttonText;
 
         if (postState === 'draft') {
-            if (emailOnly) {
+            let publishText = this.feature.emailOnlyPosts ? 'Publish & send' : 'Publish';
+
+            switch (distributionAction) {
+            case 'publish_send':
+                buttonText = (saveType === 'publish') ? publishText : 'Schedule';
+                break;
+            case 'publish':
+                buttonText = (saveType === 'publish') ? 'Publish' : 'Schedule';
+                break;
+            case 'send':
                 buttonText = saveType === 'publish' ? 'Send' : 'Schedule';
-            } else {
-                buttonText = saveType === 'publish' ? 'Publish' : 'Schedule';
+                break;
             }
         }
 
@@ -207,6 +216,18 @@ export default Component.extend({
 
         setSendEmailWhenPublished(sendEmailWhenPublished) {
             this.set('sendEmailWhenPublished', sendEmailWhenPublished);
+        },
+
+        setDistributionAction(distributionAction) {
+            this.set('distributionAction', distributionAction);
+
+            if (distributionAction === 'publish') {
+                this.set('sendEmailWhenPublished', false);
+                this.set('post.emailRecipientFilter', 'none');
+            } else {
+                this.set('sendEmailWhenPublished', this.defaultEmailRecipients);
+                this.set('post.emailRecipientFilter', this.defaultEmailRecipients);
+            }
         },
 
         open() {
@@ -366,7 +387,8 @@ export default Component.extend({
             sendEmailWhenPublished,
             sendEmailConfirmed,
             saveType,
-            typedDateError
+            typedDateError,
+            distributionAction
         } = this;
 
         // don't allow save if an invalid schedule date is present
@@ -390,6 +412,7 @@ export default Component.extend({
             post.status === 'draft' &&
             !post.email && // email sent previously
             sendEmailWhenPublished && sendEmailWhenPublished !== 'none' &&
+            distributionAction !== 'publish' &&
             !sendEmailConfirmed // set once confirmed so normal save happens
         ) {
             this.openEmailConfirmationModal(dropdown);
@@ -431,5 +454,6 @@ export default Component.extend({
 
         this.post.set('statusScratch', null);
         this.post.validate();
+        this.post.save();
     }
 });
