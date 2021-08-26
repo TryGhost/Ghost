@@ -15,7 +15,8 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions',
             'stripeSubscriptions.customer',
             'stripeSubscriptions.stripePrice',
-            'stripeSubscriptions.stripePrice.stripeProduct'
+            'stripeSubscriptions.stripePrice.stripeProduct',
+            'products'
         ];
 
         const withRelated = new Set((options.withRelated || []).concat(defaultWithRelated));
