@@ -601,8 +601,43 @@ module.exports = class MemberRepository {
         let status = memberProducts.length === 0 ? 'free' : 'comped';
         if (this.isActiveSubscriptionStatus(subscription.status)) {
             status = 'paid';
-            if (ghostProduct) {
-                memberProducts.push(ghostProduct.toJSON());
+            if (!model) {
+                // This is a new subscription! Add the product
+                if (ghostProduct) {
+                    memberProducts.push(ghostProduct.toJSON());
+                }
+            } else {
+                if (model.get('stripe_price_id') !== subscriptionData.stripe_price_id) {
+                    // The subscription has changed plan - we may need to update the products
+                    memberProducts.push(ghostProduct.toJSON());
+
+                    const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+                    const changedProduct = await this._productRepository.get({
+                        stripe_price_id: model.get('stripe_price_id')
+                    }, options);
+
+                    let activeSubscriptionForChangedProduct = false;
+
+                    for (const subscription of subscriptions.models) {
+                        if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
+                            try {
+                                const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')});
+                                if (subscriptionProduct && changedProduct && subscriptionProduct.id === changedProduct.id) {
+                                    activeSubscriptionForChangedProduct = true;
+                                }
+                            } catch (e) {
+                                this._logging.error(`Failed to attach products to member - ${data.id}`);
+                                this._logging.error(e);
+                            }
+                        }
+                    }
+
+                    if (!activeSubscriptionForChangedProduct) {
+                        memberProducts = memberProducts.filter((product) => {
+                            return product.id !== changedProduct.id;
+                        });
+                    }
+                }
             }
         } else {
             const subscriptions = await member.related('stripeSubscriptions').fetch(options);
