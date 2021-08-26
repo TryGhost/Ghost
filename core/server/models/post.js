@@ -654,7 +654,8 @@ Post = ghostBookshelf.Model.extend({
 
         // NOTE: this is a stopgap solution for email-only posts where their status is unchanged after publish
         //       but the usual publis/send newsletter flow continues
-        if (model.related('posts_meta').get('email_only') && (newStatus === 'published') && this.hasChanged('status')) {
+        const hasEmailOnlyFlag = _.get(attrs, 'posts_meta.email_only') || model.related('posts_meta').get('email_only');
+        if (hasEmailOnlyFlag && (newStatus === 'published') && this.hasChanged('status')) {
             this.set('status', 'sent');
         }
 
