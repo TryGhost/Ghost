@@ -273,18 +273,7 @@ module.exports = function MembersAPI({
     }
 
     async function getMemberIdentityData(email) {
-        const model = await users.get({email}, {
-            withRelated: [
-                'stripeSubscriptions',
-                'stripeSubscriptions.stripePrice',
-                'labels',
-                'products'
-            ]
-        });
-        if (!model) {
-            return null;
-        }
-        return model.toJSON();
+        return memberBREADService.read({email});
     }
 
     async function getMemberIdentityToken(email) {
