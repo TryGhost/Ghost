@@ -908,10 +908,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.27.2":
-  version "1.27.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.27.2.tgz#2c3731d63a3ea01ed50a9ce78e0e8aaac46c7b55"
-  integrity sha512-mzNRmLKOzyKXooNL5Z6S91zpLozdlJDAsY7SJHz13ETeksRy6om3jhDz696WCNmiIKS3yArRMi9dzEwS2KbGzQ==
+"@tryghost/members-api@1.27.3":
+  version "1.27.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.27.3.tgz#04e32e785252131bdece6e9a759de0bc06d1c993"
+  integrity sha512-NnzZMJBPsifx35kf04VCjJTJO5KmH1qWky0/TchQOlQhfrZpNuA72sykVdFc/IPGseRGCu6ANMRUKBW8N8X/9w==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
