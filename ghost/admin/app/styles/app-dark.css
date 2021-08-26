@@ -263,8 +263,16 @@ input:focus,
     color: var(--black);
 }
 
+.gh-btn-group {
+    background: var(--whitegrey-l2);
+}
+
 .gh-btn-group .gh-btn:first-of-type {
     border-right: none !important;
+}
+
+.gh-btn-group .gh-btn-group-selected span {
+    background: var(--lightgrey-l1) !important;
 }
 
 .gh-btn-blue,
