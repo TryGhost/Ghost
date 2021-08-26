@@ -33,7 +33,15 @@ module.exports = class MemberBREADService {
             withRelated: Array.from(withRelated)
         });
 
+        if (!model) {
+            return null;
+        }
+
         const member = model.toJSON(options);
+
+        if (!member.products || !Array.isArray(member.products)) {
+            return member;
+        }
 
         const subscriptionProducts = member.subscriptions.map(sub => sub.price.product.product_id);
         for (const product of member.products) {
