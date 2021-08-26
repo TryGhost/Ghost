@@ -39,10 +39,12 @@ module.exports = class MemberBREADService {
         for (const product of member.products) {
             if (!subscriptionProducts.includes(product.id)) {
                 const productAddEvent = member.productEvents.find(event => event.product_id === product.id);
+                let startDate;
                 if (!productAddEvent || productAddEvent.action !== 'added') {
-                    // There's something very wrong here. They have been comped this product - why is there no event????
+                    startDate = moment();
+                } else {
+                    startDate = moment(productAddEvent.created_at);
                 }
-                const startDate = moment(productAddEvent.created_at);
                 member.subscriptions.push({
                     id: '',
                     customer: {
