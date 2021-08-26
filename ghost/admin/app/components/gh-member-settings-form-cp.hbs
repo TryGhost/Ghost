@@ -145,68 +145,104 @@
                         </h3>
 
                         {{#each product.subscriptions as |sub|}}
-                        <div class="gh-memberproduct-subscription">
-                            <div>
-                                <div>
-                                    <span class="gh-cp-memberproduct-pricelabel">{{sub.price.nickname}}</span>
-                                    &ndash;
-                                    {{#if sub.cancel_at_period_end}}
-                                        <span class="gh-cp-memberproduct-renewal">Has access until {{sub.validUntil}}</span>
-                                        <span class="gh-badge archived">Cancelled</span>
-                                    {{else}}
-                                        <span class="gh-cp-memberproduct-renewal">Renews {{sub.validUntil}}</span>
-                                        <span class="gh-badge active">Active</span>
-                                    {{/if}}
-                                </div>
-                                {{#if sub.cancellationReason}}
-                                    <div class="gh-memberproduct-cancelreason"><span class="fw6">Cancellation reason:</span> {{sub.cancellationReason}}</div>
-                                {{/if}}
-                                <div class="gh-memberproduct-created">Created on {{sub.startDate}}</div>
-                            </div>
-
-                            <div class="flex items-center">
-                                <div class="gh-product-card-price">
-                                    <div class="flex items-start">
-                                        <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
-                                        <span class="amount">{{sub.price.nonDecimalAmount}}</span>
+                            {{#if sub.isComplimentary}}
+                                <div class="gh-memberproduct-subscription">
+                                    <div>
+                                        <div>
+                                            <span class="gh-cp-memberproduct-pricelabel">Complimentary</span>
+                                            <span class="gh-badge active">Active</span>
+                                        </div>
+                                        <div class="gh-memberproduct-created">Created on</div>
                                     </div>
-                                    <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
-                                </div>
-
-                                <span class="action-menu">
-                                    <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon gh-btn-subscription-action icon-only" @title="Actions">
-                                        <span>
-                                            {{svg-jar "dotdotdot"}}
-                                            <span class="hidden">Subscription menu</span>
+                                    <div class="flex items-center">
+                                        <div class="gh-product-card-price">
+                                            <div class="flex items-start">
+                                                <span class="currency-symbol">$</span>
+                                                <span class="amount">0</span>
+                                            </div>
+                                            <div class="period">yearly</div>
+                                        </div>
+                                        <span class="action-menu">
+                                            <GhDropdownButton @dropdownName="subscription-menu-complimentary" @classNames="gh-btn gh-btn-outline gh-btn-icon gh-btn-subscription-action icon-only" @title="Actions">
+                                                <span>
+                                                    {{svg-jar "dotdotdot"}}
+                                                    <span class="hidden">Subscription menu</span>
+                                                </span>
+                                            </GhDropdownButton>
+                                            <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
+                                                <li>
+                                                    <button {{action "removeComplimentary" product.id}}>
+                                                        <span class="red">Remove complimentary subscription</span>
+                                                    </button>
+                                                </li>
+                                            </GhDropdown>
                                         </span>
-                                    </GhDropdownButton>
-                                    <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
-                                        <li>
-                                            <a href="https://dashboard.stripe.com/customers/{{sub.customer.id}}" target="_blank" rel="noopener">
-                                                View Stripe customer
-                                            </a>
-                                        </li>
-                                        <li class="divider"></li>
-                                        <li>
-                                            <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener">
-                                                View Stripe subscription
-                                            </a>
-                                        </li>
-                                        <li>
-                                        {{#if sub.cancel_at_period_end}}
-                                            <button {{action "continueSubscription" sub.id}}>
-                                                <span>Continue subscription</span>
-                                            </button>
-                                        {{else}}
-                                            <button {{action "cancelSubscription" sub.id}}>
-                                                <span class="red">Cancel subscription</span>
-                                            </button>
+                                    </div>
+                                </div>
+                            {{else}}
+                                <div class="gh-memberproduct-subscription">
+                                    <div>
+                                        <div>
+                                            <span class="gh-cp-memberproduct-pricelabel">{{sub.price.nickname}}</span>
+                                            &ndash;
+                                            {{#if sub.cancel_at_period_end}}
+                                                <span class="gh-cp-memberproduct-renewal">Has access until {{sub.validUntil}}</span>
+                                                <span class="gh-badge archived">Cancelled</span>
+                                            {{else}}
+                                                <span class="gh-cp-memberproduct-renewal">Renews {{sub.validUntil}}</span>
+                                                <span class="gh-badge active">Active</span>
+                                            {{/if}}
+                                        </div>
+                                        {{#if sub.cancellationReason}}
+                                            <div class="gh-memberproduct-cancelreason"><span class="fw6">Cancellation reason:</span> {{sub.cancellationReason}}</div>
                                         {{/if}}
-                                        </li>
-                                    </GhDropdown>
-                                </span>
-                            </div>
-                        </div>
+                                        <div class="gh-memberproduct-created">Created on {{sub.startDate}}</div>
+                                    </div>
+
+                                    <div class="flex items-center">
+                                        <div class="gh-product-card-price">
+                                            <div class="flex items-start">
+                                                <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
+                                                <span class="amount">{{sub.price.nonDecimalAmount}}</span>
+                                            </div>
+                                            <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
+                                        </div>
+
+                                        <span class="action-menu">
+                                            <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon gh-btn-subscription-action icon-only" @title="Actions">
+                                                <span>
+                                                    {{svg-jar "dotdotdot"}}
+                                                    <span class="hidden">Subscription menu</span>
+                                                </span>
+                                            </GhDropdownButton>
+                                            <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
+                                                <li>
+                                                    <a href="https://dashboard.stripe.com/customers/{{sub.customer.id}}" target="_blank" rel="noopener">
+                                                        View Stripe customer
+                                                    </a>
+                                                </li>
+                                                <li class="divider"></li>
+                                                <li>
+                                                    <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener">
+                                                        View Stripe subscription
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                {{#if sub.cancel_at_period_end}}
+                                                    <button {{action "continueSubscription" sub.id}}>
+                                                        <span>Continue subscription</span>
+                                                    </button>
+                                                {{else}}
+                                                    <button {{action "cancelSubscription" sub.id}}>
+                                                        <span class="red">Cancel subscription</span>
+                                                    </button>
+                                                {{/if}}
+                                                </li>
+                                            </GhDropdown>
+                                        </span>
+                                    </div>
+                                </div>
+                            {{/if}}
                         {{/each}}
 
                         {{#if (and (feature "multipleProducts") (eq product.subscriptions.length 0))}}
