@@ -16,11 +16,6 @@ export default class GhSearchInputTrigger extends Component {
     }
 
     @action
-    captureMousedown(e) {
-        e.stopPropagation();
-    }
-
-    @action
     handleInput(event) {
         let term = event.target.value;
 
@@ -55,6 +50,8 @@ export default class GhSearchInputTrigger extends Component {
         if (this.args.extra?.openOnFocus && this.args.select.results.length > 0) {
             this.open();
         }
+
+        this.args.onFocus?.(...arguments);
     }
 
     @action
@@ -73,6 +70,8 @@ export default class GhSearchInputTrigger extends Component {
             this.args.select.actions.search('');
             this.close();
         }
+
+        this.args.onBlur?.(...arguments);
     }
 
     @action
