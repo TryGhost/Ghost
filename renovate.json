@@ -13,7 +13,8 @@
       "moment",
       "moment-timezone",
       "nodemailer",
-      "simple-dom"
+      "simple-dom",
+      "@tryghost/members-api"
     ],
   "ignorePaths": ["test"],
   "packageRules": [
