@@ -285,6 +285,7 @@ export default class MembersAccessController extends Controller {
 
     @action
     confirmProductSave() {
+        this.updatePortalPreview({forceRefresh: true});
         return this.fetchProducts.perform();
     }
 
