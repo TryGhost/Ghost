@@ -49,6 +49,14 @@ class ProductRepository {
      * @returns {Promise<ProductModel>}
      */
     async get(data, options) {
+        if (!options.transacting) {
+            return this._Product.transaction((transacting) => {
+                return this.get(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
         if ('stripe_product_id' in data) {
             const stripeProduct = await this._StripeProduct.findOne({
                 stripe_product_id: data.stripe_product_id
@@ -112,6 +120,15 @@ class ProductRepository {
             throw new UpdateCollisionError({
                 message: 'The requested functionality requires Stripe to be configured. See https://ghost.org/integrations/stripe/',
                 code: 'STRIPE_NOT_CONFIGURED'
+            });
+        }
+
+        if (!options.transacting) {
+            return this._Product.transaction((transacting) => {
+                return this.create(data, {
+                    ...options,
+                    transacting
+                });
             });
         }
 
@@ -238,6 +255,15 @@ class ProductRepository {
             throw new UpdateCollisionError({
                 message: 'The requested functionality requires Stripe to be configured. See https://ghost.org/integrations/stripe/',
                 code: 'STRIPE_NOT_CONFIGURED'
+            });
+        }
+
+        if (!options.transacting) {
+            return this._Product.transaction((transacting) => {
+                return this.update(data, {
+                    ...options,
+                    transacting
+                });
             });
         }
 
@@ -464,6 +490,14 @@ class ProductRepository {
      * @returns {Promise<{data: ProductModel[], meta: object}>}
      **/
     async list(options) {
+        if (!options.transacting) {
+            return this._Product.transaction((transacting) => {
+                return this.list({
+                    ...options,
+                    transacting
+                });
+            });
+        }
         return this._Product.findPage(options);
     }
 
