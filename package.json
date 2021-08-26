@@ -33,7 +33,7 @@
     "test:acceptance": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/api-acceptance' './test/frontend-acceptance' --timeout=10000",
     "test:regression": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/regression' --timeout=60000",
     "test:slow": "yarn test:unit --reporter=mocha-slow-test-reporter && yarn test:acceptance --reporter=mocha-slow-test-reporter",
-    "coverage:unit": "c8 report --all -n 'core/{*.js,frontend,server,shared}' --reporter text --reporter html",
+    "cov:unit": "c8 report --all -n 'core/{*.js,frontend,server,shared}' --reporter text --reporter html",
     "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js'",
     "lint:shared": "eslint --ignore-path .eslintignore 'core/shared/**/*.js'",
     "lint:frontend": "eslint --ignore-path .eslintignore 'core/frontend/**/*.js'",

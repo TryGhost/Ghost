@@ -114,7 +114,7 @@ jobs:
           database__connection__filename: /dev/shm/ghost-test.db
 
       - name: Unit test coverage
-        run: yarn coverage:unit
+        run: yarn cov:unit
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
