@@ -2,7 +2,7 @@ import hbs from 'htmlbars-inline-precompile';
 import mockPosts from '../../../mirage/config/posts';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {find, findAll, render, settled} from '@ember/test-helpers';
+import {render, settled} from '@ember/test-helpers';
 import {setupRenderingTest} from 'ember-mocha';
 import {startMirage} from 'ghost-admin/initializers/ember-cli-mirage';
 
@@ -32,8 +32,5 @@ describe('Integration: Component: gh-distribution-action-select', function () {
         await render(hbs`<GhDistributionActionSelect @post=post />`);
 
         expect(this.element, 'top-level elements').to.exist;
-        expect(find('#publish-action'), 'publish action').to.exist;
-        expect(findAll('option'), 'number of options').to.have.length(3);
-        expect(find('select').value, 'selected option value').to.equal('publish_send');
     });
 });
