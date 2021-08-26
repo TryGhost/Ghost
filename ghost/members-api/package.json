@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-api",
-  "version": "1.27.3",
+  "version": "1.28.0",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-api",
   "author": "Ghost Foundation",
   "license": "MIT",
