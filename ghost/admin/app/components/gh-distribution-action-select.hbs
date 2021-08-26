@@ -1,12 +1,17 @@
-<span class="gh-select">
-    <OneWaySelect
-        @value={{this.distributionValue}}
+<span class="gh-publishmenu-select">
+    <PowerSelect
         @options={{this.availablePublishActions}}
-        @optionValuePath="value"
-        @optionLabelPath="name"
-        @includeBlank={{false}}
-        @update={{this.setPublishAction}}
+        @renderInPlace={{true}}
+        @selected={{this.distributionValue}}
+        @onChange={{this.setPublishAction}}
+        @searchEnabled={{false}}
         @id="publish-action"
-        @name="publish-action" />
-    {{svg-jar "arrow-down-small"}}
+        @name="publish-action"
+        @triggerComponent="gh-power-select/trigger"
+        @triggerClass="ember-power-select-inline"
+        @dropdownClass="gh-publishmenu-select-dropdown"
+        as |availablePublishAction|
+    >
+        {{availablePublishAction.name}}
+    </PowerSelect>
 </span>
