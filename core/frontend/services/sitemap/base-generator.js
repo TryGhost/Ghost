@@ -32,7 +32,7 @@ class BaseSiteMapGenerator {
                 ts: -(self.nodeTimeLookup[id] || 0),
                 node: node
             };
-        }, []);
+        });
 
         // Sort nodes by timestamp
         const sortedNodes = _.sortBy(timedNodes, 'ts');
