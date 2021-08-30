@@ -184,7 +184,7 @@
     "grunt-subgrunt": "1.3.0",
     "grunt-update-submodules": "0.4.1",
     "jwks-rsa": "2.0.4",
-    "mocha": "9.1.0",
+    "mocha": "9.1.1",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "0.4.10",
     "nock": "13.1.3",
