@@ -33,7 +33,7 @@
     "@sentry/ember": "6.11.0",
     "@tryghost/color-utils": "0.1.1",
     "@tryghost/helpers": "1.1.51",
-    "@tryghost/kg-clean-basic-html": "2.0.3",
+    "@tryghost/kg-clean-basic-html": "2.0.4",
     "@tryghost/kg-parser-plugins": "2.0.4",
     "@tryghost/limit-service": "0.6.1",
     "@tryghost/members-csv": "1.1.3",
