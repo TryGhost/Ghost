@@ -14,7 +14,7 @@
                     <label for="url">{{capitalize this.post.displayName}} URL</label>
                     {{!-- new posts don't have a preview link --}}
                     {{#unless this.post.isNew}}
-                        {{#if this.post.isPublished}}
+                        {{#if (or this.post.isPublished this.post.isSent)}}
                         <a class="post-view-link" target="_blank" href="{{this.post.url}}">
                             View {{this.post.displayName}} {{svg-jar "external"}}
                         </a>
