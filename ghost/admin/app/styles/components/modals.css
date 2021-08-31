@@ -229,10 +229,16 @@
     margin-left: 0;
 }
 
+.modal-footer-hint {
+    font-size: 1.3rem;
+    color: var(--middarkgrey);
+}
+
 .modal-body .gh-image-uploader {
     margin: 0;
     background: color-mod(var(--whitegrey) h(+7) s(-4%) l(+5%));
 }
+
 
 
 /* Full screen setting modal with preview. Used in e.g. Portal

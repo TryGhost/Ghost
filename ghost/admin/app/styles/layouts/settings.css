@@ -1690,6 +1690,7 @@ p.theme-validation-details {
     color: var(--middarkgrey);
     text-transform: uppercase;
     pointer-events: none;
+    min-width: 60px;
 }
 
 .gh-setting-members-currencylabel span {
