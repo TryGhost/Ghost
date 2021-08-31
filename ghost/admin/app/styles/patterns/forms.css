@@ -214,7 +214,7 @@ select.error {
 
 .gh-select:focus,
 select:focus {
-    background: color-mod(var(--input-bg-color) l(-3%));
+    border-color: var(--lightgrey-d1);
 }
 
 textarea {
