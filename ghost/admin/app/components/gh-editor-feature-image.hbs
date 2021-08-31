@@ -8,16 +8,14 @@
         @onComplete={{this.setUploadedImage}}
         as |uploader|
     >
-        {{#if (feature "featureImgDragDrop")}}
-            {{#unless @image}}
-                <div
-                    class="gh-editor-feature-image-dropzone"
-                    {{on "dragover" this.dragOver}}
-                    {{on "dragleave" this.dragLeave}}
-                    {{on "drop" (fn this.drop uploader.setFiles)}}
-                ></div>
-            {{/unless}}
-        {{/if}}
+        {{#unless @image}}
+            <div
+                class="gh-editor-feature-image-dropzone"
+                {{on "dragover" this.dragOver}}
+                {{on "dragleave" this.dragLeave}}
+                {{on "drop" (fn this.drop uploader.setFiles)}}
+            ></div>
+        {{/unless}}
 
         {{#if this.canDrop}}
             <div class="gh-editor-feature-image-drop-indicator bg-green br-pill pe-none"></div>

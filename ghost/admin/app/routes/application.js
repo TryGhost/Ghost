@@ -43,11 +43,12 @@ export default Route.extend(ShortcutsRoute, {
 
     init() {
         this._super(...arguments);
+
         this.router.on('routeDidChange', () => {
             this.notifications.displayDelayed();
         });
 
-        // TODO: featureImgDragDrop - move event initialization here when removing feature flag
+        this.ui.initBodyDragHandlers();
     },
 
     beforeModel() {
@@ -146,9 +147,7 @@ export default Route.extend(ShortcutsRoute, {
     },
 
     willDestroy() {
-        // TODO: featureImgDragDrop - remove .session. when removing feature flag
-        document.body.removeEventListener('dragenter', this.session.bodyDragEnterHandler);
-        document.body.removeEventListener('dragleave', this.session.bodyDragLeaveHandler);
+        this.ui.cleanupBodyDragHandlers();
     },
 
     async prepareApp() {
