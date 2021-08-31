@@ -24,7 +24,6 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'emailCardSegments',
     'multipleProducts',
-    'featureImgDragDrop',
     'oauthLogin',
     'membersFiltering',
     'emailOnlyPosts',
