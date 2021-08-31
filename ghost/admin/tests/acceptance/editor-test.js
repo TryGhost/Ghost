@@ -184,7 +184,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'draft status text'
-            ).to.equal('Draft');
+            ).to.match(/Draft\s+- Saved/);
 
             // click on publish now
             await click('[data-test-publishmenu-trigger]');
@@ -325,7 +325,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'post status updated after unpublished'
-            ).to.equal('Draft');
+            ).to.match(/Draft\s+- Saved/);
 
             // schedule post
             await click('[data-test-publishmenu-cancel]');
@@ -421,7 +421,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'status text after unschedule'
-            ).to.equal('Draft');
+            ).to.match(/Draft\s+- Saved/);
 
             expect(
                 find('[data-test-schedule-countdown]'),
