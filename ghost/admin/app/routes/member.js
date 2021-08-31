@@ -1,16 +1,14 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-@classic
 export default class MembersRoute extends AuthenticatedRoute {
     @service router;
 
     _requiresBackgroundRefresh = true;
 
-    init() {
-        super.init(...arguments);
+    constructor() {
+        super(...arguments);
         this.router.on('routeWillChange', (transition) => {
             this.showUnsavedChangesModal(transition);
         });
@@ -36,6 +34,8 @@ export default class MembersRoute extends AuthenticatedRoute {
     setupController(controller, member) {
         super.setupController(...arguments);
         if (this._requiresBackgroundRefresh) {
+            // `member` is passed directly in `<LinkTo>` so it can be a proxy
+            // object used by the sparse list requiring the use of .get()
             controller.fetchMemberTask.perform(member.get('id'));
         }
     }
