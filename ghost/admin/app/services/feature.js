@@ -56,7 +56,6 @@ export default Service.extend({
     multipleProducts: feature('multipleProducts', {developer: true}),
     membersFiltering: feature('membersFiltering', {developer: true}),
     emailCardSegments: feature('emailCardSegments', {developer: true}),
-    featureImgDragDrop: feature('featureImgDragDrop', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
     emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
     dashboardTwo: feature('dashboardTwo', {developer: true}),

@@ -157,4 +157,48 @@ export default class UiService extends Service {
             window.document.title = blogTitle;
         }
     }
+
+    @action
+    initBodyDragHandlers() {
+        // when any drag event is occurring we add `data-user-is-dragging` to the
+        // body element so that we can have dropzones start listening to pointer
+        // events allowing us to have interactive elements "underneath" drop zones
+        this.bodyDragEnterHandler = (event) => {
+            if (!event.dataTransfer) {
+                return;
+            }
+
+            document.body.dataset.userIsDragging = true;
+            window.clearTimeout(this.dragTimer);
+        };
+
+        this.bodyDragLeaveHandler = (event) => {
+            // only remove document-level "user is dragging" indicator when leaving the document
+            if (event.screenX !== 0 || event.screenY !== 0) {
+                return;
+            }
+
+            window.clearTimeout(this.dragTimer);
+            this.dragTimer = window.setTimeout(() => {
+                delete document.body.dataset.userIsDragging;
+            }, 50);
+        };
+
+        this.cancelDrag = () => {
+            delete document.body.dataset.userIsDragging;
+        };
+
+        document.body.addEventListener('dragenter', this.bodyDragEnterHandler, {capture: true});
+        document.body.addEventListener('dragleave', this.bodyDragLeaveHandler, {capture: true});
+        document.body.addEventListener('dragend', this.cancelDrag, {capture: true});
+        document.body.addEventListener('drop', this.cancelDrag, {capture: true});
+    }
+
+    @action
+    cleanupBodyDragHandlers() {
+        document.body.removeEventListener('dragenter', this.bodyDragEnterHandler, {capture: true});
+        document.body.removeEventListener('dragleave', this.bodyDragLeaveHandler, {capture: true});
+        document.body.removeEventListener('dragend', this.cancelDrag, {capture: true});
+        document.body.removeEventListener('drop', this.cancelDrag, {capture: true});
+    }
 }
