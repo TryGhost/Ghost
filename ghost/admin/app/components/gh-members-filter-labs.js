@@ -16,18 +16,18 @@ const FILTER_PROPERTIES = [
     {label: 'Member status', name: 'status', group: 'Subscription'},
     // {label: 'Tier', name: 'tier', group: 'Subscription'},
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
+    {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
 
     // Emails
     {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
     {label: 'Emails opened (all time)', name: 'email_opened_count', group: 'Email'},
-    {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'},
+    {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'}
     // {label: 'Emails sent (30 days)', name: 'x', group: 'Email'},
     // {label: 'Emails opened (30 days)', name: 'x', group: 'Email'},
     // {label: 'Open rate (30 days)', name: 'x', group: 'Email'},
     // {label: 'Emails sent (60 days)', name: 'x', group: 'Email'},
     // {label: 'Emails opened (60 days)', name: 'x', group: 'Email'},
     // {label: 'Open rate (60 days)', name: 'x', group: 'Email'},
-    {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Email'}
 ];
 
 const FILTER_RELATIONS_OPTIONS = {
