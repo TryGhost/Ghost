@@ -15,7 +15,7 @@
     >
         <GhTrimFocusInput
             @shouldFocus={{this.benefitItem.last}}
-            @placeholder="Add benefit"
+            @placeholder="Benefit (e.g. Expert analysis)"
             @value={{readonly this.name}}
             @input={{action "updateLabel" value="target.value"}}
             @keyPress={{action "clearLabelErrors"}}
