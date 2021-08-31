@@ -43,7 +43,7 @@
         },
         "status": {
           "type": "string",
-          "enum": ["published", "draft", "scheduled"]
+          "enum": ["published", "draft", "scheduled", "sent"]
         },
         "locale": {
           "type": ["string", "null"],
