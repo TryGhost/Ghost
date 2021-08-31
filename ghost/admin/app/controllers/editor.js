@@ -470,6 +470,8 @@ export default Controller.extend({
                     status = 'published';
                 } else if (this.willSchedule && !this.get('post.isPublished')) {
                     status = 'scheduled';
+                } else if (this.get('post.isSent')) {
+                    status = 'sent';
                 } else {
                     status = 'draft';
                 }
