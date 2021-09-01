@@ -52,7 +52,7 @@
     "@nexes/nql": "0.6.0",
     "@sentry/node": "6.12.0",
     "@tryghost/adapter-manager": "0.2.14",
-    "@tryghost/admin-api-schema": "2.5.2",
+    "@tryghost/admin-api-schema": "2.6.0",
     "@tryghost/bookshelf-plugins": "0.3.0",
     "@tryghost/bootstrap-socket": "0.2.9",
     "@tryghost/color-utils": "0.1.1",
