@@ -731,10 +731,10 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/color-utils@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.1.tgz#55b4d5885094507aeb9189a99286b89afbc10080"
-  integrity sha512-4Wd9NyYjF+7O6KWe5SAsE6NJHTIzsdN05aRKq9i94IidD3LHVl2Hk0ZmnQqqBeMowmPJON/hHppD59kglirorQ==
+"@tryghost/color-utils@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.2.tgz#40024c077618fd9cbe6f72f48e0b84905167ef9b"
+  integrity sha512-MeC6QZ6IzudpkpwLcXPs85QT0CprWK7fB7yFR9Ss8ceAEYd9hm6IznLCK+7Uh2xjXgDocrnw8UEfebt4fkr0UA==
   dependencies:
     color "^3.2.1"
 
