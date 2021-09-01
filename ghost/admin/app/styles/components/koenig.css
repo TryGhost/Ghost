@@ -928,7 +928,7 @@
 
 .kg-card-help {
     background: color-mod(var(--whitegrey) l(+3%));
-    margin: 12px -13px -9px;
+    margin: 12px -13px -1px;
     padding: 6px;
 }
 
