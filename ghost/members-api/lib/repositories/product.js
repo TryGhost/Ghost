@@ -311,7 +311,7 @@ class ProductRepository {
                         currency: data.monthly_price.currency,
                         type: 'recurring',
                         interval: 'month'
-                    });
+                    }, options);
                     let priceModel;
                     if (existingPrice) {
                         priceModel = existingPrice;
@@ -358,7 +358,7 @@ class ProductRepository {
                         currency: data.yearly_price.currency,
                         type: 'recurring',
                         interval: 'year'
-                    });
+                    }, options);
                     let priceModel;
 
                     if (existingPrice) {
