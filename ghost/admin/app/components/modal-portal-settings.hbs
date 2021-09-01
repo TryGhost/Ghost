@@ -317,7 +317,7 @@
             <div class="gh-portal-preview-container {{if this.showLinksPage "hide"}}">
                 <div class="gh-portal-site-frame-cover"> </div>
                 <GhSiteIframe
-                    class="gh-portal-siteiframe"
+                    class="gh-portal-siteiframe {{if (feature "multipleProducts") "gh-portal-siteiframe-enabled"}}"
                     @src={{this.portalPreviewUrl}}
                     @guid={{this.portalPreviewGuid}}
                     @invisibleUntilLoaded="portal-ready" />

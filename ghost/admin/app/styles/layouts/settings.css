@@ -1596,6 +1596,10 @@ p.theme-validation-details {
     transition: height 0.17s ease-out;
 }
 
+.gh-setting-members-portal-mock.mock-enabled {
+    pointer-events: unset;
+}
+
 .gh-setting-members-portal-disabled {
     display: flex;
     flex-direction: column;
