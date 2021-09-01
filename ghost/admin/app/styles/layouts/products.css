@@ -401,7 +401,7 @@
 }
 
 .gh-form-edit-product .gh-main-section-content.gh-product-form-benefits {
-    max-height: 322px;
+    max-height: 275px;
     overflow: scroll;
     flex-grow: 1;
     padding: 12px 16px 0 0;
