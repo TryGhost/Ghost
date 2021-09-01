@@ -17,10 +17,10 @@
                         @value={{readonly this.product.name}}
                         @input={{action (mut this.product.name) value="target.value"}}
                         @name="name"
+                        @placeholder="Bronze"
                         @id="name"
                         @class="gh-input" />
                     <GhErrorMessage @errors={{this.errors}} @property="name" />
-                    <p>Examples: Bronze, Silver, Gold</p>
                 </GhFormGroup>
                 <GhFormGroup @errors={{this.errors}} @property="description">
                     <label for="description" class="fw6">Description</label>
@@ -28,10 +28,10 @@
                         @value={{readonly this.product.description}}
                         @input={{action (mut this.product.description) value="target.value"}}
                         @name="description"
+                        @placeholder="Full access to premium content"
                         @id="description"
                         @class="gh-input" />
                     <GhErrorMessage @errors={{this.errors}} @property="description" />
-                    <p>Example: Full access to premium content</p>
                 </GhFormGroup>
                 <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
                     <div class="gh-settings-members-pricelabelcont">
@@ -115,7 +115,6 @@
                             @deleteItem={{action "deleteBenefit"}}
                             @updateLabel={{action "updateLabel"}}
                             data-test-navitem="new" />
-                        <p class="gh-product-benefit-hint">Example: Expert analysis</p>
                     </form>
                 </div>
             </div>
