@@ -30,7 +30,7 @@
                         {{#if this.canMakeOwner}}
                             <li>
                                 <button {{action "toggleTransferOwnerModal"}}>
-                                    Make Owner
+                                    Make owner
                                 </button>
                                 {{#if this.showTransferOwnerModal}}
                                     <GhFullscreenModal @modal="transfer-owner"
@@ -43,20 +43,20 @@
                         {{#if this.deleteUserActionIsVisible}}
                             <li>
                                 <button {{action "toggleDeleteUserModal"}} class="delete" data-test-delete-button>
-                                    Delete User
+                                    Delete user
                                 </button>
                             </li>
                             {{#if this.user.isActive}}
                                 <li>
                                     <button {{action "toggleSuspendUserModal"}} class="suspend" data-test-suspend-button>
-                                        Suspend User
+                                        Suspend user
                                     </button>
                                 </li>
                             {{/if}}
                             {{#if this.user.isSuspended}}
                                 <li>
                                     <button {{action "toggleUnsuspendUserModal"}} class="unsuspend" data-test-unsuspend-button>
-                                        Un-suspend User
+                                        Un-suspend user
                                     </button>
                                 </li>
                             {{/if}}
@@ -112,7 +112,7 @@
             <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.save) on="submit"}}>
 
                 <figure class="user-cover" style={{background-image-style this.user.coverImageUrl}}>
-                    <button type="button" class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change Cover</span></button>
+                    <button type="button" class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change cover</span></button>
                     {{#if this.showUploadCoverModal}}
                         <GhFullscreenModal @modal="upload-image"
                             @model={{hash model=this.user imageProperty="coverImage"}}
@@ -122,8 +122,8 @@
                 </figure>
 
                 <figure class="user-image bg-whitegrey">
-                    <div id="user-image" class="img" style={{background-image-style this.user.profileImageUrl}}><span class="hidden">{{this.user.name}}"s Picture</span></div>
-                    <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit Picture</button>
+                    <div id="user-image" class="img" style={{background-image-style this.user.profileImageUrl}}><span class="hidden">{{this.user.name}}"s picture</span></div>
+                    <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit picture</button>
                     {{#if this.showUploadImageModal}}
                         <GhFullscreenModal @modal="upload-image"
                             @model={{hash model=this.user imageProperty="profileImage" paramsHash=(hash purpose="profile_image")}}
@@ -136,11 +136,10 @@
                     <fieldset class="user-details-bottom">
 
                         <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="name" @class="first-form-group">
-                            <label for="user-name">Full Name</label>
+                            <label for="user-name">Full name</label>
                             <GhTextInput
                                 @id="user-name"
                                 @class="user-name"
-                                @placeholder="Full Name"
                                 @autocorrect="off"
                                 @value={{readonly this.user.name}}
                                 @input={{action (mut this.user.name) value="target.value"}}
@@ -160,7 +159,6 @@
                                 @class="user-name"
                                 @id="user-slug"
                                 @name="user"
-                                @placeholder="Slug"
                                 @selectOnClick="true"
                                 @autocorrect="off"
                                 @value={{readonly this.slugValue}}
@@ -180,7 +178,7 @@
                                     @type="email"
                                     @id="user-email"
                                     @name="email"
-                                    @placeholder="Email Address"
+                                    @placeholder="jamie@example.com"
                                     @autocapitalize="off"
                                     @autocorrect="off"
                                     @autocomplete="off"
@@ -243,7 +241,7 @@
                         </GhFormGroup>
 
                         <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="facebook">
-                            <label for="user-facebook">Facebook Profile</label>
+                            <label for="user-facebook">Facebook profile</label>
                             <GhTextInput
                                 @type="url"
                                 @placeholder="https://www.facebook.com/username"
@@ -260,7 +258,7 @@
                         </GhFormGroup>
 
                         <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="twitter">
-                            <label for="user-twitter">Twitter Profile</label>
+                            <label for="user-twitter">Twitter profile</label>
                             <GhTextInput
                                 @type="url"
                                 @placeholder="https://twitter.com/username"
@@ -304,7 +302,7 @@
                         <fieldset class="user-details-form">
                             {{#if this.isOwnProfile}}
                                 <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="password">
-                                    <label for="user-password-old">Old Password</label>
+                                    <label for="user-password-old">Old password</label>
                                     <GhTextInput
                                         @type="password"
                                         @id="user-password-old"
@@ -321,7 +319,7 @@
                             {{/if}}
 
                             <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="newPassword">
-                                <label for="user-password-new">New Password</label>
+                                <label for="user-password-new">New password</label>
                                 <GhTextInput
                                     @value={{readonly this.user.newPassword}}
                                     @type="password"
@@ -337,7 +335,7 @@
                             </GhFormGroup>
 
                             <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="ne2Password">
-                                <label for="user-new-password-verification">Verify Password</label>
+                                <label for="user-new-password-verification">Verify password</label>
                                 <GhTextInput
                                     @value={{readonly this.user.ne2Password}}
                                     @type="password"
@@ -364,7 +362,7 @@
                     <div class="pa5">
                         <fieldset class="user-details-form">
                             <GhFormGroup>
-                                <label for="personal-token">Staff Access Token</label>
+                                <label for="personal-token">Staff access token</label>
                                 <div class="relative flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
                                     <GhTextInput
                                             @id="personal-token"
@@ -390,7 +388,7 @@
                                     Give apps personal access without sharing your email/password.
                                 </p>
                                 {{#if this.personalTokenRegenerated}}
-                                    <p class="green"> Staff Access Token was successfully regenerated </p>
+                                    <p class="green">Staff access token was successfully regenerated </p>
                                 {{/if}}
                                 {{#if this.showRegenerateTokenModal}}
                                     <GhFullscreenModal @modal="regenerate-token"
