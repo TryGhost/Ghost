@@ -20,6 +20,7 @@
                         @id="name"
                         @class="gh-input" />
                     <GhErrorMessage @errors={{this.errors}} @property="name" />
+                    <p>Examples: Bronze, Silver, Gold</p>
                 </GhFormGroup>
                 <GhFormGroup @errors={{this.errors}} @property="description">
                     <label for="description" class="fw6">Description</label>
@@ -30,7 +31,7 @@
                         @id="description"
                         @class="gh-input" />
                     <GhErrorMessage @errors={{this.errors}} @property="description" />
-                    <p>Short summary of what members get with this tier</p>
+                    <p>Example: Full access to premium content</p>
                 </GhFormGroup>
                 <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
                     <div class="gh-settings-members-pricelabelcont">
@@ -114,6 +115,7 @@
                             @deleteItem={{action "deleteBenefit"}}
                             @updateLabel={{action "updateLabel"}}
                             data-test-navitem="new" />
+                        <p class="gh-product-benefit-hint">Example: Expert analysis</p>
                     </form>
                 </div>
             </div>

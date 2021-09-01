@@ -9,7 +9,7 @@ export default BaseValidator.create({
         let hasValidated = model.get('hasValidated');
 
         if (isBlank(name)) {
-            model.get('errors').add('name', 'Please enter the benefit');
+            model.get('errors').add('name', 'Please enter a benefit');
             this.invalidate();
         }
 
