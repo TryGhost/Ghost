@@ -64,6 +64,10 @@ export const PlanSectionStyles = `
         border-right: none;
     }
 
+    .gh-portal-plans-container:not(.has-multiple-products) {
+        margin-bottom: 2px;
+    }
+
     .gh-portal-plans-container.has-multiple-products .gh-portal-plan-section::before {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
