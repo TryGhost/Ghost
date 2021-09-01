@@ -47,7 +47,7 @@
                 </div>
             </div>
             <div class="gh-setting-members-portalpreview">
-                <div class="gh-setting-members-portal-mock">
+                <div class="gh-setting-members-portal-mock {{if (feature "multipleProducts") "mock-enabled"}}">
                     {{#if (or (eq this.settings.membersSignupAccess 'none') this.switchFromNoneTask.isRunning)}}
                         <div class="gh-setting-members-portal-disabled">
                             <span class="lightgrey">{{svg-jar "portal-logo-stroke"}}</span>
