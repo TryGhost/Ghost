@@ -401,7 +401,7 @@
 }
 
 .gh-form-edit-product .gh-main-section-content.gh-product-form-benefits {
-    max-height: 298px;
+    max-height: 322px;
     overflow: scroll;
     flex-grow: 1;
     padding: 12px 16px 0 0;
@@ -416,6 +416,7 @@
 
 .gh-product-benefits .gh-blognav-item {
     position: relative;
+    align-items: flex-start;
 }
 
 .gh-product-benefits .gh-blognav-label {
@@ -423,7 +424,8 @@
 }
 
 .gh-product-benefits .gh-blognav-label .response {
-    font-size: 1.3rem;
+    position: relative;
+    font-size: 1.25rem;
     margin: 2px 0 6px;
 }
 
@@ -434,9 +436,9 @@
     opacity: 0;
 }
 
-/* .gh-product-benefits .gh-blognav-add {
-    display: none;
-} */
+.gh-product-benefits .gh-blognav-add {
+    margin-top: 8px;
+}
 
 .gh-product-benefits .gh-blognav-grab {
     text-indent: 0px;
@@ -450,4 +452,12 @@
 
 .gh-product-benefits .gh-blognav-item:not(.gh-blognav-item--sortable) {
     margin-bottom: 16px;
+}
+
+.gh-product-benefit-hint {
+    color: var(--midgrey-d2);
+    font-size: 1.25rem !important;
+    font-weight: 400;
+    padding: 0 16px;
+    margin-top: -12px;
 }
