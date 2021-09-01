@@ -356,6 +356,10 @@
     height: calc((1 / 0.95) * 100%) !important;
 }
 
+.gh-portal-siteiframe-enabled {
+    pointer-events: unset;
+}
+
 .gh-portal-site-frame-cover {
     position: absolute;
     top: 0;
