@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-api",
-  "version": "1.29.0",
+  "version": "1.29.1",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-api",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -29,7 +29,7 @@
     "@tryghost/debug": "^0.1.2",
     "@tryghost/errors": "^0.2.9",
     "@tryghost/ignition-errors": "^0.1.2",
-    "@tryghost/magic-link": "^1.0.10",
+    "@tryghost/magic-link": "^1.0.11",
     "@tryghost/tpl": "^0.1.2",
     "@types/jsonwebtoken": "^8.5.1",
     "bluebird": "^3.5.4",
