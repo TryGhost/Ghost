@@ -1,4 +1,5 @@
 import React, {useEffect, useRef} from 'react';
+import {hasMode} from '../../utils/check-mode';
 import {isCookiesDisabled} from '../../utils/helpers';
 
 export const InputFieldStyles = `
@@ -86,7 +87,7 @@ function InputField({
     type,
     value,
     placeholder,
-    disabled,
+    disabled = false,
     onChange = () => {},
     onBlur = () => {},
     onKeyDown = () => {},
@@ -102,6 +103,12 @@ function InputField({
     if (isCookiesDisabled()) {
         disabled = true;
     }
+
+    // Disable all input fields in preview mode
+    if (hasMode(['preview'])) {
+        disabled = true;
+    }
+
     let autocomplete = '';
     let autocorrect = '';
     let autocapitalize = '';
