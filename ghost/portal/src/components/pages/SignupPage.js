@@ -7,7 +7,6 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite, getAvailableProducts, hasMultipleProductsFeature} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
-import {hasMode} from '../../utils/check-mode';
 
 const React = require('react');
 
