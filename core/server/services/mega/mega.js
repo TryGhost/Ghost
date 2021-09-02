@@ -74,7 +74,7 @@ const getEmailData = async (postModel, options) => {
  * @param {Object} postModel - post model instance
  * @param {[string]} toEmails - member email addresses to send email to
  * @param {ValidAPIVersion} apiVersion - api version to be used when serializing email data
- * @param {ValidMemberSegment} memberSegment
+ * @param {ValidMemberSegment} [memberSegment]
  */
 const sendTestEmail = async (postModel, toEmails, apiVersion, memberSegment) => {
     let emailData = await getEmailData(postModel, {apiVersion});
