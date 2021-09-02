@@ -4,6 +4,11 @@ const errors = require('@tryghost/errors');
 const mega = require('../../services/mega');
 const labs = require('../../../shared/labs');
 
+const emailPreview = new mega.EmailPreview({
+    apiVersion: 'canary',
+    isSet: labs.isSet.bind(labs)
+});
+
 module.exports = {
     docName: 'email_preview',
 
@@ -34,23 +39,7 @@ module.exports = {
                 });
             }
 
-            let emailContent = await mega.postEmailSerializer.serialize(model, {
-                isBrowserPreview: true,
-                apiVersion: 'canary'
-            });
-            if (labs.isSet('emailCardSegments') && frame.options.memberSegment) {
-                emailContent = mega.postEmailSerializer.renderEmailForSegment(emailContent, frame.options.memberSegment);
-            }
-            const replacements = mega.postEmailSerializer.parseReplacements(emailContent);
-
-            replacements.forEach((replacement) => {
-                emailContent[replacement.format] = emailContent[replacement.format].replace(
-                    replacement.match,
-                    replacement.fallback || ''
-                );
-            });
-
-            return emailContent;
+            return emailPreview.generateEmailContent(model, frame.options.memberSegment);
         }
     },
     sendTestEmail: {
