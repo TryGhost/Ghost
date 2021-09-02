@@ -37,15 +37,9 @@ export default Component.extend(ValidationState, {
             return this.updateLabel(value, this.benefitItem);
         },
 
-        clearLabelErrors(event) {
-            // enter key
-            if (event.keyCode === 13 && this.get('benefitItem.isNew')) {
-                event.preventDefault();
-                run.scheduleOnce('actions', this, this.send, 'addItem', this.benefitItem);
-            } else {
-                if (this.get('benefitItem.errors')) {
-                    this.get('benefitItem.errors').remove('name');
-                }
+        clearLabelErrors() {
+            if (this.get('benefitItem.errors')) {
+                this.get('benefitItem.errors').remove('name');
             }
         }
     },
