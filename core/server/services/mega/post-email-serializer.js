@@ -1,10 +1,8 @@
 const _ = require('lodash');
 const juice = require('juice');
 const template = require('./template');
-const labsTemplate = require('./template-labs');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
-const labs = require('../../../shared/labs');
 const moment = require('moment-timezone');
 const cheerio = require('cheerio');
 const api = require('../../api');
@@ -266,7 +264,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
 
     const templateSettings = await getTemplateSettings();
 
-    const render = labs.isSet('emailCardSegments') ? labsTemplate : template;
+    const render = template;
 
     let htmlTemplate = render({post, site: getSite(), templateSettings});
 
