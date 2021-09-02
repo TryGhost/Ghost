@@ -5,7 +5,8 @@
     </span>
 {{/unless}}
 
-<div class="gh-blognav-line">
+<div class="gh-blognav-line {{unless this.name "placeholder"}}">
+    {{svg-jar "check-2"}}
     <GhValidationStatusContainer
         @tagName="span"
         @class="gh-blognav-label"

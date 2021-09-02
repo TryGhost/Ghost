@@ -1,132 +1,184 @@
-<header class="modal-header" data-test-modal="webhook-form">
-    <h1 data-test-text="title">{{this.title}}</h1>
-</header>
 <button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
     {{svg-jar "close"}}
 </button>
 
-<form>
-<div class="modal-body gh-form-edit-product">
-    <div class="gh-main-section columns-3">
-        <div class="gh-main-section-block span-2">
-            <h4 class="gh-main-section-header small bn">Basic</h4>
-            <div class="gh-main-section-content grey gh-product-priceform-block">
-                <GhFormGroup @errors={{this.errors}} @property="name">
-                    <label for="name" class="fw6">Name</label>
-                    <GhTextInput
-                        @value={{readonly this.product.name}}
-                        @input={{action (mut this.product.name) value="target.value"}}
-                        @name="name"
-                        @placeholder="Bronze"
-                        @id="name"
-                        @class="gh-input" />
-                    <GhErrorMessage @errors={{this.errors}} @property="name" />
-                </GhFormGroup>
-                <GhFormGroup @errors={{this.errors}} @property="description">
-                    <label for="description" class="fw6">Description</label>
-                    <GhTextInput
-                        @value={{readonly this.product.description}}
-                        @input={{action (mut this.product.description) value="target.value"}}
-                        @name="description"
-                        @placeholder="Full access to premium content"
-                        @id="description"
-                        @class="gh-input" />
-                    <GhErrorMessage @errors={{this.errors}} @property="description" />
-                </GhFormGroup>
-                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
-                    <div class="gh-settings-members-pricelabelcont">
-                        <label for="monthlyPrice">Prices</label>
-                        <span>–</span>
-                        <div>
-                            <span class="gh-setting-members-currency gh-select">
-                                <div class="gh-setting-members-currencylabel">
-                                    <span>{{this.currency}}</span>
-                                    {{svg-jar "arrow-down-small"}}
-                                </div>
-                                <OneWaySelect
-                                    @value={{this.selectedCurrency}}
-                                    id="currency"
-                                    name="currency"
-                                    @options={{readonly this.allCurrencies}}
-                                    @optionValuePath="value"
-                                    @optionLabelPath="label"
-                                    @update={{action "setCurrency"}}
-                                />
-                            </span>
-                        </div>
-                    </div>
-                    <div class="gh-setting-members-prices">
+<div class="gh-product-modal-content">
+    <header class="modal-header" data-test-modal="webhook-form">
+        <h1 data-test-text="title">{{this.title}}</h1>
+    </header>
 
-                        <div class="gh-input-group">
-                            <GhTextInput
-                                @id="monthlyPrice"
-                                @value={{readonly this.stripeMonthlyAmount}}
-                                @type="number"
-                                @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                                @focus-out={{action "validateStripePlans"}}
-                            />
-                            <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
+    <form>
+    <div class="modal-body gh-form-edit-product">
+        <div class="gh-main-section columns-3">
+            <div class="gh-main-section-block span-2">
+                <h4 class="gh-main-section-header small bn">Basic</h4>
+                <div class="gh-main-section-content grey gh-product-priceform-block">
+                    <GhFormGroup @errors={{this.errors}} @property="name">
+                        <label for="name" class="fw6">Name</label>
+                        <GhTextInput
+                            @value={{readonly this.product.name}}
+                            @input={{action (mut this.product.name) value="target.value"}}
+                            @name="name"
+                            @placeholder="Bronze"
+                            @id="name"
+                            @class="gh-input" />
+                        <GhErrorMessage @errors={{this.errors}} @property="name" />
+                    </GhFormGroup>
+                    <GhFormGroup @errors={{this.errors}} @property="description">
+                        <label for="description" class="fw6">Description</label>
+                        <GhTextInput
+                            @value={{readonly this.product.description}}
+                            @input={{action (mut this.product.description) value="target.value"}}
+                            @name="description"
+                            @placeholder="Full access to premium content"
+                            @id="description"
+                            @class="gh-input" />
+                        <GhErrorMessage @errors={{this.errors}} @property="description" />
+                    </GhFormGroup>
+                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
+                        <div class="gh-settings-members-pricelabelcont">
+                            <label for="monthlyPrice">Prices</label>
+                            <span>–</span>
+                            <div>
+                                <span class="gh-setting-members-currency gh-select">
+                                    <div class="gh-setting-members-currencylabel">
+                                        <span>{{this.currency}}</span>
+                                        {{svg-jar "arrow-down-small"}}
+                                    </div>
+                                    <OneWaySelect
+                                        @value={{this.selectedCurrency}}
+                                        id="currency"
+                                        name="currency"
+                                        @options={{readonly this.allCurrencies}}
+                                        @optionValuePath="value"
+                                        @optionLabelPath="label"
+                                        @update={{action "setCurrency"}}
+                                    />
+                                </span>
+                            </div>
                         </div>
-                        <div class="gh-input-group">
-                            <GhTextInput
-                                @id="yearlyPrice"
-                                @value={{readonly this.stripeYearlyAmount}}
-                                @type="number"
-                                @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                                @focus-out={{this.validateStripePlans}}
-                                @placeholder=''
-                                data-test-title-input={{true}}
-                            />
-                            <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
+                        <div class="gh-setting-members-prices">
+
+                            <div class="gh-input-group">
+                                <GhTextInput
+                                    @id="monthlyPrice"
+                                    @value={{readonly this.stripeMonthlyAmount}}
+                                    @type="number"
+                                    @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
+                                    @focus-out={{action "validateStripePlans"}}
+                                />
+                                <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
+                            </div>
+                            <div class="gh-input-group">
+                                <GhTextInput
+                                    @id="yearlyPrice"
+                                    @value={{readonly this.stripeYearlyAmount}}
+                                    @type="number"
+                                    @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
+                                    @focus-out={{this.validateStripePlans}}
+                                    @placeholder=''
+                                    data-test-title-input={{true}}
+                                />
+                                <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
+                            </div>
+                        </div>
+                        {{#if this.stripePlanError}}
+                            <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
+                        {{/if}}
+                    </GhFormGroup>
+                </div>
+
+                <h4 class="gh-main-section-header small bn">Benefits</h4>
+                <div class="gh-main-section-content grey gh-product-form-benefits">
+                    <div class="gh-product-benefits">
+                        <form id="product-benefits" class="gh-blognav" novalidate="novalidate">
+                            <SortableObjects
+                                @sortableObjectList={{this.benefits}}
+                                @useSwap={{false}}
+                                @sortEndAction={{action "reorderItems"}}
+                            >
+                                {{#each this.benefits as |benefitItem index|}}
+                                    <DraggableObject @content={{benefitItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
+                                        <GhBenefitItem
+                                            @benefitItem={{benefitItem}}
+                                            @id={{index}}
+                                            @addItem={{action "addBenefit"}}
+                                            @focusItem={{action "focusItem"}}
+                                            @deleteItem={{action "deleteBenefit"}}
+                                            @updateLabel={{action "updateLabel"}}
+                                            data-test-navitem={{index}} />
+                                    </DraggableObject>
+                                {{/each}}
+                            </SortableObjects>
+                            <GhBenefitItem
+                                @benefitItem={{this.newBenefit}}
+                                @addItem={{action "addBenefit"}}
+                                @deleteItem={{action "deleteBenefit"}}
+                                @updateLabel={{action "updateLabel"}}
+                                data-test-navitem="new" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="gh-main-section-block gh-product-form-tierpreview">
+                <div class="gh-product-form-tierpreview-content">
+                    <h4 class="gh-main-section-header small bn">Tier Preview</h4>
+                    <div class="gh-main-section-content" style="border-color: {{this.settings.accentColor}}">
+                        <span class="checkmark" style="background-color: {{this.settings.accentColor}}"></span>
+                        
+                        {{#if this.product.name}}
+                            <h4>{{this.product.name}}</h4>
+                        {{else}}
+                            <h4 class="placeholder">Bronze</h4>
+                        {{/if}}
+
+                        {{#if this.product.description}}
+                            <p>{{this.product.description}}</p>
+                        {{else}}
+                            <p class="placeholder">Full access to premium content</p>
+                        {{/if}}
+
+                        {{#if this.benefits}}
+                            <ul>
+                            {{#each this.benefits as |benefitItem index|}}
+                                <li>{{svg-jar "check-2"}} <span>{{benefitItem.name}}</span></li>
+                            {{/each}}
+                            </ul>
+                        {{else}}
+                            <ul class="placeholder">
+                                <li>{{svg-jar "check-2"}} <span>Expert analysis</span></li>
+                            </ul>
+                        {{/if}}
+                        
+                        <div class="price">
+                            
+                            {{#if this.stripeMonthlyAmount}}
+                                <span class="monthly-price">
+                                    {{this.stripeMonthlyAmount}}
+                                    <span class="period"><span class="currency">{{this.currency}}</span>/month</span>
+                                </span>
+                            {{else}}
+                                <span class="monthly-price placeholder">
+                                    0
+                                    <span class="period"><span class="currency">{{this.currency}}</span>/month</span>
+                                </span>
+                            {{/if}}
+
+                            {{#if this.stripeYearlyAmount}}
+                                <span class="yearly-price">{{this.stripeYearlyAmount}}<span class="currency">{{this.currency}}</span>/year</span>
+                            {{else}}
+                                <span class="yearly-price placeholder">0<span class="currency">{{this.currency}}</span>/year</span>
+                            {{/if}}
                         </div>
                     </div>
-                    {{#if this.stripePlanError}}
-                        <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
-                    {{/if}}
-                </GhFormGroup>
-            </div>
-        </div>
-        <div class="gh-main-section-block">
-            <h4 class="gh-main-section-header small bn">Benefits</h4>
-            <div class="gh-main-section-content grey gh-product-form-benefits">
-                <div class="gh-product-benefits">
-                    <form id="product-benefits" class="gh-blognav" novalidate="novalidate">
-                        <SortableObjects
-                            @sortableObjectList={{this.benefits}}
-                            @useSwap={{false}}
-                            @sortEndAction={{action "reorderItems"}}
-                        >
-                            {{#each this.benefits as |benefitItem index|}}
-                                <DraggableObject @content={{benefitItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
-                                    <GhBenefitItem
-                                        @benefitItem={{benefitItem}}
-                                        @id={{index}}
-                                        @addItem={{action "addBenefit"}}
-                                        @focusItem={{action "focusItem"}}
-                                        @deleteItem={{action "deleteBenefit"}}
-                                        @updateLabel={{action "updateLabel"}}
-                                        data-test-navitem={{index}} />
-                                </DraggableObject>
-                            {{/each}}
-                        </SortableObjects>
-                        <GhBenefitItem
-                            @benefitItem={{this.newBenefit}}
-                            @addItem={{action "addBenefit"}}
-                            @deleteItem={{action "deleteBenefit"}}
-                            @updateLabel={{action "updateLabel"}}
-                            data-test-navitem="new" />
-                    </form>
                 </div>
             </div>
         </div>
     </div>
+    </form>
 </div>
-</form>
 
-<div class="modal-footer modal-footer-spread items-center">
-    <div class="modal-footer-hint">
-        Completely lost? <a href="https://ghost.org/help/topic/members/" target="_blank" rel="noopener noreferrer">Check the documentation</a>
-    </div>
+<div class="modal-footer top-shadow items-center">
     <div>
         <button
             class="gh-btn"
