@@ -94,6 +94,11 @@
     padding: 0 32px;
 }
 
+.modal-footer.top-shadow {
+    margin-bottom: -4px;
+    padding-top: 4px;
+}
+
 .fullscreen-modal-body-scrolling .modal-footer:before,
 .modal-footer.top-shadow:before {
     position: absolute;
@@ -103,7 +108,7 @@
     right: -32px;
     height: 6px;
     background: hsla(0,0%,100%,0);
-    box-shadow: 0 -0.3px 1px rgb(0 0 0 / 3%), 0 -4px 7px rgb(0 0 0 / 6%);
+    box-shadow: 0 -0.3px 1px rgb(0 0 0 / 3%), 0 -4px 4px rgb(0 0 0 / 4%);
 }
 
 .modal-footer.top-shadow:before {
