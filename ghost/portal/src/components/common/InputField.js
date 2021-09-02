@@ -54,13 +54,13 @@ export const InputFieldStyles = `
         color: var(--grey7);
     }
 
-    .gh-portal-input:disabled {
+    .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled {
         background: var(--grey13);
         color: var(--grey9);
         box-shadow: none;
     }
 
-    .gh-portal-input:disabled::placeholder {
+    .gh-portal-popup-container:not(.preview) .gh-portal-input:disabled::placeholder {
         color: var(--grey9);
     }
 `;
