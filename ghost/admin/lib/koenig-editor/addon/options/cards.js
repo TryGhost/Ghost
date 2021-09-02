@@ -129,8 +129,7 @@ export const CARD_MENU = [
             desc: 'Target free or paid members with a CTA',
             matches: ['email', 'cta'],
             type: 'card',
-            replaceArg: 'email-cta',
-            feature: 'emailCardSegments'
+            replaceArg: 'email-cta'
         },
         {
             label: 'Public preview',
