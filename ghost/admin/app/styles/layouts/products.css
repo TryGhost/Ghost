@@ -370,6 +370,13 @@
     max-width: 900px;
 }
 
+.gh-product-modal-content {
+    margin: -32px -32px 0;
+    padding: 32px 32px 0;
+    max-height: calc(100vh - 16vw);
+    overflow: scroll;
+}
+
 .gh-form-edit-product .gh-main-section {
     margin-bottom: 32px;
     grid-template-columns: 1fr 0.9fr 1.1fr;
@@ -401,22 +408,37 @@
 }
 
 .gh-form-edit-product .gh-main-section-content.gh-product-form-benefits {
-    max-height: 275px;
-    overflow: scroll;
-    flex-grow: 1;
-    padding: 12px 16px 0 0;
+    padding-left: 8px;
     margin-bottom: 0;
 }
 
 .gh-product-benefits .gh-input {
-    font-size: 1.3rem;
-    height: 32px;
-    padding: 6px 28px 6px 8px;
+    padding: 6px 28px 6px 30px;
+}
+
+.gh-product-benefits .gh-blognav-line {
+    position: relative;
+}
+
+.gh-product-benefits .gh-blognav-line svg {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    top: 13px;
+    left: 11px;
+}
+
+.gh-product-benefits .gh-blognav-line.placeholder {
+    color: var(--midlightgrey);
+}
+
+.gh-product-benefits .gh-blognav-line svg path {
+    stroke-width: 3px;
 }
 
 .gh-product-benefits .gh-blognav-item {
     position: relative;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .gh-product-benefits .gh-blognav-label {
@@ -431,13 +453,13 @@
 
 .gh-product-benefits .gh-blognav-delete {
     position: absolute;
-    top: 0;
+    top: 4px;
     right: 8px;
     opacity: 0;
 }
 
 .gh-product-benefits .gh-blognav-add {
-    margin-top: 8px;
+    margin-top: 2px;
 }
 
 .gh-product-benefits .gh-blognav-grab {
@@ -450,7 +472,7 @@
     opacity: 1;
 }
 
-.gh-product-benefits .gh-blognav-item:not(.gh-blognav-item--sortable) {
+.gh-product-benefits .gh-blognav-item:not(.gh-blognav-item--sortable):not(:last-of-type) {
     margin-bottom: 16px;
 }
 
@@ -460,4 +482,140 @@
     font-weight: 400;
     padding: 0 16px;
     margin-top: -12px;
+}
+
+.gh-product-form-tierpreview-content {
+    position: sticky;
+    top: 45px;
+    height: max-content;
+}
+
+.gh-product-form-tierpreview .gh-main-section-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    border: 2px solid var(--blackgrey);
+    border-radius: 4px;
+    padding: 24px;
+}
+
+.gh-product-form-tierpreview .gh-main-section-content .checkmark {
+    position: relative;
+    background-color: var(--blackgrey);
+    border-radius: 999px;
+    height: 18px;
+    width: 18px;
+}
+
+.gh-product-form-tierpreview .gh-main-section-content .checkmark::after {
+    display: block;
+    position: absolute;
+    content: "";
+    left: 6.5px;
+    top: 2.5px;
+    width: 5px;
+    height: 11px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.gh-product-form-tierpreview .gh-main-section-content h4 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.45em;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 7px;
+    text-align: center;
+    min-height: 24px;
+    word-break: break-word;
+    color: #333;
+}
+
+.gh-product-form-tierpreview .gh-main-section-content p {
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 1.45em;
+    text-align: center;
+    color: #474747;
+    padding: 16px 0;
+    margin: 8px 0 20px;
+    width: 100%;
+    border-top: 1px solid #eaeaea;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.gh-product-form-tierpreview .price {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gh-product-form-tierpreview .monthly-price {
+    display: flex;
+    align-items: baseline;
+    font-size: 3.3rem;
+    font-weight: 500;
+    line-height: 1em;
+    color: #3d3d3d;
+}
+
+.gh-product-form-tierpreview .monthly-price .period {
+    font-size: 1.3rem;
+    line-height: 1.6em;
+    color: #515151;
+    letter-spacing: 0.3px;
+    margin-left: 2px;
+}
+
+.gh-product-form-tierpreview .yearly-price {
+    font-size: 1.2rem;
+    line-height: 1.6em;
+    color: #aeaeae;
+    text-align: center;
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+    height: 18px;
+    margin-top: -1px;
+}
+
+.gh-product-form-tierpreview .currency {
+    text-transform: uppercase;
+}
+
+.gh-product-form-tierpreview ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100px;
+    margin-bottom: 12px;
+}
+
+.gh-product-form-tierpreview li {
+    display: flex;
+    align-items: flex-start;
+    font-size: 1.3rem;
+    line-height: 1.45em;
+    color: #686868;
+    margin: 0 0 12px;
+    padding: 0;
+}
+
+.gh-product-form-tierpreview li svg {
+    width: 13px;
+    height: 13px;
+    min-width: 12px;
+    margin: 3px 6px 0 0;
+    overflow: visible;
+}
+
+.gh-product-form-tierpreview li svg path {
+    stroke-width: 3px;
+}
+
+.gh-product-form-tierpreview .placeholder {
+    opacity: 0.35;
 }
