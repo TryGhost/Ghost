@@ -109,6 +109,14 @@ const sendTestEmail = async (postModel, toEmails, apiVersion, memberSegment) => 
         return Promise.reject(response.error);
     }
 
+    if (response && response[0] && response[0].error) {
+        return Promise.reject(new errors.EmailError({
+            statusCode: response[0].error.statusCode,
+            message: response[0].error.message,
+            context: response[0].error.originalMessage
+        }));
+    }
+
     return response;
 };
 
