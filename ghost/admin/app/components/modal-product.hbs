@@ -179,21 +179,19 @@
 </div>
 
 <div class="modal-footer top-shadow items-center">
-    <div>
-        <button
-            class="gh-btn"
-            {{action "closeModal"}}
-            {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-            {{action (optional this.noop) on="mouseDown"}}
-            data-test-button="cancel-webhook"
-        >
-            <span>Cancel</span>
-        </button>
-        <GhTaskButton @buttonText="{{if this.isExistingProduct "Save" "Add tier"}}"
-            @successText={{this.successText}}
-            @task={{this.saveProduct}}
-            @idleClass="gh-btn-primary"
-            @class="gh-btn {{if this.isExistingProduct "gh-btn-black" "gh-btn-green"}} gh-btn-icon"
-            data-test-button="save-product" />
-    </div>
+    <button
+        class="gh-btn"
+        {{action "closeModal"}}
+        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+        {{action (optional this.noop) on="mouseDown"}}
+        data-test-button="cancel-webhook"
+    >
+        <span>Cancel</span>
+    </button>
+    <GhTaskButton @buttonText="{{if this.isExistingProduct "Save" "Add tier"}}"
+        @successText={{this.successText}}
+        @task={{this.saveProduct}}
+        @idleClass="gh-btn-primary"
+        @class="gh-btn {{if this.isExistingProduct "gh-btn-black" "gh-btn-green"}} gh-btn-icon"
+        data-test-button="save-product" />
 </div>
