@@ -1,6 +1,6 @@
 <KoenigCard
     @icon={{"koenig/card-indicator-email"}}
-    @class={{concat (kg-style "container-card") " kg-email-card mih10 miw-100 relative"}}
+    @class={{concat (kg-style "container-card") " kg-email-card kg-email-cta-card mih10 miw-100 relative"}}
     @style={{@cardStyle}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
@@ -21,8 +21,7 @@
     as |card|
 >
     {{#if @isEditing}}
-
-        <div class="kg-card-help kg-card-help-labs">
+        <div class="kg-card-help">
             <p>
                 <span>
                     Only visible to
@@ -32,7 +31,7 @@
                         @onChange={{this.setSegment}}
                         @searchEnabled={{false}}
                         @triggerComponent="gh-power-select/trigger"
-                        @triggerClass="ember-power-select-inline ember-power-select-inline-labs"
+                        @triggerClass="ember-power-select-inline"
                         @dropdownClass="gh-member-segment-select-dropdown"
                         as |segment|
                     >

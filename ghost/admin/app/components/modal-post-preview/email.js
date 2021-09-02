@@ -123,11 +123,10 @@ export default class ModalPostPreviewEmailComponent extends Component {
             subject = post.email.subject;
         // model is a post, fetch email preview
         } else {
-            let url = this.ghostPaths.url.api('/email_preview/posts', post.id);
-            if (this.feature.emailCardSegments) {
-                url = `${url}?memberSegment=${encodeURIComponent(this.memberSegment)}`;
-            }
-            let response = await this.ajax.request(url);
+            let url = new URL(this.ghostPaths.url.api('/email_preview/posts', post.id), window.location.href);
+            url.searchParams.set('memberSegment', this.memberSegment);
+
+            let response = await this.ajax.request(url.href);
             let [emailPreview] = response.email_previews;
             html = emailPreview.html;
             subject = emailPreview.subject;

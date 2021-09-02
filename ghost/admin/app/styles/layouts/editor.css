@@ -970,20 +970,43 @@ figure {
 /* Email-CTA card
 /* -------------------------------------------------------------------------- */
 
-.kg-email-card .border-top {
+.kg-email-cta-card .border-top {
     margin: -1.6rem 0 5rem;
 }
 
-.kg-email-card .border-top.edit-mode {
+.kg-email-cta-card .border-top.edit-mode {
     margin: 2.4rem 0 5rem;
 }
 
-.kg-email-card .border-bottom {
+.kg-email-cta-card .border-bottom {
     margin: 5rem 0 1.6rem;
 }
 
-.kg-email-card.no-border {
-    border-left: none;
+.kg-email-cta-card .kg-card-help {
+    margin: 0 -13px 16px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--whitegrey);
+    background: var(--whitegrey-l2);
+}
+
+.kg-email-cta-card .kg-card-help p {
+    color: var(--midgrey);
+    text-align: left;
+}
+
+.kg-email-cta-card .kg-card-help .ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg {
+    width: 8px;
+    height: 6px;
+    margin-top: 0;
+}
+
+.kg-email-cta-card .kg-card-help .ember-basic-dropdown-content {
+    width: 200px !important;
+}
+
+.kg-email-cta-card .kg-card-help .ember-power-select-inline {
+    padding: 0 2px;
+    color: var(--darkgrey);
 }
 
 .email-cta-toolbar {
@@ -1071,33 +1094,6 @@ figure {
     font-weight: 400;
 }
 
-.kg-card-help-labs {
-    margin: 0 -13px 16px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--whitegrey);
-    background: var(--whitegrey-l2);
-}
-
-.kg-card-help-labs p {
-    color: var(--midgrey);
-    text-align: left;
-}
-
-.kg-card-help-labs .ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg {
-    width: 8px;
-    height: 6px;
-    margin-top: 0;
-}
-
-.kg-card-help-labs .ember-basic-dropdown-content {
-    width: 200px !important;
-}
-
-.ember-power-select-inline-labs {
-    padding: 0 2px;
-    color: var(--darkgrey);
-}
-
 .gh-member-segment-select-dropdown {
     width: unset !important;
     min-width: min-content !important;
@@ -1106,12 +1102,12 @@ figure {
     border-radius: 3px !important;
 }
 
-.gh-btn-accent {
+.email-cta-card .gh-btn-accent {
     height: 38px;
     margin-top: 2.4rem;
 }
 
-.gh-btn-accent span {
+.email-cta-card .gh-btn-accent span {
     height: 38px;
     font-size: 1.5rem;
     line-height: 38px;
