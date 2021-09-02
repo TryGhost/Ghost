@@ -56,21 +56,15 @@ module.exports = {
         async query(frame) {
             const options = Object.assign(frame.options, {status: 'all'});
             let model = await models.Post.findOne(options, {withRelated: ['authors']});
+
             if (!model) {
                 throw new errors.NotFoundError({
                     message: i18n.t('errors.api.posts.postNotFound')
                 });
             }
+
             const {emails = []} = frame.data;
-            const response = await mega.mega.sendTestEmail(model, emails, 'v3');
-            if (response && response[0] && response[0].error) {
-                throw new errors.EmailError({
-                    statusCode: response[0].error.statusCode,
-                    message: response[0].error.message,
-                    context: response[0].error.originalMessage
-                });
-            }
-            return response;
+            return await mega.mega.sendTestEmail(model, emails, 'v3');
         }
     }
 };
