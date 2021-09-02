@@ -576,6 +576,7 @@ figure blockquote p {
 .btn {
     box-sizing: border-box;
     width: 100%;
+    display: table;
 }
 
 .btn>tbody>tr>td {
@@ -616,6 +617,16 @@ figure blockquote p {
     background-color: #3498db;
     border-color: #3498db;
     color: #ffffff;
+}
+
+.btn-accent table td {
+    background-color: ${templateSettings.adjustedAccentColor || '#3498db'};
+}
+
+.btn-accent a {
+    background-color: ${templateSettings.adjustedAccentColor || '#3498db'};
+    border-color: ${templateSettings.adjustedAccentColor || '#3498db'};
+    color: ${templateSettings.adjustedAccentContrastColor || '#ffffff'};
 }
 
 /* -------------------------------------

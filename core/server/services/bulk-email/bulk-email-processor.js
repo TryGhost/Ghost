@@ -9,7 +9,6 @@ const mailgunProvider = require('./mailgun');
 const sentry = require('../../../shared/sentry');
 const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
-const labs = require('../../../shared/labs');
 
 const BATCH_SIZE = mailgunProvider.BATCH_SIZE;
 
@@ -231,7 +230,7 @@ module.exports = {
             recipientData[recipient.member_email] = data;
         });
 
-        if (labs.isSet('emailCardSegments')) {
+        if (memberSegment) {
             emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
         }
 

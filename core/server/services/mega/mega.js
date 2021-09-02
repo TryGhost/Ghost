@@ -17,7 +17,6 @@ const db = require('../../data/db');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const {getSegmentsFromHtml} = require('./segment-parser');
-const labs = require('../../../shared/labs');
 
 // Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
 const events = require('../../lib/common/events');
@@ -80,10 +79,9 @@ const sendTestEmail = async (postModel, toEmails, apiVersion, memberSegment) => 
     let emailData = await getEmailData(postModel, {apiVersion});
     emailData.subject = `[Test] ${emailData.subject}`;
 
-    if (labs.isSet('emailCardSegments') && memberSegment) {
+    if (memberSegment) {
         emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
     }
-
     // fetch any matching members so that replacements use expected values
     const recipients = await Promise.all(toEmails.map(async (email) => {
         const member = await membersService.api.members.get({email});
@@ -445,28 +443,26 @@ async function createSegmentedEmailBatches({emailModel, options}) {
         return [];
     }
 
-    if (labs.isSet('emailCardSegments')) {
-        const segments = getSegmentsFromHtml(emailModel.get('html'));
-        const batchIds = [];
+    const segments = getSegmentsFromHtml(emailModel.get('html'));
+    const batchIds = [];
 
-        if (segments.length) {
-            const partitionedMembers = partitionMembersBySegment(memberRows, segments);
+    if (segments.length) {
+        const partitionedMembers = partitionMembersBySegment(memberRows, segments);
 
-            for (const partition in partitionedMembers) {
-                const emailBatchIds = await createEmailBatches({
-                    emailModel,
-                    memberRows: partitionedMembers[partition],
-                    memberSegment: partition === 'unsegmented' ? null : partition,
-                    options
-                });
-                batchIds.push(emailBatchIds);
-            }
-            return batchIds;
+        for (const partition in partitionedMembers) {
+            const emailBatchIds = await createEmailBatches({
+                emailModel,
+                memberRows: partitionedMembers[partition],
+                memberSegment: partition === 'unsegmented' ? null : partition,
+                options
+            });
+            batchIds.push(emailBatchIds);
         }
+    } else {
+        const emailBatchIds = await createEmailBatches({emailModel, memberRows, options});
+        batchIds.push(emailBatchIds);
     }
 
-    const emailBatchIds = await createEmailBatches({emailModel, memberRows, options});
-    const batchIds = [emailBatchIds];
     return batchIds;
 }
 

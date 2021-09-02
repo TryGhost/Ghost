@@ -22,7 +22,6 @@ const BETA_FEATURES = [
 ];
 
 const ALPHA_FEATURES = [
-    'emailCardSegments',
     'multipleProducts',
     'oauthLogin',
     'membersFiltering',

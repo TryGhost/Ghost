@@ -5,11 +5,9 @@ class EmailPreview {
      * @constructor
      * @param {Object} options
      * @param {String} options.apiVersion
-     * @param {Function} [options.isSet]
      */
-    constructor({apiVersion, isSet}) {
+    constructor({apiVersion}) {
         this.apiVersion = apiVersion;
-        this.isSet = isSet;
     }
 
     /**
@@ -23,7 +21,7 @@ class EmailPreview {
             apiVersion: this.apiVersion
         });
 
-        if (this.isSet && this.isSet('emailCardSegments') && memberSegment) {
+        if (memberSegment) {
             emailContent = postEmailSerializer.renderEmailForSegment(emailContent, memberSegment);
         }
 

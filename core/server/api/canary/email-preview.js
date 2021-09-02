@@ -2,11 +2,9 @@ const models = require('../../models');
 const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const mega = require('../../services/mega');
-const labs = require('../../../shared/labs');
 
 const emailPreview = new mega.EmailPreview({
-    apiVersion: 'canary',
-    isSet: labs.isSet.bind(labs)
+    apiVersion: 'canary'
 });
 
 module.exports = {
