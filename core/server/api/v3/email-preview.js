@@ -3,6 +3,10 @@ const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const mega = require('../../services/mega');
 
+const emailPreview = new mega.EmailPreview({
+    apiVersion: 'v3'
+});
+
 module.exports = {
     docName: 'email_preview',
 
@@ -32,20 +36,7 @@ module.exports = {
                 });
             }
 
-            let emailContent = await mega.postEmailSerializer.serialize(model, {
-                isBrowserPreview: true,
-                apiVersion: 'v3'
-            });
-            const replacements = mega.postEmailSerializer.parseReplacements(emailContent);
-
-            replacements.forEach((replacement) => {
-                emailContent[replacement.format] = emailContent[replacement.format].replace(
-                    replacement.match,
-                    replacement.fallback || ''
-                );
-            });
-
-            return emailContent;
+            return emailPreview.generateEmailContent(model, frame.options.memberSegment);
         }
     },
     sendTestEmail: {
