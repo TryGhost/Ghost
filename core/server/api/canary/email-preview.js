@@ -22,34 +22,35 @@ module.exports = {
             'status'
         ],
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const options = Object.assign(frame.options, {formats: 'html,plaintext', withRelated: ['authors', 'posts_meta']});
             const data = Object.assign(frame.data, {status: 'all'});
-            return models.Post.findOne(data, options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.posts.postNotFound')
-                        });
-                    }
 
-                    return mega.postEmailSerializer.serialize(model, {isBrowserPreview: true, apiVersion: 'canary'}).then((emailContent) => {
-                        if (labs.isSet('emailCardSegments') && frame.options.memberSegment) {
-                            emailContent = mega.postEmailSerializer.renderEmailForSegment(emailContent, frame.options.memberSegment);
-                        }
+            const model = await models.Post.findOne(data, options);
 
-                        const replacements = mega.postEmailSerializer.parseReplacements(emailContent);
-
-                        replacements.forEach((replacement) => {
-                            emailContent[replacement.format] = emailContent[replacement.format].replace(
-                                replacement.match,
-                                replacement.fallback || ''
-                            );
-                        });
-
-                        return emailContent;
-                    });
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: i18n.t('errors.api.posts.postNotFound')
                 });
+            }
+
+            let emailContent = await mega.postEmailSerializer.serialize(model, {
+                isBrowserPreview: true,
+                apiVersion: 'canary'
+            });
+            if (labs.isSet('emailCardSegments') && frame.options.memberSegment) {
+                emailContent = mega.postEmailSerializer.renderEmailForSegment(emailContent, frame.options.memberSegment);
+            }
+            const replacements = mega.postEmailSerializer.parseReplacements(emailContent);
+
+            replacements.forEach((replacement) => {
+                emailContent[replacement.format] = emailContent[replacement.format].replace(
+                    replacement.match,
+                    replacement.fallback || ''
+                );
+            });
+
+            return emailContent;
         }
     },
     sendTestEmail: {
