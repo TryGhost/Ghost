@@ -91,10 +91,8 @@
                     id={{this.buttonTextInputId}}
                     name="button-text"
                     value={{@payload.buttonText}}
-                    placeholder={{if this.buttonFocused "" "Add button text"}}
+                    placeholder="Add button text"
                     {{on "input" this.setButtonText}}
-                    {{on "focus" (fn (mut this.buttonFocused) true)}}
-                    {{on "blur" (fn (mut this.buttonFocused) false)}}
                     {{on-key "Enter" (fn this.focusElement "#button-url-input")}}
                 >
 
