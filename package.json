@@ -148,7 +148,7 @@
     "nconf": "0.11.3",
     "node-jose": "2.0.0",
     "nodemailer": "0.7.1",
-    "oembed-parser": "1.4.7",
+    "oembed-parser": "1.4.8",
     "passport": "0.4.1",
     "passport-google-oauth": "2.0.0",
     "path-match": "1.2.4",
