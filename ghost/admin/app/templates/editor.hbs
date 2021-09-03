@@ -108,7 +108,7 @@
             <GhPostSettingsMenu
                 @post={{this.post}}
                 @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
-                @deletePost={{action "toggleDeletePostModal"}}
+                @deletePost={{action "openDeletePostModal"}}
                 @updateSlugTask={{this.updateSlugTask}}
                 @savePostTask={{this.savePostTask}}
             />
@@ -122,13 +122,6 @@
             <span>{{svg-jar "sidemenu"}}</span>
         {{/if}}
     </button>
-
-    {{#if this.showDeletePostModal}}
-        <GhFullscreenModal @modal="delete-post"
-            @model={{hash post=this.post onSuccess=(route-action 'redirectToContentScreen' this.post.displayName)}}
-            @close={{action "toggleDeletePostModal"}}
-            @modifier="action wide" />
-    {{/if}}
 
     {{#if this.showLeaveEditorModal}}
         <GhFullscreenModal @modal="leave-editor"

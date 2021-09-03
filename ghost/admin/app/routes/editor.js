@@ -67,10 +67,6 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             this.controller.send('toggleReAuthenticateModal');
         },
 
-        redirectToContentScreen(displayName) {
-            this.transitionTo(displayName === 'page' ? 'pages' : 'posts');
-        },
-
         willTransition(transition) {
             // exit early if an upgrade is required because our extended route
             // class will abort the transition and show an error

@@ -95,6 +95,7 @@ export default Controller.extend({
     config: service(),
     feature: service(),
     membersCountCache: service(),
+    modals: service(),
     notifications: service(),
     router: service(),
     slugGenerator: service(),
@@ -106,7 +107,6 @@ export default Controller.extend({
 
     leaveEditorTransition: null,
     shouldFocusTitle: false,
-    showDeletePostModal: false,
     showLeaveEditorModal: false,
     showReAuthenticateModal: false,
     showEmailPreviewModal: false,
@@ -275,7 +275,7 @@ export default Controller.extend({
             return transition.retry();
         },
 
-        toggleDeletePostModal() {
+        openDeletePostModal() {
             if (!this.get('post.isNew')) {
                 this.modals.open('modals/delete-post', {
                     post: this.post
