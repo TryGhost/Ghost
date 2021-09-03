@@ -2,6 +2,7 @@ const activate = require('./activate');
 const themeLoader = require('./loader');
 const storage = require('./storage');
 const getJSON = require('./to-json');
+const installer = require('./installer');
 
 const settingsCache = require('../../../shared/settings-cache');
 
@@ -26,6 +27,7 @@ module.exports = {
         activate: activate.activate,
         getZip: storage.getZip,
         setFromZip: storage.setFromZip,
+        installFromGithub: installer.installFromGithub,
         destroy: storage.destroy
     }
 };
