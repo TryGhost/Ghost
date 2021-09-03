@@ -1158,6 +1158,18 @@
 }
 
 
+/* Special Koenig styles
+/* --------------------------------------------------------------- */
+.koenig-gallery-trash-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.koenig-gallery-trash-icon path {
+    fill: #15171A;
+}
+
+
 /* Mobiledoc-kit base styles
 /* NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css
 /* --------------------------------------------------------------- */
