@@ -17,11 +17,11 @@
 @import "patterns/navlist.css";
 @import "patterns/boxes.css";
 
-
 /* Components
 /* ---------------------------------------------------------- */
 @import "components/loading-indicator.css";
 @import "components/modals.css";
+@import "components/modals-new.css";
 @import "components/notifications.css";
 @import "components/uploader.css";
 @import "components/splitbuttons.css";

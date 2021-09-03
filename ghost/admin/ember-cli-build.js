@@ -119,6 +119,9 @@ module.exports = function (defaults) {
         'ember-composable-helpers': {
             only: ['optional', 'toggle']
         },
+        'ember-promise-modals': {
+            excludeCSS: true
+        },
         outputPaths: {
             app: {
                 html: isProduction ? 'index.min.html' : 'index.html',

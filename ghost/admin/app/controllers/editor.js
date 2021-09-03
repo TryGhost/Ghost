@@ -277,7 +277,11 @@ export default Controller.extend({
 
         toggleDeletePostModal() {
             if (!this.get('post.isNew')) {
-                this.toggleProperty('showDeletePostModal');
+                this.modals.open('modals/delete-post', {
+                    post: this.post
+                }, {
+                    className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
+                });
             }
         },
 
