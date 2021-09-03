@@ -2,9 +2,13 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const moment = require('moment');
 const config = require('../../../shared/config');
-const i18n = require('../../../shared/i18n');
 const urlUtils = require('../../../shared/url-utils');
 const api = require('../../api');
+
+const messages = {
+    jobNotFound: 'Job not found.',
+    jobPublishInThePast: 'Use the force flag to publish a post in the past.'
+};
 
 class PostSchedulingService {
     /**
@@ -34,11 +38,11 @@ class PostSchedulingService {
         const publishedAtMoment = moment(preScheduledResource.published_at);
 
         if (publishedAtMoment.diff(moment(), 'minutes') > publishAPostBySchedulerToleranceInMinutes) {
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.notFound')}));
+            return Promise.reject(new errors.NotFoundError({message: messages.jobNotFound}));
         }
 
         if (publishedAtMoment.diff(moment(), 'minutes') < publishAPostBySchedulerToleranceInMinutes * -1 && force !== true) {
-            return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.api.job.publishInThePast')}));
+            return Promise.reject(new errors.NotFoundError({message: messages.jobPublishInThePast}));
         }
 
         const editedResource = {};
