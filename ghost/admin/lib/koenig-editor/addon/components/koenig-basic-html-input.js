@@ -9,7 +9,7 @@ import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
-import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
+import {getContentFromPasteEvent, parsePostFromPaste} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {registerBasicTextExpansions} from '../options/text-expansions';
 import {run} from '@ember/runloop';
@@ -275,12 +275,26 @@ export default Component.extend({
     /* custom event handlers ------------------------------------------------ */
 
     handlePaste(event) {
+        // prevent default editor paste, we want to sanitise the pasted post
+        // before inserting to avoid disparities arising from `didUpdatePost`
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
         let {editor, editor: {range}} = this;
-        let {text} = getContentFromPasteEvent(event);
 
         if (!editor.cursor.isAddressable(event.target)) {
             return;
         }
+
+        if (!range.isCollapsed) {
+            editor.performDelete();
+        }
+
+        if (editor.post.isBlank) {
+            editor._insertEmptyMarkupSectionAtCursor();
+        }
+
+        const {text} = getContentFromPasteEvent(event);
 
         if (text && validator.isURL(text)) {
             // if we have a text selection, make that selection a link
@@ -290,13 +304,46 @@ export default Component.extend({
                     postEditor.addMarkupToRange(range, linkMarkup);
                 });
                 editor.selectRange(range.tail);
-
-                // prevent mobiledoc's default paste event handler firing
-                event.preventDefault();
-                event.stopImmediatePropagation();
                 return;
             }
         }
+
+        const position = editor.range.head;
+        const targetFormat = event.shiftKey ? 'text' : 'html';
+        const pastedPost = parsePostFromPaste(event, editor, {targetFormat});
+
+        // Basic HTML post sanitisation - same operations as `didUpdatePost`
+        // -----------------------------------------------------------------
+
+        // remove non-markerable and non-list sections
+        pastedPost.sections.forEach((section) => {
+            if (!section.isMarkerable && !section.isListSection) {
+                pastedPost.sections.remove(section);
+            }
+        });
+
+        // remove all but first section
+        while (pastedPost.sections.length > 1) {
+            pastedPost.sections.remove(pastedPost.sections.tail);
+        }
+
+        // convert first item of list section to a paragraph
+        if (pastedPost.sections.head && pastedPost.sections.head.isListSection) {
+            let list = pastedPost.sections.head;
+            let listItem = list.items.head;
+            let newMarkers = listItem.markers.map(m => m.clone());
+            let p = editor.builder.createMarkupSection('p', newMarkers);
+
+            pastedPost.sections.remove(list);
+            pastedPost.sections.append(p);
+        }
+        // -----------------------------------------------------------------
+
+        // same as default
+        editor.run((postEditor) => {
+            const newPosition = postEditor.insertPost(position, pastedPost);
+            postEditor.setRange(newPosition);
+        });
     },
 
     /* mobiledoc event handlers ----------------------------------------------*/
@@ -312,6 +359,8 @@ export default Component.extend({
     // - if first section is a list, grab the content of the first list item
     didUpdatePost(postEditor) {
         let {builder, editor, editor: {post}} = postEditor;
+
+        // NOTE: Update `handlePaste` to match if basic html cleanup operations are changed
 
         // remove any non-markerable sections
         post.sections.forEach((section) => {
@@ -333,7 +382,7 @@ export default Component.extend({
         }
 
         // convert list section to a paragraph section
-        if (post.sections.head.isListSection) {
+        if (post.sections.head && post.sections.head.isListSection) {
             let list = post.sections.head;
             let listItem = list.items.head;
             let newMarkers = listItem.markers.map(m => m.clone());
