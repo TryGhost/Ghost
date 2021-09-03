@@ -74,6 +74,7 @@ export default Component.extend({
     init() {
         this._super(...arguments);
         this.SPECIAL_MARKUPS = [];
+        this._lastSetHtml = this.html;
     },
 
     didReceiveAttrs() {
@@ -81,8 +82,9 @@ export default Component.extend({
 
         // reset local mobiledoc if html has been changed upstream so that
         // the html will be re-parsed by the mobiledoc-kit editor
-        if (this.cleanHTML !== this._getHTML()) {
+        if (this._lastSetHtml !== this.html) {
             this.set('mobiledoc', null);
+            this._lastSetHtml = this.html;
         }
     },
 
@@ -343,7 +345,9 @@ export default Component.extend({
 
     postDidChange() {
         // trigger closure action
-        this.onChange(this._getHTML());
+        const html = this._getHTML();
+        this._lastSetHtml = html;
+        this.onChange(html);
     },
 
     cursorDidChange(editor) {
