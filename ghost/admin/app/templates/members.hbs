@@ -112,6 +112,7 @@
     {{#unless this.members.loading}}
         <section class="view-container">
             {{#if (feature "membersFiltering")}}
+                {{#if this.members}}
                 <div class="gh-list-scrolling">
                     <table class="gh-list">
                         <thead>
@@ -123,12 +124,6 @@
                                 {{#each this.filterColumnLabels as |filterColumn|}}
                                     <th>{{filterColumn}}</th>
                                 {{/each}}
-                                {{!-- <th>Open rate</th>
-                                <th>Location</th>
-                                <th>Created</th>
-                                <th>Open rate</th>
-                                <th>Location</th>
-                                <th>Created</th> --}}
                             </tr>
                         </thead>
                         <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-main" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
@@ -140,6 +135,22 @@
                         </VerticalCollection>
                     </table>
                 </div>
+                {{else}}
+                <div class="no-posts-box">
+                    <div class="no-posts">
+                    {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
+                    {{#if this.showingAll}}
+                        <h3>No members yet</h3>
+                        <GhMembersNoMembers @afterCreate={{this.refreshData}} />
+                    {{else}}
+                        <h3>No members match the current filter</h3>
+                        <LinkTo @route="members" @query={{hash filter=null}} class="gh-btn gh-btn-lg">
+                            <span>Show all members</span>
+                        </LinkTo>
+                    {{/if}}
+                    </div>
+                </div>
+                {{/if}}
             {{else}}
             <section class="content-list">
                 <ol class="members-list gh-list {{unless this.members "no-posts"}}">
