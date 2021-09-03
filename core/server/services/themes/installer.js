@@ -5,8 +5,11 @@ const security = require('@tryghost/security');
 const request = require('@tryghost/request');
 const errors = require('@tryghost/errors/lib/errors');
 const limitService = require('../../services/limits');
-const i18n = require('../../../shared/i18n');
 const {setFromZip} = require('./storage');
+
+const messages = {
+    repoDoesNotExist: 'Supplied GitHub theme does not exist or is inaccessible'
+};
 
 /**
  *
@@ -54,7 +57,7 @@ const installFromGithub = async (ref) => {
     } catch (e) {
         if (e.statusCode && e.statusCode === 404) {
             return Promise.reject(new errors.BadRequestError({
-                message: i18n.t('errors.api.themes.repoDoesNotExist'),
+                message: messages.repoDoesNotExist,
                 context: zipUrl
             }));
         }
