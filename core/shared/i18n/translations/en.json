@@ -412,8 +412,7 @@
                 "invalidFile": "Please select a valid zip file.",
                 "overrideCasper": "Please rename your zip, it's not allowed to override the default casper theme.",
                 "destroyCasper": "Deleting the default casper theme is not allowed.",
-                "destroyActive": "Deleting the active theme is not allowed.",
-                "repoDoesNotExist": "Supplied GitHub theme does not exist or is inaccessible"
+                "destroyActive": "Deleting the active theme is not allowed."
             },
             "images": {
                 "missingFile": "Please select an image.",
