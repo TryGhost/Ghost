@@ -22,6 +22,7 @@
 /* ---------------------------------------------------------- */
 @import "components/loading-indicator.css";
 @import "components/modals.css";
+@import "components/modals-new.css";
 @import "components/notifications.css";
 @import "components/uploader.css";
 @import "components/splitbuttons.css";
