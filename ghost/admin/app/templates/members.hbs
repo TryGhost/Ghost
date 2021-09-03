@@ -168,6 +168,9 @@
                                     <GhMembersNoMembers @afterCreate={{this.refreshData}} />
                                 {{else}}
                                     <h3>No members match the current filter</h3>
+                                    <LinkTo @route="members" @query={{hash label=null paid=null search=null}} class="gh-btn gh-btn-lg">
+                                        <span>Show all members</span>
+                                    </LinkTo>
                                 {{/if}}
                             </div>
                         </li>
