@@ -125,7 +125,10 @@ module.exports = {
                 member = await membersService.api.members.create(frame.data.members[0], frame.options);
 
                 if (frame.data.members[0].stripe_customer_id) {
-                    await membersService.api.members.linkStripeCustomer(frame.data.members[0].stripe_customer_id, member);
+                    await membersService.api.members.linkStripeCustomer({
+                        customer_id: frame.data.members[0].stripe_customer_id,
+                        member_id: member.id
+                    });
                 }
 
                 if (frame.data.members[0].comped) {
