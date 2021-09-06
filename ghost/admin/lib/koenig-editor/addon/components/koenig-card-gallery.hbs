@@ -61,7 +61,7 @@
             {{/if}}
 
             {{#if (or uploader.isUploading (is-empty this.imageRows))}}
-                <div class="relative miw-100 flex items-center {{if (is-empty this.imageRows) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+                <div class="relative miw-100 flex items-center {{if (is-empty this.imageRows) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}" data-gallery={{is-empty this.imageRows}}>
                     {{#if this.isDraggedOver}}
                         <span class="db center sans-serif fw7 f7 middarkgrey">
                             Drop 'em like it's hot 🔥

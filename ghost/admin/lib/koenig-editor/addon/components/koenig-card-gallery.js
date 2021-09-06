@@ -341,32 +341,48 @@ export default Component.extend({
     //   drop container vs a drag reorder+file drop container?
     _registerOrRefreshDragDropHandler() {
         if (this._dragDropContainer) {
-            run.schedule('afterRender', this, function () {
-                this._dragDropContainer.refresh();
-                if (!isEmpty(this.images) && !this._dragDropContainer.isDragEnabled) {
-                    this._dragDropContainer.enableDrag();
-                }
-            });
+            run.scheduleOnce('afterRender', this, this._refreshDragDropContainer);
         } else {
-            run.schedule('afterRender', this, function () {
-                let galleryElem = this.element.querySelector('[data-gallery]');
-                if (galleryElem) {
-                    this._dragDropContainer = this.koenigDragDropHandler.registerContainer(
-                        galleryElem,
-                        {
-                            draggableSelector: '[data-image]',
-                            droppableSelector: '[data-image]',
-                            isDragEnabled: !isEmpty(this.images),
-                            onDragStart: run.bind(this, this._dragStart),
-                            onDragEnd: run.bind(this, this._dragEnd),
-                            getDraggableInfo: run.bind(this, this._getDraggableInfo),
-                            getIndicatorPosition: run.bind(this, this._getDropIndicatorPosition),
-                            onDrop: run.bind(this, this._onDrop),
-                            onDropEnd: run.bind(this, this._onDropEnd)
-                        }
-                    );
+            run.scheduleOnce('afterRender', this, this._registerDragDropContainer);
+        }
+    },
+
+    _refreshDragDropContainer() {
+        const galleryElem = this.element.querySelector('[data-gallery]');
+
+        // gallery element can change when switching from placeholder to gallery
+        // make sure the DnD container is updated to match
+        if (this._dragDropContainer.element !== galleryElem) {
+            this._dragDropContainer.destroy();
+            this._registerDragDropContainer();
+        } else {
+            this._dragDropContainer.refresh();
+        }
+
+        if (!isEmpty(this.images) && !this._dragDropContainer.isDragEnabled) {
+            this._dragDropContainer.enableDrag();
+        }
+    },
+
+    _registerDragDropContainer() {
+        const galleryElem = this.element.querySelector('[data-gallery]');
+        if (galleryElem) {
+            this._dragDropContainer = this.koenigDragDropHandler.registerContainer(
+                galleryElem,
+                {
+                    draggableSelector: '[data-image]',
+                    droppableSelector: '[data-image]',
+                    isDragEnabled: !isEmpty(this.images),
+                    onDragStart: run.bind(this, this._dragStart),
+                    onDragEnd: run.bind(this, this._dragEnd),
+                    onDragEnterContainer: run.bind(this, this._dragEnter),
+                    onDragLeaveContainer: run.bind(this, this._dragLeave),
+                    getDraggableInfo: run.bind(this, this._getDraggableInfo),
+                    getIndicatorPosition: run.bind(this, this._getDropIndicatorPosition),
+                    onDrop: run.bind(this, this._onDrop),
+                    onDropEnd: run.bind(this, this._onDropEnd)
                 }
-            });
+            );
         }
     },
 
@@ -386,6 +402,20 @@ export default Component.extend({
         } else {
             this._dragDropContainer.disableDrag();
         }
+
+        if (this.isDraggedOver) {
+            this.set('isDraggedOver', false);
+        }
+    },
+
+    _dragEnter() {
+        if (this.images.length === 0) {
+            this.set('isDraggedOver', true);
+        }
+    },
+
+    _dragLeave() {
+        this.set('isDraggedOver', false);
     },
 
     _getDraggableInfo(draggableElement) {
@@ -412,6 +442,10 @@ export default Component.extend({
         let {insertIndex} = draggableInfo;
         let droppables = Array.from(this.element.querySelectorAll('[data-image]'));
         let draggableIndex = droppables.indexOf(draggableInfo.element);
+
+        if (!this.images.length) {
+            insertIndex = 0;
+        }
 
         if (this._isDropAllowed(draggableIndex, insertIndex)) {
             if (draggableIndex === -1) {
