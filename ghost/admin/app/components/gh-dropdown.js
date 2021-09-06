@@ -37,6 +37,7 @@ export default Component.extend(DropdownMixin, {
             if (event.animationName === 'fade-out' && this.closing) {
                 this.set('isOpen', false);
                 this.set('closing', false);
+                this.onClose?.();
             }
         });
 
@@ -61,7 +62,6 @@ export default Component.extend(DropdownMixin, {
 
     close() {
         this.set('closing', true);
-        this.onClose?.();
         if (this.button) {
             this.set('button.isOpen', false);
         }
