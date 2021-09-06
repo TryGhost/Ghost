@@ -457,7 +457,7 @@ export default Component.extend({
                 payload.width = payload.width || img.naturalWidth;
                 payload.height = payload.height || img.naturalHeight;
                 if (!payload.fileName) {
-                    let url = new URL(img.src);
+                    let url = new URL(payload.src || img.src);
                     let fileName = url.pathname.match(/\/([^/]*)$/)[1];
                     payload.fileName = fileName;
                 }
