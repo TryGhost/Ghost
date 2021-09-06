@@ -76,7 +76,7 @@
                 {{#if this.showVisibilityInput}}
                     {{#if (feature "multipleProducts")}}
                         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
-                            <label for="visibility-input">Post access</label>
+                            <label for="visibility-input">{{capitalize @post.displayName}} access</label>
                             <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
                         </GhFormGroup>
 
