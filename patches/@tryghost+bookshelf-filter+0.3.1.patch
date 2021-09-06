@@ -1,0 +1,15 @@
+diff --git a/node_modules/@tryghost/bookshelf-filter/lib/bookshelf-filter.js b/node_modules/@tryghost/bookshelf-filter/lib/bookshelf-filter.js
+index 34478a6..49ddc52 100644
+--- a/node_modules/@tryghost/bookshelf-filter/lib/bookshelf-filter.js
++++ b/node_modules/@tryghost/bookshelf-filter/lib/bookshelf-filter.js
+@@ -51,7 +51,9 @@ const filter = function filter(Bookshelf) {
+                     custom = extra;
+                 }
+             }
+-
++            if (custom) {
++                custom = custom.replace(/authors:(.)($|\+|\))/, 'authors:\'$1\'$2');
++            }
+             try {
+                 this.query((qb) => {
+                     nql(custom, {
