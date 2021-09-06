@@ -105,10 +105,10 @@ export default class GhMembersFilterLabsComponent extends Component {
     @tracked filters = A([
         EmberObject.create({
             id: `filter-0`,
-            type: 'name',
+            type: 'label',
             relation: 'is',
             value: '',
-            relationOptions: FILTER_RELATIONS_OPTIONS.name
+            relationOptions: FILTER_RELATIONS_OPTIONS.label
         })
     ]);
 
@@ -128,10 +128,10 @@ export default class GhMembersFilterLabsComponent extends Component {
     addFilter() {
         this.filters.pushObject(EmberObject.create({
             id: `filter-${this.nextFilterId}`,
-            type: 'name',
+            type: 'label',
             relation: 'is',
             value: '',
-            relationOptions: this.availableFilterRelationsOptions.name
+            relationOptions: FILTER_RELATIONS_OPTIONS.label
         }));
         this.nextFilterId = this.nextFilterId + 1;
         this.applySoftFilter();
@@ -139,7 +139,7 @@ export default class GhMembersFilterLabsComponent extends Component {
 
     @action
     onDropdownClose() {
-        this.args.onResetSoftFilter();
+        this.applyFilter();
     }
 
     generateNqlFilter(filters) {
@@ -193,6 +193,7 @@ export default class GhMembersFilterLabsComponent extends Component {
     setFilterRelation(filterId, newRelation) {
         const filterToEdit = this.filters.findBy('id', filterId);
         filterToEdit.set('relation', newRelation);
+        this.applySoftFilter();
     }
 
     @action
@@ -226,13 +227,7 @@ export default class GhMembersFilterLabsComponent extends Component {
             }
             return fil.value;
         });
-        this.filters.forEach((fil) => {
-            if (fil.type === 'label' && !fil.value?.length) {
-                this.filters.removeObject(fil);
-            } else if (!fil.value) {
-                this.filters.removeObject(fil);
-            }
-        });
+
         const query = this.generateNqlFilter(validFilters);
         this.args.onApplyFilter(query, validFilters);
     }
@@ -243,10 +238,10 @@ export default class GhMembersFilterLabsComponent extends Component {
         this.filters = A([
             EmberObject.create({
                 id: `filter-0`,
-                type: 'name',
+                type: 'label',
                 relation: 'is',
                 value: '',
-                relationOptions: FILTER_RELATIONS_OPTIONS.name
+                relationOptions: FILTER_RELATIONS_OPTIONS.label
             })
         ]);
         this.args.onResetFilter();

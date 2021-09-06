@@ -225,22 +225,25 @@ export default class MembersController extends Controller {
     @action
     applyFilter(filterStr, filters) {
         this.softFilters = A([]);
-        this.filters = filters;
         this.filterParam = filterStr || null;
+        this.filters = filters;
     }
 
     @action
     applySoftFilter(filterStr, filters) {
         this.softFilters = filters;
         this.softFilterParam = filterStr || null;
-        this.softFilterTask.perform(filterStr);
+        let {label, paidParam, searchParam, orderParam} = this;
+        this.fetchMembersTask.perform({label, paidParam, searchParam, orderParam, filterParam: filterStr});
     }
 
     @action
     resetSoftFilter() {
-        this.softFilters = A([]);
-        this.softFilterParam = null;
-        this.fetchMembersTask.perform();
+        if (this.softFilters.length > 0 || !!this.softFilterParam) {
+            this.softFilters = A([]);
+            this.softFilterParam = null;
+            this.fetchMembersTask.perform();
+        }
     }
 
     @action
@@ -249,6 +252,7 @@ export default class MembersController extends Controller {
         this.softFilterParam = null;
         this.filters = A([]);
         this.filterParam = null;
+        this.fetchMembersTask.perform();
     }
 
     @action
@@ -365,13 +369,6 @@ export default class MembersController extends Controller {
     @task
     *fetchLabelsTask() {
         yield this.store.query('label', {limit: 'all'});
-    }
-
-    @task({restartable: true})
-    *softFilterTask(query) {
-        let {label, paidParam, searchParam, orderParam} = this;
-        yield timeout(250); // debounce
-        this.fetchMembersTask.perform({label, paidParam, searchParam, orderParam, filterParam: query});
     }
 
     @task({restartable: true})
