@@ -985,10 +985,10 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
-"@tryghost/members-ssr@1.0.11":
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.11.tgz#fe8d79f9f163d37aea99568560b0bb8a9553323f"
-  integrity sha512-xJmzwX8mlE1w6v+RSqA3lfUa0AbOrq/jtrc3Tpi9WonsovZJJ+SLCkFodf5yfEZS2xu5qil4lpVUBdvd4xOQPg==
+"@tryghost/members-ssr@1.0.12":
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.12.tgz#ff2d0c41b23b66ee5768f62b40e99f56cc65d6ae"
+  integrity sha512-Lf6zq2X+zriUfJRqxg1+TZEBtUy6Cy/0kYGudVeUxFV0u220OquCa5ZB/RUNpIJyziC8p0bBMuRc2df7xB8S7w==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/ignition-errors" "^0.1.2"
