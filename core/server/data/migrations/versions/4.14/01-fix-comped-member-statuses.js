@@ -49,4 +49,22 @@ module.exports = createTransactionalMigration(async function up(knex) {
             .update('status', 'comped')
             .whereIn('id', compedMemberIdsChunk);
     }
+
+    for (const memberId of compedMemberIds) {
+        const mostRecentStatusEvent = await knex('members_status_events')
+            .select('*')
+            .where('member_id', memberId)
+            .orderBy('created_at', 'desc')
+            .limit(1)
+            .first();
+
+        if (!mostRecentStatusEvent) {
+            logging.warn(`Could not find a status event for member ${memberId} - skipping this member`);
+        } else if (mostRecentStatusEvent.to_status !== 'comped') {
+            logging.info(`Updating members_status_event ${mostRecentStatusEvent.id}`);
+            await knex('members_status_events')
+                .update('to_status', 'comped')
+                .where('id', mostRecentStatusEvent.id);
+        }
+    }
 }, async function down() {});
