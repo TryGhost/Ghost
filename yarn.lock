@@ -895,24 +895,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.5.tgz#9dcea114b57c4becccdc78f372905425f64e8252"
-  integrity sha512-1DauWxHUq+oKf0bwJIWJjNc6SZ8fAhVCjBy5ZvCJ6NNArNxydUm6oJeFmMqrhKfedoCRITf88XffIzN2/u3S1w==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch-bunyan" "^0.1.1"
-    "@tryghost/root-utils" "^0.3.3"
-    bunyan "^1.8.15"
-    bunyan-loggly "^1.4.2"
-    fs-extra "^10.0.0"
-    gelf-stream "^1.1.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.17.21"
-    moment "^2.29.1"
-    prettyjson "^1.2.1"
-
-"@tryghost/logging@^0.1.3":
+"@tryghost/logging@0.1.6", "@tryghost/logging@^0.1.3":
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.6.tgz#9efe5d789f2f3bbf40b38bc4d5b8da42b9d784e6"
   integrity sha512-kVE3d8hmsx3VI6RjUTt3aaYevVl7gh4zqTE49BmVpoBnXhCyw0Y7Iki425GvO9UgyGP5EMe8NOZM4aVk5uMhEg==
