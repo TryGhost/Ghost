@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {tracked} from '@glimmer/tracking';
 
 const FILTER_OPTIONS = {
     subscriptionPriceInterval: [
@@ -27,14 +28,28 @@ const FILTER_OPTIONS = {
 };
 
 export default class GhMembersFilterValueLabs extends Component {
+    @tracked filterValue;
     constructor(...args) {
         super(...args);
         this.availableFilterOptions = FILTER_OPTIONS;
+        this.filterValue = this.args.filter.value;
     }
 
     @action
     setInputFilterValue(filterType, filterId, event) {
-        this.args.setFilterValue(filterType, filterId, event.target.value);
+        this.filterValue = event.target.value;
+    }
+
+    @action
+    updateInputFilterValue(filterType, filterId) {
+        this.args.setFilterValue(filterType, filterId, this.filterValue);
+    }
+
+    @action
+    updateInputFilterValueOnEnter(filterType, filterId, event) {
+        if (event.keyCode === 13) {
+            this.args.setFilterValue(filterType, filterId, this.filterValue);
+        }
     }
 
     @action
