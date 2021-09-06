@@ -50,7 +50,9 @@ class PostsImporter extends BaseImporter {
      */
     sanitizePostsMeta(model) {
         let postsMetaFromFile = _.find(this.requiredFromFile.posts_meta, {post_id: model.id}) || _.pick(model, metaAttrs);
-        let postsMetaData = Object.assign({}, _.mapValues(postsMetaSchema, () => null), postsMetaFromFile);
+        let postsMetaData = Object.assign({}, _.mapValues(postsMetaSchema, (value) => {
+            return Reflect.has(value, 'defaultTo') ? value.defaultTo : null;
+        }), postsMetaFromFile);
         model.posts_meta = postsMetaData;
         _.each(metaAttrs, (attr) => {
             delete model[attr];
