@@ -99,7 +99,7 @@ export default class MembersController extends Controller {
     }
 
     get showingAll() {
-        return !this.searchParam && !this.paidParam && !this.label && !this.filterParam;
+        return !this.searchParam && !this.paidParam && !this.label && !this.filterParam && !this.softFilterParam;
     }
 
     get availableOrders() {
