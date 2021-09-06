@@ -48,7 +48,7 @@ class ProductRepository {
      *
      * @returns {Promise<ProductModel>}
      */
-    async get(data, options) {
+    async get(data, options = {}) {
         if (!options.transacting) {
             return this._Product.transaction((transacting) => {
                 return this.get(data, {
@@ -115,7 +115,7 @@ class ProductRepository {
      *
      * @returns {Promise<ProductModel>}
      **/
-    async create(data, options) {
+    async create(data, options = {}) {
         if (!this._stripeAPIService.configured && (data.stripe_prices || data.monthly_price || data.yearly_price)) {
             throw new UpdateCollisionError({
                 message: 'The requested functionality requires Stripe to be configured. See https://ghost.org/integrations/stripe/',
@@ -250,7 +250,7 @@ class ProductRepository {
      *
      * @returns {Promise<ProductModel>}
      **/
-    async update(data, options) {
+    async update(data, options = {}) {
         if (!this._stripeAPIService.configured && (data.stripe_prices || data.monthly_price || data.yearly_price)) {
             throw new UpdateCollisionError({
                 message: 'The requested functionality requires Stripe to be configured. See https://ghost.org/integrations/stripe/',
@@ -489,7 +489,7 @@ class ProductRepository {
      *
      * @returns {Promise<{data: ProductModel[], meta: object}>}
      **/
-    async list(options) {
+    async list(options = {}) {
         if (!options.transacting) {
             return this._Product.transaction((transacting) => {
                 return this.list({
