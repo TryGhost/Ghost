@@ -15,8 +15,8 @@
             <div class="gh-publishmenu-radio {{if (eq @saveType "publish") "active"}}" {{on "click" (fn this.setSaveType "publish")}}>
                 <div class="gh-publishmenu-radio-button" data-test-publishmenu-published-option></div>
                 <div class="gh-publishmenu-radio-content">
-                    <div class="gh-publishmenu-radio-label">Set it live now</div>
-                    <div class="gh-publishmenu-radio-desc">Publish this {{@post.displayName}} immediately</div>
+                    <div class="gh-publishmenu-radio-label">{{#if this.args.post.emailOnly}}Send email now{{else}}Set it live now{{/if}}</div>
+                    <div class="gh-publishmenu-radio-desc">{{#if this.args.post.emailOnly}}Deliver this immediately{{else}}Publish this {{@post.displayName}} immediately{{/if}}</div>
                 </div>
             </div>
             <div class="gh-publishmenu-radio {{if (eq @saveType "schedule") "active"}}" {{on "click" (fn this.setSaveType "schedule")}}>
@@ -35,7 +35,7 @@
                         @minDate={{this._minDate}}
                         @isActive={{eq @saveType "schedule"}}
                     />
-                    <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
+                    <div class="gh-publishmenu-radio-desc">{{#if this.args.post.emailOnly}}Send email at a specific time{{else}}Set automatic future publish date{{/if}}</div>
                 </div>
             </div>
         </div>
