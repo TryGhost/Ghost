@@ -102,20 +102,8 @@ function exportCSV(page, _apiConfig, frame) {
 function serializeMember(member, options) {
     const json = member.toJSON ? member.toJSON(options) : member;
 
-    let comped = false;
-    if (json.subscriptions) {
-        const hasCompedSubscription = !!json.subscriptions.find(
-            /**
-             * @param {SerializedMemberStripeSubscription} sub
-             */
-            function (sub) {
-                return sub.plan.nickname === 'Complimentary' && sub.status === 'active';
-            }
-        );
-        if (hasCompedSubscription) {
-            comped = true;
-        }
-    }
+    const comped = json.status === 'comped';
+
     const subscriptions = json.subscriptions || [];
 
     const serialized = {
