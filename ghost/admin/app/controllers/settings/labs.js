@@ -46,6 +46,7 @@ export default Controller.extend({
     importErrors: null,
     importSuccessful: false,
     showDeleteAllModal: false,
+    showEarlyAccessModal: false,
     submitting: false,
     uploadButtonText: 'Import',
 
@@ -154,6 +155,10 @@ export default Controller.extend({
 
         toggleDeleteAllModal() {
             this.toggleProperty('showDeleteAllModal');
+        },
+
+        toggleEarlyAccessModal() {
+            this.toggleProperty('showEarlyAccessModal');
         },
 
         async toggleIsOAuthEnabled() {
