@@ -59,6 +59,12 @@ export default class GhMemberLabelInputLabs extends Component {
     }
 
     @action
+    editLabel(label, event) {
+        event.stopPropagation();
+        this.args.onLabelEdit?.(label.slug);
+    }
+
+    @action
     createLabel(labelName) {
         let currentLabels = this.selectedLabels;
         let currentLabelNames = currentLabels.map(label => label.get('name').toLowerCase());
