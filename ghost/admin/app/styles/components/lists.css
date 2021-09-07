@@ -302,7 +302,7 @@ ul.nostyle li {
     position: relative;
     overflow: scroll;
     max-width: calc(100% + 96px);
-    /* height: calc(100vh - 96px); */
+    height: calc(100vh - 96px);
     margin: 0 -48px -81px;
     padding: 0 48px 0 0;
 }
