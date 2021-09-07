@@ -69,16 +69,17 @@
 }
 
 .gh-publishmenu-select .ember-power-select-inline {
+    padding-right: 3px;
     color: var(--black);
     font-size: 1.7rem;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1.25em;
 }
 
 .gh-publishmenu-select .ember-power-select-inline svg {
     width: 9px !important;
     height: 5.6px !important;
-    margin: 0 0 0 1px !important;
+    margin: 0 !important;
 }
 
 .gh-publishmenu-select .ember-power-select-inline svg path {
