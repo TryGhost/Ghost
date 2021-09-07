@@ -73,7 +73,7 @@
     "@tryghost/limit-service": "0.6.1",
     "@tryghost/logging": "0.1.6",
     "@tryghost/magic-link": "1.0.11",
-    "@tryghost/members-api": "1.31.0",
+    "@tryghost/members-api": "1.32.0",
     "@tryghost/members-csv": "1.1.6",
     "@tryghost/members-importer": "0.3.1",
     "@tryghost/members-ssr": "1.0.12",
