@@ -208,6 +208,12 @@ module.exports = {
             }, {
                 key: 'stripe_connect_account_id',
                 value: null
+            }, {
+                key: 'members_stripe_webhook_id',
+                value: null
+            }, {
+                key: 'members_stripe_webhook_secret',
+                value: null
             }], frame.options);
         }
     },
