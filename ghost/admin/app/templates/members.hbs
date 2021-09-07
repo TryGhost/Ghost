@@ -33,6 +33,7 @@
                 <GhMembersFilterLabs
                     @isFiltered={{this.isFiltered}}
                     @onApplyFilter={{this.applyFilter}}
+                    @defaultFilterParam={{this.defaultFilterParam}}
                     @onApplySoftFilter={{this.applySoftFilter}}
                     @onResetSoftFilter={{this.resetSoftFilter}}
                     @onResetFilter={{this.resetFilter}}
@@ -126,7 +127,7 @@
                                 {{/each}}
                             </tr>
                         </thead>
-                        <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-main" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
+                        <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-list-scrolling" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
                             <GhMembersListItemLabs
                                 @member={{member}}
                                 @filterColumns={{this.filterColumns}}
