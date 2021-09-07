@@ -168,6 +168,16 @@ module.exports = function MembersAPI({
         logging: common.logging
     });
 
+    async function disconnectStripe() {
+        await Product.forge().query().update({
+            monthly_price_id: null,
+            yearly_price_id: null
+        });
+        await StripePrice.forge().query().del();
+        await StripeProduct.forge().query().del();
+        await StripeCustomer.forge().query().del();
+    }
+
     const ready = paymentConfig.stripe ? Promise.all([
         stripeMigrations.populateProductsAndPrices().then(() => {
             return stripeMigrations.populateStripePricesFromStripePlansSetting(stripeConfig.plans);
@@ -387,6 +397,7 @@ module.exports = function MembersAPI({
         getMemberIdentityToken,
         getMemberIdentityData,
         setMemberGeolocationFromIp,
+        disconnectStripe,
         getPublicConfig,
         bus,
         sendEmailWithMagicLink,
