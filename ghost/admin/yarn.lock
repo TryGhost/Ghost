@@ -14048,10 +14048,10 @@ terser@^5.3.0:
     source-map "~0.7.2"
     source-map-support "~0.5.19"
 
-testem@3.4.3:
-  version "3.4.3"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.4.3.tgz#ed13abb9632622cec17b285bf9aa0a9cc6c02024"
-  integrity sha512-x8P+urqzwv+K8eJo6/kavSLtwgLr59AINkIG+CIVmWy2DDtC8xt9J+4n8G6PETcSXIO3cSUTt63QWTgDGGBVnA==
+testem@3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.5.0.tgz#c77cc1e46114c60f6f16c4f221a8a222346fb211"
+  integrity sha512-qucRtq6aDVrCc6aEyz15CxIpjij95B8XTHpRT7xrTdTw3iFypZw95DQjX+EnGmGIqUB7CGapv3L2OP+HAlHUBg==
   dependencies:
     "@xmldom/xmldom" "^0.7.1"
     backbone "^1.1.2"
