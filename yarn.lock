@@ -944,7 +944,7 @@
     node-jose "^2.0.0"
     stripe "^8.142.0"
 
-"@tryghost/members-csv@1.1.6", "@tryghost/members-csv@^1.1.5":
+"@tryghost/members-csv@1.1.6", "@tryghost/members-csv@^1.1.6":
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.6.tgz#32c936cdff698317a9f20c4c98b8a55aad5a804f"
   integrity sha512-q064BD3ZOI9h+jC4V20Tj15Y1Uzlrw6IL0EmPN50JvmkulYlafDYBrD8S++awd1jweapACrJM9Kb6kVoF1kIqQ==
@@ -955,13 +955,13 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-importer@0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.3.1.tgz#51baee3161a0646f4d63610f1005743a6717eb63"
-  integrity sha512-qMselhbYbNrnV4Fiwzrc8kDe5PRkD/K4pNzHCa/yzsc7pN7KGnnKBTGrnFHhL5YHDuWAf5H7tmtUiqLsxdy6wA==
+"@tryghost/members-importer@0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.3.2.tgz#34def7f5bf5bc1f861e1e03ab5490934960a80cd"
+  integrity sha512-v6Vee0LthMRRLCvNYItVVI2Hc5EmfrPYVjlPGcQ2Bnju0o7tBKb9BfB7BfFUmtcJRLSgQepbHw2QCwLZ1eup1A==
   dependencies:
     "@tryghost/errors" "^0.2.13"
-    "@tryghost/members-csv" "^1.1.5"
+    "@tryghost/members-csv" "^1.1.6"
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
