@@ -22,7 +22,7 @@
             {{label.name}}
         </span>
         {{#if label.slug}}
-            <span class="dropdown-action-icon" {{on "click" (fn @onLabelEdit label.slug)}}>
+            <span class="dropdown-action-icon" {{on "mouseup" (fn this.editLabel label)}}>
                 {{svg-jar "pen"}}
             </span>
         {{/if}}
