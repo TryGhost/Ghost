@@ -73,13 +73,18 @@
             {{#if (gh-user-can-admin this.session.user)}}
                 <li class="relative">
                     {{#if (eq this.router.currentRouteName "members.index")}}
-                        <LinkTo @route="members" @current-when="members member" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
+                        <LinkTo @route="members" @current-when="members member" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members
+                            {{#unless this.memberCountLoading}}
+                                <span class="gh-nav-member-count">{{format-number this.memberCount}}</span>
+                            {{/unless}}
+                        </LinkTo>
                     {{else}}
-                        <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members</LinkTo>
+                        <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members
+                            {{#unless this.memberCountLoading}}
+                                <span class="gh-nav-member-count">{{format-number this.memberCount}}</span>
+                            {{/unless}}
+                        </LinkTo>
                     {{/if}}
-                    {{#unless this.memberCountLoading}}
-                    <span class="gh-nav-member-count">{{format-number this.memberCount}}</span>
-                    {{/unless}}
                 </li>
                 <li>
                     <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "module"}}Integrations</LinkTo>
