@@ -79,6 +79,29 @@
             </div>
         </div>
 
+        {{#if (enable-developer-experiments)}}
+        <div class="gh-main-section">
+            <h4 class="gh-main-section-header small bn">Early-access features</h4>
+            <div class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Tiers</h4>
+                            <p class="gh-expandable-description">
+                                Allow members to sign-up for different tiers. <a href="https://ghost.org/help/topic/members" target="_blank">Learn more</a>
+                            </p>
+                        </div>
+                        {{#if (feature "multipleProducts")}}
+                            <span class="gh-badge">Enabled</span>
+                        {{else}}
+                            <button type="button" class="gh-btn" {{action "toggleEarlyAccessModal"}}><span>Enable</span></button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/if}}
+
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Beta features</h4>
             <div class="gh-expandable">
@@ -94,7 +117,7 @@
                     <div class="gh-expandable-header">
                         <div>
                             <h4 class="gh-expandable-title">Redirects</h4>
-                            <p class="gh-expandable-description">Configure redirects for old or moved content, more info in <a href="https://ghost.org/docs/tutorials/implementing-redirects/">the docs</a></p>
+                            <p class="gh-expandable-description">Configure redirects for old or moved content, more info in <a href="https://ghost.org/docs/tutorials/implementing-redirects/" target="_blank">the docs</a></p>
                         </div>
                         <div class="gh-setting-action flex flex-column items-end">
                             {{#if uploader.isUploading}}
@@ -305,5 +328,11 @@
 {{#if this.showDeleteAllModal}}
     <GhFullscreenModal @modal="delete-all"
         @close={{action "toggleDeleteAllModal"}}
+        @modifier="action wide" />
+{{/if}}
+
+{{#if this.showEarlyAccessModal}}
+    <GhFullscreenModal @modal="early-access"
+        @close={{action "toggleEarlyAccessModal"}}
         @modifier="action wide" />
 {{/if}}

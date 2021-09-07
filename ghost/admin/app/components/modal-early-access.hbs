@@ -1,0 +1,14 @@
+<header class="modal-header">
+    <h1>Enable early-access feature</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>You're about to enable a feature that's not fully finished yet, and <strong>once it's turned on there's no way back</strong>. Are you sure?</p>
+    <p><a href="https://ghost.org/help/topic/members" target="_blank">Learn more about early access features</a></p>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    <button {{action "closeModal"}} class="gh-btn gh-btn-primary"><span>Enable feature</span></button>
+</div>
