@@ -169,6 +169,10 @@ module.exports = function MembersAPI({
     });
 
     async function disconnectStripe() {
+        if (stripeConfig && stripeConfig.webhook && stripeConfig.webhook.id) {
+            await stripeWebhookService.removeWebhook(stripeConfig.webhook.id);
+        }
+
         await Product.forge().query().update({
             monthly_price_id: null,
             yearly_price_id: null
