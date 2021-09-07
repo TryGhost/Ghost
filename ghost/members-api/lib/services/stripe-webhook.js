@@ -101,6 +101,20 @@ module.exports = class StripeWebhookService {
     }
 
     /**
+     * @param {string} id - WebhookEndpoint Stripe ID
+     *
+     * @returns {Promise<boolean>}
+     */
+    async removeWebhook(id) {
+        try {
+            await this._stripeAPIService.deleteWebhookEndpoint(id);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    /**
      * @param {string} body
      * @param {string} signature
      * @returns {import('stripe').Stripe.Event}
