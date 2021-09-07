@@ -9,7 +9,6 @@ const {BadRequestError, NoPermissionError, NotFoundError} = require('@tryghost/e
 const settingsService = require('../../services/settings');
 const settingsCache = require('../../../shared/settings-cache');
 const membersService = require('../../services/members');
-const ghostBookshelf = require('../../models/base');
 
 module.exports = {
     docName: 'settings',
