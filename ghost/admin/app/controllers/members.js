@@ -485,11 +485,12 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index', {filter: this.filterParam, search: null}))});
+        this.reset();
+
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
-        return response.meta;
+        return response?.bulk?.meta;
     }
 
     @task({drop: true})
@@ -509,11 +510,11 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index', {filter: this.filterParam, search: null}))});
+        this.reset();
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
-        return response.meta;
+        return response?.bulk?.meta;
     }
 
     @task({drop: true})
@@ -533,11 +534,11 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index', {filter: this.filterParam, search: null}))});
+        this.reset();
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
 
-        return response.meta;
+        return response?.bulk?.meta;
     }
     // Internal ----------------------------------------------------------------
 
@@ -547,6 +548,7 @@ export default class MembersController extends Controller {
 
     reset() {
         this.filterParam = null;
+        this.softFilterParam = null;
     }
 
     reload(params) {

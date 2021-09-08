@@ -1,4 +1,4 @@
-<header class="modal-header" data-test-modal="delete-members">
+<header class="modal-header" data-test-modal="add-label-members">
     <h1>Add Label</h1>
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
@@ -11,7 +11,35 @@
         </p>
     </div>
 {{else}}
-    <div class="gh-content-box pa" data-test-state="add-label-complete">
+    <div class="gh-content-box pa" data-test-state="add-complete">
+        {{#if this.error}}
+            <div class="flex items-center">
+                {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
+                <div>
+                    <p class="ma0 pa0">
+                        <span class="fw5" data-test-text="add-error">{{this.error}}</span>
+                    </p>
+                </div>
+            </div>
+        {{else}}
+            <div class="flex items-center">
+                {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
+                <p class="ma0 pa0">
+                    Label added to  <span class="fw6" data-test-text="add-count">{{gh-pluralize this.response.stats.successful "member"}}</span>
+                    successfully
+                </p>
+            </div>
+            {{#if this.response.stats.unsuccessful}}
+                <div class="flex items-start mt2" data-test-bulk-label-add-errors>
+                    {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
+                    <div>
+                        <p class="ma0 pa0">
+                            Failed to add label to <span class="fw5" data-test-text="invalid-count"> {{gh-pluralize this.response.stats.unsuccessful "member"}}</span>
+                        </p>
+                    </div>
+                </div>
+            {{/if}}
+        {{/if}}
     </div>
 {{/if}}
 
