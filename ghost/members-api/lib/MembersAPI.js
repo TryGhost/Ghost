@@ -350,7 +350,7 @@ module.exports = function MembersAPI({
     };
 
     middleware.handleStripeWebhook.use(body.raw({type: 'application/json'}), async function (req, res) {
-        if (!stripeAPIService) {
+        if (!stripeAPIService.configured) {
             common.logging.error(`Stripe not configured, not handling webhook`);
             res.writeHead(400);
             return res.end();
