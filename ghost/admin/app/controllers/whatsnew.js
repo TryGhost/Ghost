@@ -6,6 +6,9 @@ import {inject as service} from '@ember/service';
 export default Controller.extend({
     config: service(),
     upgradeStatus: service(),
+    whatsNew: service(),
+
+    queryParams: ['entry'],
 
     copyrightYear: computed(function () {
         let date = new Date();
