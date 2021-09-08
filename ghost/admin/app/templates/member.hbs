@@ -31,6 +31,7 @@
                 @member={{this.member}}
                 @scratchMember={{this.scratchMember}}
                 @setProperty={{this.setProperty}}
+                @onLabelEdit={{this.editLabel}}
                 @saveMember={{this.save}}
                 @isSaveRunning={{this.saveTask.isRunning}}
                 @isLoading={{this.isLoading}} />
@@ -76,4 +77,13 @@
         @model={{this.member}}
         @close={{this.toggleImpersonateMemberModal}}
         @modifier="action wide" />
+{{/if}}
+
+{{#if this.showLabelModal}}
+    <GhFullscreenModal
+        @modal="members-label-form"
+        @model={{this.labelModalData}}
+        @close={{this.toggleLabelModal}}
+        @modifier="action wide"
+    />
 {{/if}}

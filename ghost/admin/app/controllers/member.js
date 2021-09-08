@@ -21,13 +21,42 @@ export default class MemberController extends Controller {
     @tracked showDeleteMemberModal = false;
     @tracked showImpersonateMemberModal = false;
     @tracked showUnsavedChangesModal = false;
+    @tracked modalLabel = null;
+    @tracked showLabelModal = false;
 
     leaveScreenTransition = null;
+
+    constructor() {
+        super(...arguments);
+        this._availableLabels = this.store.peekAll('label');
+    }
 
     // Computed properties -----------------------------------------------------
 
     get member() {
         return this.model;
+    }
+
+    get labelModalData() {
+        let label = this.modalLabel;
+        let labels = this.availableLabels;
+
+        return {
+            label,
+            labels
+        };
+    }
+
+    get availableLabels() {
+        let labels = this._availableLabels
+            .filter(label => !label.isNew)
+            .filter(label => label.id !== null)
+            .sort((labelA, labelB) => labelA.name.localeCompare(labelB.name, undefined, {ignorePunctuation: true}));
+        let options = labels.toArray();
+
+        options.unshiftObject({name: 'All labels', slug: null});
+
+        return options;
     }
 
     set member(member) {
@@ -48,6 +77,22 @@ export default class MemberController extends Controller {
     }
 
     // Actions -----------------------------------------------------------------
+
+    @action
+    toggleLabelModal() {
+        this.showLabelModal = !this.showLabelModal;
+    }
+
+    @action
+    editLabel(label, e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        let modalLabel = this.availableLabels.findBy('slug', label);
+        this.modalLabel = modalLabel;
+        this.showLabelModal = !this.showLabelModal;
+    }
 
     @action
     setProperty(propKey, value) {
