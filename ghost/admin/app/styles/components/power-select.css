@@ -366,3 +366,22 @@
 .gh-snippet-dropdown li:not(.ember-power-select-group) {
     padding: 8px 12px;
 }
+
+.gh-snippet-dropdown .ember-power-select-group-name {
+    margin-top: 0;
+}
+
+.gh-btn-create-snippet {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2px 0;
+    color: var(--green-d1);
+    font-weight: 500;
+}
+
+.gh-btn-create-snippet svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    fill: var(--green-d1)
+}
