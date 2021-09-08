@@ -54,14 +54,13 @@
 @import "layouts/settings.css";
 @import "layouts/users.css";
 @import "layouts/user.css";
-@import "layouts/about.css";
+@import "layouts/whatsnew.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
 @import "layouts/error.css";
 @import "layouts/apps.css";
 @import "layouts/packages.css";
 @import "layouts/labs.css";
-@import "layouts/whats-new.css";
 @import "layouts/preview-email.css";
 @import "layouts/portal-settings.css";
 @import "layouts/billing.css";

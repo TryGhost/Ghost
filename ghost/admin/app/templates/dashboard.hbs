@@ -1,4 +1,4 @@
-<section class="gh-canvas">
+<section class="gh-canvas" {{scroll-top}}>
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             Dashboard
@@ -304,24 +304,24 @@
             {{/if}}
 
             {{#unless (or  whatsNewEntriesLoading whatsNewEntriesError)}}
-            <div class="gh-dashboard-box whats-new">
+            <div class="gh-dashboard-box whats-new {{if this.whatsNew.hasNew "has-new"}}">
                 <div class="gh-dashboard-header-container">
                     <h4 class="gh-dashboard-header">What's new?</h4>
                     {{svg-jar "gift"}}
                 </div>
                 <div class="content">
                     {{#each this.whatsNewEntries as |entry|}}
-                        <a href={{entry.url}} target="_blank" rel="noopener noreferrer">
+                        <LinkTo @route="whatsnew" @query={{hash entry=entry.slug}}>
                             <h2>{{entry.title}}</h2>
                             <span class="wn-date">{{moment-format entry.published_at "D MMM YYYY"}}</span>
                             {{#if entry.custom_excerpt}}
                                 <p>{{entry.custom_excerpt}}</p>
                             {{/if}}
-                        </a>
+                        </LinkTo>
                     {{/each}}
                 </div>
                 <div class="footer">
-                    <a class="green" href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">See all updates</a>
+                    <LinkTo @route="whatsnew" @query={{hash entry=null}} class="green">See more &rarr;</LinkTo>
                 </div>
             </div>
             {{/unless}}

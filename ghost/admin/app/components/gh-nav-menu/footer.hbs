@@ -24,24 +24,19 @@
                         </li>
                         <li class="divider" role="separator"></li>
                         <li role="presentation">
-                            <LinkTo @route="about" @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="about">
-                                About Ghost
-                            </LinkTo>
-                        </li>
-                        <li role="presentation">
-                            <button class="dropdown-item" role="menuitem" tabindex="-1" {{on "click" this.whatsNew.showModal}}>
+                            <LinkTo @route="whatsnew" @query={{hash entry=null}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="whatsnew">
                                 What's new?
                                 {{#if this.whatsNew.hasNew}}
                                     <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
                                 {{/if}}
-                            </button>
+                            </LinkTo>
                         </li>
-                        <li class="divider" role="separator"></li>
                         <li role="presentation">
                             <LinkTo @route="staff.user" @model={{this.session.user.slug}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="user-profile">
                                 Your profile
                             </LinkTo>
                         </li>
+                        <li class="divider" role="separator"></li>
                         <li role="presentation">
                             <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/docs/" target="_blank">
                                 Support center

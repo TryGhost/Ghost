@@ -1,22 +1,7 @@
 import Component from '@glimmer/component';
+import getScrollParent from '../utils/get-scroll-parent';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-
-// TODO: move to a util - duplicated in koenig-editor/koenig-link-input
-function getScrollParent(node) {
-    const isElement = node instanceof HTMLElement;
-    const overflowY = isElement && window.getComputedStyle(node).overflowY;
-    const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
-
-    if (!node) {
-        return null;
-    } else if (isScrollable && node.scrollHeight >= node.clientHeight) {
-        return node;
-    }
-
-    return getScrollParent(node.parentNode) || document.body;
-}
-
 export default class GhScrollTrigger extends Component {
     @service inViewport;
 

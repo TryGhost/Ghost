@@ -779,6 +779,26 @@ a.gh-dashboard-container {
     margin-bottom: -12px;
 }
 
+.gh-dashboard-box.whats-new.has-new .content a:first-of-type h2 {
+    display: inline-flex;
+    align-items: center;
+}
+
+.gh-dashboard-box.whats-new.has-new .content a:first-of-type h2:after {
+    display: inline-block;
+    content: "New";
+    font-size: 1.2rem;
+    white-space: nowrap;
+    background: var(--green);
+    text-transform: uppercase;
+    color: #fff;
+    line-height: 1;
+    border-radius: 2px;
+    margin-left: 4px;
+    margin-top: 2px;
+    padding: 3px 4px;
+}
+
 .gh-dashboard-dismiss {
     position: absolute;
     top: 20px;
