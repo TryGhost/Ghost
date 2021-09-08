@@ -4535,12 +4535,12 @@ ghost-ignition@4.6.3, ghost-ignition@^4.2.4:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-storage-base@0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-0.0.4.tgz#c5badcab13d1763febc8eb3b293e1eb3a5e511e1"
-  integrity sha512-OWL/ONgP24r5s64eH25u8Nb36+MkQALvaeANByaEZlVYXJGkbt+lX+KMmkWMaC9bVpMRTc+ZZE1q/V3V0B0PXQ==
+ghost-storage-base@0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-0.0.6.tgz#b390e6a501af31ec8463aafa3286a25de6da08c8"
+  integrity sha512-7t77iWWZA1Pk7X5O9cemMRb+DDisljUN2NEd06GNZ+Q43DtCkfLuTkoj0KRkT8bJf2yapsaVtXu5sIRYql4g0Q==
   dependencies:
-    moment "2.24.0"
+    moment "2.27.0"
 
 github-from-package@0.0.0:
   version "0.0.0"
