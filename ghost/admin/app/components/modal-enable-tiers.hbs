@@ -1,0 +1,13 @@
+<header class="modal-header">
+    <h1>Tiers is a one-way street!</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>Tiers for paid memberships is currently in an early access beta. Once enabled, it cannot be switched off. <a href="https://ghost.org/help/topic/members" target="_blank">Learn more here</a></p>
+</div>
+
+<div class="modal-footer">
+    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    <button {{action "closeModal"}} class="gh-btn gh-btn-primary"><span>Enable Tiers</span></button>
+</div>

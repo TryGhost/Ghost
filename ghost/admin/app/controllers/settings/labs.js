@@ -47,6 +47,7 @@ export default Controller.extend({
     importSuccessful: false,
     showDeleteAllModal: false,
     showEarlyAccessModal: false,
+    showEnableTiersModal: false,
     submitting: false,
     uploadButtonText: 'Import',
 
@@ -159,6 +160,10 @@ export default Controller.extend({
 
         toggleEarlyAccessModal() {
             this.toggleProperty('showEarlyAccessModal');
+        },
+
+        toggleEnableTiersModal() {
+            this.toggleProperty('showEnableTiersModal');
         },
 
         async toggleIsOAuthEnabled() {
