@@ -371,6 +371,15 @@ h6 {
     color: var(--black);
 }
 
+.gh-data-unavailable-label {
+    font-size: 1.3rem;
+    line-height: 1.4em;
+    font-weight: 400;
+    color: var(--midgrey);
+    margin: 4px 0;
+    max-width: 330px;
+}
+
 p,
 ul,
 ol,

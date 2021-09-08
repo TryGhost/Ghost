@@ -715,6 +715,58 @@ textarea.gh-member-details-textarea {
     background: var(--red);
 }
 
+.gh-members-no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin: 32px 0;
+}
+
+.gh-members-no-data svg {
+    width: 76px;
+    height: auto;
+    margin-bottom: 8px;
+}
+
+.gh-members-no-data svg path,
+.gh-members-no-data svg rect,
+.gh-members-no-data svg circle {
+    stroke-width: 0.8px;
+}
+
+.gh-members-no-data h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--middarkgrey);
+}
+
+.gh-members-no-data p {
+    font-size: 1.3rem;
+    line-height: 1.5em;
+    margin: 4px 44px 0;
+    color: var(--midgrey);
+}
+
+.gh-members-no-list h4 {
+    margin-top: 8px;
+}
+
+.gh-members-no-list svg path {
+    stroke-width: 1px;
+}
+
+.gh-members-no-subs svg {
+    width: 64px;
+    margin-left: 18px;
+}
+
+.gh-members-no-subs svg path,
+.gh-members-no-subs svg rect,
+.gh-members-no-subs svg circle {
+    stroke-width: 1px;
+}
+
 .gh-member-feed {
     margin: -12px 0 -8px;
 }

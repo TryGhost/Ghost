@@ -1073,6 +1073,10 @@
     border: none;
 }
 
+.gh-main-section-header.pt0 {
+    padding-top: 0;
+}
+
 .gh-main-section-description {
     color: var(--middarkgrey);
     border-bottom: 1px solid var(--whitegrey);
