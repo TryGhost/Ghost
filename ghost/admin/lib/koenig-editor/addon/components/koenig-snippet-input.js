@@ -18,6 +18,15 @@ export default class KoenigSnippetInputComponent extends Component {
     @tracked name = '';
     @tracked style = htmlSafe('');
 
+    get snippetsWithGroup() {
+        const snippets = this.args.snippets;
+
+        return [{
+            groupName: 'Replace existing',
+            options: snippets
+        }];
+    }
+
     constructor() {
         super(...arguments);
 

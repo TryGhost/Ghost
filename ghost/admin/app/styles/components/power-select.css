@@ -363,6 +363,6 @@
     border-top: 1px solid var(--input-border-color) !important;
 }
 
-.gh-snippet-dropdown li {
+.gh-snippet-dropdown li:not(.ember-power-select-group) {
     padding: 8px 12px;
 }
