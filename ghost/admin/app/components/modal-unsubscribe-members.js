@@ -15,16 +15,21 @@ export default ModalComponent.extend({
 
     actions: {
         confirm() {
-            this.unsubscribeMember.perform();
+            this.unsubscribeMemberTask.perform();
         }
     },
 
     unsubscribeMemberTask: task(function* () {
         try {
-            yield this.confirm();
-            this.membersStats.invalidate();
-        } finally {
-            this.send('closeModal');
+            const response = yield this.confirm();
+            this.set('response', response);
+            this.set('confirmed', true);
+        } catch (e) {
+            if (e.payload?.errors) {
+                this.set('confirmed', true);
+                this.set('error', e.payload.errors[0].message);
+            }
+            throw e;
         }
     }).drop()
 });

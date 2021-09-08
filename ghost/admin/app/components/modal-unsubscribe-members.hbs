@@ -1,10 +1,10 @@
-<header class="modal-header" data-test-modal="delete-members">
+<header class="modal-header" data-test-modal="unsubscribe-members">
     <h1>Unsubscribe members from email?</h1>
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
 {{#if (not this.confirmed)}}
-    <div class="modal-body" data-test-state="delete-unconfirmed">
+    <div class="modal-body" data-test-state="unsubscribe-unconfirmed">
         <p>
             You're about to unsubscribe
             <strong data-test-text="unsubscribe-count">{{gh-pluralize this.model.memberCount "member"}}</strong> from email newsletters.
@@ -12,13 +12,13 @@
         </p>
     </div>
 {{else}}
-    <div class="gh-content-box pa" data-test-state="delete-complete">
+    <div class="gh-content-box pa" data-test-state="unsubscribe-complete">
         {{#if this.error}}
             <div class="flex items-center">
                 {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
                 <div>
                     <p class="ma0 pa0">
-                        <span class="fw5" data-test-text="delete-error">{{this.error}}</span>
+                        <span class="fw5" data-test-text="unsubscribe-error">{{this.error}}</span>
                     </p>
                 </div>
             </div>
@@ -26,8 +26,8 @@
             <div class="flex items-center">
                 {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
                 <p class="ma0 pa0">
-                    <span class="fw6" data-test-text="deleted-count">{{gh-pluralize this.response.stats.successful "member"}}</span>
-                    successfully deleted
+                    <span class="fw6" data-test-text="unsubscribe-count">{{gh-pluralize this.response.stats.successful "member"}}</span>
+                    successfully unsubscribed
                 </p>
             </div>
             {{#if this.response.stats.unsuccessful}}
@@ -36,7 +36,7 @@
                     <div>
                         <p class="ma0 pa0">
                             <span class="fw5" data-test-text="invalid-count">{{gh-pluralize this.response.stats.unsuccessful "member"}}</span>
-                            failed to delete
+                            failed to unsubscribe
                         </p>
                     </div>
                 </div>
