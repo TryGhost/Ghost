@@ -1,33 +1,39 @@
-<div class="gh-member-feed" ...attributes>
-    <div class="flex-auto flex flex-column items-stretch {{if this.activities "justify-between" "h-100 justify-center"}}">
-        <div>
-            {{#if this.activities}}
-                {{#each this.firstActivities as |activity|}}
-                    <GhMemberActivityFeedItem @activity={{activity}} />
-                {{/each}}
-
-                {{#liquid-if this.isShowingAll class="show-overflow"}}
-                    {{#each this.remainingActivities as |activity|}}
+{{#if this.activities}}<h4 class="gh-main-section-header small bn">Member activity</h4>{{/if}}
+<div class="gh-main-section-content bordered {{if this.activities "" "mt8"}}">
+    <div class="gh-member-feed" ...attributes>
+        <div class="flex-auto flex flex-column items-stretch {{if this.activities "justify-between" "h-100 justify-center"}}">
+            <div>
+                {{#if this.activities}}
+                    {{#each this.firstActivities as |activity|}}
                         <GhMemberActivityFeedItem @activity={{activity}} />
                     {{/each}}
-                {{/liquid-if}}
 
-                {{#if (and this.remainingActivities (not this.isShowingAll))}}
-                    <button
-                        type="button"
-                        class="gh-btn gh-member-btn-expandfeed"
-                        data-test-button="view-all-activity"
-                        {{on "click" this.showAll}}
-                    >
-                        <span>View all activity</span>
-                    </button>
+                    {{#liquid-if this.isShowingAll class="show-overflow"}}
+                        {{#each this.remainingActivities as |activity|}}
+                            <GhMemberActivityFeedItem @activity={{activity}} />
+                        {{/each}}
+                    {{/liquid-if}}
+
+                    {{#if (and this.remainingActivities (not this.isShowingAll))}}
+                        <button
+                            type="button"
+                            class="gh-btn gh-member-btn-expandfeed"
+                            data-test-button="view-all-activity"
+                            {{on "click" this.showAll}}
+                        >
+                            <span>View all activity</span>
+                        </button>
+                    {{/if}}
+                {{else}}
+                    <div class="gh-members-no-data gh-members-no-list">
+                        <div class="lightgrey">{{svg-jar "no-data-list"}}</div>
+                        <h4>Member activity</h4>
+                        <p>
+                            All events related to this member will be shown here. 
+                        </p>
+                    </div>
                 {{/if}}
-            {{else}}
-                <div class="gh-no-data-list">
-                    {{svg-jar "no-data-list"}}
-                    <span>No member activity.</span>
-                </div>
-            {{/if}}
+            </div>
         </div>
     </div>
 </div>
