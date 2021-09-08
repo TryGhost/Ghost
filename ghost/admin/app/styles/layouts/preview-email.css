@@ -1,4 +1,5 @@
-.fullscreen-modal-email-preview {
+/* TODO: remove .epm-modal once original modals.css is removed */
+.epm-modal.fullscreen-modal-email-preview {
     margin: 24px;
     max-width: 100%;
 }
