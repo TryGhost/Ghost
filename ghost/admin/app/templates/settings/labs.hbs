@@ -79,32 +79,28 @@
             </div>
         </div>
 
-        {{#if (enable-developer-experiments)}}
         <div class="gh-main-section">
-            <h4 class="gh-main-section-header small bn">Early-access features</h4>
+            <h4 class="gh-main-section-header small bn">Beta features</h4>
             <div class="gh-expandable">
+
+                {{#if (enable-developer-experiments)}}
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
                             <h4 class="gh-expandable-title">Tiers</h4>
                             <p class="gh-expandable-description">
-                                Allow members to sign-up for different tiers. <a href="https://ghost.org/help/topic/members" target="_blank">Learn more</a>
+                                Add additional tiers to your paid memberships (e.g. Bronze, Silver, Gold). <a href="https://ghost.org/help/topic/members" target="_blank">Learn more here</a>
                             </p>
                         </div>
                         {{#if (feature "multipleProducts")}}
                             <span class="gh-badge">Enabled</span>
                         {{else}}
-                            <button type="button" class="gh-btn" {{action "toggleEarlyAccessModal"}}><span>Enable</span></button>
+                            <button type="button" class="gh-btn" {{action "toggleEnableTiersModal"}}><span>Enable</span></button>
                         {{/if}}
                     </div>
                 </div>
-            </div>
-        </div>
-        {{/if}}
+                {{/if}}
 
-        <div class="gh-main-section">
-            <h4 class="gh-main-section-header small bn">Beta features</h4>
-            <div class="gh-expandable">
                 <div class="gh-expandable-block">
                     <GhUploader
                         @extensions={{this.redirectsFileExtensions}}
@@ -331,8 +327,8 @@
         @modifier="action wide" />
 {{/if}}
 
-{{#if this.showEarlyAccessModal}}
-    <GhFullscreenModal @modal="early-access"
-        @close={{action "toggleEarlyAccessModal"}}
+{{#if this.showEnableTiersModal}}
+    <GhFullscreenModal @modal="enable-tiers"
+        @close={{action "toggleEnableTiersModal"}}
         @modifier="action wide" />
 {{/if}}
