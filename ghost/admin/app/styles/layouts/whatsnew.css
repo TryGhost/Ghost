@@ -1,0 +1,434 @@
+/* About /ghost/settings/about/
+/* ---------------------------------------------------------- */
+
+.gh-about-logo svg {
+    position: relative;
+    width: 120px;
+    height: auto;
+}
+
+.gh-about-logo {
+    border-bottom: 1px solid var(--lightgrey-l2);
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+}
+
+.gh-about-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-gap: 80px;
+}
+
+.gh-about-box {
+    position: sticky;
+    top: 96px;
+    right: 0;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    height: max-content;
+    border-radius: 3px;
+    min-width: 300px;
+}
+
+.gh-about-box.grey {
+    border: none;
+    background: var(--main-color-content-greybg);
+}
+
+.gh-env-details {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    padding: 24px 28px 28px;
+}
+
+.gh-about-container h2 {
+    font-size: 1.65rem;
+    line-height: 1.4em;
+    font-weight: 600;
+    border-bottom: 1px solid var(--lightgrey-l2);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.gh-env-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.gh-env-list li {
+    margin: 0 0 4px;
+    font-size: 1.4rem;
+    line-height: 1.5em;
+}
+
+.gh-env-help {
+    max-width: 200px;
+}
+
+.gh-env-help .gh-btn {
+    margin: 4px 0;
+}
+
+@media (max-width: 670px) {
+    .gh-env-details {
+        flex-direction: column;
+    }
+    .gh-env-help {
+        margin: 1em 0;
+        max-width: none;
+    }
+    .gh-env-help .gh-btn {
+        display: inline-block;
+    }
+}
+
+.gh-about-content-actions {
+    display: none;
+}
+
+
+
+/* Upgrade
+/* ---------------------------------------------------------- */
+
+.gh-upgrade-notification {
+    padding-top: 1em;
+}
+
+.gh-upgrade-notification a {
+    text-decoration: underline;
+}
+
+/* Copyright Info
+/* ---------------------------------------------------------- */
+
+.gh-copyright-info {
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    border-top: 1px solid var(--lightgrey-l2);
+    padding-top: 16px;
+    margin-top: 16px;
+}
+
+
+/* What's new */
+/* ---------------------------------------------------------- */
+.gh-whats-new {
+    flex-grow: 2;
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    margin-top: -24px;
+}
+
+.gh-whats-new-heading {
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    line-height: 1.3em;
+    font-weight: 700;
+    margin: 0;
+}
+
+.gh-whats-new-heading svg {
+    width: 20px;
+    height: 20px;
+    margin-top: -2px;
+    margin-right: 12px;
+}
+
+.gh-whats-new-heading svg path {
+    fill: var(--pink);
+}
+
+.gh-wn-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: -32px -32px 0;
+    padding: 18px 18px 12px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    overflow: hidden;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background: var(--pink);
+    background: linear-gradient(135deg, color-mod(var(--pink) h(-10) s(+5%) l(-10%)) 0%, rgba(173,38,180,1) 100%);
+}
+
+.gh-wn-header .background-img {
+    position: absolute;
+    top: -30px;
+    left: 0;
+}
+
+.gh-wn-header h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #FFF;
+    margin: 0 8px 4px;
+}
+
+.gh-wn-header svg path {
+    fill: #fff;
+}
+
+.gh-wn-close {
+    stroke: #FFF;
+    opacity: 0.6;
+    transition: all 0.2s ease-in-out;
+}
+
+.gh-wn-close:hover {
+    opacity: 1.0;
+}
+
+.gh-wn-entry {
+    margin: 0 0 5vmin;
+    padding-bottom: 5vmin;
+    width: 100%;
+    border-bottom: 1px solid var(--lightgrey-l2);
+}
+
+.gh-wn-content {
+    max-width: 620px;
+}
+
+.gh-wn-entry h4 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    margin: 24px 0 4px;
+    color: var(--midlightgrey);
+}
+
+.gh-wn-entry h1 {
+    font-size: 3.1rem;
+    line-height: 1.3em;
+    font-weight: 700;
+    letter-spacing: 0px;
+    color: var(--black);
+    margin-bottom: 16px;
+}
+
+.gh-wn-entry h2 {
+    border-bottom: none;
+    font-size: 1.9rem;
+    padding-bottom: 0;
+    margin-bottom: 20px;
+}
+
+.gh-wn-entry p,
+.gh-wn-entry li {
+    line-height: 1.6em;
+}
+
+.gh-wn-entry li {
+    margin-bottom: 12px;
+}
+
+.gh-wn-entry p {
+    margin: 0 0 20px;
+    padding: 0;
+}
+
+.gh-wn-entry figure {
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.gh-wn-entry img {
+    height: auto;
+}
+
+.gh-wn-entry hr {
+    border-top: 1px solid var(--whitegrey-l1);
+    margin: 24px 0;
+}
+
+
+/* Bookmark card details */
+.gh-wn-entry .kg-bookmark-card {
+    margin-bottom: 20px;
+}
+
+.gh-wn-entry .kg-bookmark-container {
+    display: flex;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    color: var(--darkgrey);
+    text-decoration: none;
+    min-height: 148px;
+    box-shadow: 0px 2px 5px -1px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.09);
+    border-radius: 3px;
+}
+
+.gh-wn-entry .kg-bookmark-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 16px;
+}
+
+.gh-wn-entry .kg-bookmark-title {
+    font-size: 1.3rem;
+    line-height: 1.5em;
+    font-weight: 600;
+    color: color(var(--midgrey) l(-30%));
+}
+
+.gh-wn-entry .kg-bookmark-container:hover .kg-bookmark-title {
+    color: var(--blue);
+}
+
+.gh-wn-entry .kg-bookmark-description {
+    display: -webkit-box;
+    font-size: 1.25rem;
+    line-height: 1.5em;
+    color: color(var(--midgrey) l(-10%));
+    font-weight: 400;
+    margin-top: 12px;
+    max-height: 36px;
+    overflow-y: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.gh-wn-entry .kg-bookmark-thumbnail {
+    position: relative;
+    min-width: 40%;
+    max-height: 100%;
+}
+
+.gh-wn-entry .kg-bookmark-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0 3px 3px 0;
+}
+
+.gh-wn-entry .kg-bookmark-metadata {
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: color(var(--midgrey) l(-10%));
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.gh-wn-entry .kg-bookmark-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+}
+
+.gh-wn-entry .kg-bookmark-author {
+    line-height: 1.5em;
+}
+
+.gh-wn-entry .kg-bookmark-author:after {
+    content: "•";
+    margin: 0 6px;
+}
+
+.gh-wn-entry .kg-bookmark-publisher {
+    overflow: hidden;
+    line-height: 1.5em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+}
+
+.gh-wn-entry .gh-wn-footer {
+    margin: 0 -32px -32px;
+    padding: 14px 32px 16px;
+    border-top: 1px solid var(--whitegrey);
+    justify-content: space-between;
+}
+
+.gh-wn-footer {
+    position: relative;
+    margin-top: 14px;
+    margin-bottom: -13px;
+}
+
+.gh-wn-footer:before {
+    position: absolute;
+    content: "";
+    top: -14px;
+    left: -32px;
+    right: -32px;
+    height: 6px;
+    background: rgba(255,255,255,0);
+    box-shadow:
+        0 -0.3px 1px rgba(0, 0, 0, 0.03),
+        0 -4px 7px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 1380px) {
+    .gh-wn-content {
+        max-width: 36vw;
+    }
+}
+
+@media (max-width: 1120px) {
+    .gh-wn-content {
+        max-width: 680px;
+    }
+
+    .gh-about-box {
+        position: relative;
+        top: unset;
+        right: unset;
+    }
+
+    .gh-about-container {
+        grid-template-columns: unset;
+        grid-template-rows: auto;
+        grid-gap: 32px;
+    }
+
+    .gh-env-details {
+        grid-row: 1/2;
+    }
+
+    .gh-about-content-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-gap: 20px;
+        grid-row: 2/3;
+        margin-top: -12px;
+    }
+
+    .gh-whats-new {
+        grid-row: 3/4;
+    }
+
+
+    .gh-about-header-actions a {
+        display: none;
+    }
+
+    .gh-wn-entry iframe {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 540px) {
+    .gh-about-content-actions {
+        grid-template-columns: unset;
+        grid-template-rows: auto;
+        grid-gap: 12px;
+        margin-top: -20px;
+    }
+}
