@@ -1,0 +1,15 @@
+name: Auto Assign
+on:
+  pull_request:
+    types: [opened, reopened]
+jobs:
+  automate:
+    runs-on: ubuntu-18.04
+    env:
+      FORCE_COLOR: 1
+    steps:
+      - uses: actions/checkout@v2
+      - run: gh extension install daniellockyer/gh-auto-assign
+      - run: gh auto-assign
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
