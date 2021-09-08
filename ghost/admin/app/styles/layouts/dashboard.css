@@ -726,12 +726,16 @@ a.gh-dashboard-container {
 
 .gh-no-data-list svg {
     margin-top: 60px;
-    width: 80px;
+    width: 76px;
     height: auto;
 }
 
+.gh-no-data-list svg path {
+    stroke-width: 1px;
+}
+
 .gh-no-data-list span {
-    margin-top: 16px;
+    margin-top: 12px;
     font-size: 1.3rem;
     margin-bottom: 46px;
 }

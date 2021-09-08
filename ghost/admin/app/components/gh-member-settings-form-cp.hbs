@@ -108,7 +108,13 @@
             <div class="gh-main-section-content bordered">
                 <div class="gh-cp-memberproduct-noproduct">
                     {{#unless this.isCreatingComplimentary}}
-                    <div class="mb2">This member doesn't have subscriptions.</div>
+                    <div class="gh-members-no-data gh-members-no-subs">
+                        <span class="lightgrey nt10">{{svg-jar "no-data-subscription"}}</span>
+                        <h4>No subscriptions</h4>
+                        <p>
+                            This member doesn't have any subscriptions.
+                        </p>
+                    </div>
                     {{/unless}}
 
                     {{#unless this.member.isNew}}
@@ -317,25 +323,31 @@
         </div>
         <div class="gh-main-section-block">
             <div class="gh-main-section-content bordered">
-                <div class="gh-heading-xs">Emails received</div>
-                <div class="gh-data-summary gh-cp-data-summary">{{@member.emailCount}}</div>
-                <div class="gh-heading-xs">Emails opened</div>
-                <div class="gh-data-summary gh-cp-data-summary">{{@member.emailOpenedCount}}</div>
-                <div class="gh-heading-xs">Avg. open rate</div>
-                <div class="gh-data-summary gh-cp-data-summary">
-                    {{#if (is-empty @member.emailOpenRate)}}
-                        <span data-tooltip="Insufficient data available">–</span>
-                    {{else}}
-                        {{@member.emailOpenRate}}%
-                    {{/if}}
-                </div>
+                {{#if (eq @member.emailCount 0)}}
+                    <div class="gh-members-no-data gh-members-no-stats">
+                        <span class="lightgrey">{{svg-jar "no-data-line-chart"}}</span>
+                        <h4>Email engagement</h4>
+                        <p>
+                            This member hasn't received a newsletter yet. Once they do, we'll show their engagement here.
+                        </p>
+                    </div>
+                {{else}}
+                    <div class="gh-heading-xs">Emails received</div>
+                    <div class="gh-data-summary gh-cp-data-summary">{{@member.emailCount}}</div>
+                    <div class="gh-heading-xs">Emails opened</div>
+                    <div class="gh-data-summary gh-cp-data-summary">{{@member.emailOpenedCount}}</div>
+                    <div class="gh-heading-xs">Avg. open rate</div>
+                    <div class="gh-data-summary gh-cp-data-summary {{if (is-empty @member.emailOpenRate) "gh-data-unavailable-label"}}">
+                        {{#if (is-empty @member.emailOpenRate)}}
+                            Will be available once this member received at least 5 emails.
+                        {{else}}
+                            {{@member.emailOpenRate}}%
+                        {{/if}}
+                    </div>
+                {{/if}}
             </div>
 
-            <h4 class="gh-main-section-header small bn">Member activity</h4>
-            <div class="gh-main-section-content bordered">
-                <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
-            </div>
-
+            <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
         </div>
     </section>
 
