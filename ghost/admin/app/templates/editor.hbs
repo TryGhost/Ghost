@@ -32,7 +32,7 @@
                     {{#unless this.post.isNew}}
                         {{#if this.post.isDraft}}
                             <div>
-                                <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" (action "togglePostPreviewModal")}}>
+                                <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" (action "openPostPreviewModal")}}>
                                     <span>Preview</span>
                                 </button>
                             </div>
@@ -134,18 +134,6 @@
         <GhFullscreenModal @modal="re-authenticate"
             @close={{action "toggleReAuthenticateModal"}}
             @modifier="action wide" />
-    {{/if}}
-
-    {{#if this.showPostPreviewModal}}
-        <GhFullscreenModal @modal="post-preview"
-            @model={{hash
-                post=this.post
-                saveTask=this.saveTask
-                setEditorSaveType=(action "setSaveType")
-                memberCount=this.memberCount
-            }}
-            @close={{action "togglePostPreviewModal"}}
-            @modifier="full-overlay email-preview" />
     {{/if}}
 
     {{#if this.showEmailPreviewModal}}

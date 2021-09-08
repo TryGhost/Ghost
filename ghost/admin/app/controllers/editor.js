@@ -289,8 +289,16 @@ export default Controller.extend({
             this.toggleProperty('showEmailPreviewModal');
         },
 
-        togglePostPreviewModal() {
-            this.toggleProperty('showPostPreviewModal');
+        openPostPreviewModal() {
+            this.modals.open('modals/post-preview', {
+                post: this.post,
+                saveTask: this.saveTask,
+                // TODO: update to call action method directly when switching to class syntax
+                setEditorSaveType: this.actions.setSaveType.bind(this),
+                memberCount: this.memberCount
+            }, {
+                className: 'fullscreen-modal fullscreen-modal-full-overlay fullscreen-modal-email-preview'
+            });
         },
 
         toggleReAuthenticateModal() {
