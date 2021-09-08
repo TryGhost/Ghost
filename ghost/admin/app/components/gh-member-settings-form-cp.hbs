@@ -339,7 +339,7 @@
                     <div class="gh-heading-xs">Avg. open rate</div>
                     <div class="gh-data-summary gh-cp-data-summary {{if (is-empty @member.emailOpenRate) "gh-data-unavailable-label"}}">
                         {{#if (is-empty @member.emailOpenRate)}}
-                            Will be available once this member received at least 5 emails.
+                            This metric is calculated once a member has received 5 newsletters.
                         {{else}}
                             {{@member.emailOpenRate}}%
                         {{/if}}
