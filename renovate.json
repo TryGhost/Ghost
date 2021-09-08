@@ -8,7 +8,6 @@
   ],
   "ignoreDeps": [
       "got",
-      "ghost-storage-base",
       "intl-messageformat",
       "moment",
       "moment-timezone",
