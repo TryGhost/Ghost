@@ -454,6 +454,9 @@ export default Component.extend({
 
         this.post.set('statusScratch', null);
         this.post.validate();
-        this.post.save();
+        // TODO: confirm with Naz why this is needed and find a different solution
+        //  - we shouldn't be saving post data every time the menu is closed,
+        //    especially when the user has chosen to cancel/close the menu without saving
+        // this.post.save();
     }
 });
