@@ -31,6 +31,14 @@ class ImageSize {
             retry: 0, // for `got`, used with image-size
             encoding: null
         };
+
+        this.NEEDLE_OPTIONS = {
+            // we need the user-agent, otherwise some https request may fail (e.g. cloudfare)
+            headers: {
+                'User-Agent': 'Mozilla/5.0 Safari/537.36'
+            },
+            response_timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000
+        };
     }
 
     // processes the Buffer result of an image file using image-size
@@ -67,7 +75,7 @@ class ImageSize {
             }));
         }
 
-        return probeSizeOf(imageUrl, this.REQUEST_OPTIONS);
+        return probeSizeOf(imageUrl, this.NEEDLE_OPTIONS);
     }
 
     // download full image then use image-size to get it's dimensions
