@@ -1,9 +1,9 @@
 import Component from '@glimmer/component';
 import EmberObject, {action} from '@ember/object';
+import nql from '@nexes/nql-lang';
 import {A} from '@ember/array';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
-
 const FILTER_PROPERTIES = [
     // Basic
     // {label: 'Name', name: 'name', group: 'Basic'},
@@ -107,7 +107,7 @@ export default class GhMembersFilterLabsComponent extends Component {
             id: `filter-0`,
             type: 'label',
             relation: 'is',
-            value: '',
+            value: [],
             relationOptions: FILTER_RELATIONS_OPTIONS.label
         })
     ]);
@@ -122,6 +122,9 @@ export default class GhMembersFilterLabsComponent extends Component {
         this.availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
         this.availableFilterValueOptions = FILTER_VALUE_OPTIONS;
         this.nextFilterId = 1;
+        if (this.args.defaultFilterParam) {
+            this.parseNqlFilter(this.args.defaultFilterParam);
+        }
     }
 
     @action
@@ -130,7 +133,7 @@ export default class GhMembersFilterLabsComponent extends Component {
             id: `filter-${this.nextFilterId}`,
             type: 'label',
             relation: 'is',
-            value: '',
+            value: [],
             relationOptions: FILTER_RELATIONS_OPTIONS.label
         }));
         this.nextFilterId = this.nextFilterId + 1;
@@ -151,11 +154,107 @@ export default class GhMembersFilterLabsComponent extends Component {
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else {
                 const relationStr = this.getFilterRelationOperator(filter.relation);
-                const filterValue = filter.value.includes(' ') ? `'${filter.value}'` : filter.value;
+                const filterValue = (typeof filter.value === 'string' && filter.value.includes(' ')) ? `'${filter.value}'` : filter.value;
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             }
         });
         return query.slice(0, -1);
+    }
+
+    parseNqlFilterKey(nqlFilter) {
+        const keys = Object.keys(nqlFilter);
+        const key = keys[0];
+        const value = nqlFilter[key];
+        const filterId = this.nextFilterId;
+        if (typeof value === 'object') {
+            if (value.$in !== undefined && key === 'label') {
+                this.nextFilterId = this.nextFilterId + 1;
+                return EmberObject.create({
+                    id: `filter-${filterId}`,
+                    type: key,
+                    relation: 'is',
+                    value: value.$in,
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                });
+            }
+            if (value.$nin !== undefined && key === 'label') {
+                this.nextFilterId = this.nextFilterId + 1;
+                return EmberObject.create({
+                    id: `filter-${filterId}`,
+                    type: key,
+                    relation: 'is-not',
+                    value: value.$nin,
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                });
+            }
+            if (value.$ne !== undefined) {
+                this.nextFilterId = this.nextFilterId + 1;
+                return EmberObject.create({
+                    id: `filter-${filterId}`,
+                    type: key,
+                    relation: 'is-not',
+                    value: value.$ne,
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                });
+            }
+            if (value.$gt !== undefined) {
+                this.nextFilterId = this.nextFilterId + 1;
+                return EmberObject.create({
+                    id: `filter-${filterId}`,
+                    type: key,
+                    relation: 'is-greater',
+                    value: value.$gt ,
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                });
+            }
+
+            if (value.$lt !== undefined) {
+                this.nextFilterId = this.nextFilterId + 1;
+                return EmberObject.create({
+                    id: `filter-${filterId}`,
+                    type: key,
+                    relation: 'is-less',
+                    value: value.$lt,
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                });
+            }
+            return null;
+        } else {
+            this.nextFilterId = this.nextFilterId + 1;
+            return EmberObject.create({
+                id: `filter-${filterId}`,
+                type: key,
+                relation: 'is',
+                value: value,
+                relationOptions: FILTER_RELATIONS_OPTIONS[key]
+            });
+        }
+    }
+
+    parseNqlFilter(filterParam) {
+        const validKeys = Object.keys(FILTER_RELATIONS_OPTIONS);
+        const filters = nql.parse(filterParam);
+        const filterKeys = Object.keys(filters);
+        let filterData = [];
+        if (filterKeys?.length === 1 && validKeys.includes(filterKeys[0])) {
+            const filterObj = this.parseNqlFilterKey(filters);
+            filterData = [filterObj];
+        } else if (filters?.$and) {
+            const andFilters = filters?.$and || [];
+            filterData = andFilters.filter((nqlFilter) => {
+                const _filterKeys = Object.keys(nqlFilter);
+                if (_filterKeys?.length === 1 && validKeys.includes(_filterKeys[0])) {
+                    return true;
+                }
+                return false;
+            }).map((nqlFilter) => {
+                return this.parseNqlFilterKey(nqlFilter);
+            }).filter((nqlFilter) => {
+                return !!nqlFilter;
+            });
+        }
+        console.log('filterData', filterData);
+        this.filters = A(filterData);
     }
 
     getFilterRelationOperator(relation) {
@@ -182,11 +281,13 @@ export default class GhMembersFilterLabsComponent extends Component {
 
     @action
     setFilterType(filterId, newType) {
-        const filterToEdit = this.filters.findBy('id', filterId);
-        filterToEdit.set('type', newType);
-        filterToEdit.set('relationOptions', this.availableFilterRelationsOptions[newType]);
         const defaultValue = this.availableFilterValueOptions[newType] ? this.availableFilterValueOptions[newType][0].name : '';
-        filterToEdit.set('value', defaultValue);
+        const filterToEdit = this.filters.findBy('id', filterId);
+        filterToEdit?.setProperties({
+            type: newType,
+            relationOptions: this.availableFilterRelationsOptions[newType],
+            value: defaultValue
+        });
     }
 
     @action
@@ -240,7 +341,7 @@ export default class GhMembersFilterLabsComponent extends Component {
                 id: `filter-0`,
                 type: 'label',
                 relation: 'is',
-                value: '',
+                value: [],
                 relationOptions: FILTER_RELATIONS_OPTIONS.label
             })
         ]);

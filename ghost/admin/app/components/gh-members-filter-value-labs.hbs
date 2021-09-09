@@ -3,13 +3,14 @@
         @onChange={{fn this.setLabelsFilterValue @filter.type @filter.id}}
         @onLabelEdit={{@onLabelEdit}}
         @triggerId="label-input"
+        @labels={{@filter.value}}
         data-test-input=""
     />
 
 {{else if (eq @filter.type 'status')}}
     <span class="gh-select">
         <OneWaySelect
-            @value={{filter.value}}
+            @value={{@filter.value}}
             @options={{this.availableFilterOptions.status}}
             @optionValuePath="name"
             @optionLabelPath="label"
@@ -21,7 +22,7 @@
 
 {{else if (eq @filter.type 'email_count')}}
     <GhTextInput
-        @value={{@filter.value}}
+        @value={{this.filterValue}}
         @type="number"
         @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
         @input={{fn this.setInputFilterValue @filter.type @filter.id}}
@@ -31,7 +32,7 @@
 
 {{else if (eq @filter.type 'email_opened_count')}}
     <GhTextInput
-        @value={{@filter.value}}
+        @value={{this.filterValue}}
         @type="number"
         @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
         @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
@@ -40,7 +41,7 @@
 
 {{else if (eq @filter.type 'email_open_rate')}}
     <GhTextInput
-        @value={{@filter.value}}
+        @value={{this.filterValue}}
         @type="number"
         @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
         @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
@@ -50,7 +51,7 @@
 {{else if (eq @filter.type 'subscriptions.plan_interval')}}
     <span class="gh-select">
         <OneWaySelect
-            @value={{filter.value}}
+            @value={{@filter.value}}
             @options={{this.availableFilterOptions.subscriptionPriceInterval}}
             @optionValuePath="name"
             @optionLabelPath="label"
@@ -63,7 +64,7 @@
 {{else if (eq @filter.type 'subscriptions.status')}}
     <span class="gh-select">
         <OneWaySelect
-            @value={{filter.value}}
+            @value={{@filter.value}}
             @options={{this.availableFilterOptions.subscriptionStripeStatus}}
             @optionValuePath="name"
             @optionLabelPath="label"
@@ -75,7 +76,7 @@
 {{else if (eq @filter.type 'subscribed')}}
     <span class="gh-select">
         <OneWaySelect
-            @value={{filter.value}}
+            @value={{@filter.value}}
             @options={{this.availableFilterOptions.subscribed}}
             @optionValuePath="name"
             @optionLabelPath="label"
