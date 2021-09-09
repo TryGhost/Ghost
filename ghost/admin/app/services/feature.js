@@ -53,7 +53,7 @@ export default Service.extend({
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
     launchComplete: feature('launchComplete', {user: true}),
     matchHelper: feature('matchHelper'),
-    multipleProducts: feature('multipleProducts', {developer: true}),
+    multipleProducts: feature('multipleProducts'),
     membersFiltering: feature('membersFiltering', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
     emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
