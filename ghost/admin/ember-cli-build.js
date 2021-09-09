@@ -218,6 +218,15 @@ module.exports = function (defaults) {
                     {moveGroupAttrsToElems: false}
                 ]
             }
+        },
+        autoImport: {
+            webpack: {
+                node: {
+                    util: true,
+                    fs: 'empty',
+                    path: true
+                }
+            }
         }
     });
 
