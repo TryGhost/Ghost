@@ -368,7 +368,7 @@
     display: flex;
     align-items: center;
     position: absolute;
-    top: -4px;
+    top: -3px;
     right: -3px;
 }
 
@@ -380,6 +380,7 @@
 }
 
 .app-button-regenerate {
+    height: 26px;
     display: flex;
     align-items: center;
     border: 1px solid var(--lightgrey);
@@ -390,6 +391,7 @@
 }
 
 .app-button-copy {
+    height: 26px;
     display: flex;
     align-items: center;
     background: var(--black);
@@ -402,6 +404,68 @@
 
 /* Zapier templates */
 /* ---------------------------------------------------------- */
+.gh-zapier-data-container {
+    margin: 1.6em 0;
+}
+
+.gh-zapier-data-container .gh-zapier-data {
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 500px) {
+    .gh-zapier-data-container .gh-zapier-data {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.gh-zapier-data .data-label {
+    width: 128px;
+    height: 36px;
+    padding: 8px 8px 8px 0;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    line-height: 1.45;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.gh-zapier-data .data {
+    width: 100%;
+    height: 36px;
+    padding: 8px;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    line-height: 1.45;
+    font-weight: 500;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.gh-zapier-data .data.highlight-hover:hover {
+    background: var(--whitegrey-l1);
+}
+
+@media (max-width: 500px) {
+    .gh-zapier-data .data {
+        padding: 4px 0;
+    }
+
+    .gh-zapier-data .data.highlight-hover:hover {
+        background: transparent;
+    }
+}
+
+.gh-zapier-data .admin-key,
+.gh-zapier-data .api-url {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
 .gh-settings-zapier-templates .apps-grid-cell:hover {
     background: var(--white);
 }
@@ -502,6 +566,10 @@
 
 .app-custom-api-table .data-label {
     width: 160px;
+}
+
+.app-custom-api-table .data.highlight-hover:hover {
+    background: var(--white) !important;
 }
 
 .apps-card-app-orb {
