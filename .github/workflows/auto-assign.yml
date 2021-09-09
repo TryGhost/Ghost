@@ -7,9 +7,8 @@ jobs:
     runs-on: ubuntu-18.04
     env:
       FORCE_COLOR: 1
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
       - run: gh extension install daniellockyer/gh-auto-assign
       - run: gh auto-assign
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
