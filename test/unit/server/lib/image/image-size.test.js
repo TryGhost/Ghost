@@ -127,7 +127,10 @@ describe('lib/image: image size', function () {
                 width: 64
             };
 
-            const requestMock = nock('https://super-website.com').get('/random-path').reply(404);
+            const requestMock = nock('https://super-website.com')
+                .get('/media/icon.ico')
+                .replyWithFile(200, path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes.ico'));
+            const requestMockNotFound = nock('https://super-website.com').get('/random-path').reply(404);
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
@@ -135,17 +138,11 @@ describe('lib/image: image size', function () {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
-            }, urlUtils: {}, request: (requestUrl) => {
-                if (requestUrl === url) {
-                    return Promise.resolve({
-                        body: fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes.ico'))
-                    });
-                }
-                return Promise.reject();
-            }});
+            }, urlUtils: {}, request: {}});
 
             imageSize.getImageSizeFromUrl(url).then(function (res) {
-                requestMock.isDone().should.be.false();
+                requestMockNotFound.isDone().should.be.false();
+                requestMock.isDone().should.be.true();
                 should.exist(res);
                 res.width.should.be.equal(expectedImageObject.width);
                 res.height.should.be.equal(expectedImageObject.height);
