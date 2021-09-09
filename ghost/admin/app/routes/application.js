@@ -163,7 +163,6 @@ export default Route.extend(ShortcutsRoute, {
                 beforeSend(event) {
                     event.tags = event.tags || {};
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
-                    console.log('beforeSend', event);
                     return event;
                 }
             });
