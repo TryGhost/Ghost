@@ -253,7 +253,7 @@ export default class GhMembersFilterLabsComponent extends Component {
                 return !!nqlFilter;
             });
         }
-        console.log('filterData', filterData);
+
         this.filters = A(filterData);
     }
 
