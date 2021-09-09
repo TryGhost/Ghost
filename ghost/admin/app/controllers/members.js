@@ -485,7 +485,7 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.reset();
+        this.reload();
 
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
@@ -510,9 +510,7 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.reset();
-        this.membersStats.invalidate();
-        this.membersStats.fetchCounts();
+        this.reload();
 
         return response?.bulk?.meta;
     }
@@ -534,9 +532,7 @@ export default class MembersController extends Controller {
 
         // reset and reload
         this.store.unloadAll('member');
-        this.reset();
-        this.membersStats.invalidate();
-        this.membersStats.fetchCounts();
+        this.reload();
 
         return response?.bulk?.meta;
     }
@@ -546,9 +542,12 @@ export default class MembersController extends Controller {
         this.searchText = '';
     }
 
-    reset() {
-        this.filterParam = null;
-        this.softFilterParam = null;
+    resetFilters(params) {
+        if (!params?.filterParam) {
+            this.filters = A([]);
+            this.softFilterParam = null;
+            this.softFilters = A([]);
+        }
     }
 
     reload(params) {

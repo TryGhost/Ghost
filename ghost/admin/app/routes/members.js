@@ -24,6 +24,7 @@ export default class MembersRoute extends AuthenticatedRoute {
     }
 
     model(params) {
+        this.controllerFor('members').resetFilters(params);
         return this.controllerFor('members').fetchMembersTask.perform(params);
     }
 
@@ -44,12 +45,6 @@ export default class MembersRoute extends AuthenticatedRoute {
             return {
                 titleToken: 'Members'
             };
-        }
-    }
-
-    resetController(controller, isExiting) {
-        if (isExiting) {
-            controller.reset();
         }
     }
 }
