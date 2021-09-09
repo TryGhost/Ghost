@@ -1102,12 +1102,12 @@ figure {
     border-radius: 3px !important;
 }
 
-.email-cta-card .gh-btn-accent {
+.kg-email-cta-card .gh-btn-accent {
     height: 38px;
     margin-top: 2.4rem;
 }
 
-.email-cta-card .gh-btn-accent span {
+.kg-email-cta-card .gh-btn-accent span {
     height: 38px;
     font-size: 1.5rem;
     line-height: 38px;
