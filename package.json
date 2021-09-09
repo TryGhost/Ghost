@@ -152,7 +152,7 @@
     "passport": "0.4.1",
     "passport-google-oauth": "2.0.0",
     "path-match": "1.2.4",
-    "probe-image-size": "5.0.0",
+    "probe-image-size": "7.2.1",
     "rss": "1.2.2",
     "sanitize-html": "2.5.0",
     "semver": "7.3.5",
