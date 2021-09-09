@@ -281,13 +281,19 @@ export default class GhMembersFilterLabsComponent extends Component {
 
     @action
     setFilterType(filterId, newType) {
-        const defaultValue = this.availableFilterValueOptions[newType] ? this.availableFilterValueOptions[newType][0].name : '';
+        let defaultValue = this.availableFilterValueOptions[newType] ? this.availableFilterValueOptions[newType][0].name : '';
+        if (newType === 'label' && !defaultValue) {
+            defaultValue = [];
+        }
         const filterToEdit = this.filters.findBy('id', filterId);
         filterToEdit?.setProperties({
             type: newType,
             relationOptions: this.availableFilterRelationsOptions[newType],
             value: defaultValue
         });
+        if (newType !== 'label' && defaultValue) {
+            this.applySoftFilter();
+        }
     }
 
     @action
@@ -300,11 +306,7 @@ export default class GhMembersFilterLabsComponent extends Component {
     @action
     setFilterValue(filterType, filterId, filterValue) {
         const filterToEdit = this.filters.findBy('id', filterId);
-        if (filterType === 'label') {
-            filterToEdit.set('value', filterValue);
-        } else {
-            filterToEdit.set('value', filterValue);
-        }
+        filterToEdit.set('value', filterValue);
         this.applySoftFilter();
     }
 
