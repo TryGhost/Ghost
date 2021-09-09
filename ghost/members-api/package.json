@@ -30,6 +30,7 @@
     "@tryghost/errors": "^0.2.9",
     "@tryghost/ignition-errors": "^0.1.2",
     "@tryghost/magic-link": "^1.0.11",
+    "@tryghost/stripe-service": "^0.1.0",
     "@tryghost/tpl": "^0.1.2",
     "@types/jsonwebtoken": "^8.5.1",
     "bluebird": "^3.5.4",
@@ -39,10 +40,8 @@
     "express": "^4.16.4",
     "got": "^9.6.0",
     "jsonwebtoken": "^8.5.1",
-    "leaky-bucket": "2.2.0",
     "lodash": "^4.17.11",
-    "node-jose": "^2.0.0",
-    "stripe": "^8.142.0"
+    "node-jose": "^2.0.0"
   },
   "publishConfig": {
     "access": "public"
