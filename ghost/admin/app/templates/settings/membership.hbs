@@ -69,7 +69,7 @@
         <div class="gh-setting-members-tierscontainer">
             <div class="gh-settings-members-tiersheader">
                 <h4 class="gh-main-section-header small bn">Membership tiers</h4>
-                {{#if this.session.user.isOwnerOnly}}
+                {{#if this.session.user.isAdmin}}
                 <button type="button" class="gh-btn gh-btn-outline gh-btn-stripe-status {{if this.isConnectDisallowed "disabled"}} {{if this.settings.stripeConnectAccountId "connected" ""}}" {{on "click" this.openStripeConnect}}>
                     <span>
                         {{if this.settings.stripeConnectAccountId "Connected to Stripe" "Stripe not connected"}}

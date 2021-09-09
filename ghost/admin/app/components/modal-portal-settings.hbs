@@ -154,7 +154,7 @@
                             </div>
                         {{else}}
                         <div class="gh-portal-setting-no-stripe">
-                            You need to <button class="gh-btn gh-btn-link black {{if (not this.session.user.isOwnerOnly) "disabled"}}" {{on "click" (action "openStripeSettings")}}>connect to Stripe</button> to take payments
+                            You need to <button class="gh-btn gh-btn-link black {{if (not this.session.user.isAdmin) "disabled"}}" {{on "click" (action "openStripeSettings")}}>connect to Stripe</button> to take payments
                         </div>
                         {{/if}}
                     </div>
