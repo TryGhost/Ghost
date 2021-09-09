@@ -21,6 +21,7 @@ import {TrackedObject} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
+import {captureMessage} from '@sentry/browser';
 import {createParserPlugins} from '@tryghost/kg-parser-plugins';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
@@ -614,14 +615,38 @@ export default Component.extend({
             // assume that the last card in the list is the one we want to
             // select. Needs to be scheduled afterRender so that the new card
             // is actually present
-            run.schedule('afterRender', this, function () {
-                let card = this.componentCards.lastObject;
-
+            const editOrSelectCard = (card) => {
                 if (card.koenigOptions.hasEditMode) {
                     this.editCard(card);
                 } else if (card.koenigOptions.selectAfterInsert) {
                     this.selectCard(card);
                 }
+            };
+
+            run.schedule('afterRender', this, function () {
+                let card = this.componentCards.lastObject;
+
+                // Sentry was showing `card` being undefined at times (id: 2451728694).
+                // Retrying with logging to see if it's a case of multiple render loops
+                // or some other underlying issue
+                // TODO: check Sentry for issue occurence after 4.13.0
+                if (!card) {
+                    captureMessage('replaceWithCardSection: card was not present after first render');
+                    console.warn('replaceWithCardSection: card was not present after first render'); // eslint-disable-line
+
+                    run.schedule('afterRender', this, function () {
+                        card = this.componentCards.lastObject;
+
+                        if (!card) {
+                            captureMessage('replaceWithCardSection: card was not present after second render');
+                            console.warn('replaceWithCardSection: card was not present after second render'); // eslint-disable-line
+                        }
+
+                        editOrSelectCard(card);
+                    });
+                }
+
+                editOrSelectCard(card);
             });
         },
 
