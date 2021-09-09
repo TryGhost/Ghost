@@ -77,7 +77,8 @@ async function signin({data, api, state}) {
     try {
         await api.member.sendMagicLink(data);
         return {
-            page: 'magiclink'
+            page: 'magiclink',
+            lastPage: 'signin'
         };
     } catch (e) {
         return {
@@ -99,7 +100,8 @@ async function signup({data, state, api}) {
             await api.member.checkoutPlan({plan, email, name});
         }
         return {
-            page: 'magiclink'
+            page: 'magiclink',
+            lastPage: 'signup'
         };
     } catch (e) {
         return {
