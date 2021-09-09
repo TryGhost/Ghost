@@ -9,7 +9,7 @@ const errors = require('@tryghost/errors');
 
 // these are formats supported by image-size but not probe-image-size
 const FETCH_ONLY_FORMATS = [
-    'cur', 'icns', 'ico', 'dds'
+    'cur', 'icns', 'dds'
 ];
 
 class ImageSize {
