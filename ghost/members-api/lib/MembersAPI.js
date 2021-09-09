@@ -3,7 +3,7 @@ const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
 const common = require('./common');
 
-const StripeAPIService = require('./services/stripe-api');
+const StripeAPIService = require('@tryghost/stripe-service');
 const StripeWebhookService = require('./services/stripe-webhook');
 const TokenService = require('./services/token');
 const GeolocationSerice = require('./services/geolocation');
