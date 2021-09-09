@@ -1,12 +1,9 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {tracked} from '@glimmer/tracking';
 
 export default class GhMemberLabelInputLabs extends Component {
     @service store;
-
-    @tracked selectedLabels = [];
 
     get availableLabels() {
         return this._availableLabels.toArray().sort((labelA, labelB) => {
@@ -25,7 +22,18 @@ export default class GhMemberLabelInputLabs extends Component {
         // store and be updated when the above query returns
         this.store.query('label', {limit: 'all'});
         this._availableLabels = this.store.peekAll('label');
-        this.selectedLabels = this.args.labels || [];
+    }
+
+    get selectedLabels() {
+        if (typeof this.args.labels === 'object') {
+            if (this.args.labels?.length && typeof this.args.labels[0] === 'string') {
+                return this.args.labels.map((d) => {
+                    return this.availableLabels.find(label => label.slug === d);
+                }) || [];
+            }
+            return this.args.labels || [];
+        }
+        return [];
     }
 
     willDestroy() {
@@ -54,7 +62,6 @@ export default class GhMemberLabelInputLabs extends Component {
         });
 
         // update labels
-        this.selectedLabels = newLabels;
         this.args.onChange(newLabels);
     }
 
