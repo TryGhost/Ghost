@@ -230,9 +230,7 @@ module.exports = {
             recipientData[recipient.member_email] = data;
         });
 
-        if (memberSegment) {
-            emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
-        }
+        emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
 
         return mailgunProvider.send(emailData, recipientData, replacements).then((response) => {
             debug(`sent message (${Date.now() - startTime}ms)`);
