@@ -52,6 +52,7 @@
         <GhTaskButton
             @buttonText="Add Label"
             @successText="Added"
+            @disabled={{this.isDisabled}}
             @task={{this.addLabelTask}}
             @class="gh-btn gh-btn-green gh-btn-icon"
             data-test-button="confirm"

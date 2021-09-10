@@ -50,6 +50,7 @@
         </button>
 
         <GhTaskButton
+            @disabled={{this.isDisabled}}
             @buttonText="Remove Label"
             @successText="Removed"
             @task={{this.removeLabelTask}}
