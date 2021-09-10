@@ -22,7 +22,7 @@
 
 {{else if (eq @filter.type 'email_count')}}
     <GhTextInput
-        @value={{this.filterValue}}
+        @value={{@filter.value}}
         @type="number"
         @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
         @input={{fn this.setInputFilterValue @filter.type @filter.id}}
@@ -32,7 +32,7 @@
 
 {{else if (eq @filter.type 'email_opened_count')}}
     <GhTextInput
-        @value={{this.filterValue}}
+        @value={{@filter.value}}
         @type="number"
         @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
         @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
@@ -41,7 +41,7 @@
 
 {{else if (eq @filter.type 'email_open_rate')}}
     <GhTextInput
-        @value={{this.filterValue}}
+        @value={{@filter.value}}
         @type="number"
         @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
         @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
@@ -88,7 +88,7 @@
 {{else}}
     <GhTextInput
         @name={{@filter.id}}
-        @value={{this.filterValue}}
+        @value={{@filter.value}}
         @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
         @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
         @input={{fn this.setInputFilterValue @filter.type @filter.id}}
