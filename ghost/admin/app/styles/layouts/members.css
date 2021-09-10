@@ -1863,4 +1863,23 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-members-filter-builder {
     width: 720px;
+    margin-top: 8px;
+}
+
+@media (max-width: 980px) {
+    .gh-members-filter-builder {
+        width: 640px;
+    }
+}
+
+@media (max-width: 890px) {
+    .gh-members-filter-builder {
+        margin-right: -180px;
+    }
+}
+
+@media (max-width: 690px) {
+    .gh-members-filter-builder {
+        width: calc(100% - 100px);
+    }
 }
