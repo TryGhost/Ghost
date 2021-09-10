@@ -5,7 +5,7 @@
                 {{section.title}}
             </div>
             {{#each section.items as |item|}}
-                {{#if (card-is-available item)}}
+                {{#if (card-is-available item postType=@postType)}}
                     <div
                         class="{{if (eq item @selectedItem) "kg-cardmenu-card-selected"}} {{kg-style "cardmenu-card"}}"
                         data-kg="cardmenu-card"
