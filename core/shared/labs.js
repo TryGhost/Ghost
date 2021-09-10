@@ -18,11 +18,11 @@ const messages = {
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'activitypub',
-    'matchHelper',
-    'multipleProducts'
+    'matchHelper'
 ];
 
 const ALPHA_FEATURES = [
+    'multipleProducts',
     'oauthLogin',
     'membersFiltering',
     'emailOnlyPosts',
