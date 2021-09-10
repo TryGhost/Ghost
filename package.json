@@ -167,7 +167,7 @@
   },
   "devDependencies": {
     "@lodder/grunt-postcss": "3.0.1",
-    "c8": "7.8.0",
+    "c8": "7.9.0",
     "coffeescript": "2.5.1",
     "cssnano": "5.0.8",
     "eslint": "7.32.0",
