@@ -205,12 +205,12 @@
 .ember-power-select-multiple-option {
     margin: 2px;
     padding: 2px 6px;
-    border: 1px solid var(--black-20);
     border-radius: 3px;
     font-size: 0.93em;
     font-weight: 500;
-    color: white;
-    background: var(--black);
+    border: 1px solid var(--whitegrey-d1);
+    color: var(--darkgrey);
+    background: var(--whitegrey-d1);
 }
 
 .ember-power-select-multiple-remove-btn {
@@ -227,9 +227,9 @@
 }
 
 .ember-power-select-multiple-remove-btn svg path {
-    stroke: white;
     stroke-width: 2px;
-    fill: white;
+    stroke: var(--black);
+    fill: var(--black);
 }
 
 .ember-power-select-trigger-multiple-input {
