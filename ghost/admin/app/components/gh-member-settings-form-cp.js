@@ -35,16 +35,13 @@ export default class extends Component {
         if (!this.membersUtils.isStripeEnabled) {
             return false;
         }
-        if (this.feature.get('multipleProducts')) {
-            return true;
+
+        let products = this.member.get('products');
+        if (products && products.length > 0) {
+            return false;
         }
-        let subscriptions = this.member.get('subscriptions') || [];
-        const hasZeroPriceSub = subscriptions.filter((sub) => {
-            return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.status);
-        }).find((sub) => {
-            return !sub?.price?.amount;
-        });
-        return !hasZeroPriceSub;
+
+        return true;
     }
 
     get products() {
