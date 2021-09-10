@@ -1,8 +1,7 @@
-<span class="dropdown">
-    <GhDropdownButton
-        @dropdownName="members-actions-filter"
-        @classNames="gh-btn gh-btn-icon gh-btn-action-icon"
-        @title="Members Actions"
+<GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @onClose={{this.onDropdownClose}} as |dd|>
+
+    <dd.Trigger
+        class="gh-btn gh-btn-icon gh-btn-action-icon"
         data-test-button="members-actions"
     >
         <span class="{{if @isFiltered "gh-btn-label-green"}}">
@@ -12,13 +11,9 @@
             ({{totalFilters}})
             {{/if}}
         </span>
-    </GhDropdownButton>
-    <GhDropdown
-        @name="members-actions-filter"
-        @tagName="div"
-        @onClose={{this.onDropdownClose}}
-        @classNames="gh-member-actions-menu gh-filter-builder gh-members-filter-builder dropdown-menu dropdown-triangle-top-right"
-    >
+    </dd.Trigger>
+
+    <dd.Content class="gh-member-actions-menu gh-filter-builder gh-members-filter-builder dropdown-menu dropdown-triangle-top-right">
         <h3>Filter list</h3>
         <section class="gh-filters">
             {{#each this.filters as |filter|}}
@@ -57,8 +52,7 @@
                                 type="button"
                                 class="gh-btn gh-btn-text gh-btn-link gh-btn-icon gh-delete-filter"
                                 title="Delete filter"
-                                {{!-- {{on "click" (fn this.deleteFilter filter.id)}} --}}
-                                {{action "deleteFilter" filter.id}}
+                                {{on "click" (fn this.deleteFilter filter.id)}}
                             >
                                 {{svg-jar "close"}} <span class="hidden">Delete filter</span>
                             </button>
@@ -66,7 +60,6 @@
                     </GhFormGroup>
                 </div>
             {{/each}}
-            {{!-- <div class="gh-filter-block-divider">And</div> --}}
             <div>
                 <button type="button"
                     class="gh-btn gh-btn-text gh-btn-link green gh-btn-icon gh-add-filter"
@@ -90,5 +83,6 @@
                 <span>Apply filters</span>
             </button>
         </div>
-    </GhDropdown>
-</span>
+    </dd.Content>
+
+</GhBasicDropdown>
