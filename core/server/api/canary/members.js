@@ -124,8 +124,10 @@ module.exports = {
                     }, frame.options);
                 }
 
-                if (frame.data.members[0].comped) {
-                    await membersService.api.members.setComplimentarySubscription(member);
+                if (!labsService.isSet('multipleProducts')) {
+                    if (frame.data.members[0].comped) {
+                        await membersService.api.members.setComplimentarySubscription(member);
+                    }
                 }
 
                 if (frame.options.send_email) {
@@ -188,14 +190,16 @@ module.exports = {
 
                 const hasCompedSubscription = !!member.related('stripeSubscriptions').find(sub => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active');
 
-                if (typeof frame.data.members[0].comped === 'boolean') {
-                    if (frame.data.members[0].comped && !hasCompedSubscription) {
-                        await membersService.api.members.setComplimentarySubscription(member);
-                    } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
-                        await membersService.api.members.cancelComplimentarySubscription(member);
-                    }
+                if (!labsService.isSet('multipleProducts')) {
+                    if (typeof frame.data.members[0].comped === 'boolean') {
+                        if (frame.data.members[0].comped && !hasCompedSubscription) {
+                            await membersService.api.members.setComplimentarySubscription(member);
+                        } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
+                            await membersService.api.members.cancelComplimentarySubscription(member);
+                        }
 
-                    await member.load(['stripeSubscriptions', 'products', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
+                        await member.load(['stripeSubscriptions', 'products', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
+                    }
                 }
 
                 await member.load(['stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);

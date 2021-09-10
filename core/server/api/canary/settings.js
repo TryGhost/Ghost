@@ -252,8 +252,8 @@ module.exports = {
                     'stripe_connect_account_id',
                     'stripe_connect_display_name'
                 ].includes(setting.key)
-                // Remove obfuscated settings
-                && !(setting.value === settingsService.obfuscatedSetting && settingsService.isSecretSetting(setting));
+                    // Remove obfuscated settings
+                    && !(setting.value === settingsService.obfuscatedSetting && settingsService.isSecretSetting(setting));
             });
 
             const getSetting = setting => settingsCache.get(setting.key, {resolve: false});
