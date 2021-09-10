@@ -44,11 +44,7 @@
     <button class="close" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
-        {{#if this.session.user.isOwnerOnly}}
-            <p>Your post has been published but the email failed to send. Please verify your email settings if the error persists.</p>
-        {{else}}
-            <p>Your post has been published but the email failed to send. Please verify your email settings if the error persists.</p>
-        {{/if}}
+        <p>Your post has been published but the email failed to send. Please verify your email settings if the error persists.</p>
         <p class="mb0">
             <button type="button" class="gh-btn gh-btn-text regular" {{action (toggle "errorDetailsOpen" this)}} data-test-toggle-error>
                 {{#if this.errorDetailsOpen}}

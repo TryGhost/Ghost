@@ -121,7 +121,7 @@
                         {{#if this.settings.stripeConnectAccountId}}
                             <button type="button" class="gh-btn" {{on "click" (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
                         {{else}}
-                            <button type="button" class="stripe-connect {{if (or (not this.session.user.isOwnerOnly) this.isConnectDisallowed) "disabled"}}" {{on "click" this.openStripeConnect}}>
+                            <button type="button" class="stripe-connect {{if (or (not this.session.user.isAdmin) this.isConnectDisallowed) "disabled"}}" {{on "click" this.openStripeConnect}}>
                                 <span>Connect with Stripe</span>
                             </button>
                         {{/if}}
