@@ -138,3 +138,21 @@
 .gh-filter-builder .ember-power-select-trigger-multiple-input {
     height: 23px;
 }
+
+@media (max-width: 690px) {
+    .gh-filter-builder .gh-filter-inputgroup {
+        grid-template-columns: 1fr 18px;
+        grid-template-rows: 3fr;
+        grid-row-gap: 4px;
+        margin-bottom: 12px;
+    }
+
+    .gh-filter-builder .gh-filter-inputgroup :not(.gh-delete-filter) {
+        grid-column: 1 / 2;
+    }
+
+    .gh-filter-builder .gh-filter-inputgroup .gh-delete-filter {
+        grid-row: 1/2;
+        grid-column: 2/3;
+    }
+}
