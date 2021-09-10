@@ -12,6 +12,7 @@ const registerAllCoreHelpers = function registerAllCoreHelpers() {
     registerThemeHelper('cancel_link', coreHelpers.cancel_link);
     registerThemeHelper('concat', coreHelpers.concat);
     registerThemeHelper('content', coreHelpers.content);
+    registerThemeHelper('products', coreHelpers.products);
     registerThemeHelper('date', coreHelpers.date);
     registerThemeHelper('encode', coreHelpers.encode);
     registerThemeHelper('excerpt', coreHelpers.excerpt);
