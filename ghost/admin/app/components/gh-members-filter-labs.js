@@ -113,7 +113,7 @@ export default class GhMembersFilterLabsComponent extends Component {
     ]);
 
     get totalFilters() {
-        return this.filters.length;
+        return this.filters?.length;
     }
 
     constructor(...args) {
