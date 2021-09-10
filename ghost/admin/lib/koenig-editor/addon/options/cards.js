@@ -121,7 +121,8 @@ export const CARD_MENU = [
             desc: 'Only visible when delivered by email',
             matches: ['email'],
             type: 'card',
-            replaceArg: 'email'
+            replaceArg: 'email',
+            postType: 'post'
         },
         {
             label: 'Email call to action',
@@ -129,7 +130,8 @@ export const CARD_MENU = [
             desc: 'Target free or paid members with a CTA',
             matches: ['email', 'cta'],
             type: 'card',
-            replaceArg: 'email-cta'
+            replaceArg: 'email-cta',
+            postType: 'post'
         },
         {
             label: 'Public preview',

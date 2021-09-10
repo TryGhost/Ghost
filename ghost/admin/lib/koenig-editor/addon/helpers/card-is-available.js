@@ -6,7 +6,7 @@ export default class CardIsAvailableHelper extends Helper {
     @service config;
     @service feature;
 
-    compute([card]) {
+    compute([card], {postType} = {}) {
         let cardIsAvailable = true;
 
         if (card.developerExperiment) {
@@ -15,6 +15,10 @@ export default class CardIsAvailableHelper extends Helper {
 
         if (card.feature) {
             cardIsAvailable = get(this.feature, card.feature);
+        }
+
+        if (postType && card.postType) {
+            cardIsAvailable = card.postType === postType;
         }
 
         return cardIsAvailable;
