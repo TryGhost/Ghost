@@ -154,18 +154,20 @@
                             
                             {{#if this.stripeMonthlyAmount}}
                                 <span class="monthly-price">
+                                    <span class="currency">{{currency-symbol this.currency}}</span>
                                     {{this.stripeMonthlyAmount}}
-                                    <span class="period"><span class="currency">{{this.currency}}</span>/month</span>
+                                    <span class="period">/month</span>
                                 </span>
                             {{else}}
                                 <span class="monthly-price placeholder">
+                                    <span class="currency">{{currency-symbol this.currency}}</span>
                                     0
-                                    <span class="period"><span class="currency">{{this.currency}}</span>/month</span>
+                                    <span class="period">/month</span>
                                 </span>
                             {{/if}}
 
                             {{#if this.stripeYearlyAmount}}
-                                <span class="yearly-price">{{this.stripeYearlyAmount}}<span class="currency">{{this.currency}}</span>/year</span>
+                                <span class="yearly-price">{{currency-symbol this.currency}}{{this.stripeYearlyAmount}}/year</span>
                             {{else}}
                                 <span class="yearly-price placeholder">0<span class="currency">{{this.currency}}</span>/year</span>
                             {{/if}}
