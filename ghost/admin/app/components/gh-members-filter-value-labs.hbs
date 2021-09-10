@@ -41,13 +41,16 @@
     />
 
 {{else if (eq @filter.type 'email_open_rate')}}
-    <GhTextInput
-        @value={{@filter.value}}
-        @type="number"
-        @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
-        @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
-        @input={{fn this.setInputFilterValue @filter.type @filter.id}}
-    />
+    <div class="relative">
+        <span class="gh-input-percentage-label">%</span>
+        <GhTextInput
+            @value={{@filter.value}}
+            @type="number"
+            @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
+            @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
+            @input={{fn this.setInputFilterValue @filter.type @filter.id}}
+        />
+    </div>
 
 {{else if (eq @filter.type 'subscriptions.plan_interval')}}
     <span class="gh-select">
