@@ -269,7 +269,10 @@ export default class GhMembersFilterLabsComponent extends Component {
     }
 
     @action
-    deleteFilter(filterId) {
+    deleteFilter(filterId, event) {
+        event.stopPropagation();
+        event.preventDefault();
+
         const filterToDelete = this.filters.findBy('id', filterId);
         if (this.filters.length === 1) {
             this.resetFilter();
