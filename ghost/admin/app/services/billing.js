@@ -54,11 +54,10 @@ export default Service.extend({
     // Controls billing window modal visibility and sync of the URL visible in browser
     // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
     // for example: by entering "/pro" route in the URL or using history navigation (back and forward)
-    setBillingWindowOpen(value) {
-        let billingIframe = this.getBillingIframe();
-
-        if (billingIframe && value) {
-            billingIframe.contentWindow.location.replace(this.getIframeURL());
+    toggleProWindow(value) {
+        if (this.get('billingWindowOpen') && value) {
+            // don't attempt to open again
+            return;
         }
 
         this.set('billingWindowOpen', value);
@@ -69,20 +68,18 @@ export default Service.extend({
     // remembering the route from which the action has been triggered - "previousRoute" so it
     // could be reused when closing billing window
     openBillingWindow(currentRoute, childRoute) {
+        if (this.get('billingWindowOpen')) {
+            // don't attempt to open again
+            return;
+        }
+
         this.set('previousRoute', currentRoute);
 
         // Ensures correct "getIframeURL" calculation when syncing iframe location
-        // in setBillingWindowOpen
+        // in toggleProWindow
         window.location.hash = childRoute || '/pro';
 
         this.router.transitionTo(childRoute || '/pro');
-    },
-
-    closeBillingWindow() {
-        this.set('billingWindowOpen', false);
-
-        let transitionRoute = this.get('previousRoute') || '/';
-        this.router.transitionTo(transitionRoute);
     },
 
     getBillingIframe() {

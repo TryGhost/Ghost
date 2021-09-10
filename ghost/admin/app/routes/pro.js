@@ -25,7 +25,7 @@ export default AuthenticatedRoute.extend({
             this.billing.set('action', params.action);
         }
 
-        this.billing.setBillingWindowOpen(true);
+        this.billing.toggleProWindow(true);
     },
 
     actions: {
@@ -44,7 +44,7 @@ export default AuthenticatedRoute.extend({
                 }
             }
 
-            this.billing.setBillingWindowOpen(isBillingTransition);
+            this.billing.toggleProWindow(isBillingTransition);
         }
     },
 
