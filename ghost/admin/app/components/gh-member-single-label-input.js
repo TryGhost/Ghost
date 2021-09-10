@@ -25,7 +25,7 @@ export default class GhMemberLabelInput extends Component {
         // store and be updated when the above query returns
         this.store.query('label', {limit: 'all'});
         this._availableLabels = this.store.peekAll('label');
-        this.selectedLabel = this.args.label || this.availableLabels[0].get('id');
+        this.selectedLabel = this.args.label || this.availableLabels[0]?.get('id');
         this.args.onChange(this.selectedLabel);
     }
 
