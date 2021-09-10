@@ -585,6 +585,13 @@
     text-transform: uppercase;
 }
 
+.gh-product-form-tierpreview .monthly-price .currency {
+    align-self: flex-start;
+    font-size: 2.0rem;
+    font-weight: 500;
+    line-height: 1.3em;
+}
+
 .gh-product-form-tierpreview ul {
     list-style: none;
     margin: 0;
