@@ -56,8 +56,8 @@ const FILTER_RELATIONS_OPTIONS = {
         {label: 'is not', name: 'is-not'}
     ],
     label: [
-        {label: 'is in', name: 'is'},
-        {label: 'is not in', name: 'is-not'}
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
     ],
     email_count: [
         {label: 'is', name: 'is'},

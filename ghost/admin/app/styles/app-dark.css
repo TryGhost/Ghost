@@ -981,3 +981,15 @@ input:focus,
     top: 0;
     right: -2px;
 }
+
+.gh-list-scrolling thead th {
+    background: linear-gradient(90deg, rgba(21,23,25,1) 90%, rgba(21,23,25,0) 100%);
+}
+
+.gh-list-scrolling tbody .gh-list-data:first-child {
+    background: linear-gradient(90deg, rgba(21,23,25,1) 90%, rgba(21,23,25,0) 100%);
+}
+
+.gh-filter-builder .gh-filters {
+    background: var(--whitegrey);
+}
