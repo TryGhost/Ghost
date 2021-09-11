@@ -620,7 +620,7 @@ const MobileStyles = `
         align-items: center;
         justify-content: space-between;
         background: var(--white);
-        overflow-y: scroll;
+        overflow-y: auto;
     }
 
     .gh-portal-popup-container {
