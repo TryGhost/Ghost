@@ -5,7 +5,8 @@ const manager = new Manager();
 // Responsible for handling requests for sitemap files
 module.exports = function handler(siteApp) {
     const verifyResourceType = function verifyResourceType(req, res, next) {
-        if (!Object.prototype.hasOwnProperty.call(manager, req.params.resource)) {
+        const resourceWithoutPage = req.params.resource.replace(/-\d+$/, '');
+        if (!Object.prototype.hasOwnProperty.call(manager, resourceWithoutPage)) {
             return res.sendStatus(404);
         }
 
@@ -22,8 +23,9 @@ module.exports = function handler(siteApp) {
     });
 
     siteApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res) {
-        const type = req.params.resource;
-        const page = 1;
+        const type = req.params.resource.replace(/-\d+$/, '');
+        const pageParam = (req.params.resource.match(/-(\d+)$/) || [null, null])[1];
+        const page = pageParam ? parseInt(pageParam, 10) : 1;
 
         res.set({
             'Cache-Control': 'public, max-age=' + config.get('caching:sitemap:maxAge'),

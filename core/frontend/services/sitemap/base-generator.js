@@ -17,11 +17,12 @@ class BaseSiteMapGenerator {
     constructor() {
         this.nodeLookup = {};
         this.nodeTimeLookup = {};
-        this.siteMapContent = null;
+        this.siteMapContent = new Map();
         this.lastModified = 0;
+        this.maxPerPage = 50000;
     }
 
-    generateXmlFromNodes() {
+    generateXmlFromNodes(page) {
         const self = this;
 
         // Get a mapping of node to timestamp
@@ -37,8 +38,11 @@ class BaseSiteMapGenerator {
         // Sort nodes by timestamp
         const sortedNodes = _.sortBy(timedNodes, 'ts');
 
+        // Get the page of nodes that was requested
+        const pageNodes = sortedNodes.slice((page - 1) * this.maxPerPage, page * this.maxPerPage);
+
         // Grab just the nodes
-        const urlElements = _.map(sortedNodes, 'node');
+        const urlElements = _.map(pageNodes, 'node');
 
         const data = {
             // Concat the elements to the _attr declaration
@@ -63,7 +67,7 @@ class BaseSiteMapGenerator {
             this.updateLastModified(datum);
             this.updateLookups(datum, node);
             // force regeneration of xml
-            this.siteMapContent = null;
+            this.siteMapContent.clear();
         }
     }
 
@@ -71,7 +75,7 @@ class BaseSiteMapGenerator {
         this.removeFromLookups(datum);
 
         // force regeneration of xml
-        this.siteMapContent = null;
+        this.siteMapContent.clear();
         this.lastModified = Date.now();
     }
 
@@ -148,13 +152,13 @@ class BaseSiteMapGenerator {
         return !!imageUrl;
     }
 
-    getXml() {
-        if (this.siteMapContent) {
-            return this.siteMapContent;
+    getXml(page = 1) {
+        if (this.siteMapContent.has(page)) {
+            return this.siteMapContent.get(page);
         }
 
-        const content = this.generateXmlFromNodes();
-        this.siteMapContent = content;
+        const content = this.generateXmlFromNodes(page);
+        this.siteMapContent.set(page, content);
         return content;
     }
 
@@ -177,7 +181,7 @@ class BaseSiteMapGenerator {
     reset() {
         this.nodeLookup = {};
         this.nodeTimeLookup = {};
-        this.siteMapContent = null;
+        this.siteMapContent.clear();
     }
 }
 

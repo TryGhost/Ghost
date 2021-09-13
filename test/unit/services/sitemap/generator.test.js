@@ -60,7 +60,8 @@ describe('Generators', function () {
                     pages: new PageGenerator(),
                     tags: new TagGenerator(),
                     authors: new UserGenerator()
-                }
+                },
+                maxPerPage: 50
             });
         });
 
@@ -100,9 +101,9 @@ describe('Generators', function () {
 
             it('get cached xml', function () {
                 sinon.spy(generator, 'generateXmlFromNodes');
-                generator.siteMapContent = 'something';
+                generator.siteMapContent.set(1, 'something');
                 generator.getXml().should.eql('something');
-                generator.siteMapContent = null;
+                generator.siteMapContent.clear();
                 generator.generateXmlFromNodes.called.should.eql(false);
             });
 
@@ -198,12 +199,12 @@ describe('Generators', function () {
 
                 generator.getXml();
 
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/home/</loc>');
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/magic/</loc>');
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/subscribe/</loc>');
+                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/home/</loc>');
+                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/magic/</loc>');
+                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/subscribe/</loc>');
 
                 // <loc> should exist exactly one time
-                generator.siteMapContent.match(/<loc>/g).length.should.eql(3);
+                generator.siteMapContent.get(1).match(/<loc>/g).length.should.eql(3);
             });
         });
     });
