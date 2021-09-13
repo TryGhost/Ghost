@@ -3,7 +3,6 @@ import ENV from '../config/environment';
 import ghostPaths from '../utils/ghost-paths';
 import setupSession from 'ember-simple-auth/initializers/setup-session';
 import setupSessionRestoration from 'ember-simple-auth/initializers/setup-session-restoration';
-import setupSessionService from 'ember-simple-auth/initializers/setup-session-service';
 
 export default {
     name: 'ember-simple-auth',
@@ -13,7 +12,6 @@ export default {
         Configuration.load(config);
 
         setupSession(registry);
-        setupSessionService(registry);
         setupSessionRestoration(registry);
     }
 };
