@@ -152,6 +152,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     metadata: {
                         name,
                         requestSrc: 'portal',
+                        fp_tid: (window.FPROM || window.$FPROM)?.data?.tid,
                         ...metadata
                     },
                     successUrl,
