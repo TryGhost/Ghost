@@ -1,4 +1,4 @@
-<div class="modal-content">
+<div class="modal-content" {{on-key "Enter" (perform this.deletePostTask)}}>
     <header class="modal-header">
         <h1>Are you sure you want to delete this {{@data.post.displayName}}?</h1>
     </header>
