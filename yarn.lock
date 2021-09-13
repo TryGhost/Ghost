@@ -1423,13 +1423,13 @@ amperize@0.6.1:
     uuid "^7.0.1"
     validator "^12.0.0"
 
-analytics-node@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-5.0.0.tgz#7435c39253956cdd1a9074f608b083e985d63d31"
-  integrity sha512-eU/lPK6V3hmmv7hnJ8762zExL7WvcpVeBL6RgGZ8yQZQewk08VbbHk0M5GAlhruyh0ZT+/IBPW3Q/SYVhjexNQ==
+analytics-node@5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-5.1.0.tgz#69f2183af07b7e9aeef129232c6c1e44ef2f28d9"
+  integrity sha512-qojiIIQs+ruKS4BEb7+nLIim0TpmifMnYQYYQWBHcYBurv/IXRs3bL28wCuv1aKpRKpyDjAvugYSA7V7pw8t8g==
   dependencies:
     "@segment/loosely-validate-event" "^2.0.0"
-    axios "^0.21.1"
+    axios "^0.21.4"
     axios-retry "^3.0.2"
     lodash.isstring "^4.0.1"
     md5 "^2.2.1"
@@ -1710,10 +1710,10 @@ axios-retry@^3.0.2:
   dependencies:
     is-retry-allowed "^1.1.0"
 
-axios@^0.21.1:
-  version "0.21.3"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.3.tgz#f85d9b747f9b66d59ca463605cedf1844872b82e"
-  integrity sha512-JtoZ3Ndke/+Iwt5n+BgSli/3idTvpt5OjKyoCmz4LX5+lPiY5l7C1colYezhlxThjNa/NhngCUWZSZFypIFuaA==
+axios@^0.21.4:
+  version "0.21.4"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
+  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
   dependencies:
     follow-redirects "^1.14.0"
 
