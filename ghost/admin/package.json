@@ -100,7 +100,7 @@
     "ember-power-select": "4.1.5",
     "ember-resolver": "8.0.3",
     "ember-route-action-helper": "2.0.8",
-    "ember-simple-auth": "3.1.0",
+    "ember-simple-auth": "4.0.0",
     "ember-sinon": "5.0.0",
     "ember-source": "3.21.3",
     "ember-svg-jar": "2.3.3",
