@@ -1,0 +1,34 @@
+<div class="modal-content" {{will-destroy this.willClose}}>
+    <div class="modal-body gh-ps-modal-body">
+        <div class="gh-branding-settings-header">
+            <h4>Customize</h4>
+            <div class="gh-branding-settings-actions">
+                <button
+                    class="gh-btn mr3"
+                    {{on "click" @close}}
+                    {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+                    {{on "mousedown" (optional this.noop)}}
+                    data-test-button="cancel-custom-view-form"
+                >
+                    <span>Cancel</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="gh-branding-settings">
+            <section class="gh-branding-settings-options">
+
+            </section>
+
+            <section class="gh-branding-settings-right">
+                <GhBrowserPreview class="gh-branding-settings-previewcontainer" @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
+                    <iframe
+                        id="site=frame"
+                        class="site-frame gh-branding-settings-preview"
+                        {{did-insert this.registerPreviewIframe}}
+                    ></iframe>
+                </GhBrowserPreview>
+            </section>
+        </div>
+    </div>
+</div>
