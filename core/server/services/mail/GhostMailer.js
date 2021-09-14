@@ -67,15 +67,18 @@ function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
 
 module.exports = class GhostMailer {
     constructor() {
-        const nodemailer = require('nodemailer');
-        const transport = config.get('mail') && config.get('mail').transport || 'direct';
+        const nodemailer = require('@tryghost/nodemailer');
+
+        let transport = config.get('mail') && config.get('mail').transport || 'direct';
+        transport = transport.toLowerCase();
+
         // nodemailer mutates the options passed to createTransport
         const options = config.get('mail') && _.clone(config.get('mail').options) || {};
 
         this.state = {
             usingDirect: transport === 'direct'
         };
-        this.transport = nodemailer.createTransport(transport, options);
+        this.transport = nodemailer(transport, options);
     }
 
     /**
@@ -102,52 +105,42 @@ module.exports = class GhostMailer {
 
         const response = await this.sendMail(messageToSend);
 
-        if (this.transport.transportType === 'DIRECT') {
+        if (this.state.usingDirect) {
             return this.handleDirectTransportResponse(response);
         }
 
         return response;
     }
 
-    sendMail(message) {
-        return new Promise((resolve, reject) => {
-            this.transport.sendMail(message, (err, response) => {
-                if (err) {
-                    reject(createMailError({
-                        message: i18n.t('errors.mail.reason', {reason: err.message || err}),
-                        err
-                    }));
-                }
-                resolve(response);
+    async sendMail(message) {
+        try {
+            const response = await this.transport.sendMail(message);
+            return response;
+        } catch (err) {
+            throw createMailError({
+                message: i18n.t('errors.mail.reason', {reason: err.message || err}),
+                err
             });
-        });
+        }
     }
 
     handleDirectTransportResponse(response) {
-        return new Promise((resolve, reject) => {
-            response.statusHandler.once('failed', function (data) {
-                if (data.error && data.error.code === 'ENOTFOUND') {
-                    reject(createMailError({
-                        message: i18n.t('errors.mail.noMailServerAtAddress.error', {domain: data.domain})
-                    }));
-                }
+        if (!response) {
+            return i18n.t('notices.mail.messageSent');
+        }
 
-                reject(createMailError());
+        if (response.pending.length > 0) {
+            throw createMailError({
+                message: i18n.t('errors.mail.reason', {reason: 'Email has been temporarily rejected'})
             });
+        }
 
-            response.statusHandler.once('requeue', function (data) {
-                if (data.error && data.error.message) {
-                    reject(createMailError({
-                        message: i18n.t('errors.mail.reason', {reason: data.error.message})
-                    }));
-                }
-
-                reject(createMailError());
+        if (response.errors.length > 0) {
+            throw createMailError({
+                message: i18n.t('errors.mail.reason', {reason: response.errors[0].message})
             });
+        }
 
-            response.statusHandler.once('sent', function () {
-                resolve(i18n.t('notices.mail.messageSent'));
-            });
-        });
+        return i18n.t('notices.mail.messageSent');
     }
 };

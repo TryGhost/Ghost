@@ -1,28 +1,19 @@
 const should = require('should');
 const sinon = require('sinon');
 const mail = require('../../../../core/server/services/mail');
+const configUtils = require('../../../utils/configUtils');
 
 describe('Mail: Utils', function () {
     const scope = {ghostMailer: null};
 
     beforeEach(function () {
+        configUtils.set({mail: {transport: 'stub'}});
         scope.ghostMailer = new mail.GhostMailer();
-
-        sinon.stub(scope.ghostMailer.transport, 'sendMail').callsFake(function (message, sendMailDone) {
-            sendMailDone(null, {
-                statusHandler: {
-                    once: function (eventName, eventDone) {
-                        if (eventName === 'sent') {
-                            eventDone();
-                        }
-                    }
-                }
-            });
-        });
     });
 
     afterEach(function () {
         sinon.restore();
+        configUtils.restore();
     });
 
     it('generate welcome', function (done) {

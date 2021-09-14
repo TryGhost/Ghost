@@ -11,7 +11,6 @@
       "intl-messageformat",
       "moment",
       "moment-timezone",
-      "nodemailer",
       "simple-dom"
     ],
   "ignorePaths": ["test"],
