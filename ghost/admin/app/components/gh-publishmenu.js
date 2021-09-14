@@ -169,6 +169,10 @@ export default Component.extend({
                 return 'status:-free';
             }
 
+            if (this.post.visibility === 'filter') {
+                return this.post.visibilityFilter;
+            }
+
             return this.post.visibility;
         }
 
