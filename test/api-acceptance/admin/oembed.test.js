@@ -126,6 +126,31 @@ describe('Oembed API', function () {
             should.exist(res.body.errors);
             res.body.errors[0].context.should.match(/insufficient metadata/i);
         });
+
+        it('errors when fetched url is an IP address', async function () {
+            const redirectMock = nock('http://test.com/')
+                .get('/')
+                .reply(302, undefined, {Location: 'http://0.0.0.0:8080'});
+
+            const pageMock = nock('http://0.0.0.0:8080')
+                .get('/')
+                .reply(
+                    200,
+                    '<html><head><title>TESTING</title></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
+
+            const url = encodeURIComponent('http://test.com');
+            const res = await request.get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+
+            pageMock.isDone().should.be.true();
+            should.exist(res.body.errors);
+            res.body.errors[0].context.should.match(/insufficient metadata/i);
+        });
     });
 
     describe('with unknown provider', function () {

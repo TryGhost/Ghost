@@ -12,8 +12,9 @@ function isPrivateIp(addr) {
       /^(::f{4}:)?169\.254\.([0-9]{1,3})\.([0-9]{1,3})$/i.test(addr) ||
       /^f[cd][0-9a-f]{2}:/i.test(addr) ||
       /^fe80:/i.test(addr) ||
-      /^::1$/.test(addr) ||
-      /^::$/.test(addr);
+      /^::[10]$/.test(addr) ||
+      /^::$/.test(addr) ||
+      /^0/.test(addr);
 }
 
 async function errorIfHostnameResolvesToPrivateIp(options) {
