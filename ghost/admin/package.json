@@ -50,7 +50,7 @@
     "broccoli-merge-trees": "4.2.0",
     "broccoli-terser-sourcemap": "4.1.0",
     "chai": "4.3.4",
-    "chai-dom": "1.9.0",
+    "chai-dom": "1.10.0",
     "codemirror": "5.48.2",
     "csscomb": "4.3.0",
     "cssnano": "4.1.10",
