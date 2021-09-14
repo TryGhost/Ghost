@@ -101,8 +101,13 @@ class OEmbed {
         try {
             const cookieJar = new CookieJar();
             const response = await this.externalRequest(url, {cookieJar});
-            const html = response.body;
-            scraperResponse = await metascraper({html, url});
+
+            if (this.isIpOrLocalhost(response.url)) {
+                scraperResponse = {};
+            } else {
+                const html = response.body;
+                scraperResponse = await metascraper({html, url});
+            }
         } catch (err) {
             return Promise.reject(err);
         }
