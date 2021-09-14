@@ -920,15 +920,16 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.32.1":
-  version "1.32.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.32.1.tgz#a890c8f2f2ae92d7d43437e52cb14dd6ae194732"
-  integrity sha512-1ox59JG6RCa+BZpuJQtfPjddIMQnodAfD2/nm8MvMsEVrUMtiu9BeH6yihJATroCwoqCvNJWGhG2/1t/FubGkw==
+"@tryghost/members-api@1.34.0":
+  version "1.34.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.34.0.tgz#151f974a21e4d822df7a3f512da632d0cb755fe4"
+  integrity sha512-/jtqpwLzQvf+HFgfJGu029VA0a3CkJ6/ciGYcHECt9aVtzslzbOXCq5rFDDa4AGTDtNcnrBgah4+koy/zTq2iw==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
     "@tryghost/ignition-errors" "^0.1.2"
     "@tryghost/magic-link" "^1.0.11"
+    "@tryghost/stripe-service" "^0.1.0"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
@@ -938,10 +939,8 @@
     express "^4.16.4"
     got "^9.6.0"
     jsonwebtoken "^8.5.1"
-    leaky-bucket "2.2.0"
     lodash "^4.17.11"
     node-jose "^2.0.0"
-    stripe "^8.142.0"
 
 "@tryghost/members-csv@1.1.6", "@tryghost/members-csv@^1.1.6":
   version "1.1.6"
@@ -1071,6 +1070,16 @@
   integrity sha512-+EA1BJ5D55RQA3HsTMchGdxXL/0cN/rHbSjqLhjBhKuWTFNLb6AR9res1Bw3vb7ZxMV0ggUOrFDJ1Lqo2RbsEA==
   dependencies:
     unidecode "^0.1.8"
+
+"@tryghost/stripe-service@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/stripe-service/-/stripe-service-0.1.0.tgz#59b8b00cb14740e7e84baa58913de283c53be044"
+  integrity sha512-3f/v5qDe99pJ4FTir3ogpATB9h7Xf8I0hrSysJdUBCKEvb6p9UkN5HGIfMZMypxlbi5aldnRShoBWJTGycD+pw==
+  dependencies:
+    "@tryghost/debug" "^0.1.4"
+    "@tryghost/errors" "^0.2.13"
+    leaky-bucket "^2.2.0"
+    stripe "^8.174.0"
 
 "@tryghost/tpl@0.1.3", "@tryghost/tpl@^0.1.1", "@tryghost/tpl@^0.1.2", "@tryghost/tpl@^0.1.3":
   version "0.1.3"
@@ -6052,7 +6061,7 @@ lazystream@^1.0.0:
   dependencies:
     readable-stream "^2.0.5"
 
-leaky-bucket@2.2.0:
+leaky-bucket@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/leaky-bucket/-/leaky-bucket-2.2.0.tgz#d37da29a45f64528c86b6882d2b5e1594588e2de"
   integrity sha512-87qsyt18gLVb+uB+zVz1zSi3yl6UJD5AoKINNOg3PBfqMis1FGgfOTi6hLkw7lJYZ3Gawf/BLj76WhDqsT0eZA==
@@ -9534,7 +9543,7 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
 
-stripe@^8.142.0:
+stripe@^8.174.0:
   version "8.174.0"
   resolved "https://registry.yarnpkg.com/stripe/-/stripe-8.174.0.tgz#91d2e61b0217b1ee9fde2842582e0f1cf1dddc94"
   integrity sha512-UFU5TuYH7XwUmSllUIcIKhhsvvhhjw9D6ZwVdfB74wU4VOOaWBiQqszkw6chaEFpdulUmbcAH5eZltV3HwOi7g==
