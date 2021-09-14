@@ -61,7 +61,7 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         mailer.should.have.property('transport');
-        mailer.transport.transportType.should.eql('SMTP');
+        mailer.transport.transporter.name.should.eql('SMTP');
         mailer.transport.sendMail.should.be.a.Function();
     });
 
@@ -71,7 +71,7 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         mailer.should.have.property('transport');
-        mailer.transport.transportType.should.eql('DIRECT');
+        mailer.transport.transporter.name.should.eql('SMTP (direct)');
     });
 
     it('sends valid message successfully ', function (done) {
@@ -79,10 +79,10 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.transport.transportType.should.eql('STUB');
+        mailer.transport.transporter.name.should.eql('Stub');
 
         mailer.send(mailDataNoServer).then(function (response) {
-            should.exist(response.message);
+            should.exist(response.response);
             should.exist(response.envelope);
             response.envelope.to.should.containEql('joe@example.com');
 
@@ -95,7 +95,7 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.transport.transportType.should.eql('STUB');
+        mailer.transport.transporter.name.should.eql('Stub');
 
         mailer.send(mailDataNoServer).then(function () {
             done(new Error('Stub did not error'));
@@ -125,7 +125,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for domain doesn\'t exist', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transport.transporter.name.should.eql('SMTP (direct)');
 
             mailer.send(mailDataNoDomain).then(function () {
                 done(new Error('Error message not shown.'));
@@ -136,7 +136,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for no mail server at this address', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transport.transporter.name.should.eql('SMTP (direct)');
 
             mailer.send(mailDataNoServer).then(function () {
                 done(new Error('Error message not shown.'));
@@ -147,7 +147,7 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for incomplete data', function (done) {
-            mailer.transport.transportType.should.eql('DIRECT');
+            mailer.transport.transporter.name.should.eql('SMTP (direct)');
 
             mailer.send(mailDataIncomplete).then(function () {
                 done(new Error('Error message not shown.'));
@@ -169,7 +169,7 @@ describe('Mail: Ghostmailer', function () {
             mailer = new mail.GhostMailer();
 
             sandbox.stub(mailer, 'sendMail').resolves();
-            mailer.transport.transportType = 'NOT DIRECT';
+            mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
                 to: 'user@example.com',
@@ -184,7 +184,7 @@ describe('Mail: Ghostmailer', function () {
             beforeEach(async function () {
                 mailer = new mail.GhostMailer();
                 sandbox.stub(mailer, 'sendMail').resolves();
-                mailer.transport.transportType = 'NOT DIRECT';
+                mailer.transport.transporter.name = 'NOT DIRECT';
                 sandbox.stub(settingsCache, 'get').returns('Test');
             });
 
@@ -251,7 +251,7 @@ describe('Mail: Ghostmailer', function () {
             mailer = new mail.GhostMailer();
 
             sandbox.stub(mailer, 'sendMail').resolves();
-            mailer.transport.transportType = 'NOT DIRECT';
+            mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
                 to: 'user@example.com',
@@ -270,7 +270,7 @@ describe('Mail: Ghostmailer', function () {
             mailer = new mail.GhostMailer();
 
             sandbox.stub(mailer, 'sendMail').resolves();
-            mailer.transport.transportType = 'NOT DIRECT';
+            mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
                 to: 'user@example.com',
@@ -298,7 +298,7 @@ describe('Mail: Ghostmailer', function () {
             mailer = new mail.GhostMailer();
 
             sandbox.stub(mailer, 'sendMail').resolves();
-            mailer.transport.transportType = 'NOT DIRECT';
+            mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
                 to: 'user@example.com',
@@ -326,7 +326,7 @@ describe('Mail: Ghostmailer', function () {
             mailer = new mail.GhostMailer();
 
             sandbox.stub(mailer, 'sendMail').resolves();
-            mailer.transport.transportType = 'NOT DIRECT';
+            mailer.transport.transporter.name = 'NOT DIRECT';
 
             await mailer.send({
                 to: 'user@example.com',
