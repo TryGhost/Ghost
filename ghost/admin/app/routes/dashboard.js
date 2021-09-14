@@ -10,10 +10,6 @@ export default class DashboardRoute extends AuthenticatedRoute {
         if (!this.session.user.isAdmin) {
             return this.transitionTo('site');
         }
-
-        if (this.feature.dashboardTwo) {
-            return this.transitionTo('dashboard-labs');
-        }
     }
 
     buildRouteInfoMetadata() {
