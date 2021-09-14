@@ -51,7 +51,8 @@ module.exports = function MembersAPI({
         Product,
         Settings
     },
-    logger
+    logger,
+    labsService
 }) {
     if (logger) {
         common.logging.setLogger(logger);
@@ -110,7 +111,12 @@ module.exports = function MembersAPI({
     });
 
     const memberBREADService = new MemberBREADService({
-        memberRepository
+        memberRepository,
+        emailService: {
+            sendEmailWithMagicLink
+        },
+        labsService,
+        stripeService: stripeAPIService
     });
 
     const stripeWebhookService = new StripeWebhookService({
