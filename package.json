@@ -154,7 +154,7 @@
     "path-match": "1.2.4",
     "probe-image-size": "5.0.0",
     "rss": "1.2.2",
-    "sanitize-html": "2.5.0",
+    "sanitize-html": "2.5.1",
     "semver": "7.3.5",
     "stoppable": "1.1.0",
     "tough-cookie": "4.0.0",
