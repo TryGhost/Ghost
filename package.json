@@ -58,7 +58,7 @@
     "@tryghost/color-utils": "0.1.2",
     "@tryghost/config-url-helpers": "0.1.0",
     "@tryghost/constants": "0.1.8",
-    "@tryghost/debug": "0.1.4",
+    "@tryghost/debug": "0.1.5",
     "@tryghost/email-analytics-provider-mailgun": "1.0.0",
     "@tryghost/email-analytics-service": "1.0.0",
     "@tryghost/errors": "0.2.13",
