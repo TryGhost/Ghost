@@ -22,16 +22,16 @@ describe('Labs Service', function () {
         sinon.stub(process.env, 'NODE_ENV').value('production');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('labs').returns({
-            dashboardTwo: true
+            emailOnlyPosts: true
         });
 
         labs.getAll().should.eql({
-            dashboardTwo: true,
+            emailOnlyPosts: true,
             members: true
         });
 
         labs.isSet('members').should.be.true;
-        labs.isSet('dashboardTwo').should.be.true;
+        labs.isSet('emailOnlyPosts').should.be.true;
     });
 
     it('returns a falsy alpha flag when dev experiments in NOT toggled', function () {
@@ -39,7 +39,7 @@ describe('Labs Service', function () {
         sinon.stub(process.env, 'NODE_ENV').value('production');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('labs').returns({
-            dashboardTwo: true
+            emailOnlyPosts: true
         });
 
         labs.getAll().should.eql({
@@ -47,7 +47,7 @@ describe('Labs Service', function () {
         });
 
         labs.isSet('members').should.be.true;
-        labs.isSet('dashboardTwo').should.be.false;
+        labs.isSet('emailOnlyPosts').should.be.false;
     });
 
     it('members flag is true when members_signup_access setting is "all"', function () {
