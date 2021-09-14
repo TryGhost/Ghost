@@ -15,20 +15,30 @@
                     <p>Basic publication details and site metadata</p>
                 </div>
             </LinkTo>
-            <button type="button" class="gh-setting-group" {{action (toggle "showBrandingModal" this)}} data-test-nav="branding">
-                <span class="blue">{{svg-jar "paint-palette"}}</span>
-                <div>
-                    <h4>Branding</h4>
-                    <p>Upload site logo and set accent color</p>
-                </div>
-            </button>
-            <LinkTo class="gh-setting-group" @route="settings.theme" data-test-nav="theme">
-                <span class="green">{{svg-jar "view-site"}}</span>
-                <div>
-                    <h4>Theme</h4>
-                    <p>Install and update themes</p>
-                </div>
-            </LinkTo>
+            {{#if (feature "customThemeSettings")}}
+                <LinkTo class="gh-setting-group" @route="settings.design" data-test-nav="design">
+                    <span class="blue">{{svg-jar "paint-palette"}}</span>
+                    <div>
+                        <h4>Design</h4>
+                        <p>Make things pretty (CHANGEME)</p>
+                    </div>
+                </LinkTo>
+            {{else}}
+                <button type="button" class="gh-setting-group" {{action (toggle "showBrandingModal" this)}} data-test-nav="branding">
+                    <span class="blue">{{svg-jar "paint-palette"}}</span>
+                    <div>
+                        <h4>Branding</h4>
+                        <p>Upload site logo and set accent color</p>
+                    </div>
+                </button>
+                <LinkTo class="gh-setting-group" @route="settings.theme" data-test-nav="theme">
+                    <span class="green">{{svg-jar "view-site"}}</span>
+                    <div>
+                        <h4>Theme</h4>
+                        <p>Install and update themes</p>
+                    </div>
+                </LinkTo>
+            {{/if}}
             <LinkTo class="gh-setting-group" @route="settings.navigation" data-test-nav="navigation">
                 <span class="pink">{{svg-jar "compass-2"}}</span>
                 <div>
