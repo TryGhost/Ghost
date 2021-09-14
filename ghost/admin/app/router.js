@@ -52,7 +52,9 @@ Router.map(function () {
     this.route('settings.members-email', {path: '/settings/members-email'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
 
-    this.route('settings.design', {path: '/settings/design'});
+    this.route('settings.design', {path: '/settings/design'}, function () {
+        this.route('customize');
+    });
 
     // this.route('settings.products', {path: '/settings/products'});
     // this.route('settings.product.new', {path: '/settings/product/new'});
