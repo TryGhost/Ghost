@@ -57,6 +57,7 @@ export default Service.extend({
     membersFiltering: feature('membersFiltering', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
     emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
+    customThemeSettings: feature('customThemeSettings', {developer: true}),
 
     _user: null,
 
