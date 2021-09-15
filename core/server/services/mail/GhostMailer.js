@@ -77,7 +77,6 @@ module.exports = class GhostMailer {
             usingDirect: transport === 'direct'
         };
         this.transport = nodemailer(transport, options);
-        console.log(this.transport);
     }
 
     /**
