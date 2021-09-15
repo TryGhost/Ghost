@@ -77,6 +77,7 @@ module.exports = class GhostMailer {
             usingDirect: transport === 'direct'
         };
         this.transport = nodemailer(transport, options);
+        console.log(this.transport);
     }
 
     /**
@@ -100,7 +101,13 @@ module.exports = class GhostMailer {
         }
 
         const messageToSend = createMessage(message);
+
         const response = await this.sendMail(messageToSend);
+
+        if (this.state.usingDirect) {
+            return this.handleDirectTransportResponse(response);
+        }
+
         return response;
     }
 
