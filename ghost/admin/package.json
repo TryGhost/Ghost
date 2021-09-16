@@ -98,7 +98,7 @@
     "ember-power-calendar-moment": "0.1.7",
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
     "ember-power-select": "4.1.5",
-    "ember-promise-modals": "TryGhost/ember-promise-modals#v2.0.0+ghost.1",
+    "ember-promise-modals": "TryGhost/ember-promise-modals#v2.0.0+ghost.2",
     "ember-resolver": "8.0.3",
     "ember-route-action-helper": "2.0.8",
     "ember-simple-auth": "4.0.0",
