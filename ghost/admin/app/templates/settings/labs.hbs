@@ -300,6 +300,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Members Activity</h4>
+                            <p class="gh-expandable-description">
+                               Enable recording of member activity for analytics
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="membersActivity" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
