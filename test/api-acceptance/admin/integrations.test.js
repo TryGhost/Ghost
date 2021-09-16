@@ -331,5 +331,14 @@ describe('Integrations API', function () {
         await request.get(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
             .set('Origin', config.get('url'))
             .expect(404);
+
+        const editRes = await request.put(localUtils.API.getApiQuery(`integrations/${createdIntegration.id}/`))
+            .send({
+                integrations: [createdIntegration]
+            })
+            .set('Origin', config.get('url'))
+            .expect(404);
+
+        editRes.body.errors[0].context.should.eql('Integration not found.');
     });
 });
