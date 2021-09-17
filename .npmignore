@@ -6,6 +6,7 @@
 .eslintrc.json
 .npmignore
 changelog.md*
+coverage
 docs/**
 _site/**
 content/adapters/**
