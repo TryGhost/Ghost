@@ -173,10 +173,16 @@ describe('Exporter', function () {
             } = require('../../../../core/server/data/exporter/table-lists.js');
 
             const nonSchemaTables = ['migrations', 'migrations_lock'];
+            const requiredTables = schemaTables.concat(nonSchemaTables);
+            // NOTE: You should not add tables to this list unless they are temporary
+            const ignoredTables = ['temp_member_analytic_events'];
+
+            const expectedTables = requiredTables.filter(table => !ignoredTables.includes(table)).sort();
+            const actualTables = BACKUP_TABLES.concat(TABLES_ALLOWLIST).sort();
 
             // NOTE: this test is serving a role of a reminder to have a look into exported tables allowlists
             //       if it failed you probably need to add or remove a table entry from table-lists module
-            [...Object.keys(schema.tables), ...nonSchemaTables].sort().should.eql([...BACKUP_TABLES, ...TABLES_ALLOWLIST].sort());
+            should.deepEqual(actualTables, expectedTables);
         });
 
         it('should be fixed when default settings is changed', function () {
