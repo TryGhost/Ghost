@@ -19,6 +19,11 @@ module.exports = createTransactionalMigration(
             )
             .where('members.status', 'free');
 
+        if (freeMemberEvents.length === 0) {
+            logging.info('No free members found - skipping migration');
+            return;
+        }
+
         const eventsByMember = _.groupBy(freeMemberEvents, 'member_id');
 
         const eventsToUpdate = Object.keys(eventsByMember).reduce((incorrectEvents, memberId) => {
