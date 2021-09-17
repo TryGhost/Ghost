@@ -60,27 +60,27 @@ describe('Match helper', function () {
         };
 
         // @TODO: Fix this!
-        // describe('Basic values', function () {
-        // runTests({
-        // '{{match truthy_bool}}': 'true',
-        // '{{match falsy_bool}}': 'false',
-        // '{{match one}}': 'true',
-        // '{{match zero}}': 'false',
-        // '{{match string}}': 'true',
-        // '{{match empty}}': 'false',
-        // '{{match null}}': 'false',
-        // '{{match undefined}}': 'false',
-        // '{{match unknown}}': 'false',
-        // '{{match object}}': 'true',
+        describe('Basic values', function () {
+            runTests({
+                '{{match truthy_bool}}': 'true',
+                '{{match falsy_bool}}': 'false',
+                '{{match one}}': 'true',
+                '{{match zero}}': 'false',
+                '{{match string}}': 'true',
+                '{{match empty}}': 'false',
+                '{{match null}}': 'false',
+                '{{match undefined}}': 'false',
+                '{{match unknown}}': 'false',
+                '{{match object}}': 'true',
 
-        // // Zero works if includeZero is set
-        // '{{match zero includeZero=true}}': 'true',
+                // Zero works if includeZero is set
+                '{{match zero includeZero=true}}': 'true',
 
-        // // Nesting the helper should still resolve correctly
-        // '{{match (match truthy_bool)}}': 'true',
-        // '{{match (match falsy_bool)}}': 'false'
-        // }, hash);
-        // });
+                // Nesting the helper should still resolve correctly
+                '{{match (match truthy_bool)}}': 'true',
+                '{{match (match falsy_bool)}}': 'false'
+            }, hash);
+        });
 
         // @TODO: Implement Implicit Equals
         // describe('Implicit Equals', function () {
@@ -146,6 +146,43 @@ describe('Match helper', function () {
             const expected = 'case c';
 
             shouldCompileToExpected(templateString, {title}, expected);
+        });
+    });
+
+    // By using match as a block helper, instead of returning true or false, the matching template is executed
+    // We've already tested all the logic of the matches, for the block helpers we only need to test that the correct template is executed
+    describe('{{#match}} (block)', function () {
+        it('Executes the first block when match is true', function () {
+            const templateString = '{{#match title "=" "Hello World"}}case a{{else match title "=" "Hello World!"}}case b{{else}}case c{{/match}}';
+            const hash = {
+                title: 'Hello World'
+            };
+
+            const expected = 'case a';
+
+            shouldCompileToExpected(templateString, hash, expected);
+        });
+
+        it('Executes secondary blocks correctly', function () {
+            const templateString = '{{#match title "=" "Hello World"}}case a{{else match title "=" "Hello World!"}}case b{{else}}case c{{/match}}';
+            const hash = {
+                title: 'Hello World!'
+            };
+
+            const expected = 'case b';
+
+            shouldCompileToExpected(templateString, hash, expected);
+        });
+
+        it('Executes the else block when match is false', function () {
+            const templateString = '{{#match title "=" "Hello World"}}case a{{else match title "=" "Hello World!"}}case b{{else}}case c{{/match}}';
+            const hash = {
+                title: 'Hello'
+            };
+
+            const expected = 'case c';
+
+            shouldCompileToExpected(templateString, hash, expected);
         });
     });
 });
