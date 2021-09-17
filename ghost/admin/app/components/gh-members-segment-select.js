@@ -97,7 +97,7 @@ export default class GhMembersSegmentSelect extends Component {
         if (this.feature.get('multipleProducts')) {
             // fetch all products w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
             // TODO: add `include: 'count.members` to query once API supports
-            const products = yield this.store.query('product', {limit: 'all'});
+            const products = yield this.store.query('product', {limit: 'all', include: 'monthly_price,yearly_price,benefits'});
 
             if (products.length > 0) {
                 const productsGroup = {
