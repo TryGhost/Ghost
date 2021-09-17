@@ -1,6 +1,11 @@
 const models = require('../../models');
 const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
+const getWebhooksServiceInstance = require('../../services/webhooks/webhooks-service');
+
+const webhooksService = getWebhooksServiceInstance({
+    WebhookModel: models.Webhook
+});
 
 module.exports = {
     docName: 'webhooks',
@@ -15,30 +20,7 @@ module.exports = {
         data: [],
         permissions: true,
         async query(frame) {
-            const webhook = await models.Webhook.getByEventAndTarget(
-                frame.data.webhooks[0].event,
-                frame.data.webhooks[0].target_url,
-                frame.options
-            );
-
-            if (webhook) {
-                throw new errors.ValidationError({message: i18n.t('errors.api.webhooks.webhookAlreadyExists')});
-            }
-
-            try {
-                const newWebhook = await models.Webhook.add(frame.data.webhooks[0], frame.options);
-                return newWebhook;
-            } catch (error) {
-                if (error.errno === 1452 || (error.code === 'SQLITE_CONSTRAINT' && /SQLITE_CONSTRAINT: FOREIGN KEY constraint failed/.test(error.message))) {
-                    throw new errors.ValidationError({
-                        message: i18n.t('notices.data.validation.index.schemaValidationFailed', {
-                            key: 'integration_id'
-                        }),
-                        context: i18n.t('errors.api.webhooks.nonExistingIntegrationIdProvided.context'),
-                        help: i18n.t('errors.api.webhooks.nonExistingIntegrationIdProvided.help')
-                    });
-                }
-            }
+            return await webhooksService.add(frame.data, frame.options);
         }
     },
 
