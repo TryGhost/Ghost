@@ -8,6 +8,10 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
     @service modals;
     @service settings;
 
+    customizeModal = null;
+    confirmModal = null;
+    hasConfirmed = false;
+
     beforeModel() {
         super.beforeModel(...arguments);
 
@@ -35,11 +39,13 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
             transition.abort();
 
             const shouldLeave = await this.confirmUnsavedChanges();
+            this.hasConfirmed = true;
 
             if (shouldLeave) {
                 return transition.retry();
             }
         } else {
+            this.hasConfirmed = true;
             return true;
         }
     }
@@ -48,9 +54,14 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
         this.customizeModal?.close();
         this.customizeModal = null;
         this.confirmModal = null;
+        this.hasConfirmed = false;
     }
 
     async beforeModalClose() {
+        if (this.hasConfirmed) {
+            return;
+        }
+
         const shouldLeave = await this.confirmUnsavedChanges();
 
         if (shouldLeave === true) {
