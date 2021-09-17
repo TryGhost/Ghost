@@ -52,6 +52,32 @@ describe('Generators', function () {
         sinon.restore();
     });
 
+    it('max node setting results in the right number of nodes', function () {
+        generator = new PostGenerator({maxNodes: 5});
+
+        for (let i = 0; i < 10; i++) {
+            generator.addUrl(`http://my-ghost-blog.com/episode-${i}/`, testUtils.DataGenerator.forKnex.createPost({
+                created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,
+                updated_at: null,
+                published_at: null,
+                slug: `episode-${i}`
+            }));
+        }
+
+        generator.getXml();
+
+        // We end up with 10 nodes
+        Object.keys(generator.nodeLookup).should.be.Array().with.lengthOf(10);
+
+        // But only 5 are output in the xml
+        generator.siteMapContent.match(/<loc>/g).should.be.Array().with.lengthOf(5);
+    });
+
+    it('default is 50k', function () {
+        generator = new PostGenerator();
+        generator.maxNodes.should.eql(50000);
+    });
+
     describe('IndexGenerator', function () {
         beforeEach(function () {
             generator = new IndexGenerator({

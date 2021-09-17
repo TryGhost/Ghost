@@ -19,30 +19,34 @@ class BaseSiteMapGenerator {
         this.nodeTimeLookup = {};
         this.siteMapContent = null;
         this.lastModified = 0;
+        this.maxNodes = 50000;
     }
 
     generateXmlFromNodes() {
-        const self = this;
-
         // Get a mapping of node to timestamp
-        const timedNodes = _.map(this.nodeLookup, function (node, id) {
+        let nodesToProcess = _.map(this.nodeLookup, (node, id) => {
             return {
                 id: id,
                 // Using negative here to sort newest to oldest
-                ts: -(self.nodeTimeLookup[id] || 0),
+                ts: -(this.nodeTimeLookup[id] || 0),
                 node: node
             };
         });
 
+        // Limit to 50k nodes - this is a quick fix to prevent errors in google console
+        if (this.maxNodes) {
+            nodesToProcess = nodesToProcess.slice(0, this.maxNodes);
+        }
+
         // Sort nodes by timestamp
-        const sortedNodes = _.sortBy(timedNodes, 'ts');
+        nodesToProcess = _.sortBy(nodesToProcess, 'ts');
 
         // Grab just the nodes
-        const urlElements = _.map(sortedNodes, 'node');
+        nodesToProcess = _.map(nodesToProcess, 'node');
 
         const data = {
             // Concat the elements to the _attr declaration
-            urlset: [XMLNS_DECLS].concat(urlElements)
+            urlset: [XMLNS_DECLS].concat(nodesToProcess)
         };
 
         // Generate full xml
