@@ -3,13 +3,12 @@ import Transform from '@ember-data/serializer/transform';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
 export default Transform.extend({
-    deserialize(serialized, options) {
+    deserialize(serialized) {
         let benefitsItems, benefitsArray;
 
         benefitsArray = serialized || [];
 
         benefitsItems = benefitsArray.map((itemDetails) => {
-            itemDetails.isSecondary = options && options.isSecondary || false;
             return ProductBenefitItem.create(itemDetails);
         });
 
