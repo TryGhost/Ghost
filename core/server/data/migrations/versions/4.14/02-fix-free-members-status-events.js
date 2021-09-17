@@ -30,7 +30,7 @@ module.exports = createTransactionalMigration(
             const events = eventsByMember[memberId];
 
             events.sort((a, b) => {
-                return new Date(b) - new Date(a);
+                return new Date(b.created_at) - new Date(a.created_at);
             });
 
             const mostRecentStatusEvent = events[0];
