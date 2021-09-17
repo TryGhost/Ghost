@@ -1,36 +1,54 @@
+const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils.js');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Updating members_status_events for free members');
-        const freeMembers = await knex('members')
-            .select('id')
-            .where('status', 'free');
+        const freeMemberEvents = await knex('members')
+            .select(
+                'members.id as member_id',
+                'members_status_events.id',
+                'members_status_events.to_status',
+                'members_status_events.created_at'
+            )
+            .innerJoin(
+                'members_status_events',
+                'members.id',
+                'members_status_events.member_id'
+            )
+            .where('members.status', 'free');
 
-        if (freeMembers.length === 0) {
-            logging.info('No free members found - skipping migration');
-            return;
-        } else {
-            logging.info(`Found ${freeMembers.length} free members - checking members_status_events`);
-        }
+        const eventsByMember = _.groupBy(freeMemberEvents, 'member_id');
 
-        for (const member of freeMembers) {
-            const mostRecentStatusEvent = await knex('members_status_events')
-                .select('*')
-                .where('member_id', member.id)
-                .orderBy('created_at', 'desc')
-                .limit(1)
-                .first();
+        const eventsToUpdate = Object.keys(eventsByMember).reduce((incorrectEvents, memberId) => {
+            const events = eventsByMember[memberId];
 
-            if (!mostRecentStatusEvent) {
-                logging.warn(`Could not find a status event for member ${member.id} - skipping this member`);
-            } else if (mostRecentStatusEvent.to_status !== 'free') {
-                logging.info(`Updating members_status_event ${mostRecentStatusEvent.id}`);
-                await knex('members_status_events')
-                    .update('to_status', 'free')
-                    .where('id', mostRecentStatusEvent.id);
+            events.sort((a, b) => {
+                return new Date(b) - new Date(a);
+            });
+
+            const mostRecentStatusEvent = events[0];
+
+            if (mostRecentStatusEvent && mostRecentStatusEvent.to_status !== 'free') {
+                return incorrectEvents.concat(mostRecentStatusEvent.id);
             }
+
+            return incorrectEvents;
+        }, []);
+
+        logging.info(`Found ${eventsToUpdate.length} member status events that need updating`);
+
+        // Umm? Well... The current version of SQLite3 bundled with Ghost supports
+        // a maximum of 999 variables, we use one variable for the SET value
+        // and so we're left with 998 for our WHERE IN clause values
+        const chunkedEventsToUpdate = _.chunk(eventsToUpdate, 998);
+
+        for (const chunk of chunkedEventsToUpdate) {
+            logging.info(`Updating a chunk of ${chunk.length} member status events`);
+            await knex('members_status_events')
+                .update('to_status', 'free')
+                .whereIn('id', chunk);
         }
     },
     async function down() {}
