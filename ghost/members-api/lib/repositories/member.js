@@ -12,6 +12,11 @@ const messages = {
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true'
 };
 
+/**
+ * @typedef {object} ITokenService
+ * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
+ */
+
 module.exports = class MemberRepository {
     /**
      * @param {object} deps
@@ -25,6 +30,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.productRepository
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
+     * @param {ITokenService} deps.tokenService
      * @param {any} deps.logger
      */
     constructor({
@@ -38,6 +44,7 @@ module.exports = class MemberRepository {
         StripeCustomerSubscription,
         stripeAPIService,
         productRepository,
+        tokenService,
         logger
     }) {
         this._Member = Member;
@@ -50,6 +57,7 @@ module.exports = class MemberRepository {
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
         this._productRepository = productRepository;
+        this.tokenService = tokenService;
         this._logging = logger;
     }
 
@@ -74,6 +82,14 @@ module.exports = class MemberRepository {
             return null;
         }
         return this._Member.findOne(data, options);
+    }
+
+    async getByToken(token, options) {
+        const data = await this.tokenService.decodeToken(token);
+
+        return this.get({
+            email: data.sub
+        }, options);
     }
 
     async create(data, options) {

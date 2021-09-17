@@ -29,14 +29,21 @@ module.exports = class TokenService {
 
     /**
      * @param {string} token
+     * @returns {Promise<jwt.JwtPayload>}
      */
     async decodeToken(token) {
         await this._keyStoreReady;
 
-        return jwt.verify(token, this._publicKey, {
+        const result = jwt.verify(token, this._publicKey, {
             algorithms: ['RS512'],
             issuer: this._issuer
         });
+
+        if (typeof result === 'string') {
+            return {sub: result};
+        }
+
+        return result;
     }
 
     async getPublicKeys() {

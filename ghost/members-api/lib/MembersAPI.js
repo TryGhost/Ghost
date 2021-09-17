@@ -58,6 +58,12 @@ module.exports = function MembersAPI({
         common.logging.setLogger(logger);
     }
 
+    const tokenService = new TokenService({
+        privateKey,
+        publicKey,
+        issuer
+    });
+
     const stripeConfig = paymentConfig && paymentConfig.stripe || {};
 
     const stripeAPIService = new StripeAPIService({
@@ -90,6 +96,7 @@ module.exports = function MembersAPI({
     const memberRepository = new MemberRepository({
         stripeAPIService,
         logger,
+        tokenService,
         productRepository,
         Member,
         MemberSubscribeEvent,
@@ -126,12 +133,6 @@ module.exports = function MembersAPI({
         memberRepository,
         eventRepository,
         sendEmailWithMagicLink
-    });
-
-    const tokenService = new TokenService({
-        privateKey,
-        publicKey,
-        issuer
     });
 
     const geolocationService = new GeolocationSerice();
