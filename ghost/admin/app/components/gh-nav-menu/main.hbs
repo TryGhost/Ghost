@@ -104,17 +104,6 @@
                 <li class="relative gh-nav-pro">
                     <GhBillingUpdateButton />
                 </li>
-                <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
-                {{#if this.showBilling}}
-                    <li class="relative">
-                        <a href="javascript:void(0)" {{action "toggleBillingModal" }} data-test-nav="billing">
-                            {{svg-jar "credit-card"}} View billing
-                        </a>
-                    </li>
-                    <li class="relative gh-nav-pro">
-                        <GhBillingUpdateButton />
-                    </li>
-                {{/if}}
             {{/if}}
         </ul>
         {{/if}}
