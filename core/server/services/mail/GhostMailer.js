@@ -1,7 +1,6 @@
 // # Mail
 // Handles sending email for Ghost
 const _ = require('lodash');
-const Promise = require('bluebird');
 const validator = require('@tryghost/validator');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
