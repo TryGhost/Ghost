@@ -8,16 +8,34 @@
                     {{on "click" @close}}
                     {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
                     {{on "mousedown" (optional this.noop)}}
-                    data-test-button="cancel-custom-view-form"
+                    data-test-button="cancel-customize"
                 >
                     <span>Cancel</span>
                 </button>
+
+                <GhTaskButton
+                    @buttonText="Save and close"
+                    @successText="Saved"
+                    @task={{@data.saveTask}}
+                    @idleClass="gh-btn-primary"
+                    @class="gh-btn gh-btn-icon"
+                    data-test-button="save-customize"
+                />
             </div>
         </div>
 
         <div class="gh-branding-settings">
             <section class="gh-branding-settings-options">
+                <div class="gh-btn-group">
+                    <button type="button" class="gh-btn {{if (eq this.tab "general") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "general")}}><span>General</span></button>
+                    <button type="button" class="gh-btn {{if (eq this.tab "theme") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "theme")}}><span>Theme</span></button>
+                </div>
 
+                {{#if (eq this.tab "general")}}
+                    <Modals::Design::Customize::GeneralSettings @replacePreviewContents={{this.replacePreviewContents}} />
+                {{else if (eq this.tab "theme")}}
+                    <Modals::Design::Customize::ThemeSettings @replacePreviewContents={{this.replacePreviewContents}} />
+                {{/if}}
             </section>
 
             <section class="gh-branding-settings-right">

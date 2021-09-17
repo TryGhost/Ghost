@@ -21,7 +21,9 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
     }
 
     activate() {
-        this.customizeModal = this.modals.open('modals/design/customize', {}, {
+        this.customizeModal = this.modals.open('modals/design/customize', {
+            saveTask: this.controllerFor('settings.design.customize').saveTask
+        }, {
             className: 'fullscreen-modal-full-overlay fullscreen-modal-branding-modal',
             beforeClose: bind(this, this.beforeModalClose)
         });
