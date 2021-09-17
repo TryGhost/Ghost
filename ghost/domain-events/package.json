@@ -1,0 +1,30 @@
+{
+  "name": "@tryghost/domain-events",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Members/tree/main/packages/domain-events",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "types": "types",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --check-coverage mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.15.4",
+    "c8": "7.9.0",
+    "mocha": "9.1.1",
+    "should": "13.2.3",
+    "sinon": "11.1.2"
+  },
+  "dependencies": {}
+}
