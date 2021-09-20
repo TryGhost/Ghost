@@ -116,6 +116,7 @@ class SettingsBREADService {
 
         if (!(options.context && options.context.internal)) {
             const firstCoreSetting = filteredSettings.find(setting => getSetting(setting).group === 'core');
+
             if (firstCoreSetting) {
                 throw new NoPermissionError({
                     message: tpl(messages.accessCoreSettingFromExtReq)
