@@ -11,7 +11,7 @@
     {{else if @post.isScheduled}}
         <time datetime="{{@post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
             Will be published
-            {{#if @post.emailRecipientFilter}}
+            {{#if (and @post.emailRecipientFilter (not @post.email))}}
                 and sent to <GhRecipientFilterCount @filter={{@post.emailRecipientFilter}} />
             {{/if}}
             {{this.scheduledTime}}
