@@ -29,6 +29,7 @@ function hideValueIfSecret(setting) {
  */
 const getSettingsBREADServiceInstance = () => {
     return new SettingsBREADService({
+        SettingsModel: models.Settings,
         settingsCache: SettingsCache
     });
 };
