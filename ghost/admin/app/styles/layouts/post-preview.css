@@ -220,6 +220,11 @@
     height: 2.4rem;
   }
 
+  .gh-post-preview-social-container p {
+      width: 100%;
+      text-align: center;
+  }
+
 @media (max-width: 1120px) {
     .gh-social-container-responsive {
         flex-direction: column;
