@@ -10,6 +10,8 @@ const settingsService = require('../../services/settings');
 const settingsCache = require('../../../shared/settings-cache');
 const membersService = require('../../services/members');
 
+const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
+
 module.exports = {
     docName: 'settings',
 
@@ -55,41 +57,7 @@ module.exports = {
             }
         },
         query(frame) {
-            let setting;
-            if (frame.options.key === 'slack') {
-                const slackURL = settingsCache.get('slack_url', {resolve: false});
-                const slackUsername = settingsCache.get('slack_username', {resolve: false});
-
-                setting = slackURL || slackUsername;
-                setting.key = 'slack';
-                setting.value = [{
-                    url: slackURL && slackURL.value,
-                    username: slackUsername && slackUsername.value
-                }];
-            } else {
-                setting = settingsCache.get(frame.options.key, {resolve: false});
-            }
-
-            if (!setting) {
-                return Promise.reject(new NotFoundError({
-                    message: i18n.t('errors.api.settings.problemFindingSetting', {
-                        key: frame.options.key
-                    })
-                }));
-            }
-
-            // @TODO: handle in settings model permissible fn
-            if (setting.group === 'core' && !(frame.options.context && frame.options.context.internal)) {
-                return Promise.reject(new NoPermissionError({
-                    message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
-                }));
-            }
-
-            setting = settingsService.hideValueIfSecret(setting);
-
-            return {
-                [frame.options.key]: setting
-            };
+            return settingsBREADService.read(frame.options.key, frame.options.context);
         }
     },
 
