@@ -29,6 +29,7 @@
 @media (max-width: 500px) {
     .settings-menu-toggle {
         top: 15px;
+        right: 20px;
     }
 }
 
