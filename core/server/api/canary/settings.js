@@ -193,18 +193,6 @@ module.exports = {
         permissions: {
             unsafeAttrsObject(frame) {
                 return _.find(frame.data.settings, {key: 'labs'});
-            },
-            async before(frame) {
-                if (frame.options.context && frame.options.context.internal) {
-                    return;
-                }
-
-                const firstCoreSetting = frame.data.settings.find(setting => setting.group === 'core');
-                if (firstCoreSetting) {
-                    throw new NoPermissionError({
-                        message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
-                    });
-                }
             }
         },
         async query(frame) {
