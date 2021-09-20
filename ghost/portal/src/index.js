@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import setupAnalytics from './analytics';
 
 const ROOT_DIV_ID = 'ghost-portal-root';
 
@@ -30,15 +31,24 @@ function handleTokenUrl() {
     }
 }
 
-function setup() {
+function setupAnalyticsScript({siteUrl}) {
+    const analyticsTag = document.querySelector('meta[name=ghost-analytics-id]');
+    const analyticsId = analyticsTag?.content;
+    if (siteUrl && analyticsTag) {
+        setupAnalytics({siteUrl, analyticsId});
+    }
+}
+
+function setup({siteUrl}) {
     addRootDiv();
     handleTokenUrl();
+    setupAnalyticsScript({siteUrl});
 }
 
 function init() {
     const customSiteUrl = getSiteUrl();
     const siteUrl = customSiteUrl || window.location.origin;
-    setup();
+    setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
             <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} />
