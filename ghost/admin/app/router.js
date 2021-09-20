@@ -54,6 +54,8 @@ Router.map(function () {
 
     this.route('settings.design', {path: '/settings/design'}, function () {
         this.route('customize');
+        this.route('change-theme');
+        this.route('advanced');
     });
 
     // this.route('settings.products', {path: '/settings/products'});
