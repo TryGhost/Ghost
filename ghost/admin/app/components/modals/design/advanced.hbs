@@ -5,9 +5,14 @@
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
-    </div>
+        <div class="gh-setting-header">Installed Themes</div>
+        <div class="gh-themes-container">
 
-    <div class="modal-footer">
-
+            <GhThemeTable
+                @themes={{this.themes}}
+                @activateTheme={{optional this.noop}}
+                @downloadTheme={{optional this.noop}}
+                @deleteTheme={{optional this.noop}} />
+        </div>
     </div>
 </div>

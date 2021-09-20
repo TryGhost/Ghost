@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 export default class SettingsDesignAdvancedRoute extends AuthenticatedRoute {
     @service feature;
     @service modals;
+    @service store;
 
     beforeModel() {
         super.beforeModel(...arguments);
@@ -16,6 +17,8 @@ export default class SettingsDesignAdvancedRoute extends AuthenticatedRoute {
         if (!this.feature.customThemeSettings) {
             return this.transitionTo('settings');
         }
+
+        this.store.findAll('theme');
     }
 
     activate() {
