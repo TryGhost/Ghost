@@ -5,7 +5,7 @@ const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
 const frontendSettings = require('../../../frontend/services/settings');
 const i18n = require('../../../shared/i18n');
-const {BadRequestError, NoPermissionError, NotFoundError} = require('@tryghost/errors');
+const {BadRequestError, NoPermissionError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings');
 const settingsCache = require('../../../shared/settings-cache');
 const membersService = require('../../services/members');
@@ -208,76 +208,20 @@ module.exports = {
             }
         },
         async query(frame) {
+            let stripeConnectData;
             const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
-
-            const settings = frame.data.settings.filter((setting) => {
-                // The `stripe_connect_integration_token` "setting" is only used to set the `stripe_connect_*` settings.
-                return ![
-                    'stripe_connect_integration_token',
-                    'stripe_connect_publishable_key',
-                    'stripe_connect_secret_key',
-                    'stripe_connect_livemode',
-                    'stripe_connect_account_id',
-                    'stripe_connect_display_name'
-                ].includes(setting.key)
-                    // Remove obfuscated settings
-                    && !(setting.value === settingsService.obfuscatedSetting && settingsService.isSecretSetting(setting));
-            });
-
-            const getSetting = setting => settingsCache.get(setting.key, {resolve: false});
-
-            const firstUnknownSetting = settings.find(setting => !getSetting(setting));
-
-            if (firstUnknownSetting) {
-                throw new NotFoundError({
-                    message: i18n.t('errors.api.settings.problemFindingSetting', {
-                        key: firstUnknownSetting.key
-                    })
-                });
-            }
-
-            if (!(frame.options.context && frame.options.context.internal)) {
-                const firstCoreSetting = settings.find(setting => getSetting(setting).group === 'core');
-                if (firstCoreSetting) {
-                    throw new NoPermissionError({
-                        message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
-                    });
-                }
-            }
 
             if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
                 const getSessionProp = prop => frame.original.session[prop];
-                try {
-                    const data = await membersService.stripeConnect.getStripeConnectTokenData(stripeConnectIntegrationToken.value, getSessionProp);
-                    settings.push({
-                        key: 'stripe_connect_publishable_key',
-                        value: data.public_key
-                    });
-                    settings.push({
-                        key: 'stripe_connect_secret_key',
-                        value: data.secret_key
-                    });
-                    settings.push({
-                        key: 'stripe_connect_livemode',
-                        value: data.livemode
-                    });
-                    settings.push({
-                        key: 'stripe_connect_display_name',
-                        value: data.display_name
-                    });
-                    settings.push({
-                        key: 'stripe_connect_account_id',
-                        value: data.account_id
-                    });
-                } catch (err) {
-                    throw new BadRequestError({
-                        err,
-                        message: 'The Stripe Connect token could not be parsed.'
-                    });
-                }
+
+                stripeConnectData = await settingsBREADService.getStripeConnectData(
+                    stripeConnectIntegrationToken,
+                    getSessionProp,
+                    membersService.stripeConnect.getStripeConnectTokenData
+                );
             }
 
-            return models.Settings.edit(settings, frame.options);
+            return await settingsBREADService.edit(frame.data.settings, frame.options, stripeConnectData);
         }
     },
 
