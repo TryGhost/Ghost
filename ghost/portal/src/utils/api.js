@@ -7,7 +7,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
         }
     }
 
-    function makeRequest({url, method, headers = {}, credentials, body}) {
+    function makeRequest({url, method = 'GET', headers = {}, credentials = undefined, body = undefined}) {
         const options = {
             method,
             headers,
@@ -17,6 +17,28 @@ function setupGhostApi({siteUrl = window.location.origin}) {
         return fetch(url, options);
     }
     const api = {};
+
+    api.analytics = {
+        pushEvent(event) {
+            const url = endpointFor({type: 'members', resource: 'events'});
+            const body = {
+                events: [event]
+            };
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(function (res) {
+                if (!res.ok) {
+                    return null;
+                }
+                return res.json();
+            });
+        }
+    };
 
     api.site = {
         read() {
