@@ -22,7 +22,14 @@
 .gh-publishmenu {
     position: relative;
     z-index: 1000;
+    display: inherit;
     margin-right: 8px;
+}
+
+@media (max-width: 500px) {
+    .gh-publishmenu {
+        margin-right: 0;
+    }
 }
 
 .gh-publishmenu-dropdown {

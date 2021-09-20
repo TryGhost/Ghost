@@ -330,6 +330,12 @@
     }
 }
 
+@media (max-width: 500px) {
+    .gh-editor-header .mobile {
+        margin-left: 5px;
+    }
+}
+
 .gh-btn-editor {
     background: var(--white) !important;
 }
@@ -593,11 +599,16 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     fill: var(--darkgrey);
 }
 
+@media (max-width: 500px) {
+    .gh-editor-back-button {
+        margin-right: 0;
+    }
+}
+
 .gh-editor-post-status {
     height: 33px;
     display: flex;
     align-items: center;
-    margin-right: 8px;
     padding: 5px 12px 6px;
     font-size: 1.35rem;
     font-weight: 400;
