@@ -79,7 +79,7 @@
     "@tryghost/members-importer": "0.3.2",
     "@tryghost/members-ssr": "1.0.12",
     "@tryghost/mw-session-from-token": "0.1.22",
-    "@tryghost/nodemailer": "0.3.1",
+    "@tryghost/nodemailer": "0.3.2",
     "@tryghost/package-json": "1.0.2",
     "@tryghost/promise": "0.1.9",
     "@tryghost/request": "0.1.5",
