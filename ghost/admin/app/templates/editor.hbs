@@ -8,7 +8,7 @@
             <header class="gh-editor-header br2 pe-none">
                 <div class="flex items-center pe-auto">
                     {{#if this.ui.isFullScreen}}
-                        <div class="ml3 flex items-center">
+                        <div class="ml3 mobile flex items-center">
                             <LinkTo @route={{pluralize this.post.displayName }} @classNames="gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
                                 <span>
                                     {{svg-jar "arrow-left"}}
