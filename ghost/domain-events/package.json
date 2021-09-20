@@ -20,7 +20,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.15.4",
+    "@babel/eslint-parser": "7.15.4",
     "c8": "7.9.0",
     "mocha": "9.1.1",
     "should": "13.2.3",
