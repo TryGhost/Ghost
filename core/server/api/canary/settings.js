@@ -1,11 +1,10 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const validator = require('@tryghost/validator');
 const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
 const frontendSettings = require('../../../frontend/services/settings');
 const i18n = require('../../../shared/i18n');
-const {BadRequestError, NoPermissionError} = require('@tryghost/errors');
+const {BadRequestError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings');
 const settingsCache = require('../../../shared/settings-cache');
 const membersService = require('../../services/members');
@@ -121,17 +120,7 @@ module.exports = {
         ],
         async query(frame) {
             const {email, type} = frame.data;
-            if (typeof email !== 'string' || !validator.isEmail(email)) {
-                throw new BadRequestError({
-                    message: i18n.t('errors.api.settings.invalidEmailReceived')
-                });
-            }
 
-            if (!type || !['fromAddressUpdate', 'supportAddressUpdate'].includes(type)) {
-                throw new BadRequestError({
-                    message: 'Invalid email type recieved'
-                });
-            }
             try {
                 // Send magic link to update fromAddress
                 await membersService.settings.sendEmailAddressUpdateMagicLink({
