@@ -188,7 +188,7 @@ export const CARD_MENU = [
         {
             label: 'CodePen',
             icon: 'koenig/kg-card-type-codepen',
-            desc: '/codepen [video url]',
+            desc: '/[pen url]',
             iconClass: 'kg-card-type-codepen',
             matches: ['codepen'],
             type: 'card',
