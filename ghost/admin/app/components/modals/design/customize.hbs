@@ -32,9 +32,13 @@
                 </div>
 
                 {{#if (eq this.tab "general")}}
-                    <Modals::Design::Customize::GeneralSettings @replacePreviewContents={{this.replacePreviewContents}} />
+                    <Modals::Design::Customize::GeneralSettings
+                        @updatePreview={{perform this.updatePreviewTask}}
+                    />
                 {{else if (eq this.tab "theme")}}
-                    <Modals::Design::Customize::ThemeSettings @replacePreviewContents={{this.replacePreviewContents}} />
+                    <Modals::Design::Customize::ThemeSettings
+                        @updatePreview={{perform this.updatePreviewTask}}
+                    />
                 {{/if}}
             </section>
 

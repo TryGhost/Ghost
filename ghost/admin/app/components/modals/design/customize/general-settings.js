@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import config from 'ghost-admin/config/environment';
 import {
     ICON_EXTENSIONS,
     ICON_MIME_TYPES,
@@ -13,7 +12,6 @@ import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
 
 export default class DesignTabGeneralSettingsComponent extends Component {
-    @service ajax;
     @service config;
     @service ghostPaths;
     @service settings;
@@ -49,12 +47,6 @@ export default class DesignTabGeneralSettingsComponent extends Component {
 
         return params.toString();
     }
-
-    constructor() {
-        super(...arguments);
-        this.updatePreviewTask.perform();
-    }
-
     willDestroy() {
         super.willDestroy?.(...arguments);
         this.settings.errors.remove('accentColor');
@@ -70,14 +62,14 @@ export default class DesignTabGeneralSettingsComponent extends Component {
     async imageUploaded(property, results) {
         if (results[0]) {
             this.settings.set(property, results[0].url);
-            this.updatePreviewTask.perform();
+            this.args.updatePreview();
         }
     }
 
     @action
     async removeImage(imageName) {
         this.settings.set(imageName, '');
-        this.updatePreviewTask.perform();
+        this.args.updatePreview();
     }
 
     @action
@@ -121,7 +113,7 @@ export default class DesignTabGeneralSettingsComponent extends Component {
             }
 
             this.settings.set('accentColor', newColor);
-            this.updatePreviewTask.perform();
+            this.args.updatePreview();
         } else {
             this.settings.errors.add('accentColor', 'Please enter a color in hex format');
             this.settings.hasValidated.pushObject('accentColor');
@@ -132,39 +124,5 @@ export default class DesignTabGeneralSettingsComponent extends Component {
     *debounceUpdateAccentColor(event) {
         yield timeout(500);
         this.updateAccentColor(event);
-    }
-
-    @task
-    *updatePreviewTask() {
-        // skip during testing because we don't have mocks for the front-end
-        if (config.environment === 'test') {
-            return;
-        }
-
-        // grab the preview html
-        const ajaxOptions = {
-            contentType: 'text/html;charset=utf-8',
-            dataType: 'text',
-            headers: {
-                'x-ghost-preview': this.previewData
-            }
-        };
-
-        // TODO: config.blogUrl always removes trailing slash - switch to always have trailing slash
-        const frontendUrl = `${this.config.get('blogUrl')}/`;
-        const previewContents = yield this.ajax.post(frontendUrl, ajaxOptions);
-
-        // inject extra CSS to disable navigation and prevent clicks
-        const injectedCss = `html { pointer-events: none; }`;
-
-        const domParser = new DOMParser();
-        const htmlDoc = domParser.parseFromString(previewContents, 'text/html');
-
-        const stylesheet = htmlDoc.querySelector('style');
-        const originalCSS = stylesheet.innerHTML;
-        stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
-
-        // replace the iframe contents with the doctored preview html
-        this.args.replacePreviewContents(htmlDoc.documentElement.innerHTML);
     }
 }
