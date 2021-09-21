@@ -3,11 +3,10 @@ import setupGhostApi from './utils/api';
 function sendEntryViewEvent({analyticsId, api}) {
     if (analyticsId) {
         api.analytics.pushEvent({
-            event_name: 'entry_view',
-            member_id: '',
-            member_status: '',
+            type: 'entry_view',
             entry_id: analyticsId,
-            source_url: window.location.href
+            source_url: window.location.href,
+            created_at: new Date()
         });
     }
 }
