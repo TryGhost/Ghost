@@ -1,27 +1,12 @@
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const {NotFoundError, NoPermissionError, BadRequestError} = require('@tryghost/errors');
+const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 
 const messages = {
     problemFindingSetting: 'Problem finding setting: {key}',
     accessCoreSettingFromExtReq: 'Attempted to access core setting from external request'
 };
-
-// The string returned when a setting is set as write-only
-const obfuscatedSetting = '••••••••';
-
-// The function used to decide whether a setting is write-only
-function isSecretSetting(setting) {
-    return /secret/.test(setting.key);
-}
-
-// The function that obfuscates a write-only setting
-function hideValueIfSecret(setting) {
-    if (setting.value && isSecretSetting(setting)) {
-        return {...setting, value: obfuscatedSetting};
-    }
-    return setting;
-}
 
 class SettingsBREADService {
     /**
