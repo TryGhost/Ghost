@@ -5,7 +5,7 @@ function sendEntryViewEvent({analyticsId, api}) {
         api.analytics.pushEvent({
             type: 'entry_view',
             entry_id: analyticsId,
-            source_url: window.location.href,
+            entry_url: window.location.href,
             created_at: new Date()
         });
     }
