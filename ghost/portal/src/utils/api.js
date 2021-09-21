@@ -19,8 +19,10 @@ function setupGhostApi({siteUrl = window.location.origin}) {
     const api = {};
 
     api.analytics = {
-        pushEvent(event) {
+        async pushEvent(event) {
             const url = endpointFor({type: 'members', resource: 'events'});
+            const identity = await api.member.identity();
+            event.identity = identity;
             const body = {
                 events: [event]
             };
