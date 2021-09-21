@@ -1,6 +1,6 @@
 <div class="gh-stack" ...attributes>
-    <div class="gh-stack-item">
-        <div class="gh-setting-content">
+    <div class="gh-stack-item gh-setting-first">
+        <div class="flex-grow-1">
             <div class="gh-setting-title">Site description</div>
             <div class="gh-setting-desc mb3">Used in your theme, meta data and search results</div>
             {{#each uploader.errors as |error|}}
@@ -9,22 +9,22 @@
             <div class="w-100 flex flex-column flex-row-ns">
                 <GhErrorMessage @errors={{settings.errors}} @property="description" class="w-100 red"/>
             </div>
-        </div>
 
-        <div class="gh-setting-action" class="flex flex-column" data-test-setting="description">
-            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="description" @class="description-container">
-                <GhTextInput
-                    @value={{readonly this.settings.description}}
-                    @input={{action (mut this.settings.description) value="target.value"}}
-                    @focus-out={{action "validate" "description" target=this.settings}}
-                    data-test-description-input={{true}}
-                />
-                <GhErrorMessage @errors={{this.settings.errors}} @property="description"/>
-            </GhFormGroup>
+            <div class="gh-setting-action" class="flex flex-column" data-test-setting="description">
+                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="description" @class="description-container-labs">
+                    <GhTextInput
+                        @value={{readonly this.settings.description}}
+                        @input={{action (mut this.settings.description) value="target.value"}}
+                        @focus-out={{action "validate" "description" target=this.settings}}
+                        data-test-description-input={{true}}
+                    />
+                    <GhErrorMessage @errors={{this.settings.errors}} @property="description"/>
+                </GhFormGroup>
+            </div>
         </div>
     </div>
 
-    <div class="gh-stack-item gh-setting-first gh-accent-color">
+    <div class="gh-stack-item gh-setting gh-accent-color">
         <div class="gh-setting-content">
             <div class="gh-setting-title">Accent color</div>
             <div class="gh-setting-desc">Primary color used in your publication theme</div>
@@ -67,6 +67,51 @@
                             name="accent-color"
                             class="color-picker"
                             value="{{this.accentColorPickerValue}}"
+                            {{on "input" (perform this.debounceUpdateAccentColor)}}
+                        >
+                    </div>
+                </div>
+            </GhFormGroup>
+        </div>
+    </div>
+
+        <div class="gh-stack-item gh-setting gh-accent-color">
+        <div class="gh-setting-content">
+            <div class="gh-setting-title">Secondary color</div>
+            <div class="gh-setting-desc">Secondary color used in your publication theme</div>
+        </div>
+
+        <div class="gh-setting-action" data-test-setting="accentColor">
+            <GhFormGroup
+                @errors={{this.settings.errors}}
+                @hasValidated={{this.settings.hasValidated}}
+                @property="accentColor"
+                @class="input-color-form-group"
+            >
+                <div class="input-color">
+                    <input
+                        type="text"
+                        placeholder="15171A"
+                        name="accent-color"
+                        autocorrect="off"
+                        maxlength="6"
+                        value="cccccc"
+                        class="gh-input"
+                        {{on "input" (perform this.debounceUpdateAccentColor)}}
+                        {{on "blur" this.updateAccentColor}}
+                        {{on-key "Enter" this.blurElement}}
+                        data-test-input="accentColor"
+                    />
+                    <div class="color-picker-horizontal-divider"></div>
+                    <div
+                        class="color-box-container"
+                        style={{this.accentColorBgStlye}}
+                    >
+                        <input
+                            type="color"
+                            name="accent-color"
+                            class="color-picker"
+                            value="#cccccc"
                             {{on "input" (perform this.debounceUpdateAccentColor)}}
                         >
                     </div>
