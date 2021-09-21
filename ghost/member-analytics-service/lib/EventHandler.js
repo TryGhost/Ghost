@@ -3,7 +3,7 @@ const {MemberEntryViewEvent} = require('@tryghost/member-events');
 
 const AnalyticEvent = require('./AnalyticEvent');
 
-class AnalyticsService {
+class EventHandler {
     /**
      * @param {import('./AnalyticEventRepository')} repository
      */
@@ -31,4 +31,4 @@ class AnalyticsService {
     }
 }
 
-module.exports = AnalyticsService;
+module.exports = EventHandler;

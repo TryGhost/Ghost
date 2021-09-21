@@ -1,19 +1,19 @@
 const AnalyticEventRepository = require('./lib/AnalyticEventRepository');
-const AnalyticsService = require('./lib/AnalyticsService');
+const EventHandler = require('./lib/EventHandler');
 
-class MemberAnalyticsModule {
+class MemberAnalyticsService {
     /**
      * @param {AnalyticEventRepository} analyticEventRepository
      */
     constructor(analyticEventRepository) {
-        this.service = new AnalyticsService(analyticEventRepository);
+        this.eventHandler = new EventHandler(analyticEventRepository);
     }
 
     static create(AnalyticEventModel) {
         const analyticEventRepository = new AnalyticEventRepository(AnalyticEventModel);
 
-        return new MemberAnalyticsModule(analyticEventRepository);
+        return new MemberAnalyticsService(analyticEventRepository);
     }
 }
 
-module.exports = MemberAnalyticsModule;
+module.exports = MemberAnalyticsService;
