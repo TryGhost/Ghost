@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const i18n = require('../../../../../../shared/i18n');
-const {NotFoundError, ValidationError,BadRequestError} = require('@tryghost/errors');
+const {NotFoundError, ValidationError, BadRequestError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 
 const messages = {

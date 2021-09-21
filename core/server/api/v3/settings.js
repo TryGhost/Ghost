@@ -6,7 +6,6 @@ const frontendSettings = require('../../../frontend/services/settings');
 const i18n = require('../../../shared/i18n');
 const {BadRequestError, NoPermissionError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings');
-const settingsCache = require('../../../shared/settings-cache');
 const membersService = require('../../services/members');
 
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
@@ -18,26 +17,7 @@ module.exports = {
         options: ['type', 'group'],
         permissions: true,
         query(frame) {
-            let settings = settingsCache.getAll();
-
-            // CASE: no context passed (functional call)
-            if (!frame.options.context) {
-                return Promise.resolve(settings.filter((setting) => {
-                    return setting.group === 'site';
-                }));
-            }
-
-            if (!frame.options.context.internal) {
-                // CASE: omit core settings unless internal request
-                settings = _.filter(settings, (setting) => {
-                    const isCore = setting.group === 'core';
-                    return !isCore;
-                });
-                // CASE: omit secret settings unless internal request
-                settings = settings.map(settingsService.hideValueIfSecret);
-            }
-
-            return settings;
+            return settingsBREADService.browse(frame.options.context);
         }
     },
 
