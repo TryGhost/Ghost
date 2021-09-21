@@ -29,80 +29,80 @@ defaults = {
     directories: []
 };
 
-function ImportManager() {
-    this.importers = [ImageImporter, DataImporter];
-    this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
-    // Keep track of file to cleanup at the end
-    this.fileToDelete = null;
-}
+class ImportManager {
+    constructor() {
+        this.importers = [ImageImporter, DataImporter];
+        this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
 
-/**
- * A number, or a string containing a number.
- * @typedef {Object} ImportData
- * @property [Object] data
- * @property [Array] images
- */
+        // Keep track of file to cleanup at the end
+        this.fileToDelete = null;
+    }
 
-_.extend(ImportManager.prototype, {
     /**
      * Get an array of all the file extensions for which we have handlers
      * @returns {string[]}
      */
-    getExtensions: function () {
+    getExtensions() {
         return _.flatten(_.union(_.map(this.handlers, 'extensions'), defaults.extensions));
-    },
+    }
+
     /**
      * Get an array of all the mime types for which we have handlers
      * @returns {string[]}
      */
-    getContentTypes: function () {
+    getContentTypes() {
         return _.flatten(_.union(_.map(this.handlers, 'contentTypes'), defaults.contentTypes));
-    },
+    }
+
     /**
      * Get an array of directories for which we have handlers
      * @returns {string[]}
      */
-    getDirectories: function () {
+    getDirectories() {
         return _.flatten(_.union(_.map(this.handlers, 'directories'), defaults.directories));
-    },
+    }
+
     /**
      * Convert items into a glob string
      * @param {String[]} items
      * @returns {String}
      */
-    getGlobPattern: function (items) {
+    getGlobPattern(items) {
         return '+(' + _.reduce(items, function (memo, ext) {
             return memo !== '' ? memo + '|' + ext : ext;
         }, '') + ')';
-    },
+    }
+
     /**
      * @param {String[]} extensions
      * @param {Number} level
      * @returns {String}
      */
-    getExtensionGlob: function (extensions, level) {
+    getExtensionGlob(extensions, level) {
         const prefix = level === ALL_DIRS ? '**/*' :
             (level === ROOT_OR_SINGLE_DIR ? '{*/*,*}' : '*');
 
         return prefix + this.getGlobPattern(extensions);
-    },
+    }
+
     /**
      *
      * @param {String[]} directories
      * @param {Number} level
      * @returns {String}
      */
-    getDirectoryGlob: function (directories, level) {
+    getDirectoryGlob(directories, level) {
         const prefix = level === ALL_DIRS ? '**/' :
             (level === ROOT_OR_SINGLE_DIR ? '{*/,}' : '');
 
         return prefix + this.getGlobPattern(directories);
-    },
+    }
+
     /**
      * Remove files after we're done (abstracted into a function for easier testing)
      * @returns {Function}
      */
-    cleanUp: function () {
+    cleanUp() {
         const self = this;
 
         if (self.fileToDelete === null) {
@@ -120,14 +120,16 @@ _.extend(ImportManager.prototype, {
 
             self.fileToDelete = null;
         });
-    },
+    }
+
     /**
      * Return true if the given file is a Zip
      * @returns Boolean
      */
-    isZip: function (ext) {
+    isZip(ext) {
         return _.includes(defaults.extensions, ext);
-    },
+    }
+
     /**
      * Checks the content of a zip folder to see if it is valid.
      * Importable content includes any files or directories which the handlers can process
@@ -136,7 +138,7 @@ _.extend(ImportManager.prototype, {
      * @param {String} directory
      * @returns {Promise}
      */
-    isValidZip: function (directory) {
+    isValidZip(directory) {
         // Globs match content in the root or inside a single directory
         const extMatchesBase = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_OR_SINGLE_DIR), {cwd: directory});
 
@@ -166,20 +168,22 @@ _.extend(ImportManager.prototype, {
         }
 
         throw new errors.UnsupportedMediaTypeError({message: i18n.t('errors.data.importer.index.invalidZipStructure')});
-    },
+    }
+
     /**
      * Use the extract module to extract the given zip file to a temp directory & return the temp directory path
      * @param {String} filePath
      * @returns {Promise[]} Files
      */
-    extractZip: function (filePath) {
+    extractZip(filePath) {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
         this.fileToDelete = tmpDir;
 
         return extract(filePath, tmpDir).then(function () {
             return tmpDir;
         });
-    },
+    }
+
     /**
      * Use the handler extensions to get a globbing pattern, then use that to fetch all the files from the zip which
      * are relevant to the given handler, and return them as a name and path combo
@@ -187,18 +191,19 @@ _.extend(ImportManager.prototype, {
      * @param {String} directory
      * @returns [] Files
      */
-    getFilesFromZip: function (handler, directory) {
+    getFilesFromZip(handler, directory) {
         const globPattern = this.getExtensionGlob(handler.extensions, ALL_DIRS);
         return _.map(glob.sync(globPattern, {cwd: directory}), function (file) {
             return {name: file, path: path.join(directory, file)};
         });
-    },
+    }
+
     /**
      * Get the name of the single base directory if there is one, else return an empty string
      * @param {String} directory
-     * @returns {Promise (String)}
+     * @returns {String}
      */
-    getBaseDirectory: function (directory) {
+    getBaseDirectory(directory) {
         // Globs match root level only
         const extMatches = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_ONLY), {cwd: directory});
 
@@ -218,7 +223,8 @@ _.extend(ImportManager.prototype, {
         }
 
         return extMatchesAll[0].split('/')[0];
-    },
+    }
+
     /**
      * Process Zip
      * Takes a reference to a zip file, extracts it, sends any relevant files from inside to the right handler, and
@@ -228,7 +234,7 @@ _.extend(ImportManager.prototype, {
      * @param {File} file
      * @returns {Promise(ImportData)}
      */
-    processZip: function (file) {
+    processZip(file) {
         const self = this;
 
         return this.extractZip(file.path).then(function (zipDirectory) {
@@ -268,7 +274,8 @@ _.extend(ImportManager.prototype, {
                 return importData;
             });
         });
-    },
+    }
+
     /**
      * Process File
      * Takes a reference to a single file, sends it to the relevant handler to be loaded and returns an object in the
@@ -278,7 +285,7 @@ _.extend(ImportManager.prototype, {
      * @param {File} file
      * @returns {Promise(ImportData)}
      */
-    processFile: function (file, ext) {
+    processFile(file, ext) {
         const fileHandler = _.find(this.handlers, function (handler) {
             return _.includes(handler.extensions, ext);
         });
@@ -289,7 +296,8 @@ _.extend(ImportManager.prototype, {
             importData[fileHandler.type] = loadedData;
             return importData;
         });
-    },
+    }
+
     /**
      * Import Step 1:
      * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
@@ -297,11 +305,12 @@ _.extend(ImportManager.prototype, {
      * @param {File} file
      * @returns {Promise}
      */
-    loadFile: function (file) {
+    loadFile(file) {
         const self = this;
         const ext = path.extname(file.name).toLowerCase();
         return this.isZip(ext) ? self.processZip(file) : self.processFile(file, ext);
-    },
+    }
+
     /**
      * Import Step 2:
      * Pass the prepared importData through the preProcess function of the various importers, so that the importers can
@@ -309,7 +318,7 @@ _.extend(ImportManager.prototype, {
      * @param {ImportData} importData
      * @returns {Promise(ImportData)}
      */
-    preProcess: function (importData) {
+    preProcess(importData) {
         const ops = [];
         _.each(this.importers, function (importer) {
             ops.push(function () {
@@ -318,16 +327,17 @@ _.extend(ImportManager.prototype, {
         });
 
         return pipeline(ops);
-    },
+    }
+
     /**
      * Import Step 3:
      * Each importer gets passed the data from importData which has the key matching its type - i.e. it only gets the
      * data that it should import. Each importer then handles actually importing that data into Ghost
      * @param {ImportData} importData
-     * @param {importOptions} importOptions to allow override of certain import features such as locking a user
-     * @returns {Promise(ImportData)}
+     * @param {Object} importOptions to allow override of certain import features such as locking a user
+     * @returns {Promise<any>}
      */
-    doImport: function (importData, importOptions) {
+    doImport(importData, importOptions) {
         importOptions = importOptions || {};
         const ops = [];
         _.each(this.importers, function (importer) {
@@ -341,24 +351,26 @@ _.extend(ImportManager.prototype, {
         return sequence(ops).then(function (importResult) {
             return importResult;
         });
-    },
+    }
+
     /**
      * Import Step 4:
      * Report on what was imported, currently a no-op
      * @param {ImportData} importData
-     * @returns {Promise(ImportData)}
+     * @returns {Promise<ImportData>}
      */
-    generateReport: function (importData) {
+    generateReport(importData) {
         return Promise.resolve(importData);
-    },
+    }
+
     /**
      * Import From File
      * The main method of the ImportManager, call this to kick everything off!
      * @param {File} file
-     * @param {importOptions} importOptions to allow override of certain import features such as locking a user
+     * @param {Object} importOptions to allow override of certain import features such as locking a user
      * @returns {Promise}
      */
-    importFromFile: function (file, importOptions = {}) {
+    importFromFile(file, importOptions = {}) {
         const self = this;
 
         // Step 1: Handle converting the file to usable data
@@ -374,6 +386,13 @@ _.extend(ImportManager.prototype, {
             return self.generateReport(importData);
         }).finally(() => self.cleanUp()); // Step 5: Cleanup any files
     }
-});
+}
+
+/**
+ * A number, or a string containing a number.
+ * @typedef {Object} ImportData
+ * @property [Object] data
+ * @property [Array] images
+ */
 
 module.exports = new ImportManager();
