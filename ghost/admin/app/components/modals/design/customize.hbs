@@ -1,7 +1,7 @@
 <div class="modal-content">
     <div class="modal-body gh-ps-modal-body">
         <div class="gh-branding-settings-header">
-            <h4>Customize</h4>
+            <h4>Site design</h4>
             <div class="gh-branding-settings-actions">
                 <button
                     class="gh-btn mr3"
@@ -26,7 +26,7 @@
 
         <div class="gh-branding-settings">
             <section class="gh-branding-settings-options">
-                <div class="gh-btn-group">
+                <div class="gh-btn-group gh-design-settings-tabs">
                     <button type="button" class="gh-btn {{if (eq this.tab "general") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "general")}}><span>General</span></button>
                     <button type="button" class="gh-btn {{if (eq this.tab "theme") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "theme")}}><span>Theme</span></button>
                 </div>

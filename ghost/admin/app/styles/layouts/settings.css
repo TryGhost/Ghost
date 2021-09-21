@@ -167,6 +167,10 @@
     padding-top: 0px;
 }
 
+.gh-setting-first .description-container-labs {
+    margin-bottom: 12px;
+}
+
 .gh-setting-last {
     padding-bottom: 0px;
 }
@@ -1382,6 +1386,29 @@ p.theme-validation-details {
 .gh-branding-settings .gh-accent-color .response {
     margin: -8px 0 0;
     font-size: 1.3rem;
+}
+
+/* Design (Labs)
+/* ---------------------------------------------------- */
+.gh-design-settings-tabs {
+    width: 100%;
+    margin-bottom: 48px;
+    background: transparent;
+}
+
+.gh-design-settings-tabs .gh-btn {
+    width: 50%;
+    margin: 0;
+}
+
+.gh-design-settings-tabs .gh-btn-group-selected span {
+    box-shadow: none;
+    background: var(--black) !important;
+    color: var(--white);
+}
+
+.gh-theme-setting-title {
+    margin-bottom: 1rem;
 }
 
 /* Membership */
