@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/magic-link",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/magic-link",
   "author": "Ghost Foundation",
   "license": "MIT",
