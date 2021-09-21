@@ -1,3 +1,15 @@
+function getAnalyticsMetadata() {
+    const analyticsTag = document.querySelector('meta[name=ghost-analytics-id]');
+    const analyticsId = analyticsTag?.content;
+    if (analyticsTag) {
+        return {
+            entry_id: analyticsId,
+            source_url: window.location.href
+        };
+    }
+    return null;
+}
+
 function setupGhostApi({siteUrl = window.location.origin}) {
     const apiPath = 'members/api';
 
@@ -90,6 +102,14 @@ function setupGhostApi({siteUrl = window.location.origin}) {
 
         update({name, subscribed}) {
             const url = endpointFor({type: 'members', resource: 'member'});
+            const body = {
+                name,
+                subscribed
+            };
+            const analyticsData = getAnalyticsMetadata();
+            if (analyticsData) {
+                body.metadata = analyticsData;
+            }
             return makeRequest({
                 url,
                 method: 'PUT',
@@ -97,10 +117,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     'Content-Type': 'application/json'
                 },
                 credentials: 'same-origin',
-                body: JSON.stringify({
-                    name,
-                    subscribed
-                })
+                body: JSON.stringify(body)
             }).then(function (res) {
                 if (!res.ok) {
                     return null;
@@ -111,20 +128,25 @@ function setupGhostApi({siteUrl = window.location.origin}) {
 
         sendMagicLink({email, emailType, labels, name, oldEmail}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
+            const body = {
+                name,
+                email,
+                oldEmail,
+                emailType,
+                labels,
+                requestSrc: 'portal'
+            };
+            const analyticsData = getAnalyticsMetadata();
+            if (analyticsData) {
+                body.metadata = analyticsData;
+            }
             return makeRequest({
                 url,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    oldEmail,
-                    emailType,
-                    labels,
-                    requestSrc: 'portal'
-                })
+                body: JSON.stringify(body)
             }).then(function (res) {
                 if (res.ok) {
                     return 'Success';
@@ -164,6 +186,16 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 checkoutCancelUrl.searchParams.set('stripe', 'cancel');
                 cancelUrl = checkoutCancelUrl.href;
             }
+            const metadataObj = {
+                name,
+                requestSrc: 'portal',
+                fp_tid: (window.FPROM || window.$FPROM)?.data?.tid,
+                ...metadata
+            };
+            const analyticsData = getAnalyticsMetadata();
+            if (analyticsData) {
+                metadataObj.ghost_analytics = analyticsData;
+            }
             return makeRequest({
                 url,
                 method: 'POST',
@@ -173,12 +205,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 body: JSON.stringify({
                     priceId: plan,
                     identity: identity,
-                    metadata: {
-                        name,
-                        requestSrc: 'portal',
-                        fp_tid: (window.FPROM || window.$FPROM)?.data?.tid,
-                        ...metadata
-                    },
+                    metadata: metadataObj,
                     successUrl,
                     cancelUrl,
                     customerEmail: customerEmail
@@ -251,19 +278,24 @@ function setupGhostApi({siteUrl = window.location.origin}) {
         async updateSubscription({subscriptionId, planName, planId, smartCancel, cancelAtPeriodEnd, cancellationReason}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'subscriptions'}) + subscriptionId + '/';
+            const body = {
+                smart_cancel: smartCancel,
+                cancel_at_period_end: cancelAtPeriodEnd,
+                cancellation_reason: cancellationReason,
+                identity: identity,
+                priceId: planId
+            };
+            const analyticsData = getAnalyticsMetadata();
+            if (body) {
+                body.metadata = analyticsData;
+            }
             return makeRequest({
                 url,
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    smart_cancel: smartCancel,
-                    cancel_at_period_end: cancelAtPeriodEnd,
-                    cancellation_reason: cancellationReason,
-                    identity: identity,
-                    priceId: planId
-                })
+                body: JSON.stringify(body)
             });
         }
     };
