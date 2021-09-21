@@ -1,7 +1,13 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const i18n = require('../../../../../../shared/i18n');
-const {NotFoundError, ValidationError} = require('@tryghost/errors');
+const {NotFoundError, ValidationError, BadRequestError} = require('@tryghost/errors');
+const validator = require('@tryghost/validator');
+
+const messages = {
+    invalidEmailReceived: 'Please send a valid email',
+    invalidEmailTypeReceived: 'Invalid email type received'
+};
 
 module.exports = {
     read(apiConfig, frame) {
@@ -61,6 +67,22 @@ module.exports = {
 
         if (errors.length) {
             return Promise.reject(errors[0]);
+        }
+    },
+
+    updateMembersEmail(apiConfig, frame) {
+        const {email, type} = frame.data;
+
+        if (typeof email !== 'string' || !validator.isEmail(email)) {
+            throw new BadRequestError({
+                message: messages.invalidEmailReceived
+            });
+        }
+
+        if (!type || !['fromAddressUpdate', 'supportAddressUpdate'].includes(type)) {
+            throw new BadRequestError({
+                message: messages.invalidEmailTypeReceived
+            });
         }
     }
 };
