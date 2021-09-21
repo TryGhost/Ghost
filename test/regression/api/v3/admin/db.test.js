@@ -15,7 +15,7 @@ let ghost = testUtils.startGhost;
 let request;
 let eventsTriggered;
 
-describe('DB API', function () {
+describe('DB API (v3)', function () {
     let backupKey;
     let schedulerKey;
 
@@ -59,8 +59,8 @@ describe('DB API', function () {
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);
 
-                // NOTE: 9 default tables + 1 from include parameters
-                Object.keys(jsonResponse.db[0].data).length.should.eql(10);
+                // NOTE: 10 default tables + 1 from include parameters
+                Object.keys(jsonResponse.db[0].data).length.should.eql(11);
             });
     });
 
