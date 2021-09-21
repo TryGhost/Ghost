@@ -6,23 +6,7 @@ const events = require('../../lib/common/events');
 const models = require('../../models');
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
-
-// The string returned when a setting is set as write-only
-const obfuscatedSetting = '••••••••';
-
-// The function used to decide whether a setting is write-only
-function isSecretSetting(setting) {
-    return /secret/.test(setting.key);
-}
-
-// The function that obfuscates a write-only setting
-// NOTE: move this method into SettingsBREADService once once refactoring is finished
-function hideValueIfSecret(setting) {
-    if (setting.value && isSecretSetting(setting)) {
-        return {...setting, value: obfuscatedSetting};
-    }
-    return setting;
-}
+const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
