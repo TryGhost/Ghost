@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const {NotFoundError, NoPermissionError, BadRequestError} = require('@tryghost/errors');
 
@@ -32,6 +33,34 @@ class SettingsBREADService {
     constructor({SettingsModel, settingsCache}) {
         this.SettingsModel = SettingsModel;
         this.settingsCache = settingsCache;
+    }
+
+    /**
+     *
+     * @param {Object} context ghost API context instance
+     * @returns
+     */
+    browse(context) {
+        let settings = this.settingsCache.getAll();
+
+        // CASE: no context passed (functional call)
+        if (!context) {
+            return Promise.resolve(settings.filter((setting) => {
+                return setting.group === 'site';
+            }));
+        }
+
+        if (!context.internal) {
+            // CASE: omit core settings unless internal request
+            settings = _.filter(settings, (setting) => {
+                const isCore = setting.group === 'core';
+                return !isCore;
+            });
+            // CASE: omit secret settings unless internal request
+            settings = settings.map(hideValueIfSecret);
+        }
+
+        return settings;
     }
 
     /**
