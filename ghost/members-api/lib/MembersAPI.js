@@ -4,6 +4,8 @@ const MagicLink = require('@tryghost/magic-link');
 const common = require('./common');
 
 const StripeAPIService = require('@tryghost/stripe-service');
+const MemberAnalyticsService = require('@tryghost/member-analytics-service');
+
 const StripeWebhookService = require('./services/stripe-webhook');
 const TokenService = require('./services/token');
 const GeolocationSerice = require('./services/geolocation');
@@ -46,6 +48,7 @@ module.exports = function MembersAPI({
         MemberStatusEvent,
         MemberProductEvent,
         MemberEmailChangeEvent,
+        MemberAnalyticEvent,
         StripeProduct,
         StripePrice,
         Product,
@@ -75,6 +78,9 @@ module.exports = function MembersAPI({
         },
         logger
     });
+
+    const memberAnalyticsService = MemberAnalyticsService.create(MemberAnalyticEvent);
+    memberAnalyticsService.eventHandler.setupSubscribers();
 
     const stripeMigrations = new StripeMigrations({
         stripeAPIService,
