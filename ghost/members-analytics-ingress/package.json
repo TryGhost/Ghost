@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-analytics-ingress",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-analytics-ingress",
   "author": "Ghost Foundation",
   "license": "MIT",
