@@ -1,7 +1,7 @@
 const {describe, it} = require('mocha');
 const should = require('should');
 const sinon = require('sinon');
-const StripeAPIService = require('@tryghost/stripe-service');
+const StripeAPIService = require('@tryghost/members-stripe-service');
 const StripeWebhookService = require('../../../../lib/services/stripe-webhook');
 const ProductRepository = require('../../../../lib/repositories/product');
 const MemberRepository = require('../../../../lib/repositories/member');
