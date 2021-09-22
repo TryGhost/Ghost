@@ -1,6 +1,5 @@
 const common = require('../../lib/common');
 const _ = require('lodash');
-const errors = require('@tryghost/ignition-errors');
 
 /**
  * RouterController
@@ -219,33 +218,22 @@ module.exports = class RouterController {
     }
 
     async sendMagicLink(req, res) {
-        const {email, emailType, oldEmail, requestSrc} = req.body;
-        let forceEmailType = false;
+        const {email, emailType, requestSrc} = req.body;
         if (!email) {
             res.writeHead(400);
             return res.end('Bad Request.');
         }
 
         try {
-            if (oldEmail) {
-                const existingMember = await this._memberRepository.get({email});
-                if (existingMember) {
-                    throw new errors.BadRequestError({
-                        message: 'This email is already associated with a member'
-                    });
-                }
-                forceEmailType = true;
-            }
-
             if (!this._allowSelfSignup) {
-                const member = oldEmail ? await this._memberRepository.get({oldEmail}) : await this._memberRepository.get({email});
+                const member = await this._memberRepository.get({email});
                 if (member) {
-                    const tokenData = _.pick(req.body, ['oldEmail']);
-                    await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: {forceEmailType}});
+                    const tokenData = {};
+                    await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc});
                 }
             } else {
-                const tokenData = _.pick(req.body, ['labels', 'name', 'oldEmail']);
-                await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc, options: {forceEmailType}});
+                const tokenData = _.pick(req.body, ['labels', 'name']);
+                await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc});
             }
             res.writeHead(201);
             return res.end('Created.');

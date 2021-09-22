@@ -1,25 +1,57 @@
 const errors = require('@tryghost/ignition-errors');
 
-/**
- * MemberController
- *
- * @param {object} deps
- * @param {any} deps.memberRepository
- * @param {any} deps.StripePrice
- * @param {any} deps.stripeApiService
- * @param {any} deps.tokenService
- */
 module.exports = class MemberController {
+    /**
+     * @param {object} deps
+     * @param {any} deps.memberRepository
+     * @param {any} deps.StripePrice
+     * @param {any} deps.tokenService
+     * @param {any} deps.sendEmailWithMagicLink
+     * @param {boolean} deps.allowSelfSignup
+     */
     constructor({
         memberRepository,
         StripePrice,
-        stripeAPIService,
-        tokenService
+        tokenService,
+        sendEmailWithMagicLink,
+        allowSelfSignup
     }) {
         this._memberRepository = memberRepository;
         this._StripePrice = StripePrice;
-        this._stripeApiService = stripeAPIService;
         this._tokenService = tokenService;
+        this._sendEmailWithMagicLink = sendEmailWithMagicLink;
+        this._allowSelfSignup = allowSelfSignup;
+    }
+
+    async updateEmailAddress(req, res) {
+        const identity = req.body.identity;
+        const email = req.body.email;
+        const options = {
+            forceEmailType: true
+        };
+
+        if (!identity) {
+            res.writeHead(403);
+            return res.end('No Permission.');
+        }
+
+        let tokenData = {};
+        try {
+            const member = await this._memberRepository.getByToken(identity);
+            tokenData.oldEmail = member.get('email');
+        } catch (err) {
+            res.writeHead(401);
+            res.end('Unauthorized.');
+        }
+
+        try {
+            await this._sendEmailWithMagicLink({email, tokenData, requestedType: 'updateEmail', options});
+            res.writeHead(201);
+            return res.end('Created.');
+        } catch (err) {
+            res.writeHead(500);
+            return res.end('Internal Server Error.');
+        }
     }
 
     async updateSubscription(req, res) {
