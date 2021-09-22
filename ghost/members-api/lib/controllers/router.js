@@ -1,9 +1,6 @@
 const common = require('../../lib/common');
 const _ = require('lodash');
 const errors = require('@tryghost/ignition-errors');
-const DomainEvents = require('@tryghost/domain-events');
-const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
-const {MemberEntryViewEvent} = require('@tryghost/member-events');
 
 /**
  * RouterController
