@@ -3,7 +3,7 @@ const fastq = require('fastq');
 const later = require('@breejs/later');
 const Bree = require('bree');
 const pWaitFor = require('p-wait-for');
-const errors = require('@tryghost/errors');
+const {IgnitionError, IncorrectUsageError} = require('@tryghost/errors');
 const isCronExpression = require('./is-cron-expression');
 const assembleBreeJob = require('./assemble-bree-job');
 
@@ -67,7 +67,9 @@ class JobManager {
                 if (typeof job === 'string') {
                     name = path.parse(job).name;
                 } else {
-                    throw new Error('Name parameter should be present if job is a function');
+                    throw new IncorrectUsageError({
+                        message: 'Name parameter should be present if job is a function'
+                    });
                 }
             }
 
@@ -79,7 +81,9 @@ class JobManager {
                 }
 
                 if ((schedule.error && schedule.error !== -1) || schedule.schedules.length === 0) {
-                    throw new Error('Invalid schedule format');
+                    throw new IncorrectUsageError({
+                        message: 'Invalid schedule format'
+                    });
                 }
 
                 this.logging.info(`Scheduling job ${name} at ${at}. Next run on: ${later.schedule(schedule).next()}`);
@@ -105,7 +109,7 @@ class JobManager {
                 } catch (err) {
                     // NOTE: each job should be written in a safe way and handle all errors internally
                     //       if the error is caught here jobs implementaton should be changed
-                    this.logging.error(new errors.IgnitionError({
+                    this.logging.error(new IgnitionError({
                         level: 'critical',
                         errorType: 'UnhandledJobError',
                         message: 'Processed job threw an unhandled error',
