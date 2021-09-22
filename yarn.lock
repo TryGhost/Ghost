@@ -1497,7 +1497,16 @@
     moment "^2.29.1"
     prettyjson "^1.2.1"
 
-"@tryghost/magic-link@1.0.11", "@tryghost/magic-link@^1.0.11":
+"@tryghost/magic-link@1.0.12":
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.12.tgz#19220f9a78d9723fddd35c953365e1222ec3b322"
+  integrity sha512-VEX3c5HEl8ge1bLmhOKUDT7tS1dvo6YOdZbfTHwQb8ccBST1yxCndv7v9esoKFBAwFAdOrJXbxN6dC0l3UuKlw==
+  dependencies:
+    bluebird "^3.5.5"
+    jsonwebtoken "^8.5.1"
+    lodash "^4.17.15"
+
+"@tryghost/magic-link@^1.0.11":
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.11.tgz#4ced33826051fcbfae2e26f576efee4a8b42912a"
   integrity sha512-dc/YmYpj3nuNtKAyt3VFBo+sx8pTqLgMK94lus4keCfZGyz/HLrg/1XSp+Yc1v0r2jsGKLiZGQGrAQc8HfQuVA==
