@@ -3,7 +3,7 @@ import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-export default class MembershipOfferRoute extends AuthenticatedRoute {
+export default class SettingsMembershipOfferRoute extends AuthenticatedRoute {
     @service feature;
     @service modals;
     @service settings;

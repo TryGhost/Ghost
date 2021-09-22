@@ -665,3 +665,18 @@
 .fullscreen-modal-edit-offer {
     max-width: 1020px;
 }
+
+.gh-offers-list {
+    padding: 0;
+}
+
+.gh-offers-list-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+}
+
+.gh-offers-list-footer a svg path {
+    stroke-width: 1.5px;
+}
