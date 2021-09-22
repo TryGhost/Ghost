@@ -24,6 +24,7 @@
     "sinon": "11.0.0"
   },
   "dependencies": {
+    "@tryghost/errors": "^0.2.13",
     "bluebird": "^3.7.2",
     "emoji-regex": "^9.2.2",
     "execa": "^4.1.0",
