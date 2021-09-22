@@ -661,3 +661,7 @@
 .gh-offers-list-cta button {
     min-width: 140px;
 }
+
+.fullscreen-modal-edit-offer {
+    max-width: 1020px;
+}
