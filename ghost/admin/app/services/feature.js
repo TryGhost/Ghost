@@ -55,6 +55,7 @@ export default Service.extend({
     matchHelper: feature('matchHelper'),
     multipleProducts: feature('multipleProducts'),
     membersFiltering: feature('membersFiltering', {developer: true}),
+    offers: feature('offers', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
     emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
     customThemeSettings: feature('customThemeSettings', {developer: true}),
