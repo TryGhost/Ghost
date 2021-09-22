@@ -1479,7 +1479,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@0.1.7":
+"@tryghost/logging@0.1.7", "@tryghost/logging@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.7.tgz#22fbff99bc880402691e8836f550348df1c797d8"
   integrity sha512-8EM2lCT9E7zt6SlGwlAlQQ7Nwoq2vXgU9C5KFBV/2rbMgnsVsNOwdPGgixozxNNczxYFkTHF5mpQg/+3oV2GjQ==
@@ -1487,23 +1487,6 @@
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
     "@tryghost/elasticsearch-bunyan" "^0.1.1"
     "@tryghost/root-utils" "^0.3.4"
-    bunyan "^1.8.15"
-    bunyan-loggly "^1.4.2"
-    fs-extra "^9.1.0"
-    gelf-stream "^1.1.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.17.21"
-    moment "^2.29.1"
-    prettyjson "^1.2.1"
-
-"@tryghost/logging@^0.1.3":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.1.6.tgz#9efe5d789f2f3bbf40b38bc4d5b8da42b9d784e6"
-  integrity sha512-kVE3d8hmsx3VI6RjUTt3aaYevVl7gh4zqTE49BmVpoBnXhCyw0Y7Iki425GvO9UgyGP5EMe8NOZM4aVk5uMhEg==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch-bunyan" "^0.1.1"
-    "@tryghost/root-utils" "^0.3.3"
     bunyan "^1.8.15"
     bunyan-loggly "^1.4.2"
     fs-extra "^9.1.0"
@@ -1700,17 +1683,18 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/update-check-service@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.2.0.tgz#3c473faf380cda4b34d106b1109222d4fd8ca942"
-  integrity sha512-RN6roj5f6CqPVEEbBYPLkqRKGuPaOA7NrBZBIpTB5MEFQRKpeh3hwSb65KsViFfUKLkshV1haYVe1ggx+0KP5A==
+"@tryghost/update-check-service@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.2.2.tgz#0de3bee6501305f3ffeeeae80f0d5068687ff847"
+  integrity sha512-6itDvtzKx+5IZ4Mr8cBIKBlDjFsLNKTpYWFb5xW38OBHpfHQbXloGw0A5z6b7cqjfjI6tDiWxxrYD7mJJnVt9w==
   dependencies:
+    "@tryghost/debug" "^0.1.5"
     "@tryghost/errors" "^0.2.11"
-    "@tryghost/logging" "^0.1.3"
+    "@tryghost/logging" "^0.1.7"
     "@tryghost/tpl" "^0.1.3"
-    bluebird "3.7.2"
-    lodash "4.17.21"
-    moment "2.24.0"
+    bluebird "^3.7.2"
+    lodash "^4.17.21"
+    moment "^2.24.0"
 
 "@tryghost/url-utils@2.0.2", "@tryghost/url-utils@^2.0.0":
   version "2.0.2"
@@ -7572,7 +7556,7 @@ moment-timezone@0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.24.0, moment@2.27.0, "moment@>= 2.9.0", moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.1:
+moment@2.24.0, moment@2.27.0, "moment@>= 2.9.0", moment@^2.18.1, moment@^2.19.3, moment@^2.24.0, moment@^2.27.0, moment@^2.29.1:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
