@@ -20,7 +20,9 @@ class LimitService {
      */
     loadLimits({limits = {}, subscription, helpLink, db, errors}) {
         if (!errors) {
-            throw new IncorrectUsageError(`Config Missing: 'errors' is required.`);
+            throw new IncorrectUsageError({
+                message: `Config Missing: 'errors' is required.`
+            });
         }
 
         this.errors = errors;
@@ -42,7 +44,9 @@ class LimitService {
                     this.limits[name] = new MaxLimit({name: name, config: limitConfig, helpLink, db, errors});
                 } else if (_.has(limitConfig, 'maxPeriodic')) {
                     if (subscription === undefined) {
-                        throw new errors.IncorrectUsageError({message: 'Attempted to setup a periodic max limit without a subscription'});
+                        throw new errors.IncorrectUsageError({
+                            message: 'Attempted to setup a periodic max limit without a subscription'
+                        });
                     }
 
                     const maxPeriodicLimitConfig = Object.assign({}, limitConfig, subscription);
