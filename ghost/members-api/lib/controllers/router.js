@@ -2,6 +2,7 @@ const common = require('../../lib/common');
 const _ = require('lodash');
 const errors = require('@tryghost/ignition-errors');
 const DomainEvents = require('@tryghost/domain-events');
+const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
 const {MemberEntryViewEvent} = require('@tryghost/member-events');
 
 /**
@@ -217,30 +218,6 @@ module.exports = class RouterController {
             const error = e.message || 'Unable to initiate checkout session';
             res.writeHead(400);
             return res.end(error);
-        }
-    }
-
-    async createEvents(req, res) {
-        try {
-            const {events} = req.body;
-            for (const event of events) {
-                if (event.type === 'entry_view') {
-                    const entryEvent = new MemberEntryViewEvent({
-                        entryId: event.entry_id,
-                        entryUrl: event.entry_url,
-                        memberId: req.member ? req.member.id : null,
-                        memberStatus: req.member ? req.member.status : null
-                    }, event.created_at);
-                    DomainEvents.dispatch(entryEvent);
-                }
-            }
-            res.writeHead(201);
-            return res.end('Created.');
-        } catch (err) {
-            const statusCode = (err && err.statusCode) || 500;
-            common.logging.error(err);
-            res.writeHead(statusCode);
-            return res.end('Internal Server Error.');
         }
     }
 
