@@ -19,9 +19,9 @@
   },
   "devDependencies": {
     "c8": "7.9.0",
-    "mocha": "9.0.0",
+    "mocha": "9.1.1",
     "should": "13.2.3",
-    "sinon": "11.0.0"
+    "sinon": "11.1.2"
   },
   "dependencies": {
     "@tryghost/errors": "^0.2.14",
