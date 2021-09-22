@@ -220,32 +220,36 @@
                         {{/liquid-if}}
                     </div>
                 </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Offers</h4>
-                            <p class="gh-expandable-description">Manage targeted discounts</p>
-                        </div>
-                        <button type="button" class="gh-btn" {{action (toggle "offersOpen" this)}}><span>{{if this.offersOpen "Close" "Expand"}}</span></button>
-                    </div>
-                    <div class="gh-expandable-content">
-                        {{#liquid-if this.offersOpen}}
-                        <div class="gh-setting-content-extended">
-                            <div class="gh-main-content-card gh-offers gh-offers-list-cta">
-                                {{svg-jar "discount-bubble" class="discount-bubble"}}
-                                <h4>Provide special offers to new signups</h4>
-                                <p>
-                                    Boost your subscriptions by creating targeted discounts to potential members. 
-                                    <a href="https://ghost.org/help/">Learn more</a>
-                                </p>
-                                <button type="button" class="gh-btn gh-btn-green gh-btn-icon">
-                                    <span>{{svg-jar "add"}} Add offer</span>
-                                </button>
+                {{#if (feature "offers")}}
+                    {{#if this.settings.stripeConnectAccountId}}
+                    <div class="gh-expandable-block">
+                        <div class="gh-expandable-header">
+                            <div>
+                                <h4 class="gh-expandable-title">Offers</h4>
+                                <p class="gh-expandable-description">Manage targeted discounts</p>
                             </div>
+                            <button type="button" class="gh-btn" {{action (toggle "offersOpen" this)}}><span>{{if this.offersOpen "Close" "Expand"}}</span></button>
                         </div>
-                        {{/liquid-if}}
+                        <div class="gh-expandable-content">
+                            {{#liquid-if this.offersOpen}}
+                            <div class="gh-setting-content-extended">
+                                <div class="gh-main-content-card gh-offers gh-offers-list-cta">
+                                    {{svg-jar "discount-bubble" class="discount-bubble"}}
+                                    <h4>Provide special offers to new signups</h4>
+                                    <p>
+                                        Boost your subscriptions by creating targeted discounts to potential members. 
+                                        <a href="https://ghost.org/help/" target="_blank">Learn more</a>
+                                    </p>
+                                    <button type="button" class="gh-btn gh-btn-green gh-btn-icon">
+                                        <span>{{svg-jar "add"}} Add offer</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {{/liquid-if}}
+                        </div>
                     </div>
-                </div>
+                    {{/if}}
+                {{/if}}
             </section>
         </div>
     </section>
