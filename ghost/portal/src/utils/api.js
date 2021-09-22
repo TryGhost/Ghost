@@ -171,6 +171,30 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
+        async updateEmailAddress({email}) {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'member/email'});
+            const body = {
+                email,
+                identity
+            };
+
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(function (res) {
+                if (res.ok) {
+                    return 'Success';
+                } else {
+                    throw new Error('Failed to send email address verification email');
+                }
+            });
+        },
+
         async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, metadata = {}} = {}) {
             const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();

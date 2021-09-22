@@ -262,7 +262,7 @@ async function updateMemberEmail({data, state, api}) {
     const originalEmail = getMemberEmail({member: state.member});
     if (email !== originalEmail) {
         try {
-            await api.member.sendMagicLink({email, oldEmail: originalEmail, emailType: 'updateEmail'});
+            await api.member.updateEmailAddress({email});
             return {
                 success: true
             };
