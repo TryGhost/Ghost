@@ -1776,10 +1776,10 @@
     "@tryghost/root-utils" "^0.3.4"
     semver "^7.3.5"
 
-"@tryghost/vhost-middleware@1.0.15":
-  version "1.0.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.15.tgz#6f5e7e018fe6d9b09b0f2b7f5294f8133398cbd1"
-  integrity sha512-8ViwnbMg4kjahTri4nXojACTJtRpjJZmi6XTSjR0DHbFDbWIurLkcfWApRGtVOEumVT7jEnyzDG6wAeIvoNFzQ==
+"@tryghost/vhost-middleware@1.0.16":
+  version "1.0.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.16.tgz#f8f5af252b28afd080e7a22985534abdc242b944"
+  integrity sha512-2lbKizmyuXNHK6usNXtyzjF/oR+G+sTtihJkKAoFSTUVlwl1QKU8uVuLDvuC5Wb2USFNQecQqhxLyrJJHTjENA==
 
 "@tryghost/zip@1.1.14":
   version "1.1.14"
