@@ -1,0 +1,32 @@
+<div class="modal-content">
+    <header class="modal-header" data-test-modal="delete-user" {{did-insert this.setup}}>
+        <h1>New offer</h1>
+    </header>
+    <a class="close" href="" role="button" title="Close" {{on "click" @close}}>
+        {{svg-jar "close"}}<span class="hidden">Close</span>
+    </a>
+
+    <form>
+        <div class="modal-body">
+            
+        </div>
+    </form>
+
+    <div class="modal-footer">
+        <button
+            class="gh-btn mr3"
+            {{on "click" @close}}
+            {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+            {{on "mousedown" (optional this.noop)}}
+            data-test-button="cancel-customize"
+        >
+            <span>Cancel</span>
+        </button>
+
+        <GhTaskButton @buttonText="Add subscription"
+            @successText={{"Added"}}
+            {{!-- @task={{this.addProduct}} --}}
+            @class="gh-btn gh-btn-green gh-btn-icon gh-btn-add-memberproduct"
+            data-test-button="save-comp-product" />
+    </div>
+</div>

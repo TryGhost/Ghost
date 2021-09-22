@@ -48,7 +48,9 @@ Router.map(function () {
 
     this.route('settings');
     this.route('settings.general', {path: '/settings/general'});
-    this.route('settings.membership', {path: '/settings/members'});
+    this.route('settings.membership', {path: '/settings/members'}, function () {
+        this.route('offer');
+    });
     this.route('settings.members-email', {path: '/settings/members-email'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
 
