@@ -80,7 +80,7 @@
     "@tryghost/members-ssr": "1.0.13",
     "@tryghost/mw-session-from-token": "0.1.23",
     "@tryghost/nodemailer": "0.3.2",
-    "@tryghost/package-json": "1.0.2",
+    "@tryghost/package-json": "1.0.3",
     "@tryghost/promise": "0.1.10",
     "@tryghost/request": "0.1.5",
     "@tryghost/root-utils": "0.3.4",
