@@ -1559,10 +1559,10 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
-"@tryghost/members-ssr@1.0.12":
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.12.tgz#ff2d0c41b23b66ee5768f62b40e99f56cc65d6ae"
-  integrity sha512-Lf6zq2X+zriUfJRqxg1+TZEBtUy6Cy/0kYGudVeUxFV0u220OquCa5ZB/RUNpIJyziC8p0bBMuRc2df7xB8S7w==
+"@tryghost/members-ssr@1.0.13":
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.13.tgz#1b082bbbcce328a9f2b5e8e74ffb622cbec40ca3"
+  integrity sha512-uF2sG+ETdg6hkWt3DeYVyh6b+3zDE3rNnQu5GdwxklEUhYUpo3ADEDAbXlWcO5UvAGgoxlHkbh2V5GWuNHB2cA==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/ignition-errors" "^0.1.2"
