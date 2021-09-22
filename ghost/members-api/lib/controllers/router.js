@@ -10,7 +10,7 @@ const errors = require('@tryghost/ignition-errors');
  * @param {any} deps.StripePrice
  * @param {boolean} deps.allowSelfSignup
  * @param {any} deps.magicLinkService
- * @param {import('@tryghost/stripe-service')} deps.stripeAPIService
+ * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
  * @param {any} deps.tokenService
  * @param {any} deps.config
  * @param {any} deps.logging
