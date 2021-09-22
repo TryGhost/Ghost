@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/security",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "repository": "https://github.com/TryGhost/Utils/tree/master/packages/security",
   "author": "Ghost Foundation",
   "license": "MIT",

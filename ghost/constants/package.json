@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/constants",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "repository": "https://github.com/TryGhost/Utils/tree/master/packages/constants",
   "author": "Ghost Foundation",
   "license": "MIT",
