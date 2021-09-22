@@ -1285,6 +1285,18 @@
     }
 }
 
+.gh-main-content-card {
+    border-radius: 3px;
+    padding: 24px;
+    background: var(--main-bg-color);
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
+}
+
+.gh-main-content-card:last-of-type {
+    margin-bottom: 24px;
+}
+
 /* Canvas */
 .gh-canvas-title {
     display: flex;
