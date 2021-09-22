@@ -1421,10 +1421,10 @@
   optionalDependencies:
     sharp "^0.29.0"
 
-"@tryghost/job-manager@0.8.7":
-  version "0.8.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.7.tgz#2cd9dc5204e39bc8f70d315cb9fd0d476c136bfe"
-  integrity sha512-fNStDPhVB8qNItyLzHOcTvMrbRFrgxFMiEkfC/+auf+tX7AP9oJqK8LkCt/kK79FRUyASrFurl0G2xmrQjl4FA==
+"@tryghost/job-manager@0.8.8":
+  version "0.8.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.8.tgz#76dbb19426997c654bdec08fae3d61ca97f1dee1"
+  integrity sha512-QGtVhL/SRPjxH0p3pou/en5cO+HFczecmpemdEvm6UGR5x7rtNXoqDyIyALfGNKMJ14BwunOkS43I/g3j3RnNQ==
   dependencies:
     "@breejs/later" "^4.0.2"
     bree "^6.2.0"
