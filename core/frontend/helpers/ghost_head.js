@@ -41,7 +41,7 @@ function getMembersHelper() {
     const stripeDirectPublishableKey = settingsCache.get('stripe_publishable_key');
     const stripeConnectAccountId = settingsCache.get('stripe_connect_account_id');
 
-    let membersHelper = `<script defer src="https://unpkg.com/@tryghost/portal@~0.15.0/umd/portal.min.js" data-ghost="${urlUtils.getSiteUrl()}"></script>`;
+    let membersHelper = `<script defer src="https://unpkg.com/@tryghost/portal@~0.16.0/umd/portal.min.js" data-ghost="${urlUtils.getSiteUrl()}"></script>`;
     membersHelper += (`<style> ${templateStyles}</style>`);
     if ((!!stripeDirectSecretKey && !!stripeDirectPublishableKey) || !!stripeConnectAccountId) {
         membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';

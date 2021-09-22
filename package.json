@@ -56,7 +56,7 @@
     "@tryghost/kg-markdown-html-renderer": "3.0.0",
     "@tryghost/kg-mobiledoc-html-renderer": "3.0.1",
     "@tryghost/magic-link": "0.6.4",
-    "@tryghost/members-api": "0.37.12",
+    "@tryghost/members-api": "0.37.13",
     "@tryghost/members-csv": "0.4.2",
     "@tryghost/members-ssr": "0.8.8",
     "@tryghost/mw-session-from-token": "0.1.14",
