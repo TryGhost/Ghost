@@ -26,6 +26,7 @@
     "sinon": "11.0.0"
   },
   "dependencies": {
+    "@tryghost/errors": "^0.2.13",
     "lodash": "^4.17.21",
     "luxon": "^1.26.0"
   }

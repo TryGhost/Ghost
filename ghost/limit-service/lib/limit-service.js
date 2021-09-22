@@ -1,5 +1,6 @@
 const {MaxLimit, MaxPeriodicLimit, FlagLimit, AllowlistLimit} = require('./limit');
 const config = require('./config');
+const {IncorrectUsageError} = require('@tryghost/errors');
 const _ = require('lodash');
 
 class LimitService {
@@ -19,7 +20,7 @@ class LimitService {
      */
     loadLimits({limits = {}, subscription, helpLink, db, errors}) {
         if (!errors) {
-            throw new Error(`Config Missing: 'errors' is required.`);
+            throw new IncorrectUsageError(`Config Missing: 'errors' is required.`);
         }
 
         this.errors = errors;

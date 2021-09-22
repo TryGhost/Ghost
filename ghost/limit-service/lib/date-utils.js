@@ -1,4 +1,5 @@
 const {DateTime} = require('luxon');
+const {IncorrectUsageError} = require('@tryghost/errors');
 
 const SUPPORTED_INTERVALS = ['month'];
 /**
@@ -21,7 +22,7 @@ const lastPeriodStart = (startDate, interval) => {
         return lastPeriodStartDate.toISO();
     }
 
-    throw new Error('Invalid interval specified. Only "month" value is accepted.');
+    throw new IncorrectUsageError('Invalid interval specified. Only "month" value is accepted.');
 };
 
 module.exports = {
