@@ -55,7 +55,7 @@
     "@tryghost/adapter-manager": "0.2.14",
     "@tryghost/admin-api-schema": "2.6.0",
     "@tryghost/bookshelf-plugins": "0.3.1",
-    "@tryghost/bootstrap-socket": "0.2.9",
+    "@tryghost/bootstrap-socket": "0.2.10",
     "@tryghost/color-utils": "0.1.2",
     "@tryghost/config-url-helpers": "0.1.0",
     "@tryghost/constants": "0.1.8",
