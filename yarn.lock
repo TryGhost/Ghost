@@ -1505,10 +1505,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
 
-"@tryghost/members-api@1.32.1":
-  version "1.32.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.32.1.tgz#a890c8f2f2ae92d7d43437e52cb14dd6ae194732"
-  integrity sha512-1ox59JG6RCa+BZpuJQtfPjddIMQnodAfD2/nm8MvMsEVrUMtiu9BeH6yihJATroCwoqCvNJWGhG2/1t/FubGkw==
+"@tryghost/members-api@1.32.3":
+  version "1.32.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-1.32.3.tgz#ecf0948db251edcbd5aa4efd5b12db25ceb87da4"
+  integrity sha512-p5rimYXj35fTQBtDuoSLDzuKEmofd4Ot3rokUDAmaa8Lj4Tsoh3TnrTESSUc7PkCwDYts4PDX5+cLPhkc3LpTg==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
