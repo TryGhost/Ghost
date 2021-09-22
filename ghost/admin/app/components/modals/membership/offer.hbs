@@ -1,29 +1,57 @@
 <div class="modal-content">
-    <header class="modal-header" data-test-modal="delete-user" {{did-insert this.setup}}>
+    <header class="modal-header">
         <h1>New offer</h1>
     </header>
-    <a class="close" href="" role="button" title="Close" {{on "click" @close}}>
-        {{svg-jar "close"}}<span class="hidden">Close</span>
-    </a>
-
     <form>
         <div class="modal-body">
-            
+            <div class="gh-main-section columns-3">
+                <div class="gh-main-section-block span-2">
+                    <h4 class="gh-main-section-header small bn">Basic</h4>
+                    <div class="gh-main-section-content grey gh-product-priceform-block">
+                        <GhFormGroup @errors={{this.errors}} @property="name">
+                            <label for="name" class="fw6">Name</label>
+                            <GhTextInput
+                                @name="name"
+                                @placeholder="Black Friday"
+                                @id="name"
+                                @class="gh-input" />
+                            <GhErrorMessage @errors={{this.errors}} @property="name" />
+                            <p>User internally</p>
+                        </GhFormGroup>
+                    </div>
+
+                    <h4 class="gh-main-section-header small bn">Discount info</h4>
+                    <div class="gh-main-section-content grey gh-product-priceform-block">
+                        <GhFormGroup @errors={{this.errors}} @property="name">
+                            <label for="name" class="fw6">Product – cadence</label>
+                            <GhTextInput
+                                @name="product-cadence"
+                                @placeholder=""
+                                @id="product-cadence"
+                                @class="gh-input" />
+                            <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
+                        </GhFormGroup>
+                    </div>
+                </div>
+                <div class="gh-main-section-block">
+                    <h4 class="gh-main-section-header small bn">Portal preview</h4>
+                </div>
+            </div>
         </div>
     </form>
 
     <div class="modal-footer">
         <button
-            class="gh-btn mr3"
+            class="gh-btn"
             {{on "click" @close}}
             {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
             {{on "mousedown" (optional this.noop)}}
-            data-test-button="cancel-customize"
+            data-test-button="cancel-offer"
         >
             <span>Cancel</span>
         </button>
 
-        <GhTaskButton @buttonText="Add subscription"
+        <GhTaskButton @buttonText="Add offer"
             @successText={{"Added"}}
             {{!-- @task={{this.addProduct}} --}}
             @class="gh-btn gh-btn-green gh-btn-icon gh-btn-add-memberproduct"
