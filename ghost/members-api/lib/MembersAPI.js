@@ -5,6 +5,7 @@ const common = require('./common');
 
 const StripeAPIService = require('@tryghost/stripe-service');
 const MemberAnalyticsService = require('@tryghost/member-analytics-service');
+const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
 
 const StripeWebhookService = require('./services/stripe-webhook');
 const TokenService = require('./services/token');
@@ -353,7 +354,7 @@ module.exports = function MembersAPI({
         ),
         createEvents: Router().use(
             body.json(),
-            (req, res) => routerController.createEvents(req, res)
+            (req, res) => MembersAnalyticsIngress.createEvents(req, res)
         ),
         updateSubscription: Router({mergeParams: true}).use(
             body.json(),
