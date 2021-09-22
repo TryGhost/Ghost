@@ -1,7 +1,7 @@
 {
-  "name": "@tryghost/stripe-service",
-  "version": "0.1.0",
-  "repository": "https://github.com/TryGhost/Members/tree/main/packages/stripe-service",
+  "name": "@tryghost/members-stripe-service",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-stripe-service",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
