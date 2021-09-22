@@ -34,6 +34,7 @@ module.exports = function setupMembersApp() {
     // We don't want to add global bodyParser middleware as that interfers with stripe webhook requests on - `/webhooks`.
     membersApp.get('/api/member', middleware.getMemberData);
     membersApp.put('/api/member', bodyParser.json({limit: '1mb'}), middleware.updateMemberData);
+    membersApp.post('/api/member/email', bodyParser.json({limit: '1mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.delete('/api/session', middleware.deleteSession);
     membersApp.get('/api/site', middleware.getMemberSiteData);
