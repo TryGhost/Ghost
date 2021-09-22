@@ -1328,10 +1328,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.1.tgz#6a35004cb0e3cde62a65b6c358448abfc22d31d5"
   integrity sha512-afz0ZVin/z2X59e4Hs3VkbezHTaLxoCvFA+UOH5i1S8Tm8eN9F6XBbxKLi092Ci68he9/7vxWiJK83s2I1HJkA==
 
-"@tryghost/constants@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.8.tgz#b08074cdc6f8a379209750e60c2ab62c8ba895cf"
-  integrity sha512-3/w0k2JlpYjG/3tU3zjvVlrNH+kK9bjZvp7xaCkvmbsLGxQFMtlKU4fFY+rcpDVWOkywIHmKbLGmAqADgZeakA==
+"@tryghost/constants@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.9.tgz#1c3ecb42feffdff4cb2ad684938a209ac69ebeaf"
+  integrity sha512-tCRFl+d5tYUyAHKGXt+eEm7f7Vpb0a8VXGenpo1q20PEPY7lVsHkFJ+8mwebQWUmELrXKfYkDgjuQDZizQxArA==
 
 "@tryghost/debug@0.1.5", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5":
   version "0.1.5"
