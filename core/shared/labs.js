@@ -27,7 +27,8 @@ const ALPHA_FEATURES = [
     'membersFiltering',
     'emailOnlyPosts',
     'customThemeSettings',
-    'membersActivity'
+    'membersActivity',
+    'offers'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
