@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 const exec = require('child_process').exec;
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const debug = require('ghost-ignition').debug('update-check');
+const debug = require('@tryghost/debug')('update-check');
 
 const internal = {context: {internal: true}};
 
