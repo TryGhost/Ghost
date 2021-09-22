@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/email-analytics-service",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": "https://github.com/TryGhost/Publishing/tree/master/packages/email-analytics-service",
   "author": "Ghost Foundation",
   "license": "MIT",
