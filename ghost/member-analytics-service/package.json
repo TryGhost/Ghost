@@ -24,5 +24,12 @@
     "mocha": "9.1.1",
     "should": "13.2.3",
     "sinon": "11.1.2"
+  },
+  "dependencies": {
+    "@tryghost/domain-events": "^0.1.1",
+    "@tryghost/errors": "^0.2.14",
+    "@tryghost/member-events": "^0.2.0",
+    "@tryghost/tpl": "^0.1.4",
+    "bson-objectid": "^2.0.1"
   }
 }

@@ -23,5 +23,9 @@
     "mocha": "9.1.1",
     "should": "13.2.3",
     "sinon": "11.1.2"
+  },
+  "dependencies": {
+    "@tryghost/domain-events": "^0.1.1",
+    "@tryghost/member-events": "^0.2.0"
   }
 }
