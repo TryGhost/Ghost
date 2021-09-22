@@ -1304,10 +1304,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-transaction-events/-/bookshelf-transaction-events-0.1.4.tgz#03fce5bd6b5f694724ee6fb61ce2c2f2e97a6318"
   integrity sha512-HbHV8lF6ylOcag/M7dpw5eagi8pkLR1gRKHjEUQVBaBKZLXt0XKRZNYEJyu3sLUY/VBpXmIpuAok2YM/RaJucA==
 
-"@tryghost/bootstrap-socket@0.2.9":
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.9.tgz#441e9287c4293fc344fc363a4ea8579144393ea6"
-  integrity sha512-unOiro5Wo9gjOgya6vQAA3pkOlwxr54//Md+nBrKNopd5n9mBvLC076tNIKCisUECCvkJPMYRtFmGJz9U5rb5w==
+"@tryghost/bootstrap-socket@0.2.10":
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.10.tgz#8b4136b4d8126f1945324c155feb3b1c9d4eaaa1"
+  integrity sha512-MKw2o0ZnDUfD5GzQuGGlK7f5NEEpLLN3pr9NRu7jEYfIbrQSjIhFs2XwnVBHZCLXzSjokTftNNHDuKu2wbCl3A==
 
 "@tryghost/bunyan-rotating-filestream@0.0.7", "@tryghost/bunyan-rotating-filestream@^0.0.7":
   version "0.0.7"
