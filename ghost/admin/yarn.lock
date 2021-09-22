@@ -6960,9 +6960,9 @@ ember-power-select@4.1.5:
     ember-text-measurer "^0.6.0"
     ember-truth-helpers "^2.1.0 || ^3.0.0"
 
-ember-promise-modals@TryGhost/ember-promise-modals#v2.0.0+ghost.2:
+ember-promise-modals@TryGhost/ember-promise-modals#v2.0.0+ghost.3:
   version "2.0.0"
-  resolved "https://codeload.github.com/TryGhost/ember-promise-modals/tar.gz/820eddbd0ee5fa6c48928a959006c1528f3a4e81"
+  resolved "https://codeload.github.com/TryGhost/ember-promise-modals/tar.gz/7849fe130359f765673d0eb6b3355100f94129d2"
   dependencies:
     "@ember/test-waiters" "^3.0.0"
     broccoli-funnel "^3.0.8"
