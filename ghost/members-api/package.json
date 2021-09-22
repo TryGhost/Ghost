@@ -27,9 +27,12 @@
   },
   "dependencies": {
     "@tryghost/debug": "^0.1.2",
+    "@tryghost/domain-events": "^0.1.1",
     "@tryghost/errors": "^0.2.9",
     "@tryghost/ignition-errors": "^0.1.2",
     "@tryghost/magic-link": "^1.0.12",
+    "@tryghost/member-analytics-service": "^0.1.0",
+    "@tryghost/member-events": "^0.2.0",
     "@tryghost/stripe-service": "^0.1.0",
     "@tryghost/tpl": "^0.1.2",
     "@types/jsonwebtoken": "^8.5.1",
