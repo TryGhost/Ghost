@@ -84,7 +84,7 @@
     "@tryghost/promise": "0.1.10",
     "@tryghost/request": "0.1.5",
     "@tryghost/root-utils": "0.3.4",
-    "@tryghost/security": "0.2.9",
+    "@tryghost/security": "0.2.10",
     "@tryghost/session-service": "0.1.25",
     "@tryghost/social-urls": "0.1.26",
     "@tryghost/string": "0.1.20",
