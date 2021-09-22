@@ -20,11 +20,6 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    border-radius: 3px;
-    padding: 24px;
-    background: var(--main-bg-color);
-    margin-bottom: 12px;
-    box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 980px) {
@@ -625,4 +620,44 @@
 
 .gh-product-form-tierpreview .placeholder {
     opacity: 0.35;
+}
+
+/* Offers */
+.gh-offers-list-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4vw;
+}
+
+.gh-offers-list-cta h4 {
+    color: var(--darkgrey);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 8px;
+} 
+
+.gh-offers-list-cta p {
+    max-width: 390px;
+    color: var(--midgrey);
+    text-align: center;
+    line-height: 1.45em;
+    margin: 0 0 20px;
+    padding: 0;
+}
+
+.gh-offers-list-cta .discount-bubble {
+    color: var(--lightgrey);
+    width: 72px;
+    height: 72px;
+    margin-bottom: 16px;
+}
+
+.gh-offers-list-cta .discount-bubble path,
+.gh-offers-list-cta .discount-bubble circle {
+    stroke-width: 0.8px;
+}
+
+.gh-offers-list-cta button {
+    min-width: 140px;
 }
