@@ -3,6 +3,11 @@ const config = require('./config');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const _ = require('lodash');
 
+const messages = {
+    missingErrorsConfig: `Config Missing: 'errors' is required.`,
+    noSubscriptionParameter: 'Attempted to setup a periodic max limit without a subscription'
+};
+
 class LimitService {
     constructor() {
         this.limits = {};
@@ -21,7 +26,7 @@ class LimitService {
     loadLimits({limits = {}, subscription, helpLink, db, errors}) {
         if (!errors) {
             throw new IncorrectUsageError({
-                message: `Config Missing: 'errors' is required.`
+                message: messages.missingErrorsConfig
             });
         }
 
@@ -44,8 +49,8 @@ class LimitService {
                     this.limits[name] = new MaxLimit({name: name, config: limitConfig, helpLink, db, errors});
                 } else if (_.has(limitConfig, 'maxPeriodic')) {
                     if (subscription === undefined) {
-                        throw new errors.IncorrectUsageError({
-                            message: 'Attempted to setup a periodic max limit without a subscription'
+                        throw new IncorrectUsageError({
+                            message: messages.noSubscriptionParameter
                         });
                     }
 
