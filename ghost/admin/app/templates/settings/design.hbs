@@ -29,11 +29,11 @@
 
         <section class="gh-design-settings-right">
             <GhBrowserPreview class="gh-design-settings-previewcontainer" @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
-                <GhSiteIframe @src={{this.previewSrc}} @guid={{this.previewGuid}} {{did-insert this.registerPreviewIframe}}></GhSiteIframe>
+                <GhSiteIframe @src={{this.previewSrc}} @guid={{this.previewGuid}}></GhSiteIframe>
             </GhBrowserPreview>
         </section>
     </section>
-   
+
 </section>
 
 {{outlet}}
