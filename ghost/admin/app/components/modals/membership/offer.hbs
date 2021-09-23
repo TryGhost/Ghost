@@ -1,46 +1,107 @@
-<div class="modal-content">
-    <header class="modal-header">
-        <h1>New offer</h1>
-    </header>
-    <form>
-        <div class="modal-body">
-            <div class="gh-main-section columns-3">
-                <div class="gh-main-section-block span-2">
-                    <h4 class="gh-main-section-header small bn">Basic</h4>
-                    <div class="gh-main-section-content grey gh-product-priceform-block">
-                        <GhFormGroup @errors={{this.errors}} @property="name">
-                            <label for="name" class="fw6">Name</label>
-                            <GhTextInput
-                                @name="name"
-                                @placeholder="Black Friday"
-                                @id="name"
-                                @class="gh-input" />
-                            <GhErrorMessage @errors={{this.errors}} @property="name" />
-                            <p>User internally</p>
-                        </GhFormGroup>
-                    </div>
+<section class="modal-content">
+    <div class="gh-offer-modal-content">
+        <header class="modal-header">
+            <h1>New offer</h1>
+        </header>
+        <form>
+            <div class="modal-body">
+                <div class="gh-main-section columns-3">
+                    <div class="gh-main-section-block no-margin span-2">
+                        <h4 class="gh-main-section-header small bn">Basic</h4>
+                        <div class="gh-main-section-content grey">
+                            <GhFormGroup @errors={{this.errors}} @property="name">
+                                <label for="name" class="fw6">Name</label>
+                                <GhTextInput
+                                    @name="name"
+                                    @placeholder="Black Friday"
+                                    @id="name"
+                                    @class="gh-input" />
+                                <GhErrorMessage @errors={{this.errors}} @property="name" />
+                                <p>User internally</p>
+                            </GhFormGroup>
+                        </div>
 
-                    <h4 class="gh-main-section-header small bn">Discount info</h4>
-                    <div class="gh-main-section-content grey gh-product-priceform-block">
-                        <GhFormGroup @errors={{this.errors}} @property="name">
-                            <label for="name" class="fw6">Product – cadence</label>
-                            <GhTextInput
-                                @name="product-cadence"
-                                @placeholder=""
-                                @id="product-cadence"
-                                @class="gh-input" />
-                            <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
-                        </GhFormGroup>
+                        <h4 class="gh-main-section-header small bn">Discount info</h4>
+                        <div class="gh-main-section-content grey">
+                            <GhFormGroup @errors={{this.errors}} @property="product-cadence">
+                                <label for="product-cadence" class="fw6">Product – cadence</label>
+                                <GhTextInput
+                                    @name="product-cadence"
+                                    @placeholder=""
+                                    @id="product-cadence"
+                                    @class="gh-input" />
+                                <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
+                            </GhFormGroup>
+                            <div class="form-col2">
+                                <div class="gh-offer-type">
+                                    <div class="gh-radio active">
+                                        <div class="gh-radio-button"></div>
+                                        <div class="gh-radio-content">
+                                            <div class="gh-radio-label">Percentage discount</div>
+                                        </div>
+                                    </div>
+                                    <div class="gh-radio">
+                                        <div class="gh-radio-button"></div>
+                                        <div class="gh-radio-content">
+                                            <div class="gh-radio-label">Fixed amount discount</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <GhFormGroup @errors={{this.errors}} @property="amount">
+                                    <label for="amount" class="fw6">Percentage off</label>
+                                    <GhTextInput
+                                        @name="amount"
+                                        @placeholder=""
+                                        @id="amount"
+                                        @class="gh-input" />
+                                    <GhErrorMessage @errors={{this.errors}} @property="amount" />
+                                </GhFormGroup>
+                            </div>
+                        </div>
+
+                        <h4 class="gh-main-section-header small bn">Portal settings</h4>
+                        <div class="gh-main-section-content grey">
+                            <div class="form-col2">
+                                <GhFormGroup @errors={{this.errors}} @property="display-title">
+                                    <label for="display-title" class="fw6">Display title</label>
+                                    <GhTextInput
+                                        @name="display-title"
+                                        @placeholder=""
+                                        @id="display-title"
+                                        @class="gh-input" />
+                                    <GhErrorMessage @errors={{this.errors}} @property="display-title" />
+                                </GhFormGroup>
+                                <GhFormGroup @errors={{this.errors}} @property="code">
+                                    <label for="code" class="fw6">Offer code</label>
+                                    <GhTextInput
+                                        @name="code"
+                                        @placeholder=""
+                                        @id="code"
+                                        @class="gh-input" />
+                                    <GhErrorMessage @errors={{this.errors}} @property="code" />
+                                </GhFormGroup>
+                            </div>
+                            <GhFormGroup @errors={{this.errors}} @property="description">
+                                <label for="description" class="fw6">Description</label>
+                                <GhTextInput
+                                    @name="description"
+                                    @placeholder=""
+                                    @id="description"
+                                    @class="gh-input" />
+                                <GhErrorMessage @errors={{this.errors}} @property="description" />
+                            </GhFormGroup>
+                        </div>
                     </div>
-                </div>
-                <div class="gh-main-section-block">
-                    <h4 class="gh-main-section-header small bn">Portal preview</h4>
+                    <div class="gh-main-section-block no-margin">
+                        <h4 class="gh-main-section-header small bn">Portal preview</h4>
+                    </div>
                 </div>
             </div>
-        </div>
-    </form>
+        </form>
 
-    <div class="modal-footer">
+    </div>
+
+    <div class="modal-footer top-shadow">
         <button
             class="gh-btn"
             {{on "click" @close}}
@@ -57,4 +118,4 @@
             @class="gh-btn gh-btn-green gh-btn-icon gh-btn-add-memberproduct"
             data-test-button="save-comp-product" />
     </div>
-</div>
+</section>

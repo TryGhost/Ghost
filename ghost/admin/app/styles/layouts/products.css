@@ -623,6 +623,21 @@
 }
 
 /* Offers */
+.fullscreen-modal-edit-offer {
+    max-width: 1220px;
+}
+
+.gh-offer-modal-content {
+    margin: -32px -32px 0;
+    padding: 32px 32px 0;
+    max-height: calc(100vh - 16vw);
+    overflow: scroll;
+}
+
+.gh-offer-modal-content .gh-main-section.columns-3 {
+    grid-template-columns: 0.8fr 0.8fr 1.2fr;
+}
+
 .gh-offers-list-cta {
     display: flex;
     flex-direction: column;
@@ -662,10 +677,6 @@
     min-width: 140px;
 }
 
-.fullscreen-modal-edit-offer {
-    max-width: 1020px;
-}
-
 .gh-offers-list {
     padding: 0;
 }
@@ -679,4 +690,21 @@
 
 .gh-offers-list-footer a svg path {
     stroke-width: 1.5px;
+}
+
+.gh-offer-modal-content .form-group:last-of-type {
+    margin-bottom: 0;
+}
+
+.gh-offer-type {
+    white-space: nowrap;
+    margin-top: 3px;
+}
+
+.gh-offer-type .gh-radio {
+    margin-bottom: 16px;
+}
+
+.gh-offer-type .gh-radio-label {
+    font-size: 1.3rem;
 }

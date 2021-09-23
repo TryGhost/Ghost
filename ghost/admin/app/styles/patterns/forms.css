@@ -66,6 +66,12 @@ input[type=number] {
     opacity: 0.5;
 }
 
+.form-col2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 24px;
+}
+
 /* Form Groups
 /* ---------------------------------------------------------- */
 
