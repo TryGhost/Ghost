@@ -1,7 +1,14 @@
 const yaml = require('js-yaml');
 const debug = require('@tryghost/debug')('frontend:services:settings:yaml-parser');
-const {i18n} = require('../proxy');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    yamlParsing: {
+        error: 'Could not parse {file}: {context}.',
+        help: 'Check your {file} file for typos and fix the named issues.'
+    }
+};
 
 /**
  * Takes a YAML file, parses it and returns a JSON Object
@@ -21,11 +28,11 @@ module.exports = function parseYaml(file, fileName) {
         // `reason` property as well as in the message.
         // As the file uploaded is invalid, the person uploading must fix this - it's a 4xx error
         throw new errors.IncorrectUsageError({
-            message: i18n.t('errors.services.settings.yaml.error', {file: fileName, context: error.reason}),
+            message: tpl(messages.yamlParsing.error, {file: fileName, context: error.reason}),
             code: 'YAML_PARSER_ERROR',
             context: error.message,
             err: error,
-            help: i18n.t('errors.services.settings.yaml.help', {file: fileName})
+            help: tpl(messages.yamlParsing.help, {file: fileName})
         });
     }
 };
