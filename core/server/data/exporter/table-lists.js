@@ -50,6 +50,7 @@ const TABLES_ALLOWLIST = [
     'roles',
     'roles_users',
     'settings',
+    'custom_theme_settings',
     'tags',
     'users'
 ];
