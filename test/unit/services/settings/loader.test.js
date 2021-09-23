@@ -47,7 +47,7 @@ describe('UNIT > Settings Service loader:', function () {
             loadSettings.__set__('yamlParser', yamlParserStub);
             loadSettings.__set__('validate', validateStub);
 
-            const setting = loadSettings('goodroutes');
+            const setting = loadSettings.loadSettingsSync('goodroutes');
             should.exist(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
             // There are 4 files in the fixtures folder, but only 1 supported and valid yaml files
@@ -65,7 +65,7 @@ describe('UNIT > Settings Service loader:', function () {
             loadSettings.__set__('yamlParser', yamlParserStub);
 
             try {
-                loadSettings('goodroutes');
+                loadSettings.loadSettingsSync('goodroutes');
                 done(new Error('Loader should fail'));
             } catch (err) {
                 should.exist(err);
@@ -94,7 +94,7 @@ describe('UNIT > Settings Service loader:', function () {
             loadSettings.__set__('yamlParser', yamlParserStub);
 
             try {
-                loadSettings('routes');
+                loadSettings.loadSettingsSync('routes');
                 done(new Error('Loader should fail'));
             } catch (err) {
                 err.message.should.match(/Error trying to load YAML setting for routes from/);

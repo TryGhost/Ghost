@@ -61,7 +61,7 @@ const loadSettings = async (setting) => {
  * @param {String} setting the requested settings as defined in setting knownSettings
  * @returns {Object} settingsFile
  */
-module.exports = function loadSettingsSync(setting) {
+module.exports.loadSettingsSync = function loadSettingsSync(setting) {
     const {fileName, contentPath, filePath} = getSettingFilePath(setting);
 
     try {
