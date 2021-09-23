@@ -1,9 +1,12 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class DashboardRoute extends AuthenticatedRoute {
     @service feature;
     @service settings;
+
+    previewIframe = null;
 
     beforeModel() {
         super.beforeModel(...arguments);
@@ -25,5 +28,19 @@ export default class DashboardRoute extends AuthenticatedRoute {
         return {
             mainClasses: ['gh-main-wide']
         };
+    }
+
+    @action
+    registerPreviewIframe(element) {
+        this.previewIframe = element;
+    }
+
+    @action
+    replacePreviewContents(html) {
+        if (this.previewIframe) {
+            this.previewIframe.contentWindow.document.open();
+            this.previewIframe.contentWindow.document.write(html);
+            this.previewIframe.contentWindow.document.close();
+        }
     }
 }
