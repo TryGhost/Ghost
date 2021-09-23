@@ -5,15 +5,35 @@
             <span>{{svg-jar "arrow-right"}}</span>
             Design
         </h2>
+        <section class="view-actions">
+            <LinkTo class="gh-btn gh-btn-action-icon" @route="settings.design.advanced"><span>Advanced</span></LinkTo>
+            <LinkTo class="gh-btn gh-btn-primary" @route="settings.design.change-theme"><span>Change theme</span></LinkTo>
+        </section>
     </GhCanvasHeader>
 
-    <section class="view-container">
-        <ul>
-            <li><LinkTo @route="settings.design.customize">Customize</LinkTo></li>
-            <li><LinkTo @route="settings.design.change-theme">Change theme</LinkTo></li>
-            <li><LinkTo @route="settings.design.advanced">Advanced theme options</LinkTo></li>
-        </ul>
+    <section class="view-container flex">
+        <section class="gh-expandable gh-design-settings-left">
+            <h4 class="gh-main-section-header small bn">Active theme</h4>
+            <div class="gh-expandable-block gh-active-theme">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Casper</h4>
+                        <p class="gh-expandable-description">
+                            Version 1.14.0
+                        </p>
+                    </div>
+                    <LinkTo class="gh-btn gh-btn-green" @route="settings.design.customize"><span>Customize design &rarr;</span></LinkTo>
+                </div>
+            </div>
+        </section>
+
+        <section class="gh-design-settings-right">
+            <GhBrowserPreview class="gh-design-settings-previewcontainer" @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
+                <GhSiteIframe @src={{this.previewSrc}} @guid={{this.previewGuid}} {{did-insert this.registerPreviewIframe}}></GhSiteIframe>
+            </GhBrowserPreview>
+        </section>
     </section>
+   
 </section>
 
 {{outlet}}
