@@ -60,36 +60,6 @@ module.exports = {
         return SettingsLoader(setting);
     },
 
-    /**
-     * Getter for all YAML settings.
-     * Example: `settings.getAll().then(...)`
-     * will return an Object like this (assuming we're supporting `routes`
-     * and `globals`):
-     * {
-     *     routes: {
-     *         routes: null,
-     *         collections: { '/': [Object] },
-     *         resources: { tag: '/tag/{slug}/', author: '/author/{slug}/' }
-     *     },
-     *     globals: {
-     *         config: { url: 'testblog.com' }
-     *     }
-     * }
-     * @returns {Object} settingsObject
-     * @description Returns all settings object as defined per YAML files in
-     * `/content/settings` directory.
-     */
-    getAll: function getAll() {
-        const knownSettings = this.knownSettings();
-        const settingsToReturn = {};
-
-        _.each(knownSettings, function (setting) {
-            settingsToReturn[setting] = SettingsLoader(setting);
-        });
-
-        return settingsToReturn;
-    },
-
     getDefaulHash: (setting) => {
         return defaultHashes[setting];
     },
