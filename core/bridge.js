@@ -40,7 +40,7 @@ class Bridge {
         return themeEngine.getActive();
     }
 
-    activateTheme(loadedTheme, checkedTheme, error) {
+    activateTheme(loadedTheme, checkedTheme) {
         let settings = {
             locale: settingsCache.get('lang')
         };
@@ -53,7 +53,7 @@ class Bridge {
                 previousGhostAPI = this.getActiveTheme().engine('ghost-api');
             }
 
-            themeEngine.setActive(settings, loadedTheme, checkedTheme, error);
+            themeEngine.setActive(settings, loadedTheme, checkedTheme);
             const currentGhostAPI = this.getActiveTheme().engine('ghost-api');
 
             if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
