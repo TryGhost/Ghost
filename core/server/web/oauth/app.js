@@ -36,8 +36,10 @@ module.exports = function setupOAuthApp() {
      */
     function googleOAuthMiddleware(clientId, secret) {
         return (req, res, next) => {
+            const adminURL = urlUtils.urlFor('admin', true);
+
             //Create the callback url to be sent to Google
-            const callbackUrl = new URL(`${urlUtils.urlFor('admin', true)}oauth/google/callback`);
+            const callbackUrl = new URL('oauth/google/callback', adminURL);
 
             passport.authenticate(new GoogleStrategy({
                 clientID: clientId,
@@ -52,7 +54,7 @@ module.exports = function setupOAuthApp() {
                     const emails = profile.emails.filter(email => email.verified === true).map(email => email.value);
 
                     if (!emails.includes(req.user.get('email'))) {
-                        return res.redirect(`${urlUtils.urlFor('admin')}#/staff/?message=oauth-linking-failed`);
+                        return res.redirect(new URL('#/staff?message=oauth-linking-failed', adminURL));
                     }
 
                     // TODO: configure the oauth data for this user (row in the oauth table)
@@ -67,7 +69,7 @@ module.exports = function setupOAuthApp() {
                     //TODO: instead find the oauth row with the email use the provider id
                     const emails = profile.emails.filter(email => email.verified === true);
                     if (emails.length < 1) {
-                        return res.redirect(`${urlUtils.urlFor('admin')}#/signin?message=login-failed`);
+                        return res.redirect(new URL('#/signin?message=login-failed', adminURL));
                     }
                     const email = emails[0].value;
 
@@ -82,7 +84,7 @@ module.exports = function setupOAuthApp() {
                         let invite = await models.Invite.findOne({email, status: 'sent'}, options);
 
                         if (!invite || invite.get('expires') < Date.now()) {
-                            return res.redirect(`${urlUtils.urlFor('admin')}#/signin?message=login-failed`);
+                            return res.redirect(new URL('#/signin?message=login-failed', adminURL));
                         }
 
                         //Accept invite
@@ -103,7 +105,7 @@ module.exports = function setupOAuthApp() {
 
                 await auth.session.sessionService.createSessionForUser(req, res, req.user);
 
-                return res.redirect(urlUtils.urlFor('admin'));
+                return res.redirect(adminURL);
             }), {
                 scope: ['profile', 'email'],
                 session: false,
