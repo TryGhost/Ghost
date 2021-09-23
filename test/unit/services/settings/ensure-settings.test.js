@@ -3,7 +3,7 @@ const should = require('should');
 const fs = require('fs-extra');
 const path = require('path');
 const configUtils = require('../../../utils/configUtils');
-const ensureSettings = require('../../../../core/frontend/services/settings/ensure-settings');
+const ensureSettings = require('../../../../core/server/services/route-settings/ensure-settings');
 
 describe('UNIT > Settings Service ensure settings:', function () {
     beforeEach(function () {

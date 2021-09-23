@@ -1,7 +1,5 @@
 const crypto = require('crypto');
-const debug = require('@tryghost/debug')('frontend:services:settings:index');
 const SettingsLoader = require('./loader');
-const ensureSettingsFile = require('./ensure-settings');
 
 /**
  * md5 hashes of default routes settings
@@ -15,14 +13,6 @@ const calculateHash = (data) => {
 };
 
 module.exports = {
-    init: function () {
-        debug('init routes settings service');
-
-        // Make sure that supported settings files are available
-        // inside of the `content/setting` directory
-        return ensureSettingsFile('routes.yaml');
-    },
-
     /**
      * Getter for routes YAML setting.
      * Example: `settings.get().then(...)`

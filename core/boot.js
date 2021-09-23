@@ -112,10 +112,10 @@ async function initCore({ghostServer, config}) {
 async function initFrontend() {
     debug('Begin: initFrontend');
 
-    debug('Begin: Frontend Settings');
-    const frontendSettings = require('./frontend/services/settings');
-    await frontendSettings.init();
-    debug('End: Frontend Settings');
+    debug('Begin: Frontend Routing Settings');
+    const routeSettings = require('./server/services/route-settings');
+    await routeSettings.init();
+    debug('End: Frontend Routing Settings');
 
     debug('Begin: Themes');
     const themeService = require('./server/services/themes');
