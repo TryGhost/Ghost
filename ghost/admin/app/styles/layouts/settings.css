@@ -1318,6 +1318,7 @@ p.theme-validation-details {
     margin: 32px 68px 68px;
 }
 
+.gh-design-settings-previewcontainer .site-frame,
 .gh-branding-settings-previewcontainer .site-frame,
 .gh-launch-wizard-preview {
     width: 133.33333%;
@@ -1390,6 +1391,26 @@ p.theme-validation-details {
 
 /* Design (Labs)
 /* ---------------------------------------------------- */
+.gh-design-settings-left {
+    flex-grow: 1;
+    background: none;
+}
+
+.gh-design-settings-right {
+    flex-grow: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: 50vh;
+    min-height: 480px;
+    margin-left: 80px;
+}
+
+.gh-expandable-block.gh-active-theme {
+    border: 1px solid var(--list-color-divider);
+    border-radius: var(--border-radius);
+}
+
 .gh-design-settings-tabs {
     width: 100%;
     margin-bottom: 48px;
