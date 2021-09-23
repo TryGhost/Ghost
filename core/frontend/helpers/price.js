@@ -11,8 +11,13 @@
 // Returns amount equal to the dominant denomintation of the currency.
 // For example, if 2100 is passed, it will return 21.
 const isNumber = require('lodash/isNumber');
-const {errors, i18n} = require('../services/proxy');
+const {errors, tpl} = require('../services/proxy');
 const _ = require('lodash');
+
+const messages = {
+    attrIsRequired: 'Attribute is required e.g. {{price plan.amount}}',
+    attrMustBeNumeric: 'Attribute value should be a number'
+};
 
 function formatter({amount, currency, numberFormat = 'short', currencyFormat = 'symbol', locale}) {
     const formatterOptions = {
@@ -77,20 +82,20 @@ module.exports = function price(planOrAmount, options) {
     // CASE: if no amount is passed, e.g. `{{price}}` we throw an error
     if (arguments.length < 2) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.price.attrIsRequired')
+            message: tpl(messages.attrIsRequired)
         });
     }
 
     // CASE: if amount is passed, but it is undefined we throw an error
     if (amount === undefined) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.price.attrIsRequired')
+            message: tpl(messages.attrIsRequired)
         });
     }
 
     if (!isNumber(amount)) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.price.attrMustBeNumeric')
+            message: tpl(messages.attrMustBeNumeric)
         });
     }
 

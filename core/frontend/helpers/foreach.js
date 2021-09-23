@@ -3,13 +3,17 @@
 //
 // Block helper designed for looping through posts
 const _ = require('lodash');
-const {logging, i18n, hbs, checks} = require('../services/proxy');
+const {logging, tpl, hbs, checks} = require('../services/proxy');
 const {Utils: hbsUtils, handlebars: {createFrame}} = hbs;
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 
+const messages = {
+    iteratorNeeded: 'Need to pass an iterator to {{#foreach}}'
+};
+
 module.exports = function foreach(items, options) {
     if (!options) {
-        logging.warn(i18n.t('warnings.helpers.foreach.iteratorNeeded'));
+        logging.warn(tpl(messages.iteratorNeeded));
     }
 
     if (hbsUtils.isFunction(items)) {

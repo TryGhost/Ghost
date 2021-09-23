@@ -3,10 +3,14 @@
 // `{{#prev_post}}<a href ="{{url}}>previous post</a>{{/prev_post}}'
 // `{{#next_post}}<a href ="{{url absolute="true">next post</a>{{/next_post}}'
 
-const {logging, i18n, api, hbs, checks} = require('../services/proxy');
+const {logging, tpl, api, hbs, checks} = require('../services/proxy');
 const get = require('lodash/get');
 const Promise = require('bluebird');
 const moment = require('moment');
+
+const messages = {
+    mustBeCalledAsBlock: 'The {{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}'
+};
 
 const createFrame = hbs.handlebars.createFrame;
 
@@ -78,7 +82,7 @@ module.exports = function prevNext(options) {
 
     // Guard against incorrect usage of the helpers
     if (!options.fn || !options.inverse) {
-        data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: options.name});
+        data.error = tpl(messages.mustBeCalledAsBlock, {helperName: options.name});
         logging.warn(data.error);
         return Promise.resolve();
     }
