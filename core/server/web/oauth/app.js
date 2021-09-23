@@ -109,7 +109,8 @@ module.exports = function setupOAuthApp() {
             }), {
                 scope: ['profile', 'email'],
                 session: false,
-                prompt: 'consent'
+                prompt: 'consent',
+                accessType: 'offline'
             })(req, res, next);
         };
     }
