@@ -41,7 +41,7 @@ module.exports = class MemberController {
             tokenData.oldEmail = member.get('email');
         } catch (err) {
             res.writeHead(401);
-            res.end('Unauthorized.');
+            return res.end('Unauthorized.');
         }
 
         try {
