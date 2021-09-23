@@ -273,5 +273,8 @@ module.exports = function apiRoutes() {
     router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
     router.del('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
 
+    // ## Custom theme settings
+    router.get('/custom_theme_settings', mw.authAdminApi, labs.enabledMiddleware('customThemeSettings'), http(api.customThemeSettings.browse));
+
     return router;
 };
