@@ -4,11 +4,9 @@ const SettingsLoader = require('./loader');
 const ensureSettingsFile = require('./ensure-settings');
 
 /**
- * md5 hashes of default settings
+ * md5 hashes of default routes settings
  */
-const defaultHashes = {
-    routes: '3d180d52c663d173a6be791ef411ed01'
-};
+const defaultRoutesSettingHash = '3d180d52c663d173a6be791ef411ed01';
 
 const calculateHash = (data) => {
     return crypto.createHash('md5')
@@ -36,8 +34,8 @@ module.exports = {
         return SettingsLoader('routes');
     },
 
-    getDefaulHash: (setting) => {
-        return defaultHashes[setting];
+    getDefaultHash: () => {
+        return defaultRoutesSettingHash;
     },
 
     getCurrentHash: async (setting) => {

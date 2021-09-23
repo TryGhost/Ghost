@@ -64,6 +64,6 @@ describe('DB version integrity', function () {
         fixturesHash.should.eql(currentFixturesHash);
         settingsHash.should.eql(currentSettingsHash);
         routesHash.should.eql(currentRoutesHash);
-        routesHash.should.eql(frontendSettings.getDefaulHash('routes'));
+        routesHash.should.eql(frontendSettings.getDefaultHash());
     });
 });
