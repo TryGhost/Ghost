@@ -2,16 +2,20 @@
 // Usage: `{{asset "css/screen.css"}}`
 //
 // Returns the path to the specified asset.
-const {SafeString, metaData, errors, i18n} = require('../services/proxy');
+const {SafeString, metaData, errors, tpl} = require('../services/proxy');
 const get = require('lodash/get');
 const {getAssetUrl} = metaData;
+
+const messages = {
+    pathIsRequired: 'The {{asset}} helper must be passed a path'
+};
 
 module.exports = function asset(path, options) {
     const hasMinFile = get(options, 'hash.hasMinFile');
 
     if (!path) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.asset.pathIsRequired')
+            message: tpl(messages.pathIsRequired)
         });
     }
 

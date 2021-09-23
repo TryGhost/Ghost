@@ -1,10 +1,15 @@
 // # Get Helper
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
-const {config, logging, errors, i18n, hbs, api, prepareContextResource} = require('../services/proxy');
+const {config, logging, errors, tpl, hbs, api, prepareContextResource} = require('../services/proxy');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const jsonpath = require('jsonpath');
+
+const messages = {
+    mustBeCalledAsBlock: 'The {{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}',
+    invalidResource: 'Invalid resource given to get helper'
+};
 
 const createFrame = hbs.handlebars.createFrame;
 
@@ -121,13 +126,13 @@ module.exports = function get(resource, options) {
     let returnedRowsCount;
 
     if (!options.fn) {
-        data.error = i18n.t('warnings.helpers.mustBeCalledAsBlock', {helperName: 'get'});
+        data.error = tpl(messages.mustBeCalledAsBlock, {helperName: 'get'});
         logging.warn(data.error);
         return Promise.resolve();
     }
 
     if (!RESOURCES[resource]) {
-        data.error = i18n.t('warnings.helpers.get.invalidResource');
+        data.error = tpl(messages.invalidResource);
         logging.warn(data.error);
         return Promise.resolve(options.inverse(self, {data: data}));
     }

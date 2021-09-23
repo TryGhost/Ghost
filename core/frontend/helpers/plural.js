@@ -10,14 +10,18 @@
 // The 3rd argument is the string that will be output if the variable's value is 1
 // The 4th argument is the string that will be output if the variable's value is 2+
 
-const {errors, i18n, SafeString} = require('../services/proxy');
+const {errors, tpl, SafeString} = require('../services/proxy');
 const isUndefined = require('lodash/isUndefined');
+
+const messages = {
+    valuesMustBeDefined: 'All values must be defined for empty, singular and plural'
+};
 
 module.exports = function plural(number, options) {
     if (isUndefined(options.hash) || isUndefined(options.hash.empty) ||
         isUndefined(options.hash.singular) || isUndefined(options.hash.plural)) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.plural.valuesMustBeDefined')
+            message: tpl(messages.valuesMustBeDefined)
         });
     }
 

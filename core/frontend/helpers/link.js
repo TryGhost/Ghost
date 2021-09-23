@@ -1,7 +1,11 @@
 // # link helper
 const _ = require('lodash');
-const {config, SafeString, errors, i18n, localUtils} = require('../services/proxy');
+const {config, SafeString, errors, tpl, localUtils} = require('../services/proxy');
 const {buildLinkClasses} = localUtils;
+
+const messages = {
+    hrefIsRequired: 'The {{#link}}{{/link}} helper requires an href="" attribute.'
+};
 
 const managedAttributes = ['href', 'class', 'activeClass', 'parentActiveClass'];
 
@@ -25,7 +29,7 @@ module.exports = function link(options) {
     // If there is no href provided, this is theme dev error, so we throw an error to make this clear.
     if (!_.has(options.hash, 'href')) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.link.hrefIsRequired')
+            message: tpl(messages.hrefIsRequired)
         });
     }
     // If the href attribute is empty, this is probably a dynamic data problem, hard for theme devs to track down
