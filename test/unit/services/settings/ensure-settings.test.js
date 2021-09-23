@@ -19,30 +19,12 @@ describe('UNIT > Settings Service ensure settings:', function () {
 
     describe('Ensure settings files', function () {
         it('returns yaml file from settings folder if it exists', function () {
-            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/badroutes.yaml'), 'utf8').resolves('content');
             fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/goodroutes.yaml'), 'utf8').resolves('content');
 
-            return ensureSettings(['goodroutes', 'badroutes']).then(() => {
-                fs.readFile.callCount.should.be.eql(2);
+            return ensureSettings('goodroutes.yaml').then(() => {
+                fs.readFile.callCount.should.be.eql(1);
                 fs.copy.called.should.be.false();
             });
-        });
-
-        it('copies default settings file if not found but does not overwrite existing files', function () {
-            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../core/frontend/services/settings/default-globals.yaml');
-            const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/globals.yaml');
-            const fsError = new Error('not found');
-            fsError.code = 'ENOENT';
-
-            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').resolves('content');
-            fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/globals.yaml'), 'utf8').rejects(fsError);
-            fs.copy.withArgs(expectedDefaultSettingsPath, expectedContentPath).resolves();
-
-            return ensureSettings(['routes', 'globals'])
-                .then(() => {
-                    fs.readFile.calledTwice.should.be.true();
-                    fs.copy.calledOnce.should.be.true();
-                });
         });
 
         it('copies default settings file if no file found', function () {
@@ -54,7 +36,7 @@ describe('UNIT > Settings Service ensure settings:', function () {
             fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').rejects(fsError);
             fs.copy.withArgs(expectedDefaultSettingsPath, expectedContentPath).resolves();
 
-            return ensureSettings(['routes']).then(() => {
+            return ensureSettings('routes.yaml').then(() => {
                 fs.readFile.calledOnce.should.be.true();
                 fs.copy.calledOnce.should.be.true();
             });
@@ -67,7 +49,7 @@ describe('UNIT > Settings Service ensure settings:', function () {
 
             fs.readFile.withArgs(path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml'), 'utf8').rejects(fsError);
 
-            return ensureSettings(['routes'])
+            return ensureSettings('routes.yaml')
                 .then(() => {
                     throw new Error('Expected test to fail');
                 })
