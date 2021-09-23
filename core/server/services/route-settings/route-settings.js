@@ -143,6 +143,8 @@ const init = function () {
     return ensureSettingsFile('routes.yaml');
 };
 
-module.exports.setFromFilePath = setFromFilePath;
-module.exports.get = get;
 module.exports.init = init;
+module.exports.api = {
+    setFromFilePath: setFromFilePath,
+    get: get
+};
