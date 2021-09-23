@@ -2,7 +2,7 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const debug = require('@tryghost/debug')('frontend:services:settings:index');
 const SettingsLoader = require('./loader');
-const ensureSettingsFiles = require('./ensure-settings');
+const ensureSettingsFile = require('./ensure-settings');
 
 const errors = require('@tryghost/errors');
 
@@ -21,13 +21,11 @@ const calculateHash = (data) => {
 
 module.exports = {
     init: function () {
-        const knownSettings = this.knownSettings();
-
-        debug('init settings service for:', knownSettings);
+        debug('init routes settings service');
 
         // Make sure that supported settings files are available
         // inside of the `content/setting` directory
-        return ensureSettingsFiles(knownSettings);
+        return ensureSettingsFile('routes.yaml');
     },
 
     /**
