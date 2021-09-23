@@ -1,10 +1,7 @@
-const _ = require('lodash');
 const crypto = require('crypto');
 const debug = require('@tryghost/debug')('frontend:services:settings:index');
 const SettingsLoader = require('./loader');
 const ensureSettingsFile = require('./ensure-settings');
-
-const errors = require('@tryghost/errors');
 
 /**
  * md5 hashes of default settings
@@ -29,35 +26,14 @@ module.exports = {
     },
 
     /**
-    * Global place to switch on more available settings.
-    */
-    knownSettings: function knownSettings() {
-        return ['routes'];
-    },
-
-    /**
-     * Getter for YAML settings.
-     * Example: `settings.get('routes').then(...)`
-     * will return an Object like this:
+     * Getter for routes YAML setting.
+     * Example: `settings.get().then(...)`
+     * will return a JSON Object like this:
      * {routes: {}, collections: {}, resources: {}}
-     * @param {String} setting type of supported setting.
-     * @returns {Object} settingsFile
-     * @description Returns settings object as defined per YAML files in
-     * `/content/settings` directory.
+     * @returns {Object} routes.yaml in JSON format
      */
-    get: function get(setting) {
-        const knownSettings = this.knownSettings();
-
-        // CASE: this should be an edge case and only if internal usage of the
-        // getter is incorrect.
-        if (!setting || _.indexOf(knownSettings, setting) < 0) {
-            throw new errors.IncorrectUsageError({
-                message: `Requested setting is not supported: '${setting}'.`,
-                help: `Please use only the supported settings: ${knownSettings}.`
-            });
-        }
-
-        return SettingsLoader(setting);
+    get: function get() {
+        return SettingsLoader('routes');
     },
 
     getDefaulHash: (setting) => {
