@@ -155,7 +155,7 @@ async function initDynamicRouting() {
     debug(`Frontend API Version: ${apiVersion}`);
 
     routing.bootstrap.start(apiVersion, routeSettings);
-    const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
+    const getRoutesHash = () => frontendSettings.getCurrentHash();
 
     const settings = require('./server/services/settings');
     await settings.syncRoutesHash(getRoutesHash);

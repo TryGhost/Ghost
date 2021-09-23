@@ -191,7 +191,7 @@ module.exports = {
         },
         async query(frame) {
             await routeSettings.setFromFilePath(frame.file.path);
-            const getRoutesHash = () => frontendSettings.getCurrentHash('routes');
+            const getRoutesHash = () => frontendSettings.getCurrentHash();
             await settingsService.syncRoutesHash(getRoutesHash);
         }
     },
