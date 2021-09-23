@@ -643,5 +643,21 @@ module.exports = {
         entry_id: {type: 'string', maxlength: 24, nullable: true},
         source_url: {type: 'string', maxlength: 2000, nullable: true},
         metadata: {type: 'string', maxlength: 191, nullable: true}
+    },
+    custom_theme_settings: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        theme: {type: 'string', maxlength: 191, nullable: false},
+        key: {type: 'string', maxlength: 191, nullable: false},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            validations: {
+                isIn: [[
+                    'select'
+                ]]
+            }
+        },
+        value: {type: 'text', maxlength: 65535, nullable: true}
     }
 };

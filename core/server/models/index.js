@@ -17,6 +17,7 @@ const models = [
     'post',
     'role',
     'settings',
+    'custom-theme-setting',
     'session',
     'tag',
     'tag-public',
