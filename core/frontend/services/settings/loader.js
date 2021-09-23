@@ -22,7 +22,7 @@ const getSettingFilePath = (setting) => {
 
 /**
  * Functionally same as loadSettingsSync with exception of loading
- * settigs asyncronously. This method is used at new places to read settings
+ * settings asynchronously. This method is used at new places to read settings
  * to prevent blocking the eventloop
  *
  * @param {String} setting the requested settings as defined in setting knownSettings
@@ -56,7 +56,7 @@ const loadSettings = async (setting) => {
 /**
  * Reads the desired settings YAML file and passes the
  * file to the YAML parser which then returns a JSON object.
- * NOTE: loading happens syncronously
+ * NOTE: loading happens synchronously
  *
  * @param {String} setting the requested settings as defined in setting knownSettings
  * @returns {Object} settingsFile
