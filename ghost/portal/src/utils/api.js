@@ -49,7 +49,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 if (!res.ok) {
                     return null;
                 }
-                return res.json();
+                return res.text();
             });
         }
     };
