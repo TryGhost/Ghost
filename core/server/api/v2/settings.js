@@ -168,7 +168,7 @@ module.exports = {
             method: 'edit'
         },
         async query(frame) {
-            await routeSettings.setFromFilePath(frame.file.path);
+            await routeSettings.api.setFromFilePath(frame.file.path);
             const getRoutesHash = () => frontendSettings.getCurrentHash();
             await settingsService.syncRoutesHash(getRoutesHash);
         }
@@ -188,7 +188,7 @@ module.exports = {
             method: 'browse'
         },
         query() {
-            return routeSettings.get();
+            return routeSettings.api.get();
         }
     }
 };
