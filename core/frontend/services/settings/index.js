@@ -31,7 +31,7 @@ module.exports = {
      * @returns {Object} routes.yaml in JSON format
      */
     get: function get() {
-        return SettingsLoader('routes');
+        return SettingsLoader.loadSettingsSync('routes');
     },
 
     getDefaultHash: () => {

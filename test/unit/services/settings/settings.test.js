@@ -29,7 +29,7 @@ describe('UNIT > Settings Service:', function () {
 
         it('returns settings object for `routes`', function () {
             settingsLoaderStub.returns(settingsStubFile);
-            settings.__set__('SettingsLoader', settingsLoaderStub);
+            settings.__set__('SettingsLoader.loadSettingsSync', settingsLoaderStub);
 
             const result = settings.get();
             should.exist(result);
@@ -39,7 +39,7 @@ describe('UNIT > Settings Service:', function () {
 
         it('passes SettingsLoader error through', function (done) {
             settingsLoaderStub.throws(new errors.GhostError({message: 'oops'}));
-            settings.__set__('SettingsLoader', settingsLoaderStub);
+            settings.__set__('SettingsLoader.loadSettingsSync', settingsLoaderStub);
 
             try {
                 settings.get();
