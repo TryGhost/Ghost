@@ -3,18 +3,60 @@ const BREAD = require('./bread');
 const debug = require('@tryghost/debug')('custom-theme-settings-service');
 
 module.exports = class CustomThemeSettingsService {
+    /**
+     * @param {Object} options
+     * @param {any} options.model - Bookshelf-like model instance for storing theme setting key/value pairs
+     * @param {import('./cache')} options.cache - Instance of a custom key/value pair cache
+     */
     constructor({model, cache}) {
+        this.activeThemeName = null;
+
+        /** @private */
         this.repository = new BREAD({model});
-        this.cache = cache;
+        this.valueCache = cache;
+        this.activeThemeSettings = {};
     }
 
-    // add/remove/edit theme setting records to match theme settings
+    /**
+     * The service only deals with one theme at a time,
+     * that theme is changed by calling this method with the output from gscan
+     *
+     * @param {Object} theme - checked theme output from gscan
+     */
     async activateTheme(theme) {
-        const knownSettingsCollection = await this.repository.browse({theme: theme.name});
-        // convert to JSON so we can use a standard array rather than a bookshelf collection
-        let knownSettings = knownSettingsCollection.toJSON();
+        this.activeThemeName = theme.name;
 
+        // add/remove/edit key/value records in the respository to match theme settings
+        const settings = this.syncRepositoryWithTheme(theme);
+
+        // populate the shared cache with all key/value pairs for this theme
+        this.populateValueCacheForTheme(theme, settings);
+        // populate the cache used for exposing full setting details for editing
+        this.populateInternalCacheForTheme(theme, settings);
+    }
+
+    /**
+     * Convert the key'd internal cache object to an array suitable for use with Ghost's API
+     */
+    listSettings() {
+        const settingObjects = Object.entries(this.activeThemeSettings).map(([key, setting]) => {
+            return Object.assign({}, setting, {key});
+        });
+
+        return settingObjects;
+    }
+
+    // Private -----------------------------------------------------------------
+
+    /**
+     * @param {Object} theme - checked theme output from gscan
+     * @private
+     */
+    async syncRepositoryWithTheme(theme) {
         const themeSettings = theme.customSettings || {};
+
+        const settingsCollection = await this.repository.browse({theme: theme.themeName});
+        let knownSettings = settingsCollection.toJSON();
 
         // exit early if there's nothing to sync for this theme
         if (knownSettings.length === 0 && _.isEmpty(themeSettings)) {
@@ -64,14 +106,50 @@ module.exports = class CustomThemeSettingsService {
             }
         }
 
-        // populate the cache with all key/value pairs for this theme
-        this.populateCacheForTheme(theme);
+        const updatedSettingsCollection = await this.repository.browse({theme: theme.themeName});
+        return updatedSettingsCollection.toJSON();
     }
 
-    async populateCacheForTheme(theme) {
-        const settingsCollection = await this.repository.browse({theme: theme.themeName});
-        const settings = settingsCollection.toJSON();
+    /**
+     * @param {Object} theme - checked theme output from gscan
+     * @param {Array} settings - theme settings fetched from repository
+     * @private
+     */
+    populateValueCacheForTheme(theme, settings) {
+        if (_.isEmpty(theme.customSettings)) {
+            this.valueCache.populate([]);
+            return;
+        }
 
-        this.cache.populate(settings);
+        this.valueCache.populate(settings);
+    }
+
+    /**
+     * @param {Object} theme - checked theme output from gscan
+     * @param {Array} settings - theme settings fetched from repository
+     * @private
+     */
+    populateInternalCacheForTheme(theme, settings) {
+        if (_.isEmpty(theme.customSettings)) {
+            this.activeThemeSettings = new Map();
+            return;
+        }
+
+        const settingValues = settings.reduce((acc, setting) => {
+            acc[setting.key] = setting;
+            return acc;
+        }, new Object());
+
+        const activeThemeSettings = new Object();
+
+        for (const [key, setting] of Object.entries(theme.customSettings)) {
+            // value comes from the stored key/value pairs rather than theme, we don't need the ID - theme name + key is enough
+            activeThemeSettings[key] = Object.assign({}, setting, {
+                id: settingValues[key].id,
+                value: settingValues[key].value
+            });
+        }
+
+        this.activeThemeSettings = activeThemeSettings;
     }
 };
