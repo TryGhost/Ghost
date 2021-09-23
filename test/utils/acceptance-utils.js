@@ -16,7 +16,7 @@ const db = require('../../core/server/data/db');
 const models = require('../../core/server/models');
 const urlService = require('../../core/frontend/services/url');
 const settingsService = require('../../core/server/services/settings');
-const frontendSettingsService = require('../../core/frontend/services/settings');
+const routeSettingsService = require('../../core/server/services/route-settings');
 const web = require('../../core/server/web');
 const themeService = require('../../core/server/services/themes');
 const limits = require('../../core/server/services/limits');
@@ -109,8 +109,8 @@ const restartModeGhostStart = async () => {
     await settingsService.init();
     debug('settings done');
 
-    // Reload the frontend
-    await frontendSettingsService.init();
+    // Load the frontend-related components
+    await routeSettingsService.init();
     await themeService.init();
     debug('frontend done');
 

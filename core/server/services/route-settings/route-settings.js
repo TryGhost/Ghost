@@ -9,6 +9,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
+const ensureSettingsFile = require('./ensure-settings');
 
 const messages = {
     loadError: 'Could not load {filename} file.'
@@ -134,5 +135,14 @@ const get = async () => {
     return readFile(settingsFilePath);
 };
 
+const init = function () {
+    debug('init routes settings service');
+
+    // Make sure that supported settings files are available
+    // inside of the `content/setting` directory
+    return ensureSettingsFile('routes.yaml');
+};
+
 module.exports.setFromFilePath = setFromFilePath;
 module.exports.get = get;
+module.exports.init = init;
