@@ -39,7 +39,7 @@ class DatabaseStateManager {
             await this.knexMigrator.isDatabaseOK();
             return state;
         } catch (error) {
-            // CASE: database has not yet been initialised
+            // CASE: database has not yet been initialized
             if (error.code === 'DB_NOT_INITIALISED') {
                 state = states.NEEDS_INITIALISATION;
                 return state;
