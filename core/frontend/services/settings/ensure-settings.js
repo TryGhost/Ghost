@@ -2,9 +2,13 @@ const fs = require('fs-extra');
 const Promise = require('bluebird');
 const path = require('path');
 const debug = require('@tryghost/debug')('frontend:services:settings:ensure-settings');
-const {i18n} = require('../proxy');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
+
+const messages = {
+    ensureSettings: 'Error trying to access settings files in {path}.'
+};
 
 /**
 * Makes sure file is in the `/content/settings` directory. If not, copy the default over.
@@ -31,7 +35,7 @@ module.exports = function ensureSettingsFile(fileName) {
         }).catch((error) => {
             // CASE: we might have a permission error, as we can't access the directory
             throw new errors.GhostError({
-                message: i18n.t('errors.services.settings.ensureSettings', {path: contentPath}),
+                message: tpl(messages.ensureSettings, {path: contentPath}),
                 err: error,
                 context: error.path
             });
