@@ -5,6 +5,7 @@ const {api} = require('../proxy');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
+const customThemeSettingsCache = require('../../../shared/custom-theme-settings-cache');
 const labs = require('../../../shared/labs');
 const activeTheme = require('./active');
 const preview = require('./preview');
@@ -114,6 +115,7 @@ async function updateGlobalTemplateOptions(req, res, next) {
         posts_per_page: activeTheme.get().config('posts_per_page'),
         image_sizes: activeTheme.get().config('image_sizes')
     };
+    const themeSettingsData = customThemeSettingsCache.getAll();
     const productData = await getProductAndPricesData();
     const priceData = calculateLegacyPriceData(productData);
 
@@ -136,7 +138,8 @@ async function updateGlobalTemplateOptions(req, res, next) {
                 config: themeData,
                 price: priceData,
                 product,
-                products
+                products,
+                custom: themeSettingsData
             }
         });
     }
