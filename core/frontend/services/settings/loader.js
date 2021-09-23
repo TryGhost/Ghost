@@ -1,11 +1,15 @@
 const fs = require('fs-extra');
 const path = require('path');
 const debug = require('@tryghost/debug')('frontend:services:settings:settings-loader');
-const {i18n} = require('../proxy');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const yamlParser = require('./yaml-parser');
 const validate = require('./validate');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    settingsLoaderError: `Error trying to load YAML setting for {setting} from '{path}'.`
+};
 
 const getSettingFilePath = (setting) => {
     // we only support the `yaml` file extension. `yml` will be ignored.
@@ -26,7 +30,7 @@ const getSettingFilePath = (setting) => {
  * to prevent blocking the eventloop
  *
  * @param {String} setting the requested settings as defined in setting knownSettings
- * @returns {Object} settingsFile
+ * @returns {Promise<Object>} settingsFile
  */
 const loadSettings = async (setting) => {
     const {fileName, contentPath, filePath} = getSettingFilePath(setting);
@@ -43,7 +47,7 @@ const loadSettings = async (setting) => {
         }
 
         throw new errors.GhostError({
-            message: i18n.t('errors.services.settings.loader', {
+            message: tpl(messages.settingsLoaderError, {
                 setting: setting,
                 path: contentPath
             }),
@@ -76,7 +80,7 @@ module.exports.loadSettingsSync = function loadSettingsSync(setting) {
         }
 
         throw new errors.GhostError({
-            message: i18n.t('errors.services.settings.loader', {
+            message: tpl(messages.settingsLoaderError, {
                 setting: setting,
                 path: contentPath
             }),
