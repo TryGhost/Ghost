@@ -38,8 +38,8 @@ module.exports = {
         return defaultRoutesSettingHash;
     },
 
-    getCurrentHash: async (setting) => {
-        const data = await SettingsLoader.loadSettings(setting);
+    getCurrentHash: async () => {
+        const data = await SettingsLoader.loadSettings('routes');
 
         return calculateHash(JSON.stringify(data));
     }
