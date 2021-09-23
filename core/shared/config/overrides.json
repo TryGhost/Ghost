@@ -6,7 +6,7 @@
         "helperTemplates": "core/frontend/helpers/tpl/",
         "adminViews": "core/server/web/admin/views/",
         "defaultViews": "core/server/views/",
-        "defaultSettings": "core/frontend/services/settings/",
+        "defaultSettings": "core/server/services/route-settings/",
         "internalAppPath": "core/frontend/apps/",
         "internalAdaptersPath": "core/server/adapters/",
         "migrationPath": "core/server/data/migrations",

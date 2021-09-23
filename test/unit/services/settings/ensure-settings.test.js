@@ -28,7 +28,7 @@ describe('UNIT > Settings Service ensure settings:', function () {
         });
 
         it('copies default settings file if no file found', function () {
-            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../core/frontend/services/settings/default-routes.yaml');
+            const expectedDefaultSettingsPath = path.join(__dirname, '../../../../core/server/services/route-settings/default-routes.yaml');
             const expectedContentPath = path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml');
             const fsError = new Error('not found');
             fsError.code = 'ENOENT';
