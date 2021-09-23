@@ -65,6 +65,13 @@ module.exports = class CustomThemeSettingsService {
         }
 
         // populate the cache with all key/value pairs for this theme
-        this.cache.populateForTheme(theme.name);
+        this.populateCacheForTheme(theme);
+    }
+
+    async populateCacheForTheme(theme) {
+        const settingsCollection = await this.repository.browse({theme: theme.themeName});
+        const settings = settingsCollection.toJSON();
+
+        this.cache.populate(settings);
     }
 };
