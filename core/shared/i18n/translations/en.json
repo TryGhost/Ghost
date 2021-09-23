@@ -539,11 +539,6 @@
             }
         },
         "services": {
-            "settings": {
-                "yaml": {
-                    "validate": "The following definition \"{at}\" is invalid: {reason}"
-                }
-            },
             "mega": {
                 "requestFailed": {
                     "error": "The email service was unable to send an email batch."

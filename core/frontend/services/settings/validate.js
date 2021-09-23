@@ -1,10 +1,14 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('frontend:services:settings:validate');
-const {i18n} = require('../proxy');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const bridge = require('../../../bridge');
 const _private = {};
 let RESOURCE_CONFIG;
+
+const messages = {
+    validationError: `The following definition "{at}" is invalid: {reason}`
+};
 
 _private.validateTemplate = function validateTemplate(object) {
     // CASE: /about/: about
@@ -42,7 +46,7 @@ _private.validateData = function validateData(object) {
 
         if (!shortForm.match(/.*\..*/)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: shortForm,
                     reason: 'Incorrect Format. Please use e.g. tag.recipes'
                 })
@@ -133,7 +137,7 @@ _private.validateData = function validateData(object) {
             _.each(requiredQueryFields, (option) => {
                 if (!Object.prototype.hasOwnProperty.call(object.data[key], option)) {
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.services.settings.yaml.validate', {
+                        message: tpl(messages.validationError, {
                             at: JSON.stringify(object.data[key]),
                             reason: `${option} is required.`
                         })
@@ -142,7 +146,7 @@ _private.validateData = function validateData(object) {
 
                 if (allowedQueryValues[option] && allowedQueryValues[option].indexOf(object.data[key][option]) === -1) {
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.services.settings.yaml.validate', {
+                        message: tpl(messages.validationError, {
                             at: JSON.stringify(object.data[key]),
                             reason: `${object.data[key][option]} not supported. Please use ${_.uniq(allowedQueryValues[option])}.`
                         })
@@ -186,7 +190,7 @@ _private.validateData = function validateData(object) {
 _private.validateRoutes = function validateRoutes(routes) {
     if (routes.constructor !== Object) {
         throw new errors.ValidationError({
-            message: i18n.t('errors.services.settings.yaml.validate', {
+            message: tpl(messages.validationError, {
                 at: routes,
                 reason: '`routes` must be a YAML map.'
             })
@@ -197,7 +201,7 @@ _private.validateRoutes = function validateRoutes(routes) {
         // CASE: we hard-require trailing slashes for the index route
         if (!routingTypeObjectKey.match(/\/$/)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'A trailing slash is required.'
                 })
@@ -207,7 +211,7 @@ _private.validateRoutes = function validateRoutes(routes) {
         // CASE: we hard-require leading slashes for the index route
         if (!routingTypeObjectKey.match(/^\//)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'A leading slash is required.'
                 })
@@ -217,7 +221,7 @@ _private.validateRoutes = function validateRoutes(routes) {
         // CASE: you define /about/:
         if (!routingTypeObject) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'Please define a template.'
                 }),
@@ -235,7 +239,7 @@ _private.validateRoutes = function validateRoutes(routes) {
 _private.validateCollections = function validateCollections(collections) {
     if (collections.constructor !== Object) {
         throw new errors.ValidationError({
-            message: i18n.t('errors.services.settings.yaml.validate', {
+            message: tpl(messages.validationError, {
                 at: collections,
                 reason: '`collections` must be a YAML map.'
             })
@@ -246,7 +250,7 @@ _private.validateCollections = function validateCollections(collections) {
         // CASE: we hard-require trailing slashes for the collection index route
         if (!routingTypeObjectKey.match(/\/$/)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'A trailing slash is required.'
                 })
@@ -256,7 +260,7 @@ _private.validateCollections = function validateCollections(collections) {
         // CASE: we hard-require leading slashes for the collection index route
         if (!routingTypeObjectKey.match(/^\//)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'A leading slash is required.'
                 })
@@ -265,7 +269,7 @@ _private.validateCollections = function validateCollections(collections) {
 
         if (!Object.prototype.hasOwnProperty.call(routingTypeObject, 'permalink')) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'Please define a permalink route.'
                 }),
@@ -277,7 +281,7 @@ _private.validateCollections = function validateCollections(collections) {
 
         if (!routingTypeObject.permalink) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'Please define a permalink route.'
                 }),
@@ -288,7 +292,7 @@ _private.validateCollections = function validateCollections(collections) {
         // CASE: we hard-require trailing slashes for the value/permalink route
         if (!routingTypeObject.permalink.match(/\/$/)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObject.permalink,
                     reason: 'A trailing slash is required.'
                 })
@@ -298,7 +302,7 @@ _private.validateCollections = function validateCollections(collections) {
         // CASE: we hard-require leading slashes for the value/permalink route
         if (!routingTypeObject.permalink.match(/^\//)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObject.permalink,
                     reason: 'A leading slash is required.'
                 })
@@ -308,7 +312,7 @@ _private.validateCollections = function validateCollections(collections) {
         // CASE: notation /:slug/ or /:primary_author/ is not allowed. We only accept /{{...}}/.
         if (routingTypeObject.permalink && routingTypeObject.permalink.match(/\/:\w+/)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObject.permalink,
                     reason: 'Please use the following notation e.g. /{slug}/.'
                 })
@@ -331,7 +335,7 @@ _private.validateCollections = function validateCollections(collections) {
 _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
     if (taxonomies.constructor !== Object) {
         throw new errors.ValidationError({
-            message: i18n.t('errors.services.settings.yaml.validate', {
+            message: tpl(messages.validationError, {
                 at: taxonomies,
                 reason: '`taxonomies` must be a YAML map.'
             })
@@ -342,7 +346,7 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
     _.each(taxonomies, (routingTypeObject, routingTypeObjectKey) => {
         if (!routingTypeObject) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'Please define a taxonomy permalink route.'
                 }),
@@ -352,7 +356,7 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
 
         if (!validRoutingTypeObjectKeys.includes(routingTypeObjectKey)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObjectKey,
                     reason: 'Unknown taxonomy.'
                 })
@@ -362,7 +366,7 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
         // CASE: we hard-require trailing slashes for the taxonomie permalink route
         if (!routingTypeObject.match(/\/$/)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObject,
                     reason: 'A trailing slash is required.'
                 })
@@ -372,7 +376,7 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
         // CASE: we hard-require leading slashes for the value/permalink route
         if (!routingTypeObject.match(/^\//)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObject,
                     reason: 'A leading slash is required.'
                 })
@@ -382,7 +386,7 @@ _private.validateTaxonomies = function validateTaxonomies(taxonomies) {
         // CASE: notation /:slug/ or /:primary_author/ is not allowed. We only accept /{{...}}/.
         if (routingTypeObject && routingTypeObject.match(/\/:\w+/)) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.services.settings.yaml.validate', {
+                message: tpl(messages.validationError, {
                     at: routingTypeObject,
                     reason: 'Please use the following notation e.g. /{slug}/.'
                 })
