@@ -27,7 +27,7 @@ module.exports = class CustomThemeSettingsService {
         this.activeThemeName = theme.name;
 
         // add/remove/edit key/value records in the respository to match theme settings
-        const settings = this.syncRepositoryWithTheme(theme);
+        const settings = await this.syncRepositoryWithTheme(theme);
 
         // populate the shared cache with all key/value pairs for this theme
         this.populateValueCacheForTheme(theme, settings);
