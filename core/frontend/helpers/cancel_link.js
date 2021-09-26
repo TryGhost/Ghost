@@ -5,8 +5,10 @@
 // Outputs cancel/renew links to manage subscription renewal after the subscription period ends.
 //
 // Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Continue subscription"
+const {templates, labs} = require('../services/proxy');
 
-const {templates, errors, tpl, labs} = require('../services/proxy');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidData: 'The {{cancel_link}} helper was used outside of a subscription context. See https://ghost.org/docs/themes/members/#cancel-links.'

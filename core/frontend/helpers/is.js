@@ -1,7 +1,8 @@
 // # Is Helper
 // Usage: `{{#is "paged"}}`, `{{#is "index, paged"}}`
 // Checks whether we're in a given context.
-const {logging, tpl} = require('../services/proxy');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 
 const messages = {

@@ -6,6 +6,7 @@
 //
 // Note that the standard {{#each tags}} implementation is unaffected by this helper
 const {urlService, SafeString, escapeExpression, templates} = require('../services/proxy');
+
 const isString = require('lodash/isString');
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 

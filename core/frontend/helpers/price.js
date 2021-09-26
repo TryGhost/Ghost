@@ -10,8 +10,8 @@
 //
 // Returns amount equal to the dominant denomintation of the currency.
 // For example, if 2100 is passed, it will return 21.
-const isNumber = require('lodash/isNumber');
-const {errors, tpl} = require('../services/proxy');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 
 const messages = {
@@ -93,7 +93,7 @@ module.exports = function price(planOrAmount, options) {
         });
     }
 
-    if (!isNumber(amount)) {
+    if (!_.isNumber(amount)) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.attrMustBeNumeric)
         });

@@ -1,4 +1,8 @@
-const {logging, tpl, SafeString, labs} = require('../services/proxy');
+const {SafeString, labs} = require('../services/proxy');
+
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
+
 const _ = require('lodash');
 
 const messages = {

@@ -9,7 +9,11 @@
 const Promise = require('bluebird');
 
 const moment = require('moment');
-const {SafeString, logging, errors} = require('../../../../services/proxy');
+const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
+
+const {SafeString} = require('../../../../services/proxy');
+
 const amperizeCache = {};
 let allowedAMPTags = [];
 let allowedAMPAttributes = {};
