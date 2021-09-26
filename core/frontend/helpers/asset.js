@@ -2,7 +2,10 @@
 // Usage: `{{asset "css/screen.css"}}`
 //
 // Returns the path to the specified asset.
-const {SafeString, metaData, errors, tpl} = require('../services/proxy');
+const {SafeString, metaData} = require('../services/proxy');
+
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const get = require('lodash/get');
 const {getAssetUrl} = metaData;
 

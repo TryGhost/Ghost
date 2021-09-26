@@ -6,10 +6,12 @@
 //
 // Returns the URL for the current object scope i.e. If inside a post scope will return image permalink
 // `absolute` flag outputs absolute URL, else URL is relative.
+const {urlUtils} = require('../services/proxy');
 
 const url = require('url');
 const _ = require('lodash');
-const {urlUtils, logging, tpl} = require('../services/proxy');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
 
 const messages = {
     attrIsRequired: 'Attribute is required e.g. {{img_url feature_image}}'

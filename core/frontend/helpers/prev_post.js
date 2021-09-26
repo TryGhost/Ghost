@@ -2,8 +2,10 @@
 //  Example usages
 // `{{#prev_post}}<a href ="{{url}}>previous post</a>{{/prev_post}}'
 // `{{#next_post}}<a href ="{{url absolute="true">next post</a>{{/next_post}}'
+const {api, hbs, checks} = require('../services/proxy');
 
-const {logging, tpl, api, hbs, checks} = require('../services/proxy');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
 const get = require('lodash/get');
 const Promise = require('bluebird');
 const moment = require('moment');

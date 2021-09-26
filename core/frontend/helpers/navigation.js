@@ -1,8 +1,10 @@
 // ### Navigation Helper
 // `{{navigation}}`
 // Outputs navigation menu of static urls
+const {SafeString, templates, hbs} = require('../services/proxy');
 
-const {SafeString, tpl, errors, templates, hbs} = require('../services/proxy');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const {slugify} = require('@tryghost/string');
 const _ = require('lodash');
 

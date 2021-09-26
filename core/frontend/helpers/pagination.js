@@ -1,8 +1,10 @@
 // ### Pagination Helper
 // `{{pagination}}`
 // Outputs previous and next buttons, along with info about the current page
+const {templates, hbs} = require('../services/proxy');
 
-const {errors, tpl, templates, hbs} = require('../services/proxy');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 
 const messages = {

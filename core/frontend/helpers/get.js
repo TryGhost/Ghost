@@ -1,7 +1,12 @@
 // # Get Helper
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
-const {config, logging, errors, tpl, hbs, api, prepareContextResource} = require('../services/proxy');
+const {config, hbs, api, prepareContextResource} = require('../services/proxy');
+
+const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
 const _ = require('lodash');
 const Promise = require('bluebird');
 const jsonpath = require('jsonpath');

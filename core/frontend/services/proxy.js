@@ -2,11 +2,6 @@
 // With the exception of modules like lodash, Bluebird
 // We can later refactor to enforce this something like we did in apps
 const hbs = require('./theme-engine/engine');
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-
-const i18n = require('../../shared/i18n');
-const logging = require('@tryghost/logging');
 const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
 
@@ -27,13 +22,6 @@ module.exports = {
 
     // TODO: Only expose "get"
     settingsCache: settingsCache,
-
-    // These 3 are kind of core and required all the time
-    errors,
-    // @deprecated
-    i18n,
-    tpl,
-    logging,
 
     // Theme i18n is separate to common i18n
     themeI18n: require('./theme-engine/i18n'),
