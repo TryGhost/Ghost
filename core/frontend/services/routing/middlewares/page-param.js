@@ -1,6 +1,10 @@
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../../shared/url-utils');
+
+const messages = {
+    pageNotFound: 'Page not found.'
+};
 
 /**
  * @description Middleware, which validates and interprets the page param e.g. /page/1
@@ -21,7 +25,7 @@ module.exports = function handlePageParam(req, res, next, page) {
         return urlUtils.redirect301(res, req.originalUrl.replace(pageRegex, '/'));
     } else if (page < 1 || isNaN(page)) {
         return next(new errors.NotFoundError({
-            message: i18n.t('errors.errors.pageNotFound')
+            message: tpl(messages.pageNotFound)
         }));
     } else {
         req.params.page = page;

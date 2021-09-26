@@ -1,11 +1,11 @@
 const fs = require('fs-extra');
 const path = require('path');
 const debug = require('@tryghost/debug')('frontend:services:settings:settings-loader');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const yamlParser = require('./yaml-parser');
 const validate = require('./validate');
-const tpl = require('@tryghost/tpl');
 
 const messages = {
     settingsLoaderError: `Error trying to load YAML setting for {setting} from '{path}'.`

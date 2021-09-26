@@ -7,7 +7,12 @@ const _private = {};
 let RESOURCE_CONFIG;
 
 const messages = {
-    validationError: `The following definition "{at}" is invalid: {reason}`
+    validationError: 'The following definition "{at}" is invalid: {reason}',
+    invalidResourceError: 'Resource key not supported. {resourceKey}',
+    invalidResourceHelp: 'Please use: tag, user, post or page.',
+    badDatError: 'Please wrap the data definition into a custom name.',
+    badDataHelp: 'Example:\n data:\n  my-tag:\n    resource: tags\n    ...\n',
+    authorDeprecatedError: 'Please choose a different name. We recommend not using author.'
 };
 
 _private.validateTemplate = function validateTemplate(object) {
@@ -58,8 +63,8 @@ _private.validateData = function validateData(object) {
         if (!RESOURCE_CONFIG.QUERY[resourceKey] ||
             (Object.prototype.hasOwnProperty.call(RESOURCE_CONFIG.QUERY[resourceKey], 'internal') && RESOURCE_CONFIG.QUERY[resourceKey].internal === true)) {
             throw new errors.ValidationError({
-                message: `Resource key not supported. ${resourceKey}`,
-                help: 'Please use: tag, user, post or page.'
+                message: tpl(messages.invalidResourceError, {resourceKey}),
+                help: tpl(messages.invalidResourceHelp)
             });
         }
 
@@ -102,15 +107,15 @@ _private.validateData = function validateData(object) {
             // CASE: a name is required to define the data longform
             if (['resource', 'type', 'limit', 'order', 'include', 'filter', 'status', 'visibility', 'slug', 'redirect'].indexOf(key) !== -1) {
                 throw new errors.ValidationError({
-                    message: 'Please wrap the data definition into a custom name.',
-                    help: 'Example:\n data:\n  my-tag:\n    resource: tags\n    ...\n'
+                    message: tpl(messages.badDataError),
+                    help: tpl(messages.badDataHelp)
                 });
             }
 
             // @NOTE: We disallow author, because {{author}} is deprecated.
             if (key === 'author') {
                 throw new errors.ValidationError({
-                    message: 'Please choose a different name. We recommend not using author.'
+                    message: tpl(messages.authorDeprecatedError)
                 });
             }
 
