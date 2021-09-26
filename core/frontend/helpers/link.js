@@ -1,6 +1,10 @@
 // # link helper
+const {config, SafeString, localUtils} = require('../services/proxy');
+
 const _ = require('lodash');
-const {config, SafeString, errors, tpl, localUtils} = require('../services/proxy');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
 const {buildLinkClasses} = localUtils;
 
 const messages = {
