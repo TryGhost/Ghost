@@ -1,10 +1,18 @@
-const {i18n} = require('../../services/proxy');
-const urlUtils = require('../../../shared/url-utils');
+const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const urlUtils = require('../../../shared/url-utils');
 const middleware = require('./lib/middleware');
 const router = require('./lib/router');
 const registerHelpers = require('./lib/helpers');
+
+const messages = {
+    urlCannotContainPrivateSubdir: {
+        error: 'private subdirectory not allowed',
+        description: 'Your site url in config.js cannot contain a subdirectory called private.',
+        help: 'Please rename the subdirectory before restarting'
+    }
+};
 
 // routeKeywords.private: 'private'
 const PRIVATE_KEYWORD = 'private';
@@ -17,9 +25,9 @@ let checkSubdir = function checkSubdir() {
 
         if (paths.pop() === PRIVATE_KEYWORD) {
             logging.error(new errors.GhostError({
-                message: i18n.t('errors.config.urlCannotContainPrivateSubdir.error'),
-                context: i18n.t('errors.config.urlCannotContainPrivateSubdir.description'),
-                help: i18n.t('errors.config.urlCannotContainPrivateSubdir.help')
+                message: tpl(messages.urlCannotContainPrivateSubdir.error),
+                context: tpl(messages.urlCannotContainPrivateSubdir.description),
+                help: tpl(messages.urlCannotContainPrivateSubdir.help)
             }));
 
             // @TODO: why

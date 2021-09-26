@@ -5,11 +5,16 @@ const path = require('path');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
 const constants = require('@tryghost/constants');
-const {i18n} = require('../../../services/proxy');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../../shared/settings-cache');
 // routeKeywords.private: 'private'
 const privateRoute = '/private/';
+
+const messages = {
+    pageNotFound: 'Page not found.',
+    wrongPassword: 'Wrong password'
+};
 
 function verifySessionHash(salt, hash) {
     if (!salt || !hash) {
@@ -95,7 +100,7 @@ const privateBlogging = {
             // CASE: RSS is disabled for private blogging e.g. they create overhead
             if (req.path.match(/\/rss\/$/)) {
                 return next(new errors.NotFoundError({
-                    message: i18n.t('errors.errors.pageNotFound')
+                    message: tpl(messages.pageNotFound)
                 }));
             }
 
@@ -156,7 +161,7 @@ const privateBlogging = {
             return res.redirect(urlUtils.urlFor({relativeUrl: forward}));
         } else {
             res.error = {
-                message: i18n.t('errors.middleware.privateblogging.wrongPassword')
+                message: tpl(messages.wrongPassword)
             };
             return next();
         }

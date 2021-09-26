@@ -4,10 +4,8 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    yamlParsing: {
-        error: 'Could not parse {file}: {context}.',
-        help: 'Check your {file} file for typos and fix the named issues.'
-    }
+    error: 'Could not parse {file}: {context}.',
+    help: 'Check your {file} file for typos and fix the named issues.'
 };
 
 /**
@@ -28,11 +26,11 @@ module.exports = function parseYaml(file, fileName) {
         // `reason` property as well as in the message.
         // As the file uploaded is invalid, the person uploading must fix this - it's a 4xx error
         throw new errors.IncorrectUsageError({
-            message: tpl(messages.yamlParsing.error, {file: fileName, context: error.reason}),
+            message: tpl(messages.error, {file: fileName, context: error.reason}),
             code: 'YAML_PARSER_ERROR',
             context: error.message,
             err: error,
-            help: tpl(messages.yamlParsing.help, {file: fileName})
+            help: tpl(messages.help, {file: fileName})
         });
     }
 };

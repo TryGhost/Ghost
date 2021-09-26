@@ -2,13 +2,17 @@ const path = require('path');
 const express = require('../../../../shared/express');
 const ampRouter = express.Router('amp');
 
-// Dirty requires
-const {i18n} = require('../../../services/proxy');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
+// Dirty requires
 const urlService = require('../../../services/url');
 const helpers = require('../../../services/routing/helpers');
 const templateName = 'amp';
+
+const messages = {
+    pageNotFound: 'Page not found.'
+};
 
 function _renderer(req, res, next) {
     res.routerOptions = {
@@ -23,7 +27,7 @@ function _renderer(req, res, next) {
 
     // CASE: we only support amp pages for posts that are not static pages
     if (!data.post || data.post.page) {
-        return next(new errors.NotFoundError({message: i18n.t('errors.errors.pageNotFound')}));
+        return next(new errors.NotFoundError({message: tpl(messages.pageNotFound)}));
     }
 
     // Render Call
@@ -61,7 +65,7 @@ function getPostData(req, res, next) {
 
     if (!permalinks) {
         return next(new errors.NotFoundError({
-            message: i18n.t('errors.errors.pageNotFound')
+            message: tpl(messages.pageNotFound)
         }));
     }
 

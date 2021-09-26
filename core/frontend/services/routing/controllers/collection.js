@@ -1,11 +1,15 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:routing:controllers:collection');
-const {i18n} = require('../../proxy');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const urlService = require('../../url');
 const themeEngine = require('../../theme-engine');
 const helpers = require('../helpers');
+
+const messages = {
+    pageNotFound: 'Page not found.'
+};
 
 /**
  * @description Collection controller.
@@ -50,7 +54,7 @@ module.exports = function collectionController(req, res, next) {
             // CASE: requested page is greater than number of pages we have
             if (pathOptions.page > result.meta.pagination.pages) {
                 return next(new errors.NotFoundError({
-                    message: i18n.t('errors.errors.pageNotFound')
+                    message: tpl(messages.pageNotFound)
                 }));
             }
 
