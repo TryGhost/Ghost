@@ -218,7 +218,8 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             };
             const analyticsData = getAnalyticsMetadata();
             if (analyticsData) {
-                metadataObj.ghost_analytics = analyticsData;
+                metadataObj.ghost_analytics_entry_id = analyticsData.entry_id;
+                metadataObj.ghost_analytics_source_url = analyticsData.source_url;
             }
             return makeRequest({
                 url,
