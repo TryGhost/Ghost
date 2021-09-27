@@ -101,7 +101,7 @@
     "ember-promise-modals": "TryGhost/ember-promise-modals#v2.0.0+ghost.3",
     "ember-resolver": "8.0.3",
     "ember-route-action-helper": "2.0.8",
-    "ember-simple-auth": "4.0.0",
+    "ember-simple-auth": "4.0.1",
     "ember-sinon": "5.0.0",
     "ember-source": "3.21.3",
     "ember-svg-jar": "2.3.3",
