@@ -151,9 +151,7 @@ module.exports.init = init;
  * {routes: {}, collections: {}, resources: {}}
  * @returns {Object} routes.yaml in JSON format
  */
-module.exports.loadRouteSettingsSync = () => {
-    return SettingsLoader.loadSettingsSync();
-};
+module.exports.loadRouteSettingsSync = SettingsLoader.loadSettingsSync;
 
 module.exports.api = {
     setFromFilePath: setFromFilePath,
