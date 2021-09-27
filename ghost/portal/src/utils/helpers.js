@@ -224,6 +224,32 @@ export function getAvailableProducts({site}) {
     });
 }
 
+export function getAllProductsForSite({site}) {
+    const {products = [], portal_plans: portalPlans = []} = site || {};
+
+    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
+        return [];
+    }
+
+    return products.filter(product => !!product).filter((product) => {
+        return !!(product.monthlyPrice && product.yearlyPrice);
+    }).filter((product) => {
+        return !!(Object.keys(product.monthlyPrice).length > 0 && Object.keys(product.yearlyPrice).length > 0);
+    }).sort((productA, productB) => {
+        return productA?.monthlyPrice?.amount - productB?.monthlyPrice?.amount;
+    }).map((product) => {
+        product.monthlyPrice = {
+            ...product.monthlyPrice,
+            currency_symbol: getCurrencySymbol(product.monthlyPrice.currency)
+        };
+        product.yearlyPrice = {
+            ...product.yearlyPrice,
+            currency_symbol: getCurrencySymbol(product.yearlyPrice.currency)
+        };
+        return product;
+    });
+}
+
 export function hasBenefits({prices, site}) {
     if (!hasMultipleProductsFeature({site})) {
         return false;
@@ -273,7 +299,7 @@ export function getProductBenefits({product, site = null}) {
 }
 
 export function getProductFromId({site, productId}) {
-    const availableProducts = getAvailableProducts({site});
+    const availableProducts = getAllProductsForSite({site});
     return availableProducts.find(product => product.id === productId);
 }
 
