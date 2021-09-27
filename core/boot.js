@@ -146,7 +146,6 @@ async function initExpressApps() {
 async function initDynamicRouting() {
     debug('Begin: Dynamic Routing');
     const routing = require('./frontend/services/routing');
-    const frontendSettings = require('./frontend/services/settings');
     const routeSettingsService = require('./server/services/route-settings');
     const bridge = require('./bridge');
 
@@ -156,7 +155,7 @@ async function initDynamicRouting() {
     debug(`Frontend API Version: ${apiVersion}`);
 
     routing.bootstrap.start(apiVersion, routeSettings);
-    const getRoutesHash = () => frontendSettings.getCurrentHash();
+    const getRoutesHash = () => routeSettingsService.api.getCurrentHash();
 
     const settings = require('./server/services/settings');
     await settings.syncRoutesHash(getRoutesHash);

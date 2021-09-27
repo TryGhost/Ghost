@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const fs = require('fs-extra');
 const path = require('path');
+const crypto = require('crypto');
 const urlService = require('../../../frontend/services/url');
 
 const debug = require('@tryghost/debug')('services:route-settings');
@@ -148,7 +149,29 @@ module.exports.init = init;
 module.exports.loadRouteSettingsSync = SettingsLoader.loadSettingsSync;
 module.exports.loadRouteSettings = SettingsLoader.loadSettings;
 
+/**
+ * md5 hashes of default routes settings
+ */
+const defaultRoutesSettingHash = '3d180d52c663d173a6be791ef411ed01';
+
+const calculateHash = (data) => {
+    return crypto.createHash('md5')
+        .update(data, 'binary')
+        .digest('hex');
+};
+
+module.exports.getDefaultHash = () => {
+    return defaultRoutesSettingHash;
+};
+
+const getCurrentHash = async () => {
+    const data = await SettingsLoader.loadSettings();
+
+    return calculateHash(JSON.stringify(data));
+};
+
 module.exports.api = {
     setFromFilePath: setFromFilePath,
-    get: get
+    get: get,
+    getCurrentHash: getCurrentHash
 };
