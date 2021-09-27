@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const themeEngine = require('../../../../core/frontend/services/theme-engine');
-const validate = require('../../../../core/frontend/services/settings/validate');
+const validate = require('../../../../core/server/services/route-settings/validate');
 
 should.equal(true, true);
 

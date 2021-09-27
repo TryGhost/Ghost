@@ -367,7 +367,7 @@ describe('Integration - Web - Site canary', function () {
     });
 
     describe('extended routes.yaml: collections', function () {
-        describe.only('2 collections', function () {
+        describe('2 collections', function () {
             before(function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
