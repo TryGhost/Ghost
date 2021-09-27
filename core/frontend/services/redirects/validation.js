@@ -1,6 +1,9 @@
 const _ = require('lodash');
-const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    redirectsWrongFormat: 'Incorrect redirects file format.'
+};
 
 /**
  * Redirects are file based at the moment, but they will live in the database in the future.
@@ -9,7 +12,7 @@ const errors = require('@tryghost/errors');
 const validate = (redirects) => {
     if (!_.isArray(redirects)) {
         throw new errors.ValidationError({
-            message: i18n.t('errors.utils.redirectsWrongFormat'),
+            message: messages.redirectsWrongFormat,
             help: 'https://ghost.org/docs/themes/routing/#redirects'
         });
     }
@@ -17,7 +20,7 @@ const validate = (redirects) => {
     _.each(redirects, function (redirect) {
         if (!redirect.from || !redirect.to) {
             throw new errors.ValidationError({
-                message: i18n.t('errors.utils.redirectsWrongFormat'),
+                message: messages.redirectsWrongFormat,
                 context: redirect,
                 help: 'https://ghost.org/docs/themes/routing/#redirects'
             });
