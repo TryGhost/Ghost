@@ -145,12 +145,6 @@ const init = function () {
 };
 
 module.exports.init = init;
-/**
- * Fetches routes YAML settings synchronously.
- * will return a JSON Object like this:
- * {routes: {}, collections: {}, resources: {}}
- * @returns {Object} routes.yaml in JSON format
- */
 module.exports.loadRouteSettingsSync = SettingsLoader.loadSettingsSync;
 
 module.exports.api = {
