@@ -15,7 +15,7 @@
     </LinkTo>
 
     {{#if @tag.count.posts}}
-        <LinkTo @route="posts" @query={{hash type=null author=null tag=@tag.slug order=null}} class="gh-list-data blue gh-tag-list-posts-count gh-list-cellwidth-10 f8" @title={{concat "List posts tagged with '" @tag.name "'"}}>
+        <LinkTo @route="posts" @query={{hash type=null author=null tag=@tag.slug order=null}} class="gh-list-data gh-tag-list-posts-count gh-list-cellwidth-10 f8" @title={{concat "List posts tagged with '" @tag.name "'"}}>
             <span class="nowrap">{{gh-pluralize @tag.count.posts "post"}}</span>
         </LinkTo>
     {{else}}
