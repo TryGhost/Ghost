@@ -3728,7 +3728,7 @@ broccoli-file-creator@^1.1.1:
     broccoli-plugin "^1.1.0"
     mkdirp "^0.5.1"
 
-broccoli-file-creator@^2.0.0, broccoli-file-creator@^2.1.1:
+broccoli-file-creator@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/broccoli-file-creator/-/broccoli-file-creator-2.1.1.tgz#7351dd2496c762cfce7736ce9b49e3fce0c7b7db"
   integrity sha512-YpjOExWr92C5vhnK0kmD81kM7U09kdIRZk9w4ZDCDHuHXW+VE/x6AGEOQQW3loBQQ6Jk+k+TSm8dESy4uZsnjw==
@@ -3878,7 +3878,7 @@ broccoli-merge-trees@^2.0.0:
     broccoli-plugin "^1.3.0"
     merge-trees "^1.0.1"
 
-"broccoli-merge-trees@^2.0.0 || ^3.0.0", broccoli-merge-trees@^3.0.0, broccoli-merge-trees@^3.0.1, broccoli-merge-trees@^3.0.2:
+broccoli-merge-trees@^3.0.0, broccoli-merge-trees@^3.0.1, broccoli-merge-trees@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-3.0.2.tgz#f33b451994225522b5c9bcf27d59decfd8ba537d"
   integrity sha512-ZyPAwrOdlCddduFbsMyyFzJUrvW6b04pMvDiAQZrCwghlvgowJDY+EfoXn+eR1RRA5nmGHJ+B68T63VnpRiT1A==
@@ -7015,15 +7015,13 @@ ember-router-generator@^2.0.0:
     "@babel/traverse" "^7.4.5"
     recast "^0.18.1"
 
-ember-simple-auth@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-4.0.0.tgz#03efe3272f3f3ff9cd1646ce16189a1a1275f69e"
-  integrity sha512-OrVsAs+w9HJx8V1dlxcCuhkvwwaOjkD2rzetGqmsuUNNrBb1zghLmeKNeaQj4XIML4fungmCHh0o7MI/hq/y8Q==
+ember-simple-auth@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-4.0.1.tgz#2be1c0b41cc77df495136de77aa557ad3d2f9853"
+  integrity sha512-Qg2lYAJx2CKdRoGTZww36oQRqJJPjHG/H8yfMpK5CxNc8YHI0AHKnMmTL1QxrtYnR6LmX1tWxBuqUdKINF9wZg==
   dependencies:
     base-64 "^0.1.0"
-    broccoli-file-creator "^2.0.0"
     broccoli-funnel "^1.2.0 || ^2.0.0"
-    broccoli-merge-trees "^2.0.0 || ^3.0.0"
     ember-cli-babel "^7.20.5"
     ember-cli-is-package-missing "^1.0.0"
     ember-cookies "^0.5.0"
