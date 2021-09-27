@@ -491,6 +491,16 @@
                     "name": "Reset all passwords",
                     "action_type": "resetAllPasswords",
                     "object_type": "authentication"
+                },
+                {
+                    "name": "Browse custom theme settings",
+                    "action_type": "browse",
+                    "object_type": "custom_theme_setting"
+                },
+                {
+                    "name": "Edit custom theme settings",
+                    "action_type": "edit",
+                    "object_type": "custom_theme_setting"
                 }
             ]
         },
@@ -738,6 +748,7 @@
                     "email": "all",
                     "member_signin_url": "read",
                     "snippet": "all",
+                    "custom_theme_setting": "all",
                     "authentication": "resetAllPasswords",
                     "members_stripe_connect": "auth"
                 },
