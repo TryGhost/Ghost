@@ -106,8 +106,7 @@
             },
             "images": {
                 "invalidDimensions": "Could not fetch image dimensions."
-            },
-            "redirectsWrongFormat": "Incorrect redirects file format."
+            }
         },
         "config": {
             "couldNotLocateConfigFile": {
@@ -157,8 +156,7 @@
             "maintenance": "Site is currently undergoing maintenance, please wait a moment then retry.",
             "maintenanceUrlService": "Site is starting up, please wait a moment then retry.",
             "requiredOnFuture": "This will be required in future. Please see {link}",
-            "internalError": "Something went wrong.",
-            "jsonParse": "Could not parse JSON: {context}."
+            "internalError": "Something went wrong."
         },
         "mail": {
             "incompleteMessageData": {

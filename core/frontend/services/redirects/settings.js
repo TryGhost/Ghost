@@ -4,10 +4,15 @@ const moment = require('moment-timezone');
 const yaml = require('js-yaml');
 const Promise = require('bluebird');
 const validation = require('./validation');
+const tpl = require('@tryghost/tpl');
 
 const config = require('../../../shared/config');
-const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    jsonParse: 'Could not parse JSON: {context}.',
+    yamlParse: 'YAML input cannot be a plain string. Check the format of your YAML file.'
+};
 
 /**
  * Redirect configuration object
@@ -49,7 +54,7 @@ const parseRedirectsFile = (content, ext) => {
             redirects = JSON.parse(content);
         } catch (err) {
             throw new errors.BadRequestError({
-                message: i18n.t('errors.general.jsonParse', {context: err.message})
+                message: tpl(messages.jsonParse, {context: err.message})
             });
         }
 
@@ -66,7 +71,7 @@ const parseRedirectsFile = (content, ext) => {
         // Here we check if the user made this mistake.
         if (typeof configYaml === 'string') {
             throw new errors.BadRequestError({
-                message: i18n.t('errors.api.redirects.yamlParse'),
+                message: messages.yamlParse,
                 help: 'https://ghost.org/docs/themes/routing/#redirects'
             });
         }
