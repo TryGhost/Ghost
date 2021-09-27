@@ -1,14 +1,22 @@
 <div class="gh-stack">
-    <div class="gh-stack-item gh-setting-first">
-        <div class="flex-grow-1">
-            <div class="gh-setting-title gh-theme-setting-title">Title font</div>
+    {{#each @themeSettings as |setting index|}}
+        {{#if (eq setting.type "select")}}
+            <div class="gh-stack-item gh-setting-first">
+                <div class="flex-grow-1">
+                    <div class="gh-setting-title gh-theme-setting-title">
+                        {{humanize setting.key}}
+                    </div>
 
-                <select class="ember-select">
-                    <option value="Inter">Inter</option>
-                    <option value="Open Sans">Open Sans</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Source Serif Pro">Source Serif Pro</option>
-                </select>
-        </div>
-    </div>
+                    <select class="ember-select">
+                        {{#each setting.options as |settingOption|}}
+                            <option value={{option}} selected={{eq settingOption setting.value}}>
+                                {{settingOption}}
+                                {{#if (eq settingOption setting.default)}}(default){{/if}}
+                            </option>
+                        {{/each}}
+                    </select>
+                </div>
+            </div>
+        {{/if}}
+    {{/each}}
 </div>
