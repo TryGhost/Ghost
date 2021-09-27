@@ -32,17 +32,13 @@ const messages = {
 const filename = 'routes';
 const ext = 'yaml';
 
-const getSettingsFolder = async () => {
-    return config.getContentPath('settings');
-};
-
-const getSettingsFilePath = async () => {
-    const settingsFolder = await getSettingsFolder();
+const getSettingsFilePath = () => {
+    const settingsFolder = config.getContentPath('settings');
     return path.join(settingsFolder, `${filename}.${ext}`);
 };
 
-const getBackupFilePath = async () => {
-    const settingsFolder = await getSettingsFolder();
+const getBackupFilePath = () => {
+    const settingsFolder = config.getContentPath('settings');
     return path.join(settingsFolder, `${filename}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.${ext}`);
 };
 
@@ -76,8 +72,8 @@ const readFile = (settingsFilePath) => {
 };
 
 const setFromFilePath = async (filePath) => {
-    const settingsPath = await getSettingsFilePath();
-    const backupPath = await getBackupFilePath();
+    const settingsPath = getSettingsFilePath();
+    const backupPath = getBackupFilePath();
 
     await createBackupFile(settingsPath, backupPath);
     await saveFile(filePath, settingsPath);
