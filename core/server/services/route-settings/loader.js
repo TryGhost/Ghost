@@ -57,10 +57,10 @@ const loadSettings = async () => {
 };
 
 /**
- * Reads the desired settings YAML file and passes the
+ * Reads the routes.yaml settings file and passes the
  * file to the YAML parser which then returns a JSON object.
- * NOTE: loading happens synchronously
- * @returns {Object} settingsFile
+ *
+ * @returns {Object} settingsFile in following format: {routes: {}, collections: {}, resources: {}}
  */
 module.exports.loadSettingsSync = function loadSettingsSync() {
     const setting = 'routes';
