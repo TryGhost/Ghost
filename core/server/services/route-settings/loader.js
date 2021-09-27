@@ -28,11 +28,10 @@ const getSettingFilePath = (setting) => {
  * Functionally same as loadSettingsSync with exception of loading
  * settings asynchronously. This method is used at new places to read settings
  * to prevent blocking the eventloop
- *
- * @param {String} setting the requested settings as defined in setting knownSettings
  * @returns {Promise<Object>} settingsFile
  */
-const loadSettings = async (setting) => {
+const loadSettings = async () => {
+    const setting = 'routes';
     const {fileName, contentPath, filePath} = getSettingFilePath(setting);
 
     try {
@@ -61,11 +60,10 @@ const loadSettings = async (setting) => {
  * Reads the desired settings YAML file and passes the
  * file to the YAML parser which then returns a JSON object.
  * NOTE: loading happens synchronously
- *
- * @param {String} setting the requested settings as defined in setting knownSettings
  * @returns {Object} settingsFile
  */
-module.exports.loadSettingsSync = function loadSettingsSync(setting) {
+module.exports.loadSettingsSync = function loadSettingsSync() {
+    const setting = 'routes';
     const {fileName, contentPath, filePath} = getSettingFilePath(setting);
 
     try {
