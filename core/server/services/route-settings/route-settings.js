@@ -146,6 +146,7 @@ const init = function () {
 
 module.exports.init = init;
 module.exports.loadRouteSettingsSync = SettingsLoader.loadSettingsSync;
+module.exports.loadRouteSettings = SettingsLoader.loadSettings;
 
 module.exports.api = {
     setFromFilePath: setFromFilePath,
