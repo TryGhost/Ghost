@@ -152,7 +152,7 @@ module.exports.init = init;
  * @returns {Object} routes.yaml in JSON format
  */
 module.exports.loadRouteSettingsSync = () => {
-    return SettingsLoader.loadSettingsSync('routes');
+    return SettingsLoader.loadSettingsSync();
 };
 
 module.exports.api = {
