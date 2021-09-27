@@ -19,9 +19,9 @@ _private.registerRoutes = () => {
     customRedirectsRouter = express.Router('redirects');
 
     try {
-        const redirects = redirectsService.settings.loadRedirectsFile();
+        const redirects = redirectsService.loadRedirectsFile();
 
-        redirectsService.validation.validate(redirects);
+        redirectsService.validate(redirects);
 
         redirects.forEach((redirect) => {
             /**

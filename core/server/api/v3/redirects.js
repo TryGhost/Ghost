@@ -11,7 +11,7 @@ module.exports = {
             disposition: {
                 type: 'file',
                 value() {
-                    return redirects.settings.getRedirectsFilePath()
+                    return redirects.api.getRedirectsFilePath()
                         .then((filePath) => {
                             // TODO: Default file type is .json for backward compatibility.
                             // When .yaml becomes default or .json is removed at v4,
@@ -26,13 +26,13 @@ module.exports = {
         permissions: true,
         response: {
             async format() {
-                const filePath = await redirects.settings.getRedirectsFilePath();
+                const filePath = await redirects.api.getRedirectsFilePath();
 
                 return filePath === null || path.extname(filePath) === '.json' ? 'json' : 'plain';
             }
         },
         query() {
-            return redirects.settings.get();
+            return redirects.api.get();
         }
     },
 
@@ -42,7 +42,7 @@ module.exports = {
             cacheInvalidate: true
         },
         query(frame) {
-            return redirects.settings.setFromFilePath(frame.file.path, frame.file.ext)
+            return redirects.api.setFromFilePath(frame.file.path, frame.file.ext)
                 .then(() => {
                     // CASE: trigger that redirects are getting re-registered
                     web.shared.middlewares.customRedirects.reload();
