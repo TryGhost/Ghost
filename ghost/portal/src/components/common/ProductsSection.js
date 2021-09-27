@@ -78,7 +78,7 @@ export const ProductsSectionStyles = ({site}) => {
             padding: 0px 4px;
             text-align: center;
         }
-        
+
         .gh-portal-discount-label:before {
             position: absolute;
             content: "";
@@ -537,9 +537,10 @@ function ProductBenefits({product}) {
         return null;
     }
 
-    return product.benefits.map((benefit) => {
+    return product.benefits.map((benefit, idx) => {
+        const key = benefit?.id || `benefit-${idx}`;
         return (
-            <div className="gh-portal-product-benefit">
+            <div className="gh-portal-product-benefit" key={key}>
                 <CheckmarkIcon className='gh-portal-benefit-checkmark' alt=''/>
                 <div className="gh-portal-benefit-title">{benefit.name}</div>
             </div>
@@ -622,7 +623,7 @@ function ProductCard({product}) {
             </div>
 
             {/* Vertical version */}
-            <div className={cardClass + ' vertical'} key={product.id} onClick={(e) => {
+            <div className={cardClass + ' vertical'} key={`${product.id}-vertical`} onClick={(e) => {
                 e.stopPropagation();
                 setSelectedProduct(product.id);
             }}>
