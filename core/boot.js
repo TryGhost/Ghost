@@ -147,11 +147,12 @@ async function initDynamicRouting() {
     debug('Begin: Dynamic Routing');
     const routing = require('./frontend/services/routing');
     const frontendSettings = require('./frontend/services/settings');
+    const routeSettingsService = require('./server/services/route-settings');
     const bridge = require('./bridge');
 
     // We pass the frontend API version + the dynamic routes here, so that the frontend services are slightly less tightly-coupled
     const apiVersion = bridge.getFrontendApiVersion();
-    const routeSettings = frontendSettings.get();
+    const routeSettings = routeSettingsService.loadRouteSettingsSync();
     debug(`Frontend API Version: ${apiVersion}`);
 
     routing.bootstrap.start(apiVersion, routeSettings);

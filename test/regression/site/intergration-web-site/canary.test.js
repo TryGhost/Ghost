@@ -7,7 +7,7 @@ const mockUtils = require('../../../utils/mocks');
 const configUtils = require('../../../utils/configUtils');
 const urlUtils = require('../../../utils/urlUtils');
 const appService = require('../../../../core/frontend/services/apps');
-const frontendSettingsService = require('../../../../core/frontend/services/settings');
+const routeSettingsService = require('../../../../core/server/services/route-settings');
 const themeEngine = require('../../../../core/frontend/services/theme-engine');
 const siteApp = require('../../../../core/server/web/parent/app');
 
@@ -367,9 +367,9 @@ describe('Integration - Web - Site canary', function () {
     });
 
     describe('extended routes.yaml: collections', function () {
-        describe('2 collections', function () {
+        describe.only('2 collections', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
                         '/': {templates: ['home']}
                     },
@@ -498,7 +498,7 @@ describe('Integration - Web - Site canary', function () {
 
         describe('no collections', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
                         '/something/': {
                             templates: ['something']
@@ -549,7 +549,7 @@ describe('Integration - Web - Site canary', function () {
 
         describe('static permalink route', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
                     collections: {
@@ -653,7 +653,7 @@ describe('Integration - Web - Site canary', function () {
 
         describe('primary author permalink', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
                     collections: {
@@ -736,7 +736,7 @@ describe('Integration - Web - Site canary', function () {
 
         describe('primary tag permalink', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
                     collections: {
@@ -834,7 +834,7 @@ describe('Integration - Web - Site canary', function () {
 
         describe('collection/routes with data key', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
                         '/my-page/': {
                             data: {
@@ -1003,7 +1003,7 @@ describe('Integration - Web - Site canary', function () {
     describe('extended routes.yaml: templates', function () {
         describe('default template, no template', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
                     collections: {
@@ -1070,7 +1070,7 @@ describe('Integration - Web - Site canary', function () {
 
         describe('two templates', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
                     collections: {
@@ -1122,7 +1122,7 @@ describe('Integration - Web - Site canary', function () {
 
         describe('home.hbs priority', function () {
             before(function () {
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
                     collections: {
@@ -1198,7 +1198,7 @@ describe('Integration - Web - Site canary', function () {
             before(function () {
                 testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
-                sinon.stub(frontendSettingsService, 'get').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
                         '/channel1/': {
                             controller: 'channel',
@@ -1532,7 +1532,7 @@ describe('Integration - Web - Site canary', function () {
 
     describe('extended routes.yaml (5): rss override', function () {
         before(function () {
-            sinon.stub(frontendSettingsService, 'get').returns({
+            sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                 routes: {
                     '/podcast/rss/': {
                         templates: ['podcast/rss'],

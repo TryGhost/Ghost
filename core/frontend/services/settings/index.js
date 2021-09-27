@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const SettingsLoader = require('./loader');
+const SettingsLoader = require('../../../server/services/route-settings/loader');
 
 /**
  * md5 hashes of default routes settings
@@ -13,17 +13,6 @@ const calculateHash = (data) => {
 };
 
 module.exports = {
-    /**
-     * Getter for routes YAML setting.
-     * Example: `settings.get().then(...)`
-     * will return a JSON Object like this:
-     * {routes: {}, collections: {}, resources: {}}
-     * @returns {Object} routes.yaml in JSON format
-     */
-    get: function get() {
-        return SettingsLoader.loadSettingsSync('routes');
-    },
-
     getDefaultHash: () => {
         return defaultRoutesSettingHash;
     },

@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const configUtils = require('../../../utils/configUtils');
 const errors = require('@tryghost/errors');
-const loadSettings = rewire('../../../../core/frontend/services/settings/loader');
+const loadSettings = rewire('../../../../core/server/services/route-settings/loader');
 
 describe('UNIT > Settings Service loader:', function () {
     beforeEach(function () {
@@ -37,6 +37,28 @@ describe('UNIT > Settings Service loader:', function () {
             validateStub = sinon.stub();
         });
 
+        it('reads a settings object for routes.yaml file', function () {
+            const settingsStubFile = {
+                routes: null,
+                collections: {
+                    '/': {
+                        permalink: '/{slug}/',
+                        template: ['home', 'index']
+                    }
+                },
+                resources: {
+                    tag: '/tag/{slug}/',
+                    author: '/author/{slug}/'
+                }
+            };
+            const fsReadFileStub = sinon.stub(fs, 'readFileSync').returns(settingsStubFile);
+
+            const result = loadSettings.loadSettingsSync();
+            should.exist(result);
+            result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
+            fsReadFileStub.calledOnce.should.be.true();
+        });
+
         it('can find yaml settings file and returns a settings object', function () {
             const fsReadFileSpy = sinon.spy(fs, 'readFileSync');
             const expectedSettingsFile = path.join(__dirname, '../../../utils/fixtures/settings/goodroutes.yaml');
@@ -50,7 +72,7 @@ describe('UNIT > Settings Service loader:', function () {
             const setting = loadSettings.loadSettingsSync('goodroutes');
             should.exist(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
-            // There are 4 files in the fixtures folder, but only 1 supported and valid yaml files
+
             fsReadFileSpy.calledOnce.should.be.true();
             fsReadFileSpy.calledWith(expectedSettingsFile).should.be.true();
             yamlParserStub.callCount.should.be.eql(1);

@@ -3,8 +3,8 @@ const path = require('path');
 const debug = require('@tryghost/debug')('frontend:services:settings:settings-loader');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
-const yamlParser = require('./yaml-parser');
-const validate = require('./validate');
+const yamlParser = require('../../../frontend/services/settings/yaml-parser');
+const validate = require('../../../frontend/services/settings/validate');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
