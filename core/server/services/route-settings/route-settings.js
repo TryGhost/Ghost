@@ -10,6 +10,7 @@ const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
 const ensureSettingsFile = require('./ensure-settings');
+const SettingsLoader = require('./loader');
 
 const messages = {
     loadError: 'Could not load {filename} file.'
@@ -144,6 +145,16 @@ const init = function () {
 };
 
 module.exports.init = init;
+/**
+ * Fetches routes YAML settings synchronously.
+ * will return a JSON Object like this:
+ * {routes: {}, collections: {}, resources: {}}
+ * @returns {Object} routes.yaml in JSON format
+ */
+module.exports.loadRouteSettingsSync = () => {
+    return SettingsLoader.loadSettingsSync('routes');
+};
+
 module.exports.api = {
     setFromFilePath: setFromFilePath,
     get: get
