@@ -66,7 +66,7 @@
                                     <label for="display-title" class="fw6">Display title</label>
                                     <GhTextInput
                                         @name="display-title"
-                                        @placeholder=""
+                                        @placeholder="Black Friday Special"
                                         @id="display-title"
                                         @class="gh-input" />
                                     <GhErrorMessage @errors={{this.errors}} @property="display-title" />
@@ -75,7 +75,7 @@
                                     <label for="code" class="fw6">Offer code</label>
                                     <GhTextInput
                                         @name="code"
-                                        @placeholder=""
+                                        @placeholder="black-friday"
                                         @id="code"
                                         @class="gh-input" />
                                     <GhErrorMessage @errors={{this.errors}} @property="code" />
@@ -83,11 +83,11 @@
                             </div>
                             <GhFormGroup @errors={{this.errors}} @property="description">
                                 <label for="description" class="fw6">Description</label>
-                                <GhTextInput
-                                    @name="description"
-                                    @placeholder=""
+                                <GhTextarea
                                     @id="description"
-                                    @class="gh-input" />
+                                    @name="description"
+                                    @stopEnterKeyDownPropagation="true"
+                                />
                                 <GhErrorMessage @errors={{this.errors}} @property="description" />
                             </GhFormGroup>
                         </div>

@@ -708,3 +708,7 @@
 .gh-offer-type .gh-radio-label {
     font-size: 1.3rem;
 }
+
+.gh-offer-modal-content textarea {
+    max-width: unset;
+}
