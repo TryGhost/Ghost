@@ -1,7 +1,7 @@
 /* Tag list
 /* ---------------------------------------------------------- */
 a.gh-tag-list-posts-count:hover {
-    color: color-mod(var(--blue) l(-25%) s(+15%));
+    color: color-mod(var(--green) l(-25%) s(+15%));
 }
 
 textarea.gh-tag-details-textarea {
