@@ -61,7 +61,7 @@ describe('UNIT > Settings Service loader:', function () {
 
         it('can find yaml settings file and returns a settings object', function () {
             const fsReadFileSpy = sinon.spy(fs, 'readFileSync');
-            const expectedSettingsFile = path.join(__dirname, '../../../utils/fixtures/settings/goodroutes.yaml');
+            const expectedSettingsFile = path.join(__dirname, '../../../utils/fixtures/settings/routes.yaml');
 
             yamlParserStub.returns(yamlStubFile);
             validateStub.returns({routes: {}, collections: {}, taxonomies: {}});
@@ -69,7 +69,7 @@ describe('UNIT > Settings Service loader:', function () {
             loadSettings.__set__('yamlParser', yamlParserStub);
             loadSettings.__set__('validate', validateStub);
 
-            const setting = loadSettings.loadSettingsSync('goodroutes');
+            const setting = loadSettings.loadSettingsSync();
             should.exist(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
 
@@ -87,7 +87,7 @@ describe('UNIT > Settings Service loader:', function () {
             loadSettings.__set__('yamlParser', yamlParserStub);
 
             try {
-                loadSettings.loadSettingsSync('goodroutes');
+                loadSettings.loadSettingsSync();
                 done(new Error('Loader should fail'));
             } catch (err) {
                 should.exist(err);
@@ -116,7 +116,7 @@ describe('UNIT > Settings Service loader:', function () {
             loadSettings.__set__('yamlParser', yamlParserStub);
 
             try {
-                loadSettings.loadSettingsSync('routes');
+                loadSettings.loadSettingsSync();
                 done(new Error('Loader should fail'));
             } catch (err) {
                 err.message.should.match(/Error trying to load YAML setting for routes from/);

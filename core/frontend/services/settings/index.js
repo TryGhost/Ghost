@@ -18,7 +18,7 @@ module.exports = {
     },
 
     getCurrentHash: async () => {
-        const data = await SettingsLoader.loadSettings('routes');
+        const data = await SettingsLoader.loadSettings();
 
         return calculateHash(JSON.stringify(data));
     }
