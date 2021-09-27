@@ -1,7 +1,7 @@
 const path = require('path');
 
 const web = require('../../web');
-const redirects = require('../../../frontend/services/redirects');
+const redirects = require('../../services/redirects');
 
 module.exports = {
     docName: 'redirects',
