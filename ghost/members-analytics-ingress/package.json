@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-analytics-ingress",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-analytics-ingress",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -25,7 +25,7 @@
     "sinon": "11.1.2"
   },
   "dependencies": {
-    "@tryghost/domain-events": "^0.1.1",
-    "@tryghost/member-events": "^0.2.0"
+    "@tryghost/domain-events": "^0.1.2",
+    "@tryghost/member-events": "^0.2.1"
   }
 }
