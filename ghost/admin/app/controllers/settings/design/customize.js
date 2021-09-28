@@ -3,8 +3,10 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 
 export default class SettingsDesignCustomizeController extends Controller {
-    @service settings;
+    @service customThemeSettings;
+    @service notifications;
     @service router;
+    @service settings;
 
     @task
     *saveTask() {
@@ -12,8 +14,15 @@ export default class SettingsDesignCustomizeController extends Controller {
             if (this.settings.get('errors').length !== 0) {
                 return;
             }
-            yield this.settings.save();
+
+            yield Promise.all(
+                this.settings.save(),
+                this.customThemeSettings.save()
+            );
+
             this.router.transitionTo('settings.design');
+
+            // ensure task button switches to success state
             return true;
         } catch (error) {
             if (error) {
