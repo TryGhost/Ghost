@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "^0.1.5",
-    "@tryghost/errors": "^0.2.14"
+    "@tryghost/errors": "^0.2.14",
+    "@tryghost/tpl": "^0.1.4"
   }
 }
