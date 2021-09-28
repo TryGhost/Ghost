@@ -6,9 +6,10 @@
 // By default, authors are separated by commas.
 //
 // Note that the standard {{#each authors}} implementation is unaffected by this helper.
+const {urlService} = require('../services/proxy');
+const {SafeString, escapeExpression, templates} = require('../services/rendering');
 const isString = require('lodash/isString');
-const {SafeString, escapeExpression, templates, urlService} = require('../services/proxy');
-const ghostHelperUtils = require('@tryghost/helpers').utils;
+const {utils} = require('@tryghost/helpers');
 
 module.exports = function authors(options = {}) {
     options.hash = options.hash || {};
@@ -38,7 +39,7 @@ module.exports = function authors(options = {}) {
             }) : escapeExpression(author.name);
         }
 
-        return ghostHelperUtils.visibility.filter(authorsList, visibility, processAuthor);
+        return utils.visibility.filter(authorsList, visibility, processAuthor);
     }
 
     if (this.authors && this.authors.length) {

@@ -10,9 +10,10 @@
 //
 // Returns estimated reading time for post
 
-const {SafeString, checks} = require('../services/proxy');
+const {checks} = require('../services/proxy');
+const {SafeString} = require('../services/rendering');
 
-const calculateReadingTime = require('@tryghost/helpers').readingTime;
+const {readingTime: calculateReadingTime} = require('@tryghost/helpers');
 
 module.exports = function reading_time(options) {// eslint-disable-line camelcase
     options = options || {};

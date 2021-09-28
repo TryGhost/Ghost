@@ -1,7 +1,7 @@
 const should = require('should');
 const testUtils = require('../../../../utils');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
-const {SafeString} = require('../../../../../core/frontend/services/proxy');
+const {SafeString} = require('../../../../../core/frontend/services/rendering');
 
 describe('Unit - services/routing/helpers/format-response', function () {
     let posts;
