@@ -12,8 +12,16 @@ module.exports = class CustomThemeSettingsCache {
     }
 
     populate(settings) {
+        this.clear();
+
         settings.forEach((setting) => {
             this.content[setting.key] = setting.value;
         });
+    }
+
+    clear() {
+        for (const key in this.content) {
+            delete this.content[key];
+        }
     }
 };
