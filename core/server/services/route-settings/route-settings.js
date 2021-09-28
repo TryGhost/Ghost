@@ -10,7 +10,6 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
-const ensureSettingsFile = require('./ensure-settings');
 const SettingsLoader = require('./loader');
 
 const messages = {
@@ -133,18 +132,6 @@ const get = async () => {
     return readFile(settingsFilePath);
 };
 
-const init = function () {
-    debug('init routes settings service');
-
-    // Make sure that supported settings files are available
-    // inside of the `content/setting` directory
-    return ensureSettingsFile('routes.yaml');
-};
-
-module.exports.init = init;
-module.exports.loadRouteSettingsSync = SettingsLoader.loadSettingsSync;
-module.exports.loadRouteSettings = SettingsLoader.loadSettings;
-
 /**
  * md5 hashes of default routes settings
  */
@@ -156,7 +143,7 @@ const calculateHash = (data) => {
         .digest('hex');
 };
 
-module.exports.getDefaultHash = () => {
+const getDefaultHash = () => {
     return defaultRoutesSettingHash;
 };
 
@@ -166,7 +153,8 @@ const getCurrentHash = async () => {
     return calculateHash(JSON.stringify(data));
 };
 
-module.exports.api = {
+module.exports = {
+    getDefaultHash: getDefaultHash,
     setFromFilePath: setFromFilePath,
     get: get,
     getCurrentHash: getCurrentHash
