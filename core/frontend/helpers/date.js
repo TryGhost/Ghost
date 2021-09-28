@@ -3,7 +3,7 @@
 //
 // Formats a date using moment-timezone.js. Formats published_at by default but will also take a date as a parameter
 
-const {SafeString} = require('../services/proxy');
+const {SafeString} = require('../services/rendering');
 const moment = require('moment-timezone');
 const _ = require('lodash');
 

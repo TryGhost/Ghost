@@ -9,16 +9,18 @@
 //
 // Block helper: `{{#author}}{{/author}}`
 // This is the default handlebars behaviour of dropping into the author object scope
-const {urlService, SafeString, escapeExpression, hbs, templates} = require('../services/proxy');
-const buildInHelpers = hbs.handlebars.helpers;
+const {urlService} = require('../services/proxy');
+const {SafeString, escapeExpression, hbs, templates} = require('../services/rendering');
 const isString = require('lodash/isString');
+
+const builtInHelpers = hbs.handlebars.helpers;
 
 /**
  * @deprecated: single authors was superceded by multiple authors in Ghost 1.22.0
  */
 module.exports = function author(options) {
     if (options.fn) {
-        return buildInHelpers.with.call(this, this.author, options);
+        return builtInHelpers.with.call(this, this.author, options);
     }
 
     const autolink = isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true;

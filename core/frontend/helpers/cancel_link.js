@@ -5,7 +5,8 @@
 // Outputs cancel/renew links to manage subscription renewal after the subscription period ends.
 //
 // Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Continue subscription"
-const {templates, labs} = require('../services/proxy');
+const {labs} = require('../services/proxy');
+const {templates} = require('../services/rendering');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');

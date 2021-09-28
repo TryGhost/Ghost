@@ -2,7 +2,8 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, escapeExpression, SafeString, settingsCache, config, blogIcon, urlUtils, labs} = require('../services/proxy');
+const {metaData, settingsCache, config, blogIcon, urlUtils, labs} = require('../services/proxy');
+const {escapeExpression, SafeString} = require('../services/rendering');
 
 const logging = require('@tryghost/logging');
 const _ = require('lodash');

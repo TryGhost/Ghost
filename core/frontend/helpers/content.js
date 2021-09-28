@@ -10,7 +10,7 @@
 //
 // Dev flag feature: In case of restricted content access for member-only posts, shows CTA box
 
-const {templates, hbs, SafeString} = require('../services/proxy');
+const {templates, hbs, SafeString} = require('../services/rendering');
 const downsize = require('downsize');
 const _ = require('lodash');
 const createFrame = hbs.handlebars.createFrame;

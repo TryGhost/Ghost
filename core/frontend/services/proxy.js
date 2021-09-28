@@ -1,25 +1,11 @@
 // This file contains everything that the helpers and frontend apps require from the core of Ghost
-const hbs = require('./theme-engine/engine');
 const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
 
+// Require from the rendering framework
+const {SafeString} = require('./rendering');
+
 module.exports = {
-    /**
-     * Section one: Frontend Framework
-     * These all belong to the frontend rendering layer
-     */
-    hbs: hbs,
-    SafeString: hbs.SafeString,
-    escapeExpression: hbs.escapeExpression,
-    // The local template thing, should this be merged with the channels one?
-    templates: require('./theme-engine/handlebars/template'),
-
-    // Theme i18n is separate to common i18n
-    themeI18n: require('./theme-engine/i18n'),
-
-    // TODO: these need a more sensible home
-    localUtils: require('./theme-engine/handlebars/utils'),
-
     /**
      * Section two: data manipulation
      * Stuff that modifies API data (SDK layer)
@@ -32,7 +18,7 @@ module.exports = {
         (Array.isArray(data) ? data : [data]).forEach((resource) => {
             // feature_image_caption contains HTML, making it a SafeString spares theme devs from triple-curlies
             if (resource.feature_image_caption) {
-                resource.feature_image_caption = new hbs.SafeString(resource.feature_image_caption);
+                resource.feature_image_caption = new SafeString(resource.feature_image_caption);
             }
         });
     },

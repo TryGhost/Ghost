@@ -2,7 +2,8 @@
 //  Example usages
 // `{{#prev_post}}<a href ="{{url}}>previous post</a>{{/prev_post}}'
 // `{{#next_post}}<a href ="{{url absolute="true">next post</a>{{/next_post}}'
-const {api, hbs, checks} = require('../services/proxy');
+const {api, checks} = require('../services/proxy');
+const {hbs} = require('../services/rendering');
 
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');

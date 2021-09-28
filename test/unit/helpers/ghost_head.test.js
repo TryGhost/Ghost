@@ -12,8 +12,7 @@ const imageLib = require('../../../core/server/lib/image');
 const routing = require('../../../core/frontend/services/routing');
 const urlService = require('../../../core/frontend/services/url');
 const helpers = require('../../../core/frontend/helpers');
-const proxy = require('../../../core/frontend/services/proxy');
-const settingsCache = proxy.settingsCache;
+const {settingsCache} = require('../../../core/frontend/services/proxy');
 
 describe('{{ghost_head}} helper', function () {
     let posts = [];

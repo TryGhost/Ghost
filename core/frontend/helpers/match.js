@@ -1,4 +1,5 @@
-const {SafeString, labs} = require('../services/proxy');
+const {labs} = require('../services/proxy');
+const {SafeString} = require('../services/rendering');
 
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');

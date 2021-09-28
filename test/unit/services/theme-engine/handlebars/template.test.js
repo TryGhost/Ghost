@@ -1,12 +1,12 @@
 const should = require('should');
 const errors = require('@tryghost/errors');
-const proxy = require('../../../../../core/frontend/services/proxy');
+const {hbs, templates} = require('../../../../../core/frontend/services/rendering');
 
 describe('Helpers Template', function () {
     it('can execute a template', function () {
-        proxy.hbs.registerPartial('test', '<h1>Hello {{name}}</h1>');
+        hbs.registerPartial('test', '<h1>Hello {{name}}</h1>');
 
-        const safeString = proxy.templates.execute('test', {name: 'world'});
+        const safeString = templates.execute('test', {name: 'world'});
 
         should.exist(safeString);
         safeString.should.have.property('string').and.equal('<h1>Hello world</h1>');
@@ -14,7 +14,7 @@ describe('Helpers Template', function () {
 
     it('will throw an IncorrectUsageError if the partial does not exist', function () {
         should.throws(() => {
-            proxy.templates.execute('non-existent');
+            templates.execute('non-existent');
         }, errors.IncorrectUsageError);
     });
 });

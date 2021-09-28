@@ -1,7 +1,7 @@
 // ### Navigation Helper
 // `{{navigation}}`
 // Outputs navigation menu of static urls
-const {SafeString, templates, hbs} = require('../services/proxy');
+const {SafeString, templates, hbs} = require('../services/rendering');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');

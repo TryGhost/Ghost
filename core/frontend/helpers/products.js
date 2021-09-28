@@ -3,7 +3,8 @@
 //
 // Returns a string of the products with access to the post.
 // By default, products are separated by commas.
-const {SafeString, labs} = require('../services/proxy');
+const {labs} = require('../services/proxy');
+const {SafeString} = require('../services/rendering');
 
 const nql = require('@nexes/nql');
 const isString = require('lodash/isString');

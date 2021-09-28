@@ -1,7 +1,8 @@
 // # Get Helper
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
-const {config, hbs, api, prepareContextResource} = require('../services/proxy');
+const {config, api, prepareContextResource} = require('../services/proxy');
+const {hbs} = require('../services/rendering');
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');

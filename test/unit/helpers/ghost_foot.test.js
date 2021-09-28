@@ -1,8 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const helpers = require('../../../core/frontend/helpers');
-const proxy = require('../../../core/frontend/services/proxy');
-const settingsCache = proxy.settingsCache;
+const {settingsCache} = require('../../../core/frontend/services/proxy');
 
 describe('{{ghost_foot}} helper', function () {
     let settingsCacheStub;
