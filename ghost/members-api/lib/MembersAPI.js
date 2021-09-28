@@ -169,6 +169,7 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         sendEmailWithMagicLink,
+        labsService,
         config: {
             checkoutSuccessUrl: stripeConfig.checkoutSuccessUrl,
             checkoutCancelUrl: stripeConfig.checkoutCancelUrl,
