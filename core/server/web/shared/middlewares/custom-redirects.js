@@ -8,6 +8,7 @@ const errors = require('@tryghost/errors');
 const i18n = require('../../../../shared/i18n');
 const logging = require('@tryghost/logging');
 const redirectsService = require('../../../services/redirects');
+const labsService = require('../../../../shared/labs');
 
 const _private = {};
 
@@ -20,6 +21,13 @@ _private.registerRoutes = () => {
 
     try {
         const redirects = redirectsService.loadRedirectsFile();
+
+        if (labsService.isSet('offers')) {
+            redirects.unshift({
+                from: '/zimo50',
+                to: '/#/portal/offers/abcdefuckoff'
+            });
+        }
 
         redirectsService.validate(redirects);
 
