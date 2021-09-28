@@ -195,7 +195,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, metadata = {}} = {}) {
+        async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, offerId, metadata = {}} = {}) {
             const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
@@ -229,6 +229,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                 },
                 body: JSON.stringify({
                     priceId: plan,
+                    offerId,
                     identity: identity,
                     metadata: metadataObj,
                     successUrl,

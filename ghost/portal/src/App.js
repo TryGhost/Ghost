@@ -10,7 +10,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getProductFromId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getAvailablePrices, getCurrencySymbol, getFirstpromoterId, getProductFromId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const handleDataAttributes = require('./data-attributes');
 const React = require('react');
@@ -335,6 +335,7 @@ export default class App extends React.Component {
     fetchLinkData() {
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
+        const offersRegex = /^offers\/(\w+?)\/?$/;
         const [path] = window.location.hash.substr(1).split('?');
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
         if (path && linkRegex.test(path)) {
@@ -344,7 +345,8 @@ export default class App extends React.Component {
             const showPopup = (
                 ['monthly', 'yearly'].includes(pageQuery) ||
                 productMonthlyPriceQueryRegex.test(pageQuery) ||
-                productYearlyPriceQueryRegex.test(pageQuery)
+                productYearlyPriceQueryRegex.test(pageQuery) ||
+                offersRegex.test(pageQuery)
             ) ? false : true;
             return {
                 showPopup,
@@ -515,12 +517,28 @@ export default class App extends React.Component {
         this.setState(updatedState);
     }
 
+    handleOfferQuery({site, offerId}) {
+        removePortalLinkFromUrl();
+        const prices = getAvailablePrices({site});
+        const priceId = prices?.[0]?.id;
+        if (this.state.member) {
+            this.dispatchAction('checkoutPlan', {plan: priceId, offerId});
+        } else {
+            this.dispatchAction('signup', {plan: priceId, offerId});
+        }
+    }
+
     /** Handle direct signup link for a price */
     handleSignupQuery({site, pageQuery}) {
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
+        const offerQueryRegex = /^offers\/(\w+?)\/?$/;
         let priceId = pageQuery;
-        if (productMonthlyPriceQueryRegex.test(pageQuery || '')) {
+        if (offerQueryRegex.test(pageQuery || '')) {
+            const [, offerId] = pageQuery.match(offerQueryRegex);
+            this.handleOfferQuery({site, offerId});
+            return;
+        } else if (productMonthlyPriceQueryRegex.test(pageQuery || '')) {
             const [, productId] = pageQuery.match(productMonthlyPriceQueryRegex);
             const product = getProductFromId({site, productId});
             priceId = product?.monthlyPrice?.id;
@@ -544,7 +562,12 @@ export default class App extends React.Component {
         const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
-        if (path === 'signup') {
+        const customOfferRegex = /^offers\/(\w+?)\/?$/;
+        if (customOfferRegex.test(path)) {
+            return {
+                pageQuery: path
+            };
+        } else if (path === 'signup') {
             return {
                 page: 'signup'
             };
