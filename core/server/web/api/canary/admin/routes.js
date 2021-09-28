@@ -275,6 +275,7 @@ module.exports = function apiRoutes() {
 
     // ## Custom theme settings
     router.get('/custom_theme_settings', mw.authAdminApi, labs.enabledMiddleware('customThemeSettings'), http(api.customThemeSettings.browse));
+    router.put('/custom_theme_settings', mw.authAdminApi, labs.enabledMiddleware('customThemeSettings'), http(api.customThemeSettings.edit));
 
     return router;
 };

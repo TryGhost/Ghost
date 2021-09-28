@@ -3,5 +3,11 @@ module.exports = {
         frame.response = {
             customThemeSettings: models
         };
+    },
+
+    edit(models, apiConfig, frame) {
+        frame.response = {
+            customThemeSettings: models
+        };
     }
 };
