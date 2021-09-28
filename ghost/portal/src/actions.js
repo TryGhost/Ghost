@@ -93,11 +93,11 @@ async function signin({data, api, state}) {
 
 async function signup({data, state, api}) {
     try {
-        const {plan, email, name} = data;
+        const {plan, email, name, offerId} = data;
         if (plan.toLowerCase() === 'free') {
             await api.member.sendMagicLink(data);
         } else {
-            await api.member.checkoutPlan({plan, email, name});
+            await api.member.checkoutPlan({plan, email, name, offerId});
         }
         return {
             page: 'magiclink',
@@ -116,9 +116,10 @@ async function signup({data, state, api}) {
 
 async function checkoutPlan({data, state, api}) {
     try {
-        const {plan} = data;
+        const {plan, offerId} = data;
         await api.member.checkoutPlan({
             plan,
+            offerId,
             metadata: {
                 checkoutType: 'upgrade'
             }
