@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-18.04
     env:
       RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_NOTIFICATION_URL: ${{ secrets.RELEASE_NOTIFICATION_URL }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       FORCE_COLOR: 1
     steps:
