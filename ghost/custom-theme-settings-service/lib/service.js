@@ -1,6 +1,13 @@
 const _ = require('lodash');
 const BREAD = require('./bread');
+const tpl = require('@tryghost/tpl');
+const {BadRequestError, NotFoundError} = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('custom-theme-settings-service');
+
+const messages = {
+    problemFindingSetting: 'Problem finding setting: {key}.',
+    invalidOptionForSetting: 'Unknown option for {key}. Allowed options: {allowedOptions}.'
+};
 
 module.exports = class CustomThemeSettingsService {
     /**
@@ -44,6 +51,57 @@ module.exports = class CustomThemeSettingsService {
         });
 
         return settingObjects;
+    }
+
+    /**
+     * @param {Array} settings - array of setting objects with at least key and value properties
+     */
+    async updateSettings(settings) {
+        // abort if any settings do not match known settings
+        const firstUnknownSetting = settings.find(setting => !this.activeThemeSettings[setting.key]);
+
+        if (firstUnknownSetting) {
+            throw new NotFoundError({
+                message: tpl(messages.problemFindingSetting, {key: firstUnknownSetting.key})
+            });
+        }
+
+        // abort if any select settings have unknown option values
+        const firstInvalidOption = settings.find((setting) => {
+            const knownSetting = this.activeThemeSettings[setting.key];
+            return knownSetting.type === 'select' && !knownSetting.options.includes(setting.value);
+        });
+
+        if (firstInvalidOption) {
+            const knownSetting = this.activeThemeSettings[firstInvalidOption.key];
+
+            throw new BadRequestError({
+                message: tpl(messages.invalidOptionForSetting, {key: firstInvalidOption.key, allowedValues: knownSetting.options.join(', ')})
+            });
+        }
+
+        // save the new values
+        for (const setting of settings) {
+            const theme = this.activeThemeName;
+            const {key, value} = setting;
+
+            const settingRecord = await this.repository.read({theme, key});
+
+            settingRecord.set('value', value);
+
+            if (settingRecord.hasChanged()) {
+                await settingRecord.save(null);
+            }
+
+            // update the internal cache
+            this.activeThemeSettings[setting.key].value = setting.value;
+        }
+
+        // update the public cache
+        this.valueCache.populate(this.listSettings());
+
+        // return full setting objects
+        return this.listSettings();
     }
 
     // Private -----------------------------------------------------------------
