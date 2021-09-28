@@ -9,6 +9,11 @@ export default class CustomThemeSettingsServices extends Service {
 
     @tracked settings = [];
 
+    get isDirty() {
+        const dirtySetting = this.settings.find(setting => setting.hasDirtyAttributes);
+        return !!dirtySetting;
+    }
+
     load() {
         return this.loadTask.perform();
     }

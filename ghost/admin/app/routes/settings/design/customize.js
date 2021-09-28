@@ -4,6 +4,7 @@ import {bind} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
+    @service customThemeSettings;
     @service feature;
     @service modals;
     @service settings;
@@ -35,7 +36,7 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
 
     @action
     async willTransition(transition) {
-        if (this.settings.get('hasDirtyAttributes')) {
+        if (this.settings.get('hasDirtyAttributes') || this.customThemeSettings.isDirty) {
             transition.abort();
 
             const shouldLeave = await this.confirmUnsavedChanges();
@@ -73,7 +74,7 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
     }
 
     confirmUnsavedChanges() {
-        if (!this.settings.get('hasDirtyAttributes')) {
+        if (!this.settings.get('hasDirtyAttributes') && !this.customThemeSettings.isDirty) {
             return Promise.resolve(true);
         }
 
@@ -83,6 +84,7 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
             }).then((discardChanges) => {
                 if (discardChanges === true) {
                     this.settings.rollbackAttributes();
+                    this.customThemeSettings.rollback();
                 }
                 return discardChanges;
             }).finally(() => {
