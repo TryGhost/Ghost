@@ -2,6 +2,7 @@
 /* ---------------------------------------------------------- */
 
 .gh-publishmenu-trigger {
+    height: max-content;
     cursor: pointer;
 }
 
@@ -30,6 +31,17 @@
     .gh-publishmenu {
         margin-right: 0;
     }
+}
+
+.gh-publishmenu .sent {
+    display: block;
+    height: 34px;
+    margin-top: -2px;
+    color: var(--darkgrey);
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 34px;
+    letter-spacing: .2px;
 }
 
 .gh-publishmenu-dropdown {
