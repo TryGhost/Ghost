@@ -80,6 +80,16 @@ module.exports = class StripeService {
 
     /**
      * @param {object} options
+     */
+    async createCoupon(options) {
+        await this._rateLimitBucket.throttle();
+        const coupon = await this._stripe.coupons.create(options);
+
+        return coupon;
+    }
+
+    /**
+     * @param {object} options
      * @param {string} options.name
      *
      * @returns {Promise<IProduct>}
@@ -348,14 +358,19 @@ module.exports = class StripeService {
         const metadata = options.metadata || undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
         await this._rateLimitBucket.throttle();
+        let discounts;
+        if (options.coupon) {
+            discounts = [{coupon: options.coupon.id}];
+        }
         const session = await this._stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             success_url: options.successUrl,
             cancel_url: options.cancelUrl,
             customer_email: customerEmail,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
-            allow_promotion_codes: this._config.enablePromoCodes,
+            allow_promotion_codes: discounts ? undefined : this._config.enablePromoCodes,
             metadata,
+            discounts,
             /*
             line_items: [{
                 price: priceId
