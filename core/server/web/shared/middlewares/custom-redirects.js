@@ -5,10 +5,13 @@ const debug = require('@tryghost/debug')('web:shared:mw:custom-redirects');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
 const errors = require('@tryghost/errors');
-const i18n = require('../../../../shared/i18n');
 const logging = require('@tryghost/logging');
 const redirectsService = require('../../../services/redirects');
 const labsService = require('../../../../shared/labs');
+
+const messages = {
+    customRedirectsRegistrationFailure: 'Could not register custom redirects.'
+};
 
 const _private = {};
 
@@ -90,7 +93,7 @@ _private.registerRoutes = () => {
             logging.error(err);
         } else {
             logging.error(new errors.IncorrectUsageError({
-                message: i18n.t('errors.middleware.redirects.register'),
+                message: messages.customRedirectsRegistrationFailure,
                 context: err.message,
                 help: 'https://ghost.org/docs/themes/routing/#redirects',
                 err
