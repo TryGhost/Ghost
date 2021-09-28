@@ -9,7 +9,7 @@
 // The 2nd argument is the string that will be output if the variable's value is 0
 // The 3rd argument is the string that will be output if the variable's value is 1
 // The 4th argument is the string that will be output if the variable's value is 2+
-const {SafeString} = require('../services/proxy');
+const {SafeString} = require('../services/rendering');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');

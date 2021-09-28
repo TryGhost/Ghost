@@ -2,8 +2,8 @@
 // Usage: `{{amp_analytics}}`
 //
 // Outputs inline scripts used for analytics
-
-const {SafeString, settingsCache} = require('../../../../services/proxy');
+const {settingsCache} = require('../../../../services/proxy');
+const {SafeString} = require('../../../../services/rendering');
 
 function ampComponents() {
     let components = [];

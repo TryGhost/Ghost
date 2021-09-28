@@ -8,7 +8,8 @@
 // By default supported AMP HTML tags (no additional script tag necessary):
 // amp-img, amp-ad, amp-embed, amp-video and amp-pixel.
 // (less) dirty requires
-const {SafeString, settingsCache} = require('../../../../services/proxy');
+const {settingsCache} = require('../../../../services/proxy');
+const {SafeString} = require('../../../../services/rendering');
 
 function ampComponents() {
     let components = [];
