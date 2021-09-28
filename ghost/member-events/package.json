@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/member-events",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/member-events",
   "author": "Ghost Foundation",
   "license": "MIT",
