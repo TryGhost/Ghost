@@ -11,10 +11,6 @@ module.exports = {
         return require('./cache-control');
     },
 
-    get customRedirects() {
-        return require('./custom-redirects');
-    },
-
     get errorHandler() {
         return require('./error-handler');
     },
