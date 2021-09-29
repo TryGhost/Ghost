@@ -1,12 +1,18 @@
 const routeSettings = require('./route-settings');
 const SettingsLoader = require('./loader');
-const ensureSettingsFile = require('./ensure-settings');
+const config = require('../../../shared/config');
+const DefaultSettingsManager = require('./default-settings-manager');
+
+const defaultSettingsManager = new DefaultSettingsManager({
+    type: 'routes',
+    extension: '.yaml',
+    destinationFolderPath: config.getContentPath('settings'),
+    sourceFolderPath: config.get('paths').defaultSettings
+});
 
 module.exports = {
     init: async () => {
-        // Make sure that supported settings files are available
-        // inside of the `content/setting` directory
-        return ensureSettingsFile('routes.yaml');
+        return await defaultSettingsManager.ensureSettingsFileExists();
     },
 
     loadRouteSettingsSync: SettingsLoader.loadSettingsSync,
