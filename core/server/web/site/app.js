@@ -16,6 +16,7 @@ const appService = require('../../../frontend/services/apps');
 const themeEngine = require('../../../frontend/services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../services/members');
+const customRedirects = require('../../services/redirects');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 const mw = require('./middleware');
@@ -86,7 +87,7 @@ module.exports = function setupSiteApp(options = {}) {
 
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
-    shared.middlewares.customRedirects.use(siteApp);
+    siteApp.use(customRedirects.middleware);
 
     // (Optionally) redirect any requests to /ghost to the admin panel
     siteApp.use(mw.redirectGhostToAdmin());

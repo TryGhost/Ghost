@@ -17,7 +17,6 @@ const models = require('../../core/server/models');
 const urlService = require('../../core/frontend/services/url');
 const settingsService = require('../../core/server/services/settings');
 const routeSettingsService = require('../../core/server/services/route-settings');
-const web = require('../../core/server/web');
 const themeService = require('../../core/server/services/themes');
 const limits = require('../../core/server/services/limits');
 
@@ -120,8 +119,6 @@ const restartModeGhostStart = async () => {
     urlServiceUtils.init();
     await urlServiceUtils.isFinished();
     debug('routes done');
-    // @TODO: why does this happen _after_ URL service
-    web.shared.middlewares.customRedirects.reload();
 
     // Reload limits service
     limits.init();
