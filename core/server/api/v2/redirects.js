@@ -1,4 +1,3 @@
-const web = require('../../web');
 const redirects = require('../../services/redirects');
 
 module.exports = {
@@ -23,11 +22,7 @@ module.exports = {
             cacheInvalidate: true
         },
         query(frame) {
-            return redirects.api.setFromFilePath(frame.file.path)
-                .then(() => {
-                    // CASE: trigger that redirects are getting re-registered
-                    web.shared.middlewares.customRedirects.reload();
-                });
+            return redirects.api.setFromFilePath(frame.file.path);
         }
     }
 };
