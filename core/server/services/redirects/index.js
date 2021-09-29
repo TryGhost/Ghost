@@ -1,15 +1,23 @@
-const settings = require('./settings');
-const validation = require('./validation');
+const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils');
+
+const DynamicRedirectManager = require('@tryghost/express-dynamic-redirects');
+const CustomRedirectsAPI = require('./api');
+
+const redirectManager = new DynamicRedirectManager({
+    permanentMaxAge: config.get('caching:customRedirects:maxAge')
+}, urlUtils);
+
+const customRedirectsAPI = new CustomRedirectsAPI({
+    basePath: config.getContentPath('data')
+}, redirectManager);
 
 module.exports = {
-    loadRedirectsFile: settings.loadRedirectsFile,
-    validate: validation.validate,
-    /**
-     * Methods used in the API
-     */
-    api: {
-        getRedirectsFilePath: settings.getRedirectsFilePath,
-        get: settings.get,
-        setFromFilePath: settings.setFromFilePath
-    }
+    init() {
+        return customRedirectsAPI.init();
+    },
+
+    api: customRedirectsAPI,
+
+    middleware: redirectManager.handleRequest
 };
