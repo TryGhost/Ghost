@@ -44,9 +44,15 @@ module.exports = {
             files: 'core/frontend/**',
             rules: {
                 'ghost/node/no-restricted-require': ['off', [
+                    // These are critical refactoring issues that we need to tackle ASAP
                     {
                         name: path.resolve(__dirname, 'core/server/**'),
                         message: 'Invalid require of core/server from core/frontend.'
+                    },
+                    // If we make the frontend entirely independent, these have to be solved too
+                    {
+                        name: path.resolve(__dirname, 'core/shared/**'),
+                        message: 'Invalid require of core/shared from core/frontend.'
                     }
                 ]]
             }
