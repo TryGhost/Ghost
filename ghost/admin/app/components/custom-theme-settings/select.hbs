@@ -8,7 +8,7 @@
             {{#each @setting.options as |settingOption|}}
                 <option value={{settingOption}} selected={{eq settingOption @setting.value}}>
                     {{settingOption}}
-                    {{#if (eq settingOption setting.default)}}(default){{/if}}
+                    {{#if (eq settingOption @setting.default)}}(default){{/if}}
                 </option>
             {{/each}}
         </select>
