@@ -32,10 +32,9 @@ class SettingsLoader {
 
         return {
             fileName,
-            contentPath,
             filePath
         };
-    };
+    }
 
     /**
      * Functionally same as loadSettingsSync with exception of loading
@@ -45,7 +44,7 @@ class SettingsLoader {
      */
     async loadSettings() {
         const setting = 'routes';
-        const {fileName, contentPath, filePath} = this.getSettingFilePath(setting);
+        const {fileName, filePath} = this.getSettingFilePath(setting);
 
         try {
             const file = await fs.readFile(filePath, 'utf8');
@@ -61,9 +60,8 @@ class SettingsLoader {
             throw new errors.GhostError({
                 message: tpl(messages.settingsLoaderError, {
                     setting: setting,
-                    path: contentPath
+                    path: filePath
                 }),
-                context: filePath,
                 err: err
             });
         }
@@ -77,7 +75,7 @@ class SettingsLoader {
      */
     loadSettingsSync() {
         const setting = 'routes';
-        const {fileName, contentPath, filePath} = this.getSettingFilePath(setting);
+        const {fileName, filePath} = this.getSettingFilePath(setting);
 
         try {
             const file = fs.readFileSync(filePath, 'utf8');
@@ -93,9 +91,8 @@ class SettingsLoader {
             throw new errors.GhostError({
                 message: tpl(messages.settingsLoaderError, {
                     setting: setting,
-                    path: contentPath
+                    path: filePath
                 }),
-                context: filePath,
                 err: err
             });
         }
