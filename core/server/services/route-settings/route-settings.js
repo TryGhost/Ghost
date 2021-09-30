@@ -1,7 +1,5 @@
 const Promise = require('bluebird');
-const moment = require('moment-timezone');
 const fs = require('fs-extra');
-const path = require('path');
 const crypto = require('crypto');
 const urlService = require('../url');
 
@@ -43,11 +41,6 @@ const messages = {
 const filename = 'routes';
 const ext = 'yaml';
 
-const getBackupFilePath = () => {
-    const settingsFolder = config.getContentPath('settings');
-    return path.join(settingsFolder, `${filename}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.${ext}`);
-};
-
 const createBackupFile = async (settingsPath, backupPath) => {
     return await fs.copy(settingsPath, backupPath);
 };
@@ -79,7 +72,7 @@ const readFile = (settingsFilePath) => {
 
 const setFromFilePath = async (filePath) => {
     const settingsPath = settingsPathManager.getDefaultFilePath();
-    const backupPath = getBackupFilePath();
+    const backupPath = settingsPathManager.getBackupFilePath();
 
     await createBackupFile(settingsPath, backupPath);
     await saveFile(filePath, settingsPath);
