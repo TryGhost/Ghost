@@ -56,7 +56,7 @@ export default Component.extend({
                     // This notification needs to be shown to every user regardless their permissions to see billing
                     this.notifications.showAlert('Billing error: This site is queued for suspension. The owner of this site must update payment information.', {type: 'error', key: 'billing.overdue'});
                 } else {
-                    this.notifications.closeAlerts('billing.exceeded');
+                    this.notifications.closeAlerts('billing.overdue');
                 }
                 // Detect if the current member limits are exceeded and render a notification
                 if (
