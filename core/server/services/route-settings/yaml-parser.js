@@ -3,10 +3,14 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    error: 'Could not parse provided YAML file: {context}.',
-    help: 'Check provided file for typos and fix the named issues.',
-    yamlParse: 'YAML input cannot be a plain string. Check the format of your YAML file.',
-    yamlParseHelp: 'https://ghost.org/docs/themes/routing/'
+    parsingError: {
+        message: 'Could not parse provided YAML file: {context}.',
+        help: 'Check provided file for typos and fix the named issues.',
+    },
+    invalidYamlFormat: {
+        message: 'YAML input cannot be a plain string. Check the format of your YAML file.',
+        help: 'https://ghost.org/docs/themes/routing/'
+    }
 };
 
 /**
@@ -23,9 +27,9 @@ module.exports = function parseYaml(file) {
         // But one of the obvious errors is the plain string output.
         // Here we check if the user made this mistake.
         if (typeof parsed === 'string') {
-            throw new errors.BadRequestError({
-                message: messages.yamlParse,
-                help: messages.yamlParseHelp
+            throw new errors.IncorrectUsageError({
+                message: messages.invalidYamlFormat.message,
+                help: messages.invalidYamlFormat.help
             });
         }
 
@@ -39,11 +43,11 @@ module.exports = function parseYaml(file) {
         // `reason` property as well as in the message.
         // As the file uploaded is invalid, the person uploading must fix this - it's a 4xx error
         throw new errors.IncorrectUsageError({
-            message: tpl(messages.error, {context: error.reason}),
+            message: tpl(messages.parsingError.message, {context: error.reason}),
             code: 'YAML_PARSER_ERROR',
             context: error.message,
             err: error,
-            help: messages.help
+            help: messages.parsingError.help
         });
     }
 };
