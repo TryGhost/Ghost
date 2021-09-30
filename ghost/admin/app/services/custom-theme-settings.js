@@ -50,7 +50,9 @@ export default class CustomThemeSettingsServices extends Service {
         const listRecord = this.store.createRecord('custom-theme-setting-list', {customThemeSettings: this.settings});
         yield listRecord.save();
 
-        // don't keep references to individual settings around
+        this.settings = listRecord.customThemeSettings;
+
+        // don't keep references to lists and their children around
         this.store.unloadRecord(listRecord);
 
         return this.settings;
