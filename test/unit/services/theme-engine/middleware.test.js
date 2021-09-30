@@ -72,12 +72,16 @@ describe('Themes middleware', function () {
         fakeActiveTheme.mounted = false;
 
         executeMiddleware(middleware, req, res, function next(err) {
-            should.not.exist(err);
+            try {
+                should.not.exist(err);
 
-            fakeActiveTheme.mount.called.should.be.true();
-            fakeActiveTheme.mount.calledWith(req.app).should.be.true();
+                fakeActiveTheme.mount.called.should.be.true();
+                fakeActiveTheme.mount.calledWith(req.app).should.be.true();
 
-            done();
+                done();
+            } catch (error) {
+                done(error);
+            }
         });
     });
 
@@ -85,11 +89,15 @@ describe('Themes middleware', function () {
         fakeActiveTheme.mounted = true;
 
         executeMiddleware(middleware, req, res, function next(err) {
-            should.not.exist(err);
+            try {
+                should.not.exist(err);
 
-            fakeActiveTheme.mount.called.should.be.false();
+                fakeActiveTheme.mount.called.should.be.false();
 
-            done();
+                done();
+            } catch (error) {
+                done(error);
+            }
         });
     });
 
@@ -99,14 +107,18 @@ describe('Themes middleware', function () {
             .returns(undefined);
 
         executeMiddleware(middleware, req, res, function next(err) {
-            // Did throw an error
-            should.exist(err);
-            err.message.should.eql('The currently active theme "bacon-sensation" is missing.');
+            try {
+                // Did throw an error
+                should.exist(err);
+                err.message.should.eql('The currently active theme "bacon-sensation" is missing.');
 
-            activeTheme.get.called.should.be.true();
-            fakeActiveTheme.mount.called.should.be.false();
+                activeTheme.get.called.should.be.true();
+                fakeActiveTheme.mount.called.should.be.false();
 
-            done();
+                done();
+            } catch (error) {
+                done(error);
+            }
         });
     });
 
@@ -114,11 +126,15 @@ describe('Themes middleware', function () {
         req.secure = Math.random() < 0.5;
 
         executeMiddleware(middleware, req, res, function next(err) {
-            should.not.exist(err);
+            try {
+                should.not.exist(err);
 
-            should.equal(res.locals.secure, req.secure);
+                should.equal(res.locals.secure, req.secure);
 
-            done();
+                done();
+            } catch (error) {
+                done(error);
+            }
         });
     });
 
@@ -127,29 +143,33 @@ describe('Themes middleware', function () {
             const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
 
             executeMiddleware(middleware, req, res, function next(err) {
-                should.not.exist(err);
+                try {
+                    should.not.exist(err);
 
-                hbs.updateTemplateOptions.calledOnce.should.be.true();
-                const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
-                const data = templateOptions.data;
+                    hbs.updateTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    const data = templateOptions.data;
 
-                data.should.be.an.Object().with.properties('site', 'labs', 'config');
+                    data.should.be.an.Object().with.properties('site', 'labs', 'config');
 
-                // Check Theme Config
-                data.config.should.be.an.Object()
-                    .with.properties(themeDataExpectedProps)
-                    .and.size(themeDataExpectedProps.length);
-                // posts per page should be set according to the stub
-                data.config.posts_per_page.should.eql(2);
+                    // Check Theme Config
+                    data.config.should.be.an.Object()
+                        .with.properties(themeDataExpectedProps)
+                        .and.size(themeDataExpectedProps.length);
+                    // posts per page should be set according to the stub
+                    data.config.posts_per_page.should.eql(2);
 
-                // Check labs config
-                should.deepEqual(data.labs, fakeLabsData);
+                    // Check labs config
+                    should.deepEqual(data.labs, fakeLabsData);
 
-                should.equal(data.site, fakeSiteData);
-                should.exist(data.site.signup_url);
-                data.site.signup_url.should.equal('#/portal');
+                    should.equal(data.site, fakeSiteData);
+                    should.exist(data.site.signup_url);
+                    data.site.signup_url.should.equal('#/portal');
 
-                done();
+                    done();
+                } catch (error) {
+                    done(error);
+                }
             });
         });
 
@@ -158,13 +178,17 @@ describe('Themes middleware', function () {
                 .withArgs('members_signup_access').returns('none');
 
             executeMiddleware(middleware, req, res, function next(err) {
-                const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
-                const data = templateOptions.data;
+                try {
+                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    const data = templateOptions.data;
 
-                should.exist(data.site.signup_url);
-                data.site.signup_url.should.equal('https://feedly.com/i/subscription/feed/http%3A%2F%2F127.0.0.1%3A2369%2Frss%2F');
+                    should.exist(data.site.signup_url);
+                    data.site.signup_url.should.equal('https://feedly.com/i/subscription/feed/http%3A%2F%2F127.0.0.1%3A2369%2Frss%2F');
 
-                done();
+                    done();
+                } catch (error) {
+                    done(error);
+                }
             });
         });
     });
@@ -177,21 +201,25 @@ describe('Themes middleware', function () {
             };
 
             executeMiddleware(middleware, req, res, function next(err) {
-                should.not.exist(err);
+                try {
+                    should.not.exist(err);
 
-                hbs.updateTemplateOptions.calledOnce.should.be.true();
-                const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
-                const data = templateOptions.data;
+                    hbs.updateTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    const data = templateOptions.data;
 
-                data.should.be.an.Object().with.properties('site', 'labs', 'config');
+                    data.should.be.an.Object().with.properties('site', 'labs', 'config');
 
-                should.equal(data.site, fakeSiteData);
+                    should.equal(data.site, fakeSiteData);
 
-                data.site.should.be.an.Object().with.properties('accent_color', '_preview');
-                data.site._preview.should.eql(previewString);
-                data.site.accent_color.should.eql('#000fff');
+                    data.site.should.be.an.Object().with.properties('accent_color', '_preview');
+                    data.site._preview.should.eql(previewString);
+                    data.site.accent_color.should.eql('#000fff');
 
-                done();
+                    done();
+                } catch (error) {
+                    done(error);
+                }
             });
         });
 
@@ -202,22 +230,26 @@ describe('Themes middleware', function () {
             };
 
             executeMiddleware(middleware, req, res, function next(err) {
-                should.not.exist(err);
+                try {
+                    should.not.exist(err);
 
-                hbs.updateTemplateOptions.calledOnce.should.be.true();
-                const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
-                const data = templateOptions.data;
+                    hbs.updateTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    const data = templateOptions.data;
 
-                data.should.be.an.Object().with.properties('site', 'labs', 'config');
+                    data.should.be.an.Object().with.properties('site', 'labs', 'config');
 
-                should.equal(data.site, fakeSiteData);
+                    should.equal(data.site, fakeSiteData);
 
-                data.site.should.be.an.Object().with.properties('accent_color', 'icon', '_preview');
-                data.site._preview.should.eql(previewString);
-                data.site.accent_color.should.eql('#000fff');
-                data.site.icon.should.eql('/content/images/myimg.png');
+                    data.site.should.be.an.Object().with.properties('accent_color', 'icon', '_preview');
+                    data.site._preview.should.eql(previewString);
+                    data.site.accent_color.should.eql('#000fff');
+                    data.site.icon.should.eql('/content/images/myimg.png');
 
-                done();
+                    done();
+                } catch (error) {
+                    done(error);
+                }
             });
         });
     });
