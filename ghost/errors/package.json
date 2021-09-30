@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/errors",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "repository": "https://github.com/TryGhost/Utils/tree/master/packages/errors",
   "author": "Ghost Foundation",
   "license": "MIT",
