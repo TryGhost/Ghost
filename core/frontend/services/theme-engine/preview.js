@@ -14,7 +14,7 @@ function decodeValue(value) {
     return value;
 }
 
-function getPreviewData(previewHeader, siteData) {
+function getPreviewData(previewHeader) {
     // Keep the string shorter with short codes for certain parameters
     const supportedSettings = {
         c: 'accent_color',
@@ -25,23 +25,27 @@ function getPreviewData(previewHeader, siteData) {
 
     let opts = new URLSearchParams(previewHeader);
 
+    const previewData = {};
+
     opts.forEach((value, key) => {
         value = decodeValue(value);
         if (supportedSettings[key]) {
-            _.set(siteData, supportedSettings[key], value);
+            _.set(previewData, supportedSettings[key], value);
         }
     });
 
-    siteData._preview = previewHeader;
+    previewData._preview = previewHeader;
 
-    return siteData;
+    return previewData;
 }
 
 module.exports._PREVIEW_HEADER_NAME = PREVIEW_HEADER_NAME;
-module.exports.handle = (req, siteData) => {
+module.exports.handle = (req) => {
+    let previewData = {};
+
     if (req && req.header(PREVIEW_HEADER_NAME)) {
-        siteData = getPreviewData(req.header(PREVIEW_HEADER_NAME), siteData);
+        previewData = getPreviewData(req.header(PREVIEW_HEADER_NAME));
     }
 
-    return siteData;
+    return previewData;
 };

@@ -87,11 +87,8 @@ async function getProductAndPricesData() {
     }
 }
 
-function getSiteData(req) {
+function getSiteData() {
     let siteData = settingsCache.getPublic();
-
-    // @TODO: it would be nicer if this was proper middleware somehow...
-    siteData = preview.handle(req, siteData);
 
     // theme-only computed property added to @site
     if (settingsCache.get('members_signup_access') === 'none') {
@@ -108,7 +105,7 @@ async function updateGlobalTemplateOptions(req, res, next) {
     // Static information, same for every request unless the settings change
     // @TODO: bind this once and then update based on events?
     // @TODO: decouple theme layer from settings cache using the Content API
-    const siteData = getSiteData(req);
+    const siteData = getSiteData();
     const labsData = labs.getAll();
 
     const themeData = {
@@ -157,9 +154,17 @@ function updateLocalTemplateData(req, res, next) {
 
 function updateLocalTemplateOptions(req, res, next) {
     const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
+
+    // adjust @site.url for http/https based on the incoming request
     const siteData = {
         url: urlUtils.urlFor('home', {secure: req.secure, trailingSlash: false}, true)
     };
+
+    // @TODO: it would be nicer if this was proper middleware somehow...
+    const previewData = preview.handle(req);
+
+    // update site data with any preview values from the request
+    Object.assign(siteData, previewData);
 
     const member = req.member ? {
         uuid: req.member.uuid,
