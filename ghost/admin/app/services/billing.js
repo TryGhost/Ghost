@@ -10,6 +10,7 @@ export default Service.extend({
     billingWindowOpen: false,
     subscription: null,
     previousRoute: null,
+    action: null,
 
     init() {
         this._super(...arguments);
@@ -51,14 +52,33 @@ export default Service.extend({
         return url;
     },
 
+    // Sends a route update to a child route in the BMA, because we can't control
+    // navigating to it otherwise
+    sendRouteUpdate() {
+        const action = this.get('action');
+
+        if (action) {
+            if (action === 'checkout') {
+                this.getBillingIframe().contentWindow.postMessage({
+                    query: 'routeUpdate',
+                    response: this.get('checkoutRoute')
+                }, '*');
+            }
+
+            this.set('action', null);
+        }
+    },
+
     // Controls billing window modal visibility and sync of the URL visible in browser
     // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
     // for example: by entering "/pro" route in the URL or using history navigation (back and forward)
     toggleProWindow(value) {
-        if (this.get('billingWindowOpen') && value) {
+        if (this.get('billingWindowOpen') && value && !this.get('action')) {
             // don't attempt to open again
             return;
         }
+
+        this.sendRouteUpdate();
 
         this.set('billingWindowOpen', value);
     },
@@ -78,6 +98,8 @@ export default Service.extend({
         // Ensures correct "getIframeURL" calculation when syncing iframe location
         // in toggleProWindow
         window.location.hash = childRoute || '/pro';
+
+        this.sendRouteUpdate();
 
         this.router.transitionTo(childRoute || '/pro');
     },
