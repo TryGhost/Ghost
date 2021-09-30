@@ -11,5 +11,6 @@ export default class CustomThemeSettingsSelectComponent extends Component {
     setSelection(changeEvent) {
         const value = changeEvent.target.value;
         this.args.setting.set('value', value);
+        this.args.onChange?.();
     }
 }
