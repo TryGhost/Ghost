@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/settings-path-manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/settings-path-manager",
   "author": "Ghost Foundation",
   "license": "MIT",
