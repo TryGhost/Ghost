@@ -25,6 +25,7 @@
     "sinon": "11.1.2"
   },
   "dependencies": {
+    "date-fns": "^2.24.0",
     "tpl": "^0.3.0"
   }
 }

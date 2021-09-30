@@ -1,5 +1,6 @@
 const path = require('path');
 const tpl = require('@tryghost/tpl');
+const format = require('date-fns/format');
 const {IncorrectUsageError} = require('@tryghost/errors');
 
 const messages = {
@@ -34,6 +35,12 @@ class SettingsPathManager {
     getDefaultFilePath() {
         const settingsFolder = this.defaultPath;
         return path.join(settingsFolder, `${this.filename}.${this.defaultExtension}`);
+    }
+
+    getBackupFilePath() {
+        const settingsFolder = this.defaultPath;
+        const dateStamp = format(new Date(), 'yyyy-MM-dd-HH-mm-ss');
+        return path.join(settingsFolder, `${this.filename}-${dateStamp}.${this.defaultExtension}`);
     }
 }
 
