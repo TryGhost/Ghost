@@ -1569,10 +1569,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mw-session-from-token@0.1.23":
-  version "0.1.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.23.tgz#f9dd444cbaabe8c72192ad2f11328863d51ffa16"
-  integrity sha512-mDKg1g7Hb/fbk4XbfJHTqujTdmPBLrklonZbGYzuQyqhtZkO6JYLuaL2TSxQgabRGaJI2YQ5sL6hmIwPTT6z7Q==
+"@tryghost/mw-session-from-token@0.1.24":
+  version "0.1.24"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.24.tgz#61f238a8da9e1d6d6e3fe7a3095673949e52eb3e"
+  integrity sha512-8nhpKyswr65CJ4BzGk64A8OKPOR2JvDGQc/6eFD+/IXjlPWiZaoYRA22GaBrgrcif98qKG6axcTqdD2lbXI22Q==
 
 "@tryghost/nodemailer@0.3.3":
   version "0.3.3"
