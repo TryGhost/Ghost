@@ -1,4 +1,4 @@
-<section class="modal-content">
+<section class="modal-content" {{did-insert this.setup}}>
     <div class="gh-offer-modal-content">
         <header class="modal-header">
             <h1>New offer</h1>
@@ -25,37 +25,56 @@
                         <div class="gh-main-section-content grey">
                             <GhFormGroup @errors={{this.errors}} @property="product-cadence">
                                 <label for="product-cadence" class="fw6">Product – cadence</label>
-                                <GhTextInput
-                                    @name="product-cadence"
-                                    @placeholder=""
-                                    @id="product-cadence"
-                                    @class="gh-input" />
+                                <span class="gh-select">
+                                    <OneWaySelect @value={{this.selectedVisibility}}
+                                        @options={{this.cadences}}
+                                        @optionValuePath="name"
+                                        @optionLabelPath="label"
+                                        @optionTargetPath="name"
+                                        @update={{this.updateVisibility}}
+                                    />
+                                    {{svg-jar "arrow-down-small"}}
+                                </span>
                                 <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
                             </GhFormGroup>
                             <div class="form-col2">
                                 <div class="gh-offer-type">
-                                    <div class="gh-radio active">
+                                    <div class="gh-radio {{if (eq this.selectedDiscountType "percentage") "active"}}" {{on "click" (fn this.setDiscountType "percentage")}}>
                                         <div class="gh-radio-button"></div>
                                         <div class="gh-radio-content">
                                             <div class="gh-radio-label">Percentage discount</div>
                                         </div>
                                     </div>
-                                    <div class="gh-radio">
+                                    <div class="gh-radio {{if (eq this.selectedDiscountType "fixed") "active"}}" {{on "click" (fn this.setDiscountType "fixed")}}>
                                         <div class="gh-radio-button"></div>
                                         <div class="gh-radio-content">
                                             <div class="gh-radio-label">Fixed amount discount</div>
                                         </div>
                                     </div>
                                 </div>
-                                <GhFormGroup @errors={{this.errors}} @property="amount">
-                                    <label for="amount" class="fw6">Percentage off</label>
-                                    <GhTextInput
-                                        @name="amount"
-                                        @placeholder=""
-                                        @id="amount"
-                                        @class="gh-input" />
-                                    <GhErrorMessage @errors={{this.errors}} @property="amount" />
-                                </GhFormGroup>
+                                {{#if (eq this.selectedDiscountType "percentage")}}
+                                    <GhFormGroup @errors={{this.errors}} @property="amount">
+                                        <label for="amount" class="fw6">Percentage off</label>
+                                        <GhTextInput
+                                            @type="number"
+                                            @name="amount"
+                                            @placeholder=""
+                                            @id="amount"
+                                            @class="gh-input" />
+                                        <GhErrorMessage @errors={{this.errors}} @property="amount" />
+                                    </GhFormGroup>
+                                {{else}}
+                                    <GhFormGroup @errors={{this.errors}} @property="amount">
+                                        <label for="amount" class="fw6">Amount off</label>
+                                        <GhTextInput
+                                            @name="amount"
+                                            @type="number"
+                                            @placeholder=""
+                                            @id="amount"
+                                            @class="gh-input" />
+                                        <GhErrorMessage @errors={{this.errors}} @property="amount" />
+                                    </GhFormGroup>
+                                {{/if}}
                             </div>
                         </div>
 
