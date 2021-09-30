@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 
 export default ModalComponent.extend({
     router: service(),
+    billing: service(),
 
     headerMessage: computed('details', function () {
         let header = 'Upgrade to enable publishing';
@@ -24,7 +25,7 @@ export default ModalComponent.extend({
 
     actions: {
         upgrade() {
-            this.router.transitionTo('pro');
+            this.router.transitionTo('pro', {queryParams: {action: 'checkout'}});
         },
 
         confirm() {
