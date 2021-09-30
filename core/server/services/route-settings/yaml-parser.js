@@ -1,36 +1,49 @@
 const yaml = require('js-yaml');
-const debug = require('@tryghost/debug')('frontend:services:settings:yaml-parser');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    error: 'Could not parse {file}: {context}.',
-    help: 'Check your {file} file for typos and fix the named issues.'
+    error: 'Could not parse provided YAML file: {context}.',
+    help: 'Check provided file for typos and fix the named issues.',
+    yamlParse: 'YAML input cannot be a plain string. Check the format of your YAML file.',
+    yamlParseHelp: 'https://ghost.org/docs/themes/routing/'
 };
 
 /**
- * Takes a YAML file, parses it and returns a JSON Object
- * @param {YAML} file the YAML file utf8 encoded
- * @param {String} fileName the name of the file incl. extension
+ * Takes a YAML formatted string and parses it and returns a JSON Object
+ * @param {String} file the YAML file utf8 encoded
  * @returns {Object} parsed
  */
-module.exports = function parseYaml(file, fileName) {
+module.exports = function parseYaml(file) {
     try {
         const parsed = yaml.load(file);
 
-        debug('YAML settings file parsed:', fileName);
+        // yaml.load passes almost every yaml code.
+        // Because of that, it's hard to detect if there's an error in the file.
+        // But one of the obvious errors is the plain string output.
+        // Here we check if the user made this mistake.
+        if (typeof parsed === 'string') {
+            throw new errors.BadRequestError({
+                message: messages.yamlParse,
+                help: messages.yamlParseHelp
+            });
+        }
 
         return parsed;
     } catch (error) {
+        if (errors.utils.isIgnitionError(error)) {
+            throw error;
+        }
+
         // CASE: parsing failed, `js-yaml` tells us exactly what and where in the
         // `reason` property as well as in the message.
         // As the file uploaded is invalid, the person uploading must fix this - it's a 4xx error
         throw new errors.IncorrectUsageError({
-            message: tpl(messages.error, {file: fileName, context: error.reason}),
+            message: tpl(messages.error, {context: error.reason}),
             code: 'YAML_PARSER_ERROR',
             context: error.message,
             err: error,
-            help: tpl(messages.help, {file: fileName})
+            help: messages.help
         });
     }
 };
