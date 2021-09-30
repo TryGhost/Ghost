@@ -38,124 +38,148 @@ const messages = {
  * - then we reload the whole site app, which will reset all routers and re-create the url generators
  */
 
-const filename = 'routes';
-const ext = 'yaml';
+class RouteSettings {
+    constructor() {
+        /**
+         * md5 hashes of default routes settings
+         * @private
+         */
+        this.defaultRoutesSettingHash = '3d180d52c663d173a6be791ef411ed01';
+        /**
+         * @private
+         */
+        this.filename = 'routes';
+        /**
+         * @private
+         */
+        this.ext = 'yaml';
+    }
 
-const createBackupFile = async (settingsPath, backupPath) => {
-    return await fs.copy(settingsPath, backupPath);
-};
+    /**
+     * @private
+     * @param {String} settingsPath
+     * @param {String} backupPath
+     */
+    async createBackupFile(settingsPath, backupPath) {
+        return await fs.copy(settingsPath, backupPath);
+    }
 
-const restoreBackupFile = async (settingsPath, backupPath) => {
-    return await fs.copy(backupPath, settingsPath);
-};
+    /**
+     * @private
+     * @param {String} settingsPath
+     * @param {String} backupPath
+     */
+    async restoreBackupFile(settingsPath, backupPath) {
+        return await fs.copy(backupPath, settingsPath);
+    }
 
-const saveFile = async (filePath, settingsPath) => {
-    return await fs.copy(filePath, settingsPath);
-};
+    /**
+     * @private
+     * @param {String} filePath
+     * @param {String} settingsPath
+     */
+    async saveFile(filePath, settingsPath) {
+        return await fs.copy(filePath, settingsPath);
+    }
 
-const readFile = (settingsFilePath) => {
-    return fs.readFile(settingsFilePath, 'utf-8')
-        .catch((err) => {
-            if (err.code === 'ENOENT') {
-                return Promise.resolve([]);
-            }
+    /**
+     * @private
+     * @param {String} settingsFilePath
+     */
+    async readFile(settingsFilePath) {
+        return fs.readFile(settingsFilePath, 'utf-8')
+            .catch((err) => {
+                if (err.code === 'ENOENT') {
+                    return Promise.resolve([]);
+                }
 
-            if (errors.utils.isIgnitionError(err)) {
-                throw err;
-            }
+                if (errors.utils.isIgnitionError(err)) {
+                    throw err;
+                }
 
-            throw new errors.NotFoundError({
-                err: err
+                throw new errors.NotFoundError({
+                    err: err
+                });
             });
-        });
-};
+    }
 
-const setFromFilePath = async (filePath) => {
-    const settingsPath = settingsPathManager.getDefaultFilePath();
-    const backupPath = settingsPathManager.getBackupFilePath();
+    async setFromFilePath(filePath) {
+        const settingsPath = settingsPathManager.getDefaultFilePath();
+        const backupPath = settingsPathManager.getBackupFilePath();
 
-    await createBackupFile(settingsPath, backupPath);
-    await saveFile(filePath, settingsPath);
+        await this.createBackupFile(settingsPath, backupPath);
+        await this.saveFile(filePath, settingsPath);
 
-    urlService.resetGenerators({releaseResourcesOnly: true});
-
-    const bringBackValidRoutes = async () => {
         urlService.resetGenerators({releaseResourcesOnly: true});
 
-        await restoreBackupFile(settingsPath, backupPath);
+        const bringBackValidRoutes = async () => {
+            urlService.resetGenerators({releaseResourcesOnly: true});
 
-        return bridge.reloadFrontend();
-    };
+            await this.restoreBackupFile(settingsPath, backupPath);
 
-    try {
-        bridge.reloadFrontend();
-    } catch (err) {
-        return bringBackValidRoutes()
-            .finally(() => {
-                throw err;
-            });
-    }
+            return bridge.reloadFrontend();
+        };
 
-    // @TODO: how can we get rid of this from here?
-    let tries = 0;
-
-    function isBlogRunning() {
-        debug('waiting for blog running');
-        return Promise.delay(1000)
-            .then(() => {
-                debug('waited for blog running');
-                if (!urlService.hasFinished()) {
-                    if (tries > 5) {
-                        throw new errors.InternalServerError({
-                            message: tpl(messages.loadError, {filename: `${filename}.${ext}`})
-                        });
-                    }
-
-                    tries = tries + 1;
-                    return isBlogRunning();
-                }
-            });
-    }
-
-    return isBlogRunning()
-        .catch((err) => {
+        try {
+            bridge.reloadFrontend();
+        } catch (err) {
             return bringBackValidRoutes()
                 .finally(() => {
                     throw err;
                 });
-        });
-};
+        }
 
-const get = async () => {
-    const settingsFilePath = settingsPathManager.getDefaultFilePath();
+        // @TODO: how can we get rid of this from here?
+        let tries = 0;
 
-    return readFile(settingsFilePath);
-};
+        function isBlogRunning() {
+            debug('waiting for blog running');
+            return Promise.delay(1000)
+                .then(() => {
+                    debug('waited for blog running');
+                    if (!urlService.hasFinished()) {
+                        if (tries > 5) {
+                            throw new errors.InternalServerError({
+                                message: tpl(messages.loadError, {filename: `${this.filename}.${this.ext}`})
+                            });
+                        }
 
-/**
- * md5 hashes of default routes settings
- */
-const defaultRoutesSettingHash = '3d180d52c663d173a6be791ef411ed01';
+                        tries = tries + 1;
+                        return isBlogRunning();
+                    }
+                });
+        }
 
-const calculateHash = (data) => {
-    return crypto.createHash('md5')
-        .update(data, 'binary')
-        .digest('hex');
-};
+        return isBlogRunning()
+            .catch((err) => {
+                return bringBackValidRoutes()
+                    .finally(() => {
+                        throw err;
+                    });
+            });
+    }
 
-const getDefaultHash = () => {
-    return defaultRoutesSettingHash;
-};
+    async get() {
+        const settingsFilePath = settingsPathManager.getDefaultFilePath();
 
-const getCurrentHash = async () => {
-    const data = await settingsLoader.loadSettings();
+        return this.readFile(settingsFilePath);
+    }
 
-    return calculateHash(JSON.stringify(data));
-};
+    calculateHash(data) {
+        return crypto.createHash('md5')
+            .update(data, 'binary')
+            .digest('hex');
+    }
 
-module.exports = {
-    getDefaultHash: getDefaultHash,
-    setFromFilePath: setFromFilePath,
-    get: get,
-    getCurrentHash: getCurrentHash
-};
+    getDefaultHash() {
+        return this.defaultRoutesSettingHash;
+    }
+
+    async getCurrentHash() {
+        const data = await settingsLoader.loadSettings();
+
+        return this.calculateHash(JSON.stringify(data));
+    }
+}
+
+module.exports = RouteSettings;
