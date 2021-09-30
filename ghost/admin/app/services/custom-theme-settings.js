@@ -14,6 +14,16 @@ export default class CustomThemeSettingsServices extends Service {
         return !!dirtySetting;
     }
 
+    get keyValueObject() {
+        const keyValue = {};
+
+        this.settings.forEach((setting) => {
+            keyValue[setting.key] = setting.value;
+        });
+
+        return keyValue;
+    }
+
     load() {
         return this.loadTask.perform();
     }

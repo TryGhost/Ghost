@@ -24,6 +24,19 @@ export default class ModalsDesignCustomizeComponent extends Component {
         return this.customThemeSettings.settings;
     }
 
+    get previewData() {
+        const params = new URLSearchParams();
+
+        params.append('c', this.settings.get('accentColor') || '#ffffff');
+        params.append('icon', this.settings.get('icon'));
+        params.append('logo', this.settings.get('logo'));
+        params.append('cover', this.settings.get('coverImage'));
+
+        params.append('custom', JSON.stringify(this.customThemeSettings.keyValueObject));
+
+        return params.toString();
+    }
+
     @action
     changeTab(tab) {
         this.tab = tab;
