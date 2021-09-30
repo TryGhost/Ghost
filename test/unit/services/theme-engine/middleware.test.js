@@ -5,6 +5,7 @@ const middleware = require('../../../../core/frontend/services/theme-engine').mi
 // is only exposed via themeEngine.getActive()
 const activeTheme = require('../../../../core/frontend/services/theme-engine/active');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const customThemeSettingsCache = require('../../../../core/shared/custom-theme-settings-cache');
 
 const sandbox = sinon.createSandbox();
 
@@ -34,6 +35,7 @@ describe('Themes middleware', function () {
     let fakeActiveThemeName;
     let fakeSiteData;
     let fakeLabsData;
+    let fakeCustomThemeSettingsData;
 
     beforeEach(function () {
         req = {app: {}, header: () => {}};
@@ -52,7 +54,12 @@ describe('Themes middleware', function () {
             // labs data is deep cloned,
             // if we want to compare it
             // we will need some unique content
-            members: true
+            members: true,
+            customThemeSettings: true
+        };
+
+        fakeCustomThemeSettingsData = {
+            header_typography: 'Sans-Serif'
         };
 
         sandbox.stub(activeTheme, 'get')
@@ -64,6 +71,9 @@ describe('Themes middleware', function () {
 
         sandbox.stub(settingsCache, 'getPublic')
             .returns(fakeSiteData);
+
+        sandbox.stub(customThemeSettingsCache, 'getAll')
+            .returns(fakeCustomThemeSettingsData);
 
         sandbox.stub(hbs, 'updateTemplateOptions');
         sandbox.stub(hbs, 'updateLocalTemplateOptions');
@@ -151,7 +161,7 @@ describe('Themes middleware', function () {
                     const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site', 'labs', 'config');
+                    data.should.be.an.Object().with.properties('site', 'labs', 'config', 'custom');
 
                     // Check Theme Config
                     data.config.should.be.an.Object()
@@ -166,6 +176,8 @@ describe('Themes middleware', function () {
                     should.equal(data.site, fakeSiteData);
                     should.exist(data.site.signup_url);
                     data.site.signup_url.should.equal('#/portal');
+
+                    should.deepEqual(data.custom, fakeCustomThemeSettingsData);
 
                     done();
                 } catch (error) {
@@ -242,6 +254,114 @@ describe('Themes middleware', function () {
                     data.site._preview.should.eql(previewString);
                     data.site.accent_color.should.eql('#000fff');
                     data.site.icon.should.eql('/content/images/myimg.png');
+
+                    done();
+                } catch (error) {
+                    done(error);
+                }
+            });
+        });
+
+        it('calls updateLocalTemplateOptions with correct custom theme settings data', function (done) {
+            const customPreviewObject = {header_typography: 'Serif'};
+            const previewString = `custom=${encodeURIComponent(JSON.stringify(customPreviewObject))}`;
+            req.header = () => {
+                return previewString;
+            };
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                try {
+                    should.not.exist(err);
+
+                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    const data = templateOptions.data;
+
+                    data.should.be.an.Object().with.properties('site', 'custom');
+
+                    data.custom.should.be.an.Object().with.properties('header_typography');
+                    data.custom.header_typography.should.eql('Serif');
+
+                    done();
+                } catch (error) {
+                    done(error);
+                }
+            });
+        });
+
+        it('calls updateLocalTemplateOptions with correct without unknown custom theme settings', function (done) {
+            const customPreviewObject = {header_typography: 'Serif', unknown_setting: true};
+            const previewString = `custom=${encodeURIComponent(JSON.stringify(customPreviewObject))}`;
+            req.header = () => {
+                return previewString;
+            };
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                try {
+                    should.not.exist(err);
+
+                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    const data = templateOptions.data;
+
+                    data.should.be.an.Object().with.properties('site', 'custom');
+
+                    data.custom.should.be.an.Object().with.properties('header_typography');
+                    data.custom.header_typography.should.eql('Serif');
+
+                    data.custom.should.not.have.property('unknown_setting');
+
+                    done();
+                } catch (error) {
+                    done(error);
+                }
+            });
+        });
+
+        it('calls updateLocalTemplateOptions with no custom data when custom param is not parseable JSON', function (done) {
+            const previewString = `custom=${encodeURIComponent('<html>')}`;
+            req.header = () => {
+                return previewString;
+            };
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                try {
+                    should.not.exist(err);
+
+                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    const data = templateOptions.data;
+
+                    data.should.be.an.Object().with.properties('site', 'custom');
+
+                    data.custom.should.be.an.Object();
+                    data.custom.should.be.empty();
+
+                    done();
+                } catch (error) {
+                    done(error);
+                }
+            });
+        });
+
+        it('calls updateLocalTemplateOptions with no custom data when custom param is not an object', function (done) {
+            const previewString = `custom=${encodeURIComponent('"header_typography"')}`;
+            req.header = () => {
+                return previewString;
+            };
+
+            executeMiddleware(middleware, req, res, function next(err) {
+                try {
+                    should.not.exist(err);
+
+                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
+                    const data = templateOptions.data;
+
+                    data.should.be.an.Object().with.properties('site', 'custom');
+
+                    data.custom.should.be.an.Object();
+                    data.custom.should.be.empty();
 
                     done();
                 } catch (error) {
