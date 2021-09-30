@@ -19,6 +19,7 @@ const settingsService = require('../../core/server/services/settings');
 const routeSettingsService = require('../../core/server/services/route-settings');
 const themeService = require('../../core/server/services/themes');
 const limits = require('../../core/server/services/limits');
+const customRedirectsService = require('../../core/server/services/redirects');
 
 // Other Test Utilities
 const configUtils = require('./configUtils');
@@ -119,6 +120,8 @@ const restartModeGhostStart = async () => {
     urlServiceUtils.init();
     await urlServiceUtils.isFinished();
     debug('routes done');
+
+    await customRedirectsService.init();
 
     // Reload limits service
     limits.init();
