@@ -89,7 +89,7 @@
     "@tryghost/session-service": "0.1.25",
     "@tryghost/social-urls": "0.1.26",
     "@tryghost/string": "0.1.20",
-    "@tryghost/tpl": "0.1.4",
+    "@tryghost/tpl": "0.1.5",
     "@tryghost/update-check-service": "0.2.2",
     "@tryghost/url-utils": "2.0.2",
     "@tryghost/validator": "0.1.5",
