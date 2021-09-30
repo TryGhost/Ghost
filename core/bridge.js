@@ -7,6 +7,7 @@
  * Eventually, the aim is to make this a component that is initialized on boot and is either handed to or actively creates the frontend, if the frontend is desired.
  *
  * This file is a great place for all the cross-component event handling in lieu of refactoring
+ * NOTE: You may require anything from shared, the frontend or server here - it is the one place (other than boot) that is allowed :)
  */
 
 const debug = require('@tryghost/debug')('bridge');
