@@ -2,7 +2,7 @@
     <form>
         {{#each @themeSettings as |setting index|}}
             {{#if (eq setting.type "select")}}
-                <CustomThemeSettings::Select @setting={{setting}} @index={{index}} />
+                <CustomThemeSettings::Select @setting={{setting}} @index={{index}} @onChange={{@updatePreview}} />
             {{/if}}
         {{/each}}
     </form>
