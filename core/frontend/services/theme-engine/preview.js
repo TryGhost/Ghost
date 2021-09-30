@@ -14,13 +14,14 @@ function decodeValue(value) {
     return value;
 }
 
-function getPreviewData(previewHeader) {
+function getPreviewData(previewHeader, customThemeSettingKeys = []) {
     // Keep the string shorter with short codes for certain parameters
     const supportedSettings = {
         c: 'accent_color',
         icon: 'icon',
         logo: 'logo',
-        cover: 'cover_image'
+        cover: 'cover_image',
+        custom: 'custom'
     };
 
     let opts = new URLSearchParams(previewHeader);
@@ -34,17 +35,34 @@ function getPreviewData(previewHeader) {
         }
     });
 
+    if (previewData.custom) {
+        try {
+            const custom = {};
+            const previewCustom = JSON.parse(previewData.custom);
+
+            if (typeof previewCustom === 'object') {
+                customThemeSettingKeys.forEach((key) => {
+                    custom[key] = previewCustom[key];
+                });
+            }
+
+            previewData.custom = custom;
+        } catch (e) {
+            previewData.custom = {};
+        }
+    }
+
     previewData._preview = previewHeader;
 
     return previewData;
 }
 
 module.exports._PREVIEW_HEADER_NAME = PREVIEW_HEADER_NAME;
-module.exports.handle = (req) => {
+module.exports.handle = (req, customThemeSettingKeys) => {
     let previewData = {};
 
     if (req && req.header(PREVIEW_HEADER_NAME)) {
-        previewData = getPreviewData(req.header(PREVIEW_HEADER_NAME));
+        previewData = getPreviewData(req.header(PREVIEW_HEADER_NAME), customThemeSettingKeys);
     }
 
     return previewData;
