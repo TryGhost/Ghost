@@ -21,7 +21,8 @@ function getPreviewData(previewHeader, customThemeSettingKeys = []) {
         icon: 'icon',
         logo: 'logo',
         cover: 'cover_image',
-        custom: 'custom'
+        custom: 'custom',
+        d: 'description'
     };
 
     let opts = new URLSearchParams(previewHeader);
