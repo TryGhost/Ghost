@@ -5,9 +5,9 @@ const fs = require('fs-extra');
 const path = require('path');
 const configUtils = require('../../../utils/configUtils');
 const errors = require('@tryghost/errors');
-const loadSettings = rewire('../../../../core/server/services/route-settings/loader');
+const SettingsLoader = rewire('../../../../core/server/services/route-settings/settings-loader');
 
-describe('UNIT > Settings Service loader:', function () {
+describe('UNIT > SettingsLoader:', function () {
     beforeEach(function () {
         configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/'));
     });
@@ -38,6 +38,7 @@ describe('UNIT > Settings Service loader:', function () {
         });
 
         it('reads a settings object for routes.yaml file', function () {
+            const settingsLoader = new SettingsLoader();
             const settingsStubFile = {
                 routes: null,
                 collections: {
@@ -53,7 +54,7 @@ describe('UNIT > Settings Service loader:', function () {
             };
             const fsReadFileStub = sinon.stub(fs, 'readFileSync').returns(settingsStubFile);
 
-            const result = loadSettings.loadSettingsSync();
+            const result = settingsLoader.loadSettingsSync();
             should.exist(result);
             result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
             fsReadFileStub.calledOnce.should.be.true();
@@ -66,10 +67,11 @@ describe('UNIT > Settings Service loader:', function () {
             yamlParserStub.returns(yamlStubFile);
             validateStub.returns({routes: {}, collections: {}, taxonomies: {}});
 
-            loadSettings.__set__('yamlParser', yamlParserStub);
-            loadSettings.__set__('validate', validateStub);
+            SettingsLoader.__set__('yamlParser', yamlParserStub);
+            SettingsLoader.__set__('validate', validateStub);
 
-            const setting = loadSettings.loadSettingsSync();
+            const settingsLoader = new SettingsLoader();
+            const setting = settingsLoader.loadSettingsSync();
             should.exist(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
 
@@ -79,15 +81,15 @@ describe('UNIT > Settings Service loader:', function () {
         });
 
         it('can handle errors from YAML parser', function (done) {
+            SettingsLoader.__set__('yamlParser', yamlParserStub);
             yamlParserStub.throws(new errors.GhostError({
                 message: 'could not parse yaml file',
                 context: 'bad indentation of a mapping entry at line 5, column 10'
             }));
 
-            loadSettings.__set__('yamlParser', yamlParserStub);
-
+            const settingsLoader = new SettingsLoader();
             try {
-                loadSettings.loadSettingsSync();
+                settingsLoader.loadSettingsSync();
                 done(new Error('Loader should fail'));
             } catch (err) {
                 should.exist(err);
@@ -112,11 +114,13 @@ describe('UNIT > Settings Service loader:', function () {
                 return originalFn(filePath, options);
             });
 
+            SettingsLoader.__set__('yamlParser', yamlParserStub);
             yamlParserStub = sinon.spy();
-            loadSettings.__set__('yamlParser', yamlParserStub);
+
+            const settingsLoader = new SettingsLoader();
 
             try {
-                loadSettings.loadSettingsSync();
+                settingsLoader.loadSettingsSync();
                 done(new Error('Loader should fail'));
             } catch (err) {
                 err.message.should.match(/Error trying to load YAML setting for routes from/);
