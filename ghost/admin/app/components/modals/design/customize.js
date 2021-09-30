@@ -28,6 +28,7 @@ export default class ModalsDesignCustomizeComponent extends Component {
         const params = new URLSearchParams();
 
         params.append('c', this.settings.get('accentColor') || '#ffffff');
+        params.append('d', this.settings.get('description'));
         params.append('icon', this.settings.get('icon'));
         params.append('logo', this.settings.get('logo'));
         params.append('cover', this.settings.get('coverImage'));

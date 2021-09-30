@@ -15,7 +15,7 @@
                     <GhTextInput
                         @value={{readonly this.settings.description}}
                         @input={{action (mut this.settings.description) value="target.value"}}
-                        @focus-out={{action "validate" "description" target=this.settings}}
+                        @focus-out={{fn this.updateSetting "description" this.settings.description}}
                         data-test-description-input={{true}}
                     />
                     <GhErrorMessage @errors={{this.settings.errors}} @property="description"/>
@@ -140,7 +140,7 @@
             {{else if this.settings.icon}}
                 <div class="gh-branding-image-container transparent-bg">
                     <img class="blog-icon" src="{{this.settings.icon}}" {{on "click" this.triggerFileDialog}} alt="icon" data-test-icon-img>
-                    <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.removeImage "icon")}} data-test-delete-image="icon">
+                    <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.updateSetting "icon" null)}} data-test-delete-image="icon">
                         {{svg-jar "trash" class="w4 h4 fill-white"}}
                     </button>
                 </div>
@@ -175,7 +175,7 @@
                 {{else if this.settings.logo}}
                     <div class="gh-branding-image-container largeimg justify-center transparent-bg">
                         <img class="blog-logo" src="{{this.settings.logo}}" {{on "click" this.triggerFileDialog}} alt="logo" data-test-logo-img>
-                        <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.removeImage "logo")}} data-test-delete-image="logo">
+                        <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.updateSetting "logo" null)}} data-test-delete-image="logo">
                             {{svg-jar "trash" class="w4 h4 fill-white"}}
                         </button>
                     </div>
@@ -211,7 +211,7 @@
                 {{else if this.settings.coverImage}}
                     <div class="gh-branding-image-container largeimg justify-start">
                         <img class="blog-cover" src="{{this.settings.coverImage}}" {{on "click" this.triggerFileDialog}} alt="cover photo" data-test-cover-img>
-                        <button type="button" class="gh-setting-action-largeimg-delete" {{on "click" (fn this.removeImage "coverImage")}} data-test-delete-image="coverImage">
+                        <button type="button" class="gh-setting-action-largeimg-delete" {{on "click" (fn this.updateSetting "coverImage" null)}} data-test-delete-image="coverImage">
                             {{svg-jar "trash" class="w4 h4 fill-white"}}
                         </button>
                     </div>

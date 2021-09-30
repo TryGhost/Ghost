@@ -47,6 +47,7 @@ export default class DesignTabGeneralSettingsComponent extends Component {
 
         return params.toString();
     }
+
     willDestroy() {
         super.willDestroy?.(...arguments);
         this.settings.errors.remove('accentColor');
@@ -67,15 +68,16 @@ export default class DesignTabGeneralSettingsComponent extends Component {
     }
 
     @action
-    async removeImage(imageName) {
-        this.settings.set(imageName, '');
-        this.args.updatePreview();
-    }
-
-    @action
     blurElement(event) {
         event.preventDefault();
         event.target.blur();
+    }
+
+    @action
+    async updateSetting(setting, value) {
+        this.settings.set(setting, value);
+        await this.settings.validate({property: setting});
+        this.args.updatePreview();
     }
 
     @action
