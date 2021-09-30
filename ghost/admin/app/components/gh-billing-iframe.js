@@ -55,8 +55,9 @@ export default Component.extend({
                 if (event.data.subscription.status === 'past_due' || event.data.subscription.status === 'unpaid') {
                     // This notification needs to be shown to every user regardless their permissions to see billing
                     this.notifications.showAlert('Billing error: This site is queued for suspension. The owner of this site must update payment information.', {type: 'error', key: 'billing.overdue'});
+                } else {
+                    this.notifications.closeAlerts('billing.exceeded');
                 }
-
                 // Detect if the current member limits are exceeded and render a notification
                 if (
                     event.data?.exceededLimits
@@ -69,6 +70,8 @@ export default Component.extend({
                     const checkoutAction = this.billing.get('billingRouteRoot') + '?action=checkout';
 
                     this.notifications.showAlert(htmlSafe(`Your audience has grown! To continue publishing, the site owner must confirm pricing for this number of members <a href="${checkoutAction}">here</a>`), {type: 'warn', key: 'billing.exceeded'});
+                } else {
+                    this.notifications.closeAlerts('billing.exceeded');
                 }
             }
         });
