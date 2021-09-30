@@ -54,4 +54,18 @@ describe('Settings Path Manager', function () {
             path.should.equal('/content/data/redirects.json');
         });
     });
+
+    describe('getBackupFilePath', function () {
+        it('returns a path to store a backup', function (){
+            const settingsPathManager = new SettingsPathManager({
+                paths: ['/content/data', '/content/settings'],
+                type: 'routes',
+                extensions: ['yaml']
+            });
+
+            const path = settingsPathManager.getBackupFilePath();
+
+            path.should.match(/\/content\/data\/routes-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}.yaml/);
+        });
+    });
 });
