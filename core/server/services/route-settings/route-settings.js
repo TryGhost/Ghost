@@ -12,8 +12,17 @@ const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
 const SettingsLoader = require('./settings-loader');
 const parseYaml = require('./yaml-parser');
+const SettingsPathManager = require('@tryghost/settings-path-manager');
 
-const settingsLoader = new SettingsLoader({parseYaml});
+const settingsPathManager = new SettingsPathManager({
+    type: 'routes',
+    paths: [config.getContentPath('settings')]
+});
+
+const settingsLoader = new SettingsLoader({
+    parseYaml,
+    storageFolderPath: config.getContentPath('settings')
+});
 
 const messages = {
     loadError: 'Could not load {filename} file.'
@@ -33,11 +42,6 @@ const messages = {
 
 const filename = 'routes';
 const ext = 'yaml';
-
-const getSettingsFilePath = () => {
-    const settingsFolder = config.getContentPath('settings');
-    return path.join(settingsFolder, `${filename}.${ext}`);
-};
 
 const getBackupFilePath = () => {
     const settingsFolder = config.getContentPath('settings');
@@ -74,7 +78,7 @@ const readFile = (settingsFilePath) => {
 };
 
 const setFromFilePath = async (filePath) => {
-    const settingsPath = getSettingsFilePath();
+    const settingsPath = settingsPathManager.getDefaultFilePath();
     const backupPath = getBackupFilePath();
 
     await createBackupFile(settingsPath, backupPath);
@@ -130,7 +134,7 @@ const setFromFilePath = async (filePath) => {
 };
 
 const get = async () => {
-    const settingsFilePath = await getSettingsFilePath();
+    const settingsFilePath = settingsPathManager.getDefaultFilePath();
 
     return readFile(settingsFilePath);
 };
