@@ -11,7 +11,10 @@ const defaultSettingsManager = new DefaultSettingsManager({
     sourceFolderPath: config.get('paths').defaultSettings
 });
 
-const settingsLoader = new SettingsLoader({parseYaml});
+const settingsLoader = new SettingsLoader({
+    parseYaml,
+    storageFolderPath: config.getContentPath('settings')
+});
 
 module.exports = {
     init: async () => {

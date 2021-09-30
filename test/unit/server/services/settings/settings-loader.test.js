@@ -3,18 +3,12 @@ const should = require('should');
 const rewire = require('rewire');
 const fs = require('fs-extra');
 const path = require('path');
-const configUtils = require('../../../../utils/configUtils');
 const errors = require('@tryghost/errors');
 const SettingsLoader = rewire('../../../../../core/server/services/route-settings/settings-loader');
 
 describe('UNIT > SettingsLoader:', function () {
-    beforeEach(function () {
-        configUtils.set('paths:contentPath', path.join(__dirname, '../../../../utils/fixtures/'));
-    });
-
     afterEach(function () {
         sinon.restore();
-        configUtils.restore();
     });
 
     describe('Settings Loader', function () {
@@ -39,7 +33,8 @@ describe('UNIT > SettingsLoader:', function () {
 
         it('reads a settings object for routes.yaml file', function () {
             const settingsLoader = new SettingsLoader({
-                parseYaml: yamlParserStub
+                parseYaml: yamlParserStub,
+                storageFolderPath: '/content/data'
             });
             const settingsStubFile = {
                 routes: null,
@@ -64,7 +59,8 @@ describe('UNIT > SettingsLoader:', function () {
 
         it('can find yaml settings file and returns a settings object', function () {
             const fsReadFileSpy = sinon.spy(fs, 'readFileSync');
-            const expectedSettingsFile = path.join(__dirname, '../../../../utils/fixtures/settings/routes.yaml');
+            const storageFolderPath = path.join(__dirname, '../../../../utils/fixtures/settings/');
+            const expectedSettingsFile = path.join(storageFolderPath, 'routes.yaml');
 
             yamlParserStub.returns(yamlStubFile);
             validateStub.returns({routes: {}, collections: {}, taxonomies: {}});
@@ -72,7 +68,8 @@ describe('UNIT > SettingsLoader:', function () {
             SettingsLoader.__set__('validate', validateStub);
 
             const settingsLoader = new SettingsLoader({
-                parseYaml: yamlParserStub
+                parseYaml: yamlParserStub,
+                storageFolderPath: storageFolderPath
             });
             const setting = settingsLoader.loadSettingsSync();
             should.exist(setting);
@@ -84,13 +81,15 @@ describe('UNIT > SettingsLoader:', function () {
         });
 
         it('can handle errors from YAML parser', function (done) {
+            const storageFolderPath = path.join(__dirname, '../../../../utils/fixtures/settings/');
             yamlParserStub.throws(new errors.GhostError({
                 message: 'could not parse yaml file',
                 context: 'bad indentation of a mapping entry at line 5, column 10'
             }));
 
             const settingsLoader = new SettingsLoader({
-                parseYaml: yamlParserStub
+                parseYaml: yamlParserStub,
+                storageFolderPath: storageFolderPath
             });
             try {
                 settingsLoader.loadSettingsSync();
@@ -105,7 +104,8 @@ describe('UNIT > SettingsLoader:', function () {
         });
 
         it('throws error if file can\'t be accessed', function (done) {
-            const expectedSettingsFile = path.join(__dirname, '../../../../utils/fixtures/settings/routes.yaml');
+            const storageFolderPath = path.join(__dirname, '../../../utils/fixtures/settings/');
+            const expectedSettingsFile = path.join(storageFolderPath, 'routes.yaml');
             const fsError = new Error('no permission');
             fsError.code = 'EPERM';
 
@@ -121,7 +121,8 @@ describe('UNIT > SettingsLoader:', function () {
             yamlParserStub = sinon.spy();
 
             const settingsLoader = new SettingsLoader({
-                parseYaml: yamlParserStub
+                parseYaml: yamlParserStub,
+                storageFolderPath: storageFolderPath
             });
 
             try {
