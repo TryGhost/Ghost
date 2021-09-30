@@ -51,7 +51,6 @@ export default class DesignTabGeneralSettingsComponent extends Component {
     willDestroy() {
         super.willDestroy?.(...arguments);
         this.settings.errors.remove('accentColor');
-        this.settings.rollbackAttributes();
     }
 
     @action
