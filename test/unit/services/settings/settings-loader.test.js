@@ -38,7 +38,9 @@ describe('UNIT > SettingsLoader:', function () {
         });
 
         it('reads a settings object for routes.yaml file', function () {
-            const settingsLoader = new SettingsLoader();
+            const settingsLoader = new SettingsLoader({
+                parseYaml: yamlParserStub
+            });
             const settingsStubFile = {
                 routes: null,
                 collections: {
@@ -67,10 +69,11 @@ describe('UNIT > SettingsLoader:', function () {
             yamlParserStub.returns(yamlStubFile);
             validateStub.returns({routes: {}, collections: {}, taxonomies: {}});
 
-            SettingsLoader.__set__('yamlParser', yamlParserStub);
             SettingsLoader.__set__('validate', validateStub);
 
-            const settingsLoader = new SettingsLoader();
+            const settingsLoader = new SettingsLoader({
+                parseYaml: yamlParserStub
+            });
             const setting = settingsLoader.loadSettingsSync();
             should.exist(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
@@ -81,13 +84,14 @@ describe('UNIT > SettingsLoader:', function () {
         });
 
         it('can handle errors from YAML parser', function (done) {
-            SettingsLoader.__set__('yamlParser', yamlParserStub);
             yamlParserStub.throws(new errors.GhostError({
                 message: 'could not parse yaml file',
                 context: 'bad indentation of a mapping entry at line 5, column 10'
             }));
 
-            const settingsLoader = new SettingsLoader();
+            const settingsLoader = new SettingsLoader({
+                parseYaml: yamlParserStub
+            });
             try {
                 settingsLoader.loadSettingsSync();
                 done(new Error('Loader should fail'));
@@ -114,10 +118,11 @@ describe('UNIT > SettingsLoader:', function () {
                 return originalFn(filePath, options);
             });
 
-            SettingsLoader.__set__('yamlParser', yamlParserStub);
             yamlParserStub = sinon.spy();
 
-            const settingsLoader = new SettingsLoader();
+            const settingsLoader = new SettingsLoader({
+                parseYaml: yamlParserStub
+            });
 
             try {
                 settingsLoader.loadSettingsSync();

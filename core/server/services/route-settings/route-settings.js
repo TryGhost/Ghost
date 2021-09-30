@@ -11,8 +11,9 @@ const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
 const SettingsLoader = require('./settings-loader');
+const parseYaml = require('./yaml-parser');
 
-const settingsLoader = new SettingsLoader();
+const settingsLoader = new SettingsLoader({parseYaml});
 
 const messages = {
     loadError: 'Could not load {filename} file.'

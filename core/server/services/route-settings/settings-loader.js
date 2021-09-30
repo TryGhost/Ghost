@@ -4,7 +4,6 @@ const debug = require('@tryghost/debug')('frontend:services:settings:settings-lo
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
-const yamlParser = require('./yaml-parser');
 const validate = require('./validate');
 
 const messages = {
@@ -12,8 +11,12 @@ const messages = {
 };
 
 class SettingsLoader {
-    constructor() {
-
+    /**
+     * @param {Object} options
+     * @param {Function} options.parseYaml yaml parser
+     */
+    constructor({parseYaml}) {
+        this.parseYaml = parseYaml;
     }
 
     /**
@@ -48,7 +51,7 @@ class SettingsLoader {
             const file = await fs.readFile(filePath, 'utf8');
             debug('settings file found for', setting);
 
-            const object = yamlParser(file, fileName);
+            const object = this.parseYaml(file, fileName);
             return validate(object);
         } catch (err) {
             if (errors.utils.isIgnitionError(err)) {
@@ -64,7 +67,7 @@ class SettingsLoader {
                 err: err
             });
         }
-    };
+    }
 
     /**
      * Reads the routes.yaml settings file and passes the
@@ -80,7 +83,7 @@ class SettingsLoader {
             const file = fs.readFileSync(filePath, 'utf8');
             debug('settings file found for', setting);
 
-            const object = yamlParser(file, fileName);
+            const object = this.parseYaml(file, fileName);
             return validate(object);
         } catch (err) {
             if (errors.utils.isIgnitionError(err)) {
