@@ -31,7 +31,7 @@ module.exports = {
                         message: 'Invalid require of core/server from core/shared.'
                     },
                     {
-                        name: path.resolve(__dirname, 'core/server/**'),
+                        name: path.resolve(__dirname, 'core/frontend/**'),
                         message: 'Invalid require of core/frontend from core/shared.'
                     }
                 ]]
