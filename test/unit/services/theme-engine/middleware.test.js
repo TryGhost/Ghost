@@ -66,6 +66,7 @@ describe('Themes middleware', function () {
             .returns(fakeSiteData);
 
         sandbox.stub(hbs, 'updateTemplateOptions');
+        sandbox.stub(hbs, 'updateLocalTemplateOptions');
     });
 
     it('mounts active theme if not yet mounted', function (done) {
@@ -194,7 +195,7 @@ describe('Themes middleware', function () {
     });
 
     describe('Preview Mode', function () {
-        it('calls updateTemplateOptions with correct data when one parameter is set', function (done) {
+        it('calls updateLocalTemplateOptions with correct data when one parameter is set', function (done) {
             const previewString = 'c=%23000fff';
             req.header = () => {
                 return previewString;
@@ -204,13 +205,11 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site', 'labs', 'config');
-
-                    should.equal(data.site, fakeSiteData);
+                    data.should.be.an.Object().with.properties('site');
 
                     data.site.should.be.an.Object().with.properties('accent_color', '_preview');
                     data.site._preview.should.eql(previewString);
@@ -223,7 +222,7 @@ describe('Themes middleware', function () {
             });
         });
 
-        it('calls updateTemplateOptions with correct data when two parameters are set', function (done) {
+        it('calls updateLocalTemplateOptions with correct data when two parameters are set', function (done) {
             const previewString = 'c=%23000fff&icon=%2Fcontent%2Fimages%2Fmyimg.png';
             req.header = () => {
                 return previewString;
@@ -233,13 +232,11 @@ describe('Themes middleware', function () {
                 try {
                     should.not.exist(err);
 
-                    hbs.updateTemplateOptions.calledOnce.should.be.true();
-                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    hbs.updateLocalTemplateOptions.calledOnce.should.be.true();
+                    const templateOptions = hbs.updateLocalTemplateOptions.firstCall.args[1];
                     const data = templateOptions.data;
 
-                    data.should.be.an.Object().with.properties('site', 'labs', 'config');
-
-                    should.equal(data.site, fakeSiteData);
+                    data.should.be.an.Object().with.properties('site');
 
                     data.site.should.be.an.Object().with.properties('accent_color', 'icon', '_preview');
                     data.site._preview.should.eql(previewString);
