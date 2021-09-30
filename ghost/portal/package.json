@@ -37,6 +37,7 @@
     "build:combined": "node ./scripts/build-combined.js",
     "build:bundle": "webpack --config webpack.config.js",
     "test": "react-scripts test",
+    "test:ci": "yarn test --watchAll=false --coverage",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
@@ -65,6 +66,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "jest": {
+    "coverageReporters": ["text-summary", "html"]
   },
   "devDependencies": {
     "chalk": "4.1.1",
