@@ -11,6 +11,20 @@ or
 
 ## Usage
 
+```
+const tpl = require('@tryghost/tpl');
+messages = {
+    myError: 'Something terrible happened to {something}'
+};
+
+console.error(tpl(messages.myError, {something: 'The thing'}));
+```
+
+* Takes strings like 'Your site is now available on {url}' and interpolates them with passed in data
+* Will ignore double or triple braces like {{get}} or {{{content}}}
+* Can handle escaped braces e.g. \\\\{\\\\{{helpername}\\\\}\\\\}
+* There's a simple bare minimum escaping needed to make {{{helpername}}} work with interpolation e.g. {\\\\{{helpername}}}
+
 
 ## Develop
 
@@ -34,6 +48,6 @@ Follow the instructions for the top-level repo.
 
 
 
-# Copyright & License 
+# Copyright & License
 
 Copyright (c) 2013-2021 Ghost Foundation - Released under the [MIT license](LICENSE).
