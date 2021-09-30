@@ -42,6 +42,26 @@ describe('tpl', function () {
         result.should.eql('{{#get}} helper took 500ms to complete');
     });
 
+    it('ignores 3 braces', function () {
+        const string = 'The {{{helperName}}} helper is not available.';
+        const data = {
+            helperName: 'get',
+            totalMs: '500'
+        };
+        let result = tpl(string, data);
+        result.should.eql('The {{{helperName}}} helper is not available.');
+    });
+
+    it('has a simple bare minimum escaping needed', function () {
+        const string = 'The {\\{{helperName}}} helper is not available.';
+        const data = {
+            helperName: 'get',
+            totalMs: '500'
+        };
+        let result = tpl(string, data);
+        result.should.eql('The {{get}} helper is not available.');
+    });
+
     it('Can handle escaped left braces', function () {
         const string = 'The \\{\\{{helperName}}} helper is not available.';
         const data = {
@@ -54,16 +74,6 @@ describe('tpl', function () {
 
     it('Can handle escaped right braces as well', function () {
         const string = 'The \\{\\{{helperName}\\}\\} helper is not available.';
-        const data = {
-            helperName: 'get',
-            totalMs: '500'
-        };
-        let result = tpl(string, data);
-        result.should.eql('The {{get}} helper is not available.');
-    });
-
-    it('has a simple bare minimum escaping needed', function () {
-        const string = 'The {\\{{helperName}}} helper is not available.';
         const data = {
             helperName: 'get',
             totalMs: '500'
