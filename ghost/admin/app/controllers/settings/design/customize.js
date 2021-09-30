@@ -15,10 +15,10 @@ export default class SettingsDesignCustomizeController extends Controller {
                 return;
             }
 
-            yield Promise.all(
+            yield Promise.all([
                 this.settings.save(),
                 this.customThemeSettings.save()
-            );
+            ]);
 
             this.router.transitionTo('settings.design');
 
