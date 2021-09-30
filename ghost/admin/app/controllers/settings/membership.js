@@ -67,10 +67,10 @@ export default class MembersAccessController extends Controller {
             const monthlyPrice = this.product.get('monthlyPrice');
             const yearlyPrice = this.product.get('yearlyPrice');
 
-            if (monthlyPrice?.amount && parseInt(this.stripeMonthlyAmount, 10) !== (monthlyPrice.amount / 100)) {
+            if (monthlyPrice?.amount && parseFloat(this.stripeMonthlyAmount) !== (monthlyPrice.amount / 100)) {
                 return true;
             }
-            if (yearlyPrice?.amount && parseInt(this.stripeYearlyAmount, 10) !== (yearlyPrice.amount / 100)) {
+            if (yearlyPrice?.amount && parseFloat(this.stripeYearlyAmount) !== (yearlyPrice.amount / 100)) {
                 return true;
             }
         }
