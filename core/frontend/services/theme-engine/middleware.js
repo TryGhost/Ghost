@@ -161,7 +161,15 @@ function updateLocalTemplateOptions(req, res, next) {
     };
 
     // @TODO: it would be nicer if this was proper middleware somehow...
-    const previewData = preview.handle(req);
+    const previewData = preview.handle(req, Object.keys(customThemeSettingsCache.getAll()));
+
+    // strip custom off of preview data so it doesn't get merged into @site
+    const customThemeSettingsPreviewData = previewData.custom;
+    delete previewData.custom;
+    let customData = {};
+    if (labs.isSet('customThemeSettings')) {
+        customData = customThemeSettingsPreviewData;
+    }
 
     // update site data with any preview values from the request
     Object.assign(siteData, previewData);
@@ -184,6 +192,7 @@ function updateLocalTemplateOptions(req, res, next) {
         data: {
             member: member,
             site: siteData,
+            custom: customData,
             // @deprecated: a gscan warning for @blog was added before 3.0 which replaced it with @site
             blog: siteData
         }
