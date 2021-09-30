@@ -1,6 +1,7 @@
 const routeSettings = require('./route-settings');
 const SettingsLoader = require('./settings-loader');
 const config = require('../../../shared/config');
+const parseYaml = require('./yaml-parser');
 const DefaultSettingsManager = require('./default-settings-manager');
 
 const defaultSettingsManager = new DefaultSettingsManager({
@@ -10,7 +11,7 @@ const defaultSettingsManager = new DefaultSettingsManager({
     sourceFolderPath: config.get('paths').defaultSettings
 });
 
-const settingsLoader = new SettingsLoader();
+const settingsLoader = new SettingsLoader({parseYaml});
 
 module.exports = {
     init: async () => {

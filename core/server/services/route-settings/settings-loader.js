@@ -22,7 +22,7 @@ class SettingsLoader {
     /**
      * NOTE: this method will have to go to an external module to reuse in redirects settings
      * @param {String} setting type of the settings to load, e.g:'routes' or 'redirects'
-     * @returns {Object}
+     * @returns {String} setting file path
      */
     getSettingFilePath(setting) {
         // we only support the `yaml` file extension. `yml` will be ignored.
@@ -30,10 +30,7 @@ class SettingsLoader {
         const contentPath = config.getContentPath('settings');
         const filePath = path.join(contentPath, fileName);
 
-        return {
-            fileName,
-            filePath
-        };
+        return filePath;
     }
 
     /**
@@ -44,13 +41,16 @@ class SettingsLoader {
      */
     async loadSettings() {
         const setting = 'routes';
-        const {fileName, filePath} = this.getSettingFilePath(setting);
+        const filePath = this.getSettingFilePath(setting);
 
         try {
             const file = await fs.readFile(filePath, 'utf8');
             debug('settings file found for', setting);
 
-            const object = this.parseYaml(file, fileName);
+            const object = this.parseYaml(file);
+
+            debug('YAML settings file parsed:', filePath);
+
             return validate(object);
         } catch (err) {
             if (errors.utils.isIgnitionError(err)) {
@@ -75,13 +75,13 @@ class SettingsLoader {
      */
     loadSettingsSync() {
         const setting = 'routes';
-        const {fileName, filePath} = this.getSettingFilePath(setting);
+        const filePath = this.getSettingFilePath(setting);
 
         try {
             const file = fs.readFileSync(filePath, 'utf8');
             debug('settings file found for', setting);
 
-            const object = this.parseYaml(file, fileName);
+            const object = this.parseYaml(file);
             return validate(object);
         } catch (err) {
             if (errors.utils.isIgnitionError(err)) {
