@@ -1740,6 +1740,16 @@
     extract-zip "2.0.1"
     fs-extra "^9.1.0"
 
+"@tryghost/zip@1.1.16":
+  version "1.1.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.16.tgz#2f3760bf0cc7ffc2129ec5ae4c231aaca870de1a"
+  integrity sha512-RxJ3kkQrItN4EsO5XsbqoqYuK7aOKlehwU6oqsBx9JYD0Z4SqXTvavulNlOTYMNIRljgeK/6VNY0Z5z9iUbmdA==
+  dependencies:
+    archiver "^4.0.2"
+    bluebird "^3.7.2"
+    extract-zip "2.0.1"
+    fs-extra "^9.1.0"
+
 "@trysound/sax@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
