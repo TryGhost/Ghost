@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const messages = {
     parsingError: {
         message: 'Could not parse provided YAML file: {context}.',
-        help: 'Check provided file for typos and fix the named issues.',
+        help: 'Check provided file for typos and fix the named issues.'
     },
     invalidYamlFormat: {
         message: 'YAML input cannot be a plain string. Check the format of your YAML file.',
