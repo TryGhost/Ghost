@@ -10,7 +10,9 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
-const SettingsLoader = require('./loader');
+const SettingsLoader = require('./settings-loader');
+
+const settingsLoader = new SettingsLoader();
 
 const messages = {
     loadError: 'Could not load {filename} file.'
@@ -148,7 +150,7 @@ const getDefaultHash = () => {
 };
 
 const getCurrentHash = async () => {
-    const data = await SettingsLoader.loadSettings();
+    const data = await settingsLoader.loadSettings();
 
     return calculateHash(JSON.stringify(data));
 };
