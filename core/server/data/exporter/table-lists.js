@@ -25,6 +25,7 @@ const BACKUP_TABLES = [
     'snippets',
     'tokens',
     'sessions',
+    'offers',
     'stripe_products',
     'stripe_prices',
     'mobiledoc_revisions',
