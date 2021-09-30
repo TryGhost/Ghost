@@ -7,12 +7,18 @@ const path = require('path');
 const Promise = require('bluebird');
 const moment = require('moment');
 const config = require('../../../shared/config');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const StorageBase = require('ghost-storage-base');
+
+const messages = {
+    imageNotFound: 'Image not found',
+    imageNotFoundWithRef: 'Image not found: {img}',
+    cannotReadImage: 'Could not read image: {img}'
+};
 
 class LocalFileStore extends StorageBase {
     constructor() {
@@ -119,7 +125,7 @@ class LocalFileStore extends StorageBase {
                 if (err) {
                     if (err.statusCode === 404) {
                         return next(new errors.NotFoundError({
-                            message: i18n.t('errors.errors.imageNotFound'),
+                            message: tpl(messages.imageNotFound),
                             code: 'STATIC_FILE_NOT_FOUND',
                             property: err.path
                         }));
@@ -169,7 +175,7 @@ class LocalFileStore extends StorageBase {
                     if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
                         return reject(new errors.NotFoundError({
                             err: err,
-                            message: i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
+                            message: tpl(messages.imageNotFoundWithRef, {img: options.path})
                         }));
                     }
 
@@ -183,7 +189,7 @@ class LocalFileStore extends StorageBase {
 
                     return reject(new errors.GhostError({
                         err: err,
-                        message: i18n.t('errors.errors.cannotReadImage', {img: options.path})
+                        message: tpl(messages.cannotReadImage, {img: options.path})
                     }));
                 }
 
