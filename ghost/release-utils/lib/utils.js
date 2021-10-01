@@ -1,4 +1,6 @@
 const emojiRegex = require('emoji-regex');
+const fs = require('fs');
+const os = require('os');
 const _ = require('lodash');
 const {IncorrectUsageError} = require('@tryghost/errors');
 
@@ -62,4 +64,30 @@ module.exports.checkMissingOptions = (options = {}, ...requiredFields) => {
             message: `Missing options: ${missing.join(', ')}`
         });
     }
+};
+
+module.exports.getFinalChangelog = function getFinalChangelog(options) {
+    let filterEmojiCommits = true;
+    let changelog = fs.readFileSync(options.changelogPath).toString('utf8').split(os.EOL);
+    let finalChangelog = [];
+
+    if (Object.prototype.hasOwnProperty.call(options, 'filterEmojiCommits')) {
+        filterEmojiCommits = options.filterEmojiCommits;
+    }
+    // @NOTE: optional array of string lines, which we pre-pend
+    if (Object.prototype.hasOwnProperty.call(options, 'content') && _.isArray(options.content)) {
+        finalChangelog = finalChangelog.concat(options.content);
+    }
+
+    if (filterEmojiCommits) {
+        changelog = module.exports.filterEmojiCommits(changelog);
+        module.exports.sortByEmoji(changelog);
+    }
+
+    if (_.isEmpty(changelog)) {
+        changelog = ['No user-visible changes in this release.'];
+    }
+
+    finalChangelog = finalChangelog.concat(changelog);
+    return finalChangelog;
 };
