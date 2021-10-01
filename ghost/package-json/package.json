@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/package-json",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/package-json",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "tmp": "0.2.1"
   },
   "dependencies": {
-    "@tryghost/errors": "^0.2.15",
+    "@tryghost/errors": "^0.2.16",
     "@tryghost/tpl": "^0.1.5",
     "bluebird": "^3.7.2",
     "fs-extra": "^10.0.0",

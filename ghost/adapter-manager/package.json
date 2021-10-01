@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-manager",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/adapter-manager",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -25,6 +25,6 @@
     "sinon": "11.1.2"
   },
   "dependencies": {
-    "@tryghost/errors": "^0.2.15"
+    "@tryghost/errors": "^0.2.16"
   }
 }

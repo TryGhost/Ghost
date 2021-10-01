@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/release-utils",
-  "version": "0.6.17",
+  "version": "0.7.0",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/release-utils",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "sinon": "11.1.2"
   },
   "dependencies": {
-    "@tryghost/errors": "^0.2.15",
+    "@tryghost/errors": "^0.2.16",
     "bluebird": "^3.7.2",
     "emoji-regex": "^9.2.2",
     "execa": "^4.1.0",

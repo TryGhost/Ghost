@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/job-manager",
-  "version": "0.8.9",
+  "version": "0.8.10",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/job-manager",
   "author": "Ghost Foundation",
   "license": "MIT",
