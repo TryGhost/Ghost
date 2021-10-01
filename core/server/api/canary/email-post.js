@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const models = require('../../models');
 const ALLOWED_INCLUDES = ['authors', 'tags'];
 
-const message = {
+const messages = {
     postNotFound: 'Post not found.'
 };
 
@@ -34,7 +34,7 @@ module.exports = {
 
             if (!model) {
                 throw new errors.NotFoundError({
-                    message: tpl(message.postNotFound)
+                    message: tpl(messages.postNotFound)
                 });
             }
 
