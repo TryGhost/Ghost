@@ -12,8 +12,12 @@ module.exports = {
 
     read: {
         permissions: true,
-        options: ['include'],
-        data: ['uuid'],
+        options: [
+            'include'
+        ],
+        data: [
+            'uuid'
+        ],
         validation: {
             options: {
                 include: {
@@ -27,10 +31,7 @@ module.exports = {
             }
         },
         async query(frame) {
-            const model = await models.Post.findOne(
-                Object.assign(frame.data, {status: 'sent'}),
-                frame.options
-            );
+            const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), frame.options);
 
             if (!model) {
                 throw new errors.NotFoundError({
