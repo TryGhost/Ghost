@@ -32,8 +32,8 @@ const defaultSettings = require('../../../../core/server/data/schema/default-set
  */
 describe('DB version integrity', function () {
     // Only these variables should need updating
-    const currentSchemaHash = '66e58a7b9081ccf78ac539a527f27332';
-    const currentFixturesHash = '1b842814f2b02ab8831c7e9c139d186e';
+    const currentSchemaHash = 'c1c45b460f39504a01b26fcd7a62f395';
+    const currentFixturesHash = '74bec16459c86486a1ca76665eca0926';
     const currentSettingsHash = 'aa3fcbc8ab119b630aeda7366ead5493';
     const currentRoutesHash = '3d180d52c663d173a6be791ef411ed01';
 

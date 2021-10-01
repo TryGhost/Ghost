@@ -488,6 +488,26 @@
                     "object_type": "snippet"
                 },
                 {
+                    "name": "Browse offers",
+                    "action_type": "browse",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Read offers",
+                    "action_type": "read",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Edit offers",
+                    "action_type": "edit",
+                    "object_type": "offer"
+                },
+                {
+                    "name": "Add offers",
+                    "action_type": "add",
+                    "object_type": "offer"
+                },
+                {
                     "name": "Reset all passwords",
                     "action_type": "resetAllPasswords",
                     "object_type": "authentication"
@@ -749,6 +769,7 @@
                     "member_signin_url": "read",
                     "snippet": "all",
                     "custom_theme_setting": "all",
+                    "offer": "all",
                     "authentication": "resetAllPasswords",
                     "members_stripe_connect": "auth"
                 },
