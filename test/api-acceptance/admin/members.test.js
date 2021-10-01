@@ -500,7 +500,9 @@ describe('Members API', function () {
             .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-unsubscribe-test'))
             .set('Origin', config.get('url'))
             .send({
-                action: 'unsubscribe'
+                bulk: {
+                    action: 'unsubscribe'
+                }
             })
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -551,9 +553,11 @@ describe('Members API', function () {
             .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-add-labels-test'))
             .set('Origin', config.get('url'))
             .send({
-                action: 'addLabel',
-                meta: {
-                    label: labelToAdd
+                bulk: {
+                    action: 'addLabel',
+                    meta: {
+                        label: labelToAdd
+                    }
                 }
             })
             .expect('Content-Type', /json/)
@@ -581,9 +585,11 @@ describe('Members API', function () {
             .put(localUtils.API.getApiQuery('members/bulk/?filter=label:bulk-add-labels-test'))
             .set('Origin', config.get('url'))
             .send({
-                action: 'removeLabel',
-                meta: {
-                    label: labelToRemove
+                bulk: {
+                    action: 'removeLabel',
+                    meta: {
+                        label: labelToRemove
+                    }
                 }
             })
             .expect('Content-Type', /json/)
