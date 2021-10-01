@@ -517,6 +517,7 @@ module.exports = class StripeService {
     async updateSubscriptionItemPrice(subscriptionId, id, price) {
         await this._rateLimitBucket.throttle();
         const subscription = await this._stripe.subscriptions.update(subscriptionId, {
+            proration_behavior: 'always_invoice',
             items: [{
                 id,
                 price
