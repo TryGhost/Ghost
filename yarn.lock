@@ -1294,27 +1294,19 @@
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
 
-"@tryghost/email-analytics-provider-mailgun@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.1.tgz#5b3a76eddbd3cf3b5f700e69c29e8a8d50713d22"
-  integrity sha512-kLUOXsnEcY1JU2hLp6ZQyzTUDML6rDO+Cr+yFcLd3DurxN5e+07obxQUlj3U261pKzLLF9gfnYFWPbLeuCKT2g==
+"@tryghost/email-analytics-provider-mailgun@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.2.tgz#b7e453773baff6601d9092d4aa7942da4bcf5b59"
+  integrity sha512-yYBiK9Cc/0gQlmIzCoPTQnJfonlgbAqn17y41A6vg/9KVvpP3D2OuLsy6TVFkhpdcT7hdHAMV9xf4pQI9ma5MQ==
   dependencies:
-    "@tryghost/email-analytics-service" "^1.0.1"
+    "@tryghost/email-analytics-service" "^1.0.2"
     mailgun-js "^0.22.0"
     moment "^2.29.1"
 
-"@tryghost/email-analytics-service@1.0.2":
+"@tryghost/email-analytics-service@1.0.2", "@tryghost/email-analytics-service@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.2.tgz#53a53ebb281126d122fbfeea915715ca2231a57d"
   integrity sha512-DpmcebRTgNmdL4fXXgcNoiZf3NE/OA7zygpdAzZWQjCGWeovW6ZNM7/p+80nPGdSV1kSawhpvO+FFHIEDR2fKg==
-  dependencies:
-    ghost-ignition "^4.2.4"
-    lodash "^4.17.20"
-
-"@tryghost/email-analytics-service@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.1.tgz#41f883784cb41b7d1f40d89aaf0012d0ab1d1092"
-  integrity sha512-EAIs2OUmqvrR6iBsXUARmOJUFYp84yRim0UOSi3sE5noK8m9UB87FlJiBxAIGKP32tJgn+hvzRs++Pn//FJiaA==
   dependencies:
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"

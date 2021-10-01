@@ -61,7 +61,7 @@
     "@tryghost/constants": "0.1.10",
     "@tryghost/custom-theme-settings-service": "0.0.5",
     "@tryghost/debug": "0.1.5",
-    "@tryghost/email-analytics-provider-mailgun": "1.0.1",
+    "@tryghost/email-analytics-provider-mailgun": "1.0.2",
     "@tryghost/email-analytics-service": "1.0.2",
     "@tryghost/errors": "0.2.15",
     "@tryghost/helpers": "1.1.52",
