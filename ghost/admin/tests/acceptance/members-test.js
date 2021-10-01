@@ -145,53 +145,53 @@ describe('Acceptance: Members', function () {
             expect(find('[data-test-input="member-email"]').value, 'email has been preserved')
                 .to.equal('example@domain.com');
         });
-        /**
-         * Commented temporarily for unblocking Filtering GA
-         */
-        // it('can bulk delete members', async function () {
-        //     // members to be kept
-        //     this.server.createList('member', 6);
 
-        //     // imported members to be deleted
-        //     const label = this.server.create('label');
-        //     this.server.createList('member', 5, {labels: [label]});
+        it('can bulk delete members', async function () {
+            // members to be kept
+            this.server.createList('member', 6);
 
-        //     await visit('/members');
+            // imported members to be deleted
+            const label = this.server.create('label');
+            this.server.createList('member', 5, {labels: [label]});
 
-        //     expect(findAll('[data-test-member]').length).to.equal(11);
+            await visit('/members');
 
-        //     await click('[data-test-button="members-actions"]');
+            expect(findAll('[data-test-member]').length).to.equal(11);
 
-        //     expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+            await click('[data-test-button="members-actions"]');
 
-        //     // a filter is needed for the delete-selected button to show
-        //     await click('[data-test-button="members-actions"]');
-        //     await click(`[data-test-label-filter="${label.name}"]`);
+            expect(find('[data-test-button="delete-selected"]')).to.not.exist;
 
-        //     expect(findAll('[data-test-member]').length).to.equal(5);
-        //     expect(currentURL()).to.equal('/members?label=label-0');
+            // a filter is needed for the delete-selected button to show
+            await click('[data-test-button="members-filter-actions"]');
+            await click('.gh-member-label-input-labs input');
+            await click(`[data-test-label-filter="${label.name}"]`);
+            await click(`[data-test-button="members-apply-filter"]`);
 
-        //     await click('[data-test-button="members-actions"]');
+            expect(findAll('[data-test-member]').length).to.equal(5);
+            expect(currentURL()).to.equal('/members?filter=label%3A%5Blabel-0%5D');
 
-        //     expect(find('[data-test-button="delete-selected"]')).to.exist;
+            await click('[data-test-button="members-actions"]');
 
-        //     await click('[data-test-button="delete-selected"]');
+            expect(find('[data-test-button="delete-selected"]')).to.exist;
 
-        //     expect(find('[data-test-modal="delete-members"]')).to.exist;
-        //     expect(find('[data-test-text="delete-count"]')).to.have.text('5 members');
+            await click('[data-test-button="delete-selected"]');
 
-        //     await click('[data-test-button="confirm"]');
+            expect(find('[data-test-modal="delete-members"]')).to.exist;
+            expect(find('[data-test-text="delete-count"]')).to.have.text('5 members');
 
-        //     expect(find('[data-test-text="deleted-count"]')).to.have.text('5 members');
-        //     expect(find('[data-test-button="confirm"]')).to.not.exist;
-        //     // members filter is reset
-        //     // TODO: fix query params reset for empty strings
-        //     expect(currentURL()).to.equal('/members?search=');
-        //     expect(findAll('[data-test-member]').length).to.equal(6);
+            await click('[data-test-button="confirm"]');
 
-        //     await click('[data-test-button="close-modal"]');
+            expect(find('[data-test-text="deleted-count"]')).to.have.text('5 members');
+            expect(find('[data-test-button="confirm"]')).to.not.exist;
+            // members filter is reset
+            // TODO: fix query params reset for empty strings
+            expect(currentURL()).to.equal('/members?search=');
+            expect(findAll('[data-test-member]').length).to.equal(6);
 
-        //     expect(find('[data-test-modal="delete-members"]')).to.not.exist;
-        // });
+            await click('[data-test-button="close-modal"]');
+
+            expect(find('[data-test-modal="delete-members"]')).to.not.exist;
+        });
     });
 });
