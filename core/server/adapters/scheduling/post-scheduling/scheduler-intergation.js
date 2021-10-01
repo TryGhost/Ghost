@@ -1,6 +1,10 @@
 const models = require('../../../models');
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    resourceNotFound: '{resource} not found.'
+};
 
 /**
  * @description Load the internal scheduler integration
@@ -12,9 +16,7 @@ const getSchedulerIntegration = function () {
         .then((integration) => {
             if (!integration) {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.resource.resourceNotFound', {
-                        resource: 'Integration'
-                    })
+                    message: tpl(messages.resourceNotFound, {resource: 'Integration'})
                 });
             }
             return integration.toJSON();
