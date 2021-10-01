@@ -478,8 +478,10 @@ export default class MembersController extends Controller {
         // response contains details of which members failed to be unsubscribe
         const response = yield this.ajax.put(unsubscribeUrl, {
             data: {
-                action: 'unsubscribe',
-                meta: {}
+                bulk: {
+                    action: 'unsubscribe',
+                    meta: {}
+                }
             }
         });
 
@@ -499,10 +501,12 @@ export default class MembersController extends Controller {
         const addLabelUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
         const response = yield this.ajax.put(addLabelUrl, {
             data: {
-                action: 'addLabel',
-                meta: {
-                    label: {
-                        id: selectedLabel
+                bulk: {
+                    action: 'addLabel',
+                    meta: {
+                        label: {
+                            id: selectedLabel
+                        }
                     }
                 }
             }
@@ -521,10 +525,12 @@ export default class MembersController extends Controller {
         const removeLabelUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
         const response = yield this.ajax.put(removeLabelUrl, {
             data: {
-                action: 'removeLabel',
-                meta: {
-                    label: {
-                        id: selectedLabel
+                bulk: {
+                    action: 'removeLabel',
+                    meta: {
+                        label: {
+                            id: selectedLabel
+                        }
                     }
                 }
             }
