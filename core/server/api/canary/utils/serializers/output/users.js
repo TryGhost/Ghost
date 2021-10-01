@@ -43,7 +43,7 @@ module.exports = {
         debug('changePassword');
 
         frame.response = {
-            password: [{message: messages.pwdChangedSuccessfully}]
+            password: [{message: tpl(messages.pwdChangedSuccessfully)}]
         };
     },
 
