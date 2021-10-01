@@ -7,32 +7,6 @@ const request = require('request');
 
 const localUtils = require('./utils');
 
-function getFinalChangelog(options) {
-    let filterEmojiCommits = true;
-    let changelog = fs.readFileSync(options.changelogPath).toString('utf8').split(os.EOL);
-    let finalChangelog = [];
-
-    if (Object.prototype.hasOwnProperty.call(options, 'filterEmojiCommits')) {
-        filterEmojiCommits = options.filterEmojiCommits;
-    }
-    // @NOTE: optional array of string lines, which we pre-pend
-    if (Object.prototype.hasOwnProperty.call(options, 'content') && _.isArray(options.content)) {
-        finalChangelog = finalChangelog.concat(options.content);
-    }
-
-    if (filterEmojiCommits) {
-        changelog = localUtils.filterEmojiCommits(changelog);
-        localUtils.sortByEmoji(changelog);
-    }
-
-    if (_.isEmpty(changelog)) {
-        changelog = ['No user-visible changes in this release.'];
-    }
-
-    finalChangelog = finalChangelog.concat(changelog);
-    return finalChangelog;
-}
-
 module.exports.create = (options = {}) => {
     let draft = true;
     let prerelease = false;
@@ -59,11 +33,11 @@ module.exports.create = (options = {}) => {
     // CASE: changelogPath can be array of paths with content
     if (_.isArray(options.changelogPath)) {
         options.changelogPath.forEach((opts) => {
-            body = body.concat(getFinalChangelog(opts));
+            body = body.concat(localUtils.getFinalChangelog(opts));
         });
     } else {
         // CASE: changelogPath can be a single path(For backward compatibility)
-        body = body.concat(getFinalChangelog(options));
+        body = body.concat(localUtils.getFinalChangelog(options));
     }
 
     // CASE: clean before upload
