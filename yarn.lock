@@ -1303,7 +1303,15 @@
     mailgun-js "^0.22.0"
     moment "^2.29.1"
 
-"@tryghost/email-analytics-service@1.0.1", "@tryghost/email-analytics-service@^1.0.1":
+"@tryghost/email-analytics-service@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.2.tgz#53a53ebb281126d122fbfeea915715ca2231a57d"
+  integrity sha512-DpmcebRTgNmdL4fXXgcNoiZf3NE/OA7zygpdAzZWQjCGWeovW6ZNM7/p+80nPGdSV1kSawhpvO+FFHIEDR2fKg==
+  dependencies:
+    ghost-ignition "^4.2.4"
+    lodash "^4.17.20"
+
+"@tryghost/email-analytics-service@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.1.tgz#41f883784cb41b7d1f40d89aaf0012d0ab1d1092"
   integrity sha512-EAIs2OUmqvrR6iBsXUARmOJUFYp84yRim0UOSi3sE5noK8m9UB87FlJiBxAIGKP32tJgn+hvzRs++Pn//FJiaA==
