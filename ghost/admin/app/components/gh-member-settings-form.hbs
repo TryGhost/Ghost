@@ -72,21 +72,13 @@
 
                     <GhFormGroup @classNames="gh-member-labels">
                         <label for="label-input">Labels</label>
-                        {{#if (feature "membersFiltering")}}
-                            <GhMemberLabelInputLabs
-                                @onChange={{action "setLabels"}}
-                                @onLabelEdit={{@onLabelEdit}}
-                                @labels={{this.member.labels}}
-                                @triggerId="label-input"
-                                data-test-input=""
-                            />
-                        {{else}}
-                            <GhMemberLabelInput
-                                @onChange={{action "setLabels"}}
-                                @labels={{this.member.labels}}
-                                @triggerId="label-input"
-                                data-test-input="" />
-                        {{/if}}
+                        <GhMemberLabelInputLabs
+                            @onChange={{action "setLabels"}}
+                            @onLabelEdit={{@onLabelEdit}}
+                            @labels={{this.member.labels}}
+                            @triggerId="label-input"
+                            data-test-input=""
+                        />
                     </GhFormGroup>
 
                     <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" @classNames="mb0 gh-member-note">

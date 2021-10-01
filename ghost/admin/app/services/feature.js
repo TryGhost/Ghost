@@ -54,7 +54,6 @@ export default Service.extend({
     launchComplete: feature('launchComplete', {user: true}),
     matchHelper: feature('matchHelper'),
     multipleProducts: feature('multipleProducts'),
-    membersFiltering: feature('membersFiltering', {developer: true}),
     offers: feature('offers', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
     emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),

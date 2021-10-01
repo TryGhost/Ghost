@@ -35,16 +35,10 @@ export default class MembersRoute extends AuthenticatedRoute {
     }
 
     buildRouteInfoMetadata() {
-        if (this.feature.membersFiltering) {
-            return {
-                titleToken: 'Members',
-                mainClasses: ['gh-main-fullwidth']
+        return {
+            titleToken: 'Members',
+            mainClasses: ['gh-main-fullwidth']
 
-            };
-        } else {
-            return {
-                titleToken: 'Members'
-            };
-        }
+        };
     }
 }
