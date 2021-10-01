@@ -2,7 +2,7 @@
 
     <dd.Trigger
         class="gh-btn gh-btn-icon gh-btn-action-icon"
-        data-test-button="members-actions"
+        data-test-button="members-filter-actions"
     >
         <span class="{{if @isFiltered "gh-btn-label-green"}}">
             {{svg-jar "filter"}}
@@ -78,6 +78,7 @@
             </button>
             <button
                 class="gh-btn gh-btn-primary"
+                data-test-button="members-apply-filter"
                 {{on "click" this.applyFilter}}
             >
                 <span>Apply filters</span>
