@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/session-service",
   "version": "0.1.26",
-  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/session-service",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/session-service",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",

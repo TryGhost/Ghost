@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/package-json",
   "version": "1.0.4",
-  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/package-json",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/package-json",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",

@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/zip",
   "version": "1.1.16",
-  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/zip",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/zip",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",

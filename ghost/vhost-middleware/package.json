@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/vhost-middleware",
   "version": "1.0.17",
-  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/vhost-middleware",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/vhost-middleware",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",

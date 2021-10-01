@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/adapter-manager",
   "version": "0.2.16",
-  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/adapter-manager",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/adapter-manager",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",

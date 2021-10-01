@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/job-manager",
   "version": "0.8.9",
-  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/job-manager",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/job-manager",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",

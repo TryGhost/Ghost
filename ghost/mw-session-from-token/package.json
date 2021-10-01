@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/mw-session-from-token",
   "version": "0.1.24",
-  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/mw-session-from-token",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/mw-session-from-token",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
