@@ -197,8 +197,7 @@ export default class MembersController extends Controller {
                 filters.push('status:free');
             }
         }
-
-        if (filterParam && this.feature.get('membersFiltering')) {
+        if (filterParam) {
             filters.push(filterParam);
         }
 
