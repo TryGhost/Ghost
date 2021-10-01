@@ -1585,13 +1585,13 @@
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/package-json@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-1.0.3.tgz#cd5b84374e755df07286573b3355af64013b2f70"
-  integrity sha512-48h92yXDOibF8ZSD+TNx+I0K+nalA5I0UOp5Zgbtgl33X3rvM76/grRmfunqZnEZdvI291Z43EHgiRRG4fd8UQ==
+"@tryghost/package-json@1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-1.0.4.tgz#eaade11659660d2b155d64ad8d4d631fcff57a73"
+  integrity sha512-rdymLZE55zHNW0/1bO6dby4j2YFsLm4lBzv7rg1vV5UOxIhEvlmbl/1HssEmVa6FVVXCRZRhHxWS+6clkF/i+g==
   dependencies:
-    "@tryghost/errors" "^0.2.14"
-    "@tryghost/tpl" "^0.1.4"
+    "@tryghost/errors" "^0.2.15"
+    "@tryghost/tpl" "^0.1.5"
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
     lodash "^4.17.21"
@@ -1667,7 +1667,7 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/tpl@0.1.5":
+"@tryghost/tpl@0.1.5", "@tryghost/tpl@^0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.5.tgz#736dbe49d085bf8a495963062e0a5ff72e68a18a"
   integrity sha512-uE4sQ07UdjAhxidEVPwZShLdmLRcaYlrIA/rbiaB37cJ9VtXEAYwcDLb/tdnlnoXuTQ3Y1vShCWgjyD4vGo5kA==
