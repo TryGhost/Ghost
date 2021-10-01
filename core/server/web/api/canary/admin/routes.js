@@ -98,7 +98,7 @@ module.exports = function apiRoutes() {
     router.get('/members', mw.authAdminApi, http(api.members.browse));
     router.post('/members', mw.authAdminApi, http(api.members.add));
     router.del('/members', mw.authAdminApi, http(api.members.bulkDestroy));
-    router.put('/members/bulk', labs.enabledMiddleware('membersFiltering'), mw.authAdminApi, http(api.members.bulkEdit));
+    router.put('/members/bulk', mw.authAdminApi, http(api.members.bulkEdit));
 
     router.get('/members/stats/count', mw.authAdminApi, http(api.members.memberStats));
     router.get('/members/stats/mrr', mw.authAdminApi, http(api.members.mrrStats));
