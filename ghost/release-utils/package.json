@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/release-utils",
   "version": "0.6.17",
-  "repository": "https://github.com/TryGhost/Utils/tree/master/packages/release-utils",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/release-utils",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "lib/index.js",
