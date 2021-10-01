@@ -4,9 +4,23 @@ const _ = require('lodash');
 const validator = require('@tryghost/validator');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
-const i18n = require('../../../shared/i18n');
+
+const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
+
+const messages = {
+    checkEmailConfigInstructions: 'Please see {url} for instructions on configuring email.',
+    failedSendingEmail: {
+        "error": "Failed to send email."
+    },
+    incompleteMessageData: {
+        "error": "Incomplete message data."
+    },
+    reason: ' Reason: {reason}.',
+    messageSent: 'Message sent. Double check inbox and spam folder!',
+    title: 'Ghost at {domain}'
+};
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -25,7 +39,7 @@ function getFromAddress(requestedFromAddress) {
 
     // If we do have a from address, and it's just an email
     if (validator.isEmail(address, {require_tld: false})) {
-        const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : i18n.t('common.mail.title', {domain: getDomain()});
+        const defaultSiteTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : tpl('common.mail.title', {domain: getDomain()});
         return `"${defaultSiteTitle}" <${address}>`;
     }
 
@@ -51,8 +65,8 @@ function createMessage(message) {
 }
 
 function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
-    const helpMessage = i18n.t('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/config/#mail'});
-    const defaultErrorMessage = i18n.t('errors.mail.failedSendingEmail.error');
+    const helpMessage = tpl('errors.api.authentication.checkEmailConfigInstructions', {url: 'https://ghost.org/docs/config/#mail'});
+    const defaultErrorMessage = tpl('errors.mail.failedSendingEmail.error');
 
     const fullErrorMessage = defaultErrorMessage + message;
     let statusCode = (err && err.name === 'RecipientError') ? 400 : 500;
@@ -95,7 +109,7 @@ module.exports = class GhostMailer {
     async send(message) {
         if (!(message && message.subject && message.html && message.to)) {
             throw createMailError({
-                message: i18n.t('errors.mail.incompleteMessageData.error'),
+                message: tpl('errors.mail.incompleteMessageData.error'),
                 ignoreDefaultMessage: true
             });
         }
@@ -117,7 +131,7 @@ module.exports = class GhostMailer {
             return response;
         } catch (err) {
             throw createMailError({
-                message: i18n.t('errors.mail.reason', {reason: err.message || err}),
+                message: tpl('errors.mail.reason', {reason: err.message || err}),
                 err
             });
         }
@@ -125,21 +139,21 @@ module.exports = class GhostMailer {
 
     handleDirectTransportResponse(response) {
         if (!response) {
-            return i18n.t('notices.mail.messageSent');
+            return tpl('notices.mail.messageSent');
         }
 
         if (response.pending.length > 0) {
             throw createMailError({
-                message: i18n.t('errors.mail.reason', {reason: 'Email has been temporarily rejected'})
+                message: tpl('errors.mail.reason', {reason: 'Email has been temporarily rejected'})
             });
         }
 
         if (response.errors.length > 0) {
             throw createMailError({
-                message: i18n.t('errors.mail.reason', {reason: response.errors[0].message})
+                message: tpl('errors.mail.reason', {reason: response.errors[0].message})
             });
         }
 
-        return i18n.t('notices.mail.messageSent');
+        return tpl('notices.mail.messageSent');
     }
 };
