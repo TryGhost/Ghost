@@ -411,7 +411,7 @@ module.exports = {
             method: 'edit'
         },
         async query(frame) {
-            return membersService.api.members.bulkEdit(frame.data, frame.options);
+            return membersService.api.members.bulkEdit(frame.data.bulk, frame.options);
         }
     },
 
