@@ -1,7 +1,11 @@
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const getIntegrationsServiceInstance = require('../../services/integrations/integrations-service');
+
+const messages = {
+    resourceNotFound: '{resource} not found.'
+};
 
 const integrationsService = getIntegrationsServiceInstance({
     IntegrationModel: models.Integration,
@@ -51,9 +55,7 @@ module.exports = {
             return models.Integration.findOne(data, Object.assign(options, {require: true}))
                 .catch(models.Integration.NotFoundError, () => {
                     throw new errors.NotFoundError({
-                        message: i18n.t('errors.api.resource.resourceNotFound', {
-                            resource: 'Integration'
-                        })
+                        message: tpl(messages.resourceNotFound, {resource: 'Integration'})
                     });
                 });
         }
@@ -136,9 +138,7 @@ module.exports = {
             return models.Integration.destroy(Object.assign(options, {require: true}))
                 .catch(models.Integration.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.resource.resourceNotFound', {
-                            resource: 'Integration'
-                        })
+                        message: tpl(messages.resourceNotFound, {resource: 'Integration'})
                     }));
                 });
         }
