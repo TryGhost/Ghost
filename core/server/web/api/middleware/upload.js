@@ -4,8 +4,13 @@ const multer = require('multer');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+
+const messages = {
+    missingFile: 'Please select a database file to import.',
+    invalidFile: 'Unsupported file. Please try any of the following formats: {extensions}'
+};
 
 const upload = {
     enabledClear: config.get('uploadClear') || true,
@@ -72,7 +77,7 @@ const validation = function (options) {
         // Check if a file was provided
         if (!checkFileExists(req.file)) {
             return next(new errors.ValidationError({
-                message: i18n.t(`errors.api.${type}.missingFile`)
+                message: tpl(messages.missingFile)
             }));
         }
 
@@ -81,7 +86,7 @@ const validation = function (options) {
         // Check if the file is valid
         if (!checkFileIsValid(req.file, contentTypes, extensions)) {
             return next(new errors.UnsupportedMediaTypeError({
-                message: i18n.t(`errors.api.${type}.invalidFile`, {extensions: extensions})
+                message: tpl(messages.invalidFile, {extensions: extensions})
             }));
         }
 

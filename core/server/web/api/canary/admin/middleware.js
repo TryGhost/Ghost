@@ -5,7 +5,7 @@ const shared = require('../../../shared');
 const apiMw = require('../../middleware');
 
 const messages = {
-    notImplemented: "The server does not support the functionality required to fulfill the request."
+    notImplemented: 'The server does not support the functionality required to fulfill the request.'
 };
 
 const notImplemented = function (req, res, next) {
