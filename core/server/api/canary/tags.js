@@ -1,9 +1,15 @@
 const Promise = require('bluebird');
+// remove...
 const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 
 const ALLOWED_INCLUDES = ['count.posts'];
+
+const messages = {
+  tagNotFound: 'Tag not found.'
+}
 
 module.exports = {
     docName: 'tags',
@@ -56,7 +62,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.tags.tagNotFound')
+                            message: tpl(messages.tagNotFound)
                         }));
                     }
 
@@ -108,7 +114,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.tags.tagNotFound')
+                          message: tpl(messages.tagNotFound)
                         }));
                     }
 
@@ -147,7 +153,7 @@ module.exports = {
                 .then(() => null)
                 .catch(models.Tag.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.tags.tagNotFound')
+                        message: tpl(messages.tagNotFound)
                     }));
                 });
         }
