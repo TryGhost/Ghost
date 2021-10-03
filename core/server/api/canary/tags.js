@@ -1,6 +1,4 @@
 const Promise = require('bluebird');
-// remove...
-const i18n = require('../../../shared/i18n');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
@@ -9,7 +7,7 @@ const ALLOWED_INCLUDES = ['count.posts'];
 
 const messages = {
   tagNotFound: 'Tag not found.'
-}
+};
 
 module.exports = {
     docName: 'tags',
