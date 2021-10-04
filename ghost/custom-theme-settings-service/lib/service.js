@@ -131,7 +131,7 @@ module.exports = class CustomThemeSettingsService {
             const hasChangedType = themeSetting && themeSetting.type !== knownSetting.type;
 
             if (hasBeenRemoved || hasChangedType) {
-                debug(`Removing custom theme setting '${theme.name}.${themeSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`);
+                debug(`Removing custom theme setting '${theme.name}.${knownSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`);
                 await this.repository.destroy({id: knownSetting.id});
                 removedIds.push(knownSetting.id);
                 return;
