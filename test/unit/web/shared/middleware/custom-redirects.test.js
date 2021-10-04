@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
+const express = require('express');
 
 const customRedirects = rewire('../../../../../core/server/web/shared/middlewares/custom-redirects');
 const registerRoutes = customRedirects.__get__('_private.registerRoutes');
@@ -33,7 +34,7 @@ describe('UNIT: custom redirects', function () {
             from: '/test-params',
             to: '/result?q=abc'
         }];
-        const redirect = registerRoutes(redirectsConfig);
+        const redirect = registerRoutes(new express.Router(), redirectsConfig);
 
         req.url = '/test-params/?q=123&lang=js';
         redirect(req, res, next);
