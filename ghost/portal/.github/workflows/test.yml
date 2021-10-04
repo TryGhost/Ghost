@@ -23,3 +23,10 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn test
+
+      - uses: daniellockyer/action-slack-build@master
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
