@@ -129,15 +129,6 @@ class I18n {
     }
 
     /**
-     * Check if a key exists in the loaded strings
-     * @param {String} msgPath
-     */
-    doesTranslationKeyExist(msgPath) {
-        const translation = this._findString(msgPath, {log: false});
-        return translation !== this._fallbackError();
-    }
-
-    /**
      * Do the lookup within the JSON file using jsonpath
      *
      * @param {String} msgPath
