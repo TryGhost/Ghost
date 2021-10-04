@@ -63,7 +63,7 @@
     "@tryghost/debug": "0.1.5",
     "@tryghost/email-analytics-provider-mailgun": "1.0.2",
     "@tryghost/email-analytics-service": "1.0.2",
-    "@tryghost/errors": "0.2.15",
+    "@tryghost/errors": "0.2.16",
     "@tryghost/helpers": "1.1.52",
     "@tryghost/image-transform": "1.0.15",
     "@tryghost/job-manager": "0.8.9",
