@@ -1,5 +1,5 @@
 const should = require('should');
-const helpers = require('../../../core/frontend/helpers');
+const price = require('../../../core/frontend/helpers/price');
 const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 function compile(templateString) {
@@ -13,7 +13,7 @@ function compile(templateString) {
 
 describe('{{price}} helper', function () {
     before(function () {
-        handlebars.registerHelper('price', helpers.price);
+        handlebars.registerHelper('price', price);
     });
 
     it('throws an error for no provided parameters', function () {
@@ -51,7 +51,7 @@ describe('{{price}} helper', function () {
             currency: 'USD',
             currency_symbol: '$'
         };
-        const rendered = helpers.price.call({}, plan, {});
+        const rendered = price.call({}, plan, {});
         rendered.should.be.equal('$5');
     });
 
@@ -63,42 +63,42 @@ describe('{{price}} helper', function () {
             currency: 'USD',
             currency_symbol: '$'
         };
-        const rendered = helpers.price.call({}, plan, {hash: {numberFormat: 'long'}});
+        const rendered = price.call({}, plan, {hash: {numberFormat: 'long'}});
         rendered.should.be.equal('$5.00');
     });
 
     it('will format symbol if only currency - USD', function () {
-        const rendered = helpers.price.call({}, {hash: {currency: 'USD'}});
+        const rendered = price.call({}, {hash: {currency: 'USD'}});
         rendered.should.be.equal('$');
     });
 
     it('will format symbol if only currency - EUR', function () {
-        const rendered = helpers.price.call({}, {hash: {currency: 'EUR'}});
+        const rendered = price.call({}, {hash: {currency: 'EUR'}});
         rendered.should.be.equal('€');
     });
 
     it('will format with amount and currency', function () {
-        const rendered = helpers.price.call({}, 500, {hash: {currency: 'USD'}});
+        const rendered = price.call({}, 500, {hash: {currency: 'USD'}});
         rendered.should.be.equal('$5');
     });
 
     it('will format with long number format', function () {
-        const rendered = helpers.price.call({}, 500, {hash: {currency: 'USD', numberFormat: 'long'}});
+        const rendered = price.call({}, 500, {hash: {currency: 'USD', numberFormat: 'long'}});
         rendered.should.be.equal('$5.00');
     });
 
     it('will format with short number format with decimal value', function () {
-        const rendered = helpers.price.call({}, 505, {hash: {currency: 'EUR', numberFormat: 'short'}});
+        const rendered = price.call({}, 505, {hash: {currency: 'EUR', numberFormat: 'short'}});
         rendered.should.be.equal('€5.05');
     });
 
     it('will format with short number format without decimal value', function () {
-        const rendered = helpers.price.call({}, 500, {hash: {currency: 'EUR', numberFormat: 'short'}});
+        const rendered = price.call({}, 500, {hash: {currency: 'EUR', numberFormat: 'short'}});
         rendered.should.be.equal('€5');
     });
 
     it('will format with name currency format', function () {
-        const rendered = helpers.price.call({}, 500, {hash: {currency: 'USD', currencyFormat: 'name'}});
+        const rendered = price.call({}, 500, {hash: {currency: 'USD', currencyFormat: 'name'}});
         rendered.should.be.equal('5 US dollars');
     });
 });

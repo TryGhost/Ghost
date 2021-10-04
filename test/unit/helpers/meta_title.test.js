@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../utils/configUtils');
-const helpers = require('../../../core/frontend/helpers');
+const meta_title = require('../../../core/frontend/helpers/meta_title');
 const settingsCache = require('../../../core/shared/settings-cache');
 
 describe('{{meta_title}} helper', function () {
@@ -20,7 +20,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for homepage', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {},
                 {data: {root: {context: ['home']}}}
             );
@@ -30,7 +30,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for paginated page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {},
                 {data: {root: {context: [], pagination: {total: 2, page: 2}}}}
             );
@@ -40,7 +40,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for a post', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {post: {title: 'Post Title'}},
                 {data: {root: {context: ['post']}}}
             );
@@ -50,7 +50,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for a post with meta_title set', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {post: {title: 'Post Title', meta_title: 'Awesome Post'}},
                 {data: {root: {context: ['post']}}}
             );
@@ -60,7 +60,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for a page with meta_title set', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {post: {title: 'About Page', meta_title: 'All about my awesomeness', page: true}},
                 {data: {root: {context: ['page']}}}
             );
@@ -72,7 +72,7 @@ describe('{{meta_title}} helper', function () {
         it('returns correct title for a tag page', function () {
             const tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red'}};
 
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 tag,
                 {data: {root: {context: ['tag']}}}
             );
@@ -82,7 +82,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for a paginated tag page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {tag: {name: 'Rasper Red'}},
                 {data: {root: {context: ['tag', 'paged'], pagination: {total: 2, page: 2}}}}
             );
@@ -92,7 +92,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('uses tag meta_title to override default response on tag page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {tag: {name: 'Rasper Red', meta_title: 'Sasper Red'}},
                 {data: {root: {context: ['tag']}}}
             );
@@ -102,7 +102,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('uses tag meta_title to override default response on paginated tag page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {tag: {name: 'Rasper Red', meta_title: 'Sasper Red'}},
                 {data: {root: {context: ['tag']}}}
             );
@@ -112,7 +112,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for an author page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {author: {name: 'Donald Duck'}},
                 {data: {root: {context: ['author']}}}
             );
@@ -122,7 +122,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for a paginated author page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {author: {name: 'Donald Duck'}},
                 {data: {root: {context: ['author', 'paged'], pagination: {total: 2, page: 2}}}}
             );
@@ -132,7 +132,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correctly escaped title of a post', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {post: {title: 'Post Title "</>'}},
                 {data: {root: {context: ['post']}}}
             );
@@ -142,7 +142,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns meta_title on post when used within {{#foreach posts}}', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {meta_title: 'Awesome Post'},
                 {data: {root: {context: ['home']}}}
             );
@@ -161,7 +161,7 @@ describe('{{meta_title}} helper', function () {
                 }[key];
             });
 
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {},
                 {data: {root: {context: ['home']}}}
             );
@@ -171,7 +171,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for paginated page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {},
                 {data: {root: {context: [], pagination: {total: 2, page: 2}}}}
             );
@@ -183,7 +183,7 @@ describe('{{meta_title}} helper', function () {
         it('returns correct title for a tag page', function () {
             const tag = {relativeUrl: '/tag/rasper-red', tag: {name: 'Rasper Red'}};
 
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 tag,
                 {data: {root: {context: ['tag']}}}
             );
@@ -193,7 +193,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for an author page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {author: {name: 'Donald Duck'}},
                 {data: {root: {context: ['author']}}}
             );
@@ -203,7 +203,7 @@ describe('{{meta_title}} helper', function () {
         });
 
         it('returns correct title for a paginated author page', function () {
-            const rendered = helpers.meta_title.call(
+            const rendered = meta_title.call(
                 {author: {name: 'Donald Duck'}},
                 {data: {root: {context: ['author', 'paged'], pagination: {total: 2, page: 2}}}}
             );

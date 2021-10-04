@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const hbs = require('../../../core/frontend/services/theme-engine/engine');
-const helpers = require('../../../core/frontend/helpers');
+const cancel_link = require('../../../core/frontend/helpers/cancel_link');
 const labs = require('../../../core/shared/labs');
 const configUtils = require('../../utils/configUtils');
 
@@ -31,7 +31,7 @@ describe('{{cancel_link}} helper', function () {
     it('should throw if subscription data is incorrect', function () {
         const runHelper = function (data) {
             return function () {
-                helpers.cancel_link.call(data);
+                cancel_link.call(data);
             };
         };
 
@@ -43,7 +43,7 @@ describe('{{cancel_link}} helper', function () {
     });
 
     it('can render cancel subscription link', function () {
-        const rendered = helpers.cancel_link.call({
+        const rendered = cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: false
         });
@@ -57,7 +57,7 @@ describe('{{cancel_link}} helper', function () {
     });
 
     it('can render continue subscription link', function () {
-        const rendered = helpers.cancel_link.call({
+        const rendered = cancel_link.call({
             id: 'sub_continue',
             cancel_at_period_end: true
         });
@@ -69,7 +69,7 @@ describe('{{cancel_link}} helper', function () {
     });
 
     it('can render custom link class', function () {
-        const rendered = helpers.cancel_link.call({
+        const rendered = cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: false
         }, {
@@ -83,7 +83,7 @@ describe('{{cancel_link}} helper', function () {
     });
 
     it('can render custom error class', function () {
-        const rendered = helpers.cancel_link.call({
+        const rendered = cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: false
         }, {
@@ -97,7 +97,7 @@ describe('{{cancel_link}} helper', function () {
     });
 
     it('can render custom cancel subscription link attributes', function () {
-        const rendered = helpers.cancel_link.call({
+        const rendered = cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: false
         }, {
@@ -111,7 +111,7 @@ describe('{{cancel_link}} helper', function () {
     });
 
     it('can render custom continue subscription link attributes', function () {
-        const rendered = helpers.cancel_link.call({
+        const rendered = cancel_link.call({
             id: 'sub_cancel',
             cancel_at_period_end: true
         }, {
@@ -127,7 +127,7 @@ describe('{{cancel_link}} helper', function () {
     it('is disabled if labs flag is not set', function () {
         labsStub.returns(false);
 
-        const rendered = helpers.cancel_link.call({
+        const rendered = cancel_link.call({
             id: 'sub_continue',
             cancel_at_period_end: true
         });

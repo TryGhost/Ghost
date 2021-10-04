@@ -1,5 +1,7 @@
 const should = require('should');
-const helpers = require('../../../core/frontend/helpers');
+const concat = require('../../../core/frontend/helpers/concat');
+const link = require('../../../core/frontend/helpers/link');
+const url = require('../../../core/frontend/helpers/url');
 const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 const configUtils = require('../../utils/configUtils');
@@ -19,9 +21,9 @@ function compile(templateString) {
 
 describe('{{link}} helper', function () {
     before(function () {
-        handlebars.registerHelper('link', helpers.link);
-        handlebars.registerHelper('url', helpers.url);
-        handlebars.registerHelper('concat', helpers.concat);
+        handlebars.registerHelper('link', link);
+        handlebars.registerHelper('url', url);
+        handlebars.registerHelper('concat', concat);
         configUtils.config.set('url', 'https://siteurl.com');
         defaultGlobals = {
             data: {
