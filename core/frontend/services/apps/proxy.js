@@ -1,13 +1,14 @@
-const helpers = require('../../services/theme-engine/handlebars/register');
+const helperService = require('../../services/helpers');
 const routingService = require('../../services/routing');
 
 module.exports.getInstance = function getInstance() {
     const appRouter = routingService.registry.getRouter('appRouter');
 
     return {
-        helpers: {
-            register: helpers.registerThemeHelper.bind(helpers),
-            registerAsync: helpers.registerAsyncThemeHelper.bind(helpers)
+        helperService: {
+            registerAlias: helperService.registerAlias.bind(helperService),
+            registerHelper: helperService.registerHelper.bind(helperService),
+            registerDir: helperService.registerDir.bind(helperService)
         },
         // Expose the route service...
         routeService: {

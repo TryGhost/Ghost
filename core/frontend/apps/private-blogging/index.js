@@ -1,10 +1,10 @@
+const path = require('path');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const middleware = require('./lib/middleware');
 const router = require('./lib/router');
-const registerHelpers = require('./lib/helpers');
 
 const messages = {
     urlCannotContainPrivateSubdir: {
@@ -43,8 +43,7 @@ module.exports = {
         checkSubdir();
 
         ghost.routeService.registerRouter(privateRoute, router);
-
-        registerHelpers(ghost);
+        ghost.helperService.registerDir(path.resolve(__dirname, './lib/helpers'));
     },
 
     setupMiddleware: function setupMiddleware(siteApp) {
