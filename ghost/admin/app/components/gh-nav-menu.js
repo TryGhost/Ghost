@@ -1,13 +1,6 @@
-import Component from '@ember/component';
-import {match} from '@ember/object/computed';
+import Component from '@glimmer/component';
 import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    settings: service(),
-    router: service(),
-
-    tagName: 'nav',
-    classNames: ['gh-nav'],
-
-    isSettingsRoute: match('router.currentRouteName', /^settings/)
-});
+export default class GhNavMenuComponent extends Component {
+    @service settings;
+}
