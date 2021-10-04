@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import config from 'ghost-admin/config/environment';
+import {TrackedSet} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
@@ -11,7 +12,7 @@ export default class ModalsDesignCustomizeComponent extends Component {
     @service customThemeSettings;
     @service settings;
 
-    @tracked tab = 'general';
+    @tracked openSections = new TrackedSet();
 
     previewIframe = null;
 
@@ -22,6 +23,18 @@ export default class ModalsDesignCustomizeComponent extends Component {
 
     get themeSettings() {
         return this.customThemeSettings.settings;
+    }
+
+    get siteWideSettings() {
+        return this.customThemeSettings.settings.filter(setting => !setting.group);
+    }
+
+    get homepageSettings() {
+        return this.customThemeSettings.settings.filter(setting => setting.group === 'home');
+    }
+
+    get postPageSettings() {
+        return this.customThemeSettings.settings.filter(setting => setting.group === 'post');
     }
 
     get previewData() {
@@ -39,8 +52,8 @@ export default class ModalsDesignCustomizeComponent extends Component {
     }
 
     @action
-    changeTab(tab) {
-        this.tab = tab;
+    toggleSection(section) {
+        this.openSections.has(section) ? this.openSections.delete(section) : this.openSections.add(section);
     }
 
     @action
