@@ -34,6 +34,7 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
             saveTask: this.controllerFor('settings.design').saveTask
         }, {
             className: 'fullscreen-modal-total-overlay',
+            omitBackdrop: true,
             beforeClose: bind(this, this.beforeModalClose)
         });
     }
