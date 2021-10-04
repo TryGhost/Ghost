@@ -5,22 +5,19 @@ const config = require('../../../../shared/config');
 
 let UNO_MEMBERINO;
 
-function createMiddleware() {
+async function createMiddleware() {
     const url = require('url');
     const {protocol, host} = url.parse(config.get('url'));
     const siteOrigin = `${protocol}//${host}`;
 
-    membersService.api.getPublicConfig().then(({issuer}) => jwt({
+    const config = await membersService.api.getPublicConfig();
+    return jwt({
         credentialsRequired: false,
         requestProperty: 'member',
         audience: siteOrigin,
-        issuer,
+        issuer: config.issuer,
         algorithms: ['RS512'],
-        secret(req, payload, done) {
-            membersService.api.getPublicConfig().then(({publicKey}) => {
-                done(null, publicKey);
-            }).catch(done);
-        },
+        secret: config.publicKey,
         getToken(req) {
             if (!req.get('authorization')) {
                 return null;
@@ -34,17 +31,17 @@ function createMiddleware() {
 
             return credentials;
         }
-    }));
+    });
 }
 
 module.exports = {
     get authenticateMembersToken() {
         return async function (req, res, next) {
             if (!UNO_MEMBERINO) {
-                UNO_MEMBERINO = createMiddleware();
+                UNO_MEMBERINO = await createMiddleware();
             }
             try {
-                const middleware = await UNO_MEMBERINO;
+                const middleware = UNO_MEMBERINO;
 
                 middleware(req, res, function (err, ...rest) {
                     if (err && err.name === 'UnauthorizedError') {
