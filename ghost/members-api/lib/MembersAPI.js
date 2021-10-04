@@ -3,7 +3,6 @@ const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
 const common = require('./common');
 
-const StripeAPIService = require('@tryghost/members-stripe-service');
 const MemberAnalyticsService = require('@tryghost/member-analytics-service');
 const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
 
@@ -55,6 +54,7 @@ module.exports = function MembersAPI({
         Product,
         Settings
     },
+    stripeAPIService,
     logger,
     labsService
 }) {
@@ -69,16 +69,6 @@ module.exports = function MembersAPI({
     });
 
     const stripeConfig = paymentConfig && paymentConfig.stripe || {};
-
-    const stripeAPIService = new StripeAPIService({
-        config: {
-            secretKey: stripeConfig.secretKey,
-            publicKey: stripeConfig.publicKey,
-            appInfo: stripeConfig.appInfo,
-            enablePromoCodes: stripeConfig.enablePromoCodes
-        },
-        logger
-    });
 
     const memberAnalyticsService = MemberAnalyticsService.create(MemberAnalyticEvent);
     memberAnalyticsService.eventHandler.setupSubscribers();
@@ -198,7 +188,7 @@ module.exports = function MembersAPI({
         await StripeCustomer.forge().query().del();
     }
 
-    const ready = paymentConfig.stripe ? Promise.all([
+    const ready = stripeAPIService.configured ? Promise.all([
         stripeMigrations.populateProductsAndPrices().then(() => {
             return stripeMigrations.populateStripePricesFromStripePlansSetting(stripeConfig.plans);
         }).then(() => {
