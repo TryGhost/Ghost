@@ -92,6 +92,31 @@
     font-size: 1.3rem;
 }
 
+.gh-offer-value {
+    position: relative;
+}
+
+.gh-offer-value .unit {
+    display: block;
+    position: absolute;
+    top: 7px;
+    left: 8px;
+    color: var(--midgrey);
+}
+
+.gh-offer-value .gh-input {
+    padding-left: 20px;
+}
+
+.gh-offer-value.percentage .unit {
+    left: unset;
+    right: 11px;
+}
+
+.gh-offer-value.gh-offer-value.percentage .gh-input {
+    padding-left: 12px;
+    padding-right: 28px;
+}
 
 .gh-offer-form textarea {
     max-width: unset;
