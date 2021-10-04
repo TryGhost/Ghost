@@ -82,6 +82,7 @@ ul.nostyle li {
     padding: 16px 20px;
     border-top: var(--whitegrey) 1px solid;
     transition: none !important;
+    font-size: 1.3rem;
 }
 
 .gh-list.small .gh-list-data {
@@ -153,6 +154,10 @@ ul.nostyle li {
     margin: 0 0 3px 0;
     font-size: 1.5rem;
     font-weight: 600;
+}
+
+.gh-list a {
+    color: var(--black);
 }
 
 

@@ -7,6 +7,66 @@
     </GhCanvasHeader>
 
     <section class="view-container">
-        Offers...
+
+        {{#if this.offersExist}}
+            <table class="gh-list">
+                <tr class="gh-list-row header">
+                    <th class="gh-list-header">Name</th>
+                    <th class="gh-list-header">Tier</th>
+                    <th class="gh-list-header">Terms</th>
+                    <th class="gh-list-header">Redemptions</th>
+                    <th class="gh-list-header gh-list-cellwidth-10"></th>
+                </tr>
+                <tr class="gh-list-row">
+                    <LinkTo @route="offer" class="gh-list-data">
+                        <h3>Black Friday 2021</h3>
+                    </LinkTo>
+                    <LinkTo @route="offer" class="gh-list-data">
+                        <span>Bronze</span> <span class="midgrey">- Monthly</span>
+                    </LinkTo>
+                    <LinkTo @route="offer" class="gh-list-data">
+                        <span class="green fw6">20% OFF</span> <span class="midgrey"> – Once</span>
+                    </LinkTo>
+                    <LinkTo @route="offer" class="gh-list-data">
+                        <span class="midgrey">155</span>
+                    </LinkTo>
+                    <LinkTo @route="tag" @model={{@tag}} class="gh-list-data gh-list-cellwidth-10 gh-tag-list-chevron" @title="Edit tag">
+                        <div class="flex items-center justify-end w-100 h-100">
+                            <span class="nr2 lh-1">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+                        </div>
+                    </LinkTo>
+                </tr>
+                <tr class="gh-list-row">
+                    <LinkTo @route="offer" class="gh-list-data">
+                        <h3>Intro to Gold</h3>
+                    </LinkTo>
+                    <LinkTo @route="offer" class="gh-list-data">
+                        <span>Gold</span> <span class="midgrey">- Monthly</span>
+                    </LinkTo>
+                    <LinkTo @route="offer" class="gh-list-data">
+                        <span class="green fw6">30% OFF</span> <span class="midgrey"> – For 3 months</span>
+                    </LinkTo>
+                    <LinkTo @route="offer" class="gh-list-data">
+                        <span class="midgrey">94</span>
+                    </LinkTo>
+                    <LinkTo @route="tag" @model={{@tag}} class="gh-list-data gh-list-cellwidth-10 gh-tag-list-chevron" @title="Edit tag">
+                        <div class="flex items-center justify-end w-100 h-100">
+                            <span class="nr2 lh-1">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+                        </div>
+                    </LinkTo>
+                </tr>
+            </table>
+        {{else}}
+            <div class="gh-offers gh-offers-list-cta">
+                {{svg-jar "discount-bubble" class="discount-bubble"}}
+                <h4>Provide special offers to new signups</h4>
+                <p>
+                    Boost your subscriptions by creating targeted discounts to potential members.
+                </p>
+                <LinkTo @route="offer" class="gh-btn gh-btn-green gh-btn-icon">
+                    <span>{{svg-jar "add"}} Add offer</span>
+                </LinkTo>
+            </div>
+        {{/if}}
     </section>
 </section>
