@@ -77,8 +77,10 @@ _private.JSONErrorRenderer = (err, req, res, next) => { // eslint-disable-line n
         errors: [{
             message: err.message,
             context: err.context,
+            help: err.help,
             errorType: err.errorType,
-            errorDetails: err.errorDetails
+            errorDetails: err.errorDetails,
+            ghostErrorCode: err.ghostErrorCode
         }]
     });
 };
