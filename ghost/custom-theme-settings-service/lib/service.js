@@ -134,7 +134,7 @@ module.exports = class CustomThemeSettingsService {
                 debug(`Removing custom theme setting '${theme.name}.${knownSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`);
                 await this.repository.destroy({id: knownSetting.id});
                 removedIds.push(knownSetting.id);
-                return;
+                continue;
             }
 
             // replace value with default if it's not a valid select option
