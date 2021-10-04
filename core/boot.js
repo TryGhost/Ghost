@@ -106,11 +106,10 @@ async function initCore({ghostServer, config}) {
 }
 
 /**
- * Frontend is intended to be just Ghost's frontend
- * This is technically wrong currently because the theme & frontend settings services contain code used by the API to upload themes & settings
+ * These are services required by Ghost's frontend.
  */
-async function initFrontend() {
-    debug('Begin: initFrontend');
+async function initServicesForFrontend() {
+    debug('Begin: initServicesForFrontend');
 
     debug('Begin: Frontend Routing Settings');
     const routeSettings = require('./server/services/route-settings');
@@ -122,7 +121,7 @@ async function initFrontend() {
     await themeService.init();
     debug('End: Themes');
 
-    debug('End: initFrontend');
+    debug('End: initServicesForFrontend');
 }
 
 /**
@@ -138,7 +137,7 @@ async function initExpressApps() {
 }
 
 /**
- * Dynamic routing is generated from the routes.yaml file, which is part of the settings service
+ * Dynamic routing is generated from the routes.yaml file
  * When Ghost's DB and core are loaded, we can access this file and call routing.bootstrap.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
  * Routing is currently tightly coupled between the frontend and backend
@@ -219,7 +218,7 @@ async function initServices({config}) {
 /**
  * Kick off recurring jobs and background services
  * These are things that happen on boot, but we don't need to wait for them to finish
- * Later, this might be a service hook:q
+ * Later, this might be a service hook
 
  * @param {object} options
  * @param {object} options.config
@@ -326,7 +325,7 @@ async function bootGhost() {
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer, config});
-        await initFrontend();
+        await initServicesForFrontend();
         const ghostApp = await initExpressApps();
         await initDynamicRouting();
         await initServices({config});
