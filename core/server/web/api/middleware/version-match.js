@@ -1,6 +1,10 @@
 const semver = require('semver');
 const errors = require('@tryghost/errors');
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    versionMismatch: 'Client request for {clientVersion} does not match server version {serverVersion}.'
+};
 
 function checkVersionMatch(req, res, next) {
     const clientVersion = req.get('X-Ghost-Version');
@@ -14,7 +18,7 @@ function checkVersionMatch(req, res, next) {
 
     if (clientVersion && !semver.satisfies(serverVersion, constraint)) {
         return next(new errors.VersionMismatchError({
-            message: i18n.t('errors.middleware.api.versionMismatch', {
+            message: tpl(messages.versionMismatch, {
                 clientVersion: clientVersion,
                 serverVersion: serverVersion
             })
