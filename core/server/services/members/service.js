@@ -17,6 +17,7 @@ const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
+const stripeService = require('../stripe');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -147,29 +148,22 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
 const membersService = {
     async init() {
         const env = config.get('env');
-        const paymentConfig = membersConfig.getStripePaymentConfig();
 
         if (env !== 'production') {
-            if (!process.env.WEBHOOK_SECRET && membersConfig.isStripeConnected()) {
+            if (!process.env.WEBHOOK_SECRET && stripeService.api.configured) {
                 process.env.WEBHOOK_SECRET = 'DEFAULT_WEBHOOK_SECRET';
                 logging.warn(tpl(messages.remoteWebhooksInDevelopment));
             }
 
-            if (paymentConfig && paymentConfig.secretKey.startsWith('sk_live')) {
+            if (stripeService.api.configured && stripeService.api.mode === 'live') {
                 throw new errors.IncorrectUsageError(tpl(messages.noLiveKeysInDevelopment));
             }
         } else {
             const siteUrl = urlUtils.getSiteUrl();
-            if (!/^https/.test(siteUrl) && membersConfig.isStripeConnected()) {
+            if (!/^https/.test(siteUrl) && stripeService.api.configured) {
                 throw new errors.IncorrectUsageError(tpl(messages.sslRequiredForStripe));
             }
         }
-    },
-    contentGating: require('./content-gating'),
-
-    config: membersConfig,
-
-    get api() {
         if (!membersApi) {
             membersApi = createMembersApiInstance(membersConfig);
 
@@ -177,6 +171,12 @@ const membersService = {
                 logging.error(err);
             });
         }
+    },
+    contentGating: require('./content-gating'),
+
+    config: membersConfig,
+
+    get api() {
         return membersApi;
     },
 
