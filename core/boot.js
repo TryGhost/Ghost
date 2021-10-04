@@ -111,10 +111,10 @@ async function initCore({ghostServer, config}) {
 async function initServicesForFrontend() {
     debug('Begin: initServicesForFrontend');
 
-    debug('Begin: Frontend Routing Settings');
+    debug('Begin: Routing Settings');
     const routeSettings = require('./server/services/route-settings');
     await routeSettings.init();
-    debug('End: Frontend Routing Settings');
+    debug('End: Routing Settings');
 
     debug('Begin: Themes');
     const themeService = require('./server/services/themes');
@@ -122,6 +122,18 @@ async function initServicesForFrontend() {
     debug('End: Themes');
 
     debug('End: initServicesForFrontend');
+}
+
+/**
+ * Frontend is intended to be just Ghost's frontend
+ */
+async function initFrontend() {
+    debug('Begin: initFrontend');
+
+    const helperService = require('./frontend/services/helpers');
+    await helperService.init();
+
+    debug('End: initFrontend');
 }
 
 /**
@@ -331,6 +343,7 @@ async function bootGhost() {
         debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer, config});
         await initServicesForFrontend();
+        await initFrontend();
         const ghostApp = await initExpressApps();
         await initDynamicRouting();
         await initServices({config});

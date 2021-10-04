@@ -229,3 +229,5 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
             return new SafeString(head.join('\n    ').trim());
         });
 };
+
+module.exports.async = true;

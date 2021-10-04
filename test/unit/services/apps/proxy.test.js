@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const helpers = require('../../../../core/frontend/services/theme-engine/handlebars/register');
+const helpers = require('../../../../core/frontend/services/helpers');
 const AppProxy = require('../../../../core/frontend/services/apps/proxy');
 const routing = require('../../../../core/frontend/services/routing');
 
@@ -19,16 +19,17 @@ describe('Apps', function () {
         it('creates a ghost proxy', function () {
             const appProxy = AppProxy.getInstance('TestApp');
 
-            should.exist(appProxy.helpers);
-            should.exist(appProxy.helpers.register);
-            should.exist(appProxy.helpers.registerAsync);
+            should.exist(appProxy.helperService);
+            should.exist(appProxy.helperService.registerAlias);
+            should.exist(appProxy.helperService.registerDir);
+            should.exist(appProxy.helperService.registerHelper);
         });
 
         it('allows helper registration', function () {
-            const registerSpy = sinon.stub(helpers, 'registerThemeHelper');
+            const registerSpy = sinon.stub(helpers, 'registerHelper');
             const appProxy = AppProxy.getInstance('TestApp');
 
-            appProxy.helpers.register('myTestHelper', sinon.stub().returns('test result'));
+            appProxy.helperService.registerHelper('myTestHelper', sinon.stub().returns('test result'));
 
             registerSpy.called.should.equal(true);
         });
