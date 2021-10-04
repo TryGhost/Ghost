@@ -125,6 +125,10 @@ input[type=number] {
     margin-bottom: 0;
 }
 
+.form-group:last-of-type {
+    margin-bottom: 0;
+}
+
 @media (max-width: 550px) {
     .form-group {
         max-width: 100%;

@@ -72,18 +72,50 @@
 }
 
 .gh-offer-type {
+    display: grid;
+    grid-template-columns: 160px auto;
+    grid-gap: 24px;
     white-space: nowrap;
-    margin-top: 3px;
+    margin-top: -8px;
 }
 
 .gh-offer-type .gh-radio {
-    margin-bottom: 16px;
+    margin-bottom: 0;
+    align-items: center;
+}
+
+.gh-offer-type .gh-radio-content {
+    margin-left: 6px;
 }
 
 .gh-offer-type .gh-radio-label {
     font-size: 1.3rem;
 }
 
-.gh-offer-modal-content textarea {
+
+.gh-offer-form textarea {
     max-width: unset;
+}
+
+.gh-offer-form .form-group {
+    max-width: unset;
+}
+
+/* Offers – Portal preview */
+.gh-offer-portal-preview {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.gh-offer-portal-preview-mock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--midgrey);
+    border-radius: 5px;
+    height: 640px;
+    width: 420px;
+    background: #fff;
+    box-shadow: var(--box-shadow-preview-box);
 }
