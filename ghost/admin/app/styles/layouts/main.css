@@ -989,6 +989,20 @@
     max-width: var(--main-layout-content-maxwidth);
 }
 
+.gh-canvas.circle-bg::before {
+    position: absolute;
+    display: block;
+    content: "";
+    top: -450px;
+    right: -250px;
+    width: 970px;
+    height: 970px;
+    border-radius: 50%;
+    z-index: 0;
+    background: var(--main-color-content-greybg);
+    opacity: 0.5;
+}
+
 .gh-canvas-header {
     margin: 0;
     position: sticky;
@@ -997,6 +1011,11 @@
     z-index: 700;
     border-bottom: 1px solid;
     border-color: transparent;
+}
+
+.gh-canvas.circle-bg .gh-canvas-header {
+    position: relative;
+    background: none;
 }
 
 .gh-canvas-header.grey,
@@ -1027,6 +1046,25 @@
 
 .gh-main-white .gh-canvas-header {
     background: var(--white);
+}
+
+/* Main layouts */
+.gh-main-layout.content-preview {
+    display: grid;
+    grid-template-columns: auto 460px;
+    grid-gap: 32px;
+}
+
+@media (max-width: 1320px) {
+    .gh-main-layout.content-preview {
+        grid-gap: 0;
+    }
+}
+
+@media (max-width: 1140px) {
+    .gh-main-layout.content-preview {
+        display: flex;
+    }
 }
 
 /* Main sections */
