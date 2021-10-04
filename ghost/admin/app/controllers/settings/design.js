@@ -2,7 +2,7 @@ import Controller from '@ember/controller';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 
-export default class SettingsDesignCustomizeController extends Controller {
+export default class SettingsDesignController extends Controller {
     @service customThemeSettings;
     @service notifications;
     @service router;
@@ -19,8 +19,6 @@ export default class SettingsDesignCustomizeController extends Controller {
                 this.settings.save(),
                 this.customThemeSettings.save()
             ]);
-
-            this.router.transitionTo('settings.design');
 
             // ensure task button switches to success state
             return true;

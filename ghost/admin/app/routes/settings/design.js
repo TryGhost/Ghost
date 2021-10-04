@@ -3,13 +3,13 @@ import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
+export default class SettingsDesignRoute extends AuthenticatedRoute {
     @service customThemeSettings;
     @service feature;
     @service modals;
     @service settings;
 
-    customizeModal = null;
+    designModal = null;
     confirmModal = null;
     hasConfirmed = false;
 
@@ -25,11 +25,15 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
         }
     }
 
+    model() {
+        return this.settings.reload();
+    }
+
     activate() {
-        this.customizeModal = this.modals.open('modals/design/customize', {
-            saveTask: this.controllerFor('settings.design.customize').saveTask
+        this.designModal = this.modals.open('modals/design', {
+            saveTask: this.controllerFor('settings.design').saveTask
         }, {
-            className: 'fullscreen-modal-full-overlay fullscreen-modal-branding-modal',
+            className: 'fullscreen-modal-total-overlay',
             beforeClose: bind(this, this.beforeModalClose)
         });
     }
@@ -52,8 +56,8 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
     }
 
     deactivate() {
-        this.customizeModal?.close();
-        this.customizeModal = null;
+        this.designModal?.close();
+        this.designModal = null;
         this.confirmModal = null;
         this.hasConfirmed = false;
     }
@@ -66,7 +70,7 @@ export default class SettingsDesignCustomizeRoute extends AuthenticatedRoute {
         const shouldLeave = await this.confirmUnsavedChanges();
 
         if (shouldLeave === true) {
-            this.transitionTo('settings.design');
+            this.transitionTo('settings');
         } else {
             // prevent modal from closing
             return false;
