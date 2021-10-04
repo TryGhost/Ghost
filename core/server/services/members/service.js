@@ -145,6 +145,8 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
     debouncedReconfigureMembersAPI();
 });
 
+events.on('services.stripe.reconfigured', reconfigureMembersAPI);
+
 const membersService = {
     async init() {
         const env = config.get('env');

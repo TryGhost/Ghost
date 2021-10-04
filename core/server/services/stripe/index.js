@@ -37,6 +37,7 @@ module.exports = {
                 return;
             }
             debouncedConfigureApi();
+            events.emit('services.stripe.reconfigured');
         });
     },
 
