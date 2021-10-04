@@ -48,24 +48,30 @@
                             {{#if (eq this.selectedDiscountType "percentage")}}
                                 <GhFormGroup @errors={{this.errors}} @property="amount">
                                     <label for="amount" class="fw6">Percentage off</label>
-                                    <GhTextInput
-                                        @type="number"
-                                        @name="amount"
-                                        @placeholder=""
-                                        @id="amount"
-                                        @class="gh-input" />
-                                    <GhErrorMessage @errors={{this.errors}} @property="amount" />
+                                    <div class="gh-offer-value percentage">
+                                        <span class="unit">%</span>
+                                        <GhTextInput
+                                            @type="number"
+                                            @name="amount"
+                                            @placeholder=""
+                                            @id="amount"
+                                            @class="gh-input" />
+                                        <GhErrorMessage @errors={{this.errors}} @property="amount" />
+                                    </div>
                                 </GhFormGroup>
                             {{else}}
                                 <GhFormGroup @errors={{this.errors}} @property="amount">
                                     <label for="amount" class="fw6">Amount off</label>
-                                    <GhTextInput
-                                        @name="amount"
-                                        @type="number"
-                                        @placeholder=""
-                                        @id="amount"
-                                        @class="gh-input" />
-                                    <GhErrorMessage @errors={{this.errors}} @property="amount" />
+                                    <div class="gh-offer-value fixed">
+                                        <span class="unit">$</span>
+                                        <GhTextInput
+                                            @name="amount"
+                                            @type="number"
+                                            @placeholder=""
+                                            @id="amount"
+                                            @class="gh-input" />
+                                        <GhErrorMessage @errors={{this.errors}} @property="amount" />
+                                    </div>
                                 </GhFormGroup>
                             {{/if}}
                             <div class="gh-offer-type">
