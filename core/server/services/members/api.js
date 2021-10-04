@@ -1,3 +1,4 @@
+const stripeService = require('../stripe');
 const settingsCache = require('../../../shared/settings-cache');
 const MembersApi = require('@tryghost/members-api');
 const logging = require('@tryghost/logging');
@@ -183,6 +184,7 @@ function createApiInstance(config) {
             Product: models.Product,
             Settings: models.Settings
         },
+        stripeAPIService: stripeService.api,
         logger: logging,
         labsService: labsService
     });

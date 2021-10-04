@@ -174,8 +174,6 @@ class MembersConfigProvider {
         }
 
         return {
-            publicKey: stripeApiKeys.publicKey,
-            secretKey: stripeApiKeys.secretKey,
             checkoutSuccessUrl: urls.checkoutSuccess,
             checkoutCancelUrl: urls.checkoutCancel,
             billingSuccessUrl: urls.billingSuccess,
@@ -185,17 +183,10 @@ class MembersConfigProvider {
                 id: this._settingsCache.get('members_stripe_webhook_id'),
                 secret: this._settingsCache.get('members_stripe_webhook_secret')
             },
-            enablePromoCodes: this._config.get('enableStripePromoCodes'),
             product: {
                 name: this._settingsCache.get('stripe_product_name')
             },
-            plans: this._settingsCache.get('stripe_plans') || [],
-            appInfo: {
-                name: 'Ghost',
-                partner_id: 'pp_partner_DKmRVtTs4j9pwZ',
-                version: this._ghostVersion.original,
-                url: 'https://ghost.org/'
-            }
+            plans: this._settingsCache.get('stripe_plans') || []
         };
     }
 

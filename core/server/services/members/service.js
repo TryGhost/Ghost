@@ -17,6 +17,7 @@ const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
+const stripeService = require('../stripe');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -135,15 +136,8 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
         'members_from_address',
         'members_support_address',
         'members_reply_address',
-        'stripe_publishable_key',
-        'stripe_secret_key',
         'stripe_product_name',
-        'stripe_plans',
-        'stripe_connect_publishable_key',
-        'stripe_connect_secret_key',
-        'stripe_connect_livemode',
-        'stripe_connect_display_name',
-        'stripe_connect_account_id'
+        'stripe_plans'
     ].includes(settingModel.get('key'))) {
         return;
     }
@@ -151,32 +145,27 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
     debouncedReconfigureMembersAPI();
 });
 
+events.on('services.stripe.reconfigured', reconfigureMembersAPI);
+
 const membersService = {
     async init() {
         const env = config.get('env');
-        const paymentConfig = membersConfig.getStripePaymentConfig();
 
         if (env !== 'production') {
-            if (!process.env.WEBHOOK_SECRET && membersConfig.isStripeConnected()) {
+            if (!process.env.WEBHOOK_SECRET && stripeService.api.configured) {
                 process.env.WEBHOOK_SECRET = 'DEFAULT_WEBHOOK_SECRET';
                 logging.warn(tpl(messages.remoteWebhooksInDevelopment));
             }
 
-            if (paymentConfig && paymentConfig.secretKey.startsWith('sk_live')) {
+            if (stripeService.api.configured && stripeService.api.mode === 'live') {
                 throw new errors.IncorrectUsageError(tpl(messages.noLiveKeysInDevelopment));
             }
         } else {
             const siteUrl = urlUtils.getSiteUrl();
-            if (!/^https/.test(siteUrl) && membersConfig.isStripeConnected()) {
+            if (!/^https/.test(siteUrl) && stripeService.api.configured) {
                 throw new errors.IncorrectUsageError(tpl(messages.sslRequiredForStripe));
             }
         }
-    },
-    contentGating: require('./content-gating'),
-
-    config: membersConfig,
-
-    get api() {
         if (!membersApi) {
             membersApi = createMembersApiInstance(membersConfig);
 
@@ -184,6 +173,12 @@ const membersService = {
                 logging.error(err);
             });
         }
+    },
+    contentGating: require('./content-gating'),
+
+    config: membersConfig,
+
+    get api() {
         return membersApi;
     },
 
