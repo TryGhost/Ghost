@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const urlService = require('../../../core/frontend/services/url');
-const helpers = require('../../../core/frontend/helpers');
+const authorsHelper = require('../../../core/frontend/helpers/authors');
 const models = require('../../../core/server/models');
 const testUtils = require('../../utils');
 
@@ -24,7 +24,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'Thomas'})
         ];
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {autolink: 'false'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('Michael, Thomas');
@@ -36,7 +36,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'AB=CD`EF'})
         ];
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {autolink: 'false'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('John O&#x27;Nolan, AB&#x3D;CD&#x60;EF');
@@ -48,7 +48,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
         ];
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {separator: '|', autolink: 'false'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {separator: '|', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('haunted|ghost');
@@ -60,7 +60,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
         ];
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {prefix: 'on ', autolink: 'false'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {prefix: 'on ', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('on haunted, ghost');
@@ -72,7 +72,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
         ];
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {suffix: ' forever', autolink: 'false'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {suffix: ' forever', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('haunted, ghost forever');
@@ -84,7 +84,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
         ];
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {suffix: ' forever', prefix: 'on ', autolink: 'false'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {suffix: ' forever', prefix: 'on ', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('on haunted, ghost forever');
@@ -96,14 +96,14 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'ghost'})
         ];
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {suffix: ' &bull;', prefix: '&hellip; ', autolink: 'false'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {suffix: ' &bull;', prefix: '&hellip; ', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('&hellip; haunted, ghost &bull;');
     });
 
     it('does not add prefix or suffix if no authors exist', function () {
-        const rendered = helpers.authors.call({}, {hash: {prefix: 'on ', suffix: ' forever', autolink: 'false'}});
+        const rendered = authorsHelper.call({}, {hash: {prefix: 'on ', suffix: ' forever', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('');
@@ -118,7 +118,7 @@ describe('{{authors}} helper', function () {
         urlService.getUrlByResourceId.withArgs(authors[0].id).returns('author url 1');
         urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url 2');
 
-        const rendered = helpers.authors.call({authors: authors});
+        const rendered = authorsHelper.call({authors: authors});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="author url 1">foo</a>, <a href="author url 2">bar</a>');
@@ -132,7 +132,7 @@ describe('{{authors}} helper', function () {
 
         urlService.getUrlByResourceId.withArgs(authors[0].id).returns('author url 1');
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {limit: '1'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {limit: '1'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="author url 1">foo</a>');
@@ -146,7 +146,7 @@ describe('{{authors}} helper', function () {
 
         urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url 2');
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {from: '2'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="author url 2">bar</a>');
@@ -160,7 +160,7 @@ describe('{{authors}} helper', function () {
 
         urlService.getUrlByResourceId.withArgs(authors[0].id).returns('author url');
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {to: '1'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {to: '1'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="author url">foo</a>');
@@ -176,7 +176,7 @@ describe('{{authors}} helper', function () {
         urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url 2');
         urlService.getUrlByResourceId.withArgs(authors[2].id).returns('author url 3');
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {from: '2', to: '3'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2', to: '3'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="author url 2">bar</a>, <a href="author url 3">baz</a>');
@@ -191,7 +191,7 @@ describe('{{authors}} helper', function () {
 
         urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url x');
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {from: '2', limit: '1'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2', limit: '1'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="author url x">bar</a>');
@@ -208,7 +208,7 @@ describe('{{authors}} helper', function () {
         urlService.getUrlByResourceId.withArgs(authors[1].id).returns('author url b');
         urlService.getUrlByResourceId.withArgs(authors[2].id).returns('author url c');
 
-        const rendered = helpers.authors.call({authors: authors}, {hash: {from: '1', to: '3', limit: '2'}});
+        const rendered = authorsHelper.call({authors: authors}, {hash: {from: '1', to: '3', limit: '2'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="author url a">foo</a>, <a href="author url b">bar</a>, <a href="author url c">baz</a>');

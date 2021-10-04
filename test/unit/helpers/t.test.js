@@ -1,6 +1,6 @@
 const should = require('should');
 const path = require('path');
-const helpers = require('../../../core/frontend/helpers');
+const t = require('../../../core/frontend/helpers/t');
 const themeI18n = require('../../../core/frontend/services/theme-engine/i18n');
 
 describe('{{t}} helper', function () {
@@ -17,7 +17,7 @@ describe('{{t}} helper', function () {
     it('theme translation is DE', function () {
         themeI18n.init({activeTheme: 'casper', locale: 'de'});
 
-        let rendered = helpers.t.call({}, 'Top left Button', {
+        let rendered = t.call({}, 'Top left Button', {
             hash: {}
         });
 
@@ -27,7 +27,7 @@ describe('{{t}} helper', function () {
     it('theme translation is EN', function () {
         themeI18n.init({activeTheme: 'casper', locale: 'en'});
 
-        let rendered = helpers.t.call({}, 'Top left Button', {
+        let rendered = t.call({}, 'Top left Button', {
             hash: {}
         });
 
@@ -37,7 +37,7 @@ describe('{{t}} helper', function () {
     it('[fallback] no theme translation file found for FR', function () {
         themeI18n.init({activeTheme: 'casper', locale: 'fr'});
 
-        let rendered = helpers.t.call({}, 'Top left Button', {
+        let rendered = t.call({}, 'Top left Button', {
             hash: {}
         });
 
@@ -47,7 +47,7 @@ describe('{{t}} helper', function () {
     it('[fallback] no theme files at all, use key as translation', function () {
         themeI18n.init({activeTheme: 'casper-1.4', locale: 'de'});
 
-        let rendered = helpers.t.call({}, 'Top left Button', {
+        let rendered = t.call({}, 'Top left Button', {
             hash: {}
         });
 

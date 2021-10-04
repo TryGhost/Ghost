@@ -2,7 +2,8 @@ const should = require('should');
 const hbs = require('../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../utils/configUtils');
 const path = require('path');
-const helpers = require('../../../core/frontend/helpers');
+const page_url = require('../../../core/frontend/helpers/page_url');
+const pagination = require('../../../core/frontend/helpers/pagination');
 
 describe('{{pagination}} helper', function () {
     before(function (done) {
@@ -14,7 +15,7 @@ describe('{{pagination}} helper', function () {
 
         // The pagination partial expects this helper
         // @TODO: change to register with Ghost's own registration tools
-        hbs.registerHelper('page_url', helpers.page_url);
+        hbs.registerHelper('page_url', page_url);
     });
 
     const paginationRegex = /class="pagination"/;
@@ -25,7 +26,7 @@ describe('{{pagination}} helper', function () {
     it('should throw if pagination data is incorrect', function () {
         const runHelper = function (data) {
             return function () {
-                helpers.pagination.call(data);
+                pagination.call(data);
             };
         };
 
@@ -37,7 +38,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('can render single page with no pagination necessary', function () {
-        const rendered = helpers.pagination.call({
+        const rendered = pagination.call({
             pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
             tag: {slug: 'slug'}
         });
@@ -51,7 +52,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('can render first page of many with older posts link', function () {
-        const rendered = helpers.pagination.call({
+        const rendered = pagination.call({
             pagination: {page: 1, prev: null, next: 2, limit: 15, total: 8, pages: 3}
         });
         should.exist(rendered);
@@ -64,7 +65,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('can render middle pages of many with older and newer posts link', function () {
-        const rendered = helpers.pagination.call({
+        const rendered = pagination.call({
             pagination: {page: 2, prev: 1, next: 3, limit: 15, total: 8, pages: 3}
         });
         should.exist(rendered);
@@ -77,7 +78,7 @@ describe('{{pagination}} helper', function () {
     });
 
     it('can render last page of many with newer posts link', function () {
-        const rendered = helpers.pagination.call({
+        const rendered = pagination.call({
             pagination: {page: 3, prev: 2, next: null, limit: 15, total: 8, pages: 3}
         });
         should.exist(rendered);
@@ -92,7 +93,7 @@ describe('{{pagination}} helper', function () {
     it('validates values', function () {
         const runErrorTest = function (data) {
             return function () {
-                helpers.pagination.call(data);
+                pagination.call(data);
             };
         };
 
@@ -131,7 +132,7 @@ describe('{{pagination}} helper with custom template', function () {
     });
 
     it('can render single page with @site.title', function () {
-        const rendered = helpers.pagination.call({
+        const rendered = pagination.call({
             pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
             tag: {slug: 'slug'}
         }, {
@@ -149,7 +150,7 @@ describe('{{pagination}} helper with custom template', function () {
     });
 
     it('can pass attributes through', function () {
-        const rendered = helpers.pagination.call({
+        const rendered = pagination.call({
             pagination: {page: 1, prev: null, next: null, limit: 15, total: 8, pages: 1},
             tag: {slug: 'slug'}
         }, {

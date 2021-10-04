@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const urlService = require('../../../core/frontend/services/url');
 const models = require('../../../core/server/models');
-const helpers = require('../../../core/frontend/helpers');
+const tagsHelper = require('../../../core/frontend/helpers/tags');
 
 describe('{{tags}} helper', function () {
     before(function () {
@@ -24,7 +24,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar'})
         ];
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {autolink: 'false'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('foo, bar');
@@ -36,7 +36,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'ghost'})
         ];
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {separator: '|', autolink: 'false'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {separator: '|', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('haunted|ghost');
@@ -48,7 +48,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'ghost'})
         ];
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {prefix: 'on ', autolink: 'false'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {prefix: 'on ', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('on haunted, ghost');
@@ -60,7 +60,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'ghost'})
         ];
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {suffix: ' forever', autolink: 'false'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {suffix: ' forever', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('haunted, ghost forever');
@@ -72,7 +72,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'ghost'})
         ];
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {suffix: ' forever', prefix: 'on ', autolink: 'false'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {suffix: ' forever', prefix: 'on ', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('on haunted, ghost forever');
@@ -84,14 +84,14 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'ghost'})
         ];
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {suffix: ' &bull;', prefix: '&hellip; ', autolink: 'false'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {suffix: ' &bull;', prefix: '&hellip; ', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('&hellip; haunted, ghost &bull;');
     });
 
     it('does not add prefix or suffix if no tags exist', function () {
-        const rendered = helpers.tags.call({}, {hash: {prefix: 'on ', suffix: ' forever', autolink: 'false'}});
+        const rendered = tagsHelper.call({}, {hash: {prefix: 'on ', suffix: ' forever', autolink: 'false'}});
         should.exist(rendered);
 
         String(rendered).should.equal('');
@@ -106,7 +106,7 @@ describe('{{tags}} helper', function () {
         urlService.getUrlByResourceId.withArgs(tags[0].id).returns('tag url 1');
         urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url 2');
 
-        const rendered = helpers.tags.call({tags: tags});
+        const rendered = tagsHelper.call({tags: tags});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="tag url 1">foo</a>, <a href="tag url 2">bar</a>');
@@ -120,7 +120,7 @@ describe('{{tags}} helper', function () {
 
         urlService.getUrlByResourceId.withArgs(tags[0].id).returns('tag url 1');
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {limit: '1'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {limit: '1'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="tag url 1">foo</a>');
@@ -134,7 +134,7 @@ describe('{{tags}} helper', function () {
 
         urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url 2');
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {from: '2'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="tag url 2">bar</a>');
@@ -148,7 +148,7 @@ describe('{{tags}} helper', function () {
 
         urlService.getUrlByResourceId.withArgs(tags[0].id).returns('tag url x');
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {to: '1'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {to: '1'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="tag url x">foo</a>');
@@ -164,7 +164,7 @@ describe('{{tags}} helper', function () {
         urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url b');
         urlService.getUrlByResourceId.withArgs(tags[2].id).returns('tag url c');
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {from: '2', to: '3'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', to: '3'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="tag url b">bar</a>, <a href="tag url c">baz</a>');
@@ -179,7 +179,7 @@ describe('{{tags}} helper', function () {
 
         urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url b');
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {from: '2', limit: '1'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', limit: '1'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="tag url b">bar</a>');
@@ -196,7 +196,7 @@ describe('{{tags}} helper', function () {
         urlService.getUrlByResourceId.withArgs(tags[1].id).returns('tag url b');
         urlService.getUrlByResourceId.withArgs(tags[2].id).returns('tag url c');
 
-        const rendered = helpers.tags.call({tags: tags}, {hash: {from: '1', to: '3', limit: '2'}});
+        const rendered = tagsHelper.call({tags: tags}, {hash: {from: '1', to: '3', limit: '2'}});
         should.exist(rendered);
 
         String(rendered).should.equal('<a href="tag url a">foo</a>, <a href="tag url b">bar</a>, <a href="tag url c">baz</a>');
@@ -225,7 +225,7 @@ describe('{{tags}} helper', function () {
         });
 
         it('will not output internal tags by default', function () {
-            const rendered = helpers.tags.call({tags: tags});
+            const rendered = tagsHelper.call({tags: tags});
 
             String(rendered).should.equal(
                 '<a href="1">foo</a>, ' +
@@ -236,7 +236,7 @@ describe('{{tags}} helper', function () {
         });
 
         it('should still correctly apply from & limit tags', function () {
-            const rendered = helpers.tags.call({tags: tags}, {hash: {from: '2', limit: '2'}});
+            const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', limit: '2'}});
 
             String(rendered).should.equal(
                 '<a href="3">bar</a>, ' +
@@ -245,7 +245,7 @@ describe('{{tags}} helper', function () {
         });
 
         it('should output all tags with visibility="all"', function () {
-            const rendered = helpers.tags.call({tags: tags}, {hash: {visibility: 'all'}});
+            const rendered = tagsHelper.call({tags: tags}, {hash: {visibility: 'all'}});
 
             String(rendered).should.equal(
                 '<a href="1">foo</a>, ' +
@@ -257,7 +257,7 @@ describe('{{tags}} helper', function () {
         });
 
         it('should output all tags with visibility property set with visibility="public,internal"', function () {
-            const rendered = helpers.tags.call({tags: tags}, {hash: {visibility: 'public,internal'}});
+            const rendered = tagsHelper.call({tags: tags}, {hash: {visibility: 'public,internal'}});
             should.exist(rendered);
 
             String(rendered).should.equal(
@@ -270,14 +270,14 @@ describe('{{tags}} helper', function () {
         });
 
         it('Should output only internal tags with visibility="internal"', function () {
-            const rendered = helpers.tags.call({tags: tags}, {hash: {visibility: 'internal'}});
+            const rendered = tagsHelper.call({tags: tags}, {hash: {visibility: 'internal'}});
             should.exist(rendered);
 
             String(rendered).should.equal('<a href="2">#bar</a>');
         });
 
         it('should output nothing if all tags are internal', function () {
-            const rendered = helpers.tags.call({tags: tags1}, {hash: {prefix: 'stuff'}});
+            const rendered = tagsHelper.call({tags: tags1}, {hash: {prefix: 'stuff'}});
             should.exist(rendered);
 
             String(rendered).should.equal('');

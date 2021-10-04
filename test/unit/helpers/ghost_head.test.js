@@ -11,7 +11,8 @@ const models = require('../../../core/server/models');
 const imageLib = require('../../../core/server/lib/image');
 const routing = require('../../../core/frontend/services/routing');
 const urlService = require('../../../core/frontend/services/url');
-const helpers = require('../../../core/frontend/helpers');
+
+const ghost_head = require('../../../core/frontend/helpers/ghost_head');
 const {settingsCache} = require('../../../core/frontend/services/proxy');
 
 describe('{{ghost_head}} helper', function () {
@@ -310,7 +311,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
                     context: ['paged', 'index'],
@@ -330,7 +331,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on first index page', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -377,7 +378,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('twitter_description').returns('twitter site description');
             settingsCache.get.withArgs('twitter_image').returns('/content/images/twitter-image.png');
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -418,7 +419,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[0]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
@@ -466,7 +467,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[1]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
@@ -516,7 +517,7 @@ describe('{{ghost_head}} helper', function () {
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -586,7 +587,7 @@ describe('{{ghost_head}} helper', function () {
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -647,7 +648,7 @@ describe('{{ghost_head}} helper', function () {
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -697,7 +698,7 @@ describe('{{ghost_head}} helper', function () {
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/amp/',
@@ -756,7 +757,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[6]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -815,7 +816,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[7]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -871,7 +872,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[8]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -927,7 +928,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[9]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -950,7 +951,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[9]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
@@ -968,7 +969,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns next & prev URL correctly for middle page', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: {
                     pagination: {total: 4, page: 3, next: 4, prev: 2}
                 },
@@ -992,7 +993,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns next & prev URL correctly for second page', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: {
                     pagination: {total: 3, page: 2, next: 3, prev: 1}
                 },
@@ -1021,7 +1022,7 @@ describe('{{ghost_head}} helper', function () {
                 tag: tags[0]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
@@ -1063,7 +1064,7 @@ describe('{{ghost_head}} helper', function () {
                 tag: tags[1]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
@@ -1104,7 +1105,7 @@ describe('{{ghost_head}} helper', function () {
                 tag: tags[2]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
@@ -1127,7 +1128,7 @@ describe('{{ghost_head}} helper', function () {
                 tag: tags[3]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/page/2/',
@@ -1148,7 +1149,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data and schema on first author page with cover image', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: {author: users[0]},
                 locals: {
                     // @TODO: WHY?
@@ -1187,7 +1188,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not return structured data on paginated author pages', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: {author: users[1]},
                 locals: {
                     // @TODO: WHY?
@@ -1209,7 +1210,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag string even if safeVersion is invalid', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     context: [],
                     safeVersion: '0.9'
@@ -1224,7 +1225,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
                 }
@@ -1237,7 +1238,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('implicit indexing settings for non-preview pages', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
                 }
@@ -1250,7 +1251,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('outputs structured data but not schema for custom collection', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/featured/',
                     context: ['featured'],
@@ -1288,7 +1289,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns correct rss url with subdirectory', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
@@ -1317,7 +1318,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('contains the changed origin', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
@@ -1350,7 +1351,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[2]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -1382,7 +1383,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag plus injected code', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: {
                     post: false
                 },
@@ -1406,7 +1407,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('outputs post codeinjection as well', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: 'post-codeinjection'
@@ -1426,7 +1427,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('handles post codeinjection being empty', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: ''
@@ -1446,7 +1447,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('handles post codeinjection being null', function (done) {
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: null
@@ -1470,7 +1471,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[1]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     context: ['amp', 'post'],
@@ -1499,7 +1500,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[1]
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -1526,7 +1527,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1552,7 +1553,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1578,7 +1579,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1604,7 +1605,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1630,7 +1631,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1650,7 +1651,7 @@ describe('{{ghost_head}} helper', function () {
         it('includes portal when signup is "all"', function (done) {
             settingsCache.get.withArgs('members_signup_access').returns('all');
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1667,7 +1668,7 @@ describe('{{ghost_head}} helper', function () {
         it('includes portal when signup is "invite"', function (done) {
             settingsCache.get.withArgs('members_signup_access').returns('invite');
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1687,7 +1688,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('stripe_publishable_key').returns('publishable');
             settingsCache.get.withArgs('stripe_connect_account_id').returns(null);
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1708,7 +1709,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('stripe_publishable_key').returns(null);
             settingsCache.get.withArgs('stripe_connect_account_id').returns('connect_account');
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1727,7 +1728,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('members_signup_access').returns('none');
             settingsCache.get.withArgs('stripe_connect_account_id').returns('connect_account');
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1748,7 +1749,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('stripe_publishable_key', null);
             settingsCache.get.withArgs('stripe_connect_account_id', null);
 
-            helpers.ghost_head(testUtils.createHbsResponse({
+            ghost_head(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],

@@ -1,5 +1,5 @@
 const should = require('should');
-const helpers = require('../../../core/frontend/helpers');
+const lang = require('../../../core/frontend/helpers/lang');
 
 describe('{{lang}} helper', function () {
     it('returns correct language tag', function () {
@@ -19,7 +19,7 @@ describe('{{lang}} helper', function () {
                 }
             };
 
-            let rendered = helpers.lang.call({}, context);
+            let rendered = lang.call({}, context);
 
             should.exist(rendered);
             rendered.string.should.equal(locale);

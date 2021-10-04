@@ -2,11 +2,8 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
-const helpers = require('../../../core/frontend/helpers');
+const next_post = require('../../../core/frontend/helpers/prev_post');
 const api = require('../../../core/server/api');
-
-// These helpers are the same, their name just changes
-helpers.next_post = helpers.prev_post;
 
 describe('{{next_post}} helper', function () {
     const apiVersion = 'canary';
@@ -50,7 +47,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -92,7 +89,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -130,7 +127,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse};
 
-            helpers.next_post
+            next_post
                 .call({}, optionsData)
                 .then(function () {
                     fn.called.should.be.false();
@@ -166,7 +163,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -210,7 +207,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'draft',
@@ -246,7 +243,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse, hash: {in: 'primary_tag'}};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -278,7 +275,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse, hash: {in: 'primary_author'}};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -310,7 +307,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse, hash: {in: 'author'}};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -342,7 +339,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse, hash: {in: 'author'}};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -373,7 +370,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse, hash: {in: 'magic'}};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -413,7 +410,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse};
 
-            helpers.next_post
+            next_post
                 .call({
                     html: 'content',
                     status: 'published',
@@ -441,7 +438,7 @@ describe('{{next_post}} helper', function () {
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: {root: {}}};
 
-            helpers.next_post
+            next_post
                 .call(
                     {},
                     optionsData

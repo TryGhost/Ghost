@@ -1,5 +1,5 @@
 const should = require('should');
-const helpers = require('../../../core/frontend/helpers');
+const raw = require('../../../core/frontend/helpers/raw');
 const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 let defaultGlobals;
@@ -17,7 +17,7 @@ function compile(templateString) {
 
 describe('{{raw}} helper', function () {
     before(function () {
-        handlebars.registerHelper('raw', helpers.raw);
+        handlebars.registerHelper('raw', raw);
     });
 
     it('can correctly compile space', function () {

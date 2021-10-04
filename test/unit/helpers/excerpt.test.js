@@ -1,12 +1,12 @@
 const should = require('should');
 
 // Stuff we are testing
-const helpers = require('../../../core/frontend/helpers');
+const excerpt = require('../../../core/frontend/helpers/excerpt');
 
 describe('{{excerpt}} Helper', function () {
     it('renders empty string when html, excerpt, and custom_excerpt are null', function () {
         const html = null;
-        const rendered = helpers.excerpt.call({
+        const rendered = excerpt.call({
             html: html,
             custom_excerpt: null,
             excerpt: null
@@ -18,7 +18,7 @@ describe('{{excerpt}} Helper', function () {
 
     it('can render custom_excerpt', function () {
         const html = 'Hello World';
-        const rendered = helpers.excerpt.call({
+        const rendered = excerpt.call({
             html: html,
             custom_excerpt: ''
         });
@@ -29,7 +29,7 @@ describe('{{excerpt}} Helper', function () {
 
     it('can render excerpt when other fields are empty', function () {
         const html = '';
-        const rendered = helpers.excerpt.call({
+        const rendered = excerpt.call({
             html: html,
             custom_excerpt: '',
             excerpt: 'Regular excerpt'
@@ -46,7 +46,7 @@ describe('{{excerpt}} Helper', function () {
                 '< test > those<<< test >>> who mistake it &lt;for&gt; binary.';
         const expected = 'There are 10  types of people in the world: those who understand trinary,  those who ' +
             'don\'t and those>> who mistake it &lt;for&gt; binary.';
-        const rendered = helpers.excerpt.call({
+        const rendered = excerpt.call({
             html: html,
             custom_excerpt: ''
         });
@@ -58,7 +58,7 @@ describe('{{excerpt}} Helper', function () {
     it('strips multiple inline footnotes', function () {
         const html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>, my footnotes. And stuff. Footnote<sup id="fnref:2"><a href="#fn:2" rel="footnote">2</a></sup><a href="http://google.com">with a link</a> right after.';
         const expected = 'Testing, my footnotes. And stuff. Footnotewith a link right after.';
-        const rendered = helpers.excerpt.call({
+        const rendered = excerpt.call({
             html: html,
             custom_excerpt: ''
         });
@@ -71,7 +71,7 @@ describe('{{excerpt}} Helper', function () {
         const html = '<p>Testing<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup> a very short post with a single footnote.</p>\n' +
                 '<div class="footnotes"><ol><li class="footnote" id="fn:1"><p><a href="https://ghost.org">https://ghost.org</a> <a href="#fnref:1" title="return to article">↩</a></p></li></ol></div>';
         const expected = 'Testing a very short post with a single footnote.';
-        const rendered = helpers.excerpt.call({
+        const rendered = excerpt.call({
             html: html,
             custom_excerpt: ''
         });
@@ -84,7 +84,7 @@ describe('{{excerpt}} Helper', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>';
         const expected = 'Hello World!';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: ''
@@ -101,7 +101,7 @@ describe('{{excerpt}} Helper', function () {
         const html = '<p>Едквюэ опортэат <strong>праэчынт ючю но, квуй эю</strong></p>';
         const expected = 'Едквюэ опортэат';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: ''
@@ -118,7 +118,7 @@ describe('{{excerpt}} Helper', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>';
         const expected = 'Hello Wo';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: ''
@@ -136,7 +136,7 @@ describe('{{excerpt}} Helper', function () {
         const customExcerpt = 'My Custom Excerpt wins!';
         const expected = 'My Custom Excerpt wins!';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: customExcerpt
@@ -159,7 +159,7 @@ describe('{{excerpt}} Helper', function () {
                    'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
                    'after 300 characters. This give';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: customExcerpt
@@ -183,7 +183,7 @@ describe('{{excerpt}} Helper', function () {
                    'your story and make a nice summary for your readers. It\s only allowed to truncate anything ' +
                    'after 300 characters. This give';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: customExcerpt
@@ -200,7 +200,7 @@ describe('{{excerpt}} Helper', function () {
         const html = '<p>Testing.</p><p>Space before this text.</p><p>And this as well!</p>';
         const expected = 'Testing. Space before this text. And this as well!';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: ''
@@ -216,7 +216,7 @@ describe('{{excerpt}} Helper', function () {
         const html = '<p>Testing.<br>Space before this text.<br>And this as well!</p>';
         const expected = 'Testing. Space before this text. And this as well!';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: ''
@@ -234,7 +234,7 @@ describe('{{excerpt}} Helper', function () {
                 '<p>and skip the image.</p><p></p>';
         const expected = 'put space in excerpt.  before this paragraph. and skip the image.';
         const rendered = (
-            helpers.excerpt.call(
+            excerpt.call(
                 {
                     html: html,
                     custom_excerpt: ''
