@@ -2,8 +2,12 @@ const debug = require('@tryghost/debug')('api:canary:utils:permissions');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const permissions = require('../../../services/permissions');
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    noPermissionToCall: 'You do not have permission to {method} {docName}'
+};
 
 /**
  * @description Handle requests, which need authentication.
@@ -55,7 +59,7 @@ const nonePublicAuth = (apiConfig, frame) => {
         }
     }).catch((err) => {
         if (err instanceof errors.NoPermissionError) {
-            err.message = i18n.t('errors.api.utils.noPermissionToCall', {
+            err.message = tpl(messages.noPermissionToCall, {
                 method: apiConfig.method,
                 docName: apiConfig.docName
             });
