@@ -148,7 +148,7 @@ export default Component.extend({
             try {
                 await this.post.validate({property: 'visibility'});
                 await this.post.validate({property: 'visibilityFilter'});
-                if (this.post.changedAttributes().visibilityFilter) {
+                if (this.post.get('isDraft') && this.post.changedAttributes().visibilityFilter) {
                     await this.savePostTask.perform();
                 }
             } catch (e) {
