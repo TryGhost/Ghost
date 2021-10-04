@@ -2,15 +2,11 @@
     max-width: 1220px;
 }
 
-.gh-offer-modal-content {
-    margin: -32px -32px 0;
-    padding: 32px 32px 0;
-    max-height: calc(100vh - 16vw);
-    overflow: scroll;
-}
-
-.gh-offer-modal-content .gh-main-section.columns-3 {
-    grid-template-columns: 0.8fr 0.8fr 1.2fr;
+.gh-offers .view-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: calc(100vh - 95px);
 }
 
 .gh-offers-list-cta {
@@ -21,7 +17,7 @@
 }
 
 .gh-offers-list-cta h4 {
-    color: var(--darkgrey);
+    color: var(--black);
     text-align: center;
     font-weight: 600;
     margin-bottom: 8px;
@@ -165,6 +161,17 @@
     border-radius: 3px;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.07);
     color: var(--midgrey);
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     padding: 32px;
+}
+
+.gh-offers-help-card .thumbnail {
+    width: 100%;
+    height: 120px;
+    background-size: cover;
+    margin-bottom: 16px;
+}
+
+.gh-offers-help-card .gh-btn {
+    width: 100%;
 }
