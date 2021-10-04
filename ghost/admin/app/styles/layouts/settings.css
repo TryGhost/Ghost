@@ -51,15 +51,17 @@
 .gh-settings-main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    grid-auto-rows: minmax(72px, auto);
     background: var(--white);
     border-radius: .5rem;;
+    grid-gap: 24px;
+    margin: 24px 0 96px;
 }
 
 .gh-settings-main-grid .gh-setting-group {
     display: flex;
     color: var(--darkgrey);
-    padding: 20px 20px 20px 0;
-    min-height: 85px;
+    min-height: 72px;
     text-align: left;
 }
 
@@ -139,7 +141,6 @@
 /* Setting headers */
 
 .gh-setting-header {
-    margin: 4vw 0 0 1px;
     color: var(--black);
     text-transform: uppercase;
     font-weight: 500;
@@ -147,6 +148,7 @@
     font-size: 1.2rem;
     padding: 8px 0;
     border-bottom: 1px solid var(--main-color-area-divider);
+    margin: 0 0 0 1px;
 }
 
 .gh-first-header {
