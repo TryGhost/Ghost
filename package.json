@@ -82,7 +82,7 @@
     "@tryghost/mw-session-from-token": "0.1.24",
     "@tryghost/nodemailer": "0.3.3",
     "@tryghost/package-json": "1.0.4",
-    "@tryghost/promise": "0.1.11",
+    "@tryghost/promise": "0.1.12",
     "@tryghost/request": "0.1.5",
     "@tryghost/root-utils": "0.3.4",
     "@tryghost/security": "0.2.11",
