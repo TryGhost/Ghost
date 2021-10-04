@@ -96,10 +96,10 @@ _private.registerRoutes = (router, redirects) => {
 
 const loadRoutes = () => {
     try {
+        customRedirectsRouter = express.Router('redirects');
+
         const redirects = redirectsService.loadRedirectsFile();
         redirectsService.validate(redirects);
-
-        customRedirectsRouter = express.Router('redirects');
 
         _private.registerRoutes(customRedirectsRouter, redirects);
     } catch (err) {
