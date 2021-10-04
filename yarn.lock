@@ -1335,6 +1335,14 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
+"@tryghost/errors@^0.2.16":
+  version "0.2.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.16.tgz#5000255aff99b3e07aa343c7f625f1475e55c5cf"
+  integrity sha512-iTUv25q/SqQMCsxEX3dlf6pT3QWIkAVeQ7OIf9lY9fBGLZpvriplTV361u7fQYuUvUcCDYqb30s5j/cYHWuJWg==
+  dependencies:
+    "@tryghost/ignition-errors" "^0.1.0"
+    lodash "^4.17.21"
+
 "@tryghost/helpers@1.1.52":
   version "1.1.52"
   resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.52.tgz#e30bd367ea62d1b27e59abfa8e8ed8c3e072b74e"
@@ -1359,12 +1367,12 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/image-transform@1.0.15":
-  version "1.0.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.15.tgz#e285ffa9db70df253a76916d0fbc2a98603d3150"
-  integrity sha512-9yS+L++ujX41uXwNG4muLFVT3ck+EY5cc6yxwqQOKfMX4z5y7woWD8lQfZq0wlpWnr7zPEALUbIpz5kV5eH3fQ==
+"@tryghost/image-transform@1.0.16":
+  version "1.0.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.16.tgz#1302078fc113c7c5db5603a3b5c236fbaf009eb1"
+  integrity sha512-jZfK7C6yNVmC7AJoCmDk9PhjS8bt78b8fvExA7YSzkWLwlYH3Q11l97Qk45e0GrTIfLG3TRUfMfvU5ErS1sUBQ==
   dependencies:
-    "@tryghost/errors" "^0.2.15"
+    "@tryghost/errors" "^0.2.16"
     bluebird "^3.7.2"
     fs-extra "^9.1.0"
   optionalDependencies:
