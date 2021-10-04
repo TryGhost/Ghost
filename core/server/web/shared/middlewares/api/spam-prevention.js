@@ -3,9 +3,25 @@ const extend = require('lodash/extend');
 const pick = require('lodash/pick');
 const errors = require('@tryghost/errors');
 const config = require('../../../../../shared/config');
-const i18n = require('../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const spam = config.get('spam') || {};
+
+const messages = {
+    forgottenPasswordEmail: {
+        error: 'Only {rfa} forgotten password attempts per email every {rfp} seconds.',
+        context: 'Forgotten password reset attempt failed'
+    },
+    forgottenPasswordIp: {
+        error: 'Only {rfa} tries per IP address every {rfp} seconds.',
+        context: 'Forgotten password reset attempt failed'
+    },
+    tooManySigninAttempts: {
+        error: 'Only {rateSigninAttempts} tries per IP address every {rateSigninPeriod} seconds.',
+        context: 'Too many login attempts.'
+    },
+    tooManyAttempts: 'Too many attempts.'
+};
 
 const spamPrivateBlock = spam.private_block || {};
 const spamGlobalBlock = spam.global_block || {};
@@ -64,9 +80,9 @@ const globalBlock = () => {
             failCallback(req, res, next, nextValidRequestDate) {
                 return next(new errors.TooManyRequestsError({
                     message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    context: tpl(messages.forgottenPasswordIp.error,
                         {rfa: spamGlobalBlock.freeRetries + 1 || 5, rfp: spamGlobalBlock.lifetime || 60 * 60}),
-                    help: i18n.t('errors.middleware.spamprevention.tooManyAttempts')
+                    help: tpl(messages.tooManyAttempts)
                 }));
             },
             handleStoreError: handleStoreError
@@ -94,9 +110,9 @@ const globalReset = () => {
                 // TODO use i18n again
                 return next(new errors.TooManyRequestsError({
                     message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.error',
+                    context: tpl(messages.forgottenPasswordIp.error,
                         {rfa: spamGlobalReset.freeRetries + 1 || 5, rfp: spamGlobalReset.lifetime || 60 * 60}),
-                    help: i18n.t('errors.middleware.spamprevention.forgottenPasswordIp.context')
+                    help: tpl(messages.forgottenPasswordIp.context)
                 }));
             },
             handleStoreError: handleStoreError
@@ -128,8 +144,8 @@ const userLogin = () => {
                 return next(new errors.TooManyRequestsError({
                     message: `Too many sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                     // TODO add more options to i18n
-                    context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context'),
-                    help: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
+                    context: tpl(messages.tooManySigninAttempts.context),
+                    help: tpl(messages.tooManySigninAttempts.context)
                 }));
             },
             handleStoreError: handleStoreError
@@ -159,9 +175,9 @@ const userReset = function userReset() {
             failCallback(req, res, next, nextValidRequestDate) {
                 return next(new errors.TooManyRequestsError({
                     message: `Too many password reset attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                    context: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.error',
+                    context: tpl(messages.forgottenPasswordEmail.error,
                         {rfa: spamUserReset.freeRetries + 1 || 5, rfp: spamUserReset.lifetime || 60 * 60}),
-                    help: i18n.t('errors.middleware.spamprevention.forgottenPasswordEmail.context')
+                    help: tpl(messages.forgottenPasswordEmail.context)
                 }));
             },
             handleStoreError: handleStoreError
@@ -189,12 +205,12 @@ const privateBlog = () => {
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
                 logging.error(new errors.TooManyRequestsError({
-                    message: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.error',
+                    message: tpl(messages.tooManySigninAttempts.error,
                         {
                             rateSigninAttempts: spamPrivateBlock.freeRetries + 1 || 5,
                             rateSigninPeriod: spamPrivateBlock.lifetime || 60 * 60
                         }),
-                    context: i18n.t('errors.middleware.spamprevention.tooManySigninAttempts.context')
+                    context: tpl(messages.tooManySigninAttempts.context)
                 }));
 
                 return next(new errors.TooManyRequestsError({
@@ -218,7 +234,7 @@ const contentApiKey = () => {
             attachResetToRequest: true,
             failCallback(req, res, next) {
                 const err = new errors.TooManyRequestsError({
-                    message: i18n.t('errors.middleware.spamprevention.tooManyAttempts')
+                    message: tpl(messages.tooManyAttempts)
                 });
 
                 logging.error(err);
