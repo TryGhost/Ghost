@@ -1,0 +1,109 @@
+<div class="gh-viewport h-100">
+    <nav class="gh-nav">
+        <header class="gh-nav-menu">
+            <LinkTo @route="settings" class="gh-btn gh-btn-icon gh-btn-text"><span>{{svg-jar "arrow-left-tail" style="fill: black"}} Site design</span></LinkTo>
+        </header>
+        <section class="gh-nav-body">
+            <div class="gh-nav-top">
+
+                <div class="bt pl6 pt4 pr6">
+                    <button type="button" {{on "click" (fn this.toggleSection "brand")}} class="flex flex-row w-100">
+                        <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Brand</span>
+                        <span class="db">{{svg-jar (if (set-has this.openSections "brand") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+                    </button>
+                    {{#if (set-has this.openSections "brand")}}
+                        <div class="pt4">
+                            <Settings::Design::GeneralSettingsForm
+                                @updatePreview={{perform this.updatePreviewTask}}
+                            />
+                        </div>
+                    {{/if}}
+                </div>
+
+                {{#if this.themeSettings}}
+                    {{#if this.siteWideSettings}}
+                        <div class="mt4 bt pl6 pt4 pr6">
+                            <button type="button" {{on "click" (fn this.toggleSection "site-wide")}} class="flex flex-row w-100">
+                                <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Site-wide</span>
+                                <span class="db">{{svg-jar (if (set-has this.openSections "site-wide") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+                            </button>
+
+                            {{#if (set-has this.openSections "site-wide")}}
+                                <div class="pt4">
+                                    <Settings::Design::ThemeSettingsForm
+                                        @themeSettings={{this.siteWideSettings}}
+                                        @updatePreview={{perform this.updatePreviewTask}}
+                                    />
+                                </div>
+                            {{/if}}
+                        </div>
+                    {{/if}}
+
+                    {{#if this.homepageSettings}}
+                        <div class="mt4 bt pl6 pt4 pr6">
+                            <button type="button" {{on "click" (fn this.toggleSection "homepage")}} class="flex flex-row w-100">
+                                <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Homepage</span>
+                                <span class="db">{{svg-jar (if (set-has this.openSections "homepage") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+                            </button>
+
+                            {{#if (set-has this.openSections "homepage")}}
+                                <div class="pt4">
+                                    <Settings::Design::ThemeSettingsForm
+                                        @themeSettings={{this.homepageSettings}}
+                                        @updatePreview={{perform this.updatePreviewTask}}
+                                    />
+                                </div>
+                            {{/if}}
+                        </div>
+                    {{/if}}
+
+                    {{#if this.postPageSettings}}
+                        <div class="mt4 bt pl6 pt4 pr6">
+                            <button type="button" {{on "click" (fn this.toggleSection "post")}} class="flex flex-row w-100">
+                                <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Post</span>
+                                <span class="db">{{svg-jar (if (set-has this.openSections "post") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+                            </button>
+
+                            {{#if (set-has this.openSections "post")}}
+                                <div class="pt4">
+                                    <Settings::Design::ThemeSettingsForm
+                                        @themeSettings={{this.postPageSettings}}
+                                        @updatePreview={{perform this.updatePreviewTask}}
+                                    />
+                                </div>
+                            {{/if}}
+                        </div>
+                    {{/if}}
+                {{/if}}
+            </div>
+        </section>
+    </nav>
+
+    <main class="relative flex flex-column flex-grow-1" role="main">
+        <section class="gh-canvas relative w-100">
+            <GhCanvasHeader class="gh-canvas-header">
+                <h2 class="gh-canvas-title"></h2>
+                <section class="view-actions">
+                    <GhTaskButton
+                        @buttonText="Save changes"
+                        @task={{@data.saveTask}}
+                        @successText="Saved"
+                        @runningText="Saving"
+                        @class="gh-btn gh-btn-primary gh-btn-icon"
+                        data-test-button="save-settings"
+                    />
+                </section>
+            </GhCanvasHeader>
+
+            <div style="height: calc(100% - 96px)">
+                <GhBrowserPreview @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
+                    <iframe
+                        id="site=frame"
+                        class="site-frame gh-branding-settings-preview"
+                        {{did-insert this.registerPreviewIframe}}
+                    ></iframe>
+                </GhBrowserPreview>
+            </div>
+        </section>
+    </main>
+</div>

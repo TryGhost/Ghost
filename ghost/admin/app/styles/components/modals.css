@@ -70,6 +70,14 @@
     max-width: 90%;
 }
 
+.fullscreen-modal-total-overlay {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: var(--white)
+}
+
 .fullscreen-modal-action {
     margin: 6vw 0;
 }
