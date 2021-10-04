@@ -178,6 +178,7 @@ async function initServices({config}) {
     debug(`Default API Version: ${defaultApiVersion}`);
 
     debug('Begin: Services');
+    const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
@@ -193,6 +194,10 @@ async function initServices({config}) {
     // NOTE: limits service has to be initialized first
     // in case it limits initialization of any other service (e.g. webhooks)
     await limits.init();
+
+    // NOTE: stripe service has to be initialized before members
+    // as it is a dependency
+    await stripe.init();
 
     await Promise.all([
         members.init(),

@@ -135,15 +135,8 @@ events.on('settings.edited', function updateSettingFromModel(settingModel) {
         'members_from_address',
         'members_support_address',
         'members_reply_address',
-        'stripe_publishable_key',
-        'stripe_secret_key',
         'stripe_product_name',
-        'stripe_plans',
-        'stripe_connect_publishable_key',
-        'stripe_connect_secret_key',
-        'stripe_connect_livemode',
-        'stripe_connect_display_name',
-        'stripe_connect_account_id'
+        'stripe_plans'
     ].includes(settingModel.get('key'))) {
         return;
     }
