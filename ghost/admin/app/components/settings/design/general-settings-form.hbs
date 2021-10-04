@@ -75,51 +75,6 @@
         </div>
     </div>
 
-        <div class="gh-stack-item gh-setting gh-accent-color">
-        <div class="gh-setting-content">
-            <div class="gh-setting-title">Secondary color</div>
-            <div class="gh-setting-desc">Secondary color used in your publication theme</div>
-        </div>
-
-        <div class="gh-setting-action" data-test-setting="accentColor">
-            <GhFormGroup
-                @errors={{this.settings.errors}}
-                @hasValidated={{this.settings.hasValidated}}
-                @property="accentColor"
-                @class="input-color-form-group"
-            >
-                <div class="input-color">
-                    <input
-                        type="text"
-                        placeholder="15171A"
-                        name="accent-color"
-                        autocorrect="off"
-                        maxlength="6"
-                        value="cccccc"
-                        class="gh-input"
-                        {{on "input" (perform this.debounceUpdateAccentColor)}}
-                        {{on "blur" this.updateAccentColor}}
-                        {{on-key "Enter" this.blurElement}}
-                        data-test-input="accentColor"
-                    />
-                    <div class="color-picker-horizontal-divider"></div>
-                    <div
-                        class="color-box-container"
-                        style={{this.accentColorBgStlye}}
-                    >
-                        <input
-                            type="color"
-                            name="accent-color"
-                            class="color-picker"
-                            value="#cccccc"
-                            {{on "input" (perform this.debounceUpdateAccentColor)}}
-                        >
-                    </div>
-                </div>
-            </GhFormGroup>
-        </div>
-    </div>
-
     <div class="gh-stack-item gh-setting" data-test-setting="icon">
         <GhUploader
             @extensions={{this.iconExtensions}}
