@@ -123,14 +123,14 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
             await fillIn('[data-test-slack-url-input]', 'https://hooks.slack.com/services/1275958430');
             await blur('[data-test-slack-url-input]');
 
-            await visit('/settings/design');
+            await visit('/settings');
 
             expect(findAll('.fullscreen-modal').length, 'modal exists').to.equal(1);
 
             // Leave without saving
             await click('.fullscreen-modal [data-test-leave-button]');
 
-            expect(currentURL(), 'currentURL').to.equal('/settings/design');
+            expect(currentURL(), 'currentURL').to.equal('/settings');
 
             await visit('/integrations/slack');
 
