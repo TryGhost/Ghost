@@ -19,13 +19,13 @@ let customRedirectsRouter;
 
 /**
  *
+ * @param {Object} router instance of Express Router to decorate with redirects
  * @param {Object} redirects valid redirects JSON
+ *
  * @returns {Object} instance of express.Router express router handling redirects based on config
  */
-_private.registerRoutes = (redirects) => {
+_private.registerRoutes = (router, redirects) => {
     debug('redirects loading');
-
-    const redirectsRouter = express.Router('redirects');
 
     if (labsService.isSet('offers')) {
         redirects.unshift({
@@ -61,7 +61,7 @@ _private.registerRoutes = (redirects) => {
         }
 
         debug('register', redirect.from);
-        redirectsRouter.get(new RegExp(redirect.from, options), function (req, res) {
+        router.get(new RegExp(redirect.from, options), function (req, res) {
             const maxAge = redirect.permanent ? config.get('caching:customRedirects:maxAge') : 0;
             const toURL = url.parse(redirect.to);
             const toURLParams = querystring.parse(toURL.query);
@@ -91,7 +91,7 @@ _private.registerRoutes = (redirects) => {
 
     debug('redirects loaded');
 
-    return redirectsRouter;
+    return router;
 };
 
 const loadRoutes = () => {
@@ -99,8 +99,9 @@ const loadRoutes = () => {
         const redirects = redirectsService.loadRedirectsFile();
         redirectsService.validate(redirects);
 
-        const redirectsRouter = _private.registerRoutes(redirects);
-        customRedirectsRouter = redirectsRouter;
+        customRedirectsRouter = express.Router('redirects');
+
+        _private.registerRoutes(customRedirectsRouter, redirects);
     } catch (err) {
         if (errors.utils.isIgnitionError(err)) {
             logging.error(err);
