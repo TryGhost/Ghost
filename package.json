@@ -86,7 +86,7 @@
     "@tryghost/request": "0.1.5",
     "@tryghost/root-utils": "0.3.4",
     "@tryghost/security": "0.2.11",
-    "@tryghost/session-service": "0.1.26",
+    "@tryghost/session-service": "0.1.27",
     "@tryghost/social-urls": "0.1.26",
     "@tryghost/string": "0.1.20",
     "@tryghost/tpl": "0.1.5",
