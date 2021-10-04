@@ -7,7 +7,7 @@ const urlUtils = require('../../../../shared/url-utils');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-  imageNotFound: 'Image not found'
+    imageNotFound: 'Image not found'
 };
 
 function createPublicFileMiddleware(file, type, maxAge) {
