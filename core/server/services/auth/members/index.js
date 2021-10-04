@@ -10,14 +10,14 @@ async function createMiddleware() {
     const {protocol, host} = url.parse(config.get('url'));
     const siteOrigin = `${protocol}//${host}`;
 
-    const config = await membersService.api.getPublicConfig();
+    const membersConfig = await membersService.api.getPublicConfig();
     return jwt({
         credentialsRequired: false,
         requestProperty: 'member',
         audience: siteOrigin,
-        issuer: config.issuer,
+        issuer: membersConfig.issuer,
         algorithms: ['RS512'],
-        secret: config.publicKey,
+        secret: membersConfig.publicKey,
         getToken(req) {
             if (!req.get('authorization')) {
                 return null;
