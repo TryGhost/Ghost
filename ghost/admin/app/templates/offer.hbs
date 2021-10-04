@@ -1,0 +1,16 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header break tablet members-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="offers" data-test-link="offers-back">Offers</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            New offer
+        </h2>
+        <section class="view-actions">
+            <GhTaskButton @class="gh-btn gh-btn-primary gh-btn-icon" @type="button" @task={{this.saveTask}} @data-test-button="save" />
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container">
+        Offer...
+    </section>
+</section>

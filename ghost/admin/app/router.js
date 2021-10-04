@@ -38,10 +38,6 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('staff', function () {
-        this.route('user', {path: ':user_slug'});
-    });
-
     this.route('tags');
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
@@ -84,11 +80,18 @@ Router.map(function () {
     this.route('integrations.unsplash', {path: '/integrations/unsplash'});
     this.route('integrations.zapier', {path: '/integrations/zapier'});
 
+    this.route('staff', function () {
+        this.route('user', {path: ':user_slug'});
+    });
+
     this.route('members', function () {
         this.route('import');
     });
     this.route('member.new', {path: '/members/new'});
     this.route('member', {path: '/members/:member_id'});
+
+    this.route('offers');
+    this.route('offer');
 
     this.route('error404', {path: '/*path'});
 

@@ -46,6 +46,16 @@
                     <p>Set up primary and secondary menus</p>
                 </div>
             </LinkTo>
+            
+            {{#if (feature "offers")}}
+            <LinkTo class="gh-setting-group" @route="staff" data-test-nav="navigation">
+                <span class="green">{{svg-jar "staff"}}</span>
+                <div>
+                    <h4>Staff</h4>
+                    <p>Manage authors, editor and collaborators</p>
+                </div>
+            </LinkTo>
+            {{/if}}
         </div>
 
         <div class="gh-setting-header">Members</div>
@@ -75,6 +85,17 @@
                     <p>Add code to your publication</p>
                 </div>
             </LinkTo>
+            
+            {{#if (feature "offers")}}
+            <LinkTo class="gh-setting-group" @route="integrations" data-test-nav="navigation">
+                <span class="blue">{{svg-jar "module"}}</span>
+                <div>
+                    <h4>Integrations</h4>
+                    <p>Make Ghost work with apps and tools</p>
+                </div>
+            </LinkTo>
+            {{/if}}
+
             <LinkTo class="gh-setting-group" @route="settings.labs" data-test-nav="labs">
                 <span class="pink">{{svg-jar "labs"}}</span>
                 <div>
