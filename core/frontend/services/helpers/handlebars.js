@@ -1,8 +1,8 @@
 const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
-const hbs = require('../../theme-engine/engine');
-const config = require('../../../../shared/config');
 const logging = require('@tryghost/logging');
+
+const {hbs} = require('../rendering');
 
 // Register an async handlebars helper for a given handlebars instance
 function asyncHelperWrapper(hbsInstance, name, fn) {
@@ -13,7 +13,7 @@ function asyncHelperWrapper(hbsInstance, name, fn) {
             options = undefined;
         }
 
-        // Wrap the function passed in with a when.resolve so it can return either a promise or a value
+        // Wrap the function passed in with a Promise.resolve so it can return either a promise or a value
         Promise.resolve(fn.call(this, context, options)).then(function asyncHelperSuccess(result) {
             cb(result);
         }).catch(function asyncHelperError(err) {
@@ -25,7 +25,7 @@ function asyncHelperWrapper(hbsInstance, name, fn) {
                 }
             });
 
-            const result = config.get('env') === 'development' ? wrappedErr : '';
+            const result = process.env.NODE_ENV === 'development' ? wrappedErr : '';
 
             logging.error(wrappedErr);
 

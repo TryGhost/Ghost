@@ -13,7 +13,7 @@ const Promise = require('bluebird');
 const jsonpath = require('jsonpath');
 
 const messages = {
-    mustBeCalledAsBlock: 'The {{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}',
+    mustBeCalledAsBlock: 'The {\\{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}',
     invalidResource: 'Invalid resource given to get helper'
 };
 
@@ -194,3 +194,5 @@ module.exports = function get(resource, options) {
         }
     });
 };
+
+module.exports.async = true;
