@@ -6,7 +6,7 @@ const models = require('../../models');
 const ALLOWED_INCLUDES = ['count.posts'];
 
 const messages = {
-  tagNotFound: 'Tag not found.'
+    tagNotFound: 'Tag not found.'
 };
 
 module.exports = {
@@ -112,7 +112,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                          message: tpl(messages.tagNotFound)
+                            message: tpl(messages.tagNotFound)
                         }));
                     }
 
