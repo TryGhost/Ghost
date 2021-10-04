@@ -59,7 +59,7 @@
     "@tryghost/color-utils": "0.1.2",
     "@tryghost/config-url-helpers": "0.1.2",
     "@tryghost/constants": "0.1.10",
-    "@tryghost/custom-theme-settings-service": "0.0.5",
+    "@tryghost/custom-theme-settings-service": "0.0.6",
     "@tryghost/debug": "0.1.5",
     "@tryghost/email-analytics-provider-mailgun": "1.0.2",
     "@tryghost/email-analytics-service": "1.0.2",
