@@ -2,7 +2,7 @@ const should = require('should');
 const themeList = require('../../../core/server/services/themes/list');
 
 // Stuff we are testing
-const helpers = require('../../../core/frontend/helpers');
+const body_class = require('../../../core/frontend/helpers/body_class');
 
 describe('{{body_class}} helper', function () {
     let options = {};
@@ -37,7 +37,7 @@ describe('{{body_class}} helper', function () {
     it('can render class string', function () {
         options.data.root.context = ['home'];
 
-        const rendered = helpers.body_class.call({}, options);
+        const rendered = body_class.call({}, options);
         should.exist(rendered);
 
         rendered.string.should.equal('home-template');
@@ -46,7 +46,7 @@ describe('{{body_class}} helper', function () {
     describe('can render class string for context', function () {
         function callBodyClassWithContext(context, self) {
             options.data.root.context = context;
-            return helpers.body_class.call(
+            return body_class.call(
                 self,
                 options
             );

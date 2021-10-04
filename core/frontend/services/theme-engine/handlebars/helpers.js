@@ -1,5 +1,6 @@
 const register = require('./register');
-const coreHelpers = require('../../../helpers');
+const loader = require('./loader');
+const coreHelpers = loader.getHelpers();
 const registerThemeHelper = register.registerThemeHelper;
 const registerAsyncThemeHelper = register.registerAsyncThemeHelper;
 

@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const helpers = require('../../../core/frontend/helpers');
+const foreach = require('../../../core/frontend/helpers/foreach');
 const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 describe('{{#foreach}} helper', function () {
@@ -32,7 +32,7 @@ describe('{{#foreach}} helper', function () {
         });
 
         function runTest(self, _context, _options) {
-            helpers.foreach.call(self, _context, _options);
+            foreach.call(self, _context, _options);
         }
 
         it('should not populate data if no private data is supplied (array)', function () {
@@ -297,7 +297,7 @@ describe('{{#foreach}} helper', function () {
         }
 
         before(function () {
-            handlebars.registerHelper('foreach', helpers.foreach);
+            handlebars.registerHelper('foreach', foreach);
         });
 
         /** Many of these are copied direct from the handlebars spec */

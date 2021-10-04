@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const {SafeString} = require('../../../core/frontend/services/rendering');
 
 // Stuff we are testing
-const helpers = require('../../../core/frontend/helpers');
+const get = require('../../../core/frontend/helpers/get');
 
 const models = require('../../../core/server/models');
 const api = require('../../../core/server/api');
@@ -44,7 +44,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('converts html strings to SafeString', function (done) {
-            helpers.get.call(
+            get.call(
                 {},
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
@@ -74,7 +74,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('browse authors', function (done) {
-            helpers.get.call(
+            get.call(
                 {},
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
@@ -104,7 +104,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('browse authors', function (done) {
-            helpers.get.call(
+            get.call(
                 {},
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
@@ -134,7 +134,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('browse authors', function (done) {
-            helpers.get.call(
+            get.call(
                 {},
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
@@ -151,7 +151,7 @@ describe('{{#get}} helper', function () {
 
     describe('general error handling', function () {
         it('should return an error for an unknown resource', function (done) {
-            helpers.get.call(
+            get.call(
                 {},
                 'magic',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
@@ -167,7 +167,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should handle error from the API', function (done) {
-            helpers.get.call(
+            get.call(
                 {},
                 'posts',
                 {hash: {slug: 'thing!'}, data: locals, fn: fn, inverse: inverse}
@@ -183,7 +183,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should show warning for call without any options', function (done) {
-            helpers.get.call(
+            get.call(
                 {},
                 'posts',
                 {data: locals}
@@ -217,7 +217,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should resolve post.tags alias', function (done) {
-            helpers.get.call(
+            get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'tags:[{{post.tags}}]'}, data: locals, fn: fn, inverse: inverse}
@@ -231,7 +231,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should resolve post.author alias', function (done) {
-            helpers.get.call(
+            get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'author:{{post.author}}'}, data: locals, fn: fn, inverse: inverse}
@@ -245,7 +245,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should resolve basic path', function (done) {
-            helpers.get.call(
+            get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'id:-{{post.id}}'}, data: locals, fn: fn, inverse: inverse}
@@ -259,7 +259,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should handle arrays the same as handlebars', function (done) {
-            helpers.get.call(
+            get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'tags:{{post.tags.[0].slug}}'}, data: locals, fn: fn, inverse: inverse}
@@ -273,7 +273,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should handle dates', function (done) {
-            helpers.get.call(
+            get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'published_at:<=\'{{post.published_at}}\''}, data: locals, fn: fn, inverse: inverse}
@@ -287,7 +287,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should output nothing if path does not resolve', function (done) {
-            helpers.get.call(
+            get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'id:{{post.thing}}'}, data: locals, fn: fn, inverse: inverse}
@@ -301,7 +301,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should resolve global props', function (done) {
-            helpers.get.call(
+            get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'slug:{{@globalProp.foo}}'}, data: locals, fn: fn, inverse: inverse}

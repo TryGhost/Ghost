@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 
 // Stuff we are testing
-const helpers = require('../../../core/frontend/helpers');
+const has = require('../../../core/frontend/helpers/has');
 
 describe('{{#has}} helper', function () {
     let fn;
@@ -32,7 +32,7 @@ describe('{{#has}} helper', function () {
     function callHasHelper(context, hash) {
         // Hash is the options passed in
         handlebarsOptions.hash = hash;
-        return helpers.has.call(context, handlebarsOptions);
+        return has.call(context, handlebarsOptions);
     }
 
     describe('tag match', function () {

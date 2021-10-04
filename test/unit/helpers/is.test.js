@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const helpers = require('../../../core/frontend/helpers');
+const is = require('../../../core/frontend/helpers/is');
 const logging = require('@tryghost/logging');
 
 describe('{{#is}} helper', function () {
@@ -12,7 +12,7 @@ describe('{{#is}} helper', function () {
         const fn = sinon.spy();
         const inverse = sinon.spy();
 
-        helpers.is.call(
+        is.call(
             {},
             'index',
             {fn: fn, inverse: inverse, data: {root: {context: ['home', 'index']}}}
@@ -26,7 +26,7 @@ describe('{{#is}} helper', function () {
         const fn = sinon.spy();
         const inverse = sinon.spy();
 
-        helpers.is.call(
+        is.call(
             {},
             'index, paged',
             {fn: fn, inverse: inverse, data: {root: {context: ['tag', 'paged']}}}
@@ -40,7 +40,7 @@ describe('{{#is}} helper', function () {
         const fn = sinon.spy();
         const inverse = sinon.spy();
 
-        helpers.is.call(
+        is.call(
             {},
             'paged',
             {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}
@@ -55,7 +55,7 @@ describe('{{#is}} helper', function () {
         const inverse = sinon.spy();
         const logWarn = sinon.stub(logging, 'warn');
 
-        helpers.is.call(
+        is.call(
             {},
             undefined,
             {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}

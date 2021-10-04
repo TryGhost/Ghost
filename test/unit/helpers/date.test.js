@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const should = require('should');
 
 // Stuff we are testing
-const helpers = require('../../../core/frontend/helpers');
+const date = require('../../../core/frontend/helpers/date');
 
 const moment = require('moment-timezone');
 
@@ -32,19 +32,19 @@ describe('{{date}} helper', function () {
         let rendered;
 
         testDates.forEach(function (d) {
-            rendered = helpers.date.call({published_at: d}, context);
+            rendered = date.call({published_at: d}, context);
 
             should.exist(rendered);
             String(rendered).should.equal(moment(d).tz(timezone).format(format));
 
-            rendered = helpers.date.call({}, d, context);
+            rendered = date.call({}, d, context);
 
             should.exist(rendered);
             String(rendered).should.equal(moment(d).tz(timezone).format(format));
         });
 
         // No date falls back to now
-        rendered = helpers.date.call({}, context);
+        rendered = date.call({}, context);
         should.exist(rendered);
         String(rendered).should.equal(moment().tz(timezone).format(format));
     });
@@ -80,19 +80,19 @@ describe('{{date}} helper', function () {
             };
 
             testDates.forEach(function (d) {
-                rendered = helpers.date.call({published_at: d}, context);
+                rendered = date.call({published_at: d}, context);
 
                 should.exist(rendered);
                 String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
 
-                rendered = helpers.date.call({}, d, context);
+                rendered = date.call({}, d, context);
 
                 should.exist(rendered);
                 String(rendered).should.equal(moment(d).tz(timezone).locale(locale).format(format));
             });
 
             // No date falls back to now
-            rendered = helpers.date.call({}, context);
+            rendered = date.call({}, context);
             should.exist(rendered);
             String(rendered).should.equal(moment().tz(timezone).locale(locale).format(format));
         });
@@ -123,19 +123,19 @@ describe('{{date}} helper', function () {
         let rendered;
 
         testDates.forEach(function (d) {
-            rendered = helpers.date.call({published_at: d}, context);
+            rendered = date.call({published_at: d}, context);
 
             should.exist(rendered);
             String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
 
-            rendered = helpers.date.call({}, d, context);
+            rendered = date.call({}, d, context);
 
             should.exist(rendered);
             String(rendered).should.equal(moment(d).tz(timezone).from(timeNow));
         });
 
         // No date falls back to now
-        rendered = helpers.date.call({}, context);
+        rendered = date.call({}, context);
         should.exist(rendered);
         String(rendered).should.equal('a few seconds ago');
     });
@@ -158,12 +158,12 @@ describe('{{date}} helper', function () {
         let invalidDate = 'Fred';
         let rendered;
 
-        rendered = helpers.date.call({published_at: invalidDate}, context);
+        rendered = date.call({published_at: invalidDate}, context);
 
         should.exist(rendered);
         String(rendered).should.equal('a few seconds ago');
 
-        rendered = helpers.date.call({}, invalidDate, context);
+        rendered = date.call({}, invalidDate, context);
 
         should.exist(rendered);
         String(rendered).should.equal('a few seconds ago');

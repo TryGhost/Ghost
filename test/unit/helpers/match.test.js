@@ -1,13 +1,13 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const helpers = require('../../../core/frontend/helpers');
+const match = require('../../../core/frontend/helpers/match');
 const labs = require('../../../core/shared/labs');
 const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
 describe('Match helper', function () {
     before(function () {
-        handlebars.registerHelper('match', helpers.match);
+        handlebars.registerHelper('match', match);
     });
 
     afterEach(function () {

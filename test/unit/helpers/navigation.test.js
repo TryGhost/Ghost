@@ -2,10 +2,16 @@ const should = require('should');
 const hbs = require('../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../utils/configUtils');
 const path = require('path');
-const helpers = require('../../../core/frontend/helpers');
+
+const concat = require('../../../core/frontend/helpers/concat');
+const foreach = require('../../../core/frontend/helpers/foreach');
+const link_class = require('../../../core/frontend/helpers/link_class');
+const url = require('../../../core/frontend/helpers/url');
+const navigation = require('../../../core/frontend/helpers/navigation');
+
 const handlebars = require('../../../core/frontend/services/theme-engine/engine').handlebars;
 
-const runHelper = data => helpers.navigation.call({}, data);
+const runHelper = data => navigation.call({}, data);
 const runHelperThunk = data => () => runHelper(data);
 
 describe('{{navigation}} helper', function () {
@@ -22,10 +28,10 @@ describe('{{navigation}} helper', function () {
 
         // The navigation partial expects this helper
         // @TODO: change to register with Ghost's own registration tools
-        hbs.registerHelper('link_class', helpers.link_class);
-        hbs.registerHelper('concat', helpers.concat);
-        hbs.registerHelper('url', helpers.url);
-        hbs.registerHelper('foreach', helpers.foreach);
+        hbs.registerHelper('link_class', link_class);
+        hbs.registerHelper('concat', concat);
+        hbs.registerHelper('url', url);
+        hbs.registerHelper('foreach', foreach);
     });
 
     beforeEach(function () {
@@ -306,10 +312,10 @@ describe('{{navigation}} helper with custom template', function () {
         }
 
         before(function () {
-            handlebars.registerHelper('link_class', helpers.link_class);
-            handlebars.registerHelper('concat', helpers.concat);
-            handlebars.registerHelper('url', helpers.concat);
-            handlebars.registerHelper('navigation', helpers.navigation);
+            handlebars.registerHelper('link_class', link_class);
+            handlebars.registerHelper('concat', concat);
+            handlebars.registerHelper('url', concat);
+            handlebars.registerHelper('navigation', navigation);
             configUtils.config.set('url', 'https://siteurl.com');
             defaultGlobals = {
                 data: {

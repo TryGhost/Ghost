@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const helpers = require('../../../core/frontend/helpers');
+const ghost_foot = require('../../../core/frontend/helpers/ghost_foot');
 const {settingsCache} = require('../../../core/frontend/services/proxy');
 
 describe('{{ghost_foot}} helper', function () {
@@ -17,7 +17,7 @@ describe('{{ghost_foot}} helper', function () {
     it('outputs global injected code', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
-        const rendered = helpers.ghost_foot({data: {}});
+        const rendered = ghost_foot({data: {}});
         should.exist(rendered);
         rendered.string.should.match(/<script>var test = 'I am a variable!'<\/script>/);
     });
@@ -25,7 +25,7 @@ describe('{{ghost_foot}} helper', function () {
     it('outputs post injected code', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
-        const rendered = helpers.ghost_foot({
+        const rendered = ghost_foot({
             data: {
                 root: {
                     post: {
@@ -42,7 +42,7 @@ describe('{{ghost_foot}} helper', function () {
     it('handles post injected code being null', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
-        const rendered = helpers.ghost_foot({
+        const rendered = ghost_foot({
             data: {
                 root: {
                     post: {
@@ -59,7 +59,7 @@ describe('{{ghost_foot}} helper', function () {
     it('handles post injected code being empty', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('<script>var test = \'I am a variable!\'</script>');
 
-        const rendered = helpers.ghost_foot({
+        const rendered = ghost_foot({
             data: {
                 root: {
                     post: {
@@ -76,7 +76,7 @@ describe('{{ghost_foot}} helper', function () {
     it('handles global empty code injection', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns('');
 
-        const rendered = helpers.ghost_foot({data: {}});
+        const rendered = ghost_foot({data: {}});
         should.exist(rendered);
         rendered.string.should.eql('');
     });
@@ -84,7 +84,7 @@ describe('{{ghost_foot}} helper', function () {
     it('handles global undefined code injection', function () {
         settingsCacheStub.withArgs('codeinjection_foot').returns(undefined);
 
-        const rendered = helpers.ghost_foot({data: {}});
+        const rendered = ghost_foot({data: {}});
         should.exist(rendered);
         rendered.string.should.eql('');
     });

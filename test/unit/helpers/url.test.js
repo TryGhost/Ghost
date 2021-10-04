@@ -2,10 +2,10 @@ const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
 const testUtils = require('../../utils');
-const urlUtils = require('../../utils/urlUtils');
+
 const configUtils = require('../../utils/configUtils');
 const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
-const helpers = require('../../../core/frontend/helpers');
+const url = require('../../../core/frontend/helpers/url');
 const urlService = require('../../../core/frontend/services/url');
 const api = require('../../../core/server/api');
 
@@ -47,7 +47,7 @@ describe('{{url}} helper', function () {
 
             urlService.getUrlByResourceId.withArgs(post.id, {absolute: undefined, secure: undefined, withSubdirectory: true}).returns('/slug/');
 
-            rendered = helpers.url.call(post);
+            rendered = url.call(post);
             should.exist(rendered);
             rendered.string.should.equal('/slug/');
         });
@@ -64,7 +64,7 @@ describe('{{url}} helper', function () {
 
             urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: undefined, withSubdirectory: true}).returns('http://localhost:65535/slug/');
 
-            rendered = helpers.url.call(post, {hash: {absolute: 'true'}});
+            rendered = url.call(post, {hash: {absolute: 'true'}});
             should.exist(rendered);
             rendered.string.should.equal('http://localhost:65535/slug/');
         });
@@ -82,7 +82,7 @@ describe('{{url}} helper', function () {
 
             urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: true, withSubdirectory: true}).returns('https://localhost:65535/slug/');
 
-            rendered = helpers.url.call(post, {hash: {absolute: 'true'}});
+            rendered = url.call(post, {hash: {absolute: 'true'}});
             should.exist(rendered);
             rendered.string.should.equal('https://localhost:65535/slug/');
         });
@@ -97,7 +97,7 @@ describe('{{url}} helper', function () {
 
             urlService.getUrlByResourceId.withArgs(tag.id, {absolute: undefined, secure: undefined, withSubdirectory: true}).returns('/tag/the-tag/');
 
-            rendered = helpers.url.call(tag);
+            rendered = url.call(tag);
             should.exist(rendered);
             rendered.string.should.equal('/tag/the-tag/');
         });
@@ -113,26 +113,26 @@ describe('{{url}} helper', function () {
 
             urlService.getUrlByResourceId.withArgs(user.id, {absolute: undefined, secure: undefined, withSubdirectory: true}).returns('/author/some-author/');
 
-            rendered = helpers.url.call(user);
+            rendered = url.call(user);
             should.exist(rendered);
             rendered.string.should.equal('/author/some-author/');
         });
 
         it('should return / if not a post or tag', function () {
-            rendered = helpers.url.call({something: 'key'});
+            rendered = url.call({something: 'key'});
             should.exist(rendered);
             rendered.string.should.equal('/');
         });
 
         it('should return a relative url if passed through a nav context', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '/foo', label: 'Foo', slug: 'foo', current: true});
             should.exist(rendered);
             rendered.string.should.equal('/foo');
         });
 
         it('should return an absolute url if passed through a nav context', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '/bar', label: 'Bar', slug: 'bar', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -140,7 +140,7 @@ describe('{{url}} helper', function () {
         });
 
         it('should return an absolute url with https if context is secure', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '/bar', label: 'Bar', slug: 'bar', current: true, secure: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -148,7 +148,7 @@ describe('{{url}} helper', function () {
         });
 
         it('external urls should be retained in a nav context', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -156,7 +156,7 @@ describe('{{url}} helper', function () {
         });
 
         it('should handle hosted urls in a nav context', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: 'http://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -164,7 +164,7 @@ describe('{{url}} helper', function () {
         });
 
         it('should handle hosted urls in a nav context with secure', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {
                     url: 'http://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true,
                     secure: true
@@ -175,7 +175,7 @@ describe('{{url}} helper', function () {
         });
 
         it('should handle hosted https urls in a nav context with secure', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {
                     url: 'https://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true,
                     secure: true
@@ -186,7 +186,7 @@ describe('{{url}} helper', function () {
         });
 
         it('should handle hosted urls with the wrong protocol in a nav context', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: 'https://localhost:65535/quux', label: 'Quux', slug: 'quux', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -194,13 +194,13 @@ describe('{{url}} helper', function () {
         });
 
         it('should pass through protocol-less URLs regardless of absolute setting', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '//casper.website/baz', label: 'Baz', slug: 'baz', current: true},
                 {hash: {}});
             should.exist(rendered);
             rendered.string.should.equal('//casper.website/baz');
 
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '//casper.website/baz', label: 'Baz', slug: 'baz', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -208,25 +208,25 @@ describe('{{url}} helper', function () {
         });
 
         it('should pass through URLs with alternative schemes regardless of absolute setting', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: 'tel:01234567890', label: 'Baz', slug: 'baz', current: true},
                 {hash: {}});
             should.exist(rendered);
             rendered.string.should.equal('tel:01234567890');
 
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: 'mailto:example@ghost.org', label: 'Baz', slug: 'baz', current: true},
                 {hash: {}});
             should.exist(rendered);
             rendered.string.should.equal('mailto:example@ghost.org');
 
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: 'tel:01234567890', label: 'Baz', slug: 'baz', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
             rendered.string.should.equal('tel:01234567890');
 
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: 'mailto:example@ghost.org', label: 'Baz', slug: 'baz', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -234,13 +234,13 @@ describe('{{url}} helper', function () {
         });
 
         it('should pass through anchor-only URLs  regardless of absolute setting', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '#thatsthegoodstuff', label: 'Baz', slug: 'baz', current: true},
                 {hash: {}});
             should.exist(rendered);
             rendered.string.should.equal('#thatsthegoodstuff');
 
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '#thatsthegoodstuff', label: 'Baz', slug: 'baz', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -248,21 +248,21 @@ describe('{{url}} helper', function () {
         });
 
         it('should not HTML-escape URLs', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '/foo?foo=bar&baz=qux', label: 'Foo', slug: 'foo', current: true});
             should.exist(rendered);
             rendered.string.should.equal('/foo?foo=bar&baz=qux');
         });
 
         it('should encode URLs', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '/foo?foo=bar&baz=qux&<script>alert("gotcha")</script>', label: 'Foo', slug: 'foo', current: true});
             should.exist(rendered);
             rendered.string.should.equal('/foo?foo=bar&baz=qux&%3Cscript%3Ealert(%22gotcha%22)%3C/script%3E');
         });
 
         it('should not double-encode URLs', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '/?foo=space%20bar', label: 'Foo', slug: 'foo', current: true});
             should.exist(rendered);
             rendered.string.should.equal('/?foo=space%20bar');
@@ -279,7 +279,7 @@ describe('{{url}} helper', function () {
         });
 
         it('external urls should be retained in a nav context with subdir', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
@@ -287,7 +287,7 @@ describe('{{url}} helper', function () {
         });
 
         it('should handle subdir being set in nav context', function () {
-            rendered = helpers.url.call(
+            rendered = url.call(
                 {url: '/xyzzy', label: 'xyzzy', slug: 'xyzzy', current: true},
                 {hash: {absolute: 'true'}});
             should.exist(rendered);

@@ -5,7 +5,7 @@ const should = require('should');
 
 const sinon = require('sinon');
 const configUtils = require('../../utils/configUtils');
-const helpers = require('../../../core/frontend/helpers');
+const asset = require('../../../core/frontend/helpers/asset');
 const settingsCache = require('../../../core/shared/settings-cache');
 
 describe('{{asset}} helper', function () {
@@ -28,13 +28,13 @@ describe('{{asset}} helper', function () {
 
     describe('no subdirectory', function () {
         it('handles favicon correctly', function () {
-            rendered = helpers.asset('favicon.ico');
+            rendered = asset('favicon.ico');
             should.exist(rendered);
             String(rendered).should.equal('/favicon.ico');
         });
 
         it('handles ghost.css for default templates correctly', function () {
-            rendered = helpers.asset('public/ghost.css');
+            rendered = asset('public/ghost.css');
             should.exist(rendered);
             String(rendered).should.equal('/public/ghost.css?v=abc');
         });
@@ -43,14 +43,14 @@ describe('{{asset}} helper', function () {
             localSettingsCache.icon = '/content/images/favicon.png';
 
             // with png
-            rendered = helpers.asset('favicon.png');
+            rendered = asset('favicon.png');
             should.exist(rendered);
             String(rendered).should.equal('/favicon.png');
 
             localSettingsCache.icon = '/content/images/favicon.ico';
 
             // with ico
-            rendered = helpers.asset('favicon.ico');
+            rendered = asset('favicon.ico');
             should.exist(rendered);
             String(rendered).should.equal('/favicon.ico');
         });
@@ -58,19 +58,19 @@ describe('{{asset}} helper', function () {
         it('handles public assets correctly', function () {
             localSettingsCache.icon = '';
 
-            rendered = helpers.asset('public/asset.js');
+            rendered = asset('public/asset.js');
             should.exist(rendered);
             String(rendered).should.equal('/public/asset.js?v=abc');
         });
 
         it('handles theme assets correctly', function () {
-            rendered = helpers.asset('js/asset.js');
+            rendered = asset('js/asset.js');
             should.exist(rendered);
             String(rendered).should.equal('/assets/js/asset.js?v=abc');
         });
 
         it('handles hasMinFile assets correctly', function () {
-            rendered = helpers.asset('js/asset.js', {hash: {hasMinFile: true}});
+            rendered = asset('js/asset.js', {hash: {hasMinFile: true}});
             should.exist(rendered);
             String(rendered).should.equal('/assets/js/asset.min.js?v=abc');
         });

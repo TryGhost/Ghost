@@ -3,9 +3,8 @@ const hbs = require('../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../utils/configUtils');
 const path = require('path');
 
-const runHelper = data => helpers.navigation.call({}, data);
 // Stuff we are testing
-const helpers = require('../../../core/frontend/helpers');
+const content = require('../../../core/frontend/helpers/content');
 
 describe('{{content}} helper', function () {
     before(function (done) {
@@ -18,7 +17,7 @@ describe('{{content}} helper', function () {
 
     it('renders empty string when null', function () {
         const html = null;
-        const rendered = helpers.content.call({html: html});
+        const rendered = content.call({html: html});
 
         should.exist(rendered);
         rendered.string.should.equal('');
@@ -26,7 +25,7 @@ describe('{{content}} helper', function () {
 
     it('can render content', function () {
         const html = 'Hello World';
-        const rendered = helpers.content.call({html: html});
+        const rendered = content.call({html: html});
 
         should.exist(rendered);
         rendered.string.should.equal(html);
@@ -36,7 +35,7 @@ describe('{{content}} helper', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>';
 
         const rendered = (
-            helpers.content
+            content
                 .call(
                     {html: html},
                     {hash: {words: 2}}
@@ -51,7 +50,7 @@ describe('{{content}} helper', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>';
 
         const rendered = (
-            helpers.content
+            content
                 .call(
                     {html: html},
                     {hash: {words: '0'}}
@@ -66,7 +65,7 @@ describe('{{content}} helper', function () {
         const html = '<p>Hello <strong>World! It\'s me!</strong></p>';
 
         const rendered = (
-            helpers.content
+            content
                 .call(
                     {html: html},
                     {hash: {characters: 8}}
@@ -100,7 +99,7 @@ describe('{{content}} helper with no access', function () {
 
     it('can render default template', function () {
         const html = '';
-        const rendered = helpers.content.call({html: html, access: false}, optionsData);
+        const rendered = content.call({html: html, access: false}, optionsData);
         rendered.string.should.containEql('gh-post-upgrade-cta');
         rendered.string.should.containEql('gh-post-upgrade-cta-content');
         rendered.string.should.containEql('"background-color: #abcdef"');
@@ -111,7 +110,7 @@ describe('{{content}} helper with no access', function () {
     it('outputs free content if available via paywall card', function () {
         // html will be included when there is free content available
         const html = 'Free content';
-        const rendered = helpers.content.call({html: html, access: false}, optionsData);
+        const rendered = content.call({html: html, access: false}, optionsData);
         rendered.string.should.containEql('Free content');
         rendered.string.should.containEql('gh-post-upgrade-cta');
         rendered.string.should.containEql('gh-post-upgrade-cta-content');
@@ -131,7 +130,7 @@ describe('{{content}} helper with custom template', function () {
 
     it('can render custom template', function () {
         const html = 'Hello World';
-        const rendered = helpers.content.call({html: html, access: false}, optionsData);
+        const rendered = content.call({html: html, access: false}, optionsData);
         rendered.string.should.not.containEql('gh-post-upgrade-cta');
         rendered.string.should.containEql('custom-post-upgrade-cta');
         rendered.string.should.containEql('custom-post-upgrade-cta-content');

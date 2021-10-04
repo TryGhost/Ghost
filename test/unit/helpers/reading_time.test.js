@@ -1,7 +1,7 @@
 const should = require('should');
 
 // Stuff we are testing
-const helpers = require('../../../core/frontend/helpers');
+const reading_time = require('../../../core/frontend/helpers/reading_time');
 
 const almostOneMinute =
     '<p>Ghost has a number of different user roles for your team</p>' +
@@ -41,7 +41,7 @@ describe('{{reading_time}} helper', function () {
             slug: 'slug'
         };
 
-        const result = helpers.reading_time.call(data);
+        const result = reading_time.call(data);
 
         String(result).should.equal('1 min read');
     });
@@ -55,7 +55,7 @@ describe('{{reading_time}} helper', function () {
             slug: 'slug'
         };
 
-        const result = helpers.reading_time.call(data);
+        const result = reading_time.call(data);
 
         String(result).should.equal('1 min read');
     });
@@ -67,7 +67,7 @@ describe('{{reading_time}} helper', function () {
             slug: 'slug'
         };
 
-        const result = helpers.reading_time.call(data);
+        const result = reading_time.call(data);
 
         String(result).should.equal('1 min read');
     });
@@ -80,7 +80,7 @@ describe('{{reading_time}} helper', function () {
             feature_image: '/content/images/someimage.jpg'
         };
 
-        const result = helpers.reading_time.call(data);
+        const result = reading_time.call(data);
 
         // The reading time for this HTML snippet would 89 seconds without the image
         // Adding the 12 additional seconds for the image results in a readng time of over 1.5 minutes, rounded to 2
@@ -95,7 +95,7 @@ describe('{{reading_time}} helper', function () {
             slug: 'slug'
         };
 
-        const result = helpers.reading_time.call(data);
+        const result = reading_time.call(data);
 
         // The reading time for this HTML snippet would 89 seconds without the image
         // Adding the 12 additional seconds for the image results in a readng time of over 1.5 minutes, rounded to 2
@@ -110,7 +110,7 @@ describe('{{reading_time}} helper', function () {
             }
         };
 
-        const result = helpers.reading_time.call(data);
+        const result = reading_time.call(data);
 
         should.not.exist(result);
     });
