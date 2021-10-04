@@ -71,7 +71,7 @@ Check out our [official documentation](https://ghost.org/docs/) for more informa
 
 ### Contributors & Advanced Developers
 
-For anyone wishing to contribute to Ghost or to hack/customise core files we recommend following our full development setup guides: [Contributor Guide](https://ghost.org/docs/contributing/) | [Developer Setup](https://ghost.org/docs/install/source/) | [Admin Client Dev Guide](https://ghost.org/docs/install/source/#ghost-admin)
+For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor Guide](https://ghost.org/docs/contributing/) | [Developer Setup](https://ghost.org/docs/install/source/) | [Admin Client Dev Guide](https://ghost.org/docs/install/source/#ghost-admin)
 
 &nbsp;
 
