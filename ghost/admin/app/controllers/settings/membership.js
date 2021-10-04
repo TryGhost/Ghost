@@ -39,7 +39,6 @@ export default class MembersAccessController extends Controller {
     @tracked stripePlanError = '';
 
     @tracked portalPreviewUrl = '';
-    @tracked offersExist = false;
 
     portalPreviewGuid = Date.now().valueOf();
 
