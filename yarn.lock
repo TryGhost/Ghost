@@ -1747,10 +1747,10 @@
     extract-zip "2.0.1"
     fs-extra "^9.1.0"
 
-"@tryghost/zip@1.1.16":
-  version "1.1.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.16.tgz#2f3760bf0cc7ffc2129ec5ae4c231aaca870de1a"
-  integrity sha512-RxJ3kkQrItN4EsO5XsbqoqYuK7aOKlehwU6oqsBx9JYD0Z4SqXTvavulNlOTYMNIRljgeK/6VNY0Z5z9iUbmdA==
+"@tryghost/zip@1.1.17":
+  version "1.1.17"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.17.tgz#8665655fbbde0f421180d012ca7769bd133a7482"
+  integrity sha512-ZyjJsQaVSBUqsJ3iBU9hV6G1P7kTSfi83u+g26ZcSjfx4y3FvpYiDbCc2WTKj5xDS0p3NbQ7ZVOi6E73oXVlDg==
   dependencies:
     archiver "^4.0.2"
     bluebird "^3.7.2"
