@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/custom-theme-settings-service",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "repository": "https://github.com/TryGhost/Publishing/tree/main/packages/custom-theme-settings-service",
   "author": "Ghost Foundation",
   "license": "MIT",
