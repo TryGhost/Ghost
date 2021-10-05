@@ -7,12 +7,15 @@
     <div class="modal-body">
         <div class="gh-setting-header">Installed Themes</div>
         <div class="gh-themes-container">
+            <GhThemeTableLabs @themes={{this.themes}} />
 
-            <GhThemeTable
-                @themes={{this.themes}}
-                @activateTheme={{optional this.noop}}
-                @downloadTheme={{optional this.noop}}
-                @deleteTheme={{optional this.noop}} />
+            <div class="flex justify-between mt6">
+                <a href="https://ghost.org/docs/themes/" target=_"blank" rel="noopener noreferrer" class="gh-btn gh-btn-outline">
+                    <span>Theme developer docs</span>
+                </a>
+
+                <button type="button" class="gh-btn gh-btn-black" {{on "click" @close}}><span>Done</span></button>
+            </div>
         </div>
     </div>
 </div>

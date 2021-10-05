@@ -1,0 +1,67 @@
+<div class="modal-content">
+    <div class="theme-validation-container" data-test-modal="theme-errors">
+        <header class="modal-header">
+            <h1 data-test-theme-warnings-title>
+                {{#unless @data.canActivate}}
+                    {{@data.title}}
+                {{else}}
+                    {{@data.title}} with {{#if @data.errors}}errors{{else}}warnings{{/if}}
+                {{/unless}}
+            </h1>
+        </header>
+        <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+        <div class="modal-body">
+            {{#if @data.fatalErrors}}
+                <div>
+                    <h2 class="mb0 mt4 f5 fw6 red">Fatal Errors</h2>
+                    <p class="mb2 red">Must-fix to activate theme</p>
+                </div>
+                <ul class="pa0" data-test-theme-fatal-errors>
+                    {{#each @data.fatalErrors as |error|}}
+                        <li class="theme-validation-item theme-fatal-error">
+                            <GhThemeErrorLi @error={{error}} />
+                        </li>
+                    {{/each}}
+                </ul>
+            {{/if}}
+
+            {{#if @data.errors}}
+                <div>
+                    <h2 class="mb0 mt4 f5 fw6">Errors</h2>
+                    <p class="mb2">Highly recommended to fix, functionality <span>could</span> be restricted</p>
+                </div>
+
+                <ul class="pa0" data-test-theme-errors>
+                    {{#each @data.errors as |error|}}
+                        <li class="theme-validation-item theme-error">
+                            <GhThemeErrorLi @error={{error}} />
+                        </li>
+                    {{/each}}
+                </ul>
+            {{/if}}
+
+            {{#if (and @data.warnings (or @data.fatalErrors @data.errors))}}
+                <div>
+                    <h2 class="mb0 mt4 f5 fw6">Warnings</h2>
+                </div>
+            {{/if}}
+            {{#if @data.warnings}}
+                <ul class="pa0" data-test-theme-warnings>
+                    {{#each @data.warnings as |error|}}
+                        <li class="theme-validation-item theme-warning">
+                            <GhThemeErrorLi @error={{error}} />
+                        </li>
+                    {{/each}}
+                </ul>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" {{on "click" @close}} class="gh-btn" data-test-modal-close-button>
+            <span>Ok</span>
+        </button>
+    </div>
+
+</div>
