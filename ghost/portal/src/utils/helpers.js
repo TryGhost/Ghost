@@ -328,7 +328,7 @@ export function hasFreeProductPrice({site}) {
 }
 
 export function getProductFromPrice({site, priceId}) {
-    const products = getAvailableProducts({site});
+    const products = getAllProductsForSite({site});
     return products.find((product) => {
         return (product?.monthlyPrice?.id === priceId) || (product?.yearlyPrice?.id === priceId);
     });

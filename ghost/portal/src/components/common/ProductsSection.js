@@ -750,7 +750,7 @@ function getSelectedPrice({products, selectedProduct, selectedInterval}) {
         selectedPrice = {id: 'free'};
     } else {
         const product = products.find(prod => prod.id === selectedProduct);
-        selectedPrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
+        selectedPrice = selectedInterval === 'month' ? product?.monthlyPrice : product?.yearlyPrice;
     }
     return selectedPrice;
 }
@@ -876,9 +876,9 @@ export function ChangeProductSection({onPlanSelect, selectedPlan, products, type
                     <ChangeProductCards products={products} />
                 </div>
                 <ActionButton
-                    onClick={e => onPlanSelect(null, selectedPrice.id)}
+                    onClick={e => onPlanSelect(null, selectedPrice?.id)}
                     isRunning={false}
-                    disabled={activePrice.id === selectedPrice.id}
+                    disabled={!selectedPrice?.id || (activePrice.id === selectedPrice?.id)}
                     isPrimary={true}
                     brandColor={brandColor}
                     label={'Continue'}
