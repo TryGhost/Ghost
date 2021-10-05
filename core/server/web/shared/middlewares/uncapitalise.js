@@ -14,8 +14,12 @@
 
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../../shared/url-utils');
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const localUtils = require('../utils');
+
+const messages = {
+    pageNotFound: 'Page not found"'
+};
 
 const uncapitalise = (req, res, next) => {
     let pathToTest = (req.baseUrl ? req.baseUrl : '') + req.path;
@@ -38,7 +42,7 @@ const uncapitalise = (req, res, next) => {
         decodedURI = decodeURIComponent(pathToTest);
     } catch (err) {
         return next(new errors.NotFoundError({
-            message: i18n.t('errors.errors.pageNotFound'),
+            message: tpl(messages.pageNotFound),
             err: err
         }));
     }
