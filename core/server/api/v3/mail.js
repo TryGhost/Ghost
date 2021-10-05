@@ -1,9 +1,15 @@
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const mailService = require('../../services/mail');
 const api = require('./');
 let mailer;
 let _private = {};
+
+const messages = {
+    unableToSendEmail: 'Ghost is currently unable to send email.',
+    seeLinkForInstructions: 'See {link} for instructions.',
+    testGhostEmail: 'Test Ghost Email'
+};
 
 _private.sendMail = (object) => {
     if (!(mailer instanceof mailService.GhostMailer)) {
@@ -17,8 +23,8 @@ _private.sendMail = (object) => {
                     notifications: [{
                         type: 'warn',
                         message: [
-                            i18n.t('warnings.index.unableToSendEmail'),
-                            i18n.t('common.seeLinkForInstructions', {link: 'https://ghost.org/docs/concepts/config/#mail'})
+                            tpl(messages.unableToSendEmail),
+                            tpl(messages.seeLinkForInstructions, {link: 'https://ghost.org/docs/concepts/config/#mail'})
                         ].join(' ')
                     }]
                 },
@@ -47,7 +53,7 @@ module.exports = {
                     mail: [{
                         message: {
                             to: frame.user.get('email'),
-                            subject: i18n.t('common.api.mail.testGhostEmail'),
+                            subject: tpl(messages.testGhostEmail),
                             html: content.html,
                             text: content.text
                         }
