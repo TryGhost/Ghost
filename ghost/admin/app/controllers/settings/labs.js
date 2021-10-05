@@ -42,6 +42,7 @@ export default Controller.extend({
     notifications: service(),
     session: service(),
     settings: service(),
+    utils: service(),
 
     importErrors: null,
     importSuccessful: false,
@@ -140,14 +141,7 @@ export default Controller.extend({
         },
 
         downloadFile(endpoint) {
-            let downloadURL = this.get('ghostPaths.url').api(endpoint);
-            let iframe = $('#iframeDownload');
-
-            if (iframe.length === 0) {
-                iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
-            }
-
-            iframe.attr('src', downloadURL);
+            this.utils.downloadFile(this.ghostPaths.url.api(endpoint));
         },
 
         async saveOAuthSettings() {

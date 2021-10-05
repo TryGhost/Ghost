@@ -1,5 +1,4 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
-import $ from 'jquery';
 import Controller from '@ember/controller';
 import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
@@ -48,6 +47,7 @@ export default Controller.extend({
     notifications: service(),
     session: service(),
     settings: service(),
+    utils: service(),
 
     dirtyAttributes: false,
     newNavItem: null,
@@ -127,14 +127,7 @@ export default Controller.extend({
         },
 
         downloadTheme(theme) {
-            let downloadURL = `${this.get('ghostPaths.apiRoot')}/themes/${theme.name}/download/`;
-            let iframe = $('#iframeDownload');
-
-            if (iframe.length === 0) {
-                iframe = $('<iframe>', {id: 'iframeDownload'}).hide().appendTo('body');
-            }
-
-            iframe.attr('src', downloadURL);
+            this.utils.downloadFile(`${this.get('ghostPaths.apiRoot')}/themes/${theme.name}/download/`);
         },
 
         deleteTheme(theme) {
