@@ -9,6 +9,9 @@ export const DEFAULT_MODAL_OPTIONS = {
     'modals/design/confirm-delete-theme': {
         className: 'fullscreen-modal-action fullscreen-modal-wide'
     },
+    'modals/design/theme-errors': {
+        className: 'fullscreen-modal-action fullscreen-modal-wide'
+    },
     'modals/limits/custom-theme': {
         className: 'fullscreen-modal-action fullscreen-modal-wide'
     }
