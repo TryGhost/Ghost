@@ -34,7 +34,7 @@ const GLOBAL_VALIDATORS = {
 const validate = (config, attrs) => {
     let errors = [];
 
-    _.each(config, (value, key) => {``
+    _.each(config, (value, key) => {
         if (value.required && !attrs[key]) {
             errors.push(new ValidationError({
                 message: tpl(messages.validationFailed, {
