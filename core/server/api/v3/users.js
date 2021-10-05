@@ -1,5 +1,5 @@
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');
@@ -12,11 +12,16 @@ const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettin
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
 
+const messages = {
+    noPermissionToAction: 'You do not have permission to perform this action',
+    userNotFound: 'User not found.'
+};
+
 function permissionOnlySelf(frame) {
     const targetId = getTargetId(frame);
     const userId = frame.user.id;
     if (targetId !== userId) {
-        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.permissions.noPermissionToAction')}));
+        return Promise.reject(new errors.NoPermissionError({message: tpl(messages.noPermissionToAction)}));
     }
     return Promise.resolve();
 }
@@ -88,7 +93,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.users.userNotFound')
+                            message: tpl(messages.userNotFound)
                         }));
                     }
 
@@ -121,7 +126,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.users.userNotFound')
+                            message: tpl(messages.userNotFound)
                         }));
                     }
 
