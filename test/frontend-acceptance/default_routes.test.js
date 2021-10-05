@@ -208,8 +208,10 @@ describe('Default Frontend routing', function () {
 
                     $('style[amp-custom]').length.should.equal(1);
 
-                    res.text.should.containEql(':root {--ghost-accent-color: #FF1A75;}');
+                    // This asserts we should have some content (and not [object Promise] !)
+                    $('.post-content p').length.should.be.greaterThan(0);
 
+                    res.text.should.containEql(':root {--ghost-accent-color: #FF1A75;}');
                     res.text.should.not.containEql('__GHOST_URL__');
                 });
         });
