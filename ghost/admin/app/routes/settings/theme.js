@@ -23,12 +23,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
         this.controller.send('reset');
     },
 
-    deactivate() {
-        this._super(...arguments);
-        this.controller.set('leaveSettingsTransition', null);
-        this.controller.set('showLeaveSettingsModal', false);
-    },
-
     actions: {
         activateTheme(theme) {
             return this.controller.send('activateTheme', theme);

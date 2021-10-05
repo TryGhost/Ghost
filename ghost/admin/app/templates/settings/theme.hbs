@@ -7,13 +7,6 @@
         </h2>
     </GhCanvasHeader>
 
-    {{#if this.showLeaveSettingsModal}}
-        <GhFullscreenModal @modal="leave-settings"
-            @confirm={{action "leaveSettings"}}
-            @close={{action "toggleLeaveSettingsModal"}}
-            @modifier="action wide" />
-    {{/if}}
-
     <section class="view-container">
         <div class="gh-setting-header gh-first-header flex justify-between">
             <span>Ghost theme directory</span>
