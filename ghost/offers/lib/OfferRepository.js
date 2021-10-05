@@ -1,3 +1,5 @@
+const DomainEvents = require('@tryghost/domain-events');
+const OfferCodeChangeEvent = require('./events/OfferCodeChange');
 const Offer = require('./Offer');
 
 /**
@@ -125,12 +127,12 @@ class OfferRepository {
         });
 
         if (offer.codeChanged || offer.isNew) {
-            offer.oldCodes.forEach((code) => {
-                this.redirectManager.removeRedirect(code);
+            const event = OfferCodeChangeEvent.create({
+                offerId: offer.id,
+                previousCodes: offer.isNew ? null : offer.oldCodes,
+                currentCode: offer.code
             });
-            this.redirectManager.addRedirect(`/${offer.code}`, `/#/portal/offers/${offer.id}`, {
-                permanent: false
-            });
+            DomainEvents.dispatch(event);
         }
 
         if (offer.isNew) {
