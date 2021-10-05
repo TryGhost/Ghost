@@ -83,7 +83,7 @@ const messageMap = {
                 sent: 'Sent'
             },
             sent: {
-                sent: 'Sent'
+                sent: 'Updated'
             }
         }
     }
