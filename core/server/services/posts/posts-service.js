@@ -60,10 +60,9 @@ class PostsService {
                 }
             }
 
-            const postPublished = model.wasChanged() && (model.get('status') === 'published') && (model.previous('status') !== 'published');
-            const emailOnlyEnabled = model.related('posts_meta').get('email_only') && this.isSet('emailOnlyPosts');
+            const sendEmail = model.wasChanged() && this.shouldSendEmail(model.get('status'), model.previous('status'));
 
-            if (postPublished || emailOnlyEnabled) {
+            if (sendEmail) {
                 let postEmail = model.relations.email;
 
                 if (!postEmail) {
@@ -77,6 +76,18 @@ class PostsService {
         }
 
         return model;
+    }
+
+    /**
+     * Calculates if the email should be tried to be sent out
+     * @private
+     * @param {String} currentStatus current status from the post model
+     * @param {String} previousStatus previous status from the post model
+     * @returns {Boolean}
+     */
+    shouldSendEmail(currentStatus, previousStatus) {
+        return (['published', 'sent'].includes(currentStatus))
+            && (!['published', 'sent'].includes(previousStatus));
     }
 
     handleCacheInvalidation(model) {
@@ -124,3 +135,5 @@ const getPostServiceInstance = (apiVersion) => {
 };
 
 module.exports = getPostServiceInstance;
+// exposed for testing purposes only
+module.exports.PostsService = PostsService;
