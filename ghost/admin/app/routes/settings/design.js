@@ -40,20 +40,20 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
     }
 
     @action
-    async willTransition(transition) {
-        if (this.settings.get('hasDirtyAttributes') || this.customThemeSettings.isDirty) {
-            transition.abort();
-
-            const shouldLeave = await this.confirmUnsavedChanges();
-            this.hasConfirmed = true;
-
-            if (shouldLeave) {
-                return transition.retry();
-            }
-        } else {
-            this.hasConfirmed = true;
+    willTransition(transition) {
+        if (this.hasConfirmed) {
             return true;
         }
+
+        // always abort when not confirmed because Ember's router doesn't automatically wait on promises
+        transition.abort();
+
+        this.confirmUnsavedChanges().then((shouldLeave) => {
+            if (shouldLeave) {
+                this.hasConfirmed = true;
+                return transition.retry();
+            }
+        });
     }
 
     deactivate() {
