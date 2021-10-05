@@ -5,6 +5,12 @@ import {inject as service} from '@ember/service';
 export const DEFAULT_MODAL_OPTIONS = {
     'modals/confirm-unsaved-changes': {
         className: 'fullscreen-modal-action fullscreen-modal-wide'
+    },
+    'modals/design/confirm-delete-theme': {
+        className: 'fullscreen-modal-action fullscreen-modal-wide'
+    },
+    'modals/limits/custom-theme': {
+        className: 'fullscreen-modal-action fullscreen-modal-wide'
     }
 };
 

@@ -33,6 +33,13 @@
     font-weight: normal;
 }
 
+.ember-basic-dropdown-content .dropdown-menu {
+    position: relative;
+    float: none;
+    top: auto;
+    left: auto;
+}
+
 .dropdown-menu.pull-right {
     right: 0;
     left: auto;
