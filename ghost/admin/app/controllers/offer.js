@@ -11,6 +11,21 @@ export default class MembersController extends Controller {
     @tracked cadences = [];
     @tracked products = [];
     @tracked selectedDiscountType = 'percentage';
+    @tracked durations = [
+        {
+            label: 'Forever',
+            duration: 'forever'
+        },
+        {
+            label: 'Once',
+            duration: 'once'
+        },
+        {
+            label: 'Multiple months',
+            duration: 'multiple-months'
+        }
+    ];
+    @tracked selectedDuration = 'forever';
 
     constructor() {
         super(...arguments);
@@ -42,6 +57,11 @@ export default class MembersController extends Controller {
     @action
     setDiscountType(discountType) {
         this.selectedDiscountType = discountType;
+    }
+
+    @action
+    setDuration(duration) {
+        this.selectedDuration = duration;
     }
 
     @action
