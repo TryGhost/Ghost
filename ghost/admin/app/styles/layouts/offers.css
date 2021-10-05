@@ -73,6 +73,7 @@
     grid-gap: 24px;
     white-space: nowrap;
     margin-top: -8px;
+    margin-bottom: 24px;
 }
 
 .gh-offer-type .gh-radio {
@@ -114,12 +115,38 @@
     padding-right: 28px;
 }
 
+.gh-offer-form {
+    max-width: 680px;
+}
+
 .gh-offer-form textarea {
     max-width: unset;
 }
 
 .gh-offer-form .form-group {
     max-width: unset;
+}
+
+.gh-offer-duration {
+    display: flex;
+}
+
+.gh-offer-duration .form-group {
+    position: relative;
+    margin-bottom: 0;
+}
+
+.gh-offer-duration .form-group:not(:first-of-type) {
+    margin-left: 24px;
+}
+
+.gh-offer-duration .duration-months::before {
+    position: absolute;
+    content: "months";
+    bottom: 7px;
+    right: 12px;
+    color: var(--midgrey);
+    font-size: 1.5rem;
 }
 
 /* Offers – Portal preview */

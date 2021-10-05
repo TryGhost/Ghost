@@ -88,6 +88,32 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="gh-offer-duration">
+                                <GhFormGroup @errors={{this.errors}} @property="duration">
+                                    <label for="product-cadence" class="fw6">Duration</label>
+                                    <span class="gh-select">
+                                        <OneWaySelect @value=''
+                                            @options={{this.durations}}
+                                            @optionValuePath="duration"
+                                            @optionLabelPath="label"
+                                            @optionTargetPath="duration"
+                                            @update = {{this.setDuration}}
+                                        />
+                                        {{svg-jar "arrow-down-small"}}
+                                    </span>
+                                    <GhErrorMessage @errors={{this.errors}} @property="duration" />
+                                </GhFormGroup>
+                                {{#if (eq this.selectedDuration "multiple-months")}}
+                                <GhFormGroup @errors={{this.errors}} @property="duration-months" @class="duration-months">
+                                    <label for="name" class="fw6">Number of months</label>
+                                    <GhTextInput
+                                        @name="duration-months"
+                                        @id="duration-months"
+                                        @class="gh-input" />
+                                    <GhErrorMessage @errors={{this.errors}} @property="duration-months" />
+                                </GhFormGroup>
+                                {{/if}}
+                            </div>
                         </div>
 
                         <h4 class="gh-main-section-header small bn">Portal settings</h4>
