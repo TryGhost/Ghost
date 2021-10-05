@@ -33,6 +33,7 @@ export default class MembersController extends Controller {
     @service membersStats;
     @service router;
     @service store;
+    @service utils;
 
     queryParams = [
         'label',
@@ -265,15 +266,7 @@ export default class MembersController extends Controller {
         let downloadParams = new URLSearchParams(this.getApiQueryObject());
         downloadParams.set('limit', 'all');
 
-        let iframe = document.getElementById('iframeDownload');
-
-        if (!iframe) {
-            iframe = document.createElement('iframe');
-            iframe.id = 'iframeDownload';
-            iframe.style.display = 'none';
-            document.body.append(iframe);
-        }
-        iframe.setAttribute('src', `${exportUrl}?${downloadParams.toString()}`);
+        this.utils.downloadFile(`${exportUrl}?${downloadParams.toString()}`);
     }
 
     @action

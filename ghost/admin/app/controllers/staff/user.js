@@ -20,6 +20,7 @@ export default Controller.extend({
     notifications: service(),
     session: service(),
     slugGenerator: service(),
+    utils: service(),
 
     personalToken: null,
     limitErrorMessage: null,
@@ -381,18 +382,7 @@ export default Controller.extend({
     },
 
     _exportDb(filename) {
-        let exportUrl = this.get('ghostPaths.url').api('db');
-        let downloadURL = `${exportUrl}?filename=${filename}`;
-        let iframe = document.getElementById('iframeDownload');
-
-        if (!iframe) {
-            iframe = document.createElement('iframe');
-            iframe.id = 'iframeDownload';
-            iframe.style.display = 'none';
-            document.body.append(iframe);
-        }
-
-        iframe.setAttribute('src', downloadURL);
+        this.utils.downloadFile(`${this.ghostPaths.url.api('db')}?filename=${filename}`);
     },
 
     deleteUser: task(function *() {
