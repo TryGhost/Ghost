@@ -19,7 +19,7 @@ export default class ModalsService extends EPMModalsService {
 
     open(modal, data, options) {
         const mergedOptions = Object.assign({}, DEFAULT_MODAL_OPTIONS[modal], options);
-        super.open(modal, data, mergedOptions);
+        return super.open(modal, data, mergedOptions);
     }
 
     _onFirstModalAdded() {
