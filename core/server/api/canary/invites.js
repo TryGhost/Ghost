@@ -82,7 +82,7 @@ module.exports = {
                 .then(() => null)
                 .catch(models.Invite.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.invites.inviteNotFound')
+                        message: tpl(messages.inviteNotFound)
                     }));
                 });
         }
