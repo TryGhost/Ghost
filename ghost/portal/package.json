@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -68,7 +68,10 @@
     ]
   },
   "jest": {
-    "coverageReporters": ["text-summary", "html"]
+    "coverageReporters": [
+      "text-summary",
+      "html"
+    ]
   },
   "devDependencies": {
     "chalk": "4.1.1",
