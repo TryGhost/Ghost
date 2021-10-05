@@ -1,9 +1,13 @@
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const auth = require('../../services/auth');
 const api = require('./index');
+
+const messages = {
+    authAccessDenied: 'Access denied.'
+};
 
 const session = {
     read(frame) {
@@ -20,7 +24,7 @@ const session = {
 
         if (!object || !object.username || !object.password) {
             return Promise.reject(new errors.UnauthorizedError({
-                message: i18n.t('errors.middleware.auth.accessDenied')
+                message: tpl(messages.authAccessDenied)
             }));
         }
 
@@ -40,7 +44,7 @@ const session = {
         }).catch(async (err) => {
             if (!errors.utils.isIgnitionError(err)) {
                 throw new errors.UnauthorizedError({
-                    message: i18n.t('errors.middleware.auth.accessDenied'),
+                    message: tpl(messages.authAccessDenied),
                     err
                 });
             }
