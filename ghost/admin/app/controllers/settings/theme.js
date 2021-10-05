@@ -1,6 +1,5 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
-import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {isThemeValidationError} from 'ghost-admin/services/ajax';
 import {notEmpty} from '@ember/object/computed';
@@ -63,12 +62,6 @@ export default Controller.extend({
     },
 
     showDeleteThemeModal: notEmpty('themeToDelete'),
-
-    blogUrl: computed('config.blogUrl', function () {
-        let url = this.get('config.blogUrl');
-
-        return url.slice(-1) !== '/' ? `${url}/` : url;
-    }),
 
     actions: {
         async activateTheme(theme) {
