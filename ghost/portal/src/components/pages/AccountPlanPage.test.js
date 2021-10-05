@@ -1,10 +1,16 @@
 import React from 'react';
+import {generateAccountPlanFixture} from '../../utils/fixtures';
 import {render, fireEvent} from '../../utils/test-utils';
 import AccountPlanPage from './AccountPlanPage';
 
 const setup = (overrides) => {
     const {mockOnActionFn, context, ...utils} = render(
-        <AccountPlanPage />
+        <AccountPlanPage />,
+        {
+            overrideContext: {
+                ...overrides
+            }
+        }
     );
     const monthlyCheckboxEl = utils.getByLabelText('Monthly');
     const yearlyCheckboxEl = utils.getByLabelText('Yearly');
@@ -13,6 +19,23 @@ const setup = (overrides) => {
         monthlyCheckboxEl,
         yearlyCheckboxEl,
         continueBtn,
+        mockOnActionFn,
+        context,
+        ...utils
+    };
+};
+
+const customSetup = (overrides) => {
+    const {mockOnActionFn, context, ...utils} = render(
+        <AccountPlanPage />,
+        {
+            overrideContext: {
+                ...overrides
+            }
+        }
+    );
+
+    return {
         mockOnActionFn,
         context,
         ...utils
@@ -38,5 +61,15 @@ describe('Account Plan Page', () => {
 
         fireEvent.click(continueBtn);
         expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: '6085adc776909b1a2382369a'});
+    });
+
+    test('can cancel subscription for member on hidden tier', async () => {
+        const overrides = generateAccountPlanFixture();
+        const {queryByRole} = customSetup(overrides);
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+        expect(cancelButton).toBeInTheDocument();
+        fireEvent.click(cancelButton);
+        const confirmCancelButton = queryByRole('button', {name: 'Confirm cancellation'});
+        expect(confirmCancelButton).toBeInTheDocument();
     });
 });

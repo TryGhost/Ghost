@@ -338,3 +338,14 @@ export const testSite = {
     allow_self_signup: true,
     portal_plans: ['free', 'monthly', 'yearly']
 };
+
+export function generateAccountPlanFixture() {
+    return {
+        site: {
+            ...testSite,
+            products: products,
+            portal_products: ['product_2']
+        },
+        member: member.paid
+    };
+}
