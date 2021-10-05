@@ -15,7 +15,8 @@ class UniqueChecker {
      * @returns {Promise<boolean>}
      */
     async isUniqueCode(code) {
-        return await this.repository.existsByCode(code, this.options);
+        const exists = await this.repository.existsByCode(code, this.options);
+        return !exists;
     }
 
     /**
@@ -23,7 +24,8 @@ class UniqueChecker {
      * @returns {Promise<boolean>}
      */
     async isUniqueName(name) {
-        return await this.repository.existsByName(name, this.options);
+        const exists = await this.repository.existsByName(name, this.options);
+        return !exists;
     }
 }
 
