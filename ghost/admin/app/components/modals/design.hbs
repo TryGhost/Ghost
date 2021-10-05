@@ -14,7 +14,7 @@
                     {{#if (set-has this.openSections "brand")}}
                         <div class="pt4">
                             <Settings::Design::GeneralSettingsForm
-                                @updatePreview={{perform this.updatePreviewTask}}
+                                @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                             />
                         </div>
                     {{/if}}
@@ -32,7 +32,7 @@
                                 <div class="pt4">
                                     <Settings::Design::ThemeSettingsForm
                                         @themeSettings={{this.siteWideSettings}}
-                                        @updatePreview={{perform this.updatePreviewTask}}
+                                        @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                                     />
                                 </div>
                             {{/if}}
@@ -50,7 +50,7 @@
                                 <div class="pt4">
                                     <Settings::Design::ThemeSettingsForm
                                         @themeSettings={{this.homepageSettings}}
-                                        @updatePreview={{perform this.updatePreviewTask}}
+                                        @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                                     />
                                 </div>
                             {{/if}}
@@ -68,7 +68,7 @@
                                 <div class="pt4">
                                     <Settings::Design::ThemeSettingsForm
                                         @themeSettings={{this.postPageSettings}}
-                                        @updatePreview={{perform this.updatePreviewTask}}
+                                        @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                                     />
                                 </div>
                             {{/if}}
@@ -101,11 +101,7 @@
 
             <div style="height: calc(100% - 96px)">
                 <GhBrowserPreview @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
-                    <iframe
-                        id="site=frame"
-                        class="site-frame gh-branding-settings-preview"
-                        {{did-insert this.registerPreviewIframe}}
-                    ></iframe>
+                    <GhHtmlIframe id="site-frame" class="site-frame gh-branding-settings-preview" @html={{this.themeManagement.previewHtml}} />
                 </GhBrowserPreview>
             </div>
         </section>
