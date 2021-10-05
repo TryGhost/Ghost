@@ -25,7 +25,7 @@ export default class SettingsMembershipOfferRoute extends AuthenticatedRoute {
     }
 
     activate() {
-        this.customizeModal = this.modals.open('modals/membership/offer', {
+        this.offerModal = this.modals.open('modals/membership/offer', {
             saveTask: this.controllerFor('settings.membership.offer').saveTask
         }, {
             className: 'fullscreen-modal-wide fullscreen-modal-action fullscreen-modal-edit-offer',
