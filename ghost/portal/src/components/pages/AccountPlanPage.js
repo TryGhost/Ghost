@@ -118,7 +118,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     const priceString = formatNumber(plan.price);
     const planStartMessage = `${plan.currency_symbol}${priceString}/${plan.interval} – Starting ${planStartDate}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
-    const priceLabel = hasMultipleProductsFeature({site}) ? product.name : 'Price';
+    const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : 'Price';
     if (type === 'changePlan') {
         return (
             <>
