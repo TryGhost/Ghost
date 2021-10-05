@@ -1,12 +1,20 @@
 import Service from '@ember/service';
+import config from 'ghost-admin/config/environment';
 import {isEmpty} from '@ember/utils';
 import {isThemeValidationError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
+import {tracked} from '@glimmer/tracking';
 
 export default class ThemeManagementService extends Service {
+    @service ajax;
+    @service config;
+    @service customThemeSettings;
     @service limit;
     @service modals;
+    @service settings;
+
+    @tracked previewHtml;
 
     @task
     *activateTask(theme) {
@@ -34,6 +42,9 @@ export default class ThemeManagementService extends Service {
 
             try {
                 const activatedTheme = yield theme.activate();
+
+                this.updatePreviewHtmlTask.perform();
+                this.customThemeSettings.load();
 
                 const {warnings, errors} = activatedTheme;
 
@@ -82,5 +93,53 @@ export default class ThemeManagementService extends Service {
             // consumers the ability to cancel the task to clear any opened modals
             resultModal?.close();
         }
+    }
+
+    @task
+    *updatePreviewHtmlTask() {
+        // skip during testing because we don't have mocks for the front-end
+        if (config.environment === 'test') {
+            return;
+        }
+
+        // grab the preview html
+        const ajaxOptions = {
+            contentType: 'text/html;charset=utf-8',
+            dataType: 'text',
+            headers: {
+                'x-ghost-preview': this.previewData
+            }
+        };
+
+        // TODO: config.blogUrl always removes trailing slash - switch to always have trailing slash
+        const frontendUrl = `${this.config.get('blogUrl')}/`;
+        const previewContents = yield this.ajax.post(frontendUrl, ajaxOptions);
+
+        // inject extra CSS to disable navigation and prevent clicks
+        const injectedCss = `html { pointer-events: none; }`;
+
+        const domParser = new DOMParser();
+        const htmlDoc = domParser.parseFromString(previewContents, 'text/html');
+
+        const stylesheet = htmlDoc.querySelector('style');
+        const originalCSS = stylesheet.innerHTML;
+        stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+
+        // replace the iframe contents with the doctored preview html
+        this.previewHtml = htmlDoc.documentElement.innerHTML;
+    }
+
+    get previewData() {
+        const params = new URLSearchParams();
+
+        params.append('c', this.settings.get('accentColor') || '#ffffff');
+        params.append('d', this.settings.get('description'));
+        params.append('icon', this.settings.get('icon'));
+        params.append('logo', this.settings.get('logo'));
+        params.append('cover', this.settings.get('coverImage'));
+
+        params.append('custom', JSON.stringify(this.customThemeSettings.keyValueObject));
+
+        return params.toString();
     }
 }
