@@ -84,17 +84,16 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
         }
 
         if (!this.confirmModal) {
-            this.confirmModal = this.modals.open('modals/confirm-unsaved-changes', {}, {
-                className: 'fullscreen-modal-action fullscreen-modal-wide'
-            }).then((discardChanges) => {
-                if (discardChanges === true) {
-                    this.settings.rollbackAttributes();
-                    this.customThemeSettings.rollback();
-                }
-                return discardChanges;
-            }).finally(() => {
-                this.confirmModal = null;
-            });
+            this.confirmModal = this.modals.open('modals/confirm-unsaved-changes')
+                .then((discardChanges) => {
+                    if (discardChanges === true) {
+                        this.settings.rollbackAttributes();
+                        this.customThemeSettings.rollback();
+                    }
+                    return discardChanges;
+                }).finally(() => {
+                    this.confirmModal = null;
+                });
         }
 
         return this.confirmModal;
