@@ -85,6 +85,10 @@ module.exports = {
         return shared.pipeline(require('./members'), localUtils);
     },
 
+    get offers() {
+        return shared.pipeline(require('./offers'), localUtils);
+    },
+
     get products() {
         return shared.pipeline(require('./products'), localUtils);
     },
