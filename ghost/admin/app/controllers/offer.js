@@ -49,6 +49,11 @@ export default class MembersController extends Controller {
         this.cadences = cadences;
     }
 
+    @task
+    copyOfferUrl() {
+        return true;
+    }
+
     @action
     setup() {
         this.fetchProducts.perform();

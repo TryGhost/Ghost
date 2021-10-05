@@ -105,7 +105,7 @@
                                 </GhFormGroup>
                                 {{#if (eq this.selectedDuration "multiple-months")}}
                                 <GhFormGroup @errors={{this.errors}} @property="duration-months" @class="duration-months">
-                                    <label for="name" class="fw6">Number of months</label>
+                                    <label for="duration-months" class="fw6">Number of months</label>
                                     <GhTextInput
                                         @name="duration-months"
                                         @id="duration-months"
@@ -138,6 +138,24 @@
                                     <GhErrorMessage @errors={{this.errors}} @property="code" />
                                 </GhFormGroup>
                             </div>
+                            <GhFormGroup @errors={{this.errors}} @property="url" @class="gh-offer-url">
+                                <label for="url" class="fw6">URL</label>
+                                <div class="gh-input-group">
+                                    <GhTextInput
+                                        @name="url"
+                                        @value="https://example.com/black-friday"
+                                        @id="url"
+                                        @disabled="disabled"
+                                        @class="gh-input" />
+
+                                    <GhTaskButton
+                                        @buttonText="Copy link"
+                                        @task={{this.copyOfferUrl}}
+                                        @successText="Link copied"
+                                        @class="gh-btn gh-btn-icon" />
+                                </div>
+                                <GhErrorMessage @errors={{this.errors}} @property="url" />
+                            </GhFormGroup>
                             <GhFormGroup @errors={{this.errors}} @property="description">
                                 <label for="description" class="fw6">Description</label>
                                 <GhTextarea

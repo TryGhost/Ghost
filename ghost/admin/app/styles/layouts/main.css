@@ -1279,7 +1279,7 @@
 }
 
 /* Grey background modifiers */
-.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text),
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-black):not(.gh-btn-link):not(.gh-btn-text),
 .gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-black):not(.gh-btn-link):not(.gh-btn-text) {
     background: var(--whitegrey-d2);
 }
