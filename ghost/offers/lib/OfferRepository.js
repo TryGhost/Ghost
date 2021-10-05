@@ -124,11 +124,11 @@ class OfferRepository {
             duration: 'once'
         });
 
-        if (offer.codeChanged) {
+        if (offer.codeChanged || offer.isNew) {
             offer.oldCodes.forEach((code) => {
                 this.redirectManager.removeRedirect(code);
             });
-            this.redirectManager.addRedirect(offer.code, `/#/portal/offers/${offer.id}`, {
+            this.redirectManager.addRedirect(`/${offer.code}`, `/#/portal/offers/${offer.id}`, {
                 permanent: false
             });
         }
