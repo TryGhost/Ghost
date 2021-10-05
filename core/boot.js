@@ -191,6 +191,7 @@ async function initServices({config}) {
     debug('Begin: Services');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
+    const offers = require('./server/services/offers');
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
@@ -212,6 +213,7 @@ async function initServices({config}) {
 
     await Promise.all([
         members.init(),
+        offers.init(),
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
