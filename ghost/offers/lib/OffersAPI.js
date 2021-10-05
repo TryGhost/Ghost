@@ -12,6 +12,22 @@ class OffersAPI {
 
     /**
      * @param {object} data
+     * @param {string} data.id
+     *
+     * @returns {Promise<OfferMapper.OfferDTO>}
+     */
+    async getOffer(data) {
+        return this.repository.createTransaction(async (transaction) => {
+            const options = {transacting: transaction};
+
+            const offer = await this.repository.getById(data.id, options);
+
+            return OfferMapper.toDTO(offer);
+        });
+    }
+
+    /**
+     * @param {object} data
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
