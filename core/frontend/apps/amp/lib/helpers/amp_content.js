@@ -201,3 +201,5 @@ function ampContent() {
 }
 
 module.exports = ampContent;
+
+module.exports.async = true;
