@@ -7,8 +7,8 @@ const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const cheerio = require('cheerio');
-const testUtils = require('../../utils');
-const config = require('../../../core/shared/config');
+const testUtils = require('../utils');
+const config = require('../../core/shared/config');
 const ghost = testUtils.startGhost;
 let request;
 

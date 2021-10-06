@@ -12,7 +12,7 @@ const testUtils = require('../../utils');
 
 describe('Settings', function () {
     before(function () {
-        return testUtils.startGhost();
+        return testUtils.setup();
     });
 
     // Allowlist: Only this list needs updating when a core setting is added/removed/renamed
