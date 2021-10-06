@@ -15,7 +15,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "c8": "7.9.0",
+    "c8": "7.10.0",
     "mocha": "7.2.0",
     "should": "13.2.3",
     "sinon": "9.2.4"
