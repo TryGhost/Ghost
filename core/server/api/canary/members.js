@@ -13,6 +13,10 @@ const _ = require('lodash');
 
 const messages = {
     memberNotFound: 'Member not found.',
+    memberAlreadyExists: {
+        message: 'Member already exists',
+        context: 'Attempting to {action} member with existing email address.'
+    },
     stripeNotConnected: {
         message: 'Missing Stripe connection.',
         context: 'Attempting to import members with Stripe data when there is no Stripe account connected.',
@@ -21,11 +25,6 @@ const messages = {
     stripeCustomerNotFound: {
         context: 'Missing Stripe customer.',
         help: 'Make sure you’re connected to the correct Stripe Account.'
-    },
-    duplicateStripeCustomerIds: {
-        message: 'Duplicate Stripe ID',
-        context: 'Attempting to import members with duplicate Stripe customer ids.',
-        help: 'Remove duplicate Stripe customer IDs from the CSV and re-run the import.'
     },
     resourceNotFound: '{resource} not found.'
 };
