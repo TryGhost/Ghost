@@ -1,6 +1,10 @@
 const ghostBookshelf = require('./base');
-const i18n = require('../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    labelNotFound: 'Label not found.'
+};
 
 let Label;
 let Labels;
@@ -112,7 +116,7 @@ Label = ghostBookshelf.Model.extend({
             .then(function destroyLabelsAndMember(label) {
                 if (!label) {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.labels.labelNotFound')
+                        message: tpl(messages.labelNotFound)
                     }));
                 }
 

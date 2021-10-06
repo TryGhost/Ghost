@@ -1,8 +1,14 @@
 const _ = require('lodash');
 const ghostBookshelf = require('./base');
 const Promise = require('bluebird');
-const i18n = require('../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    roleNotFound: 'Role not found',
+    notEnoughPermission: 'You do not have permission to perform this action'
+};
+
 let Role;
 let Roles;
 
@@ -59,7 +65,7 @@ Role = ghostBookshelf.Model.extend({
                 .then((foundRoleModel) => {
                     if (!foundRoleModel) {
                         throw new errors.NotFoundError({
-                            message: i18n.t('errors.models.role.roleNotFound')
+                            message: tpl(messages.roleNotFound)
                         });
                     }
 
@@ -90,7 +96,7 @@ Role = ghostBookshelf.Model.extend({
             // apiKey cannot 'assign' the 'Owner' role
             if (roleModel.get('name') === 'Owner') {
                 return Promise.reject(new errors.NoPermissionError({
-                    message: i18n.t('errors.models.role.notEnoughPermission')
+                    message: tpl(messages.notEnoughPermission)
                 }));
             }
         }
@@ -99,7 +105,7 @@ Role = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new errors.NoPermissionError({message: i18n.t('errors.models.role.notEnoughPermission')}));
+        return Promise.reject(new errors.NoPermissionError({message: tpl(messages.notEnoughPermission)}));
     }
 });
 
