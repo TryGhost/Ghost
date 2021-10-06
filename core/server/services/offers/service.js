@@ -23,6 +23,7 @@ module.exports = {
         });
 
         this.api = offersModule.api;
+        this.repository = offersModule.repository;
 
         if (labs.isSet('offers')) {
             // handles setting up redirects
