@@ -297,7 +297,8 @@ class UpdateCheckService {
         debug(`creating custom notifications for ${notification.messages.length} notifications`);
         const {users} = await this.api.users.browse(Object.assign({
             limit: 'all',
-            include: ['roles']
+            include: ['roles'],
+            filter: 'status:active'
         }, internal));
 
         const adminEmails = users

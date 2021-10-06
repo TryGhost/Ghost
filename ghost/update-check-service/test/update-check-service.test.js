@@ -209,6 +209,13 @@ describe('Update Check', function () {
             };
 
             const notificationsAPIAddStub = sinon.stub().resolves();
+            const usersBrowseStub = sinon.stub().resolves({
+                users: [{
+                    roles: [{
+                        name: 'Owner'
+                    }]
+                }]
+            });
 
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -217,13 +224,7 @@ describe('Update Check', function () {
                         edit: settingsStub
                     },
                     users: {
-                        browse: sinon.stub().resolves({
-                            users: [{
-                                roles: [{
-                                    name: 'Owner'
-                                }]
-                            }]
-                        })
+                        browse: usersBrowseStub
                     },
                     posts: {
                         browse: sinon.stub().resolves()
@@ -254,6 +255,18 @@ describe('Update Check', function () {
             targetNotification.top.should.eql(notification.messages[0].top);
             targetNotification.type.should.eql('info');
             targetNotification.message.should.eql(notification.messages[0].content);
+
+            usersBrowseStub.calledTwice.should.eql(true);
+
+            // Second (non statistical) call should be looking for admin users with an 'active' status only
+            usersBrowseStub.args[1][0].should.eql({
+                limit: 'all',
+                include: ['roles'],
+                filter: 'status:active',
+                context: {
+                    internal: true
+                }
+            });
         });
 
         it('should send an email for critical notification', async function () {
