@@ -1,7 +1,13 @@
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
 const limitService = require('../../../services/limits');
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    invalidRequest: 'Invalid Request',
+    unknownContentApiKey: 'Unknown Content API Key',
+    invalidApiKeyType: 'Invalid API Key type'
+};
 
 const authenticateContentApiKey = async function authenticateContentApiKey(req, res, next) {
     // allow fallthrough to other auth methods or final ensureAuthenticated check
@@ -11,7 +17,7 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
 
     if (req.query.key.constructor === Array) {
         return next(new errors.BadRequestError({
-            message: i18n.t('errors.middleware.auth.invalidRequest'),
+            message: tpl(messages.invalidRequest),
             code: 'INVALID_REQUEST'
         }));
     }
@@ -23,14 +29,14 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
 
         if (!apiKey) {
             return next(new errors.UnauthorizedError({
-                message: i18n.t('errors.middleware.auth.unknownContentApiKey'),
+                message: tpl(messages.unknownContentApiKey),
                 code: 'UNKNOWN_CONTENT_API_KEY'
             }));
         }
 
         if (apiKey.get('type') !== 'content') {
             return next(new errors.UnauthorizedError({
-                message: i18n.t('errors.middleware.auth.invalidApiKeyType'),
+                message: tpl(messages.invalidApiKeyType),
                 code: 'INVALID_API_KEY_TYPE'
             }));
         }

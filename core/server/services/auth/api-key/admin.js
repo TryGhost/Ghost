@@ -3,8 +3,17 @@ const url = require('url');
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
 const limitService = require('../../../services/limits');
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
+
+const messages = {
+    incorrectAuthHeaderFormat: 'Authorization header format is "Authorization: Ghost [token]"',
+    invalidTokenWithMessage: 'Invalid token: {message}',
+    invalidToken: 'Invalid token',
+    adminApiKidMissing: 'Admin API kid missing.',
+    unknownAdminApiKey: 'Unknown Admin API Key',
+    invalidApiKeyType: 'Invalid API Key type'
+};
 
 let JWT_OPTIONS_DEFAULTS = {
     algorithms: ['HS256'],
@@ -45,7 +54,7 @@ const authenticate = (req, res, next) => {
 
     if (!token) {
         return next(new errors.UnauthorizedError({
-            message: i18n.t('errors.middleware.auth.incorrectAuthHeaderFormat'),
+            message: tpl(messages.incorrectAuthHeaderFormat),
             code: 'INVALID_AUTH_HEADER'
         }));
     }
@@ -57,7 +66,7 @@ const authenticateWithUrl = (req, res, next) => {
     const token = _extractTokenFromUrl(req.originalUrl);
     if (!token) {
         return next(new errors.UnauthorizedError({
-            message: i18n.t('errors.middleware.auth.invalidTokenWithMessage', {message: 'No token found in URL'}),
+            message: tpl(messages.invalidTokenWithMessage, {message: 'No token found in URL'}),
             code: 'INVALID_JWT'
         }));
     }
@@ -84,7 +93,7 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
 
     if (!decoded || !decoded.header) {
         return next(new errors.BadRequestError({
-            message: i18n.t('errors.middleware.auth.invalidToken'),
+            message: tpl(messages.invalidToken),
             code: 'INVALID_JWT'
         }));
     }
@@ -93,7 +102,7 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
 
     if (!apiKeyId) {
         return next(new errors.BadRequestError({
-            message: i18n.t('errors.middleware.auth.adminApiKidMissing'),
+            message: tpl(messages.adminApiKidMissing),
             code: 'MISSING_ADMIN_API_KID'
         }));
     }
@@ -103,14 +112,14 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
 
         if (!apiKey) {
             return next(new errors.UnauthorizedError({
-                message: i18n.t('errors.middleware.auth.unknownAdminApiKey'),
+                message: tpl(messages.unknownAdminApiKey),
                 code: 'UNKNOWN_ADMIN_API_KEY'
             }));
         }
 
         if (apiKey.get('type') !== 'admin') {
             return next(new errors.UnauthorizedError({
-                message: i18n.t('errors.middleware.auth.invalidApiKeyType'),
+                message: tpl(messages.invalidApiKeyType),
                 code: 'INVALID_API_KEY_TYPE'
             }));
         }
@@ -142,7 +151,7 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
         } catch (err) {
             if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
                 return next(new errors.UnauthorizedError({
-                    message: i18n.t('errors.middleware.auth.invalidTokenWithMessage', {message: err.message}),
+                    message: tpl(messages.invalidTokenWithMessage, {message: err.message}),
                     code: 'INVALID_JWT',
                     err
                 }));
