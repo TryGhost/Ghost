@@ -73,11 +73,9 @@ module.exports.start = (apiVersion, routerSettings) => {
     siteRouter.mountRouter(unsubscribeRouter.router());
     registry.setRouter('unsubscribeRouter', unsubscribeRouter);
 
-    if (labs.isSet('emailOnlyPosts')) {
-        const emailRouter = new EmailRouter(RESOURCE_CONFIG);
-        siteRouter.mountRouter(emailRouter.router());
-        registry.setRouter('emailRouter', emailRouter);
-    }
+    const emailRouter = new EmailRouter(RESOURCE_CONFIG);
+    siteRouter.mountRouter(emailRouter.router());
+    registry.setRouter('emailRouter', emailRouter);
 
     const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
     siteRouter.mountRouter(previewRouter.router());
