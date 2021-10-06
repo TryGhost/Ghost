@@ -9,6 +9,7 @@ import MemberValidator from 'ghost-admin/validators/member';
 import Mixin from '@ember/object/mixin';
 import Model from '@ember-data/model';
 import NavItemValidator from 'ghost-admin/validators/nav-item';
+import OfferValidator from 'ghost-admin/validators/offer';
 import PostValidator from 'ghost-admin/validators/post';
 import ProductBenefitItemValidator from 'ghost-admin/validators/product-benefit-item';
 import ProductValidator from 'ghost-admin/validators/product';
@@ -73,7 +74,8 @@ export default Mixin.create({
             webhook: WebhookValidator,
             label: LabelValidator,
             snippet: SnippetValidator,
-            product: ProductValidator
+            product: ProductValidator,
+            offer: OfferValidator
         };
     },
 
