@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
 const mega = require('../../services/mega');
 
 const messages = {
-    postNotFound: 'Post not found.',
+    postNotFound: 'Post not found.'
 };
 
 const emailPreview = new mega.EmailPreview({
