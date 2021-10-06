@@ -33,15 +33,12 @@ class OfferRepository {
     /**
      * @param {{forge: (data: object) => import('bookshelf').Model<Offer.OfferProps>}} OfferModel
      * @param {import('@tryghost/members-stripe-service')} stripeAPIService
-     * @param {import('@tryghost/express-dynamic-redirects')} redirectManager
      */
-    constructor(OfferModel, stripeAPIService, redirectManager) {
+    constructor(OfferModel, stripeAPIService) {
         /** @private */
         this.OfferModel = OfferModel;
         /** @private */
         this.stripeAPIService = stripeAPIService;
-        /** @private */
-        this.redirectManager = redirectManager;
     }
 
     /**
