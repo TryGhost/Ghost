@@ -33,7 +33,7 @@
     font-weight: normal;
 }
 
-.ember-basic-dropdown-content .dropdown-menu {
+.relative-dropdown-menu .dropdown-menu {
     position: relative;
     float: none;
     top: auto;
