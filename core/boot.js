@@ -207,13 +207,13 @@ async function initServices({config}) {
     // in case it limits initialization of any other service (e.g. webhooks)
     await limits.init();
 
-    // NOTE: stripe service has to be initialized before members
-    // as it is a dependency
+    // NOTE: Members service depends on these
+    //       so they are initialized before it.
     await stripe.init();
+    await offers.init();
 
     await Promise.all([
         members.init(),
-        offers.init(),
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
