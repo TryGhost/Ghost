@@ -9,7 +9,6 @@ const ParentRouter = require('./ParentRouter');
 const EmailRouter = require('./EmailRouter');
 const UnsubscribeRouter = require('./UnsubscribeRouter');
 
-const labs = require('../../../shared/labs');
 // This emits its own routing events
 const events = require('../../../server/lib/common/events');
 
