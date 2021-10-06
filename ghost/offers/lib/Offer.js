@@ -12,6 +12,7 @@ const ObjectID = require('bson-objectid').default;
  * @prop {'percent'|'amount'} type
  * @prop {number} amount
  * @prop {string} currency
+ * @prop {string} [stripe_coupon_id]
  * @prop {OfferTier} tier
  */
 
@@ -167,6 +168,10 @@ class Offer {
         return !!this.options.isNew;
     }
 
+    get stripeCouponId() {
+        return this.props.stripe_coupon_id;
+    }
+
     /**
      * @private
      * @param {OfferProps} props
@@ -291,6 +296,18 @@ class Offer {
         const cadence = data.cadence;
         const currency = data.currency;
 
+        if (isNew && data.stripe_coupon_id) {
+            throw new errors.InvalidOfferCoupon({
+                message: 'Cannot supply a stripe_coupon_id for new Offers.'
+            });
+        }
+        if (!isNew && !data.stripe_coupon_id) {
+            throw new errors.InvalidOfferCoupon({
+                message: 'Offers must have a stripe_coupon_id.'
+            });
+        }
+        const couponId = data.stripe_coupon_id;
+
         const tier = OfferTier.create(data.tier);
 
         return new Offer({
@@ -303,7 +320,8 @@ class Offer {
             amount,
             cadence,
             currency,
-            tier
+            tier,
+            stripe_coupon_id: couponId
         }, {isNew});
     }
 }
