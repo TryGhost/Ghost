@@ -4,7 +4,7 @@ const uuid = require('uuid');
 const moment = require('moment');
 const Promise = require('bluebird');
 const {sequence} = require('@tryghost/promise');
-const i18n = require('../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const nql = require('@nexes/nql');
 const htmlToPlaintext = require('../../shared/html-to-plaintext');
@@ -15,6 +15,13 @@ const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils');
+
+const messages = {
+    isAlreadyPublished: 'Your post is already published, please reload your page.',
+    valueCannotBeBlank: 'Value in {key} cannot be blank.',
+    expectedPublishedAtInFuture: 'Date must be at least {cannotScheduleAPostBeforeInMinutes} minutes in the future.',
+    untitled: '(Untitled)'
+};
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
@@ -481,7 +488,7 @@ Post = ghostBookshelf.Model.extend({
         // @TODO: remove when we have versioning based on updated_at
         if (newStatus !== olderStatus && newStatus === 'scheduled' && olderStatus === 'published') {
             return Promise.reject(new errors.ValidationError({
-                message: i18n.t('errors.models.post.isAlreadyPublished', {key: 'status'})
+                message: tpl(messages.isAlreadyPublished, {key: 'status'})
             }));
         }
 
@@ -495,11 +502,11 @@ Post = ghostBookshelf.Model.extend({
         if (newStatus === 'scheduled') {
             if (!publishedAt) {
                 return Promise.reject(new errors.ValidationError({
-                    message: i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
+                    message: tpl(messages.valueCannotBeBlank, {key: 'published_at'})
                 }));
             } else if (!moment(publishedAt).isValid()) {
                 return Promise.reject(new errors.ValidationError({
-                    message: i18n.t('errors.models.post.valueCannotBeBlank', {key: 'published_at'})
+                    message: tpl(messages.valueCannotBeBlank, {key: 'published_at'})
                 }));
                 // CASE: to schedule/reschedule a post, a minimum diff of x minutes is needed (default configured is 2minutes)
             } else if (
@@ -509,7 +516,7 @@ Post = ghostBookshelf.Model.extend({
                 (!options.context || !options.context.internal)
             ) {
                 return Promise.reject(new errors.ValidationError({
-                    message: i18n.t('errors.models.post.expectedPublishedAtInFuture', {
+                    message: tpl(messages.expectedPublishedAtInFuture, {
                         cannotScheduleAPostBeforeInMinutes: config.get('times').cannotScheduleAPostBeforeInMinutes
                     })
                 }));
@@ -610,7 +617,7 @@ Post = ghostBookshelf.Model.extend({
 
         // disabling sanitization until we can implement a better version
         if (!options.importing) {
-            title = this.get('title') || i18n.t('errors.models.post.untitled');
+            title = this.get('title') || tpl(messages.untitled);
             this.set('title', _.toString(title).trim());
         }
 
@@ -1205,7 +1212,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return Promise.reject(new errors.NoPermissionError({
-            message: i18n.t('errors.models.post.notEnoughPermission')
+            message: tpl(messages.notEnoughPermission)
         }));
     }
 });

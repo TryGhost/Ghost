@@ -16,6 +16,7 @@ const appService = require('../../../frontend/services/apps');
 const themeEngine = require('../../../frontend/services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../services/members');
+const offersService = require('../../services/offers');
 const siteRoutes = require('./routes');
 const shared = require('../shared');
 const mw = require('./middleware');
@@ -83,6 +84,8 @@ module.exports = function setupSiteApp(options = {}) {
 
     // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
     siteApp.use(cors(corsOptionsDelegate));
+
+    siteApp.use(offersService.middleware);
 
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
