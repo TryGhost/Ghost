@@ -17,6 +17,8 @@ const _ = require('lodash');
  */
 module.exports = class RouterController {
     constructor({
+        offerRepository,
+        productRepository,
         memberRepository,
         StripePrice,
         allowSelfSignup,
@@ -28,6 +30,8 @@ module.exports = class RouterController {
         config,
         logging
     }) {
+        this._offerRepository = offerRepository;
+        this._productRepository = productRepository;
         this._memberRepository = memberRepository;
         this._StripePrice = StripePrice;
         this._allowSelfSignup = allowSelfSignup;
@@ -116,13 +120,39 @@ module.exports = class RouterController {
     }
 
     async createCheckoutSession(req, res) {
-        const ghostPriceId = req.body.priceId;
+        let ghostPriceId = req.body.priceId;
         const identity = req.body.identity;
         const offerId = req.body.offerId;
 
-        if (!ghostPriceId) {
+        if (!ghostPriceId && !offerId) {
             res.writeHead(400);
             return res.end('Bad Request.');
+        }
+
+        if (offerId && ghostPriceId) {
+            res.writeHead(400);
+            return res.end('Bad Request.');
+        }
+
+        let coupon = null;
+        if (offerId && this.labsService.isSet('offers')) {
+            try {
+                const offer = await this._offerRepository.getById(offerId);
+                const tier = (await this._productRepository.get(offer.tier)).toJSON();
+
+                if (offer.cadence === 'month') {
+                    ghostPriceId = tier.monthly_price_id;
+                } else {
+                    ghostPriceId = tier.yearly_price_id;
+                }
+
+                coupon = {
+                    id: offer.stripeCouponId
+                };
+            } catch (err) {
+                res.writeHead(500);
+                return res.end('Could not use Offer.');
+            }
         }
 
         const price = await this._StripePrice.findOne({
@@ -150,14 +180,6 @@ module.exports = class RouterController {
         }
 
         const member = email ? await this._memberRepository.get({email}, {withRelated: ['stripeCustomers', 'products']}) : null;
-
-        let coupon = null;
-        if (offerId && this.labsService.isSet('offers')) {
-            coupon = await this._stripeAPIService.createCoupon({
-                duration: 'forever',
-                percent_off: 50
-            });
-        }
 
         if (!member) {
             const customer = null;
