@@ -98,7 +98,7 @@ module.exports = {
 
             if (!model) {
                 throw new errors.NotFoundError({
-                    message: tpl(messages.flagMustBeEnabled.memberNotFound)
+                    message: tpl(messages.memberNotFound)
                 });
             }
 
