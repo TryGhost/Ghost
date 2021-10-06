@@ -22,6 +22,7 @@ function toDomain(json) {
         amount: json.discount_amount,
         cadence: json.interval,
         currency: json.currency,
+        stripe_coupon_id: json.stripe_coupon_id,
         tier: {
             id: json.product.id,
             name: json.product.name
