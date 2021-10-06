@@ -101,8 +101,14 @@
     color: var(--midgrey);
 }
 
-.gh-offer-value .gh-input {
+.gh-offer-value:not(.fullcurrency) .gh-input {
     padding-left: 20px;
+}
+
+.gh-offer-value.fullcurrency .unit {
+    left: unset;
+    right: 11px;
+    text-align: right;
 }
 
 .gh-offer-value.percentage .unit {
