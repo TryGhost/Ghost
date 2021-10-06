@@ -7,9 +7,11 @@ class OffersModule {
     /**
      * @param {OffersAPI} offersAPI
      * @param {import('@tryghost/express-dynamic-redirects')} redirectManager
+     * @param {OfferRepository} repository
      */
-    constructor(offersAPI, redirectManager) {
+    constructor(offersAPI, redirectManager, repository) {
         this.api = offersAPI;
+        this.repository = repository;
         this.redirectManager = redirectManager;
     }
 
@@ -52,7 +54,7 @@ class OffersModule {
     static create(deps) {
         const repository = new OfferRepository(deps.OfferModel, deps.stripeAPIService);
         const offersAPI = new OffersAPI(repository);
-        return new OffersModule(offersAPI, deps.redirectManager);
+        return new OffersModule(offersAPI, deps.redirectManager, repository);
     }
 }
 
