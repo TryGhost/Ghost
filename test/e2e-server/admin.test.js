@@ -6,13 +6,13 @@
 const should = require('should');
 
 const supertest = require('supertest');
-const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
-const urlUtils = require('../../utils/urlUtils');
-const adminUtils = require('../../utils/admin-utils');
+const testUtils = require('../utils');
+const configUtils = require('../utils/configUtils');
+const urlUtils = require('../utils/urlUtils');
+const adminUtils = require('../utils/admin-utils');
 const ghost = testUtils.startGhost;
-const i18n = require('../../../core/shared/i18n');
-const config = require('../../../core/shared/config');
+const i18n = require('../../core/shared/i18n');
+const config = require('../../core/shared/config');
 let request;
 
 i18n.init();
