@@ -48,8 +48,8 @@ class OffersAPI {
      * @param {object} data
      * @param {string} data.id
      * @param {string} [data.name]
-     * @param {string} [data.title]
-     * @param {string} [data.description]
+     * @param {string} [data.display_title]
+     * @param {string} [data.display_description]
      * @param {string} [data.code]
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
@@ -62,24 +62,22 @@ class OffersAPI {
             const offer = await this.repository.getById(data.id, options);
 
             if (data.name) {
-                offer.updateName(data.name, uniqueChecker);
+                await offer.updateName(data.name, uniqueChecker);
             }
 
             if (data.code) {
-                offer.updateCode(data.code, uniqueChecker);
+                await offer.updateCode(data.code, uniqueChecker);
             }
 
-            if (data.title) {
-                offer.displayTitle = data.title;
+            if (data.display_title) {
+                offer.displayTitle = data.display_title;
             }
 
-            if (data.description) {
-                offer.displayDescription = data.description;
+            if (data.display_description) {
+                offer.displayDescription = data.display_description;
             }
 
             await this.repository.save(offer, options);
-
-            transaction.commit();
 
             return OfferMapper.toDTO(offer);
         });
