@@ -325,7 +325,7 @@ export default class AccountPlanPage extends React.Component {
         const {member} = this.context;
         if (!member) {
             this.context.onAction('switchPage', {
-                page: 'signup'
+                page: 'signin'
             });
         }
     }
