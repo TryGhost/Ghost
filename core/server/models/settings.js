@@ -5,11 +5,17 @@ const crypto = require('crypto');
 const keypair = require('keypair');
 const ObjectID = require('bson-objectid');
 const ghostBookshelf = require('./base');
-const i18n = require('../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const urlUtils = require('../../shared/url-utils');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../shared/labs');
+
+const messages = {
+    valueCannotBeBlank: 'Value in [settings.key] cannot be blank.',
+    unableToFindSetting: 'Unable to find setting to update: {key}',
+    notEnoughPermission: 'You do not have permission to perform this action'
+};
 
 const internalContext = {context: {internal: true}};
 let Settings;
@@ -208,7 +214,7 @@ Settings = ghostBookshelf.Model.extend({
                 item = item.toJSON();
             }
             if (!(_.isString(item.key) && item.key.length > 0)) {
-                return Promise.reject(new errors.ValidationError({message: i18n.t('errors.models.settings.valueCannotBeBlank')}));
+                return Promise.reject(new errors.ValidationError({message: tpl(messages.valueCannotBeBlank)}));
             }
 
             item = self.filterData(item);
@@ -237,7 +243,7 @@ Settings = ghostBookshelf.Model.extend({
                     }
                 }
 
-                return Promise.reject(new errors.NotFoundError({message: i18n.t('errors.models.settings.unableToFindSetting', {key: item.key})}));
+                return Promise.reject(new errors.NotFoundError({message: tpl(messages.unableToFindSetting, {key: item.key})}));
             });
         });
     },
@@ -318,7 +324,7 @@ Settings = ghostBookshelf.Model.extend({
         }
 
         return Promise.reject(new errors.NoPermissionError({
-            message: i18n.t('errors.models.post.notEnoughPermission')
+            message: tpl(messages.notEnoughPermission)
         }));
     },
 
