@@ -228,7 +228,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    priceId: plan,
+                    priceId: offerId ? null : plan,
                     offerId,
                     identity: identity,
                     metadata: metadataObj,
