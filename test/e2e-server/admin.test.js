@@ -10,87 +10,58 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const urlUtils = require('../utils/urlUtils');
 const adminUtils = require('../utils/admin-utils');
-const ghost = testUtils.startGhost;
 const i18n = require('../../core/shared/i18n');
 const config = require('../../core/shared/config');
 let request;
 
 i18n.init();
 
+function assertCorrectHeaders(res) {
+    should.not.exist(res.headers['x-cache-invalidate']);
+    should.exist(res.headers.date);
+}
+
 describe('Admin Routing', function () {
-    function doEnd(done) {
-        return function (err, res) {
-            if (err) {
-                return done(err);
-            }
-
-            should.not.exist(res.headers['x-cache-invalidate']);
-            should.exist(res.headers.date);
-
-            done();
-        };
-    }
-
-    function doEndNoAuth(done) {
-        return function (err, res) {
-            if (err) {
-                return done(err);
-            }
-
-            should.not.exist(res.headers['x-cache-invalidate']);
-            should.exist(res.headers.date);
-
-            done();
-        };
-    }
-
-    before(function () {
+    before(async function () {
         adminUtils.stubClientFiles();
 
-        return ghost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            });
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
     });
 
     describe('Assets', function () {
-        it('should return 404 for unknown assets', function (done) {
+        it('should return 404 for unknown assets', async function () {
             request.get('/ghost/assets/not-found.js')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .end(doEnd(done));
+                .expect(assertCorrectHeaders);
         });
 
-        it('should retrieve built assets', function (done) {
+        it('should retrieve built assets', async function () {
             request.get('/ghost/assets/vendor.js')
                 .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(200)
-                .end(doEnd(done));
+                .expect(assertCorrectHeaders);
         });
     });
 
     describe('Admin Redirects', function () {
-        it('should redirect /GHOST/ to /ghost/', function (done) {
+        it('should redirect /GHOST/ to /ghost/', async function () {
             request.get('/GHOST/')
                 .expect('Location', '/ghost/')
                 .expect(301)
-                .end(doEndNoAuth(done));
+                .expect(assertCorrectHeaders);
         });
     });
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('Require HTTPS - redirect', function () {
-        let ghostServer;
-
-        before(function () {
+        before(async function () {
             configUtils.set('url', 'https://localhost:2390');
             urlUtils.stubUrlUtilsFromConfig();
 
-            return ghost({forceStart: true})
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-                    request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
-                });
+            await testUtils.startGhost({forceStart: true});
+            request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
         });
 
         after(function () {
@@ -98,18 +69,18 @@ describe('Admin Routing', function () {
             configUtils.restore();
         });
 
-        it('should redirect admin access over non-HTTPS', function (done) {
+        it('should redirect admin access over non-HTTPS', async function () {
             request.get('/ghost/')
                 .expect('Location', /^https:\/\/localhost:2390\/ghost\//)
                 .expect(301)
-                .end(doEnd(done));
+                .expect(assertCorrectHeaders);
         });
 
-        it('should allow admin access over HTTPS', function (done) {
+        it('should allow admin access over HTTPS', async function () {
             request.get('/ghost/')
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
-                .end(doEnd(done));
+                .expect(assertCorrectHeaders);
         });
     });
 });
