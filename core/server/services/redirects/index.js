@@ -8,16 +8,20 @@ const redirectManager = new DynamicRedirectManager({
     permanentMaxAge: config.get('caching:customRedirects:maxAge')
 }, urlUtils);
 
-const customRedirectsAPI = new CustomRedirectsAPI({
-    basePath: config.getContentPath('data')
-}, redirectManager);
+let customRedirectsAPI;
 
 module.exports = {
     init() {
+        customRedirectsAPI = new CustomRedirectsAPI({
+            basePath: config.getContentPath('data')
+        }, redirectManager);
+
         return customRedirectsAPI.init();
     },
 
-    api: customRedirectsAPI,
+    get api() {
+        return customRedirectsAPI;
+    },
 
     middleware: redirectManager.handleRequest
 };
