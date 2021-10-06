@@ -511,6 +511,7 @@ module.exports = {
         customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'members_stripe_customers.customer_id', cascadeDelete: true},
         subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         stripe_price_id: {type: 'string', maxlength: 255, nullable: false, unique: false, index: true, defaultTo: ''},
+        offer_id: {type: 'string', maxlength: 24, nullable: true, references: 'offers.id'},
         status: {type: 'string', maxlength: 50, nullable: false},
         cancel_at_period_end: {type: 'bool', nullable: false, defaultTo: false},
         cancellation_reason: {type: 'string', maxlength: 500, nullable: true},
