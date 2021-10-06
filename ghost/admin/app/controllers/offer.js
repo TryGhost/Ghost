@@ -1,5 +1,7 @@
 import Controller, {inject as controller} from '@ember/controller';
 import {action} from '@ember/object';
+import {getSymbol} from 'ghost-admin/utils/currency';
+import {ghPriceAmount} from '../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
@@ -67,14 +69,31 @@ export default class OffersController extends Controller {
             name: ''
         }];
         this.products.forEach((product) => {
-            cadences.push({
-                label: `${product.name} - Monthly`,
-                name: `${product.id}-month`
-            });
-            cadences.push({
-                label: `${product.name} - Yearly`,
-                name: `${product.id}-year`
-            });
+            let monthlyCurrency = getSymbol(product.monthlyPrice.currency);
+            if (monthlyCurrency.length === 1) {
+                cadences.push({
+                    label: `${product.name} - Monthly (${monthlyCurrency}${ghPriceAmount(product.monthlyPrice.amount)})`,
+                    name: `${product.id}-month`
+                });
+            } else {
+                cadences.push({
+                    label: `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${monthlyCurrency})`,
+                    name: `${product.id}-month`
+                });
+            }
+
+            let yearlyCurrency = getSymbol(product.yearlyPrice.currency);
+            if (yearlyCurrency.length === 1) {
+                cadences.push({
+                    label: `${product.name} - Yearly (${yearlyCurrency}${ghPriceAmount(product.yearlyPrice.amount)})`,
+                    name: `${product.id}-year`
+                });
+            } else {
+                cadences.push({
+                    label: `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${yearlyCurrency})`,
+                    name: `${product.id}-year`
+                });
+            }
         });
         this.cadences = cadences;
     }
