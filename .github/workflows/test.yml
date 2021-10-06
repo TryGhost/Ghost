@@ -105,7 +105,7 @@ jobs:
           mysql root password: 'root'
 
       - run: yarn
-      - run: yarn test:acceptance
+      - run: yarn test:e2e
         env:
           database__connection__filename: /dev/shm/ghost-test.db
       - run: yarn test:unit

@@ -7,8 +7,8 @@ const urlUtils = require('../utils/urlUtils');
 let request;
 
 /**
- * This file contains extra acceptance tests for complex URL configurations
- * Examples of acceptance tests that belong here:
+ * This file contains extra e2e tests for complex URL configurations
+ * Examples of e2e tests that belong here:
  * - subdirectories
  * - https
  * - (maybe) admin + frontend URL are different
