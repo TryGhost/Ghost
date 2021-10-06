@@ -71,8 +71,8 @@
                             {{else}}
                                 <GhFormGroup @errors={{this.errors}} @property="amount">
                                     <label for="amount" class="fw6">Amount off</label>
-                                    <div class="gh-offer-value fixed">
-                                        <span class="unit">$</span>
+                                    <div class="gh-offer-value fixed {{if (eq this.currencyLength 3) "fullcurrency"}}">
+                                        <span class="unit">{{this.displayCurrency}}</span>
                                         <GhTextInput
                                             @name="amount"
                                             @type="number"

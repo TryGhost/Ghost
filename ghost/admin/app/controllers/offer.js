@@ -30,6 +30,8 @@ export default class OffersController extends Controller {
         }
     ];
     @tracked selectedDuration = 'forever';
+    @tracked displayCurrency = '$';
+    @tracked currencyLength = 1;
 
     leaveScreenTransition = null;
 
@@ -69,31 +71,28 @@ export default class OffersController extends Controller {
             name: ''
         }];
         this.products.forEach((product) => {
+            var label;
             let monthlyCurrency = getSymbol(product.monthlyPrice.currency);
             if (monthlyCurrency.length === 1) {
-                cadences.push({
-                    label: `${product.name} - Monthly (${monthlyCurrency}${ghPriceAmount(product.monthlyPrice.amount)})`,
-                    name: `${product.id}-month`
-                });
+                label = `${product.name} - Monthly (${monthlyCurrency}${ghPriceAmount(product.monthlyPrice.amount)})`;
             } else {
-                cadences.push({
-                    label: `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${monthlyCurrency})`,
-                    name: `${product.id}-month`
-                });
+                label = `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${monthlyCurrency})`;
             }
+            cadences.push({
+                label: label,
+                name: `${product.id}-month`
+            });
 
             let yearlyCurrency = getSymbol(product.yearlyPrice.currency);
             if (yearlyCurrency.length === 1) {
-                cadences.push({
-                    label: `${product.name} - Yearly (${yearlyCurrency}${ghPriceAmount(product.yearlyPrice.amount)})`,
-                    name: `${product.id}-year`
-                });
+                label = `${product.name} - Yearly (${yearlyCurrency}${ghPriceAmount(product.yearlyPrice.amount)})`;
             } else {
-                cadences.push({
-                    label: `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${yearlyCurrency})`,
-                    name: `${product.id}-year`
-                });
+                label = `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${yearlyCurrency})`;
             }
+            cadences.push({
+                label: label,
+                name: `${product.id}-year`
+            });
         });
         this.cadences = cadences;
     }
@@ -235,6 +234,16 @@ export default class OffersController extends Controller {
         this.offer.cadence = tierCadence;
         // this._saveOfferProperty('cadence', cadence);
         // this.offer.cadence = cadence;
+
+        let product = this.products.findBy('id', tierId);
+        if (product) {
+            if (tierCadence === 'year') {
+                this.displayCurrency = getSymbol(product.yearlyPrice.currency);
+            } else {
+                this.displayCurrency = getSymbol(product.monthlyPrice.currency);
+            }
+        }
+        this.currencyLength = this.displayCurrency.length;
     }
 
     @action
