@@ -1,4 +1,8 @@
-const Offer = require('./Offer');
+const Offer = require('./domain/models/Offer');
+const OfferName = require('./domain/models/OfferName');
+const OfferCode = require('./domain/models/OfferCode');
+const OfferTitle = require('./domain/models/OfferTitle');
+const OfferDescription = require('./domain/models/OfferDescription');
 const OfferMapper = require('./OfferMapper');
 const UniqueChecker = require('./UniqueChecker');
 
@@ -62,19 +66,23 @@ class OffersAPI {
             const offer = await this.repository.getById(data.id, options);
 
             if (data.name) {
-                await offer.updateName(data.name, uniqueChecker);
+                const name = OfferName.create(data.name);
+                await offer.updateName(name, uniqueChecker);
             }
 
             if (data.code) {
-                await offer.updateCode(data.code, uniqueChecker);
+                const code = OfferCode.create(data.code);
+                await offer.updateCode(code, uniqueChecker);
             }
 
             if (data.display_title) {
-                offer.displayTitle = data.display_title;
+                const title = OfferTitle.create(data.display_title);
+                offer.displayTitle = title;
             }
 
             if (data.display_description) {
-                offer.displayDescription = data.display_description;
+                const description = OfferDescription.create(data.display_description);
+                offer.displayDescription = description;
             }
 
             await this.repository.save(offer, options);

@@ -1,17 +1,24 @@
-const errors = require('./errors');
+const errors = require('../../errors');
 const ObjectID = require('bson-objectid').default;
-const {slugify} = require('@tryghost/string');
+
+const OfferName = require('./OfferName');
+const OfferCode = require('./OfferCode');
+const OfferAmount = require('./OfferAmount');
+const OfferTitle = require('./OfferTitle');
+const OfferDescription = require('./OfferDescription');
+const OfferCadence = require('./OfferCadence');
+const OfferType = require('./OfferType');
 
 /**
  * @typedef {object} OfferProps
  * @prop {ObjectID} id
- * @prop {string} name
- * @prop {string} code
- * @prop {string} display_title
- * @prop {string} display_description
- * @prop {'month'|'year'} cadence
- * @prop {'percent'|'amount'} type
- * @prop {number} amount
+ * @prop {OfferName} name
+ * @prop {OfferCode} code
+ * @prop {OfferTitle} display_title
+ * @prop {OfferDescription} display_description
+ * @prop {OfferCadence} cadence
+ * @prop {OfferType} type
+ * @prop {OfferAmount} amount
  * @prop {string} currency
  * @prop {string} [stripe_coupon_id]
  * @prop {OfferTier} tier
@@ -19,8 +26,8 @@ const {slugify} = require('@tryghost/string');
 
 /**
  * @typedef {object} UniqueChecker
- * @prop {(code: string) => Promise<boolean>} isUniqueCode
- * @prop {(code: string) => Promise<boolean>} isUniqueName
+ * @prop {(code: OfferCode) => Promise<boolean>} isUniqueCode
+ * @prop {(name: OfferName) => Promise<boolean>} isUniqueName
  */
 
 /**
@@ -87,12 +94,12 @@ class Offer {
     }
 
     /**
-     * @param {string} code
+     * @param {OfferCode} code
      * @param {UniqueChecker} uniqueChecker
      * @returns {Promise<void>}
      */
     async updateCode(code, uniqueChecker) {
-        if (code === this.props.code) {
+        if (code.equals(this.props.code)) {
             return;
         }
         if (!await uniqueChecker.isUniqueCode(code)) {
@@ -105,12 +112,12 @@ class Offer {
     }
 
     /**
-     * @param {string} name
+     * @param {OfferName} name
      * @param {UniqueChecker} uniqueChecker
      * @returns {Promise<void>}
      */
     async updateName(name, uniqueChecker) {
-        if (name === this.props.name) {
+        if (name.equals(this.props.name)) {
             return;
         }
         if (!await uniqueChecker.isUniqueName(name)) {
@@ -159,9 +166,6 @@ class Offer {
     }
 
     get amount() {
-        if (this.type === 'percent' && this.props.amount === 314) {
-            return 3.14;
-        }
         return this.props.amount;
     }
 
@@ -209,54 +213,27 @@ class Offer {
             isNew = true;
         }
 
-        if (!data.name || typeof data.name !== 'string') {
-            throw new errors.InvalidOfferNameError({
-                message: 'Offer `name` must be a string.'
-            });
-        }
-
-        if (data.name.length > 191) {
-            throw new errors.InvalidOfferNameError({
-                message: 'Offer `name` can be a maximum of 191 characters.'
-            });
+        const name = OfferName.create(data.name);
+        const code = OfferCode.create(data.code);
+        const title = OfferTitle.create(data.display_title);
+        const description = OfferDescription.create(data.display_description);
+        const type = OfferType.create(data.type);
+        const cadence = OfferCadence.create(data.cadence);
+        let amount;
+        if (type.equals(OfferType.Percent)) {
+            amount = OfferAmount.OfferPercentageAmount.create(data.amount);
+        } else {
+            amount = OfferAmount.OfferAbsoluteAmount.create(data.amount);
         }
 
         if (isNew) {
-            if (!await uniqueChecker.isUniqueName(data.name)) {
-                throw new errors.InvalidOfferNameError({
+            if (!await uniqueChecker.isUniqueName(name)) {
+                throw new errors.InvalidOfferName({
                     message: 'Offer `name` must be unique.'
                 });
             }
         }
-        const name = data.name;
 
-        if (!data.display_title || typeof data.display_title !== 'string') {
-            throw new errors.InvalidOfferDisplayTitle({
-                message: 'Offer `display_title` must be a string.'
-            });
-        }
-
-        if (data.display_title.length > 191) {
-            throw new errors.InvalidOfferDisplayTitle({
-                message: 'Offer `display_title` can be a maximum of 191 characters.'
-            });
-        }
-        const title = data.display_title;
-
-        if (!data.display_description || typeof data.display_description !== 'string') {
-            throw new errors.InvalidOfferDisplayDescription({
-                message: 'Offer `display_description` must be a string.'
-            });
-        }
-
-        if (data.display_description.length > 191) {
-            throw new errors.InvalidOfferDisplayDescription({
-                message: 'Offer `display_description` can be a maximum of 191 characters.'
-            });
-        }
-        const description = data.display_description;
-
-        const code = slugify(data.code);
         if (isNew) {
             if (!await uniqueChecker.isUniqueCode(code)) {
                 throw new errors.InvalidOfferCode({
@@ -265,35 +242,6 @@ class Offer {
             }
         }
 
-        if (data.type !== 'percent') {
-            throw new errors.InvalidOfferType({
-                message: 'Offer `type` must be "percent".'
-            });
-        }
-
-        const type = data.type;
-
-        if (data.type === 'percent') {
-            if (data.amount < 0 || data.amount > 100 && data.amount !== 314) {
-                throw new errors.InvalidOfferAmount({
-                    message: 'Offer `amount` must be an integer between 0 and 100.'
-                });
-            }
-            if (!Number.isInteger(data.amount)) {
-                throw new errors.InvalidOfferAmount({
-                    message: 'Offer `amount` must be an integer between 0 and 100.'
-                });
-            }
-        }
-        const amount = data.amount;
-
-        if (data.cadence !== 'month' && data.cadence !== 'year') {
-            throw new errors.InvalidOfferCadence({
-                message: 'Offer `cadence` must be one of "month" or "year".'
-            });
-        }
-
-        const cadence = data.cadence;
         const currency = data.currency;
 
         if (isNew && data.stripe_coupon_id) {

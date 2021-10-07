@@ -11,20 +11,20 @@ class UniqueChecker {
     }
 
     /**
-     * @param {string} code
+     * @param {import('./domain/models/OfferCode')} code
      * @returns {Promise<boolean>}
      */
     async isUniqueCode(code) {
-        const exists = await this.repository.existsByCode(code, this.options);
+        const exists = await this.repository.existsByCode(code.value, this.options);
         return !exists;
     }
 
     /**
-     * @param {string} name
+     * @param {import('./domain/models/OfferName')} name
      * @returns {Promise<boolean>}
      */
     async isUniqueName(name) {
-        const exists = await this.repository.existsByName(name, this.options);
+        const exists = await this.repository.existsByName(name.value, this.options);
         return !exists;
     }
 }
