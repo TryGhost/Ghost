@@ -117,7 +117,7 @@ describe('Acceptance: Editor', function () {
             return await authenticateSession();
         });
 
-        it('renders the editor correctly, PSM Publish Date and Save Button', async function () {
+        it.only('renders the editor correctly, PSM Publish Date and Save Button', async function () {
             let [post1] = this.server.createList('post', 2, {authors: [author]});
             let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
 
@@ -315,7 +315,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after published post is unpublished'
-            ).to.equal('Publish');
+            ).to.equal('Publish & send');
 
             expect(
                 find('[data-test-publishmenu-draft]'),
@@ -409,7 +409,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after scheduled post is unscheduled'
-            ).to.equal('Publish');
+            ).to.equal('Publish & send');
 
             await click('[data-test-publishmenu-cancel]');
 
