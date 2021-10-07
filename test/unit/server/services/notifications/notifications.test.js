@@ -175,7 +175,7 @@ describe('Notifications Service', function () {
                     createdAt: moment().toDate(),
                     status: 'alert',
                     type: 'info',
-                    dismissible: true,
+                    dismissible: false,
                     top: true,
                     message: 'Hello test world!'
                 }]
@@ -183,6 +183,17 @@ describe('Notifications Service', function () {
 
             allNotifications.length.should.equal(0);
             notificationsToAdd.length.should.equal(1);
+
+            const createdNotification = notificationsToAdd[0];
+
+            createdNotification.id.should.not.be.undefined();
+            createdNotification.custom.should.be.true();
+            createdNotification.createdAt.should.not.be.undefined();
+            createdNotification.status.should.equal('alert');
+            createdNotification.type.should.equal('info');
+            createdNotification.dismissible.should.be.false();
+            createdNotification.top.should.be.true();
+            createdNotification.message.should.equal('Hello test world!');
         });
     });
 
