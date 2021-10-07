@@ -87,7 +87,9 @@ Router.map(function () {
     this.route('member.new', {path: '/members/new'});
     this.route('member', {path: '/members/:member_id'});
 
-    this.route('offers');
+    this.route('offers', function () {
+        this.route('link');
+    });
     this.route('offer.new', {path: '/offers/new'});
     this.route('offer', {path: '/offers/:offer_id'});
 

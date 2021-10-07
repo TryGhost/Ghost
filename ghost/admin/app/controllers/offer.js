@@ -250,6 +250,7 @@ export default class OffersController extends Controller {
     updateDuration(duration) {
         this._saveOfferProperty('duration', duration);
         // this.offer.duration = duration;
+        this.selectedDuration = duration;
     }
 
     // Private -----------------------------------------------------------------
