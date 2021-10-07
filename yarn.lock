@@ -1595,10 +1595,10 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
-"@tryghost/members-offers@0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.3.1.tgz#a012e29b38a0d1e6b9e1d8aef9c474663301310f"
-  integrity sha512-sYuo/mcu8zbArNo31yCFkUBhZ8C3WxVHp72T4UnUjUg7/uoViZURb/hE787p3ts/JzbBL0ZtL9xGSq1z/hjToA==
+"@tryghost/members-offers@0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.3.3.tgz#2cb0d5d2ef4f64e889c07806dc607ec102ed8d69"
+  integrity sha512-TKiJBT5qbRoTmkti9Zl5LSpVf6WH9KmB1PTeG2/wrRDTkvrb8R87ndIn1A9j7wsxXGF2/xe2LoWAmS68ACSAQA==
   dependencies:
     "@tryghost/string" "^0.1.20"
 
