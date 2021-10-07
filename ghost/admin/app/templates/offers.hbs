@@ -17,30 +17,31 @@
                     <th class="gh-list-header">Redemptions</th>
                     <th class="gh-list-header gh-list-cellwidth-10"></th>
                 </tr>
-                {{#each this.offersList as |offer|}}
+                {{#each this.offers as |offer|}}
                     <tr class="gh-list-row">
-                        <LinkTo @route="offer" @model={{offer.offerModel}} class="gh-list-data">
+                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <h3>{{offer.name}}</h3>
                         </LinkTo>
-                        <LinkTo @route="offer" @model={{offer.offerModel}} class="gh-list-data">
-                            <span>{{offer.tier.name}}</span> <span class="midgrey">- {{offer.cadenceInterval}}</span>
+                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
+                            <span>{{offer.tier.name}}</span>
+                            <span class="midgrey">- {{if (eq offer.cadence 'month') 'Monthly' 'Yearly'}} </span>
                         </LinkTo>
-                        <LinkTo @route="offer" @model={{offer.offerModel}} class="gh-list-data">
+                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <span class="offer-value">
                                 {{svg-jar "offer"}}
                                 {{#if (eq offer.type 'percent')}}
                                     <span class="green fw6">{{offer.amount}}% OFF</span>
                                 {{/if}}
                                 {{#if (eq offer.type 'fixed')}}
-                                    <span class="green fw6">20% OFF</span>
+                                    <span class="green fw6">{{offer.currency}}{{offer.amount}} OFF</span>
                                 {{/if}}
                                 <span class="dib ml1 midgrey"> – {{offer.duration}} </span>
                             </span>
                         </LinkTo>
-                        <LinkTo @route="offer" @model={{offer.offerModel}} class="gh-list-data">
+                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <span class="midgrey">-</span>
                         </LinkTo>
-                        <LinkTo @route="offer" @model={{@offer.offerModel}} class="gh-list-data gh-list-cellwidth-10 gh-tag-list-chevron">
+                        <LinkTo @route="offer" @model={{@offer}} class="gh-list-data gh-list-cellwidth-10 gh-tag-list-chevron">
                             <div class="flex items-center justify-end w-100 h-100">
                                 <LinkTo @route="offers.link" class="gh-btn gh-btn-icon gh-btn-text gh-offer-link-button" data-tooltip="Get shareable link">
                                     <span>{{svg-jar "link"}}</span>
