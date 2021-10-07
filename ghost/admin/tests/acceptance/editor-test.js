@@ -206,7 +206,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'draft post publish button text'
-            ).to.equal('Publish');
+            ).to.equal('Publish & send');
 
             // Publish the post
             await click('[data-test-publishmenu-save]');
