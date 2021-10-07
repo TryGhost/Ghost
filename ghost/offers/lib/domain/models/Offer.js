@@ -22,7 +22,7 @@ const OfferCurrency = require('./OfferCurrency');
  * @prop {OfferType} type
  * @prop {OfferAmount} amount
  * @prop {OfferDuration} duration
- * @prop {OfferCurrency} currency
+ * @prop {OfferCurrency} [currency]
  * @prop {string} [stripe_coupon_id]
  * @prop {OfferTier} tier
  */

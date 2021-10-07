@@ -123,7 +123,7 @@ class OfferRepository {
             interval: offer.cadence.value,
             product_id: offer.tier.id,
             duration: offer.duration.value,
-            currency: offer.currency.value
+            currency: offer.currency ? offer.currency.value : null
         });
 
         if (offer.codeChanged || offer.isNew) {
@@ -139,7 +139,7 @@ class OfferRepository {
             /** @type {import('stripe').Stripe.CouponCreateParams} */
             const coupon = {
                 name: offer.name.value,
-                duration: 'once'
+                duration: offer.duration.value
             };
 
             if (offer.type.value === 'percent') {
