@@ -1,5 +1,5 @@
 /**
- * @typedef {import('./Offer')} Offer
+ * @typedef {import('./domain/models/Offer')} Offer
  */
 
 /**
@@ -32,13 +32,13 @@ class OfferMapper {
     static toDTO(offer) {
         return {
             id: offer.id,
-            name: offer.name,
-            code: offer.code,
-            display_title: offer.displayTitle,
-            display_description: offer.displayDescription,
-            type: offer.type,
-            cadence: offer.cadence,
-            amount: offer.amount,
+            name: offer.name.value,
+            code: offer.code.value,
+            display_title: offer.displayTitle.value,
+            display_description: offer.displayDescription.value,
+            type: offer.type.value,
+            cadence: offer.cadence.value,
+            amount: offer.amount.value,
             currency_restriction: offer.type === 'amount',
             currency: offer.type === 'amount' ? offer.currency : null,
             tier: {

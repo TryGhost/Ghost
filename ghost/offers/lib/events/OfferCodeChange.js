@@ -1,8 +1,10 @@
+/** @typedef {import('../domain/models/OfferCode')} OfferCode */
+
 /**
  * @typedef {object} OfferCodeChangeEventData
  * @prop {string} offerId
- * @prop {string[]} previousCodes
- * @prop {string} currentCode
+ * @prop {OfferCode[]} previousCodes
+ * @prop {OfferCode} currentCode
  */
 
 class OfferCodeChangeEvent {

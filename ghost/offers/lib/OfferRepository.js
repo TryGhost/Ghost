@@ -1,6 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('./events/OfferCodeChange');
-const Offer = require('./Offer');
+const Offer = require('./domain/models/Offer');
 
 /**
  * @typedef {object} OfferRepositoryOptions
@@ -53,7 +53,7 @@ class OfferRepository {
 
     /**
      * @param {string} name
-     * @param {OfferRepositoryOptions} options
+     * @param {OfferRepositoryOptions} [options]
      * @returns {Promise<boolean>}
      */
     async existsByName(name, options) {
@@ -66,7 +66,7 @@ class OfferRepository {
 
     /**
      * @param {string} code
-     * @param {OfferRepositoryOptions} options
+     * @param {OfferRepositoryOptions} [options]
      * @returns {Promise<boolean>}
      */
     async existsByCode(code, options) {
@@ -79,7 +79,7 @@ class OfferRepository {
 
     /**
      * @param {string} id
-     * @param {OfferRepositoryOptions} options
+     * @param {OfferRepositoryOptions} [options]
      * @returns {Promise<Offer>}
      */
     async getById(id, options) {
@@ -94,7 +94,7 @@ class OfferRepository {
     }
 
     /**
-     * @param {OfferRepositoryOptions} options
+     * @param {OfferRepositoryOptions} [options]
      * @returns {Promise<Offer[]>}
      */
     async getAll(options) {
@@ -107,19 +107,19 @@ class OfferRepository {
 
     /**
      * @param {Offer} offer
-     * @param {OfferRepositoryOptions} options
+     * @param {OfferRepositoryOptions} [options]
      * @returns {Promise<void>}
      */
     async save(offer, options) {
         const model = this.OfferModel.forge({
             id: offer.id,
-            name: offer.name,
-            code: offer.code,
-            portal_title: offer.displayTitle,
-            portal_description: offer.displayDescription,
-            discount_type: offer.type,
-            discount_amount: offer.amount,
-            interval: offer.cadence,
+            name: offer.name.value,
+            code: offer.code.value,
+            portal_title: offer.displayTitle.value,
+            portal_description: offer.displayDescription.value,
+            discount_type: offer.type.value,
+            discount_amount: offer.amount.value,
+            interval: offer.cadence.value,
             product_id: offer.tier.id,
             duration: 'once'
         });
@@ -136,12 +136,12 @@ class OfferRepository {
         if (offer.isNew) {
             /** @type {import('stripe').Stripe.CouponCreateParams} */
             const coupon = {
-                name: offer.name,
+                name: offer.name.value,
                 duration: 'once'
             };
 
-            if (offer.type === 'percent') {
-                coupon.percent_off = offer.amount;
+            if (offer.type.value === 'percent') {
+                coupon.percent_off = offer.amount.value;
             }
 
             const couponData = await this.stripeAPIService.createCoupon(coupon);

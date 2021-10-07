@@ -12,11 +12,9 @@ class InvalidPropError extends GhostError {
     }
 }
 
-class InvalidOfferNameError extends InvalidPropError {
-    static message = 'Invalid offer name!';
-}
-class InvalidOfferDisplayTitle extends InvalidPropError {}
-class InvalidOfferDisplayDescription extends InvalidPropError {}
+class InvalidOfferName extends InvalidPropError {}
+class InvalidOfferTitle extends InvalidPropError {}
+class InvalidOfferDescription extends InvalidPropError {}
 class InvalidOfferCode extends InvalidPropError {}
 class InvalidOfferType extends InvalidPropError {}
 class InvalidOfferAmount extends InvalidPropError {}
@@ -26,9 +24,9 @@ class InvalidOfferCadence extends InvalidPropError {}
 class InvalidOfferCoupon extends InvalidPropError {}
 
 module.exports = {
-    InvalidOfferNameError,
-    InvalidOfferDisplayTitle,
-    InvalidOfferDisplayDescription,
+    InvalidOfferName,
+    InvalidOfferTitle,
+    InvalidOfferDescription,
     InvalidOfferCode,
     InvalidOfferType,
     InvalidOfferAmount,

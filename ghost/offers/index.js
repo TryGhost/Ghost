@@ -22,21 +22,21 @@ class OffersModule {
         DomainEvents.subscribe(OfferCodeChangeEvent, (event) => {
             if (event.data.previousCodes) {
                 for (const previousCode of event.data.previousCodes) {
-                    this.redirectManager.removeRedirect(`/${previousCode}`);
+                    this.redirectManager.removeRedirect(`/${previousCode.value}`);
                 }
             }
             this.redirectManager.addRedirect(
-                `/${event.data.currentCode}`,
+                `/${event.data.currentCode.value}`,
                 `/#/portal/offers/${event.data.offerId}`,
                 {permanent: false}
             );
         });
 
-        const offers = await this.api.listOffers();
+        const offers = await this.repository.getAll();
 
         for (const offer of offers) {
             this.redirectManager.addRedirect(
-                `/${offer.code}`,
+                `/${offer.code.value}`,
                 `/#/portal/offers/${offer.id}`,
                 {permanent: false}
             );
