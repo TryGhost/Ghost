@@ -33,7 +33,7 @@ export default class GhPublishMenuDraftComponent extends Component {
     }
 
     get showEmailOnlyInput() {
-        return this.feature.emailOnlyPosts && this.args.post.isPost;
+        return this.args.post.isPost;
     }
 
     constructor() {
