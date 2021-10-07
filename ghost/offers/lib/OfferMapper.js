@@ -19,6 +19,8 @@
  * @prop {boolean} currency_restriction
  * @prop {string} currency
  *
+ * @prop {'once'|'repeating'|'forever'} duration
+ *
  * @prop {object} tier
  * @prop {string} tier.id
  * @prop {string} tier.name
@@ -39,8 +41,9 @@ class OfferMapper {
             type: offer.type.value,
             cadence: offer.cadence.value,
             amount: offer.amount.value,
-            currency_restriction: offer.type === 'amount',
-            currency: offer.type === 'amount' ? offer.currency : null,
+            duration: offer.duration.value,
+            currency_restriction: offer.type.value === 'amount',
+            currency: offer.type.value === 'amount' ? offer.currency : null,
             tier: {
                 id: offer.tier.id,
                 name: offer.tier.name

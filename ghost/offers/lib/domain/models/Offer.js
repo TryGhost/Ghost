@@ -8,6 +8,7 @@ const OfferTitle = require('./OfferTitle');
 const OfferDescription = require('./OfferDescription');
 const OfferCadence = require('./OfferCadence');
 const OfferType = require('./OfferType');
+const OfferDuration = require('./OfferDuration');
 
 /**
  * @typedef {object} OfferProps
@@ -19,6 +20,7 @@ const OfferType = require('./OfferType');
  * @prop {OfferCadence} cadence
  * @prop {OfferType} type
  * @prop {OfferAmount} amount
+ * @prop {OfferDuration} duration
  * @prop {string} currency
  * @prop {string} [stripe_coupon_id]
  * @prop {OfferTier} tier
@@ -93,40 +95,8 @@ class Offer {
         return this.props.currency;
     }
 
-    /**
-     * @param {OfferCode} code
-     * @param {UniqueChecker} uniqueChecker
-     * @returns {Promise<void>}
-     */
-    async updateCode(code, uniqueChecker) {
-        if (code.equals(this.props.code)) {
-            return;
-        }
-        if (!await uniqueChecker.isUniqueCode(code)) {
-            throw new errors.InvalidOfferCode({
-                message: 'Offer `code` must be unique.'
-            });
-        }
-        this.changed.code.push(this.props.code);
-        this.props.code = code;
-    }
-
-    /**
-     * @param {OfferName} name
-     * @param {UniqueChecker} uniqueChecker
-     * @returns {Promise<void>}
-     */
-    async updateName(name, uniqueChecker) {
-        if (name.equals(this.props.name)) {
-            return;
-        }
-        if (!await uniqueChecker.isUniqueName(name)) {
-            throw new errors.InvalidOfferNameError({
-                message: 'Offer `name` must be unique.'
-            });
-        }
-        this.changed.name.push(this.props.name);
-        this.props.name = name;
+    get duration() {
+        return this.props.duration;
     }
 
     get oldCodes() {
@@ -178,6 +148,42 @@ class Offer {
     }
 
     /**
+     * @param {OfferCode} code
+     * @param {UniqueChecker} uniqueChecker
+     * @returns {Promise<void>}
+     */
+    async updateCode(code, uniqueChecker) {
+        if (code.equals(this.props.code)) {
+            return;
+        }
+        if (!await uniqueChecker.isUniqueCode(code)) {
+            throw new errors.InvalidOfferCode({
+                message: 'Offer `code` must be unique.'
+            });
+        }
+        this.changed.code.push(this.props.code);
+        this.props.code = code;
+    }
+
+    /**
+     * @param {OfferName} name
+     * @param {UniqueChecker} uniqueChecker
+     * @returns {Promise<void>}
+     */
+    async updateName(name, uniqueChecker) {
+        if (name.equals(this.props.name)) {
+            return;
+        }
+        if (!await uniqueChecker.isUniqueName(name)) {
+            throw new errors.InvalidOfferName({
+                message: 'Offer `name` must be unique.'
+            });
+        }
+        this.changed.name.push(this.props.name);
+        this.props.name = name;
+    }
+
+    /**
      * @private
      * @param {OfferProps} props
      * @param {object} options
@@ -219,6 +225,7 @@ class Offer {
         const description = OfferDescription.create(data.display_description);
         const type = OfferType.create(data.type);
         const cadence = OfferCadence.create(data.cadence);
+        const duration = OfferDuration.create(data.duration);
         let amount;
         if (type.equals(OfferType.Percent)) {
             amount = OfferAmount.OfferPercentageAmount.create(data.amount);
@@ -240,6 +247,12 @@ class Offer {
                     message: 'Offer `code` must be unique.'
                 });
             }
+        }
+
+        if (duration.equals(OfferDuration.create('repeating'))) {
+            throw new errors.InvalidOfferDuration({
+                message: 'Offer `duration` must be either "once" or "forever".'
+            });
         }
 
         const currency = data.currency;
@@ -267,6 +280,7 @@ class Offer {
             type,
             amount,
             cadence,
+            duration,
             currency,
             tier,
             stripe_coupon_id: couponId
