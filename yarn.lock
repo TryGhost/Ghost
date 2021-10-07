@@ -1387,7 +1387,7 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
-"@tryghost/express-dynamic-redirects@^0.1.0":
+"@tryghost/express-dynamic-redirects@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.1.0.tgz#85c6caa2887034ea8064a40ca0622a87e4000c4e"
   integrity sha512-C9594LRjH3wsAWUoMCb5sZg/1Ifrn/O2aQeWQeBDgqUWAScmtUuIpkPNTRrq0cZ1Yv4ig5gWMKv4YSe5TdAVdA==
