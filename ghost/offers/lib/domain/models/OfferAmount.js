@@ -26,7 +26,7 @@ class OfferPercentageAmount extends OfferAmount {
     }
 }
 
-class OfferAbsoluteAmount extends OfferAmount {
+class OfferFixedAmount extends OfferAmount {
     /** @param {unknown} amount */
     static create(amount) {
         if (typeof amount !== 'number') {
@@ -46,4 +46,4 @@ class OfferAbsoluteAmount extends OfferAmount {
 
 module.exports = OfferAmount;
 module.exports.OfferPercentageAmount = OfferPercentageAmount;
-module.exports.OfferAbsoluteAmount = OfferAbsoluteAmount;
+module.exports.OfferFixedAmount = OfferFixedAmount;
