@@ -56,7 +56,6 @@ export default Service.extend({
     multipleProducts: feature('multipleProducts'),
     offers: feature('offers', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
-    emailOnlyPosts: feature('emailOnlyPosts', {developer: true}),
     customThemeSettings: feature('customThemeSettings', {developer: true}),
     membersActivity: feature('membersActivity', {developer: true}),
 

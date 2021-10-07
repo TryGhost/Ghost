@@ -103,11 +103,9 @@ export default Component.extend({
         let buttonText;
 
         if (postState === 'draft') {
-            let publishText = this.feature.emailOnlyPosts ? 'Publish & send' : 'Publish';
-
             switch (distributionAction) {
             case 'publish_send':
-                buttonText = (saveType === 'publish') ? publishText : 'Schedule';
+                buttonText = (saveType === 'publish') ? 'Publish & send' : 'Schedule';
                 break;
             case 'publish':
                 buttonText = (saveType === 'publish') ? 'Publish' : 'Schedule';
