@@ -9,7 +9,7 @@ const Offer = require('./domain/models/Offer');
 
 /**
  * @param {any} json
- * @returns {Offer.OfferProps}
+ * @returns {Offer.OfferCreateProps}
  */
 function toDomain(json) {
     return {

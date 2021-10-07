@@ -28,6 +28,22 @@ const OfferCurrency = require('./OfferCurrency');
  */
 
 /**
+ * @typedef {object} OfferCreateProps
+ * @prop {string} id
+ * @prop {string} name
+ * @prop {string} code
+ * @prop {string} display_title
+ * @prop {string} display_description
+ * @prop {string} cadence
+ * @prop {string} type
+ * @prop {number} amount
+ * @prop {string} duration
+ * @prop {string} currency
+ * @prop {string} [stripe_coupon_id]
+ * @prop {TierProps|OfferTier} tier
+ */
+
+/**
  * @typedef {object} UniqueChecker
  * @prop {(code: OfferCode) => Promise<boolean>} isUniqueCode
  * @prop {(name: OfferName) => Promise<boolean>} isUniqueName
