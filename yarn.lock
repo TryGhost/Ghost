@@ -1333,14 +1333,15 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.11.tgz#ffcc6ccb10a768aaa9276c3a22b2dea9f560e247"
   integrity sha512-ml1aJ4nJmfA8MRAJ3l9+iTdccGDQiUN1En8XwYwypfrKlECR8Mw/kKRPnqHge598+ED6J1+at5gArSq6bLKbug==
 
-"@tryghost/custom-theme-settings-service@0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/custom-theme-settings-service/-/custom-theme-settings-service-0.0.6.tgz#5e6c196d29e0965496ecab9c67ff44c57fadcd4c"
-  integrity sha512-cUuG+5pQY5T8XcgqYMQheIPMCyx5bYSV95TNZko10CObOM9qPwW38UmiAk+qY2jLvQ+VLPJRLjA/TZHAOnh+2A==
+"@tryghost/custom-theme-settings-service@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/custom-theme-settings-service/-/custom-theme-settings-service-0.1.0.tgz#ebb23289b7c092e3125db12e0fa8be74d2054db5"
+  integrity sha512-n4nCEZOZLheSHWMykpMjYHuOc0AUn+XJRW9WAEgD7g9kXuArwvsa42uWVZ12VqyQ5JSz3W5rVYXNLlZX+M3k4w==
   dependencies:
     "@tryghost/debug" "^0.1.5"
     "@tryghost/errors" "^0.2.14"
     "@tryghost/tpl" "^0.1.4"
+    lodash "^4.17.21"
 
 "@tryghost/debug@0.1.5", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5":
   version "0.1.5"
