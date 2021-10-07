@@ -3,10 +3,6 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getWebhooksServiceInstance = require('../../services/webhooks/webhooks-service');
 
-const webhooksService = getWebhooksServiceInstance({
-    WebhookModel: models.Webhook
-});
-
 const messages = {
     resourceNotFound: '{resource} not found.',
     noPermissionToEdit: {
@@ -14,6 +10,10 @@ const messages = {
         context: 'You may only {method} webhooks that belong to the authenticated integration. Check the supplied Admin API Key.'
     }
 };
+
+const webhooksService = getWebhooksServiceInstance({
+    WebhookModel: models.Webhook
+});
 
 module.exports = {
     docName: 'webhooks',
