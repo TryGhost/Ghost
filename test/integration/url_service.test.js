@@ -2,11 +2,11 @@ const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
-const models = require('../../../core/server/models');
-const events = require('../../../core/server/lib/common/events');
-const UrlService = rewire('../../../core/frontend/services/url/UrlService');
+const testUtils = require('../utils');
+const configUtils = require('../utils/configUtils');
+const models = require('../../core/server/models');
+const events = require('../../core/server/lib/common/events');
+const UrlService = rewire('../../core/frontend/services/url/UrlService');
 
 /**
  * @NOTE
