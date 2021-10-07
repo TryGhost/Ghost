@@ -2,12 +2,17 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const {BadRequestError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings');
 const membersService = require('../../services/members');
 
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
+
+const messages = {
+    failedSendingEmail: 'Failed Sending Email'
+    
+};
 
 module.exports = {
     docName: 'settings',
@@ -109,7 +114,7 @@ module.exports = {
             } catch (err) {
                 throw new BadRequestError({
                     err,
-                    message: i18n.t('errors.mail.failedSendingEmail.error')
+                    message: tpl(messages.failedSendingEmail)
                 });
             }
         }
