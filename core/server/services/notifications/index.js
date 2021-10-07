@@ -1,12 +1,12 @@
 const settingsCache = require('../../../shared/settings-cache');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const ghostVersion = require('@tryghost/version');
 const Notifications = require('./notifications');
 const models = require('../../models');
 
 module.exports.notifications = new Notifications({
     settingsCache,
-    i18n,
+    tpl,
     ghostVersion,
     SettingsModel: models.Settings
 });

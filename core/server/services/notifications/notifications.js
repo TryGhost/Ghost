@@ -5,19 +5,25 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid');
 
+const messages = {
+    noPermissionToDismissNotif: 'You do not have permission to dismiss this notification.',
+    notificationDoesNotExist: 'Notification does not exist.'
+
+};
+
 class Notifications {
     /**
      *
      * @param {Object} options
      * @param {Object} options.settingsCache - settings cache instance
-     * @param {Object} options.i18n - i18n instance
+     * @param {Object} options.tpl - tpl instance
      * @param {Object} options.ghostVersion
      * @param {String} options.ghostVersion.full - Ghost instance version in "full" format - major.minor.patch
      * @param {Object} options.SettingsModel - Ghost's Setting model instance
      */
-    constructor({settingsCache, i18n, ghostVersion, SettingsModel}) {
+    constructor({settingsCache, tpl, ghostVersion, SettingsModel}) {
         this.settingsCache = settingsCache;
-        this.i18n = i18n;
+        this.tpl = tpl;
         this.ghostVersion = ghostVersion;
         this.SettingsModel = SettingsModel;
     }
@@ -195,13 +201,13 @@ class Notifications {
 
         if (notificationToMarkAsSeenIndex > -1 && !notificationToMarkAsSeen.dismissible) {
             return Promise.reject(new errors.NoPermissionError({
-                message: this.i18n.t('errors.api.notifications.noPermissionToDismissNotif')
+                message: this.tpl(messages.noPermissionToDismissNotif)
             }));
         }
 
         if (notificationToMarkAsSeenIndex < 0) {
             return Promise.reject(new errors.NotFoundError({
-                message: this.i18n.t('errors.api.notifications.notificationDoesNotExist')
+                message: this.tpl(messages.notificationDoesNotExist)
             }));
         }
 
