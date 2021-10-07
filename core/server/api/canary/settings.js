@@ -9,6 +9,11 @@ const membersService = require('../../services/members');
 
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
 
+const messages = {
+    failedSendingEmail: 'Failed Sending Email'
+    
+};
+
 module.exports = {
     docName: 'settings',
 
