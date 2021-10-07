@@ -156,7 +156,7 @@ ul.nostyle li {
     font-weight: 600;
 }
 
-.gh-list a {
+.gh-list a:not(.gh-btn) {
     color: var(--black);
 }
 

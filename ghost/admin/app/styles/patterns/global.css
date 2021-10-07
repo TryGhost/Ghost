@@ -319,7 +319,7 @@ h5,
 h6 {
     margin: 0 0 0.3em 0;
     color: var(--black);
-    line-height: 1.15em;
+    line-height: 1.3em;
     text-rendering: optimizeLegibility;
 }
 
