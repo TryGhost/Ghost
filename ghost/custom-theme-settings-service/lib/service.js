@@ -6,7 +6,7 @@ const debug = require('@tryghost/debug')('custom-theme-settings-service');
 
 const messages = {
     problemFindingSetting: 'Problem finding setting: {key}.',
-    invalidOptionForSetting: 'Unknown option for {key}. Allowed options: {allowedOptions}.'
+    invalidOptionForSetting: 'Unknown select value for \'{key}\'. Allowed values: {allowedValues}.'
 };
 
 module.exports = class CustomThemeSettingsService {
@@ -108,6 +108,7 @@ module.exports = class CustomThemeSettingsService {
 
     /**
      * @param {Object} theme - checked theme output from gscan
+     * @returns {Array} - list of stored theme record objects
      * @private
      */
     async _syncRepositoryWithTheme(theme) {
@@ -118,7 +119,7 @@ module.exports = class CustomThemeSettingsService {
 
         // exit early if there's nothing to sync for this theme
         if (knownSettings.length === 0 && _.isEmpty(themeSettings)) {
-            return;
+            return [];
         }
 
         let removedIds = [];
