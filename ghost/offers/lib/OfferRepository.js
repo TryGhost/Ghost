@@ -22,6 +22,7 @@ function toDomain(json) {
         amount: json.discount_amount,
         cadence: json.interval,
         currency: json.currency,
+        duration: json.duration,
         stripe_coupon_id: json.stripe_coupon_id,
         tier: {
             id: json.product.id,
@@ -121,7 +122,7 @@ class OfferRepository {
             discount_amount: offer.amount.value,
             interval: offer.cadence.value,
             product_id: offer.tier.id,
-            duration: 'once'
+            duration: offer.duration.value
         });
 
         if (offer.codeChanged || offer.isNew) {
