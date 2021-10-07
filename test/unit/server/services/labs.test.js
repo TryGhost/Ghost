@@ -22,16 +22,18 @@ describe('Labs Service', function () {
         sinon.stub(process.env, 'NODE_ENV').value('production');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('labs').returns({
-            emailOnlyPosts: true
+            oauthLogin: true
         });
 
+        // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
+        //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
         labs.getAll().should.eql({
-            emailOnlyPosts: true,
+            oauthLogin: true,
             members: true
         });
 
         labs.isSet('members').should.be.true;
-        labs.isSet('emailOnlyPosts').should.be.true;
+        labs.isSet('oauthLogin').should.be.true;
     });
 
     it('returns a falsy alpha flag when dev experiments in NOT toggled', function () {
@@ -39,15 +41,17 @@ describe('Labs Service', function () {
         sinon.stub(process.env, 'NODE_ENV').value('production');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('labs').returns({
-            emailOnlyPosts: true
+            oauthLogin: true
         });
 
+        // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
+        //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
         labs.getAll().should.eql({
             members: true
         });
 
         labs.isSet('members').should.be.true;
-        labs.isSet('emailOnlyPosts').should.be.false;
+        labs.isSet('oauthLogin').should.be.false;
     });
 
     it('members flag is true when members_signup_access setting is "all"', function () {
