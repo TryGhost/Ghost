@@ -986,6 +986,17 @@
     "@sentry/utils" "6.13.2"
     tslib "^1.9.3"
 
+"@sentry/core@6.13.3":
+  version "6.13.3"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.13.3.tgz#5cbbb995128e793ebebcbf1d3b7514e0e5e8b221"
+  integrity sha512-obm3SjgCk8A7nB37b2AU1eq1q7gMoJRrGMv9VRIyfcG0Wlz/5lJ9O3ohUk+YZaaVfZMxXn6hFtsBiOWmlv7IIA==
+  dependencies:
+    "@sentry/hub" "6.13.3"
+    "@sentry/minimal" "6.13.3"
+    "@sentry/types" "6.13.3"
+    "@sentry/utils" "6.13.3"
+    tslib "^1.9.3"
+
 "@sentry/hub@6.13.2":
   version "6.13.2"
   resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.13.2.tgz#ebc66fd55c96c7686a53ffd3521b6a63f883bb79"
@@ -995,6 +1006,15 @@
     "@sentry/utils" "6.13.2"
     tslib "^1.9.3"
 
+"@sentry/hub@6.13.3":
+  version "6.13.3"
+  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.13.3.tgz#cc09623a69b5343315fdb61c7fdd0be74b72299f"
+  integrity sha512-eYppBVqvhs5cvm33snW2sxfcw6G20/74RbBn+E4WDo15hozis89kU7ZCJDOPkXuag3v1h9igns/kM6PNBb41dw==
+  dependencies:
+    "@sentry/types" "6.13.3"
+    "@sentry/utils" "6.13.3"
+    tslib "^1.9.3"
+
 "@sentry/minimal@6.13.2":
   version "6.13.2"
   resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.13.2.tgz#de3ecc62b9463bf56ccdbcf4c75f7ea1aeeebc11"
@@ -1002,6 +1022,15 @@
   dependencies:
     "@sentry/hub" "6.13.2"
     "@sentry/types" "6.13.2"
+    tslib "^1.9.3"
+
+"@sentry/minimal@6.13.3":
+  version "6.13.3"
+  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.13.3.tgz#a675a79bcc830142e4f95e6198a2efde2cd3901e"
+  integrity sha512-63MlYYRni3fs5Bh8XBAfVZ+ctDdWg0fapSTP1ydIC37fKvbE+5zhyUqwrEKBIiclEApg1VKX7bkKxVdu/vsFdw==
+  dependencies:
+    "@sentry/hub" "6.13.3"
+    "@sentry/types" "6.13.3"
     tslib "^1.9.3"
 
 "@sentry/node@6.13.2":
@@ -1019,6 +1048,21 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
+"@sentry/node@6.13.3":
+  version "6.13.3"
+  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-6.13.3.tgz#94c646c31fd240ab68ee8b85aa663e65eb499d06"
+  integrity sha512-ZeZSw+TcPcf4e0j7iEqNMtoVmz+WFW/TEoGokXIwysZqSgchKdAXDHqn+CqUqFan7d76JcJmzztAUK2JruQ2Kg==
+  dependencies:
+    "@sentry/core" "6.13.3"
+    "@sentry/hub" "6.13.3"
+    "@sentry/tracing" "6.13.3"
+    "@sentry/types" "6.13.3"
+    "@sentry/utils" "6.13.3"
+    cookie "^0.4.1"
+    https-proxy-agent "^5.0.0"
+    lru_map "^0.3.3"
+    tslib "^1.9.3"
+
 "@sentry/tracing@6.13.2":
   version "6.13.2"
   resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-6.13.2.tgz#512389ba459f48ae75e14f1528ab062dc46e4956"
@@ -1030,10 +1074,26 @@
     "@sentry/utils" "6.13.2"
     tslib "^1.9.3"
 
+"@sentry/tracing@6.13.3":
+  version "6.13.3"
+  resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-6.13.3.tgz#ca657d4afa99c50f15e638fe38405bac33e780ee"
+  integrity sha512-yyOFIhqlprPM0g4f35Icear3eZk2mwyYcGEzljJfY2iU6pJwj1lzia5PfSwiCW7jFGMmlBJNhOAIpfhlliZi8Q==
+  dependencies:
+    "@sentry/hub" "6.13.3"
+    "@sentry/minimal" "6.13.3"
+    "@sentry/types" "6.13.3"
+    "@sentry/utils" "6.13.3"
+    tslib "^1.9.3"
+
 "@sentry/types@6.13.2":
   version "6.13.2"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.13.2.tgz#8388d5b92ea8608936e7aae842801dc90e0184e6"
   integrity sha512-6WjGj/VjjN8LZDtqJH5ikeB1o39rO1gYS6anBxiS3d0sXNBb3Ux0pNNDFoBxQpOhmdDHXYS57MEptX9EV82gmg==
+
+"@sentry/types@6.13.3":
+  version "6.13.3"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.13.3.tgz#63ad5b6735b0dfd90b3a256a9f8e77b93f0f66b2"
+  integrity sha512-Vrz5CdhaTRSvCQjSyIFIaV9PodjAVFkzJkTRxyY7P77RcegMsRSsG1yzlvCtA99zG9+e6MfoJOgbOCwuZids5A==
 
 "@sentry/utils@6.13.2":
   version "6.13.2"
@@ -1041,6 +1101,14 @@
   integrity sha512-foF4PbxqPMWNbuqdXkdoOmKm3quu3PP7Q7j/0pXkri4DtCuvF/lKY92mbY0V9rHS/phCoj+3/Se5JvM2ymh2/w==
   dependencies:
     "@sentry/types" "6.13.2"
+    tslib "^1.9.3"
+
+"@sentry/utils@6.13.3":
+  version "6.13.3"
+  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.13.3.tgz#188754d40afe693c3fcae410f9322531588a9926"
+  integrity sha512-zYFuFH3MaYtBZTeJ4Yajg7pDf0pM3MWs3+9k5my9Fd+eqNcl7dYQYJbT9gyC0HXK1QI4CAMNNlHNl4YXhF91ag==
+  dependencies:
+    "@sentry/types" "6.13.3"
     tslib "^1.9.3"
 
 "@simple-dom/document@^1.4.0":
@@ -1482,10 +1550,10 @@
     "@tryghost/domain-events" "^0.1.2"
     "@tryghost/member-events" "^0.2.1"
 
-"@tryghost/members-api@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.0.0.tgz#01a7d46004705be86243e0f77f20685829b09fe0"
-  integrity sha512-lDGJtf6lO2vNVK4cqn7X5nJUIpZbRSnc3z32/3r5dL7b4xTR0wwHrDR9WvsROBkCxbPVvg7XyxGO9t316l5jDw==
+"@tryghost/members-api@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.1.0.tgz#b5ac997936c2e634f6a2ae8215234c5a5995b230"
+  integrity sha512-KzHQrKzcmOCwFLOwj1eqTc7VJyc/NlPgbaW283xutwR2qZfTaytPvRtivCUMmecmGusuSszvegLt9da1IoAIug==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
@@ -1527,10 +1595,10 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
-"@tryghost/members-offers@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.2.1.tgz#e6070df6156b9c73dd73ef7b37cef30c0b5a3046"
-  integrity sha512-FLiwWBHXo4Rt9Ei1liZYnfkb23NyvyeAdFE2GoIPVIoRrAq+Di19Df44QhAt+ixcrpS9ShNOwmJHYoySkYEgDA==
+"@tryghost/members-offers@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.3.0.tgz#e019054d2d0699ffe2297deb1202ad8e6432317f"
+  integrity sha512-YowmlJ/Ide3gfTEK8RkQ0Z/AF1foeG89Td7q46KL/1wJWS64jVifedJIp4cNIk2TlVAyXa7suKC2aYKky4KmhA==
 
 "@tryghost/members-ssr@1.0.14":
   version "1.0.14"
@@ -1668,10 +1736,10 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/update-check-service@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.2.2.tgz#0de3bee6501305f3ffeeeae80f0d5068687ff847"
-  integrity sha512-6itDvtzKx+5IZ4Mr8cBIKBlDjFsLNKTpYWFb5xW38OBHpfHQbXloGw0A5z6b7cqjfjI6tDiWxxrYD7mJJnVt9w==
+"@tryghost/update-check-service@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.2.3.tgz#1f47842c3e84ab40ac9b3bbae42eea592f632c29"
+  integrity sha512-Bwjz6tVBHZ44ZGkD6+xPZUGcrzWkLJFyix+G1yDbyw2M89BzHPz+CQ33po4f4E3MrHW8iLYyB41ryZrZs4hLbA==
   dependencies:
     "@tryghost/debug" "^0.1.5"
     "@tryghost/errors" "^0.2.11"
