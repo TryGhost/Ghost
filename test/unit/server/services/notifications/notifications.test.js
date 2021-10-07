@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
+const moment = require('moment');
 const Notifications = require('../../../../../core/server/services/notifications/notifications');
 const {owner} = require('../../../../utils/fixtures/context');
 
@@ -152,6 +153,37 @@ describe('Notifications Service', function () {
 
         should.exist(notifications);
         notifications.length.should.equal(0);
+    });
+
+    describe('add', function () {
+        it('adds a single notification when no previous exist', function () {
+            const existingNotifications = [];
+            const settingsCache = {
+                get: sinon.fake.returns(existingNotifications)
+            };
+
+            const notificationsSvc = new Notifications({
+                settingsCache,
+                ghostVersion: {
+                    full: '4.1.0'
+                }
+            });
+
+            const {allNotifications, notificationsToAdd} = notificationsSvc.add({
+                notifications: [{
+                    custom: true,
+                    createdAt: moment().toDate(),
+                    status: 'alert',
+                    type: 'info',
+                    dismissible: true,
+                    top: true,
+                    message: 'Hello test world!'
+                }]
+            });
+
+            allNotifications.length.should.equal(0);
+            notificationsToAdd.length.should.equal(1);
+        });
     });
 
     describe('Stored notifications data corruption recovery', function () {
