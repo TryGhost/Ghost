@@ -14,7 +14,7 @@ const UNSAFE_ATTRS = ['status', 'roles'];
 
 const messages = {
     userNotFound: 'User not found.',
-    noPermissionToAction: 'No Permission To Action.'
+    noPermissionToAction: 'You do not have permission to perform this action'
 };
 
 
