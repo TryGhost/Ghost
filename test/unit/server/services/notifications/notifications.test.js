@@ -194,6 +194,7 @@ describe('Notifications Service', function () {
             createdNotification.dismissible.should.be.false();
             createdNotification.top.should.be.true();
             createdNotification.message.should.equal('Hello test world!');
+            createdNotification.createdAtVersion.should.equal('4.1.0');
         });
     });
 
