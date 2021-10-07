@@ -122,7 +122,8 @@ class OfferRepository {
             discount_amount: offer.amount.value,
             interval: offer.cadence.value,
             product_id: offer.tier.id,
-            duration: offer.duration.value
+            duration: offer.duration.value,
+            currency: offer.currency.value
         });
 
         if (offer.codeChanged || offer.isNew) {
@@ -143,6 +144,9 @@ class OfferRepository {
 
             if (offer.type.value === 'percent') {
                 coupon.percent_off = offer.amount.value;
+            } else {
+                coupon.amount_off = offer.amount.value;
+                coupon.currency = offer.currency.value;
             }
 
             const couponData = await this.stripeAPIService.createCoupon(coupon);

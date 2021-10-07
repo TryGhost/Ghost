@@ -9,6 +9,7 @@ const OfferDescription = require('./OfferDescription');
 const OfferCadence = require('./OfferCadence');
 const OfferType = require('./OfferType');
 const OfferDuration = require('./OfferDuration');
+const OfferCurrency = require('./OfferCurrency');
 
 /**
  * @typedef {object} OfferProps
@@ -21,7 +22,7 @@ const OfferDuration = require('./OfferDuration');
  * @prop {OfferType} type
  * @prop {OfferAmount} amount
  * @prop {OfferDuration} duration
- * @prop {string} currency
+ * @prop {OfferCurrency} currency
  * @prop {string} [stripe_coupon_id]
  * @prop {OfferTier} tier
  */
@@ -226,11 +227,14 @@ class Offer {
         const type = OfferType.create(data.type);
         const cadence = OfferCadence.create(data.cadence);
         const duration = OfferDuration.create(data.duration);
+
+        let currency = null;
         let amount;
-        if (type.equals(OfferType.Percent)) {
+        if (type.equals(OfferType.Percentage)) {
             amount = OfferAmount.OfferPercentageAmount.create(data.amount);
-        } else {
-            amount = OfferAmount.OfferAbsoluteAmount.create(data.amount);
+        } else if (type.equals(OfferType.Fixed)) {
+            amount = OfferAmount.OfferFixedAmount.create(data.amount);
+            currency = OfferCurrency.create(data.currency);
         }
 
         if (isNew) {
@@ -254,8 +258,6 @@ class Offer {
                 message: 'Offer `duration` must be either "once" or "forever".'
             });
         }
-
-        const currency = data.currency;
 
         if (isNew && data.stripe_coupon_id) {
             throw new errors.InvalidOfferCoupon({
