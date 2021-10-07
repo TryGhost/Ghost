@@ -3,7 +3,6 @@ const config = require('../../../../shared/config');
 const urlService = require('../../url');
 const urlUtils = require('../../../../shared/url-utils');
 const helpers = require('../helpers');
-const labs = require('../../../../shared/labs');
 
 /**
  * @description Email Post Controller.
@@ -12,7 +11,7 @@ const labs = require('../../../../shared/labs');
  * @param {Function} next
  * @returns {Promise}
  */
-module.exports = [labs.enabledMiddleware('emailOnlyPosts'), function emailPostController(req, res, next) {
+module.exports = function emailPostController(req, res, next) {
     debug('emailPostController');
 
     const api = require('../../proxy').api[res.locals.apiVersion];
@@ -63,4 +62,4 @@ module.exports = [labs.enabledMiddleware('emailOnlyPosts'), function emailPostCo
             return renderer(post);
         })
         .catch(helpers.handleError(next));
-}];
+};

@@ -9,7 +9,6 @@ const cheerio = require('cheerio');
 
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
-const settingsCache = require('../../../core/shared/settings-cache');
 const bridge = require('../../../core/bridge');
 
 describe('Frontend Routing: Email Routes', function () {
@@ -19,18 +18,6 @@ describe('Frontend Routing: Email Routes', function () {
     before(async function () {
         sinon.stub(bridge, 'getFrontendApiVersion')
             .returns('v4');
-        const originalSettingsCacheGetFn = settingsCache.get;
-
-        // NOTE: this wacky stubbing can be removed once emailOnlyPosts enters GA stage
-        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-            if (key === 'labs') {
-                return {
-                    emailOnlyPosts: true
-                };
-            }
-
-            return originalSettingsCacheGetFn(key, options);
-        });
 
         await testUtils.startGhost();
 
