@@ -44,7 +44,7 @@
                 </div>
 
                 <div class="form-group">
-                    {{#if (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime)}}
+                    {{#if (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
                         <label>Publish date</label>
                     {{else}}
                         <label>Scheduled date</label>
@@ -61,7 +61,7 @@
                         @disabled={{this.post.isScheduled}}
                         @isActive={{not this.isViewingSubview}}
                     />
-                    {{#unless (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime)}}
+                    {{#unless (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
                     <p>Use the publish menu to re-schedule</p>
                     {{/unless}}
                 </div>
