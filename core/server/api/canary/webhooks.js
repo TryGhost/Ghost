@@ -1,7 +1,15 @@
 const models = require('../../models');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getWebhooksServiceInstance = require('../../services/webhooks/webhooks-service');
+
+const messages = {
+    resourceNotFound: '{resource} not found.',
+    noPermissionToEdit: {
+        message: 'You do not have permission to {method} this webhook.',
+        context: 'You may only {method} webhooks that belong to the authenticated integration. Check the supplied Admin API Key.'
+    }
+};
 
 const webhooksService = getWebhooksServiceInstance({
     WebhookModel: models.Webhook
@@ -32,7 +40,7 @@ module.exports = {
                         .then((webhook) => {
                             if (!webhook) {
                                 throw new errors.NotFoundError({
-                                    message: i18n.t('errors.api.resource.resourceNotFound', {
+                                    message: tpl(messages.resourceNotFound, {
                                         resource: 'Webhook'
                                     })
                                 });
@@ -40,10 +48,10 @@ module.exports = {
 
                             if (webhook.get('integration_id') !== frame.options.context.integration.id) {
                                 throw new errors.NoPermissionError({
-                                    message: i18n.t('errors.api.webhooks.noPermissionToEdit.message', {
+                                    message: tpl(messages.noPermissionToEdit.message, {
                                         method: 'edit'
                                     }),
-                                    context: i18n.t('errors.api.webhooks.noPermissionToEdit.context', {
+                                    context: tpl(messages.noPermissionToEdit.context, {
                                         method: 'edit'
                                     })
                                 });
@@ -73,7 +81,7 @@ module.exports = {
             return models.Webhook.edit(data.webhooks[0], Object.assign(options, {require: true}))
                 .catch(models.Webhook.NotFoundError, () => {
                     throw new errors.NotFoundError({
-                        message: i18n.t('errors.api.resource.resourceNotFound', {
+                        message: tpl(messages.resourceNotFound, {
                             resource: 'Webhook'
                         })
                     });
@@ -101,7 +109,7 @@ module.exports = {
                         .then((webhook) => {
                             if (!webhook) {
                                 throw new errors.NotFoundError({
-                                    message: i18n.t('errors.api.resource.resourceNotFound', {
+                                    message: tpl(messages.resourceNotFound, {
                                         resource: 'Webhook'
                                     })
                                 });
@@ -109,10 +117,10 @@ module.exports = {
 
                             if (webhook.get('integration_id') !== frame.options.context.integration.id) {
                                 throw new errors.NoPermissionError({
-                                    message: i18n.t('errors.api.webhooks.noPermissionToEdit.message', {
+                                    message: tpl(messages.noPermissionToEdit.message, {
                                         method: 'destroy'
                                     }),
-                                    context: i18n.t('errors.api.webhooks.noPermissionToEdit.context', {
+                                    context: tpl(messages.noPermissionToEdit.context, {
                                         method: 'destroy'
                                     })
                                 });
@@ -128,7 +136,7 @@ module.exports = {
                 .then(() => null)
                 .catch(models.Webhook.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.resource.resourceNotFound', {
+                        message: tpl(messages.resourceNotFound, {
                             resource: 'Webhook'
                         })
                     }));

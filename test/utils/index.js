@@ -8,7 +8,7 @@ const _ = require('lodash');
 const models = require('../../core/server/models');
 
 // Other Test Utilities
-const acceptanceUtils = require('./acceptance-utils');
+const e2eUtils = require('./e2e-utils');
 const APIUtils = require('./api');
 const dbUtils = require('./db-utils');
 const fixtureUtils = require('./fixture-utils');
@@ -93,9 +93,9 @@ const createEmailedPost = async function createEmailedPost({postOptions, emailOp
 };
 
 module.exports = {
-    startGhost: acceptanceUtils.startGhost,
-    stopGhost: acceptanceUtils.stopGhost,
-    getExistingData: acceptanceUtils.getExistingData,
+    startGhost: e2eUtils.startGhost,
+    stopGhost: e2eUtils.stopGhost,
+    getExistingData: e2eUtils.getExistingData,
 
     teardownDb: dbUtils.teardown,
     truncate: dbUtils.truncate,

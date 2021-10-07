@@ -9,7 +9,6 @@ const ParentRouter = require('./ParentRouter');
 const EmailRouter = require('./EmailRouter');
 const UnsubscribeRouter = require('./UnsubscribeRouter');
 
-const labs = require('../../../shared/labs');
 // This emits its own routing events
 const events = require('../../../server/lib/common/events');
 
@@ -73,11 +72,9 @@ module.exports.start = (apiVersion, routerSettings) => {
     siteRouter.mountRouter(unsubscribeRouter.router());
     registry.setRouter('unsubscribeRouter', unsubscribeRouter);
 
-    if (labs.isSet('emailOnlyPosts')) {
-        const emailRouter = new EmailRouter(RESOURCE_CONFIG);
-        siteRouter.mountRouter(emailRouter.router());
-        registry.setRouter('emailRouter', emailRouter);
-    }
+    const emailRouter = new EmailRouter(RESOURCE_CONFIG);
+    siteRouter.mountRouter(emailRouter.router());
+    registry.setRouter('emailRouter', emailRouter);
 
     const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
     siteRouter.mountRouter(previewRouter.router());
