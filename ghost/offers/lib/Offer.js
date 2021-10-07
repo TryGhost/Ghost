@@ -1,5 +1,6 @@
 const errors = require('./errors');
 const ObjectID = require('bson-objectid').default;
+const {slugify} = require('@tryghost/string');
 
 /**
  * @typedef {object} OfferProps
@@ -255,15 +256,14 @@ class Offer {
         }
         const description = data.display_description;
 
+        const code = slugify(data.code);
         if (isNew) {
-            if (!await uniqueChecker.isUniqueCode(data.code)) {
+            if (!await uniqueChecker.isUniqueCode(code)) {
                 throw new errors.InvalidOfferCode({
                     message: 'Offer `code` must be unique.'
                 });
             }
         }
-
-        const code = data.code;
 
         if (data.type !== 'percent') {
             throw new errors.InvalidOfferType({
