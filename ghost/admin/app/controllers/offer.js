@@ -1,9 +1,12 @@
 import Controller, {inject as controller} from '@ember/controller';
+import config from 'ghost-admin/config/environment';
+import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {ghPriceAmount} from '../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
+import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class OffersController extends Controller {
@@ -15,6 +18,8 @@ export default class OffersController extends Controller {
 
     @tracked cadences = [];
     @tracked products = [];
+    @tracked showUnsavedChangesModal = false;
+
     @tracked durations = [
         {
             label: 'Forever',
@@ -26,18 +31,18 @@ export default class OffersController extends Controller {
         },
         {
             label: 'Multiple months',
-            duration: 'multiple-months'
+            duration: 'repeating'
         }
     ];
-    @tracked selectedDuration = 'forever';
-    @tracked displayCurrency = '$';
-    @tracked currencyLength = 1;
 
     leaveScreenTransition = null;
 
     constructor() {
         super(...arguments);
-        this.setup();
+        if (this.isTesting === undefined) {
+            this.isTesting = config.environment === 'test';
+        }
+        // this.setup();
     }
 
     get offer() {
@@ -54,6 +59,13 @@ export default class OffersController extends Controller {
         };
     }
 
+    get discountVal() {
+        if (this.offer?.type === 'fixed' && typeof this.offer?.amount === 'number') {
+            return (this.offer?.amount / 100);
+        }
+        return this.offer?.amount;
+    }
+
     get cadence() {
         if (this.offer.tier && this.offer.cadence) {
             return `${this.offer.tier.id}-${this.offer.cadence}`;
@@ -61,44 +73,49 @@ export default class OffersController extends Controller {
         return '';
     }
 
+    get isDiscountSectionDisabled() {
+        return !this.offer.isNew;
+    }
+
     // Tasks -------------------------------------------------------------------
 
     @task({drop: true})
     *fetchProducts() {
         this.products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
-        const cadences = [{
-            label: 'Select',
-            name: ''
-        }];
+        const cadences = [];
         this.products.forEach((product) => {
-            var label;
-            let monthlyCurrency = getSymbol(product.monthlyPrice.currency);
-            if (monthlyCurrency.length === 1) {
-                label = `${product.name} - Monthly (${monthlyCurrency}${ghPriceAmount(product.monthlyPrice.amount)})`;
+            let monthlyLabel;
+            let yearlyLabel;
+            const productCurrency = product.monthlyPrice.currency;
+            const productCurrencySymbol = getSymbol(productCurrency);
+            if (productCurrencySymbol.length === 1) {
+                monthlyLabel = `${product.name} - Monthly (${productCurrencySymbol}${ghPriceAmount(product.monthlyPrice.amount)})`;
+                yearlyLabel = `${product.name} - Yearly (${productCurrencySymbol}${ghPriceAmount(product.yearlyPrice.amount)})`;
             } else {
-                label = `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${monthlyCurrency})`;
+                monthlyLabel = `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${productCurrencySymbol})`;
+                yearlyLabel = `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${productCurrencySymbol})`;
             }
+
             cadences.push({
-                label: label,
-                name: `${product.id}-month`
+                label: monthlyLabel,
+                name: `${product.id}-month-${productCurrency}`
             });
 
-            let yearlyCurrency = getSymbol(product.yearlyPrice.currency);
-            if (yearlyCurrency.length === 1) {
-                label = `${product.name} - Yearly (${yearlyCurrency}${ghPriceAmount(product.yearlyPrice.amount)})`;
-            } else {
-                label = `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${yearlyCurrency})`;
-            }
             cadences.push({
-                label: label,
-                name: `${product.id}-year`
+                label: yearlyLabel,
+                name: `${product.id}-year-${productCurrency}`
             });
         });
         this.cadences = cadences;
+        if (this.offer && !this.offer.tier) {
+            this.updateCadence(this.cadences[0].name);
+        }
     }
 
-    @task
-    copyOfferUrl() {
+    @task({drop: true})
+    *copyOfferUrl() {
+        copyTextToClipboard(this.offerUrl);
+        yield timeout(this.isTesting ? 50 : 500);
         return true;
     }
 
@@ -185,72 +202,82 @@ export default class OffersController extends Controller {
 
     @action
     setDiscountType(discountType) {
-        this._saveOfferProperty('type', discountType);
-        // this.offer.discountType = discountType;
+        if (!this.isDiscountSectionDisabled) {
+            this._saveOfferProperty('type', discountType);
+            this._saveOfferProperty('amount', '');
+        }
     }
 
     @action
     setDiscountAmount(e) {
-        this._saveOfferProperty('amount', e.target.value);
-        // this.offer.discountAmount = e.target.value;
+        let amount = e.target.value;
+        if (this.offer.type === 'fixed' && amount !== '') {
+            amount = parseInt(amount) * 100;
+        }
+        this._saveOfferProperty('amount', amount);
     }
 
     @action
     setOfferName(e) {
         this._saveOfferProperty('name', e.target.value);
-        // this.offer.name = e.target.value;
     }
 
     @action
     setPortalTitle(e) {
         this._saveOfferProperty('displayTitle', e.target.value);
-        // this.offer.portalTitle = e.target.value;
     }
 
     @action
     setPortalDescription(e) {
         this._saveOfferProperty('displayDescription', e.target.value);
-        // this.offer.portalDescription = e.target.value;
     }
 
     @action
     setOfferCode(e) {
         this._saveOfferProperty('code', e.target.value);
-        // this.offer.code = e.target.value;
     }
 
     @action
     setDurationInMonths(e) {
         this._saveOfferProperty('durationInMonths', e.target.value);
-        // this.offer.durationInMonths = e.target.value;
+    }
+
+    get offerUrl() {
+        const code = this.offer?.code || '';
+        if (code) {
+            const siteUrl = this.config.get('blogUrl');
+            return `${siteUrl}/${code}`;
+        }
+        return '';
+    }
+
+    get displayCurrency() {
+        const tierId = this.offer?.tier?.id;
+        if (!tierId) {
+            return '$';
+        }
+        const product = this.products.findBy('id', tierId);
+        const productCurrency = product?.monthlyPrice?.currency || 'usd';
+        return getSymbol(productCurrency);
+    }
+
+    get currencyLength() {
+        return this.displayCurrency.length;
     }
 
     @action
     updateCadence(cadence) {
-        const [tierId, tierCadence] = cadence.split('-');
+        const [tierId, tierCadence, currency] = cadence.split('-');
         this.offer.tier = {
             id: tierId
         };
         this.offer.cadence = tierCadence;
-        // this._saveOfferProperty('cadence', cadence);
-        // this.offer.cadence = cadence;
-
-        let product = this.products.findBy('id', tierId);
-        if (product) {
-            if (tierCadence === 'year') {
-                this.displayCurrency = getSymbol(product.yearlyPrice.currency);
-            } else {
-                this.displayCurrency = getSymbol(product.monthlyPrice.currency);
-            }
-        }
-        this.currencyLength = this.displayCurrency.length;
+        this.offer.currency = currency;
     }
 
     @action
     updateDuration(duration) {
         this._saveOfferProperty('duration', duration);
-        // this.offer.duration = duration;
-        this.selectedDuration = duration;
     }
 
     // Private -----------------------------------------------------------------

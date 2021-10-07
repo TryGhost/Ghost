@@ -1,4 +1,4 @@
-<section class="gh-canvas circle-bg">
+<section class="gh-canvas circle-bg" {{did-insert this.setup}}>
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             <LinkTo @route="offers" data-test-link="offers-back">Offers</LinkTo>
@@ -46,6 +46,7 @@
                                         @optionValuePath="name"
                                         @optionLabelPath="label"
                                         @optionTargetPath="name"
+                                        @disabled={{this.isDiscountSectionDisabled}}
                                         @update={{this.updateCadence}}
                                     />
                                     {{svg-jar "arrow-down-small"}}
@@ -62,7 +63,8 @@
                                             @name="amount"
                                             @placeholder=""
                                             @id="amount"
-                                            @value={{this.offer.amount}}
+                                            @disabled={{this.isDiscountSectionDisabled}}
+                                            @value={{readonly this.offer.amount}}
                                             @input={{this.setDiscountAmount}}
                                             @class="gh-input" />
                                         <GhErrorMessage @errors={{this.errors}} @property="amount" />
@@ -77,7 +79,8 @@
                                             @name="amount"
                                             @type="number"
                                             @placeholder=""
-                                            @value={{this.offer.amount}}
+                                            @disabled={{this.isDiscountSectionDisabled}}
+                                            @value={{readonly this.discountVal}}
                                             @input={{this.setDiscountAmount}}
                                             @id="amount"
                                             @class="gh-input" />
@@ -86,13 +89,15 @@
                                 </GhFormGroup>
                             {{/if}}
                             <div class="gh-offer-type">
-                                <div class="gh-radio {{if (eq this.offer.type "percent") "active"}}" {{on "click" (fn this.setDiscountType "percent")}}>
+                                <div class="gh-radio {{if (eq this.offer.type "percent") "active"}}"
+                                    {{on "click" (fn this.setDiscountType "percent")}}>
                                     <div class="gh-radio-button"></div>
                                     <div class="gh-radio-content">
                                         <div class="gh-radio-label">Percentage discount</div>
                                     </div>
                                 </div>
-                                <div class="gh-radio {{if (eq this.offer.type "fixed") "active"}}" {{on "click" (fn this.setDiscountType "fixed")}}>
+                                <div class="gh-radio {{if (eq this.offer.type "fixed") "active"}}"
+                                    {{on "click" (fn this.setDiscountType "fixed")}}>
                                     <div class="gh-radio-button"></div>
                                     <div class="gh-radio-content">
                                         <div class="gh-radio-label">Fixed amount discount</div>
@@ -107,6 +112,7 @@
                                             @value={{this.offer.duration}}
                                             @options={{this.durations}}
                                             @optionValuePath="duration"
+                                            @disabled={{this.isDiscountSectionDisabled}}
                                             @optionLabelPath="label"
                                             @optionTargetPath="duration"
                                             @update = {{this.updateDuration}}
@@ -115,13 +121,14 @@
                                     </span>
                                     <GhErrorMessage @errors={{this.errors}} @property="duration" />
                                 </GhFormGroup>
-                                {{#if (eq this.selectedDuration "multiple-months")}}
+                                {{#if (eq this.offer.duration "repeating")}}
                                 <GhFormGroup @errors={{this.errors}} @property="duration-months" @class="duration-months">
                                     <label for="duration-months" class="fw6">Number of months</label>
                                     <GhTextInput
                                         @name="duration-months"
                                         @value={{this.offer.durationInMonths}}
                                         @input={{this.setDurationInMonths}}
+                                        @disabled={{this.isDiscountSectionDisabled}}
                                         @id="duration-months"
                                         @class="gh-input" />
                                     <GhErrorMessage @errors={{this.errors}} @property="duration-months" />
@@ -161,7 +168,7 @@
                                 <div class="gh-input-group">
                                     <GhTextInput
                                         @name="url"
-                                        @value="https://example.com/black-friday"
+                                        @value={{this.offerUrl}}
                                         @id="url"
                                         @disabled="disabled"
                                         @class="gh-input" />
@@ -210,3 +217,11 @@
         </div> --}}
     </section>
 </section>
+
+{{#if this.showUnsavedChangesModal}}
+    <GhFullscreenModal
+        @modal="leave-settings"
+        @confirm={{this.leaveScreen}}
+        @close={{this.toggleUnsavedChangesModal}}
+        @modifier="action wide" />
+{{/if}}
