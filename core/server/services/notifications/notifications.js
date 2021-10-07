@@ -123,7 +123,8 @@ class Notifications {
             dismissible: true,
             location: 'bottom',
             status: 'alert',
-            id: ObjectId().toHexString()
+            id: ObjectId().toHexString(),
+            createdAtVersion: this.ghostVersion.full
         };
 
         const overrides = {
