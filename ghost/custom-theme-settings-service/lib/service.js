@@ -19,9 +19,9 @@ module.exports = class CustomThemeSettingsService {
         this.activeThemeName = null;
 
         /** @private */
-        this.repository = new BREAD({model});
-        this.valueCache = cache;
-        this.activeThemeSettings = {};
+        this._repository = new BREAD({model});
+        this._valueCache = cache;
+        this._activeThemeSettings = {};
     }
 
     /**
@@ -34,19 +34,19 @@ module.exports = class CustomThemeSettingsService {
         this.activeThemeName = theme.name;
 
         // add/remove/edit key/value records in the respository to match theme settings
-        const settings = await this.syncRepositoryWithTheme(theme);
+        const settings = await this._syncRepositoryWithTheme(theme);
 
         // populate the shared cache with all key/value pairs for this theme
-        this.populateValueCacheForTheme(theme, settings);
+        this._populateValueCacheForTheme(theme, settings);
         // populate the cache used for exposing full setting details for editing
-        this.populateInternalCacheForTheme(theme, settings);
+        this._populateInternalCacheForTheme(theme, settings);
     }
 
     /**
      * Convert the key'd internal cache object to an array suitable for use with Ghost's API
      */
     listSettings() {
-        const settingObjects = Object.entries(this.activeThemeSettings).map(([key, setting]) => {
+        const settingObjects = Object.entries(this._activeThemeSettings).map(([key, setting]) => {
             return Object.assign({}, setting, {key});
         });
 
@@ -58,7 +58,7 @@ module.exports = class CustomThemeSettingsService {
      */
     async updateSettings(settings) {
         // abort if any settings do not match known settings
-        const firstUnknownSetting = settings.find(setting => !this.activeThemeSettings[setting.key]);
+        const firstUnknownSetting = settings.find(setting => !this._activeThemeSettings[setting.key]);
 
         if (firstUnknownSetting) {
             throw new NotFoundError({
@@ -68,12 +68,12 @@ module.exports = class CustomThemeSettingsService {
 
         // abort if any select settings have unknown option values
         const firstInvalidOption = settings.find((setting) => {
-            const knownSetting = this.activeThemeSettings[setting.key];
+            const knownSetting = this._activeThemeSettings[setting.key];
             return knownSetting.type === 'select' && !knownSetting.options.includes(setting.value);
         });
 
         if (firstInvalidOption) {
-            const knownSetting = this.activeThemeSettings[firstInvalidOption.key];
+            const knownSetting = this._activeThemeSettings[firstInvalidOption.key];
 
             throw new BadRequestError({
                 message: tpl(messages.invalidOptionForSetting, {key: firstInvalidOption.key, allowedValues: knownSetting.options.join(', ')})
@@ -85,7 +85,7 @@ module.exports = class CustomThemeSettingsService {
             const theme = this.activeThemeName;
             const {key, value} = setting;
 
-            const settingRecord = await this.repository.read({theme, key});
+            const settingRecord = await this._repository.read({theme, key});
 
             settingRecord.set('value', value);
 
@@ -94,11 +94,11 @@ module.exports = class CustomThemeSettingsService {
             }
 
             // update the internal cache
-            this.activeThemeSettings[setting.key].value = setting.value;
+            this._activeThemeSettings[setting.key].value = setting.value;
         }
 
         // update the public cache
-        this.valueCache.populate(this.listSettings());
+        this._valueCache.populate(this.listSettings());
 
         // return full setting objects
         return this.listSettings();
@@ -110,10 +110,10 @@ module.exports = class CustomThemeSettingsService {
      * @param {Object} theme - checked theme output from gscan
      * @private
      */
-    async syncRepositoryWithTheme(theme) {
+    async _syncRepositoryWithTheme(theme) {
         const themeSettings = theme.customSettings || {};
 
-        const settingsCollection = await this.repository.browse({filter: `theme:${theme.name}`});
+        const settingsCollection = await this._repository.browse({filter: `theme:${theme.name}`});
         let knownSettings = settingsCollection.toJSON();
 
         // exit early if there's nothing to sync for this theme
@@ -132,7 +132,7 @@ module.exports = class CustomThemeSettingsService {
 
             if (hasBeenRemoved || hasChangedType) {
                 debug(`Removing custom theme setting '${theme.name}.${knownSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`);
-                await this.repository.destroy({id: knownSetting.id});
+                await this._repository.destroy({id: knownSetting.id});
                 removedIds.push(knownSetting.id);
                 continue;
             }
@@ -140,7 +140,7 @@ module.exports = class CustomThemeSettingsService {
             // replace value with default if it's not a valid select option
             if (themeSetting.options && !themeSetting.options.includes(knownSetting.value)) {
                 debug(`Resetting custom theme setting value '${theme.name}.${themeSetting.key}' - "${knownSetting.value}" is not a valid option`);
-                await this.repository.edit({value: themeSetting.default}, {id: knownSetting.id});
+                await this._repository.edit({value: themeSetting.default}, {id: knownSetting.id});
             }
         }
 
@@ -160,11 +160,11 @@ module.exports = class CustomThemeSettingsService {
                 };
 
                 debug(`Adding custom theme setting '${theme.name}.${key}'`);
-                await this.repository.add(newSettingValues);
+                await this._repository.add(newSettingValues);
             }
         }
 
-        const updatedSettingsCollection = await this.repository.browse({filter: `theme:${theme.name}`});
+        const updatedSettingsCollection = await this._repository.browse({filter: `theme:${theme.name}`});
         return updatedSettingsCollection.toJSON();
     }
 
@@ -173,13 +173,13 @@ module.exports = class CustomThemeSettingsService {
      * @param {Array} settings - theme settings fetched from repository
      * @private
      */
-    populateValueCacheForTheme(theme, settings) {
+    _populateValueCacheForTheme(theme, settings) {
         if (_.isEmpty(theme.customSettings)) {
-            this.valueCache.populate([]);
+            this._valueCache.populate([]);
             return;
         }
 
-        this.valueCache.populate(settings);
+        this._valueCache.populate(settings);
     }
 
     /**
@@ -187,9 +187,9 @@ module.exports = class CustomThemeSettingsService {
      * @param {Array} settings - theme settings fetched from repository
      * @private
      */
-    populateInternalCacheForTheme(theme, settings) {
+    _populateInternalCacheForTheme(theme, settings) {
         if (_.isEmpty(theme.customSettings)) {
-            this.activeThemeSettings = new Map();
+            this._activeThemeSettings = new Map();
             return;
         }
 
@@ -208,6 +208,6 @@ module.exports = class CustomThemeSettingsService {
             });
         }
 
-        this.activeThemeSettings = activeThemeSettings;
+        this._activeThemeSettings = activeThemeSettings;
     }
 };
