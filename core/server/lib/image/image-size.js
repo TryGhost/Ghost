@@ -6,6 +6,7 @@ const path = require('path');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidDimensions: 'Could not fetch image dimensions.'
@@ -17,9 +18,8 @@ const FETCH_ONLY_FORMATS = [
 ];
 
 class ImageSize {
-    constructor({config, tpl, storage, storageUtils, validator, urlUtils, request}) {
+    constructor({config, storage, storageUtils, validator, urlUtils, request}) {
         this.config = config;
-        this.tpl = tpl;
         this.storage = storage;
         this.storageUtils = storageUtils;
         this.validator = validator;
@@ -320,7 +320,7 @@ class ImageSize {
                 });
             } catch (err) {
                 return reject(new errors.ValidationError({
-                    message: this.tpl(messages.invalidDimensions, {
+                    message: tpl(messages.invalidDimensions, {
                         file: imagePath,
                         error: err.message
                     })
