@@ -1,5 +1,5 @@
 const DomainEvents = require('@tryghost/domain-events');
-const OfferCodeChangeEvent = require('./lib/events/OfferCodeChange');
+const OfferCodeChangeEvent = require('./lib/domain/events/OfferCodeChange');
 const OfferRepository = require('./lib/OfferRepository');
 const OffersAPI = require('./lib/OffersAPI');
 
