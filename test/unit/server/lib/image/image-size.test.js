@@ -18,7 +18,7 @@ describe('lib/image: image size', function () {
     it('[success] should have an image size function', function () {
         const imageSize = new ImageSize({config: {
             get: () => {}
-        }, i18n: {}, storage: {}, storageUtils: {}, validator: {}, urlUtils: {}, request: {}});
+        }, tpl: {}, storage: {}, storageUtils: {}, validator: {}, urlUtils: {}, request: {}});
         should.exist(imageSize.getImageSizeFromUrl);
         should.exist(imageSize.getImageSizeFromStoragePath);
     });
@@ -38,7 +38,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -66,7 +66,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -103,7 +103,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -131,7 +131,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -171,7 +171,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -217,7 +217,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -253,7 +253,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -293,7 +293,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {
+            }, tpl: {}, storage: {
                 getStorage: () => ({
                     read: obj => fs.promises.readFile(obj.path)
                 })
@@ -327,7 +327,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -360,7 +360,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -386,7 +386,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => false
@@ -415,7 +415,7 @@ describe('lib/image: image size', function () {
                         return 1;
                     }
                 }
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -440,7 +440,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -467,7 +467,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -497,7 +497,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {}, storageUtils: {
+            }, tpl: {}, storage: {}, storageUtils: {
                 isLocalImage: () => false
             }, validator: {
                 isURL: () => true
@@ -533,7 +533,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {
+            }, tpl: {}, storage: {
                 getStorage: () => ({
                     read: obj => fs.promises.readFile(obj.path)
                 })
@@ -576,7 +576,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {
+            }, tpl: {}, storage: {
                 getStorage: () => ({
                     read: obj => fs.promises.readFile(obj.path)
                 })
@@ -619,7 +619,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {
+            }, tpl: {}, storage: {
                 getStorage: () => ({
                     read: obj => fs.promises.readFile(obj.path)
                 })
@@ -662,7 +662,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {
+            }, tpl: {}, storage: {
                 getStorage: () => ({
                     read: obj => fs.promises.readFile(obj.path)
                 })
@@ -700,7 +700,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {
+            }, tpl: {}, storage: {
                 getStorage: () => ({
                     read: () => {
                         return Promise.reject(new errors.NotFoundError());
@@ -735,7 +735,7 @@ describe('lib/image: image size', function () {
 
             const imageSize = new ImageSize({config: {
                 get: () => {}
-            }, i18n: {}, storage: {
+            }, tpl: {}, storage: {
                 getStorage: () => ({
                     read: () => {
                         return Promise.resolve(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg viewBox="0 0 100 100>/svg>'));
