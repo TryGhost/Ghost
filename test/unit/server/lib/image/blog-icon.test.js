@@ -236,14 +236,13 @@ describe('lib/image: blog icon', function () {
         });
 
         it('[failure] return error message', function (done) {
-            const blogIcon = new BlogIcon({config: {}, i18n: {
-                t: key => key
-            }, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+            const blogIcon = new BlogIcon({config: {}, tpl: key => key
+                , storageUtils: {}, urlUtils: {}, settingsCache: {}});
 
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes_FILE_DOES_NOT_EXIST.ico'))
                 .catch(function (error) {
                     should.exist(error);
-                    error.message.should.eql('errors.utils.blogIcon.error');
+                    error.message.should.eql('Could not fetch icon dimensions.');
                     done();
                 });
         });
