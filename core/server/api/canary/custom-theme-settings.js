@@ -6,7 +6,7 @@ module.exports = {
     browse: {
         permissions: true,
         query() {
-            return customThemeSettingsService.listSettings();
+            return customThemeSettingsService.api.listSettings();
         }
     },
 
@@ -16,7 +16,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return customThemeSettingsService.updateSettings(frame.data.custom_theme_settings);
+            return customThemeSettingsService.api.updateSettings(frame.data.custom_theme_settings);
         }
     }
 };
