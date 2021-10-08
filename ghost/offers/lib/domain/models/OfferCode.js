@@ -1,5 +1,5 @@
 const {slugify} = require('@tryghost/string');
-const ValueObject = require('../../shared/ValueObject');
+const ValueObject = require('./shared/ValueObject');
 
 const InvalidOfferCode = require('../../errors').InvalidOfferCode;
 
