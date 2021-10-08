@@ -23,6 +23,7 @@ function toDomain(json) {
         cadence: json.interval,
         currency: json.currency,
         duration: json.duration,
+        duration_in_months: json.duration_in_months,
         stripe_coupon_id: json.stripe_coupon_id,
         tier: {
             id: json.product.id,
@@ -122,7 +123,8 @@ class OfferRepository {
             discount_amount: offer.amount.value,
             interval: offer.cadence.value,
             product_id: offer.tier.id,
-            duration: offer.duration.value,
+            duration: offer.duration.value.type,
+            duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
             currency: offer.currency ? offer.currency.value : null
         });
 
@@ -139,8 +141,12 @@ class OfferRepository {
             /** @type {import('stripe').Stripe.CouponCreateParams} */
             const coupon = {
                 name: offer.name.value,
-                duration: offer.duration.value
+                duration: offer.duration.value.type
             };
+
+            if (offer.duration.value.type === 'repeating') {
+                coupon.duration_in_months = offer.duration.value.months;
+            }
 
             if (offer.type.value === 'percent') {
                 coupon.percent_off = offer.amount.value;
