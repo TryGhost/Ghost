@@ -4,8 +4,12 @@ const Promise = require('bluebird');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 const config = require('../../../shared/config');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const externalRequest = require('../../lib/request-external');
+
+const messages = {
+    unknownProvider: 'No provider found for supplied URL.'
+};
 
 const findUrlWithProvider = (url) => {
     let provider;
@@ -33,7 +37,7 @@ const findUrlWithProvider = (url) => {
 
 function unknownProvider(url) {
     return Promise.reject(new errors.ValidationError({
-        message: i18n.t('errors.api.oembed.unknownProvider'),
+        message: tpl(messages.unknownProvider),
         context: url
     }));
 }
