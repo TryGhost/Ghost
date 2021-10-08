@@ -131,7 +131,7 @@ class OfferRepository {
         if (offer.codeChanged || offer.isNew) {
             const event = OfferCodeChangeEvent.create({
                 offerId: offer.id,
-                previousCodes: offer.isNew ? null : offer.oldCodes,
+                previousCode: offer.oldCode,
                 currentCode: offer.code
             });
             DomainEvents.dispatch(event);

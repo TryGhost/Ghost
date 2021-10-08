@@ -3,7 +3,7 @@
 /**
  * @typedef {object} OfferCodeChangeEventData
  * @prop {string} offerId
- * @prop {OfferCode[]} previousCodes
+ * @prop {OfferCode} previousCode
  * @prop {OfferCode} currentCode
  */
 
