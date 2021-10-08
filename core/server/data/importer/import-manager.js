@@ -33,21 +33,7 @@ const ROOT_ONLY = 0;
 
 const ROOT_OR_SINGLE_DIR = 1;
 const ALL_DIRS = 2;
-let defaults;
-
-const messages = {
-    couldNotCleanUpFile: {
-        error: 'Import could not clean up file ',
-        context: 'Your site will continue to work as expected'
-    },
-    unsupportedRoonExport: 'Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.',
-    noContentToImport: 'Zip did not include any content to import.',
-    invalidZipStructure: 'Invalid zip file structure.',
-    invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
-    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.'
-};
-
-defaults = {
+let defaults = {
     extensions: ['.zip'],
     contentTypes: ['application/zip', 'application/x-zip-compressed'],
     directories: []
