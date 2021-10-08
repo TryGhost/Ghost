@@ -29,7 +29,7 @@ const OfferCurrency = require('./OfferCurrency');
 
 /**
  * @typedef {object} OfferCreateProps
- * @prop {string} id
+ * @prop {string|ObjectID} id
  * @prop {string} name
  * @prop {string} code
  * @prop {string} display_title
@@ -38,6 +38,7 @@ const OfferCurrency = require('./OfferCurrency');
  * @prop {string} type
  * @prop {number} amount
  * @prop {string} duration
+ * @prop {number} duration_in_months
  * @prop {string} currency
  * @prop {string} [stripe_coupon_id]
  * @prop {TierProps|OfferTier} tier
@@ -219,7 +220,7 @@ class Offer {
     }
 
     /**
-     * @param {any} data
+     * @param {OfferCreateProps} data
      * @param {UniqueChecker} uniqueChecker
      * @returns {Promise<Offer>}
      */
@@ -242,7 +243,13 @@ class Offer {
         const description = OfferDescription.create(data.display_description);
         const type = OfferType.create(data.type);
         const cadence = OfferCadence.create(data.cadence);
-        const duration = OfferDuration.create(data.duration);
+        const duration = OfferDuration.create(data.duration, data.duration_in_months);
+
+        if (cadence.value === 'year' && duration.value.type === 'repeating') {
+            throw new errors.InvalidOfferDuration({
+                message: 'Offer `duration` must be "once" or "forever" for the "yearly" cadence.'
+            });
+        }
 
         let currency = null;
         let amount;
@@ -267,12 +274,6 @@ class Offer {
                     message: 'Offer `code` must be unique.'
                 });
             }
-        }
-
-        if (duration.equals(OfferDuration.create('repeating'))) {
-            throw new errors.InvalidOfferDuration({
-                message: 'Offer `duration` must be either "once" or "forever".'
-            });
         }
 
         if (isNew && data.stripe_coupon_id) {
