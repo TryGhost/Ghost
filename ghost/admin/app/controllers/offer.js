@@ -69,13 +69,6 @@ export default class OffersController extends Controller {
         };
     }
 
-    get discountVal() {
-        if (this.offer?.type === 'fixed' && typeof this.offer?.amount === 'number') {
-            return (this.offer?.amount / 100);
-        }
-        return this.offer?.amount;
-    }
-
     get cadence() {
         if (this.offer.tier && this.offer.cadence) {
             return `${this.offer.tier.id}-${this.offer.cadence}`;
@@ -114,7 +107,7 @@ export default class OffersController extends Controller {
         });
         this.cadences = cadences;
         if (this.offer && !this.offer.tier) {
-            this.updateCadence(this.cadences[0].name);
+            this.updateCadence(this.cadences[0]?.name);
         }
     }
 

@@ -29,6 +29,7 @@
                                     @id="name"
                                     @value={{this.offer.name}}
                                     @input={{this.setOfferName}}
+                                    data-test-input="offer-name"
                                     @class="gh-input" />
                                 <GhErrorMessage @errors={{this.errors}} @property="name" />
                                 <p>Will be shown to members on the Stripe Checkout page</p>
@@ -62,10 +63,11 @@
                                             @type="number"
                                             @placeholder=""
                                             @disabled={{this.isDiscountSectionDisabled}}
-                                            @value={{readonly this.discountVal}}
+                                            @value={{readonly (gh-price-amount this.offer.amount)}}
                                             @input={{this.setDiscountAmount}}
                                             @id="amount"
-                                            @class="gh-input" />
+                                            @class="gh-input"
+                                        />
                                         <GhErrorMessage @errors={{this.errors}} @property="amount" />
                                     </div>
                                 </GhFormGroup>

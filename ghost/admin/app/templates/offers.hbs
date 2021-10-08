@@ -18,8 +18,8 @@
                     <th class="gh-list-header gh-list-cellwidth-10"></th>
                 </tr>
                 {{#each this.offers as |offer|}}
-                    <tr class="gh-list-row">
-                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
+                    <tr class="gh-list-row" data-test-list="offers-list-item">
+                        <LinkTo @route="offer" @model={{offer}} class="gh-list-data" data-test-list="offer-name">
                             <h3>{{offer.name}}</h3>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
