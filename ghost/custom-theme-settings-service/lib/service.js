@@ -1,12 +1,12 @@
 const _ = require('lodash');
 const BREAD = require('./bread');
 const tpl = require('@tryghost/tpl');
-const {BadRequestError, NotFoundError} = require('@tryghost/errors');
+const {ValidationError} = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('custom-theme-settings-service');
 
 const messages = {
-    problemFindingSetting: 'Problem finding setting: {key}.',
-    invalidOptionForSetting: 'Unknown select value for \'{key}\'. Allowed values: {allowedValues}.'
+    problemFindingSetting: 'Unknown setting: {key}.',
+    invalidOptionForSetting: 'Invalid value for \'{key}\'. Allowed values: {allowedValues}.'
 };
 
 module.exports = class CustomThemeSettingsService {
@@ -61,7 +61,7 @@ module.exports = class CustomThemeSettingsService {
         const firstUnknownSetting = settings.find(setting => !this._activeThemeSettings[setting.key]);
 
         if (firstUnknownSetting) {
-            throw new NotFoundError({
+            throw new ValidationError({
                 message: tpl(messages.problemFindingSetting, {key: firstUnknownSetting.key})
             });
         }
@@ -75,7 +75,7 @@ module.exports = class CustomThemeSettingsService {
         if (firstInvalidOption) {
             const knownSetting = this._activeThemeSettings[firstInvalidOption.key];
 
-            throw new BadRequestError({
+            throw new ValidationError({
                 message: tpl(messages.invalidOptionForSetting, {key: firstInvalidOption.key, allowedValues: knownSetting.options.join(', ')})
             });
         }

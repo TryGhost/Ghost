@@ -586,7 +586,7 @@ describe('Service', function () {
                     default: 'valid',
                     value: 'invalid'
                 }]
-            ).should.be.rejectedWith(NotFoundError, {message: 'Problem finding setting: test.'});
+            ).should.be.rejectedWith(BadRequestError, {message: 'Unknown setting: test.'});
         });
 
         it('errors on invalid select value', async function () {
