@@ -7,6 +7,7 @@ import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockLabels from './config/labels';
 import mockMembers from './config/members';
+import mockOffers from './config/offers';
 import mockPages from './config/pages';
 import mockPosts from './config/posts';
 import mockProducts from './config/products';
@@ -74,6 +75,7 @@ export function testConfig() {
     mockUsers(this);
     mockWebhooks(this);
     mockProducts(this);
+    mockOffers(this);
 
     /* Notifications -------------------------------------------------------- */
 

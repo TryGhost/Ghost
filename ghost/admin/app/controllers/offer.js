@@ -270,24 +270,26 @@ export default class OffersController extends Controller {
 
     @action
     updateCadence(cadence) {
-        const [tierId, tierCadence, currency] = cadence.split('-');
-        this.offer.tier = {
-            id: tierId
-        };
-        this.offer.cadence = tierCadence;
-        this.offer.currency = currency;
-        const offerType = this.offer.type;
-        this.offertypes = [
-            {
-                label: '%',
-                offertype: 'percent'
-            },
-            {
-                label: currency.toUpperCase(),
-                offertype: 'fixed'
-            }
-        ];
-        this.offer.type = offerType;
+        if (cadence) {
+            const [tierId, tierCadence, currency] = cadence.split('-');
+            this.offer.tier = {
+                id: tierId
+            };
+            this.offer.cadence = tierCadence;
+            this.offer.currency = currency;
+            const offerType = this.offer.type;
+            this.offertypes = [
+                {
+                    label: '%',
+                    offertype: 'percent'
+                },
+                {
+                    label: currency.toUpperCase(),
+                    offertype: 'fixed'
+                }
+            ];
+            this.offer.type = offerType;
+        }
     }
 
     @action
