@@ -3,7 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-	couldNotGenerateSlug: 'Could not generate slug.'
+    couldNotGenerateSlug: 'Could not generate slug.'
 };
 const allowedTypes = {
     post: models.Post,
