@@ -71,7 +71,7 @@ export default class OffersController extends Controller {
 
     get cadence() {
         if (this.offer.tier && this.offer.cadence) {
-            return `${this.offer.tier.id}-${this.offer.cadence}`;
+            return `${this.offer.tier.id}-${this.offer.cadence}-${this.offer.currency}`;
         }
         return '';
     }
