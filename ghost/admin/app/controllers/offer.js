@@ -42,7 +42,6 @@ export default class OffersController extends Controller {
         if (this.isTesting === undefined) {
             this.isTesting = config.environment === 'test';
         }
-        // this.setup();
     }
 
     get offer() {
