@@ -252,8 +252,8 @@ textarea {
 
 .gh-input[disabled],
 .gh-select select[disabled] {
-    background: var(--whitegrey-l2);
-    color: var(--midlightgrey);
+    background: color-mod(var(--input-bg-color) l(-1%));
+    color: var(--midlightgrey-d2);
     border-color: var(--whitegrey);
     opacity: 1.0;
 }
