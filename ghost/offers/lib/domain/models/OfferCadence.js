@@ -1,5 +1,5 @@
 const ValueObject = require('./shared/ValueObject');
-const InvalidOfferCadence = require('../../errors').InvalidOfferCadence;
+const InvalidOfferCadence = require('../errors').InvalidOfferCadence;
 
 /**
  * @extends ValueObject<'month'|'year'>

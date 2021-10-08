@@ -1,7 +1,7 @@
 const {slugify} = require('@tryghost/string');
 const ValueObject = require('./shared/ValueObject');
 
-const InvalidOfferCode = require('../../errors').InvalidOfferCode;
+const InvalidOfferCode = require('../errors').InvalidOfferCode;
 
 /** @extends ValueObject<string> */
 class OfferCode extends ValueObject {
