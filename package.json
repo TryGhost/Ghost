@@ -82,7 +82,7 @@
     "@tryghost/members-api": "2.1.0",
     "@tryghost/members-csv": "1.1.7",
     "@tryghost/members-importer": "0.3.3",
-    "@tryghost/members-offers": "0.3.5",
+    "@tryghost/members-offers": "0.4.0",
     "@tryghost/members-ssr": "1.0.14",
     "@tryghost/mw-session-from-token": "0.1.25",
     "@tryghost/nodemailer": "0.3.3",
