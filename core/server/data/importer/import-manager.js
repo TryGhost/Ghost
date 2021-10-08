@@ -16,6 +16,18 @@ const MarkdownHandler = require('./handlers/markdown');
 const ImageImporter = require('./importers/image');
 const DataImporter = require('./importers/data');
 
+const messages = {
+    couldNotCleanUpFile: {
+        error: 'Import could not clean up file ',
+        context: 'Your site will continue to work as expected'
+    },
+    unsupportedRoonExport: 'Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.',
+    noContentToImport: 'Zip did not include any content to import.',
+    invalidZipStructure: 'Invalid zip file structure.',
+    invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
+    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.'
+};
+
 // Glob levels
 const ROOT_ONLY = 0;
 
