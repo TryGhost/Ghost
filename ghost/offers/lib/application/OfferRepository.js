@@ -1,6 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
-const OfferCodeChangeEvent = require('./domain/events/OfferCodeChange');
-const Offer = require('./domain/models/Offer');
+const OfferCodeChangeEvent = require('../domain/events/OfferCodeChange');
+const Offer = require('../domain/models/Offer');
 
 /**
  * @typedef {object} OfferRepositoryOptions
