@@ -5,7 +5,11 @@ const InvalidOfferDescription = require('../errors').InvalidOfferDescription;
 class OfferDescription extends ValueObject {
     /** @param {unknown} description */
     static create(description) {
-        if (!description || typeof description !== 'string') {
+        if (description === null || description === undefined) {
+            return new OfferDescription('');
+        }
+
+        if (typeof description !== 'string') {
             throw new InvalidOfferDescription({
                 message: 'Offer `display_description` must be a string.'
             });
