@@ -58,16 +58,29 @@
                                 <GhFormGroup @errors={{this.errors}} @property="amount">
                                     <label for="amount" class="fw6">Amount off</label>
                                     <div class="gh-offer-value percentage">
-                                        <GhTextInput
-                                            @name="amount"
-                                            @type="number"
-                                            @placeholder=""
-                                            @disabled={{this.isDiscountSectionDisabled}}
-                                            @value={{readonly (gh-price-amount this.offer.amount)}}
-                                            @input={{this.setDiscountAmount}}
-                                            @id="amount"
-                                            @class="gh-input"
-                                        />
+                                        {{#if (eq this.offer.type 'fixed')}}
+                                            <GhTextInput
+                                                @name="amount"
+                                                @type="number"
+                                                @placeholder=""
+                                                @disabled={{this.isDiscountSectionDisabled}}
+                                                @value={{readonly (gh-price-amount this.offer.amount)}}
+                                                @input={{this.setDiscountAmount}}
+                                                @id="amount"
+                                                @class="gh-input"
+                                            />
+                                        {{else}}
+                                            <GhTextInput
+                                                @name="amount"
+                                                @type="number"
+                                                @placeholder=""
+                                                @disabled={{this.isDiscountSectionDisabled}}
+                                                @value={{readonly this.offer.amount}}
+                                                @input={{this.setDiscountAmount}}
+                                                @id="amount"
+                                                @class="gh-input"
+                                            />
+                                        {{/if}}
                                         <GhErrorMessage @errors={{this.errors}} @property="amount" />
                                     </div>
                                 </GhFormGroup>
