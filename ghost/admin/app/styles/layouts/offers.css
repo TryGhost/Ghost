@@ -168,11 +168,6 @@
     font-size: 1.5rem;
 }
 
-.gh-offer-url .gh-input {
-    background: color-mod(var(--input-bg-color) l(-1%)) !important;
-    color: var(--midgrey-l2) !important;
-}
-
 /* Offers – Portal preview */
 .gh-offer-portal-preview {
     display: flex;
