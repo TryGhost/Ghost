@@ -4,7 +4,7 @@ require('./utils');
 
 const _ = require('lodash');
 const sinon = require('sinon');
-const {BadRequestError, NotFoundError} = require('@tryghost/errors');
+const {ValidationError} = require('@tryghost/errors');
 
 const Service = require('../lib/service');
 const Cache = require('../lib/cache');
@@ -586,7 +586,7 @@ describe('Service', function () {
                     default: 'valid',
                     value: 'invalid'
                 }]
-            ).should.be.rejectedWith(BadRequestError, {message: 'Unknown setting: test.'});
+            ).should.be.rejectedWith(ValidationError, {message: 'Unknown setting: test.'});
         });
 
         it('errors on invalid select value', async function () {
@@ -617,7 +617,7 @@ describe('Service', function () {
                     default: '2',
                     value: 'invalid'
                 }]
-            ).should.be.rejectedWith(BadRequestError, {message: 'Unknown select value for \'one\'. Allowed values: 1, 2.'});
+            ).should.be.rejectedWith(ValidationError, {message: 'Invalid value for \'one\'. Allowed values: 1, 2.'});
         });
     });
 });
