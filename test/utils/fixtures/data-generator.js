@@ -668,6 +668,23 @@ DataGenerator.Content = {
             name: 'Test snippet 1',
             mobiledoc: '{}'
         }
+    ],
+
+    custom_theme_settings: [
+        {
+            id: ObjectId().toHexString(),
+            theme: 'casper',
+            key: 'header_typography',
+            type: 'select',
+            value: 'Serif'
+        },
+        {
+            id: ObjectId().toHexString(),
+            theme: 'casper',
+            key: 'footer_type',
+            type: 'select',
+            value: 'Full'
+        }
     ]
 };
 
@@ -1282,6 +1299,11 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.snippets[0])
     ];
 
+    const custom_theme_settings = [
+        createBasic(DataGenerator.Content.custom_theme_settings[0]),
+        createBasic(DataGenerator.Content.custom_theme_settings[1])
+    ];
+
     return {
         createPost,
         createGenericPost,
@@ -1306,6 +1328,7 @@ DataGenerator.forKnex = (function () {
         createWebhook,
         createIntegration,
         createEmail,
+        createCustomThemeSetting: createBasic,
 
         invites,
         posts,
@@ -1330,7 +1353,8 @@ DataGenerator.forKnex = (function () {
         stripe_customer_subscriptions,
         stripe_prices,
         stripe_products,
-        snippets
+        snippets,
+        custom_theme_settings
     };
 }());
 

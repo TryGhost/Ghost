@@ -2,7 +2,13 @@ const {Service: CustomThemeSettingsService} = require('@tryghost/custom-theme-se
 const customThemeSettingsCache = require('../../shared/custom-theme-settings-cache');
 const models = require('../models');
 
-module.exports = new CustomThemeSettingsService({
-    model: models.CustomThemeSetting,
-    cache: customThemeSettingsCache
-});
+class CustomThemeSettingsServiceWrapper {
+    init() {
+        this.api = new CustomThemeSettingsService({
+            model: models.CustomThemeSetting,
+            cache: customThemeSettingsCache
+        });
+    }
+}
+
+module.exports = new CustomThemeSettingsServiceWrapper();
