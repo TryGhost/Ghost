@@ -1,5 +1,5 @@
 const ValueObject = require('./shared/ValueObject');
-const InvalidOfferTitle = require('../../errors').InvalidOfferTitle;
+const InvalidOfferTitle = require('../errors').InvalidOfferTitle;
 
 /** @extends ValueObject<string> */
 class OfferTitle extends ValueObject {

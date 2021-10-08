@@ -1,5 +1,5 @@
 const ValueObject = require('./shared/ValueObject');
-const InvalidOfferType = require('../../errors').InvalidOfferType;
+const InvalidOfferType = require('../errors').InvalidOfferType;
 
 /** @extends ValueObject<'fixed'|'percent'> */
 class OfferType extends ValueObject {

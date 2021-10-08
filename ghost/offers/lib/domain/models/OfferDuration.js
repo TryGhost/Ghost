@@ -1,5 +1,5 @@
 const ValueObject = require('./shared/ValueObject');
-const InvalidOfferDuration = require('../../errors').InvalidOfferDuration;
+const InvalidOfferDuration = require('../errors').InvalidOfferDuration;
 
 /**
  * @typedef {object} BasicDuration

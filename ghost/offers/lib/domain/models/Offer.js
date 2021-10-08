@@ -1,4 +1,4 @@
-const errors = require('../../errors');
+const errors = require('../errors');
 const ObjectID = require('bson-objectid').default;
 
 const OfferName = require('./OfferName');
