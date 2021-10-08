@@ -1,6 +1,10 @@
 const debug = require('@tryghost/debug')('api:v2:utils:serializers:output:users');
-const i18n = require('../../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const mapper = require('./utils/mapper');
+
+const messages = {
+    pwdChangedSuccessfully: "Password changed successfully."
+}
 
 module.exports = {
     browse(models, apiConfig, frame) {
@@ -29,7 +33,7 @@ module.exports = {
         debug('changePassword');
 
         frame.response = {
-            password: [{message: i18n.t('notices.api.users.pwdChangedSuccessfully')}]
+            password: [{message: tpl(messages.pwdChangedSuccessfully)}]
         };
     },
 
