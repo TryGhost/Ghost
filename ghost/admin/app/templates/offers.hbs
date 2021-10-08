@@ -41,14 +41,18 @@
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <span class="midgrey">-</span>
                         </LinkTo>
-                        <LinkTo @route="offer" @model={{@offer}} class="gh-list-data gh-list-cellwidth-10 gh-tag-list-chevron">
+                        <div class="gh-list-data gh-list-cellwidth-10 gh-tag-list-chevron">
                             <div class="flex items-center justify-end w-100 h-100">
-                                <LinkTo @route="offers.link" class="gh-btn gh-btn-icon gh-btn-text gh-offer-link-button" data-tooltip="Get shareable link">
+                                <div
+                                    class="gh-btn gh-btn-icon gh-btn-text gh-offer-link-button"
+                                    data-tooltip="Get shareable link"
+                                    {{on "click" (fn this.openLinkDialog offer)}}
+                                >
                                     <span>{{svg-jar "link"}}</span>
-                                </LinkTo>
+                                </div>
                                 <span class="nr2 lh-1">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
                             </div>
-                        </LinkTo>
+                        </div>
                     </tr>
                 {{/each}}
             </table>
