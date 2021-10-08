@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const {extract, hasProvider} = require('oembed-parser');
 const cheerio = require('cheerio');
 const _ = require('lodash');
@@ -35,10 +36,6 @@ const findUrlWithProvider = (url) => {
 };
 
 /**
- * @typedef {(string: string) => string} ITpl
- */
-
-/**
  * @typedef {Object} IConfig
  * @prop {(key: string) => string} get
  */
@@ -51,19 +48,17 @@ class OEmbed {
     /**
      *
      * @param {Object} dependencies
-     * @param {ITpl} dependencies.tpl
      * @param {IConfig} dependencies.config
      * @param {IExternalRequest} dependencies.externalRequest
      */
-    constructor({config, externalRequest, tpl}) {
+    constructor({config, externalRequest}) {
         this.config = config;
         this.externalRequest = externalRequest;
-        this.tpl = tpl;
     }
 
     unknownProvider(url) {
         return Promise.reject(new errors.ValidationError({
-            message: this.tpl(messages.unknownProvider),
+            message: tpl(messages.unknownProvider),
             context: url
         }));
     }
@@ -133,7 +128,7 @@ class OEmbed {
         }
 
         return Promise.reject(new errors.ValidationError({
-            message: this.tpl(messages.insufficientMetadata),
+            message: tpl(messages.insufficientMetadata),
             context: url
         }));
     }
