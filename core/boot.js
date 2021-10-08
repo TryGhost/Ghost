@@ -119,6 +119,8 @@ async function initServicesForFrontend() {
     debug('Begin: Themes');
     const themeService = require('./server/services/themes');
     await themeService.init();
+    const customThemeSettingsService = require('./server/services/custom-theme-settings');
+    customThemeSettingsService.init();
     debug('End: Themes');
 
     debug('End: initServicesForFrontend');
