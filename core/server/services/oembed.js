@@ -5,6 +5,11 @@ const cheerio = require('cheerio');
 const _ = require('lodash');
 const {CookieJar} = require('tough-cookie');
 
+const messages = {
+    noUrlProvided: 'No url provided.',
+    insufficientMetadata: 'URL contains insufficient metadata.'
+};
+
 const findUrlWithProvider = (url) => {
     let provider;
 
@@ -30,8 +35,7 @@ const findUrlWithProvider = (url) => {
 };
 
 /**
- * @typedef {Object} Ii18n
- * @prop {(key: string) => string} t
+ * @typedef {(string: string) => string} ITpl
  */
 
 /**
@@ -47,19 +51,19 @@ class OEmbed {
     /**
      *
      * @param {Object} dependencies
-     * @param {Ii18n} dependencies.i18n
+     * @param {ITpl} dependencies.tpl
      * @param {IConfig} dependencies.config
      * @param {IExternalRequest} dependencies.externalRequest
      */
-    constructor({config, externalRequest, i18n}) {
+    constructor({config, externalRequest, tpl}) {
         this.config = config;
         this.externalRequest = externalRequest;
-        this.i18n = i18n;
+        this.tpl = tpl;
     }
 
     unknownProvider(url) {
         return Promise.reject(new errors.ValidationError({
-            message: this.i18n.t('errors.api.oembed.unknownProvider'),
+            message: this.tpl(messages.unknownProvider),
             context: url
         }));
     }
@@ -129,7 +133,7 @@ class OEmbed {
         }
 
         return Promise.reject(new errors.ValidationError({
-            message: this.i18n.t('errors.api.oembed.insufficientMetadata'),
+            message: this.tpl(messages.insufficientMetadata),
             context: url
         }));
     }
