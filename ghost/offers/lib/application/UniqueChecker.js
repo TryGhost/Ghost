@@ -11,7 +11,7 @@ class UniqueChecker {
     }
 
     /**
-     * @param {import('./domain/models/OfferCode')} code
+     * @param {import('../domain/models/OfferCode')} code
      * @returns {Promise<boolean>}
      */
     async isUniqueCode(code) {
@@ -20,7 +20,7 @@ class UniqueChecker {
     }
 
     /**
-     * @param {import('./domain/models/OfferName')} name
+     * @param {import('../domain/models/OfferName')} name
      * @returns {Promise<boolean>}
      */
     async isUniqueName(name) {

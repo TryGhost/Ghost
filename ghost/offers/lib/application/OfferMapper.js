@@ -1,5 +1,5 @@
 /**
- * @typedef {import('./domain/models/Offer')} Offer
+ * @typedef {import('../domain/models/Offer')} Offer
  */
 
 /**

@@ -1,8 +1,8 @@
-const Offer = require('./domain/models/Offer');
-const OfferName = require('./domain/models/OfferName');
-const OfferCode = require('./domain/models/OfferCode');
-const OfferTitle = require('./domain/models/OfferTitle');
-const OfferDescription = require('./domain/models/OfferDescription');
+const Offer = require('../domain/models/Offer');
+const OfferName = require('../domain/models/OfferName');
+const OfferCode = require('../domain/models/OfferCode');
+const OfferTitle = require('../domain/models/OfferTitle');
+const OfferDescription = require('../domain/models/OfferDescription');
 const OfferMapper = require('./OfferMapper');
 const UniqueChecker = require('./UniqueChecker');
 
