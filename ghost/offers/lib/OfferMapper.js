@@ -11,7 +11,7 @@
  * @prop {string} display_title
  * @prop {string} display_description
  *
- * @prop {'percent'|'amount'} type
+ * @prop {'percent'|'fixed'} type
  *
  * @prop {'month'|'year'} cadence
  * @prop {number} amount
@@ -42,8 +42,8 @@ class OfferMapper {
             cadence: offer.cadence.value,
             amount: offer.amount.value,
             duration: offer.duration.value,
-            currency_restriction: offer.type.value === 'amount',
-            currency: offer.type.value === 'amount' ? offer.currency : null,
+            currency_restriction: offer.type.value === 'fixed',
+            currency: offer.type.value === 'fixed' ? offer.currency.value : null,
             tier: {
                 id: offer.tier.id,
                 name: offer.tier.name
