@@ -140,7 +140,7 @@ module.exports = class RouterController {
                 const offer = await this._offerRepository.getById(offerId);
                 const tier = (await this._productRepository.get(offer.tier)).toJSON();
 
-                if (offer.cadence === 'month') {
+                if (offer.cadence.value === 'month') {
                     ghostPriceId = tier.monthly_price_id;
                 } else {
                     ghostPriceId = tier.yearly_price_id;
