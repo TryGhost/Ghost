@@ -173,7 +173,7 @@ blockquote cite a {
 }
 
 a {
-    color: #15212A;
+    color: ${templateSettings.accentColor || '#15212A'};
     text-decoration: none;
 }
 
@@ -300,6 +300,10 @@ figure blockquote p {
     padding-bottom: 50px;
 }
 
+.site-title {
+    color: #15212A;
+}
+
 .post-title {
     padding-bottom: 10px;
     font-size: 42px;
@@ -386,7 +390,7 @@ figure blockquote p {
 
 .post-content a,
 .post-content-sans-serif a {
-    color: #08121A;
+    color: ${templateSettings.accentColor || '#08121A'};
     text-decoration: underline;
 }
 
@@ -936,7 +940,7 @@ ${ templateSettings.showBadge ? `
                                                 ` : ``}
                                                 ${ templateSettings.showHeaderTitle ? `
                                                 <tr>
-                                                    <td class="site-url"><div style="width: 100% !important;"><a href="${site.url}">${site.title}</a></div></td>
+                                                    <td class="site-url"><div style="width: 100% !important;"><a href="${site.url}" class="site-title">${site.title}</a></div></td>
                                                 </tr>
                                                 ` : ``}
                                             </table>
