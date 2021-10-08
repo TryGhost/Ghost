@@ -28,14 +28,15 @@
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <span class="offer-value">
-                                {{svg-jar "offer"}}
                                 {{#if (eq offer.type 'percent')}}
+                                    {{svg-jar "offer"}}
                                     <span class="green fw6">{{offer.amount}}% OFF</span>
                                 {{/if}}
                                 {{#if (eq offer.type 'fixed')}}
-                                    <span class="green fw6">{{offer.currency}}{{offer.amount}} OFF</span>
+                                    <span class="blue">{{svg-jar "offer"}}</span>
+                                    <span class="blue fw6">{{gh-price-amount offer.amount}} <span class="ttu">{{offer.currency}}</span> OFF</span>
                                 {{/if}}
-                                <span class="dib ml1 midgrey"> – {{offer.duration}} </span>
+                                <span class="dib ml1 midgrey ttc"> – {{offer.duration}} </span>
                             </span>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
