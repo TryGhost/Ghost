@@ -22,7 +22,7 @@
     text-align: center;
     font-weight: 600;
     margin-bottom: 8px;
-} 
+}
 
 .gh-offers-list-cta p {
     max-width: 390px;
@@ -83,6 +83,7 @@
 
 .gh-offer-link-button {
     opacity: 0;
+    cursor: pointer;
 }
 
 .gh-offers .gh-list-row:hover .gh-offer-link-button {
@@ -258,11 +259,11 @@
 }
 
 .gh-offers-help-card:hover {
-    box-shadow: 
-        0px 54px 80px rgba(0, 0, 0, 0.07), 
-        0px 19.7109px 29.2013px rgba(0, 0, 0, 0.0482987), 
-        0px 9.56927px 14.1767px rgba(0, 0, 0, 0.0389404), 
-        0px 4.69103px 6.94968px rgba(0, 0, 0, 0.0310596), 
+    box-shadow:
+        0px 54px 80px rgba(0, 0, 0, 0.07),
+        0px 19.7109px 29.2013px rgba(0, 0, 0, 0.0482987),
+        0px 9.56927px 14.1767px rgba(0, 0, 0, 0.0389404),
+        0px 4.69103px 6.94968px rgba(0, 0, 0, 0.0310596),
         0px 1.85484px 2.74791px rgba(0, 0, 0, 0.0217013);
     transition: all 0.3s ease-in-out;
 }
