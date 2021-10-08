@@ -5069,27 +5069,6 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@4.6.2:
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.2.tgz#c88166eb93bfcc94408c84783c62838111154b71"
-  integrity sha512-ls78Gr5pbwjzMySo7eYmAW4aOAjbNHxM54GKucFrTeOoGZHgGlOaXJMhCwLD68UW9ZD35yXsU9KhzSnNpUhemg==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "0.0.7"
-    "@tryghost/elasticsearch-bunyan" "0.1.1"
-    bunyan "1.8.15"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.3.1"
-    find-root "1.1.0"
-    fs-extra "9.1.0"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.21"
-    moment "2.27.0"
-    nconf "0.11.2"
-    prettyjson "1.2.1"
-    uuid "8.3.2"
-
 ghost-ignition@4.6.3, ghost-ignition@^4.2.4, ghost-ignition@^4.6.2:
   version "4.6.3"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.3.tgz#eea33bbd84e4e26096f9b7c8838f972acdab7533"
@@ -6629,20 +6608,20 @@ klona@^2.0.3:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
-knex-migrator@4.0.4:
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.4.tgz#0522e6922585839639bd26d7a9e671331000acd5"
-  integrity sha512-8MmK2HyiVA/IR9KG/1iOwUHXylNXmHQgLbc4L64hqD2c7EH0CggjqzHhFe+PirGCpyUbXE9bBoZky64u7XpTUQ==
+knex-migrator@4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.5.tgz#197e2b1d20902ce41a182ff14a25552cea36bfe4"
+  integrity sha512-HWpPS4Vc49t4QPOb8V7NxRSdpEiSkbs3sZf2j3yKZ8BgvQvpfsfTBGttM/nOeCWK98mwZmSt01qWxPbzxdfHbQ==
   dependencies:
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
-    debug "4.3.1"
-    ghost-ignition "4.6.2"
+    debug "4.3.2"
+    ghost-ignition "4.6.3"
     knex "0.21.19"
     lodash "4.17.21"
     moment "2.24.0"
-    nconf "0.11.2"
+    nconf "0.11.3"
     resolve "1.20.0"
   optionalDependencies:
     mysql "2.18.1"
