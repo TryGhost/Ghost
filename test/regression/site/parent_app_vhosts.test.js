@@ -1,14 +1,14 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const testUtils = require('../utils');
-const adminUtils = require('../utils/admin-utils');
-const mockUtils = require('../utils/mocks');
-const configUtils = require('../utils/configUtils');
-const urlUtils = require('../utils/urlUtils');
-const appService = require('../../core/frontend/services/apps');
-const themeEngine = require('../../core/frontend/services/theme-engine');
-const siteApp = require('../../core/server/web/parent/app');
+const testUtils = require('../../utils');
+const adminUtils = require('../../utils/admin-utils');
+const mockUtils = require('../../utils/mocks');
+const configUtils = require('../../utils/configUtils');
+const urlUtils = require('../../utils/urlUtils');
+const appService = require('../../../core/frontend/services/apps');
+const themeEngine = require('../../../core/frontend/services/theme-engine');
+const siteApp = require('../../../core/server/web/parent/app');
 
 describe('Integration - Web - vhosts', function () {
     let app;
