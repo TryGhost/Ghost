@@ -4,10 +4,14 @@ const _ = require('lodash');
 const path = require('path');
 const errors = require('@tryghost/errors');
 
+const messages = {
+    error: 'Could not fetch icon dimensions.'
+};
+
 class BlogIcon {
-    constructor({config, i18n, urlUtils, settingsCache, storageUtils}) {
+    constructor({config, tpl, urlUtils, settingsCache, storageUtils}) {
         this.config = config;
-        this.i18n = i18n;
+        this.tpl = tpl;
         this.urlUtils = urlUtils;
         this.settingsCache = settingsCache;
         this.storageUtils = storageUtils;
@@ -42,7 +46,7 @@ class BlogIcon {
                 });
             } catch (err) {
                 return reject(new errors.ValidationError({
-                    message: this.i18n.t('errors.utils.blogIcon.error', {
+                    message: this.tpl(messages.error, {
                         file: storagePath,
                         error: err.message
                     })
