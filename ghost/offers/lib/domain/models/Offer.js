@@ -117,12 +117,12 @@ class Offer {
         return this.props.duration;
     }
 
-    get oldCodes() {
+    get oldCode() {
         return this.changed.code;
     }
 
     get codeChanged() {
-        return this.changed.code.length > 0;
+        return this.changed.code !== null;
     }
 
     get displayTitle() {
@@ -174,12 +174,17 @@ class Offer {
         if (code.equals(this.props.code)) {
             return;
         }
+        if (this.changed.code) {
+            throw new errors.InvalidOfferCode({
+                message: 'Offer `code` cannot be updated more than once.'
+            });
+        }
         if (!await uniqueChecker.isUniqueCode(code)) {
             throw new errors.InvalidOfferCode({
                 message: 'Offer `code` must be unique.'
             });
         }
-        this.changed.code.push(this.props.code);
+        this.changed.code = this.props.code;
         this.props.code = code;
     }
 
@@ -197,7 +202,6 @@ class Offer {
                 message: 'Offer `name` must be unique.'
             });
         }
-        this.changed.name.push(this.props.name);
         this.props.name = name;
     }
 
@@ -214,8 +218,8 @@ class Offer {
         this.options = options;
         /** @private */
         this.changed = {
-            code: [],
-            name: []
+            /** @type OfferCode */
+            code: null
         };
     }
 

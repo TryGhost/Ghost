@@ -20,10 +20,8 @@ class OffersModule {
      */
     async init() {
         DomainEvents.subscribe(OfferCodeChangeEvent, (event) => {
-            if (event.data.previousCodes) {
-                for (const previousCode of event.data.previousCodes) {
-                    this.redirectManager.removeRedirect(`/${previousCode.value}`);
-                }
+            if (event.data.previousCode) {
+                this.redirectManager.removeRedirect(`/${event.data.previousCode.value}`);
             }
             this.redirectManager.addRedirect(
                 `/${event.data.currentCode.value}`,
