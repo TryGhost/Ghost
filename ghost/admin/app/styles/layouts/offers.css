@@ -109,58 +109,29 @@
     stroke: var(--black);
 }
 
+.gh-offer-discount {
+    display: flex;
+    align-items: flex-end;
+}
+
 .gh-offer-type {
-    display: grid;
-    grid-template-columns: 160px auto;
-    grid-gap: 24px;
-    white-space: nowrap;
-    margin-top: -8px;
-    margin-bottom: 24px;
+    width: 160px;
+    margin-bottom: 23px;
 }
 
-.gh-offer-type .gh-radio {
-    margin-bottom: 0;
-    align-items: center;
-}
-
-.gh-offer-type .gh-radio-content {
-    margin-left: 6px;
-}
-
-.gh-offer-type .gh-radio-label {
-    font-size: 1.3rem;
+.gh-offer-type select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none !important;
 }
 
 .gh-offer-value {
     position: relative;
 }
 
-.gh-offer-value .unit {
-    display: block;
-    position: absolute;
-    top: 7px;
-    left: 8px;
-    color: var(--midgrey);
-}
-
-.gh-offer-value:not(.fullcurrency) .gh-input {
-    padding-left: 20px;
-}
-
-.gh-offer-value.fullcurrency .unit {
-    left: unset;
-    right: 11px;
-    text-align: right;
-}
-
-.gh-offer-value.percentage .unit {
-    left: unset;
-    right: 11px;
-}
-
-.gh-offer-value.gh-offer-value.percentage .gh-input {
-    padding-left: 12px;
-    padding-right: 28px;
+.gh-offer-value .gh-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 .gh-offer-form {

@@ -35,6 +35,17 @@ export default class OffersController extends Controller {
         }
     ];
 
+    @tracked offertypes = [
+        {
+            label: '%',
+            offertype: 'percent'
+        },
+        {
+            label: 'USD',
+            offertype: 'fixed'
+        }
+    ];
+
     leaveScreenTransition = null;
 
     constructor() {
@@ -86,14 +97,10 @@ export default class OffersController extends Controller {
             let monthlyLabel;
             let yearlyLabel;
             const productCurrency = product.monthlyPrice.currency;
-            const productCurrencySymbol = getSymbol(productCurrency);
-            if (productCurrencySymbol.length === 1) {
-                monthlyLabel = `${product.name} - Monthly (${productCurrencySymbol}${ghPriceAmount(product.monthlyPrice.amount)})`;
-                yearlyLabel = `${product.name} - Yearly (${productCurrencySymbol}${ghPriceAmount(product.yearlyPrice.amount)})`;
-            } else {
-                monthlyLabel = `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${productCurrencySymbol})`;
-                yearlyLabel = `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${productCurrencySymbol})`;
-            }
+            const productCurrencySymbol = productCurrency.toUpperCase();
+
+            monthlyLabel = `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${productCurrencySymbol})`;
+            yearlyLabel = `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${productCurrencySymbol})`;
 
             cadences.push({
                 label: monthlyLabel,
@@ -203,7 +210,11 @@ export default class OffersController extends Controller {
     setDiscountType(discountType) {
         if (!this.isDiscountSectionDisabled) {
             this._saveOfferProperty('type', discountType);
-            this._saveOfferProperty('amount', '');
+        }
+        if (this.offer.type === 'fixed' && this.offer.amount !== '') {
+            this.offer.amount = this.offer.amount * 100;
+        } else if (this.offer.amount !== '') {
+            this.offer.amount = this.offer.amount / 100;
         }
     }
 
@@ -272,6 +283,18 @@ export default class OffersController extends Controller {
         };
         this.offer.cadence = tierCadence;
         this.offer.currency = currency;
+        const offerType = this.offer.type;
+        this.offertypes = [
+            {
+                label: '%',
+                offertype: 'percent'
+            },
+            {
+                label: currency.toUpperCase(),
+                offertype: 'fixed'
+            }
+        ];
+        this.offer.type = offerType;
     }
 
     @action
