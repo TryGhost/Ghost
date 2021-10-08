@@ -1551,10 +1551,10 @@
     "@tryghost/domain-events" "^0.1.2"
     "@tryghost/member-events" "^0.2.1"
 
-"@tryghost/members-api@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.1.0.tgz#b5ac997936c2e634f6a2ae8215234c5a5995b230"
-  integrity sha512-KzHQrKzcmOCwFLOwj1eqTc7VJyc/NlPgbaW283xutwR2qZfTaytPvRtivCUMmecmGusuSszvegLt9da1IoAIug==
+"@tryghost/members-api@2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.1.1.tgz#e4ef101fb7536f96f631b09d339e2e5735c01001"
+  integrity sha512-iLPfYQkzRQxWKoBWuYt2ytEn1RVKJFVtoQUBMwizyJgREU7qFkhoK00jXpc3plQXyhojIEVNJChE9VWG229kiA==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
@@ -1596,10 +1596,10 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
-"@tryghost/members-offers@0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.4.1.tgz#953864fad4d777cda07831b8511989adffb16053"
-  integrity sha512-RUyczy1nntMS6iSn6DJ6/3h3P+HYCTLVzA6SyQ8jdwi7lon3bvhj87P43pdEAYqKbeNrtPvF24RkoAI2YMJaoQ==
+"@tryghost/members-offers@0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.4.2.tgz#2e53d218d5f30552db916b23565625d48183d65a"
+  integrity sha512-HWXgcjqhN8AoiqAtkAjWTtcuZbLyzFS3b1pKD1/jJu0IMtZUkxoFdV4Ix0PpJ1LaCyL0VUnCqWwIVlPOaAb0Kw==
   dependencies:
     "@tryghost/string" "^0.1.20"
 
