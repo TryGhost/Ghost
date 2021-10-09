@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const parseContext = require('./parse-context');
 const _private = {};
 
@@ -17,7 +17,7 @@ const _private = {};
  * - public context cannot fetch draft/scheduled posts
  */
 _private.applyStatusRules = function applyStatusRules(docName, method, opts) {
-    const err = new errors.NoPermissionError({message: i18n.t('errors.permissions.applyStatusRules.error', {docName: docName})});
+    const err = new errors.NoPermissionError({message: tpl(messages.'errors.permissions.applyStatusRules.error', {docName: docName})});
 
     // Enforce status 'active' for users
     if (docName === 'users') {
