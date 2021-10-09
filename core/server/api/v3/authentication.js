@@ -8,7 +8,7 @@ const invitations = require('../../services/invitations');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    notTheBlogOwner: "You are not the site owner."
+    notTheBlogOwner: 'You are not the site owner.'
 };
 
 module.exports = {

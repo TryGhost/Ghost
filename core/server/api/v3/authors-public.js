@@ -5,7 +5,7 @@ const ALLOWED_INCLUDES = ['count.posts'];
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    notFound: "Author not found."
+    notFound: 'Author not found.'
 };
 
 module.exports = {

@@ -4,8 +4,8 @@ const megaService = require('../../services/mega');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    emailNotFound: "Email not found.",
-    retryNotAllowed: "Only failed emails can be retried"
+    emailNotFound: 'Email not found.',
+    retryNotAllowed: 'Only failed emails can be retried'
 };
 
 module.exports = {

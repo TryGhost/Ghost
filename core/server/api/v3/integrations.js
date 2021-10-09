@@ -9,7 +9,7 @@ const integrationsService = getIntegrationsServiceInstance({
 });
 
 const messages = {
-    resourceNotFound: "{resource} not found."
+    resourceNotFound: '{resource} not found.'
 };
 
 module.exports = {
