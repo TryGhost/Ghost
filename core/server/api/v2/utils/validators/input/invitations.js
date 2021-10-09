@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const validator = require('@tryghost/validator');
 const debug = require('@tryghost/debug')('api:v2:utils:validators:input:invitation');
-const i18n = require('../../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 module.exports = {
@@ -11,19 +11,19 @@ module.exports = {
         const data = frame.data.invitation[0];
 
         if (!data.token) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noTokenProvided')}));
+            return Promise.reject(new errors.ValidationError({message: tpl(messages.authentication.noTokenProvided)}));
         }
 
         if (!data.email) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noEmailProvided')}));
+            return Promise.reject(new errors.ValidationError({message: tpl(messages.authentication.noEmailProvided)}));
         }
 
         if (!data.password) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noPasswordProvided')}));
+            return Promise.reject(new errors.ValidationError({message: tpl(messages.authentication.noPasswordProvided)}));
         }
 
         if (!data.name) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noNameProvided')}));
+            return Promise.reject(new errors.ValidationError({message: tpl(messages.authentication.noNameProvided)}));
         }
     },
 
@@ -34,7 +34,7 @@ module.exports = {
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
             throw new errors.BadRequestError({
-                message: i18n.t('errors.api.authentication.invalidEmailReceived')
+                message: tpl(messages.authentication.invalidEmailReceived)
             });
         }
     }
