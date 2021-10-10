@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -10,7 +9,8 @@ const clients = require('./clients');
 
 const messages = {
     hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
-    hasForeignSQLite3: 'Must use hasForeignSQLite3 on an SQLite3 database'
+    hasForeignSQLite3: 'Must use hasForeignSQLite3 on an SQLite3 database',
+    noSupportForDatabase: 'No support for database client {client}'
 };
 
 function addTableColumn(tableName, table, columnName, columnSpec = schema[tableName][columnName]) {
@@ -343,7 +343,7 @@ function getTables(transaction) {
         return clients[client].getTables(transaction);
     }
 
-    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
 function getIndexes(table, transaction) {
@@ -353,7 +353,7 @@ function getIndexes(table, transaction) {
         return clients[client].getIndexes(table, transaction);
     }
 
-    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
 function getColumns(table, transaction) {
@@ -363,7 +363,7 @@ function getColumns(table, transaction) {
         return clients[client].getColumns(table);
     }
 
-    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
 function checkTables(transaction) {

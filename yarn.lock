@@ -1333,14 +1333,15 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.11.tgz#ffcc6ccb10a768aaa9276c3a22b2dea9f560e247"
   integrity sha512-ml1aJ4nJmfA8MRAJ3l9+iTdccGDQiUN1En8XwYwypfrKlECR8Mw/kKRPnqHge598+ED6J1+at5gArSq6bLKbug==
 
-"@tryghost/custom-theme-settings-service@0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/custom-theme-settings-service/-/custom-theme-settings-service-0.0.6.tgz#5e6c196d29e0965496ecab9c67ff44c57fadcd4c"
-  integrity sha512-cUuG+5pQY5T8XcgqYMQheIPMCyx5bYSV95TNZko10CObOM9qPwW38UmiAk+qY2jLvQ+VLPJRLjA/TZHAOnh+2A==
+"@tryghost/custom-theme-settings-service@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/custom-theme-settings-service/-/custom-theme-settings-service-0.1.1.tgz#f7403f7b9ad11a1ef0a0211ac28011210df31f36"
+  integrity sha512-Mo0w+UMYbhsgHm47x2fGek7j2Qo3RhZaALCRvdaBrHjaXihaSAXTy6T+5dKY4eQeiZ4rZ+5QVza7bQ93ttcxbg==
   dependencies:
     "@tryghost/debug" "^0.1.5"
     "@tryghost/errors" "^0.2.14"
     "@tryghost/tpl" "^0.1.4"
+    lodash "^4.17.21"
 
 "@tryghost/debug@0.1.5", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5":
   version "0.1.5"
@@ -1387,7 +1388,7 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
-"@tryghost/express-dynamic-redirects@^0.1.0":
+"@tryghost/express-dynamic-redirects@0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.1.0.tgz#85c6caa2887034ea8064a40ca0622a87e4000c4e"
   integrity sha512-C9594LRjH3wsAWUoMCb5sZg/1Ifrn/O2aQeWQeBDgqUWAScmtUuIpkPNTRrq0cZ1Yv4ig5gWMKv4YSe5TdAVdA==
@@ -1550,10 +1551,10 @@
     "@tryghost/domain-events" "^0.1.2"
     "@tryghost/member-events" "^0.2.1"
 
-"@tryghost/members-api@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.1.0.tgz#b5ac997936c2e634f6a2ae8215234c5a5995b230"
-  integrity sha512-KzHQrKzcmOCwFLOwj1eqTc7VJyc/NlPgbaW283xutwR2qZfTaytPvRtivCUMmecmGusuSszvegLt9da1IoAIug==
+"@tryghost/members-api@2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.1.1.tgz#e4ef101fb7536f96f631b09d339e2e5735c01001"
+  integrity sha512-iLPfYQkzRQxWKoBWuYt2ytEn1RVKJFVtoQUBMwizyJgREU7qFkhoK00jXpc3plQXyhojIEVNJChE9VWG229kiA==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^0.2.9"
@@ -1595,10 +1596,12 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
-"@tryghost/members-offers@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.3.0.tgz#e019054d2d0699ffe2297deb1202ad8e6432317f"
-  integrity sha512-YowmlJ/Ide3gfTEK8RkQ0Z/AF1foeG89Td7q46KL/1wJWS64jVifedJIp4cNIk2TlVAyXa7suKC2aYKky4KmhA==
+"@tryghost/members-offers@0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.4.2.tgz#2e53d218d5f30552db916b23565625d48183d65a"
+  integrity sha512-HWXgcjqhN8AoiqAtkAjWTtcuZbLyzFS3b1pKD1/jJu0IMtZUkxoFdV4Ix0PpJ1LaCyL0VUnCqWwIVlPOaAb0Kw==
+  dependencies:
+    "@tryghost/string" "^0.1.20"
 
 "@tryghost/members-ssr@1.0.14":
   version "1.0.14"
@@ -1722,7 +1725,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.26.tgz#dfacc38cf187d9f6733155e6408329ef54210c72"
   integrity sha512-gwh8W2tlaaKwxrQSNvvnJTUUOVyDQQ4DR+ukEgVBwKbU5m7BePACf/0iuLY3PZ3mvZyzaQ3Jc3IWQHd/FDglPA==
 
-"@tryghost/string@0.1.20", "@tryghost/string@^0.1.17":
+"@tryghost/string@0.1.20", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.20"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.20.tgz#da38e1412b2bb53dee1fe1e7a7de3f43450452a0"
   integrity sha512-+EA1BJ5D55RQA3HsTMchGdxXL/0cN/rHbSjqLhjBhKuWTFNLb6AR9res1Bw3vb7ZxMV0ggUOrFDJ1Lqo2RbsEA==
@@ -2667,16 +2670,16 @@ bytes@3.1.0:
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.0.tgz#f6cf7933a360e0588fa9fde85651cdc7f805d1f6"
   integrity sha512-zauLjrfCG+xvoyaqLoV8bLVXXNGC4JqlxFCutSDWA6fJrTo2ZuvLYTqZ7aHBLZSMOopbzwv8f+wZcVzfVTI2Dg==
 
-c8@7.9.0:
-  version "7.9.0"
-  resolved "https://registry.yarnpkg.com/c8/-/c8-7.9.0.tgz#e63b9a22c8b4adbf6a8c8cb6194ee086b3e13c24"
-  integrity sha512-aQ7dC8gASnKdBwHUuYuzsdKCEDrKnWr7ZuZUnf4CNAL81oyKloKrs7H7zYvcrmCtIrMToudBSUhq2q+LLBMvgg==
+c8@7.10.0:
+  version "7.10.0"
+  resolved "https://registry.yarnpkg.com/c8/-/c8-7.10.0.tgz#c539ebb15d246b03b0c887165982c49293958a73"
+  integrity sha512-OAwfC5+emvA6R7pkYFVBTOtI5ruf9DahffGmIqUc9l6wEh0h7iAFP6dt/V9Ioqlr2zW5avX9U9/w1I4alTRHkA==
   dependencies:
     "@bcoe/v8-coverage" "^0.2.3"
     "@istanbuljs/schema" "^0.1.2"
     find-up "^5.0.0"
     foreground-child "^2.0.0"
-    istanbul-lib-coverage "^3.0.0"
+    istanbul-lib-coverage "^3.0.1"
     istanbul-lib-report "^3.0.0"
     istanbul-reports "^3.0.2"
     rimraf "^3.0.0"
@@ -5066,27 +5069,6 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@4.6.2:
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.2.tgz#c88166eb93bfcc94408c84783c62838111154b71"
-  integrity sha512-ls78Gr5pbwjzMySo7eYmAW4aOAjbNHxM54GKucFrTeOoGZHgGlOaXJMhCwLD68UW9ZD35yXsU9KhzSnNpUhemg==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "0.0.7"
-    "@tryghost/elasticsearch-bunyan" "0.1.1"
-    bunyan "1.8.15"
-    bunyan-loggly "1.4.2"
-    caller "1.0.1"
-    debug "4.3.1"
-    find-root "1.1.0"
-    fs-extra "9.1.0"
-    gelf-stream "1.1.1"
-    json-stringify-safe "5.0.1"
-    lodash "4.17.21"
-    moment "2.27.0"
-    nconf "0.11.2"
-    prettyjson "1.2.1"
-    uuid "8.3.2"
-
 ghost-ignition@4.6.3, ghost-ignition@^4.2.4, ghost-ignition@^4.6.2:
   version "4.6.3"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.3.tgz#eea33bbd84e4e26096f9b7c8838f972acdab7533"
@@ -6296,7 +6278,7 @@ isstream@~0.1.2:
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
   integrity sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=
 
-istanbul-lib-coverage@^3.0.0:
+istanbul-lib-coverage@^3.0.0, istanbul-lib-coverage@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/istanbul-lib-coverage/-/istanbul-lib-coverage-3.0.1.tgz#e8900b3ed6069759229cf30f7067388d148aeb5e"
   integrity sha512-GvCYYTxaCPqwMjobtVcVKvSHtAGe48MNhGjpK8LtVF8K0ISX7hCKl85LgtuaSneWVyQmaGcW3iXVV3GaZSLpmQ==
@@ -6626,20 +6608,20 @@ klona@^2.0.3:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
-knex-migrator@4.0.4:
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.4.tgz#0522e6922585839639bd26d7a9e671331000acd5"
-  integrity sha512-8MmK2HyiVA/IR9KG/1iOwUHXylNXmHQgLbc4L64hqD2c7EH0CggjqzHhFe+PirGCpyUbXE9bBoZky64u7XpTUQ==
+knex-migrator@4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.0.5.tgz#197e2b1d20902ce41a182ff14a25552cea36bfe4"
+  integrity sha512-HWpPS4Vc49t4QPOb8V7NxRSdpEiSkbs3sZf2j3yKZ8BgvQvpfsfTBGttM/nOeCWK98mwZmSt01qWxPbzxdfHbQ==
   dependencies:
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
-    debug "4.3.1"
-    ghost-ignition "4.6.2"
+    debug "4.3.2"
+    ghost-ignition "4.6.3"
     knex "0.21.19"
     lodash "4.17.21"
     moment "2.24.0"
-    nconf "0.11.2"
+    nconf "0.11.3"
     resolve "1.20.0"
   optionalDependencies:
     mysql "2.18.1"
@@ -8459,10 +8441,10 @@ passport-strategy@1.x.x:
   resolved "https://registry.yarnpkg.com/passport-strategy/-/passport-strategy-1.0.0.tgz#b5539aa8fc225a3d1ad179476ddf236b440f52e4"
   integrity sha1-tVOaqPwiWj0a0XlHbd8ja0QPUuQ=
 
-passport@0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/passport/-/passport-0.4.1.tgz#941446a21cb92fc688d97a0861c38ce9f738f270"
-  integrity sha512-IxXgZZs8d7uFSt3eqNjM9NQ3g3uQCW5avD8mRNoXV99Yig50vjuaez6dQK2qC0kVWPRTujxY0dWgGfT09adjYg==
+passport@0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/passport/-/passport-0.5.0.tgz#7914aaa55844f9dce8c3aa28f7d6b73647ee0169"
+  integrity sha512-ln+ue5YaNDS+fes6O5PCzXKSseY5u8MYhX9H5Co4s+HfYI5oqvnHKoOORLYDUPh+8tHvrxugF2GFcUA1Q1Gqfg==
   dependencies:
     passport-strategy "1.x.x"
     pause "0.0.1"

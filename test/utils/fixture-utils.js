@@ -543,6 +543,12 @@ const fixtures = {
         });
     },
 
+    insertCustomThemeSettings: function insertCustomThemeSettings() {
+        return Promise.map(DataGenerator.forKnex.custom_theme_settings, function (setting) {
+            return models.CustomThemeSetting.add(setting, context.internal);
+        });
+    },
+
     async enableAllLabsFeatures() {
         const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST.map(key => [key, true]));
         const labsSetting = DataGenerator.forKnex.createSetting({
@@ -652,6 +658,9 @@ const toDoList = {
     },
     'labs:enabled': function enableAllLabsFeatures() {
         return fixtures.enableAllLabsFeatures();
+    },
+    custom_theme_settings: function insertCustomThemeSettings() {
+        return fixtures.insertCustomThemeSettings();
     }
 };
 

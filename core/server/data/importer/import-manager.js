@@ -7,7 +7,7 @@ const glob = require('glob');
 const uuid = require('uuid');
 const {extract} = require('@tryghost/zip');
 const {pipeline, sequence} = require('@tryghost/promise');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
@@ -16,14 +16,24 @@ const MarkdownHandler = require('./handlers/markdown');
 const ImageImporter = require('./importers/image');
 const DataImporter = require('./importers/data');
 
+const messages = {
+    couldNotCleanUpFile: {
+        error: 'Import could not clean up file ',
+        context: 'Your site will continue to work as expected'
+    },
+    unsupportedRoonExport: 'Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.',
+    noContentToImport: 'Zip did not include any content to import.',
+    invalidZipStructure: 'Invalid zip file structure.',
+    invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
+    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.'
+};
+
 // Glob levels
 const ROOT_ONLY = 0;
 
 const ROOT_OR_SINGLE_DIR = 1;
 const ALL_DIRS = 2;
-let defaults;
-
-defaults = {
+let defaults = {
     extensions: ['.zip'],
     contentTypes: ['application/zip', 'application/x-zip-compressed'],
     directories: []
@@ -113,8 +123,8 @@ class ImportManager {
             if (err) {
                 logging.error(new errors.GhostError({
                     err: err,
-                    context: i18n.t('errors.data.importer.index.couldNotCleanUpFile.error'),
-                    help: i18n.t('errors.data.importer.index.couldNotCleanUpFile.context')
+                    context: tpl(messages.couldNotCleanUpFile.error),
+                    help: tpl(messages.couldNotCleanUpFile.context)
                 }));
             }
 
@@ -155,7 +165,7 @@ class ImportManager {
 
         // This is a temporary extra message for the old format roon export which doesn't work with Ghost
         if (oldRoonMatches.length > 0) {
-            throw new errors.UnsupportedMediaTypeError({message: i18n.t('errors.data.importer.index.unsupportedRoonExport')});
+            throw new errors.UnsupportedMediaTypeError({message: tpl(messages.unsupportedRoonExport)});
         }
 
         // If this folder contains importable files or a content or images directory
@@ -164,10 +174,10 @@ class ImportManager {
         }
 
         if (extMatchesAll.length < 1) {
-            throw new errors.UnsupportedMediaTypeError({message: i18n.t('errors.data.importer.index.noContentToImport')});
+            throw new errors.UnsupportedMediaTypeError({message: tpl(messages.noContentToImport)});
         }
 
-        throw new errors.UnsupportedMediaTypeError({message: i18n.t('errors.data.importer.index.invalidZipStructure')});
+        throw new errors.UnsupportedMediaTypeError({message: tpl(messages.invalidZipStructure)});
     }
 
     /**
@@ -219,7 +229,7 @@ class ImportManager {
             this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory}
         );
         if (extMatchesAll.length < 1 || extMatchesAll[0].split('/') < 1) {
-            throw new errors.ValidationError({message: i18n.t('errors.data.importer.index.invalidZipFileBaseDirectory')});
+            throw new errors.ValidationError({message: tpl(messages.invalidZipFileBaseDirectory)});
         }
 
         return extMatchesAll[0].split('/')[0];
@@ -249,7 +259,7 @@ class ImportManager {
                 if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
                     // This limitation is here to reduce the complexity of the importer for now
                     return Promise.reject(new errors.UnsupportedMediaTypeError({
-                        message: i18n.t('errors.data.importer.index.zipContainsMultipleDataFormats')
+                        message: tpl(messages.zipContainsMultipleDataFormats)
                     }));
                 }
 
@@ -266,7 +276,7 @@ class ImportManager {
 
             if (ops.length === 0) {
                 return Promise.reject(new errors.UnsupportedMediaTypeError({
-                    message: i18n.t('errors.data.importer.index.noContentToImport')
+                    message: tpl(messages.noContentToImport)
                 }));
             }
 
