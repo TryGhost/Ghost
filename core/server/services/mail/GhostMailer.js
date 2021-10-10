@@ -33,7 +33,7 @@ function getFromAddress(requestedFromAddress) {
 }
 
 /**
- * Decorates incoming message object wit    h nodemailer compatible fields.
+ * Decorates incoming message object with nodemailer compatible fields.
  * For nodemailer 0.7.1 reference see - https://github.com/nodemailer/nodemailer/tree/da2f1d278f91b4262e940c0b37638e7027184b1d#e-mail-message-fields
  * @param {Object} message
  * @param {boolean} [message.forceTextContent] - force text content
