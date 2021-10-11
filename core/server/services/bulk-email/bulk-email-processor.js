@@ -2,13 +2,17 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
 const mailgunProvider = require('./mailgun');
 const sentry = require('../../../shared/sentry');
 const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
+
+const messages = {
+    error: 'The email service was unable to send an email batch.'
+};
 
 const BATCH_SIZE = mailgunProvider.BATCH_SIZE;
 
@@ -239,7 +243,7 @@ module.exports = {
             // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
             let ghostError = new errors.EmailError({
                 err: error,
-                context: i18n.t('errors.services.mega.requestFailed.error'),
+                context: tpl(messages.error),
                 code: 'BULK_EMAIL_SEND_FAILED'
             });
 
