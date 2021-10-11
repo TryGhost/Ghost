@@ -35,6 +35,7 @@ describe('Acceptance: Offers', function () {
 
     describe('as owner', function () {
         beforeEach(async function () {
+            this.server.loadFixtures('products');
             enableLabsFlag(this.server, 'offers');
 
             let role = this.server.create('role', {name: 'Owner'});
