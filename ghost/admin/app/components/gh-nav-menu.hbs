@@ -1,3 +1,7 @@
 <nav class="gh-nav" ...attributes>
-    <GhNavMenu::Main @icon={{this.settings.settledIcon}} />
+    {{#if this.ui.contextualNavMenu}}
+        {{component (concat "gh-nav-menu/" ui.contextualNavMenu)}}
+    {{else}}
+        <GhNavMenu::Main @icon={{this.settings.settledIcon}} />
+    {{/if}}
 </nav>

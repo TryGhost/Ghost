@@ -5,7 +5,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
-export default class ModalsDesignCustomizeComponent extends Component {
+export default class DesignMenuComponent extends Component {
     @service customThemeSettings;
     @service settings;
     @service themeManagement;
