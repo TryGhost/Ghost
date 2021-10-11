@@ -5,6 +5,6 @@ const models = require('../../models');
 
 module.exports.notifications = new Notifications({
     settingsCache,
-    ghostVersion,
+    ghostVersion: ghostVersion.full,
     SettingsModel: models.Settings
 });
