@@ -55,21 +55,6 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
         this.hasConfirmed = false;
     }
 
-    async beforeModalClose() {
-        if (this.hasConfirmed) {
-            return;
-        }
-
-        const shouldLeave = await this.confirmUnsavedChanges();
-
-        if (shouldLeave === true) {
-            this.transitionTo('settings');
-        } else {
-            // prevent modal from closing
-            return false;
-        }
-    }
-
     confirmUnsavedChanges() {
         if (!this.settings.get('hasDirtyAttributes') && !this.customThemeSettings.isDirty) {
             return Promise.resolve(true);
