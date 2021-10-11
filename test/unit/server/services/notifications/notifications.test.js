@@ -198,6 +198,52 @@ describe('Notifications Service', function () {
             should.exist(notifications);
             notifications.length.should.equal(0);
         });
+
+        it('filters out outdated notifications', function () {
+            const settingsCache = {
+                get: sinon.fake.returns([{
+                    dismissible: true,
+                    custom: true,
+                    id: '130f7c24-113a-4768-a698-12a8b34223f1',
+                    type: 'info',
+                    message: 'too old to show',
+                    createdAt: '2021-03-16T12:55:20.000Z',
+                    addedAt: '2021-03-17T01:41:20.906Z',
+                    createdAtVersion: '4.0.1'
+                }, {
+                    dismissible: true,
+                    custom: true,
+                    id: '130f7c24-113a-4768-a698-12a8b34223f2',
+                    type: 'info',
+                    message: 'should be visible',
+                    createdAt: '2021-03-16T12:55:20.000Z',
+                    addedAt: '2021-03-17T01:41:20.906Z',
+                    createdAtVersion: '4.1.0'
+                }, {
+                    dismissible: true,
+                    custom: true,
+                    id: '130f7c24-113a-4768-a698-12a8b34223f2',
+                    type: 'info',
+                    message: 'visible even though without a created at property',
+                    createdAt: '2021-03-16T12:55:20.000Z',
+                    addedAt: '2021-03-17T01:41:20.906Z'
+                }])
+            };
+
+            const notificationSvc = new Notifications({
+                settingsCache,
+                ghostVersion: {
+                    full: '4.1.0'
+                }
+            });
+
+            const notifications = notificationSvc.browse({user: owner});
+
+            should.exist(notifications);
+            notifications.length.should.equal(2);
+            notifications[0].message.should.equal('should be visible');
+            notifications[1].message.should.equal('visible even though without a created at property');
+        });
     });
 
     describe('Stored notifications data corruption recovery', function () {
