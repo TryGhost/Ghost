@@ -48,6 +48,7 @@ export default class UiService extends Service {
     @service router;
     @service settings;
 
+    @tracked contextualNavMenu = null;
     @tracked isFullScreen = false;
     @tracked mainClass = '';
     @tracked showMobileMenu = false;

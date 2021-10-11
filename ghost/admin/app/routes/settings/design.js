@@ -1,6 +1,5 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {action} from '@ember/object';
-import {bind} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default class SettingsDesignRoute extends AuthenticatedRoute {
@@ -8,8 +7,8 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
     @service feature;
     @service modals;
     @service settings;
+    @service ui;
 
-    designModal = null;
     confirmModal = null;
     hasConfirmed = false;
 
@@ -30,13 +29,7 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
     }
 
     activate() {
-        this.designModal = this.modals.open('modals/design', {
-            saveTask: this.controllerFor('settings.design').saveTask
-        }, {
-            className: 'fullscreen-modal-total-overlay',
-            omitBackdrop: true,
-            beforeClose: bind(this, this.beforeModalClose)
-        });
+        this.ui.contextualNavMenu = 'design';
     }
 
     @action
@@ -57,8 +50,7 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
     }
 
     deactivate() {
-        this.designModal?.close();
-        this.designModal = null;
+        this.ui.contextualNavMenu = null;
         this.confirmModal = null;
         this.hasConfirmed = false;
     }

@@ -1,10 +1,9 @@
-<div class="modal-content">
-    <header class="modal-header">
-        <h1>Advanced theme options</h1>
-    </header>
-    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <span class="gh-canvas-title">Advanced</span>
+    </GhCanvasHeader>
 
-    <div class="modal-body">
+    <section class="view-container">
         <div class="gh-setting-header">Installed Themes</div>
         <div class="gh-themes-container">
             <GhThemeTableLabs @themes={{this.themes}} />
@@ -13,9 +12,8 @@
                 <a href="https://ghost.org/docs/themes/" target=_"blank" rel="noopener noreferrer" class="gh-btn gh-btn-outline">
                     <span>Theme developer docs</span>
                 </a>
-
-                <button type="button" class="gh-btn gh-btn-black" {{on "click" @close}}><span>Done</span></button>
             </div>
         </div>
-    </div>
-</div>
+
+    </section>
+</section>
