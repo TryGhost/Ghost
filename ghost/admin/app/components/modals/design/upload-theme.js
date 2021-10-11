@@ -139,7 +139,7 @@ export default class UploadThemeModalComponent extends Component {
                 if (error.fatal) {
                     fatalErrors.push(error);
                 } else {
-                    normalErrors.push(errors[i]);
+                    normalErrors.push(error);
                 }
             });
 
