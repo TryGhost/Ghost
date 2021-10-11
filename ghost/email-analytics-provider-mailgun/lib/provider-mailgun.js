@@ -1,6 +1,7 @@
 const mailgunJs = require('mailgun-js');
 const moment = require('moment');
 const {EventProcessingResult} = require('@tryghost/email-analytics-service');
+const debug = require('ghost-ignition').debug('email-analytics-provider-mailgun');
 
 const EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
@@ -94,8 +95,10 @@ class EmailAnalyticsProviderMailgun {
 
         const result = new EventProcessingResult();
 
+        debug(`_fetchPages: starting fetching first events page`);
         let page = await mailgun.events().get(mailgunOptions);
         let events = page && page.items && page.items.map(this.normalizeEvent) || [];
+        debug(`_fetchPages: finished fetching first page with ${events.length} events`);
 
         pagesLoop:
         while (events.length !== 0) {
@@ -106,8 +109,10 @@ class EmailAnalyticsProviderMailgun {
                 break pagesLoop;
             }
 
+            debug(`_fetchPages: starting fetching next page ${page.paging.next.replace('https://api.mailgun.net/v3', '')}`);
             page = await mailgun.get(page.paging.next.replace('https://api.mailgun.net/v3', ''));
             events = page && page.items && page.items.map(this.normalizeEvent) || [];
+            debug(`_fetchPages: finished fetching next page with ${events.length} events`);
         }
 
         return result;
