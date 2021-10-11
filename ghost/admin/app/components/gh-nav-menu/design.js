@@ -6,10 +6,11 @@ import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class DesignMenuComponent extends Component {
+    @service config;
     @service customThemeSettings;
+    @service router;
     @service settings;
     @service themeManagement;
-    @service config;
 
     @tracked openSections = new TrackedSet();
 
@@ -43,5 +44,12 @@ export default class DesignMenuComponent extends Component {
     @task
     *fetchThemeSettingsTask() {
         yield this.customThemeSettings.load();
+    }
+
+    @action
+    transitionBackToIndex() {
+        if (this.router.currentRouteName !== 'settings.design.index') {
+            this.router.transitionTo('settings.design.index');
+        }
     }
 }

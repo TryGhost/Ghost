@@ -2,7 +2,7 @@
     <LinkTo @route="settings" class="gh-nav-menu-title">{{svg-jar "arrow-left-tail"}} Site design</LinkTo>
 </header>
 <section class="gh-nav-body">
-    <div class="gh-nav-top">
+    <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
 
         <div class="pl6 pt4 pr6">
             <button type="button" {{on "click" (fn this.toggleSection "brand")}} class="flex flex-row w-100">
