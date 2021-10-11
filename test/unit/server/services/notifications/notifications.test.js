@@ -15,9 +15,7 @@ describe('Notifications Service', function () {
 
             const notificationsSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '4.1.0'
-                }
+                ghostVersion: '4.1.0'
             });
 
             const {allNotifications, notificationsToAdd} = notificationsSvc.add({
@@ -64,9 +62,7 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '4.1.0'
-                }
+                ghostVersion: '4.1.0'
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -95,9 +91,7 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '4.0.0'
-                }
+                ghostVersion: '4.0.0'
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -126,9 +120,7 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '3.0.0'
-                }
+                ghostVersion: '3.0.0'
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -157,9 +149,7 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '4.0.0'
-                }
+                ghostVersion: '4.0.0'
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -188,9 +178,7 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '5.0.0'
-                }
+                ghostVersion: '5.0.0'
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -232,9 +220,7 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '4.1.0'
-                }
+                ghostVersion: '4.1.0'
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -257,9 +243,7 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '5.0.0'
-                },
+                ghostVersion: '5.0.0',
                 SettingsModel: {
                     edit: settingsModelStub
                 }
@@ -287,9 +271,7 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: {
-                    full: '5.0.0'
-                },
+                ghostVersion: '5.0.0',
                 SettingsModel: {
                     edit: settingsModelStub
                 }

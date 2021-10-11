@@ -16,8 +16,7 @@ class Notifications {
      *
      * @param {Object} options
      * @param {Object} options.settingsCache - settings cache instance
-     * @param {Object} options.ghostVersion
-     * @param {String} options.ghostVersion.full - Ghost instance version in "full" format - major.minor.patch
+     * @param {String} options.ghostVersion - Ghost instance version in "full" format - major.minor.patch
      * @param {Object} options.SettingsModel - Ghost's Setting model instance
      */
     constructor({settingsCache, ghostVersion, SettingsModel}) {
@@ -75,7 +74,7 @@ class Notifications {
     browse({user}) {
         let allNotifications = this.fetchAllNotifications();
         allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
-        const blogVersion = this.ghostVersion.full.match(/^(\d+\.)(\d+\.)(\d+)/);
+        const blogVersion = this.ghostVersion.match(/^(\d+\.)(\d+\.)(\d+)/);
 
         allNotifications = allNotifications.filter((notification) => {
             if (notification.createdAtVersion && !this.wasSeen(notification, user)) {
@@ -129,7 +128,7 @@ class Notifications {
             location: 'bottom',
             status: 'alert',
             id: ObjectId().toHexString(),
-            createdAtVersion: this.ghostVersion.full
+            createdAtVersion: this.ghostVersion
         };
 
         const overrides = {
