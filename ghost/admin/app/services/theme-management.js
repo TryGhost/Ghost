@@ -1,5 +1,6 @@
 import Service from '@ember/service';
 import config from 'ghost-admin/config/environment';
+import {action} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {isThemeValidationError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
@@ -14,7 +15,32 @@ export default class ThemeManagementService extends Service {
     @service modals;
     @service settings;
 
+    @tracked isUploading;
     @tracked previewHtml;
+
+    @action
+    async upload(event) {
+        event?.preventDefault();
+
+        if (this.limit.limiter.isLimited('customThemes')) {
+            return this.modals.open('modals/limits/custom-theme');
+        }
+
+        try {
+            // Sending a bad string to make sure it fails (empty string isn't valid)
+            await this.limit.limiter.errorIfWouldGoOverLimit('customThemes', {value: '.'});
+        } catch (error) {
+            if (error.errorType === 'HostLimitError') {
+                return this.modals.open('modals/limit/custom-theme', {
+                    message: error.message
+                });
+            }
+
+            throw error;
+        }
+
+        return this.modals.open('modals/design/upload-theme');
+    }
 
     @task
     *activateTask(theme) {

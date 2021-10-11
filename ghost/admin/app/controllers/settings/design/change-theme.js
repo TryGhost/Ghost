@@ -1,6 +1,9 @@
 import Controller from '@ember/controller';
+import {inject as service} from '@ember/service';
 
 export default class ChangeThemeController extends Controller {
+    @service themeManagement;
+
     marketplaceThemes = [{
         name: 'Edition',
         category: 'Newsletter',
