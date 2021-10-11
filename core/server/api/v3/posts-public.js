@@ -1,8 +1,10 @@
 const models = require('../../models');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const allowedIncludes = ['tags', 'authors'];
-
+const messages = {
+    postNotFound: 'Post not found.'
+};
 module.exports = {
     docName: 'posts',
 
@@ -63,7 +65,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.posts.postNotFound')
+                            message: tpl(messages.postNotFound)
                         });
                     }
 

@@ -19,6 +19,7 @@ module.exports = {
             delete notification.seen;
             delete notification.seenBy;
             delete notification.addedAt;
+            delete notification.createdAtVersion;
         });
 
         frame.response = {

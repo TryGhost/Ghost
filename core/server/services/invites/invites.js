@@ -1,4 +1,5 @@
 const security = require('@tryghost/security');
+const tpl = require('@tryghost/tpl');
 
 const messages = {
     invitedByName: '{invitedByName} has invited you to join {blogName}',
@@ -9,9 +10,8 @@ const messages = {
 };
 
 class Invites {
-    constructor({settingsCache, tpl, logging, mailService, urlUtils}) {
+    constructor({settingsCache, logging, mailService, urlUtils}) {
         this.settingsCache = settingsCache;
-        this.tpl = tpl;
         this.logging = logging;
         this.mailService = mailService;
         this.urlUtils = urlUtils;
@@ -52,7 +52,7 @@ class Invites {
                     mail: [{
                         message: {
                             to: invite.get('email'),
-                            subject: this.tpl(messages.invitedByName, {
+                            subject: tpl(messages.invitedByName, {
                                 invitedByName: emailData.invitedByName,
                                 blogName: emailData.blogName
                             }),
@@ -75,10 +75,10 @@ class Invites {
             })
             .catch((err) => {
                 if (err && err.errorType === 'EmailError') {
-                    const errorMessage = this.tpl(messages.errorSendingEmail.error, {
+                    const errorMessage = tpl(messages.errorSendingEmail.error, {
                         message: err.message
                     });
-                    const helpText = this.tpl(messages.errorSendingEmail.help);
+                    const helpText = tpl(messages.errorSendingEmail.help);
                     err.message = `${errorMessage} ${helpText}`;
                     this.logging.warn(err.message);
                 }
