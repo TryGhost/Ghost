@@ -9,7 +9,6 @@ export default Model.extend(ValidationEngine, {
     cadence: attr('string'),
     tier: attr(),
     stripeCouponId: attr('string'),
-    interval: attr('string'),
     currency: attr('string'),
     type: attr('string', {defaultValue: 'percent'}),
     amount: attr('number'),
