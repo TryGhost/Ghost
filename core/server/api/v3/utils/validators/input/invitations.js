@@ -1,8 +1,16 @@
 const Promise = require('bluebird');
 const validator = require('@tryghost/validator');
 const debug = require('@tryghost/debug')('api:v3:utils:validators:input:invitation');
-const i18n = require('../../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    noTokenProvided: 'No token provided.',
+    noEmailProvided: 'No email provided.',
+    noPasswordProvided: 'No password provided.',
+    noNameProvided: 'No name provided.',
+    invalidEmailReceived: 'The server did not receive a valid email'
+};
 
 module.exports = {
     acceptInvitation(apiConfig, frame) {
@@ -11,19 +19,19 @@ module.exports = {
         const data = frame.data.invitation[0];
 
         if (!data.token) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noTokenProvided')}));
+            return Promise.reject(new errors.ValidationError({message: tpl(messages.noTokenProvided)}));
         }
 
         if (!data.email) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noEmailProvided')}));
+            return Promise.reject(new errors.ValidationError({message: tpl(messages.noEmailProvided)}));
         }
 
         if (!data.password) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noPasswordProvided')}));
+            return Promise.reject(new errors.ValidationError({message: tpl(messages.noPasswordProvided)}));
         }
 
         if (!data.name) {
-            return Promise.reject(new errors.ValidationError({message: i18n.t('errors.api.authentication.noNameProvided')}));
+            return Promise.reject(new errors.ValidationError({message: tpl(messages.noNameProvided)}));
         }
     },
 
@@ -34,7 +42,7 @@ module.exports = {
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
             throw new errors.BadRequestError({
-                message: i18n.t('errors.api.authentication.invalidEmailReceived')
+                message: tpl(messages.invalidEmailReceived)
             });
         }
     }
