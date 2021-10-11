@@ -33,7 +33,7 @@ export default class GhPublishmenuScheduledComponent extends Component {
 
     @action
     setSaveType(type) {
-        if (this.saveType !== type) {
+        if (this.args.saveType !== type) {
             this.minDate = new Date();
             this.args.setSaveType(type);
 
