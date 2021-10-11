@@ -1368,10 +1368,10 @@
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
 
-"@tryghost/email-analytics-provider-mailgun@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.2.tgz#b7e453773baff6601d9092d4aa7942da4bcf5b59"
-  integrity sha512-yYBiK9Cc/0gQlmIzCoPTQnJfonlgbAqn17y41A6vg/9KVvpP3D2OuLsy6TVFkhpdcT7hdHAMV9xf4pQI9ma5MQ==
+"@tryghost/email-analytics-provider-mailgun@1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.3.tgz#78d0c3f61aaa41604389be0a6997e2bb4a2354c5"
+  integrity sha512-B3jgo/eINafFA17e/2Hy076yILfQDM0rqkTXwbMWgnNDg+sUEb7BAS5NPdRydalZbAGdfXq0SbzKAmUgfBHBzQ==
   dependencies:
     "@tryghost/email-analytics-service" "^1.0.2"
     mailgun-js "^0.22.0"
