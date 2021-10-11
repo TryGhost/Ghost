@@ -5,11 +5,11 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    "noTokenProvided": "No token provided.",
-    "noEmailProvided": "No email provided.",
-    "noPasswordProvided": "No password provided.",
-    "noNameProvided": "No name provided.",
-    "invalidEmailReceived": "The server did not receive a valid email"
+    noTokenProvided: 'No token provided.',
+    noEmailProvided: 'No email provided.',
+    noPasswordProvided: 'No password provided.',
+    noNameProvided: 'No name provided.',
+    invalidEmailReceived: 'The server did not receive a valid email'
 };
 
 module.exports = {
