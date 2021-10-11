@@ -882,10 +882,10 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.3.tgz#e45e384e4b8ec16bce2fd903af78450f6bf7ec98"
   integrity sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==
 
-"@lodder/grunt-postcss@3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-3.0.1.tgz#38724fa80de5605419049113b9564782a7bbf7c6"
-  integrity sha512-boAIrpGJQYxiZ/qI7BRhxNHzNsv6kPlqRpr4XhnTHNjf2RYAqDTL5CMRUcExv8crVduKkhOSSr+pnIQrI3pwYg==
+"@lodder/grunt-postcss@3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-3.1.0.tgz#716ce7b5bfbb27d885320e5ce047bba82fcd6553"
+  integrity sha512-z1fk2j1fWRsD1pxI7xEQn87cwkY+eL2dAuiGjnLBrsimHgJrPSXbkV2lEALzRGxbdojPOI5062Nbgt7sWCecXw==
   dependencies:
     diff "^5.0.0"
     maxmin "^3.0.0"
