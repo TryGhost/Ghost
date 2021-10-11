@@ -4475,6 +4475,11 @@ express-jwt@6.1.0:
     jsonwebtoken "^8.1.0"
     lodash.set "^4.0.0"
 
+express-lazy-router@1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/express-lazy-router/-/express-lazy-router-1.0.4.tgz#c3a95e76c95c757422b566646999e6375255349e"
+  integrity sha512-LXy1toGlUciLD7Bo5Ug7WpfrIBpw1FmqLdxDhGfhHdFbgmocCbUdBVD7FECXoDsWiZQ80EgHC28hJyebpQCINQ==
+
 express-query-boolean@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/express-query-boolean/-/express-query-boolean-2.0.0.tgz#ea56ac8138e2b95b171b8eee2af88738302941c3"
