@@ -12,18 +12,17 @@ module.exports = function setupApiApp() {
         apiApp.use(require('./testmode')());
     }
 
-    // Mount different API versions
-    apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app')());
-    apiApp.use(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app')());
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app'));
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app'));
 
-    apiApp.use(urlUtils.getVersionPath({version: 'v3', type: 'content'}), require('./v3/content/app')());
-    apiApp.use(urlUtils.getVersionPath({version: 'v3', type: 'admin'}), require('./v3/admin/app')());
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v3', type: 'content'}), require('./v3/content/app'));
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v3', type: 'admin'}), require('./v3/admin/app'));
 
-    apiApp.use(urlUtils.getVersionPath({version: 'v4', type: 'content'}), require('./canary/content/app')());
-    apiApp.use(urlUtils.getVersionPath({version: 'v4', type: 'admin'}), require('./canary/admin/app')());
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v4', type: 'content'}), require('./canary/content/app'));
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v4', type: 'admin'}), require('./canary/admin/app'));
 
-    apiApp.use(urlUtils.getVersionPath({version: 'canary', type: 'content'}), require('./canary/content/app')());
-    apiApp.use(urlUtils.getVersionPath({version: 'canary', type: 'admin'}), require('./canary/admin/app')());
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'canary', type: 'content'}), require('./canary/content/app'));
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'canary', type: 'admin'}), require('./canary/admin/app'));
 
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);
