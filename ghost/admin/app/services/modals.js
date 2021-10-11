@@ -2,23 +2,32 @@ import EPMModalsService from 'ember-promise-modals/services/modals';
 import {bind} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-export const DEFAULT_MODAL_OPTIONS = {
-    'modals/confirm-unsaved-changes': {
-        className: 'fullscreen-modal-action fullscreen-modal-wide'
-    },
-    'modals/design/confirm-delete-theme': {
-        className: 'fullscreen-modal-action fullscreen-modal-wide'
-    },
-    'modals/design/theme-errors': {
-        className: 'fullscreen-modal-action fullscreen-modal-wide'
-    },
-    'modals/limits/custom-theme': {
-        className: 'fullscreen-modal-action fullscreen-modal-wide'
-    }
-};
-
 export default class ModalsService extends EPMModalsService {
     @service dropdown;
+    @service themeManagement;
+
+    DEFAULT_MODAL_OPTIONS = {
+        'modals/confirm-unsaved-changes': {
+            className: 'fullscreen-modal-action fullscreen-modal-wide'
+        },
+        'modals/design/upload-theme': {
+            className: 'fullscreen-modal-action fullscreen-modal-wide',
+            beforeClose: () => {
+                if (this.themeManagement.isUploading) {
+                    return false;
+                }
+            }
+        },
+        'modals/design/confirm-delete-theme': {
+            className: 'fullscreen-modal-action fullscreen-modal-wide'
+        },
+        'modals/design/theme-errors': {
+            className: 'fullscreen-modal-action fullscreen-modal-wide'
+        },
+        'modals/limits/custom-theme': {
+            className: 'fullscreen-modal-action fullscreen-modal-wide'
+        }
+    }
 
     // we manually close modals on backdrop clicks and escape rather than letting focus-trap
     // handle it so we can intercept/abort closing for things like unsaved change confirmations
@@ -27,7 +36,7 @@ export default class ModalsService extends EPMModalsService {
     escapeDeactivates = false;
 
     open(modal, data, options) {
-        const mergedOptions = Object.assign({}, DEFAULT_MODAL_OPTIONS[modal], options);
+        const mergedOptions = Object.assign({}, this.DEFAULT_MODAL_OPTIONS[modal], options);
         return super.open(modal, data, mergedOptions);
     }
 
