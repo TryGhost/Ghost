@@ -1320,7 +1320,6 @@ p.theme-validation-details {
     margin: 32px 68px 68px;
 }
 
-.gh-design-settings-previewcontainer .site-frame,
 .gh-branding-settings-previewcontainer .site-frame,
 .gh-launch-wizard-preview {
     width: 133.33333%;
@@ -1393,45 +1392,36 @@ p.theme-validation-details {
 
 /* Design (Labs)
 /* ---------------------------------------------------- */
-.gh-design-settings-left {
-    flex-grow: 1;
-    background: none;
-}
-
-.gh-design-settings-right {
-    flex-grow: 3;
+.gh-nav-menu-title {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    height: 50vh;
-    min-height: 480px;
-    margin-left: 80px;
+    align-items: center;
+    overflow: hidden;
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.3em;
 }
 
-.gh-expandable-block.gh-active-theme {
-    border: 1px solid var(--list-color-divider);
-    border-radius: var(--border-radius);
-}
-
-.gh-design-settings-tabs {
-    width: 100%;
-    margin-bottom: 48px;
-    background: transparent;
-}
-
-.gh-design-settings-tabs .gh-btn {
-    width: 50%;
-    margin: 0;
-}
-
-.gh-design-settings-tabs .gh-btn-group-selected span {
-    box-shadow: none;
-    background: var(--black) !important;
-    color: var(--white);
+.gh-nav-menu-title svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 17px;
+    fill: var(--black);
 }
 
 .gh-theme-setting-title {
     margin-bottom: 1rem;
+}
+
+.gh-design-page-preview-mode select {
+    height: 34px;
+}
+
+.gh-design-preview-mode svg {
+    max-width: 16px;
+    max-height: 16px;
+    vertical-align: middle;
+    fill: var(--midgrey);
 }
 
 /* Membership */
