@@ -9,6 +9,7 @@ export default class ModalsDesignCustomizeComponent extends Component {
     @service customThemeSettings;
     @service settings;
     @service themeManagement;
+    @service config;
 
     @tracked openSections = new TrackedSet();
 
