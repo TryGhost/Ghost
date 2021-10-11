@@ -1,0 +1,81 @@
+<header class="gh-nav-menu">
+    <LinkTo @route="settings" class="gh-nav-menu-title">{{svg-jar "arrow-left-tail"}} Site design</LinkTo>
+</header>
+<section class="gh-nav-body">
+    <div class="gh-nav-top">
+
+        <div class="pl6 pt4 pr6">
+            <button type="button" {{on "click" (fn this.toggleSection "brand")}} class="flex flex-row w-100">
+                <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Brand</span>
+                <span class="db">{{svg-jar (if (set-has this.openSections "brand") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+            </button>
+            {{#if (set-has this.openSections "brand")}}
+                <div class="pt4">
+                    <Settings::Design::GeneralSettingsForm
+                        @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                    />
+                </div>
+            {{/if}}
+        </div>
+
+        {{#if this.themeSettings}}
+            {{#if this.siteWideSettings}}
+                <div class="mt4 pl6 pt4 pr6">
+                    <button type="button" {{on "click" (fn this.toggleSection "site-wide")}} class="flex flex-row w-100">
+                        <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Site-wide</span>
+                        <span class="db">{{svg-jar (if (set-has this.openSections "site-wide") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+                    </button>
+
+                    {{#if (set-has this.openSections "site-wide")}}
+                        <div class="pt4">
+                            <Settings::Design::ThemeSettingsForm
+                                @themeSettings={{this.siteWideSettings}}
+                                @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                            />
+                        </div>
+                    {{/if}}
+                </div>
+            {{/if}}
+
+            {{#if this.homepageSettings}}
+                <div class="mt4 pl6 pt4 pr6">
+                    <button type="button" {{on "click" (fn this.toggleSection "homepage")}} class="flex flex-row w-100">
+                        <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Homepage</span>
+                        <span class="db">{{svg-jar (if (set-has this.openSections "homepage") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+                    </button>
+
+                    {{#if (set-has this.openSections "homepage")}}
+                        <div class="pt4">
+                            <Settings::Design::ThemeSettingsForm
+                                @themeSettings={{this.homepageSettings}}
+                                @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                            />
+                        </div>
+                    {{/if}}
+                </div>
+            {{/if}}
+
+            {{#if this.postPageSettings}}
+                <div class="mt4 pl6 pt4 pr6">
+                    <button type="button" {{on "click" (fn this.toggleSection "post")}} class="flex flex-row w-100">
+                        <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Post</span>
+                        <span class="db">{{svg-jar (if (set-has this.openSections "post") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+                    </button>
+
+                    {{#if (set-has this.openSections "post")}}
+                        <div class="pt4">
+                            <Settings::Design::ThemeSettingsForm
+                                @themeSettings={{this.postPageSettings}}
+                                @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                            />
+                        </div>
+                    {{/if}}
+                </div>
+            {{/if}}
+        {{/if}}
+    </div>
+
+    <div class="gh-nav-bottom">
+        <LinkTo @route="settings.design.advanced" class="gh-btn gh-btn-icon gh-btn-text"><span>{{svg-jar "settings"}} Advanced theme settings</span></LinkTo>
+    </div>
+</section>

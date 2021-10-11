@@ -1,0 +1,26 @@
+<section class="gh-canvas relative w-100">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title">{{this.config.blogTitle}}</h2>
+        <section class="view-actions">
+            <div class="gh-contentfilter gh-btn-group">
+                <button type="button" class="gh-btn gh-design-preview-mode gh-btn-group-selected"><span>{{svg-jar "desktop"}}</span></button>
+                <button type="button" class="gh-btn gh-design-preview-mode"><span>{{svg-jar "mobile-phone"}}</span></button>
+            </div>
+
+            <GhTaskButton
+                @buttonText="Save changes"
+                @task={{@data.saveTask}}
+                @successText="Saved"
+                @runningText="Saving"
+                @class="gh-btn gh-btn-primary gh-btn-icon"
+                data-test-button="save-settings"
+            />
+        </section>
+    </GhCanvasHeader>
+
+    <div style="height: calc(100% - 96px)">
+        <GhBrowserPreview @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
+            <GhHtmlIframe id="site-frame" class="site-frame gh-branding-settings-preview" @html={{this.themeManagement.previewHtml}} />
+        </GhBrowserPreview>
+    </div>
+</section>
