@@ -126,7 +126,7 @@ export default class ThemeManagementService extends Service {
         stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
 
         // replace the iframe contents with the doctored preview html
-        this.previewHtml = htmlDoc.documentElement.innerHTML;
+        this.previewHtml = htmlDoc.documentElement.outerHTML;
     }
 
     get previewData() {
