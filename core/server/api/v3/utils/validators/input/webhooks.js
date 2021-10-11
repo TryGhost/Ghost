@@ -4,8 +4,8 @@ const tpl = require('@tryghost/tpl');
 const jsonSchema = require('../utils/json-schema');
 
 const messages = {
-    schemaValidationFailed: "Validation failed for '{key}'.",
-    context: "You may only create webhooks with 'integration_id' when using session authentication."
+    schemaValidationFailed: 'Validation failed for \'{key}\'.',
+    noIntegrationIdProvidedContext: 'You may only create webhooks with \'integration_id\' when using session authentication.'
 };
 
 module.exports = {
@@ -15,7 +15,7 @@ module.exports = {
                 message: tpl(messages.schemaValidationFailed, {
                     key: 'integration_id'
                 }),
-                context: tpl(messages.context),
+                context: tpl(messages.noIntegrationIdProvidedContext),
                 property: 'integration_id'
             }));
         }
