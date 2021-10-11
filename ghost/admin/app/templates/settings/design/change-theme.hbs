@@ -1,0 +1,32 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>All themes</h2>
+        <section class="view-actions">
+            <a href="https://ghost.org/themes/" target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-grey gh-btn-icon-right">
+                <span>Premium themes {{svg-jar "external"}}</span>
+            </a>
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container">
+        <div class="gh-theme-directory-container">
+            <div class="theme-directory">
+                {{#each this.marketplaceThemes as |theme|}}
+                    <a class="td-item" href={{theme.url}} target="_blank" rel="noopener noreferrer">
+                        <div class="td-item-screenshot relative">
+                            <img style="object-fit:contain;" src={{theme.image}} alt="{{theme.name}} Theme" />
+                            <div class="td-item-overlay">
+                                <LinkTo class="td-item-action gh-btn gh-btn-black mb4" @route="settings.theme.install" @query={{hash source="github" ref=theme.ref}}><span>Install</span></LinkTo>
+                                <a href={{theme.previewUrl}} class="td-item-action gh-btn" target="_blank" rel="noopener"><span>Preview</span></a>
+                            </div>
+                        </div>
+                        <div class="td-item-desc">
+                            <div>{{theme.name}}</div>
+                            <span>• {{theme.category}}</span>
+                        </div>
+                    </a>
+                {{/each}}
+            </div>
+        </div>
+    </section>
+</section>
