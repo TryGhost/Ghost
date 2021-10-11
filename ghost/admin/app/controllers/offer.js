@@ -5,6 +5,7 @@ import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {ghPriceAmount} from '../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
+import {slugify} from '@tryghost/string';
 import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -46,6 +47,8 @@ export default class OffersController extends Controller {
         }
     ];
 
+    @tracked defaultProps = null;
+
     leaveScreenTransition = null;
 
     constructor() {
@@ -72,6 +75,8 @@ export default class OffersController extends Controller {
     get cadence() {
         if (this.offer.tier && this.offer.cadence) {
             return `${this.offer.tier.id}-${this.offer.cadence}-${this.offer.currency}`;
+        } else if (this.defaultProps) {
+            return `${this.defaultProps.tier.id}-${this.defaultProps.cadence}-${this.defaultProps.currency}`;
         }
         return '';
     }
@@ -107,7 +112,8 @@ export default class OffersController extends Controller {
         });
         this.cadences = cadences;
         if (this.offer && !this.offer.tier) {
-            this.updateCadence(this.cadences[0]?.name);
+            this.defaultProps = {};
+            this.updateCadence(this.cadences[0]?.name, this.defaultProps);
         }
     }
 
@@ -122,10 +128,13 @@ export default class OffersController extends Controller {
     *saveTask() {
         let {offer} = this;
 
-        // if Cmd+S is pressed before the field loses focus make sure we're
-        // saving the intended property values
-        // let scratchProps = scratchOffer.getProperties(SCRATCH_PROPS);
-        // offer.setProperties(scratchProps);
+        if (!offer.tier && this.defaultProps) {
+            this.offer.tier = {
+                id: this.defaultProps?.tier.id
+            };
+            this.offer.cadence = this.defaultProps.cadence;
+            this.offer.currency = this.defaultProps.currency;
+        }
 
         try {
             yield offer.save();
@@ -249,7 +258,7 @@ export default class OffersController extends Controller {
         const code = this.offer?.code || '';
         if (code) {
             const siteUrl = this.config.get('blogUrl');
-            return `${siteUrl}/${code}`;
+            return `${siteUrl}/${slugify(code)}`;
         }
         return '';
     }
@@ -269,15 +278,15 @@ export default class OffersController extends Controller {
     }
 
     @action
-    updateCadence(cadence) {
+    updateCadence(cadence, offerObj) {
+        offerObj = offerObj || this.offer;
         if (cadence) {
             const [tierId, tierCadence, currency] = cadence.split('-');
-            this.offer.tier = {
+            offerObj.tier = {
                 id: tierId
             };
-            this.offer.cadence = tierCadence;
-            this.offer.currency = currency;
-            const offerType = this.offer.type;
+            offerObj.cadence = tierCadence;
+            offerObj.currency = currency;
             this.offertypes = [
                 {
                     label: '%',
@@ -288,7 +297,6 @@ export default class OffersController extends Controller {
                     offertype: 'fixed'
                 }
             ];
-            this.offer.type = offerType;
         }
     }
 
@@ -301,10 +309,6 @@ export default class OffersController extends Controller {
 
     _saveOfferProperty(propKey, newValue) {
         let currentValue = this.offer[propKey];
-
-        // if (newValue && typeof newValue === 'string') {
-        //     newValue = newValue.trim();
-        // }
 
         // avoid modifying empty values and triggering inadvertant unsaved changes modals
         if (newValue !== false && !newValue && !currentValue) {
