@@ -6,13 +6,14 @@ class DynamicRedirectManager {
     /**
      * @param {object} config
      * @param {number} config.permanentMaxAge
-     * @param {object} config.urlUtils
+     * @param {function} config.getSubdirectoryURL
      */
-    constructor({permanentMaxAge, urlUtils}) {
+    constructor({permanentMaxAge, getSubdirectoryURL}) {
         /** @private */
         this.permanentMaxAge = permanentMaxAge;
-        /** @private */
-        this.urlUtils = urlUtils;
+
+        this.getSubdirectoryURL = getSubdirectoryURL;
+
         /** @private */
         this.router = express.Router();
         /** @private @type {string[]} */
@@ -72,7 +73,7 @@ class DynamicRedirectManager {
              * @see https://github.com/TryGhost/Ghost/issues/10776
              */
             if (!toURL.hostname) {
-                toURL.pathname = this.urlUtils.urlJoin(this.urlUtils.getSubdir(), toURL.pathname);
+                toURL.pathname = this.getSubdirectoryURL(toURL.pathname);
             }
 
             res.set({
