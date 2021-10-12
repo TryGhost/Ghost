@@ -6,10 +6,11 @@ class DynamicRedirectManager {
     /**
      * @param {object} config
      * @param {number} config.permanentMaxAge
+     * @param {object} config.urlUtils
      */
-    constructor(config, urlUtils) {
+    constructor({permanentMaxAge, urlUtils}) {
         /** @private */
-        this.config = config;
+        this.permanentMaxAge = permanentMaxAge;
         /** @private */
         this.urlUtils = urlUtils;
         /** @private */
@@ -55,7 +56,7 @@ class DynamicRedirectManager {
         const {fromRegex, to, options: {permanent}} = this.redirects[redirectId];
 
         this.router.get(fromRegex, (req, res) => {
-            const maxAge = permanent ? this.config.permanentMaxAge : 0;
+            const maxAge = permanent ? this.permanentMaxAge : 0;
             const toURL = parseURL(to);
             const toURLParams = parseQuerystring(toURL.query);
             const currentURL = parseURL(req.url);
