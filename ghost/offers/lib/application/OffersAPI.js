@@ -99,13 +99,15 @@ class OffersAPI {
     }
 
     /**
+     * @param {object} options
+     * @param {string} options.filter
      * @returns {Promise<OfferMapper.OfferDTO[]>}
      */
-    async listOffers() {
+    async listOffers(options) {
         return await this.repository.createTransaction(async (transaction) => {
-            const options = {transacting: transaction};
+            const opts = {transacting: transaction, filter: options.filter};
 
-            const offers = await this.repository.getAll(options);
+            const offers = await this.repository.getAll(opts);
 
             return offers.map(OfferMapper.toDTO);
         });
