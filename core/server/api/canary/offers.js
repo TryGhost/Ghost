@@ -4,9 +4,12 @@ module.exports = {
     docName: 'offers',
 
     browse: {
+        options: [
+            'filter'
+        ],
         permissions: true,
         async query(frame) {
-            const offers = await offersService.api.listOffers();
+            const offers = await offersService.api.listOffers(frame.options);
             frame.response = {
                 offers
             };
