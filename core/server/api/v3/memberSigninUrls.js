@@ -1,6 +1,9 @@
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const membersService = require('../../services/members');
+const messages = {
+    memberNotFound: 'Member not found.'
+};
 
 module.exports = {
     docName: 'member_signin_urls',
@@ -15,7 +18,7 @@ module.exports = {
 
             if (!model) {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.members.memberNotFound')
+                    message: tpl(messages.memberNotFound)
                 });
             }
 
