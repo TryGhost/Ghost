@@ -36,18 +36,24 @@ export default class DesignMenuComponent extends Component {
 
     get settingGroups() {
         const groupKeys = this.KNOWN_GROUPS.map(g => g.key);
+        const groups = [];
 
-        const groups = [{
-            key: 'site-wide',
-            name: 'Site-wide',
-            icon: 'house',
-            settings: this.themeSettings.filter(setting => !groupKeys.includes(setting.group))
-        }];
+        const siteWideSettings = this.themeSettings.filter(setting => !groupKeys.includes(setting.group));
+        if (siteWideSettings.length) {
+            groups.push({
+                key: 'site-wide',
+                name: 'Site-wide',
+                icon: 'house',
+                settings: siteWideSettings
+            });
+        }
 
         this.KNOWN_GROUPS.forEach((knownGroup) => {
-            groups.push(Object.assign({}, knownGroup, {
-                settings: this.themeSettings.filter(setting => setting.group === knownGroup.key)
-            }));
+            const settings = this.themeSettings.filter(setting => setting.group === knownGroup.key);
+
+            if (settings.length) {
+                groups.push(Object.assign({}, knownGroup, {settings}));
+            }
         });
 
         return groups;
