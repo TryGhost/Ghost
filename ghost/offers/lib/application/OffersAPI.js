@@ -3,6 +3,7 @@ const OfferName = require('../domain/models/OfferName');
 const OfferCode = require('../domain/models/OfferCode');
 const OfferTitle = require('../domain/models/OfferTitle');
 const OfferDescription = require('../domain/models/OfferDescription');
+const OfferStatus = require('../domain/models/OfferStatus');
 const OfferMapper = require('./OfferMapper');
 const UniqueChecker = require('./UniqueChecker');
 
@@ -31,7 +32,7 @@ class OffersAPI {
     }
 
     /**
-     * @param {object} data
+     * @param {any} data
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
@@ -55,6 +56,7 @@ class OffersAPI {
      * @param {string} [data.display_title]
      * @param {string} [data.display_description]
      * @param {string} [data.code]
+     * @param {string} [data.status]
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
@@ -83,6 +85,11 @@ class OffersAPI {
             if (data.display_description) {
                 const description = OfferDescription.create(data.display_description);
                 offer.displayDescription = description;
+            }
+
+            if (data.status) {
+                const status = OfferStatus.create(data.status);
+                offer.status = status;
             }
 
             await this.repository.save(offer, options);
