@@ -1,21 +1,23 @@
-import Component from '@ember/component';
-import {task, timeout} from 'ember-concurrency';
+import Component from '@glimmer/component';
+import {task} from 'ember-concurrency-decorators';
+import {timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-export default Component.extend({
-    tagName: '',
+export default class GhLoadingSpinnerComponent extends Component {
+    @tracked showSpinner = false;
 
-    showSpinner: false,
     // ms until the loader is displayed,
     // prevents unnecessary flash of spinner
-    slowLoadTimeout: 200,
+    slowLoadTimeout = 200;
 
-    didInsertElement() {
-        this._super(...arguments);
+    constructor() {
+        super(...arguments);
         this.startSpinnerTimeout.perform();
-    },
+    }
 
-    startSpinnerTimeout: task(function* () {
+    @task
+    *startSpinnerTimeout() {
         yield timeout(this.slowLoadTimeout);
-        this.set('showSpinner', true);
-    })
-});
+        this.showSpinner = true;
+    }
+}
