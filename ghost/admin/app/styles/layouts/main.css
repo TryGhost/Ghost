@@ -373,7 +373,7 @@
 .gh-nav-list button.main-menu-item {
     display: flex;
     align-items: center;
-    color: color-mod(var(--middarkgrey) l(-10%));
+    color: var(--darkgrey-l1);
     transition: none;
     font-weight: 400;
     padding: 7px var(--mainmenu-padding) 7px calc(var(--mainmenu-padding) + 7px);

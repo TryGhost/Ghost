@@ -21,7 +21,7 @@ export default class DesignMenuComponent extends Component {
     }, {
         key: 'post',
         name: 'Post',
-        icon: 'house'
+        icon: 'post'
     }];
 
     constructor() {
@@ -43,7 +43,7 @@ export default class DesignMenuComponent extends Component {
             groups.push({
                 key: 'site-wide',
                 name: 'Site-wide',
-                icon: 'house',
+                icon: 'view-site',
                 settings: siteWideSettings
             });
         }

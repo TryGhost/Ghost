@@ -1,45 +1,42 @@
 <header class="gh-nav-menu">
-    <LinkTo @route="settings" class="gh-nav-menu-title">{{svg-jar "arrow-left-tail"}} Site design</LinkTo>
+    <LinkTo @route="settings" class="gh-nav-menu-title">{{svg-jar "arrow-left-tail"}}Site design</LinkTo>
 </header>
-<section class="gh-nav-body">
+<section class="gh-nav-body gh-nav-design">
     <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
-
-        <div class="pl6 pt4 pr6">
-            <button type="button" {{on "click" (fn this.toggleSection "brand")}} class="flex flex-row w-100">
-                <span class="db tl flex-grow-1">{{svg-jar "house" class="w4"}} Brand</span>
-                <span class="db">{{svg-jar (if (set-has this.openSections "brand") "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+        <div class="gh-nav-list gh-nav-main">
+            <button type="button" {{on "click" (fn this.toggleSection "brand")}}>
+                {{svg-jar "paintbrush" class="w4"}}Brand
+                {{!-- <span class="db">{{svg-jar (if (set-has this.openSections "brand") "arrow-up-small" "arrow-down-small") class="w4"}}</span> --}}
             </button>
             {{#if (set-has this.openSections "brand")}}
-                <div class="pt4">
+                <div class="gh-nav-design-settings">
                     <Settings::Design::GeneralSettingsForm
                         @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                     />
                 </div>
             {{/if}}
-        </div>
 
-        {{#if this.themeSettings}}
-            {{#each this.settingGroups as |group|}}
-                <div class="mt4 pl6 pt4 pr6">
-                    <button type="button" {{on "click" (fn this.toggleSection group.key)}} class="flex flex-row w-100">
-                        <span class="db tl flex-grow-1">{{svg-jar group.icon class="w4"}} {{group.name}}</span>
-                        <span class="db">{{svg-jar (if (set-has this.openSections group.key) "arrow-up-small" "arrow-down-small") class="w4"}}</span>
+            {{#if this.themeSettings}}
+                {{#each this.settingGroups as |group|}}
+                    <button type="button" {{on "click" (fn this.toggleSection group.key)}}>
+                        {{svg-jar group.icon class="w4"}} {{group.name}}
+                        {{!-- <span class="db">{{svg-jar (if (set-has this.openSections group.key) "arrow-up-small" "arrow-down-small") class="w4"}}</span> --}}
                     </button>
 
                     {{#if (set-has this.openSections group.key)}}
-                        <div class="pt4">
+                        <div class="gh-nav-design-settings">
                             <Settings::Design::ThemeSettingsForm
                                 @themeSettings={{group.settings}}
                                 @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                             />
                         </div>
                     {{/if}}
-                </div>
-            {{/each}}
-        {{/if}}
+                {{/each}}
+            {{/if}}
+        </div>
     </div>
 
     <div class="gh-nav-bottom">
-        <LinkTo @route="settings.design.change-theme" class="gh-btn gh-btn-icon gh-btn-text"><span>{{svg-jar "settings"}} Change theme</span></LinkTo>
+        <LinkTo @route="settings.design.change-theme">{{svg-jar "settings"}}Change theme</LinkTo>
     </div>
 </section>
