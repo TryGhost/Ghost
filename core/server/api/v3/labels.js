@@ -1,7 +1,12 @@
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    labelNotFound: 'Label not found.',
+    labelAlreadyExists: 'Label already exists'
+};
 
 const ALLOWED_INCLUDES = ['count.members'];
 
@@ -53,7 +58,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.labels.labelNotFound')
+                            message: tpl(messages.labelNotFound)
                         }));
                     }
 
@@ -80,7 +85,7 @@ module.exports = {
             return models.Label.add(frame.data.labels[0], frame.options)
                 .catch((error) => {
                     if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                        throw new errors.ValidationError({message: i18n.t('errors.api.labels.labelAlreadyExists')});
+                        throw new errors.ValidationError({message: tpl(messages.labelAlreadyExists)});
                     }
 
                     throw error;
@@ -110,7 +115,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.labels.labelNotFound')
+                            message: tpl(messages.labelNotFound)
                         }));
                     }
 
@@ -149,7 +154,7 @@ module.exports = {
                 .then(() => null)
                 .catch(models.Label.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.labels.labelNotFound')
+                        message: tpl(messages.labelNotFound)
                     }));
                 });
         }
