@@ -39,7 +39,7 @@ export default class ThemeManagementService extends Service {
     }
 
     @task
-    *activateTask(theme) {
+    *activateTask(theme, options) {
         let resultModal = null;
 
         try {
@@ -68,44 +68,48 @@ export default class ThemeManagementService extends Service {
                 this.updatePreviewHtmlTask.perform();
                 this.customThemeSettings.load();
 
-                const {warnings, errors} = activatedTheme;
+                if (!options.skipErrors) {
+                    const {warnings, errors} = activatedTheme;
 
-                if (!isEmpty(warnings) || !isEmpty(errors)) {
-                    resultModal = this.modals.open('modals/design/theme-errors', {
-                        title: 'Activation successful',
-                        canActivate: true,
-                        warnings,
-                        errors
-                    });
+                    if (!isEmpty(warnings) || !isEmpty(errors)) {
+                        resultModal = this.modals.open('modals/design/theme-errors', {
+                            title: 'Activation successful',
+                            canActivate: true,
+                            warnings,
+                            errors
+                        });
 
-                    yield resultModal;
+                        yield resultModal;
+                    }
                 }
             } catch (error) {
-                if (isThemeValidationError(error)) {
-                    let errors = error.payload.errors[0].details.errors;
-                    let fatalErrors = [];
-                    let normalErrors = [];
+                if (!options.skipErrors) {
+                    if (isThemeValidationError(error)) {
+                        let errors = error.payload.errors[0].details.errors;
+                        let fatalErrors = [];
+                        let normalErrors = [];
 
-                    // to have a proper grouping of fatal errors and none fatal, we need to check
-                    // our errors for the fatal property
-                    if (errors.length > 0) {
-                        for (let i = 0; i < errors.length; i += 1) {
-                            if (errors[i].fatal) {
-                                fatalErrors.push(errors[i]);
-                            } else {
-                                normalErrors.push(errors[i]);
+                        // to have a proper grouping of fatal errors and none fatal, we need to check
+                        // our errors for the fatal property
+                        if (errors.length > 0) {
+                            for (let i = 0; i < errors.length; i += 1) {
+                                if (errors[i].fatal) {
+                                    fatalErrors.push(errors[i]);
+                                } else {
+                                    normalErrors.push(errors[i]);
+                                }
                             }
                         }
+
+                        resultModal = this.modals.open('modals/design/theme-errors', {
+                            title: 'Activation failed',
+                            canActivate: false,
+                            errors: normalErrors,
+                            fatalErrors
+                        });
+
+                        yield resultModal;
                     }
-
-                    resultModal = this.modals.open('modals/design/theme-errors', {
-                        title: 'Activation failed',
-                        canActivate: false,
-                        errors: normalErrors,
-                        fatalErrors
-                    });
-
-                    yield resultModal;
                 }
 
                 throw error;

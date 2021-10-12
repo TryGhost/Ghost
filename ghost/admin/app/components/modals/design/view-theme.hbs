@@ -5,10 +5,14 @@
             <span>{{svg-jar "arrow-right"}}</span>
             {{@data.theme.name}}
         </h2>
+
+        <section class="view-actions">
+            <button type="button" class="gh-btn gh-btn-primary" {{on "click" this.installTheme}}><span>Use {{@data.theme.name}}</span></button>
+        </section>
     </GhCanvasHeader>
 
     <section class="view-container">
-        <GhBrowserPreview class="gh-branding-settings-previewcontainer">
+        <GhBrowserPreview class="gh-branding-settings-previewcontainer" @title={{@data.theme.name}}>
             <iframe src={{@data.theme.previewUrl}} class="site-frame gh-branding-settings-preview"></iframe>
         </GhBrowserPreview>
     </section>
