@@ -3,11 +3,15 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const path = require('path');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    error: 'Could not fetch icon dimensions.'
+};
 
 class BlogIcon {
-    constructor({config, i18n, urlUtils, settingsCache, storageUtils}) {
+    constructor({config, urlUtils, settingsCache, storageUtils}) {
         this.config = config;
-        this.i18n = i18n;
         this.urlUtils = urlUtils;
         this.settingsCache = settingsCache;
         this.storageUtils = storageUtils;
@@ -23,10 +27,10 @@ class BlogIcon {
     getIconDimensions(storagePath) {
         return new Promise((resolve, reject) => {
             let dimensions;
-    
+
             try {
                 dimensions = sizeOf(storagePath);
-    
+
                 if (dimensions.images) {
                     dimensions.width = _.maxBy(dimensions.images, function (w) {
                         return w.width;
@@ -35,14 +39,14 @@ class BlogIcon {
                         return h.height;
                     }).height;
                 }
-    
+
                 return resolve({
                     width: dimensions.width,
                     height: dimensions.height
                 });
             } catch (err) {
                 return reject(new errors.ValidationError({
-                    message: this.i18n.t('errors.utils.blogIcon.error', {
+                    message: tpl(messages.error, {
                         file: storagePath,
                         error: err.message
                     })
@@ -60,7 +64,7 @@ class BlogIcon {
      */
     isIcoImageType(icon) {
         const blogIcon = icon || this.settingsCache.get('icon');
-    
+
         return blogIcon.match(/.ico$/i) ? true : false;
     }
 
@@ -73,7 +77,7 @@ class BlogIcon {
      */
     getIconType(icon) {
         const blogIcon = icon || this.settingsCache.get('icon');
-    
+
         return this.isIcoImageType(blogIcon) ? 'x-icon' : 'png';
     }
 
@@ -86,7 +90,7 @@ class BlogIcon {
      */
     getIconUrl(absolut) {
         const blogIcon = this.settingsCache.get('icon');
-    
+
         if (absolut) {
             if (blogIcon) {
                 return this.isIcoImageType(blogIcon) ? this.urlUtils.urlFor({relativeUrl: '/favicon.ico'}, true) : this.urlUtils.urlFor({relativeUrl: '/favicon.png'}, true);
@@ -111,7 +115,7 @@ class BlogIcon {
      */
     getIconPath() {
         const blogIcon = this.settingsCache.get('icon');
-    
+
         if (blogIcon) {
             return this.storageUtils.getLocalFileStoragePath(blogIcon);
         } else {

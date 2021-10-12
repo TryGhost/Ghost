@@ -1,12 +1,13 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const i18n = require('../../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const {NotFoundError, ValidationError, BadRequestError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 
 const messages = {
     invalidEmailReceived: 'Please send a valid email',
-    invalidEmailTypeReceived: 'Invalid email type received'
+    invalidEmailTypeReceived: 'Invalid email type received',
+    problemFindingSetting: 'Problem finding setting: {key}'
 };
 
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
         // @NOTE: was removed https://github.com/TryGhost/Ghost/issues/10373
         if (frame.options.key === 'ghost_head' || frame.options.key === 'ghost_foot') {
             return Promise.reject(new NotFoundError({
-                message: i18n.t('errors.api.settings.problemFindingSetting', {
+                message: tpl(messages.problemFindingSetting, {
                     key: frame.options.key
                 })
             }));
@@ -28,7 +29,7 @@ module.exports = {
             if (setting.key === 'ghost_head' || setting.key === 'ghost_foot') {
                 // @NOTE: was removed https://github.com/TryGhost/Ghost/issues/10373
                 errors.push(new NotFoundError({
-                    message: i18n.t('errors.api.settings.problemFindingSetting', {
+                    message: tpl(messages.problemFindingSetting, {
                         key: setting.key
                     })
                 }));

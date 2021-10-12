@@ -7,7 +7,25 @@ const models = require('../../models');
 const membersService = require('../../services/members');
 
 const settingsCache = require('../../../shared/settings-cache');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    memberNotFound: 'Member not found.',
+    stripeNotConnected: {
+        message: 'Missing Stripe connection.',
+        context: 'Attempting to import members with Stripe data when there is no Stripe account connected.',
+        help: 'You need to connect to Stripe to import Stripe customers. '
+    },
+    memberAlreadyExists: {
+        message: 'Member already exists',
+        context: 'Attempting to {action} member with existing email address.'
+    },
+    stripeCustomerNotFound: {
+        context: 'Missing Stripe customer.',
+        help: 'Make sure you’re connected to the correct Stripe Account.'
+    },
+    resourceNotFound: '{resource} not found.'
+};
 
 const allowedIncludes = ['email_recipients'];
 
@@ -80,7 +98,7 @@ module.exports = {
 
             if (!model) {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.members.memberNotFound')
+                    message: tpl(messages.memberNotFound)
                 });
             }
 
@@ -115,9 +133,9 @@ module.exports = {
                     const property = frame.data.members[0].comped ? 'comped' : 'stripe_customer_id';
 
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.api.members.stripeNotConnected.message'),
-                        context: i18n.t('errors.api.members.stripeNotConnected.context'),
-                        help: i18n.t('errors.api.members.stripeNotConnected.help'),
+                        message: tpl(messages.stripeNotConnected.message),
+                        context: tpl(messages.stripeNotConnected.context),
+                        help: tpl(messages.stripeNotConnected.help),
                         property
                     });
                 }
@@ -143,8 +161,8 @@ module.exports = {
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.models.member.memberAlreadyExists.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExists.context', {
+                        message: tpl(messages.memberAlreadyExists.message),
+                        context: tpl(messages.memberAlreadyExists.context, {
                             action: 'add'
                         })
                     });
@@ -157,8 +175,8 @@ module.exports = {
                 if (member && isStripeLinkingError) {
                     if (error.message.indexOf('customer') && error.code === 'resource_missing') {
                         error.message = `Member not imported. ${error.message}`;
-                        error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
-                        error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
+                        error.context = tpl(messages.stripeCustomerNotFound.context);
+                        error.help = tpl(messages.stripeCustomerNotFound.help);
                     }
 
                     await membersService.api.members.destroy({
@@ -208,8 +226,8 @@ module.exports = {
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.models.member.memberAlreadyExists.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExists.context', {
+                        message: tpl(messages.memberAlreadyExists.message),
+                        context: tpl(messages.memberAlreadyExists.context, {
                             action: 'edit'
                         })
                     });
@@ -261,7 +279,7 @@ module.exports = {
             });
             if (!model) {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.members.memberNotFound')
+                    message: tpl(messages.memberNotFound)
                 });
             }
 
@@ -292,7 +310,7 @@ module.exports = {
                 id: frame.options.id
             }, frame.options)).catch(models.Member.NotFoundError, () => {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.resource.resourceNotFound', {
+                    message: tpl(messages.resourceNotFound, {
                         resource: 'Member'
                     })
                 });
