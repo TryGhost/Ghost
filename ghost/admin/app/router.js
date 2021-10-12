@@ -49,7 +49,9 @@ Router.map(function () {
     this.route('settings.code-injection', {path: '/settings/code-injection'});
 
     this.route('settings.design', {path: '/settings/design'}, function () {
-        this.route('change-theme');
+        this.route('change-theme', function () {
+            this.route('view', {path: ':theme_name'});
+        });
     });
 
     // this.route('settings.products', {path: '/settings/products'});

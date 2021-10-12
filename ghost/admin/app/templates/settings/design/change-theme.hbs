@@ -17,19 +17,15 @@
         <div class="gh-theme-directory-container">
             <div class="theme-directory">
                 {{#each this.marketplaceThemes as |theme|}}
-                    <a class="td-item" href={{theme.url}} target="_blank" rel="noopener noreferrer">
+                    <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item">
                         <div class="td-item-screenshot relative">
                             <img style="object-fit:contain;" src={{theme.image}} alt="{{theme.name}} Theme" />
-                            <div class="td-item-overlay">
-                                <LinkTo class="td-item-action gh-btn gh-btn-black mb4" @route="settings.theme.install" @query={{hash source="github" ref=theme.ref}}><span>Install</span></LinkTo>
-                                <a href={{theme.previewUrl}} class="td-item-action gh-btn" target="_blank" rel="noopener"><span>Preview</span></a>
-                            </div>
                         </div>
                         <div class="td-item-desc">
                             <div>{{theme.name}}</div>
                             <span>• {{theme.category}}</span>
                         </div>
-                    </a>
+                    </LinkTo>
                 {{/each}}
             </div>
         </div>
