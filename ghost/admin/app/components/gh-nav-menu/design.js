@@ -14,6 +14,8 @@ export default class DesignMenuComponent extends Component {
 
     @tracked openSections = new TrackedSet();
 
+    KNOWN_GROUPS = ['homepage', 'post'];
+
     constructor() {
         super(...arguments);
         this.fetchThemeSettingsTask.perform();
@@ -25,11 +27,11 @@ export default class DesignMenuComponent extends Component {
     }
 
     get siteWideSettings() {
-        return this.customThemeSettings.settings.filter(setting => !setting.group);
+        return this.customThemeSettings.settings.filter(setting => !this.KNOWN_GROUPS.includes(setting.group));
     }
 
     get homepageSettings() {
-        return this.customThemeSettings.settings.filter(setting => setting.group === 'home');
+        return this.customThemeSettings.settings.filter(setting => setting.group === 'homepage');
     }
 
     get postPageSettings() {
