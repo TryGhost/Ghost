@@ -56,7 +56,7 @@ export default Service.extend({
     multipleProducts: feature('multipleProducts'),
     offers: feature('offers', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
-    customThemeSettings: feature('customThemeSettings', {developer: true}),
+    customThemeSettings: feature('customThemeSettings', {developer: true, requires: ['matchHelper']}),
     membersActivity: feature('membersActivity', {developer: true}),
 
     _user: null,
@@ -95,6 +95,12 @@ export default Service.extend({
 
         // set the new key value for either the labs property or the accessibility property
         set(featureObject, key, value);
+
+        if (options.requires && value === true) {
+            options.requires.forEach((flag) => {
+                set(featureObject, flag, true);
+            });
+        }
 
         // update the 'labs' or 'accessibility' key of the model
         model.set(serviceProperty, JSON.stringify(featureObject));
