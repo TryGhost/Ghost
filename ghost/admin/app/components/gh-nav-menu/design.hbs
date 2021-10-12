@@ -5,8 +5,8 @@
     <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
         <div class="gh-nav-list gh-nav-main">
             <button class="gh-nav-design-tab" type="button" {{on "click" (fn this.toggleSection "brand")}}>
-                {{svg-jar "paintbrush" class="w4"}}Brand
-                {{!-- <span class="db">{{svg-jar (if (set-has this.openSections "brand") "arrow-up-small" "arrow-down-small") class="w4"}}</span> --}}
+                <span class="gh-nav-button-expand">{{svg-jar (if (set-has this.openSections "brand") "arrow-down-stroke" "arrow-right-stroke")}}</span>
+                {{svg-jar "paintbrush"}}Brand
             </button>
             {{#if (set-has this.openSections "brand")}}
                 <div class="gh-nav-design-settings">
@@ -19,8 +19,8 @@
             {{#if this.themeSettings}}
                 {{#each this.settingGroups as |group|}}
                     <button class="gh-nav-design-tab" type="button" {{on "click" (fn this.toggleSection group.key)}}>
-                        {{svg-jar group.icon class="w4"}} {{group.name}}
-                        {{!-- <span class="db">{{svg-jar (if (set-has this.openSections group.key) "arrow-up-small" "arrow-down-small") class="w4"}}</span> --}}
+                        <span class="gh-nav-button-expand">{{svg-jar (if (set-has this.openSections group.key) "arrow-down-stroke" "arrow-right-stroke")}}</span>
+                        {{svg-jar group.icon}} {{group.name}}
                     </button>
 
                     {{#if (set-has this.openSections group.key)}}
