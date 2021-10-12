@@ -8,15 +8,18 @@ import {run} from '@ember/runloop';
 import {schedule} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KoenigCardEmailCtaComponent extends Component {
     @service config;
+    @service store;
     @service membersUtils;
     @service ui;
 
     @tracked buttonFocused = false;
     @tracked contentFocused = false;
+    @tracked offers = null;
 
     buttonTextInputId = 'button-text-input-' + guidFor(this);
     urlInputId = 'url-input-' + guidFor(this);
@@ -77,6 +80,15 @@ export default class KoenigCardEmailCtaComponent extends Component {
             }]);
         }
 
+        if (this.offers) {
+            this.offers.forEach((offer) => {
+                urls.push(...[{
+                    name: `Offer - ${offer.name}`,
+                    url: this.config.getSiteUrl(offer.code)
+                }]);
+            });
+        }
+
         return urls;
     }
 
@@ -96,6 +108,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
                 this._updatePayloadAttr(key, value);
             }
         });
+        this.fetchOffersTask.perform();
     }
 
     // required for snippet rects to be calculated - editor reaches in to component,
@@ -189,6 +202,11 @@ export default class KoenigCardEmailCtaComponent extends Component {
     focusElement(selector, event) {
         event.preventDefault();
         document.querySelector(selector)?.focus();
+    }
+
+    @task({restartable: true})
+    *fetchOffersTask() {
+        this.offers = yield this.store.query('offer', {limit: 'all'});
     }
 
     _updatePayloadAttr(attr, value) {
