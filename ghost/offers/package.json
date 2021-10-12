@@ -26,6 +26,7 @@
     "sinon": "11.1.2"
   },
   "dependencies": {
+    "@nexes/mongo-utils": "^0.3.1",
     "@tryghost/string": "^0.1.20"
   }
 }
