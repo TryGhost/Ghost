@@ -22,10 +22,6 @@ export default class ThemeManagementService extends Service {
     async upload(event) {
         event?.preventDefault();
 
-        if (this.limit.limiter.isLimited('customThemes')) {
-            return this.modals.open('modals/limits/custom-theme');
-        }
-
         try {
             // Sending a bad string to make sure it fails (empty string isn't valid)
             await this.limit.limiter.errorIfWouldGoOverLimit('customThemes', {value: '.'});
