@@ -1,6 +1,7 @@
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('../domain/events/OfferCodeChange');
 const Offer = require('../domain/models/Offer');
+const OfferStatus = require('../domain/models/OfferStatus');
 
 /**
  * @typedef {object} OfferRepositoryOptions
@@ -25,6 +26,7 @@ function toDomain(json) {
         duration: json.duration,
         duration_in_months: json.duration_in_months,
         stripe_coupon_id: json.stripe_coupon_id,
+        status: json.active ? 'active' : 'archived',
         tier: {
             id: json.product.id,
             name: json.product.name
@@ -125,7 +127,8 @@ class OfferRepository {
             product_id: offer.tier.id,
             duration: offer.duration.value.type,
             duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
-            currency: offer.currency ? offer.currency.value : null
+            currency: offer.currency ? offer.currency.value : null,
+            active: offer.status.equals(OfferStatus.create('active'))
         });
 
         if (offer.codeChanged || offer.isNew) {
