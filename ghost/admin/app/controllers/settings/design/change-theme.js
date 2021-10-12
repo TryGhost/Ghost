@@ -1,8 +1,13 @@
 import Controller from '@ember/controller';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 export default class ChangeThemeController extends Controller {
+    @service store;
     @service themeManagement;
+
+    @tracked showAdvanced = false;
 
     marketplaceThemes = [{
         name: 'Edition',
@@ -37,4 +42,13 @@ export default class ChangeThemeController extends Controller {
         image: 'assets/img/themes/Ease.jpg',
         shortImage: 'assets/img/themes/Ease-cut.jpg'
     }]
+
+    get themes() {
+        return this.store.peekAll('theme');
+    }
+
+    @action
+    toggleAdvanced() {
+        this.showAdvanced = !this.showAdvanced;
+    }
 }
