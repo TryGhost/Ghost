@@ -1,8 +1,12 @@
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const ALLOWED_INCLUDES = ['count.posts'];
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    notFound: 'Author not found.'
+};
 
 module.exports = {
     docName: 'authors',
@@ -54,7 +58,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.authors.notFound')
+                            message: tpl(messages.notFound)
                         }));
                     }
 
