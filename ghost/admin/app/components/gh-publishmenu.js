@@ -199,6 +199,10 @@ export default Component.extend({
         this._postStatus = this.postStatus;
         this.setDefaultSendEmailWhenPublished();
         this.checkIsSendingEmailLimitedTask.perform();
+
+        if (this.post.isPage) {
+            this.set('distributionAction', 'publish');
+        }
     },
 
     actions: {
