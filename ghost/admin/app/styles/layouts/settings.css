@@ -1410,13 +1410,13 @@ p.theme-validation-details {
     fill: var(--black);
 }
 
-.gh-nav-design .gh-nav-list button,
-.gh-nav-design .gh-nav-bottom a {
+.gh-nav-design-tab {
     display: flex;
     align-items: center;
     box-sizing: border-box;
     width: 100%;
     margin: 0;
+    padding: 7px var(--mainmenu-padding) 7px calc(var(--mainmenu-padding) + 7px);
     color: var(--darkgrey-l1);
     font-weight: 400;
     font-size: 1.45rem;
@@ -1424,8 +1424,8 @@ p.theme-validation-details {
     transition: none;
 }
 
-.gh-nav-design .gh-nav-list button {
-    padding: 7px var(--mainmenu-padding) 7px calc(var(--mainmenu-padding) + 7px);
+.gh-nav-bottom .gh-nav-design-tab {
+    padding: 0;
 }
 
 .gh-nav-design .gh-nav-bottom svg {
@@ -1440,6 +1440,78 @@ p.theme-validation-details {
 
 .gh-nav-design-settings {
     padding: 24px var(--mainmenu-padding) 32px calc(var(--mainmenu-padding) + 7px);
+}
+
+.gh-nav-design .gh-stack-item {
+    flex-direction: column;
+}
+
+.gh-nav-design .gh-setting-title {
+    font-size: 1.45rem;
+}
+
+.gh-nav-design .gh-setting-action {
+    align-self: flex-start;
+}
+
+.gh-nav-design .input-color input {
+    position: relative;
+    height: 30px;
+    width: 102px;
+    padding: 3px 4px 3px 44px;
+    font-size: 1.3rem;
+}
+
+.gh-nav-design .input-color::after {
+    top: 5px;
+    left: 34px;
+}
+
+.gh-nav-design .color-box-container {
+    height: 26px;
+    width: 26px;
+    position: absolute;
+    overflow: hidden;
+    top: 2px;
+    left: 2px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.gh-nav-design .color-box-container .color-picker {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    width: 50px;
+    height: 50px;
+}
+
+.gh-nav-design .gh-setting-action-largeimg-delete,
+.gh-nav-design .gh-setting-action-smallimg-delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 5px;
+    margin: 0;
+    border-radius: 3px;
+    opacity: 0;
+}
+
+.gh-nav-design .gh-setting-action-largeimg-delete:hover,
+.gh-nav-design .gh-setting-action-smallimg-delete:hover {
+    background: var(--red);
+    border-color: transparent;
+}
+
+.gh-nav-design .gh-setting-action-largeimg-delete svg,
+.gh-nav-design .gh-setting-action-smallimg-delete svg {
+    margin: 0;
 }
 
 .gh-theme-setting-title {
