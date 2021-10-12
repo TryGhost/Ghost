@@ -84,7 +84,7 @@
         >
         <div class="gh-setting-content">
             <div class="gh-setting-title">Publication icon</div>
-            <div class="gh-setting-desc">A square, social icon used in the UI of your publication, at least 60x60px</div>
+            <div class="gh-setting-desc">A square, social icon, at least 60x60px</div>
             {{#each uploader.errors as |error|}}
                 <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
             {{/each}}
@@ -119,7 +119,7 @@
         >
         <div>
             <div class="gh-setting-title">Publication logo</div>
-            <div class="gh-setting-desc mb3">The primary logo for your brand displayed across your theme, should be transparent and at least 600px x 72px</div>
+            <div class="gh-setting-desc mb3">The primary logo, should be transparent and at least 600x72px</div>
 
             <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg flex flex-column">
                 {{#each uploader.errors as |error|}}

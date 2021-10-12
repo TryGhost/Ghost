@@ -4,7 +4,7 @@
 <section class="gh-nav-body gh-nav-design">
     <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
         <div class="gh-nav-list gh-nav-main">
-            <button type="button" {{on "click" (fn this.toggleSection "brand")}}>
+            <button class="gh-nav-design-tab" type="button" {{on "click" (fn this.toggleSection "brand")}}>
                 {{svg-jar "paintbrush" class="w4"}}Brand
                 {{!-- <span class="db">{{svg-jar (if (set-has this.openSections "brand") "arrow-up-small" "arrow-down-small") class="w4"}}</span> --}}
             </button>
@@ -18,7 +18,7 @@
 
             {{#if this.themeSettings}}
                 {{#each this.settingGroups as |group|}}
-                    <button type="button" {{on "click" (fn this.toggleSection group.key)}}>
+                    <button class="gh-nav-design-tab" type="button" {{on "click" (fn this.toggleSection group.key)}}>
                         {{svg-jar group.icon class="w4"}} {{group.name}}
                         {{!-- <span class="db">{{svg-jar (if (set-has this.openSections group.key) "arrow-up-small" "arrow-down-small") class="w4"}}</span> --}}
                     </button>
@@ -37,6 +37,6 @@
     </div>
 
     <div class="gh-nav-bottom">
-        <LinkTo @route="settings.design.change-theme">{{svg-jar "settings"}}Change theme</LinkTo>
+        <LinkTo class="gh-nav-design-tab" @route="settings.design.change-theme">{{svg-jar "settings"}}Change theme</LinkTo>
     </div>
 </section>
