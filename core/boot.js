@@ -117,10 +117,11 @@ async function initServicesForFrontend() {
     debug('End: Routing Settings');
 
     debug('Begin: Themes');
-    const themeService = require('./server/services/themes');
-    await themeService.init();
+    // customThemSettingsService.api must be initialized before any theme activation occurs
     const customThemeSettingsService = require('./server/services/custom-theme-settings');
     customThemeSettingsService.init();
+    const themeService = require('./server/services/themes');
+    await themeService.init();
     debug('End: Themes');
 
     debug('End: initServicesForFrontend');

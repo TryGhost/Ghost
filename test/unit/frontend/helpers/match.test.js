@@ -148,41 +148,4 @@ describe('Match helper', function () {
             shouldCompileToExpected(templateString, {title}, expected);
         });
     });
-
-    // By using match as a block helper, instead of returning true or false, the matching template is executed
-    // We've already tested all the logic of the matches, for the block helpers we only need to test that the correct template is executed
-    describe('{{#match}} (block)', function () {
-        it('Executes the first block when match is true', function () {
-            const templateString = '{{#match title "=" "Hello World"}}case a{{else match title "=" "Hello World!"}}case b{{else}}case c{{/match}}';
-            const hash = {
-                title: 'Hello World'
-            };
-
-            const expected = 'case a';
-
-            shouldCompileToExpected(templateString, hash, expected);
-        });
-
-        it('Executes secondary blocks correctly', function () {
-            const templateString = '{{#match title "=" "Hello World"}}case a{{else match title "=" "Hello World!"}}case b{{else}}case c{{/match}}';
-            const hash = {
-                title: 'Hello World!'
-            };
-
-            const expected = 'case b';
-
-            shouldCompileToExpected(templateString, hash, expected);
-        });
-
-        it('Executes the else block when match is false', function () {
-            const templateString = '{{#match title "=" "Hello World"}}case a{{else match title "=" "Hello World!"}}case b{{else}}case c{{/match}}';
-            const hash = {
-                title: 'Hello'
-            };
-
-            const expected = 'case c';
-
-            shouldCompileToExpected(templateString, hash, expected);
-        });
-    });
 });
