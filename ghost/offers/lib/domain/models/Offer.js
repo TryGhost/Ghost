@@ -10,6 +10,7 @@ const OfferCadence = require('./OfferCadence');
 const OfferType = require('./OfferType');
 const OfferDuration = require('./OfferDuration');
 const OfferCurrency = require('./OfferCurrency');
+const OfferStatus = require('./OfferStatus');
 
 /**
  * @typedef {object} OfferProps
@@ -24,6 +25,7 @@ const OfferCurrency = require('./OfferCurrency');
  * @prop {OfferDuration} duration
  * @prop {OfferCurrency} [currency]
  * @prop {string} [stripe_coupon_id]
+ * @prop {OfferStatus} status
  * @prop {OfferTier} tier
  */
 
@@ -41,6 +43,7 @@ const OfferCurrency = require('./OfferCurrency');
  * @prop {number} duration_in_months
  * @prop {string} currency
  * @prop {string} [stripe_coupon_id]
+ * @prop {string} status
  * @prop {TierProps|OfferTier} tier
  */
 
@@ -115,6 +118,14 @@ class Offer {
 
     get duration() {
         return this.props.duration;
+    }
+
+    get status() {
+        return this.props.status;
+    }
+
+    set status(value) {
+        this.props.status = value;
     }
 
     get oldCode() {
@@ -248,6 +259,7 @@ class Offer {
         const type = OfferType.create(data.type);
         const cadence = OfferCadence.create(data.cadence);
         const duration = OfferDuration.create(data.duration, data.duration_in_months);
+        const status = OfferStatus.create(data.status);
 
         if (cadence.value === 'year' && duration.value.type === 'repeating') {
             throw new errors.InvalidOfferDuration({
@@ -306,7 +318,8 @@ class Offer {
             duration,
             currency,
             tier,
-            stripe_coupon_id: couponId
+            stripe_coupon_id: couponId,
+            status
         }, {isNew});
     }
 }
