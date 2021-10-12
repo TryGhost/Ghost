@@ -13,7 +13,8 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v2
         with:
-          node-version: '14.16.1'
+          node-version: "14.16.1"
+          cache: npm
 
       - name: Set up Git
         run: |

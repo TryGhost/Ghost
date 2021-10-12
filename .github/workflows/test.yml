@@ -1,13 +1,13 @@
 name: Test Suite
 on:
-  pull_request:
+  pull_request: null
   push:
     branches:
       - main
-      - 'v4.*'
+      - "v4.*"
       - 3.x
       - 2.x
-      - 'renovate/*'
+      - "renovate/*"
 env:
   FORCE_COLOR: 1
 jobs:
@@ -19,7 +19,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '14.16.1'
+          node-version: "14.16.1"
+          cache: npm
       - run: yarn
       - run: yarn lint
       - uses: daniellockyer/action-slack-build@master
@@ -34,7 +35,7 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
-        DB: ['sqlite3', 'mysql']
+        DB: ["sqlite3", "mysql"]
     env:
       database__client: ${{ matrix.DB }}
       database__connection__filename: /dev/shm/ghost-test.db
@@ -50,7 +51,8 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v2
         with:
-          node-version: '14.16.1'
+          node-version: "14.16.1"
+          cache: npm
 
       - name: Shutdown MySQL
         run: sudo service mysql stop
@@ -59,9 +61,9 @@ jobs:
       - uses: mirromutth/mysql-action@v1.1
         if: matrix.DB == 'mysql'
         with:
-          mysql version: '5.7'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
+          mysql version: "5.7"
+          mysql database: "ghost_testing"
+          mysql root password: "root"
 
       - run: yarn
       - run: |
@@ -76,7 +78,7 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
-        node: [ '12.22.1', '14.16.1' ]
+        node: ["12.22.1", "14.16.1"]
         env:
           - DB: sqlite3
             NODE_ENV: testing
@@ -92,6 +94,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
+          cache: npm
 
       - name: Shutdown MySQL
         run: sudo service mysql stop
@@ -100,9 +103,9 @@ jobs:
       - uses: mirromutth/mysql-action@v1.1
         if: matrix.env.DB == 'mysql'
         with:
-          mysql version: '5.7'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
+          mysql version: "5.7"
+          mysql database: "ghost_testing"
+          mysql root password: "root"
 
       - run: yarn
       - run: yarn test:e2e
@@ -134,7 +137,8 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v2
         with:
-          node-version: '12.22.1'
+          node-version: "12.22.1"
+          cache: npm
       - run: npm install -g ghost-cli@latest
       - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
 
@@ -150,18 +154,17 @@ jobs:
           DIR=$(mktemp -d)
           ghost install local -d $DIR
           ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+        #- name: Update from latest v1
+        #run: |
+        #DIR=$(mktemp -d)
+        #ghost install v1 --local -d $DIR
+        #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
-      #- name: Update from latest v1
-          #run: |
-          #DIR=$(mktemp -d)
-          #ghost install v1 --local -d $DIR
-          #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
-
-      #- name: Update from latest v2
-          #run: |
-          #DIR=$(mktemp -d)
-          #ghost install v2 --local -d $DIR
-          #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+        #- name: Update from latest v2
+        #run: |
+        #DIR=$(mktemp -d)
+        #ghost install v2 --local -d $DIR
+        #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
       - name: Update from latest v3
         run: |
