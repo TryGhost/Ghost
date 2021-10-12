@@ -2,10 +2,15 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const {BadRequestError, NoPermissionError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings');
 const membersService = require('../../services/members');
+
+const messages = {
+    error: 'Failed to send email.',
+    accessCoreSettingFromExtReq: 'Attempted to access core setting from external request'
+};
 
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
 
@@ -109,7 +114,7 @@ module.exports = {
             } catch (err) {
                 throw new BadRequestError({
                     err,
-                    message: i18n.t('errors.mail.failedSendingEmail.error')
+                    message: tpl(messages.error)
                 });
             }
         }
@@ -162,7 +167,7 @@ module.exports = {
                 const firstCoreSetting = frame.data.settings.find(setting => setting.group === 'core');
                 if (firstCoreSetting) {
                     throw new NoPermissionError({
-                        message: i18n.t('errors.api.settings.accessCoreSettingFromExtReq')
+                        message: tpl(messages.accessCoreSettingFromExtReq)
                     });
                 }
             }

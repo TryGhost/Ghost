@@ -1,7 +1,10 @@
 const models = require('../../models');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
+const messages = {
+    couldNotGenerateSlug: 'Could not generate slug.'
+};
 const allowedTypes = {
     post: models.Post,
     tag: models.Tag,
@@ -36,9 +39,7 @@ module.exports = {
             return models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all'})
                 .then((slug) => {
                     if (!slug) {
-                        return Promise.reject(new errors.GhostError({
-                            message: i18n.t('errors.api.slugs.couldNotGenerateSlug')
-                        }));
+                        return Promise.reject(new errors.GhostError({message: tpl(messages.couldNotGenerateSlug)}));
                     }
                     return slug;
                 });
