@@ -10,6 +10,12 @@ export default class ModalsService extends EPMModalsService {
         'modals/confirm-unsaved-changes': {
             className: 'fullscreen-modal-action fullscreen-modal-wide'
         },
+        'modals/design/confirm-delete-theme': {
+            className: 'fullscreen-modal-action fullscreen-modal-wide'
+        },
+        'modals/design/theme-errors': {
+            className: 'fullscreen-modal-action fullscreen-modal-wide'
+        },
         'modals/design/upload-theme': {
             className: 'fullscreen-modal-action fullscreen-modal-wide',
             beforeClose: () => {
@@ -18,11 +24,9 @@ export default class ModalsService extends EPMModalsService {
                 }
             }
         },
-        'modals/design/confirm-delete-theme': {
-            className: 'fullscreen-modal-action fullscreen-modal-wide'
-        },
-        'modals/design/theme-errors': {
-            className: 'fullscreen-modal-action fullscreen-modal-wide'
+        'modals/design/view-theme': {
+            className: 'fullscreen-modal-total-overlay',
+            omitBackdrop: true
         },
         'modals/limits/custom-theme': {
             className: 'fullscreen-modal-action fullscreen-modal-wide'
