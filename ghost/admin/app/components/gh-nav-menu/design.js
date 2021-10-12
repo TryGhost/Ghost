@@ -14,7 +14,15 @@ export default class DesignMenuComponent extends Component {
 
     @tracked openSections = new TrackedSet();
 
-    KNOWN_GROUPS = ['homepage', 'post'];
+    KNOWN_GROUPS = [{
+        key: 'homepage',
+        name: 'Homepage',
+        icon: 'house'
+    }, {
+        key: 'post',
+        name: 'Post',
+        icon: 'house'
+    }];
 
     constructor() {
         super(...arguments);
@@ -26,16 +34,23 @@ export default class DesignMenuComponent extends Component {
         return this.customThemeSettings.settings;
     }
 
-    get siteWideSettings() {
-        return this.customThemeSettings.settings.filter(setting => !this.KNOWN_GROUPS.includes(setting.group));
-    }
+    get settingGroups() {
+        const groupKeys = this.KNOWN_GROUPS.map(g => g.key);
 
-    get homepageSettings() {
-        return this.customThemeSettings.settings.filter(setting => setting.group === 'homepage');
-    }
+        const groups = [{
+            key: 'site-wide',
+            name: 'Site-wide',
+            icon: 'house',
+            settings: this.themeSettings.filter(setting => !groupKeys.includes(setting.group))
+        }];
 
-    get postPageSettings() {
-        return this.customThemeSettings.settings.filter(setting => setting.group === 'post');
+        this.KNOWN_GROUPS.forEach((knownGroup) => {
+            groups.push(Object.assign({}, knownGroup, {
+                settings: this.themeSettings.filter(setting => setting.group === knownGroup.key)
+            }));
+        });
+
+        return groups;
     }
 
     @action
