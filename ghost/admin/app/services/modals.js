@@ -13,6 +13,9 @@ export default class ModalsService extends EPMModalsService {
         'modals/design/confirm-delete-theme': {
             className: 'fullscreen-modal-action fullscreen-modal-wide'
         },
+        'modals/design/install-theme': {
+            className: 'fullscreen-modal-action fullscreen-modal-wide'
+        },
         'modals/design/theme-errors': {
             className: 'fullscreen-modal-action fullscreen-modal-wide'
         },
