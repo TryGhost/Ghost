@@ -1,7 +1,35 @@
+const {flowRight} = require('lodash');
+const {mapKeyValues, mapQuery} = require('@nexes/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('../domain/events/OfferCodeChange');
 const Offer = require('../domain/models/Offer');
 const OfferStatus = require('../domain/models/OfferStatus');
+
+const statusTransformer = mapKeyValues({
+    key: {
+        from: 'status',
+        to: 'active'
+    },
+    values: [{
+        from: 'active',
+        to: true
+    }, {
+        from: 'archived',
+        to: false
+    }]
+});
+
+const rejectNonStatusTransformer = input => mapQuery(input, function (value, key) {
+    if (key !== 'status') {
+        return;
+    }
+
+    return {
+        [key]: value
+    };
+});
+
+const mongoTransformer = flowRight(statusTransformer, rejectNonStatusTransformer);
 
 /**
  * @typedef {object} BaseOptions
@@ -110,6 +138,7 @@ class OfferRepository {
     async getAll(options) {
         const models = await this.OfferModel.findAll({
             ...options,
+            mongoTransformer,
             withRelated: ['product']
         });
         return Promise.all(models.toJSON().map(toDomain).map(Offer.create));
