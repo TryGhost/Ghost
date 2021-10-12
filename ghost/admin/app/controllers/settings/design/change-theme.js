@@ -8,6 +8,7 @@ export default class ChangeThemeController extends Controller {
     @service themeManagement;
 
     @tracked showAdvanced = false;
+    @tracked themes = this.store.peekAll('theme');
 
     marketplaceThemes = [{
         name: 'Edition',
@@ -42,10 +43,6 @@ export default class ChangeThemeController extends Controller {
         image: 'assets/img/themes/Ease.jpg',
         shortImage: 'assets/img/themes/Ease-cut.jpg'
     }]
-
-    get themes() {
-        return this.store.peekAll('theme');
-    }
 
     @action
     toggleAdvanced() {
