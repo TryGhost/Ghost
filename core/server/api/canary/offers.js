@@ -27,6 +27,9 @@ module.exports = {
     edit: {
         options: ['id'],
         permissions: true,
+        headers: {
+            cacheInvalidate: true
+        },
         async query(frame) {
             const offer = await offersService.api.updateOffer({
                 ...frame.data.offers[0],
@@ -40,6 +43,9 @@ module.exports = {
 
     add: {
         permissions: true,
+        headers: {
+            cacheInvalidate: true
+        },
         async query(frame) {
             const offer = await offersService.api.createOffer(frame.data.offers[0]);
             frame.response = {
