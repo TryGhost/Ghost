@@ -386,6 +386,7 @@ module.exports = {
     },
     offers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        active: {type: 'boolean', nullable: false, defaultTo: true},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         code: {type: 'string', maxlength: 191, nullable: false, unique: true},
         product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id'},
