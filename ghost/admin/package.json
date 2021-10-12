@@ -27,7 +27,7 @@
   "devDependencies": {
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.0.0",
-    "@ember/render-modifiers": "1.0.2",
+    "@ember/render-modifiers": "2.0.0",
     "@glimmer/component": "1.0.4",
     "@html-next/vertical-collection": "2.0.0",
     "@nexes/nql-lang": "0.0.1",
