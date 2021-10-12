@@ -1395,6 +1395,7 @@ p.theme-validation-details {
 .gh-nav-menu-title {
     display: flex;
     align-items: center;
+    padding-left: 7px;
     overflow: hidden;
     color: var(--black);
     font-size: 1.5rem;
@@ -1407,6 +1408,38 @@ p.theme-validation-details {
     height: 16px;
     margin-right: 17px;
     fill: var(--black);
+}
+
+.gh-nav-design .gh-nav-list button,
+.gh-nav-design .gh-nav-bottom a {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    color: var(--darkgrey-l1);
+    font-weight: 400;
+    font-size: 1.45rem;
+    border-radius: 0;
+    transition: none;
+}
+
+.gh-nav-design .gh-nav-list button {
+    padding: 7px var(--mainmenu-padding) 7px calc(var(--mainmenu-padding) + 7px);
+}
+
+.gh-nav-design .gh-nav-bottom svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 17px;
+}
+
+.gh-nav-design .gh-nav-bottom svg path {
+    stroke: currentColor;
+}
+
+.gh-nav-design-settings {
+    padding: 24px var(--mainmenu-padding) 32px calc(var(--mainmenu-padding) + 7px);
 }
 
 .gh-theme-setting-title {
