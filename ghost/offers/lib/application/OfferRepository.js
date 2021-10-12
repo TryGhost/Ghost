@@ -4,8 +4,14 @@ const Offer = require('../domain/models/Offer');
 const OfferStatus = require('../domain/models/OfferStatus');
 
 /**
- * @typedef {object} OfferRepositoryOptions
+ * @typedef {object} BaseOptions
  * @prop {import('knex').Transaction} transacting
+ */
+
+/**
+ * @extends BaseOptions
+ * @typedef {object} ListOptions
+ * @prop {string} filter
  */
 
 /**
@@ -57,7 +63,7 @@ class OfferRepository {
 
     /**
      * @param {string} name
-     * @param {OfferRepositoryOptions} [options]
+     * @param {BaseOptions} [options]
      * @returns {Promise<boolean>}
      */
     async existsByName(name, options) {
@@ -70,7 +76,7 @@ class OfferRepository {
 
     /**
      * @param {string} code
-     * @param {OfferRepositoryOptions} [options]
+     * @param {BaseOptions} [options]
      * @returns {Promise<boolean>}
      */
     async existsByCode(code, options) {
@@ -83,7 +89,7 @@ class OfferRepository {
 
     /**
      * @param {string} id
-     * @param {OfferRepositoryOptions} [options]
+     * @param {BaseOptions} [options]
      * @returns {Promise<Offer>}
      */
     async getById(id, options) {
@@ -98,7 +104,7 @@ class OfferRepository {
     }
 
     /**
-     * @param {OfferRepositoryOptions} [options]
+     * @param {ListOptions} options
      * @returns {Promise<Offer[]>}
      */
     async getAll(options) {
@@ -111,7 +117,7 @@ class OfferRepository {
 
     /**
      * @param {Offer} offer
-     * @param {OfferRepositoryOptions} [options]
+     * @param {BaseOptions} [options]
      * @returns {Promise<void>}
      */
     async save(offer, options) {
