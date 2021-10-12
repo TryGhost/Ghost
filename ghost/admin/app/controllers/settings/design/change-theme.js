@@ -14,7 +14,7 @@ export default class ChangeThemeController extends Controller {
         name: 'Edition',
         category: 'Newsletter',
         url: 'https://github.com/TryGhost/Edition',
-        previewUrl: 'https://ghost.org/themes/edition',
+        previewUrl: 'https://edition.ghost.io/',
         ref: 'TryGhost/Edition',
         image: 'assets/img/themes/Edition.jpg',
         shortImage: 'assets/img/themes/Edition-cut.jpg'
@@ -22,7 +22,7 @@ export default class ChangeThemeController extends Controller {
         name: 'Alto',
         category: 'Blog',
         url: 'https://github.com/TryGhost/Alto',
-        previewUrl: 'https://ghost.org/themes/alto',
+        previewUrl: 'https://alto.ghost.io',
         ref: 'TryGhost/Alto',
         image: 'assets/img/themes/Alto.jpg',
         shortImage: 'assets/img/themes/Alto-cut.jpg'
@@ -30,7 +30,7 @@ export default class ChangeThemeController extends Controller {
         name: 'London',
         category: 'Photography',
         url: 'https://github.com/TryGhost/London',
-        previewUrl: 'https://ghost.org/themes/london',
+        previewUrl: 'https://london.ghost.io',
         ref: 'TryGhost/London',
         image: 'assets/img/themes/London.jpg',
         shortImage: 'assets/img/themes/London-cut.jpg'
@@ -38,7 +38,7 @@ export default class ChangeThemeController extends Controller {
         name: 'Ease',
         category: 'Documentation',
         url: 'https://github.com/TryGhost/Ease',
-        previewUrl: 'https://ghost.org/themes/ease',
+        previewUrl: 'https://ease.ghost.io',
         ref: 'TryGhost/Ease',
         image: 'assets/img/themes/Ease.jpg',
         shortImage: 'assets/img/themes/Ease-cut.jpg'
