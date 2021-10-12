@@ -76,4 +76,41 @@ describe('DynamicRedirectManager', function () {
         should.equal(status, null);
         should.equal(location, null);
     });
+
+    it('The routing works when passed an invalid regexp for the from parameter', function () {
+        const manager = new DynamicRedirectManager({permanentMaxAge: 100, urlUtils});
+
+        const from = '/invalid_regex/(/size/[a-zA-Z0-9_-.]*/[a-zA-Z0-9_-.]*/[0-9]*/[0-9]*/)([a-zA-Z0-9_-.]*)';
+        const to = '/';
+
+        manager.addRedirect(from , to, {
+            permanent: false
+        });
+
+        const req = {
+            method: 'GET',
+            url: '/test-params/'
+        };
+
+        let headers = null;
+        let status = null;
+        let location = null;
+        const res = {
+            set(_headers) {
+                headers = _headers;
+            },
+            redirect(_status, _location) {
+                status = _status;
+                location = _location;
+            }
+        };
+
+        manager.handleRequest(req, res, function next() {
+            should.ok(true, 'next should have been called');
+        });
+
+        should.equal(headers, null);
+        should.equal(status, null);
+        should.equal(location, null);
+    });
 });
