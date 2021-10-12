@@ -1424,8 +1424,22 @@ p.theme-validation-details {
     transition: none;
 }
 
-.gh-nav-bottom .gh-nav-design-tab {
-    padding: 0;
+.gh-nav-design-tab:hover {
+    background: var(--mainmenu-color-hover-bg);
+}
+
+.gh-nav-design-tab:focus {
+    color: var(--black);
+    font-weight: 600;
+}
+
+.gh-nav-design .gh-nav-button-expand {
+    top: auto;
+    padding-top: 3px;
+}
+
+.gh-nav-design .gh-nav-bottom {
+    padding: 32px 0;
 }
 
 .gh-nav-design .gh-nav-bottom svg {
