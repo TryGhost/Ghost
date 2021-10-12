@@ -13,7 +13,9 @@ const urlUtils = {
 
 describe('DynamicRedirectManager', function () {
     it('Prioritizes the query params of the redirect', function () {
-        const manager = new DynamicRedirectManager({permanentMaxAge: 100, urlUtils});
+        const manager = new DynamicRedirectManager({permanentMaxAge: 100, getSubdirectoryURL: (pathname) => {
+            return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+        }});
 
         manager.addRedirect('/test-params', '/result?q=abc', {permanent: true});
 
@@ -45,8 +47,9 @@ describe('DynamicRedirectManager', function () {
     });
 
     it('Allows redirects to be removed', function () {
-        const manager = new DynamicRedirectManager({permanentMaxAge: 100, urlUtils});
-
+        const manager = new DynamicRedirectManager({permanentMaxAge: 100, getSubdirectoryURL: (pathname) => {
+            return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+        }});
         const id = manager.addRedirect('/test-params', '/result?q=abc', {permanent: true});
         manager.removeRedirect(id);
 
@@ -78,8 +81,9 @@ describe('DynamicRedirectManager', function () {
     });
 
     it('The routing works when passed an invalid regexp for the from parameter', function () {
-        const manager = new DynamicRedirectManager({permanentMaxAge: 100, urlUtils});
-
+        const manager = new DynamicRedirectManager({permanentMaxAge: 100, getSubdirectoryURL: (pathname) => {
+            return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+        }});
         const from = '/invalid_regex/(/size/[a-zA-Z0-9_-.]*/[a-zA-Z0-9_-.]*/[0-9]*/[0-9]*/)([a-zA-Z0-9_-.]*)';
         const to = '/';
 
