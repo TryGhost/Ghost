@@ -25,15 +25,22 @@ module.exports = {
         this.api = offersModule.api;
         this.repository = offersModule.repository;
 
+        let initCalled = false;
         if (labs.isSet('offers')) {
             // handles setting up redirects
-            await offersModule.init();
+            const promise = offersModule.init();
+            initCalled = true;
+            await promise;
         }
 
         // TODO: Delete after GA
         let offersEnabled = labs.isSet('offers');
         events.on('settings.labs.edited', async () => {
-            if (labs.isSet('offers') !== offersEnabled) {
+            if (labs.isSet('offers') && !initCalled) {
+                const promise = offersModule.init();
+                initCalled = true;
+                await promise;
+            } else if (labs.isSet('offers') !== offersEnabled) {
                 offersEnabled = labs.isSet('offers');
 
                 if (offersEnabled) {
