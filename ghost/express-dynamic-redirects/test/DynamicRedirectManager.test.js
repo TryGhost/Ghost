@@ -12,8 +12,8 @@ const urlUtils = {
 };
 
 describe('DynamicRedirectManager', function () {
-    it('Prioritises the query params of the redirect', function () {
-        const manager = new DynamicRedirectManager({permanentMaxAge: 100}, urlUtils);
+    it('Prioritizes the query params of the redirect', function () {
+        const manager = new DynamicRedirectManager({permanentMaxAge: 100, urlUtils});
 
         manager.addRedirect('/test-params', '/result?q=abc', {permanent: true});
 
@@ -45,7 +45,7 @@ describe('DynamicRedirectManager', function () {
     });
 
     it('Allows redirects to be removed', function () {
-        const manager = new DynamicRedirectManager({permanentMaxAge: 100}, urlUtils);
+        const manager = new DynamicRedirectManager({permanentMaxAge: 100, urlUtils});
 
         const id = manager.addRedirect('/test-params', '/result?q=abc', {permanent: true});
         manager.removeRedirect(id);
