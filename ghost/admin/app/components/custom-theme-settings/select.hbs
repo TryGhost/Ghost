@@ -1,7 +1,7 @@
 <div class="gh-stack-item {{if (eq @index 0) "gh-setting-first"}}">
     <div class="flex-grow-1">
         <label class="gh-setting-title gh-theme-setting-title" for={{this.selectId}}>
-            {{humanize @setting.key}}
+            {{humanize-setting-key @setting.key}}
         </label>
 
         <select class="ember-select" name={{this.selectName}} id={{this.selectId}} {{on "change" this.setSelection}}>
