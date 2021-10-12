@@ -92,19 +92,27 @@ class DynamicRedirectManager {
      * @returns {string} The redirect ID
      */
     addRedirect(from, to, options) {
-        const fromRegex = this.buildRegex(from);
-        const redirectId = from;
+        try {
+            const fromRegex = this.buildRegex(from);
+            const redirectId = from;
 
-        this.redirectIds.push(redirectId);
-        this.redirects[redirectId] = {
-            fromRegex,
-            to,
-            options
-        };
+            this.redirectIds.push(redirectId);
+            this.redirects[redirectId] = {
+                fromRegex,
+                to,
+                options
+            };
 
-        this.setupRedirect(redirectId);
+            this.setupRedirect(redirectId);
 
-        return redirectId;
+            return redirectId;
+        } catch (error) {
+            if (error.message.match(/Invalid regular expression/gi)) {
+                return null;
+            }
+
+            throw error;
+        }
     }
 
     /**
