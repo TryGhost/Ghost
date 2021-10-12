@@ -259,7 +259,7 @@ class Offer {
         const type = OfferType.create(data.type);
         const cadence = OfferCadence.create(data.cadence);
         const duration = OfferDuration.create(data.duration, data.duration_in_months);
-        const status = OfferStatus.create(data.status);
+        const status = OfferStatus.create(data.status || 'active');
 
         if (cadence.value === 'year' && duration.value.type === 'repeating') {
             throw new errors.InvalidOfferDuration({
