@@ -1563,6 +1563,13 @@
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 
+"@tryghost/metrics@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-0.2.0.tgz#e44ddea0ffc6b4092a7dd83f12911f4e3d00812c"
+  integrity sha512-pym7A2BDjVCNj6LPlxPg5qPXbrZNSamXWqTF5PxeUSUhF6kZpYkxSVU1L3ADkQlG1UqYsJQuO4FrEf0DBuntJg==
+  dependencies:
+    "@tryghost/pretty-stream" "^0.1.1"
+
 "@tryghost/mobiledoc-kit@^0.12.4-ghost.1":
   version "0.12.4-ghost.1"
   resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.12.4-ghost.1.tgz#32060242b4c7e787a9605ba856454c6a26141925"
@@ -1605,6 +1612,15 @@
   dependencies:
     chalk "^4.1.0"
     sywac "^1.3.0"
+
+"@tryghost/pretty-stream@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.1.tgz#8be18694f3081424c0efb832fa32469d5891356b"
+  integrity sha512-+FYAVozEmYctaVI+4xEhRnpep0xSnGL7FiT91dffxTLx2QVQxI1qADD9Dfb9EzIYIDRttUKoZJ4xzrVpnzD0WQ==
+  dependencies:
+    lodash "^4.17.21"
+    moment "^2.29.1"
+    prettyjson "^1.2.1"
 
 "@tryghost/promise@0.1.12":
   version "0.1.12"

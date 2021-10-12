@@ -16,13 +16,18 @@ const debug = require('@tryghost/debug')('boot');
  * Helper class to create consistent log messages
  */
 class BootLogger {
-    constructor(logging, startTime) {
+    constructor(logging, metrics, startTime) {
         this.logging = logging;
+        this.metrics = metrics;
         this.startTime = startTime;
     }
     log(message) {
         let {logging, startTime} = this;
         logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
+    }
+    metric(name) {
+        let {metrics, startTime} = this;
+        metrics.metric(name, Date.now() - startTime);
     }
 }
 
@@ -289,6 +294,7 @@ async function bootGhost() {
     let config;
     let ghostServer;
     let logging;
+    let metrics;
 
     // These require their own try-catch block and error format, because we can't log an error if logging isn't working
     try {
@@ -301,7 +307,8 @@ async function bootGhost() {
         // Logging is used absolutely everywhere
         debug('Begin: Load logging');
         logging = require('@tryghost/logging');
-        bootLogger = new BootLogger(logging, startTime);
+        metrics = require('@tryghost/metrics');
+        bootLogger = new BootLogger(logging, metrics, startTime);
         debug('End: Load logging');
 
         // At this point logging is required, so we can handle errors better
@@ -362,6 +369,7 @@ async function bootGhost() {
 
         // Step 6 - We are technically done here - let everyone know!
         bootLogger.log('booted');
+        bootLogger.metric('boot-time');
         notifyServerReady();
 
         // Step 7 - Init our background services, we don't wait for this to finish
