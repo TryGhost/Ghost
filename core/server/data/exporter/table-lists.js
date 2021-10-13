@@ -37,7 +37,8 @@ const BACKUP_TABLES = [
     'members_paid_subscription_events',
     'members_subscribe_events',
     'members_product_events',
-    'offers'
+    'offers',
+    'offer_redemptions'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file
