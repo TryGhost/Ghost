@@ -55,7 +55,7 @@
                     {{/if}}
                 {{else}}
                     <p>
-                        "{{this.themeName}}" uploaded successfully.
+                        <strong>{{this.themeName}}</strong> uploaded successfully.
                         {{#if this.canActivateTheme}}Do you want to activate it now?{{/if}}
                     </p>
                 {{/if}}
@@ -125,7 +125,7 @@
                     </button>
                 {{/if}}
                 {{#if this.canActivateTheme}}
-                    <button type="button" {{on "click" this.activate}} class="gh-btn" data-test-activate-now-button>
+                    <button type="button" {{on "click" this.activate}} class="gh-btn gh-btn-primary" data-test-activate-now-button>
                         <span>Activate{{#if this.validationErrors}} with errors{{/if}}</span>
                     </button>
                 {{/if}}
