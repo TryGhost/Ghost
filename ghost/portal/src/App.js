@@ -10,7 +10,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getAvailablePrices, getCurrencySymbol, getFirstpromoterId, getProductFromId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const handleDataAttributes = require('./data-attributes');
 const React = require('react');
@@ -334,7 +334,7 @@ export default class App extends React.Component {
     /** Fetch state from Portal Links */
     fetchLinkData() {
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
-        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
+        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
         const offersRegex = /^offers\/(\w+?)\/?$/;
         const [path] = window.location.hash.substr(1).split('?');
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
@@ -530,22 +530,15 @@ export default class App extends React.Component {
 
     /** Handle direct signup link for a price */
     handleSignupQuery({site, pageQuery}) {
-        const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
-        const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const offerQueryRegex = /^offers\/(\w+?)\/?$/;
         let priceId = pageQuery;
         if (offerQueryRegex.test(pageQuery || '')) {
             const [, offerId] = pageQuery.match(offerQueryRegex);
             this.handleOfferQuery({site, offerId});
             return;
-        } else if (productMonthlyPriceQueryRegex.test(pageQuery || '')) {
-            const [, productId] = pageQuery.match(productMonthlyPriceQueryRegex);
-            const product = getProductFromId({site, productId});
-            priceId = product?.monthlyPrice?.id;
-        } else if (productYearlyPriceQueryRegex.test(pageQuery || '')) {
-            const [, productId] = pageQuery.match(productYearlyPriceQueryRegex);
-            const product = getProductFromId({site, productId});
-            priceId = product?.yearlyPrice?.id;
+        }
+        if (getPriceIdFromPageQuery({site, pageQuery})) {
+            priceId = getPriceIdFromPageQuery({site, pageQuery});
         }
         const queryPrice = getQueryPrice({site: site, priceId});
         if (!this.state.member

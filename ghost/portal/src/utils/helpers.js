@@ -492,3 +492,19 @@ export const createPopupNotification = ({type, status, autoHide, duration, close
         count
     };
 };
+
+export function getPriceIdFromPageQuery({site, pageQuery}) {
+    const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
+    const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
+
+    if (productMonthlyPriceQueryRegex.test(pageQuery || '')) {
+        const [, productId] = pageQuery.match(productMonthlyPriceQueryRegex);
+        const product = getProductFromId({site, productId});
+        return product?.monthlyPrice?.id;
+    } else if (productYearlyPriceQueryRegex.test(pageQuery || '')) {
+        const [, productId] = pageQuery.match(productYearlyPriceQueryRegex);
+        const product = getProductFromId({site, productId});
+        return product?.yearlyPrice?.id;
+    }
+    return null;
+}
