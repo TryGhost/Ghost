@@ -4,33 +4,37 @@
 <section class="gh-nav-body gh-nav-design">
     <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
         <div class="gh-nav-list gh-nav-main">
-            <button class="gh-nav-design-tab" type="button" {{on "click" (fn this.toggleSection "brand")}}>
-                <span class="gh-nav-button-expand">{{svg-jar (if (eq this.openSection "brand") "arrow-down-stroke" "arrow-right-stroke")}}</span>
-                {{svg-jar "paintbrush"}}Brand
-            </button>
-            {{#if (eq this.openSection "brand")}}
-                <div class="gh-nav-design-settings">
-                    <Settings::Design::GeneralSettingsForm
-                        @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
-                    />
-                </div>
-            {{/if}}
+            {{#let (eq this.openSection "brand") as |isOpen|}}
+                <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection "brand")}}>
+                    <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-down-stroke" "arrow-right-stroke")}}</span>
+                    {{svg-jar "paintbrush"}}Brand
+                </button>
+                {{#if isOpen}}
+                    <div class="gh-nav-design-settings">
+                        <Settings::Design::GeneralSettingsForm
+                            @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                        />
+                    </div>
+                {{/if}}
+            {{/let}}
 
             {{#if this.themeSettings}}
                 {{#each this.settingGroups as |group|}}
-                    <button class="gh-nav-design-tab" type="button" {{on "click" (fn this.toggleSection group.key)}}>
-                        <span class="gh-nav-button-expand">{{svg-jar (if (eq this.openSection group.key) "arrow-down-stroke" "arrow-right-stroke")}}</span>
-                        {{svg-jar group.icon}} {{group.name}}
-                    </button>
+                    {{#let (eq this.openSection group.key) as |isOpen|}}
+                        <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection group.key)}}>
+                            <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-down-stroke" "arrow-right-stroke")}}</span>
+                            {{svg-jar group.icon}} {{group.name}}
+                        </button>
 
-                    {{#if (eq this.openSection group.key)}}
-                        <div class="gh-nav-design-settings">
-                            <Settings::Design::ThemeSettingsForm
-                                @themeSettings={{group.settings}}
-                                @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
-                            />
-                        </div>
-                    {{/if}}
+                        {{#if isOpen}}
+                            <div class="gh-nav-design-settings">
+                                <Settings::Design::ThemeSettingsForm
+                                    @themeSettings={{group.settings}}
+                                    @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                                />
+                            </div>
+                        {{/if}}
+                    {{/let}}
                 {{/each}}
             {{/if}}
         </div>
