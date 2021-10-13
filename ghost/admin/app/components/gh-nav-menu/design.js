@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
+import {times} from 'lodash-es';
 import {tracked} from '@glimmer/tracking';
 
 export default class DesignMenuComponent extends Component {
@@ -18,11 +19,13 @@ export default class DesignMenuComponent extends Component {
     KNOWN_GROUPS = [{
         key: 'homepage',
         name: 'Homepage',
-        icon: 'house'
+        icon: 'house',
+        previewType: 'homepage'
     }, {
         key: 'post',
         name: 'Post',
-        icon: 'post'
+        icon: 'post',
+        previewType: 'post'
     }];
 
     constructor() {
@@ -73,6 +76,13 @@ export default class DesignMenuComponent extends Component {
             this.openSection = null;
         } else {
             this.openSection = section;
+
+            const group = this.KNOWN_GROUPS.findBy('key', section);
+            if (group && group.previewType) {
+                this.themeManagement.setPreviewType(group.previewType);
+            } else {
+                this.themeManagement.setPreviewType('homepage');
+            }
         }
     }
 
