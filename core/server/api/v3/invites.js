@@ -1,11 +1,14 @@
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const invites = require('../../services/invites');
 const models = require('../../models');
 const api = require('./index');
 const ALLOWED_INCLUDES = [];
 const UNSAFE_ATTRS = ['role_id'];
+const messages = {
+    inviteNotFound: 'Invite not found.'
+};
 
 module.exports = {
     docName: 'invites',
@@ -50,7 +53,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         return Promise.reject(new errors.NotFoundError({
-                            message: i18n.t('errors.api.invites.inviteNotFound')
+                            message: tpl(messages.inviteNotFound)
                         }));
                     }
 
@@ -78,7 +81,7 @@ module.exports = {
                 .then(() => null)
                 .catch(models.Invite.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.invites.inviteNotFound')
+                        message: tpl(messages.inviteNotFound)
                     }));
                 });
         }
