@@ -4,6 +4,9 @@
             {{#if (eq setting.type "select")}}
                 <CustomThemeSettings::Select @setting={{setting}} @index={{index}} @onChange={{@updatePreview}} />
             {{/if}}
+            {{#if (eq setting.type "boolean")}}
+                <CustomThemeSettings::Boolean @setting={{setting}} @index={{index}} @onChange={{@updatePreview}} />
+            {{/if}}
         {{/each}}
     </form>
 </div>
