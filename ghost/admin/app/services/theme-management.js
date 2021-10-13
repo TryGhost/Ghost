@@ -14,9 +14,33 @@ export default class ThemeManagementService extends Service {
     @service limit;
     @service modals;
     @service settings;
+    @service store;
 
     @tracked isUploading;
+    @tracked previewType = 'homepage';
     @tracked previewHtml;
+
+    allPosts = this.store.peekAll('post');
+
+    availablePreviewTypes = [{
+        name: 'homepage',
+        label: 'Homepage'
+    }, {
+        name: 'post',
+        label: 'Post'
+    }]
+
+    get latestPublishedPost() {
+        return this.allPosts.toArray().filterBy('status', 'published').sortBy('publishedAtUTC').lastObject;
+    }
+
+    @action
+    setPreviewType(type) {
+        if (type !== this.previewType) {
+            this.previewType = type;
+            this.updatePreviewHtmlTask.perform();
+        }
+    }
 
     @action
     async upload(event) {
@@ -138,7 +162,17 @@ export default class ThemeManagementService extends Service {
         };
 
         // TODO: config.blogUrl always removes trailing slash - switch to always have trailing slash
-        const frontendUrl = `${this.config.get('blogUrl')}/`;
+        let frontendUrl = `${this.config.get('blogUrl')}/`;
+
+        if (this.previewType === 'post') {
+            // in case we haven't loaded any posts so far
+            if (!this.latestPublishedPost) {
+                yield this.store.query('post', {filter: 'status:published', order: 'created_at DESC', limit: 1});
+            }
+
+            frontendUrl = this.latestPublishedPost.url;
+        }
+
         const previewContents = yield this.ajax.post(frontendUrl, ajaxOptions);
 
         // inject extra CSS to disable navigation and prevent clicks
