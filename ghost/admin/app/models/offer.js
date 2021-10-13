@@ -7,6 +7,7 @@ export default Model.extend(ValidationEngine, {
     name: attr('string'),
     code: attr('string'),
     cadence: attr('string'),
+    status: attr('string', {defaultValue: 'active'}),
     tier: attr(),
     stripeCouponId: attr('string'),
     currency: attr('string'),

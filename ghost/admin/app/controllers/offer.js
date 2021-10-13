@@ -15,6 +15,7 @@ export default class OffersController extends Controller {
     @service config;
     @service settings;
     @service store;
+    @service modals;
     @service notifications;
 
     @tracked cadences = [];
@@ -252,6 +253,28 @@ export default class OffersController extends Controller {
     @action
     setDurationInMonths(e) {
         this._saveOfferProperty('durationInMonths', e.target.value);
+    }
+
+    @action
+    openConfirmArchiveModal() {
+        if (!this.offer.isNew) {
+            this.modals.open('modals/archive-offer', {
+                offer: this.offer
+            }, {
+                className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
+            });
+        }
+    }
+
+    @action
+    openConfirmUnarchiveModal() {
+        if (!this.offer.isNew) {
+            this.modals.open('modals/unarchive-offer', {
+                offer: this.offer
+            }, {
+                className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
+            });
+        }
     }
 
     get offerUrl() {
