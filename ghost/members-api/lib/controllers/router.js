@@ -140,6 +140,11 @@ module.exports = class RouterController {
                 const offer = await this._offersAPI.getOffer({id: offerId});
                 const tier = (await this._productRepository.get(offer.tier)).toJSON();
 
+                if (offer.status === 'archived') {
+                    res.writeHead(403);
+                    return res.end('Offer is archived.');
+                }
+
                 if (offer.cadence === 'month') {
                     ghostPriceId = tier.monthly_price_id;
                 } else {
