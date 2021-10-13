@@ -13,7 +13,7 @@
 
                 {{#if this.willOverwriteExisting}}
                     <p>
-                        This will overwrite your existing version of {{this.themeName}}. All custom changes will be lost.
+                        This will overwrite your existing version of {{this.themeName}}{{if this.willOverwriteExisting.active ", which is your active theme"}}. All custom changes will be lost.
                     </p>
                 {{/if}}
             {{/if}}
