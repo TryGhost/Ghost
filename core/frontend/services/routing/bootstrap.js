@@ -29,7 +29,7 @@ let siteRouter;
  * @param {Object} options
  * @returns {ExpressRouter}
  */
-module.exports.init = ({start = false, routerSettings, apiVersion}) => {
+const init = ({start = false, routerSettings, apiVersion}) => {
     debug('bootstrap init', start, apiVersion, routerSettings);
 
     registry.resetAllRouters();
@@ -64,7 +64,7 @@ module.exports.init = ({start = false, routerSettings, apiVersion}) => {
  * @param {string} apiVersion
  * @param {object} routerSettings
  */
-module.exports.start = (apiVersion, routerSettings) => {
+const start = (apiVersion, routerSettings) => {
     debug('bootstrap start', apiVersion, routerSettings);
     const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
@@ -112,3 +112,6 @@ module.exports.start = (apiVersion, routerSettings) => {
 
     debug('Routes:', registry.getAllRoutes());
 };
+
+module.exports.init = init;
+module.exports.start = start;
