@@ -1,8 +1,13 @@
 const jsonSchema = require('../utils/json-schema');
 const config = require('../../../../../../shared/config');
-const i18n = require('../../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {imageSize, blogIcon} = require('../../../../../lib/image');
+
+const messages = {
+    isNotSquare: 'Please select a valid image file with square dimensions.',
+    invalidFile: 'Please select a valid image.'
+};
 
 const profileImage = (frame) => {
     return imageSize.getImageSizeFromPath(frame.file.path).then((response) => {
@@ -12,7 +17,7 @@ const profileImage = (frame) => {
         // CASE: file needs to be a square
         if (frame.file.dimensions.width !== frame.file.dimensions.height) {
             return Promise.reject(new errors.ValidationError({
-                message: i18n.t('errors.api.images.isNotSquare')
+                message: tpl(messages.isNotSquare)
             }));
         }
     });
@@ -28,7 +33,7 @@ const icon = (frame) => {
     // CASE: file should not be larger than 100kb
     if (!validIconFileSize(frame.file.size)) {
         return Promise.reject(new errors.ValidationError({
-            message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})
+            message: tpl(messages.invalidFile, {extensions: iconExtensions})
         }));
     }
 
@@ -39,7 +44,7 @@ const icon = (frame) => {
         // CASE: file needs to be a square
         if (frame.file.dimensions.width !== frame.file.dimensions.height) {
             return Promise.reject(new errors.ValidationError({
-                message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})
+                message: tpl(messages.invalidFile, {extensions: iconExtensions})
             }));
         }
 
@@ -47,14 +52,14 @@ const icon = (frame) => {
         // .ico files can contain multiple sizes, we need at least a minimum of 60px (16px is ok, as long as 60px are present as well)
         if (frame.file.dimensions.width < 60) {
             return Promise.reject(new errors.ValidationError({
-                message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})
+                message: tpl(messages.invalidFile, {extensions: iconExtensions})
             }));
         }
 
         // CASE: icon needs to be smaller than or equal to 1000px
         if (frame.file.dimensions.width > 1000) {
             return Promise.reject(new errors.ValidationError({
-                message: i18n.t('errors.api.icons.invalidFile', {extensions: iconExtensions})
+                message: tpl(messages.invalidFile, {extensions: iconExtensions})
             }));
         }
     });
