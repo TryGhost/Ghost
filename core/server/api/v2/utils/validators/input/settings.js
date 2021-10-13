@@ -1,7 +1,13 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const i18n = require('../../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const {BadRequestError, ValidationError} = require('@tryghost/errors');
+
+const messages = {
+    error: 'Attempted to change active_theme via settings API',
+    help: 'Please activate theme via the themes API endpoints instead',
+    schemaValidationFailed: 'Validation failed for \'{key}\'.'
+};
 
 module.exports = {
     edit(apiConfig, frame) {
@@ -12,8 +18,8 @@ module.exports = {
                 // @NOTE: active theme has to be changed via theme endpoints
                 errors.push(
                     new BadRequestError({
-                        message: i18n.t('errors.api.settings.activeThemeSetViaAPI.error'),
-                        help: i18n.t('errors.api.settings.activeThemeSetViaAPI.help')
+                        message: tpl(messages.error),
+                        help: tpl(messages.help)
                     })
                 );
             }
@@ -25,7 +31,7 @@ module.exports = {
                 } catch (e) {
                     errors.push(
                         new ValidationError({
-                            message: i18n.t('notices.data.validation.index.schemaValidationFailed', {
+                            message: tpl(messages.schemaValidationFailed, {
                                 key: 'unsplash'
                             }),
                             property: 'unsplash'
