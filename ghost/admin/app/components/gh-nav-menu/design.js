@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import {TrackedSet} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
@@ -12,7 +11,7 @@ export default class DesignMenuComponent extends Component {
     @service settings;
     @service themeManagement;
 
-    @tracked openSections = new TrackedSet();
+    @tracked openSection = null;
 
     KNOWN_GROUPS = [{
         key: 'homepage',
@@ -61,7 +60,11 @@ export default class DesignMenuComponent extends Component {
 
     @action
     toggleSection(section) {
-        this.openSections.has(section) ? this.openSections.delete(section) : this.openSections.add(section);
+        if (this.openSection === section) {
+            this.openSection = null;
+        } else {
+            this.openSection = section;
+        }
     }
 
     @task

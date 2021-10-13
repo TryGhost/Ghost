@@ -5,10 +5,10 @@
     <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
         <div class="gh-nav-list gh-nav-main">
             <button class="gh-nav-design-tab" type="button" {{on "click" (fn this.toggleSection "brand")}}>
-                <span class="gh-nav-button-expand">{{svg-jar (if (set-has this.openSections "brand") "arrow-down-stroke" "arrow-right-stroke")}}</span>
+                <span class="gh-nav-button-expand">{{svg-jar (if (eq this.openSection "brand") "arrow-down-stroke" "arrow-right-stroke")}}</span>
                 {{svg-jar "paintbrush"}}Brand
             </button>
-            {{#if (set-has this.openSections "brand")}}
+            {{#if (eq this.openSection "brand")}}
                 <div class="gh-nav-design-settings">
                     <Settings::Design::GeneralSettingsForm
                         @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
@@ -19,11 +19,11 @@
             {{#if this.themeSettings}}
                 {{#each this.settingGroups as |group|}}
                     <button class="gh-nav-design-tab" type="button" {{on "click" (fn this.toggleSection group.key)}}>
-                        <span class="gh-nav-button-expand">{{svg-jar (if (set-has this.openSections group.key) "arrow-down-stroke" "arrow-right-stroke")}}</span>
+                        <span class="gh-nav-button-expand">{{svg-jar (if (eq this.openSection group.key) "arrow-down-stroke" "arrow-right-stroke")}}</span>
                         {{svg-jar group.icon}} {{group.name}}
                     </button>
 
-                    {{#if (set-has this.openSections group.key)}}
+                    {{#if (eq this.openSection group.key)}}
                         <div class="gh-nav-design-settings">
                             <Settings::Design::ThemeSettingsForm
                                 @themeSettings={{group.settings}}
