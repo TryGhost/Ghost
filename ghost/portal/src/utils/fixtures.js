@@ -339,6 +339,26 @@ export const testSite = {
     portal_plans: ['free', 'monthly', 'yearly']
 };
 
+export const offer = {
+    id: '615fc537e1a950452c06e64d',
+    name: 'Black Friday',
+    code: 'black-friday',
+    display_title: 'Black Friday Special',
+    display_description: 'Black Friday Sale!',
+    type: 'percent',
+    cadence: 'month',
+    amount: 50,
+    duration: 'once',
+    duration_in_months: null,
+    currency_restriction: false,
+    currency: null,
+    status: 'active',
+    tier: {
+        id: '61233747fa18731c77a36691',
+        name: 'Basic'
+    }
+};
+
 export function generateAccountPlanFixture() {
     return {
         site: {

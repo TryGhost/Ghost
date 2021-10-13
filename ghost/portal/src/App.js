@@ -18,8 +18,8 @@ const React = require('react');
 const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
-    member: Fixtures.member.paid,
-    page: 'signup'
+    member: Fixtures.member.free,
+    page: 'offer'
 };
 
 function SentryErrorBoundary({site, children}) {
@@ -518,13 +518,20 @@ export default class App extends React.Component {
     }
 
     handleOfferQuery({site, offerId}) {
-        removePortalLinkFromUrl();
         const prices = getAvailablePrices({site});
         const priceId = prices?.[0]?.id;
-        if (this.state.member) {
-            this.dispatchAction('checkoutPlan', {plan: priceId, offerId});
+        const showOfferScreen = false;
+        if (showOfferScreen) {
+            this.dispatchAction('openPopup', {
+                page: 'offer'
+            });
         } else {
-            this.dispatchAction('signup', {plan: priceId, offerId});
+            removePortalLinkFromUrl();
+            if (this.state.member) {
+                this.dispatchAction('checkoutPlan', {plan: priceId, offerId});
+            } else {
+                this.dispatchAction('signup', {plan: priceId, offerId});
+            }
         }
     }
 
