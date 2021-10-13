@@ -1,6 +1,9 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const membersService = require('../../services/members');
+const messages = {
+    memberNotFound: 'Member not found.'
+};
 
 const messages = {
     memberNotFound: 'Member not found.'
