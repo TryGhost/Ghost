@@ -1,7 +1,11 @@
 const Promise = require('bluebird');
-const i18n = require('../../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../../../../models');
+
+const messages = {
+    userAlreadyRegistered: 'User is already registered.'
+};
 
 module.exports = {
     add(apiConfig, frame) {
@@ -9,7 +13,7 @@ module.exports = {
             .then((user) => {
                 if (user) {
                     return Promise.reject(new errors.ValidationError({
-                        message: i18n.t('errors.api.users.userAlreadyRegistered')
+                        message: tpl(messages.userAlreadyRegistered)
                     }));
                 }
             });
