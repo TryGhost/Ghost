@@ -26,7 +26,6 @@ module.exports = {
         });
 
         this.api = offersModule.api;
-        this.repository = offersModule.repository;
 
         let initCalled = false;
         if (labs.isSet('offers')) {
