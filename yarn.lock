@@ -1580,10 +1580,10 @@
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 
-"@tryghost/metrics@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-0.2.2.tgz#8254d7b3719e6136c57e62b23fa68ecb456ab925"
-  integrity sha512-XTawbbDtMiyWEnHAOgfY00r7gfN7sCHX7zkKRD5sEX0IpY6UzDxXjvBWQwFBezuapGxE4GQDgne3laatdggB7A==
+"@tryghost/metrics@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-0.2.3.tgz#61dc89bd5a14ce9fba40482e481eaa394d57c1ef"
+  integrity sha512-IiEgjEWO29sIkZ7ZtaOhQCX4SJP2ZUI1jma6M3A7s+8xEwAmrSU7E3XjfiodOSr5+rvy2KGOKK16begIQhKAww==
   dependencies:
     "@tryghost/elasticsearch" "^0.1.2"
     "@tryghost/pretty-stream" "^0.1.1"
