@@ -27,27 +27,6 @@ describe('Redirects API', function () {
             });
     });
 
-    describe('Download', function () {
-        afterEach(function () {
-            configUtils.config.set('paths:contentPath', originalContentPath);
-        });
-
-        it('file exists', function () {
-            return request
-                .get(localUtils.API.getApiQuery('redirects/json/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /application\/json/)
-                .expect('Content-Disposition', 'Attachment; filename="redirects.json"')
-                .expect(200)
-                .then((res) => {
-                    res.headers['content-disposition'].should.eql('Attachment; filename="redirects.json"');
-                    res.headers['content-type'].should.eql('application/json; charset=utf-8');
-
-                    should.deepEqual(res.body, require('../../../../utils/fixtures/data/redirects.json'));
-                });
-        });
-    });
-
     describe('Upload', function () {
         describe('Error cases', function () {
             it('syntax error', function () {
