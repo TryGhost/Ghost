@@ -17,7 +17,7 @@ const _ = require('lodash');
  */
 module.exports = class RouterController {
     constructor({
-        offerRepository,
+        offersAPI,
         productRepository,
         memberRepository,
         StripePrice,
@@ -30,7 +30,7 @@ module.exports = class RouterController {
         config,
         logging
     }) {
-        this._offerRepository = offerRepository;
+        this._offersAPI = offersAPI;
         this._productRepository = productRepository;
         this._memberRepository = memberRepository;
         this._StripePrice = StripePrice;
@@ -137,10 +137,10 @@ module.exports = class RouterController {
         let coupon = null;
         if (offerId && this.labsService.isSet('offers')) {
             try {
-                const offer = await this._offerRepository.getById(offerId);
+                const offer = await this._offersAPI.getOffer({id: offerId});
                 const tier = (await this._productRepository.get(offer.tier)).toJSON();
 
-                if (offer.cadence.value === 'month') {
+                if (offer.cadence === 'month') {
                     ghostPriceId = tier.monthly_price_id;
                 } else {
                     ghostPriceId = tier.yearly_price_id;
