@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/configUtils');
-const urlService = require('../../../../../core/frontend/services/url');
+const bootstrap = require('../../../../../core/frontend/services/routing/bootstrap');
 const generateFeed = require('../../../../../core/frontend/services/rss/generate-feed');
 
 describe('RSS: Generate Feed', function () {
@@ -43,7 +43,7 @@ describe('RSS: Generate Feed', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId');
+        sinon.stub(bootstrap.internal, 'getUrlByResourceId');
 
         baseUrl = '/rss/';
 
@@ -92,7 +92,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = posts;
 
             _.each(data.posts, function (post) {
-                urlService.getUrlByResourceId.withArgs(post.id, {secure: undefined, absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
+                bootstrap.internal.getUrlByResourceId.withArgs(post.id, {secure: undefined, absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
             });
 
             generateFeed(baseUrl, data).then(function (xmlData) {
@@ -204,7 +204,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [posts[0]];
 
             _.each(data.posts, function (post) {
-                urlService.getUrlByResourceId.withArgs(post.id, {secure: undefined, absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
+                bootstrap.internal.getUrlByResourceId.withArgs(post.id, {secure: undefined, absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
             });
 
             generateFeed(baseUrl, data).then(function (xmlData) {
