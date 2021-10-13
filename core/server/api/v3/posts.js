@@ -1,9 +1,13 @@
 const models = require('../../models');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service');
 const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
+
+const messages = {
+    postNotFound: 'Post not found.'
+};
 
 const postsService = getPostServiceInstance('v3');
 
@@ -73,7 +77,7 @@ module.exports = {
                 .then((model) => {
                     if (!model) {
                         throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.posts.postNotFound')
+                            message: tpl(messages.postNotFound)
                         });
                     }
 
@@ -188,7 +192,7 @@ module.exports = {
                 .then(() => null)
                 .catch(models.Post.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.posts.postNotFound')
+                        message: tpl(messages.postNotFound)
                     }));
                 });
         }
