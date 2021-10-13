@@ -1434,6 +1434,26 @@ p.theme-validation-details {
     font-weight: 600;
 }
 
+.gh-nav-bottom .gh-nav-design-tab {
+    flex-direction: column;
+}
+
+.gh-nav-bottom .gh-nav-design-tab.active {
+    background: var(--mainmenu-color-hover-bg);
+}
+
+.gh-nav-bottom .gh-nav-design-tab span {
+    display: flex;
+    align-items: center;
+}
+
+.gh-nav-design-tab .active-theme {
+    margin-left: 33px;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    font-weight: 400;
+}
+
 .gh-nav-design .gh-nav-list .active svg {
     fill: none;
 }
@@ -1605,6 +1625,22 @@ p.theme-validation-details {
 
 .gh-theme-directory-container-labs {
     padding: 8px 0 0;
+}
+
+.gh-theme-preview {
+    max-width: none;
+    padding: 0 80px 48px;
+}
+
+.gh-theme-preview .view-container {
+    padding-bottom: 0;
+}
+
+.gh-theme-previewcontainer .site-frame {
+    width: 133.33333%;
+    height: 133.33333%;
+    transform: scale(0.75);
+    transform-origin: 0 0;
 }
 
 /* Membership */
