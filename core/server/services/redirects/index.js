@@ -5,8 +5,11 @@ const DynamicRedirectManager = require('@tryghost/express-dynamic-redirects');
 const CustomRedirectsAPI = require('./api');
 
 const redirectManager = new DynamicRedirectManager({
-    permanentMaxAge: config.get('caching:customRedirects:maxAge')
-}, urlUtils);
+    permanentMaxAge: config.get('caching:customRedirects:maxAge'),
+    getSubdirectoryURL: (pathname) => {
+        return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+    }
+});
 
 let customRedirectsAPI;
 
