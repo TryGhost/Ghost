@@ -1,21 +1,19 @@
 <div class="modal-content">
     <div class="theme-validation-container">
         <header class="modal-header" data-test-modal="upload-theme">
-            <h1>{{if this.installSuccess "Theme installed and activated" "Use this theme"}}</h1>
+            <h1>{{if this.installSuccess "Theme installed and activated" "Install theme"}}</h1>
         </header>
         <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
         <div class="modal-body">
             {{#if this.isConfirming}}
                 <p>
-                    You're about to use the <strong>{{this.themeName}}</strong> theme for your site.
-                    {{#unless this.willOverwriteExisting}}The look of your site will instantly be updated.{{/unless}}
+                    By clicking below, <strong>{{this.themeName}}</strong> will automatically be activated as the theme for your site.
                 </p>
 
                 {{#if this.willOverwriteExisting}}
                     <p>
-                        You already have a version of <strong>{{this.themeName}}</strong> installed.
-                        This will overwrite your existing version, any custom changes to theme files will be lost.
+                        This will overwrite your existing version of {{this.themeName}}. All custom changes will be lost.
                     </p>
                 {{/if}}
             {{/if}}
@@ -34,7 +32,7 @@
                     </p>
                 {{else}}
                     {{!-- Installed with no errors --}}
-                    <p>The theme <strong>"{{this.themeName}}"</strong> was installed successfully.</p>
+                    <p><strong>{{this.themeName}}</strong> has been successfully installed and activated as your theme.</p>
                 {{/if}}
             {{/if}}
 
@@ -101,7 +99,7 @@
                 {{#if this.shouldShowInstall}}
                     <GhTaskButton
                         @disabled={{this.refreshThemesTask.isRunning}}
-                        @buttonText={{if this.willOverwriteExisting "Overwrite" "Use theme"}}
+                        @buttonText={{if this.willOverwriteExisting "Overwrite" "Install"}}
                         @runningText="Installing"
                         @successText="Installed"
                         @task={{this.installThemeTask}}
