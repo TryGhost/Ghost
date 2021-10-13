@@ -233,3 +233,7 @@
         0px 1.85484px 2.74791px rgba(0, 0, 0, 0.0217013);
     transition: all 0.3s ease-in-out;
 }
+
+.gh-offers-actions .gh-contentfilter {
+    margin-left: 0;
+}
