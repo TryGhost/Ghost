@@ -2056,12 +2056,28 @@
   dependencies:
     color "^3.2.1"
 
+"@tryghost/errors@^0.2.16":
+  version "0.2.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.16.tgz#5000255aff99b3e07aa343c7f625f1475e55c5cf"
+  integrity sha512-iTUv25q/SqQMCsxEX3dlf6pT3QWIkAVeQ7OIf9lY9fBGLZpvriplTV361u7fQYuUvUcCDYqb30s5j/cYHWuJWg==
+  dependencies:
+    "@tryghost/ignition-errors" "^0.1.0"
+    lodash "^4.17.21"
+
 "@tryghost/helpers@1.1.52":
   version "1.1.52"
   resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.52.tgz#e30bd367ea62d1b27e59abfa8e8ed8c3e072b74e"
   integrity sha512-9RFj49Wleb5SNhjxcg/eEscJv6tkrwW356vS+/QRUaGRGwd2DYPm+jejMI3OTOyANDbK+ZtpYH8crCJefg9jBA==
   dependencies:
     lodash-es "^4.17.11"
+
+"@tryghost/ignition-errors@^0.1.0":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/ignition-errors/-/ignition-errors-0.1.7.tgz#41dc25262933040ce2d0ef266154f242b15e670b"
+  integrity sha512-wxuUvK8x3n1LMJNlfA0b6Ynf0wstWQCpWZJ6ikfJ/h7XIH28GZ5rnivuId6bjLPTkbbbsOQN0bxGi6+V2rJIyQ==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
 
 "@tryghost/kg-clean-basic-html@2.0.5", "@tryghost/kg-clean-basic-html@^2.0.5":
   version "2.0.5"
@@ -2075,11 +2091,12 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^2.0.5"
 
-"@tryghost/limit-service@0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.6.1.tgz#192a5cfcb2e9d6c335e3340ef4fcb3a1ecc23a4b"
-  integrity sha512-EQyhAPXczcqpuSMpXCC9YQZ5z3aCfO4N4fT8GbZnECausf4lWH64mbUQxptlj40iDyguX4YbrJvTmCfbpCA/lA==
+"@tryghost/limit-service@0.6.4":
+  version "0.6.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-0.6.4.tgz#ad69a2fb547360549710dbc1654ea86efd1809bd"
+  integrity sha512-REC41PEUdwhabLE0O4V6UCq7CRxjrWzwOtms7FqWt6fZ9+yHZxP/Nc+dGPch1jaEBVOod+xQ8PytKF4YDN+IGA==
   dependencies:
+    "@tryghost/errors" "^0.2.16"
     lodash "^4.17.21"
     luxon "^1.26.0"
 
@@ -15476,7 +15493,7 @@ uuid@^3.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
-uuid@^8.3.0:
+uuid@^8.3.0, uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
