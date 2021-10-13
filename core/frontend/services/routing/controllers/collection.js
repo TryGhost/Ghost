@@ -3,7 +3,7 @@ const debug = require('@tryghost/debug')('services:routing:controllers:collectio
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
-const urlService = require('../../url');
+const bootstrap = require('../bootstrap');
 const themeEngine = require('../../theme-engine');
 const helpers = require('../helpers');
 
@@ -72,7 +72,7 @@ module.exports = function collectionController(req, res, next) {
              * People should always invert their filters to ensure that the database query loads unique posts per collection.
              */
             result.posts = _.filter(result.posts, (post) => {
-                if (urlService.owns(res.routerOptions.identifier, post.id)) {
+                if (bootstrap.internal.owns(res.routerOptions.identifier, post.id)) {
                     return post;
                 }
 

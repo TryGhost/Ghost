@@ -16,6 +16,7 @@ const defaultApiVersion = 'v4';
 
 const registry = require('./registry');
 let siteRouter;
+let _urlService;
 
 /**
  * @description The `init` function will return the wrapped parent express router and will start creating all
@@ -29,7 +30,8 @@ let siteRouter;
  * @param {Object} options
  * @returns {ExpressRouter}
  */
-const init = ({start = false, routerSettings, apiVersion}) => {
+const init = ({start = false, routerSettings, apiVersion, urlService}) => {
+    _urlService = urlService;
     debug('bootstrap init', start, apiVersion, routerSettings);
 
     registry.resetAllRouters();
@@ -113,5 +115,16 @@ const start = (apiVersion, routerSettings) => {
     debug('Routes:', registry.getAllRoutes());
 };
 
+module.exports.internal = {
+    owns: (routerId, id) => {
+        return _urlService.owns(routerId, id);
+    },
+    getUrlByResourceId: (id, options) => {
+        return _urlService.getUrlByResourceId(id, options);
+    },
+    getResourceById: (resourceId) => {
+        return _urlService.getResourceById(resourceId);
+    }
+};
 module.exports.init = init;
 module.exports.start = start;
