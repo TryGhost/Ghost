@@ -1543,6 +1543,65 @@ p.theme-validation-details {
     fill: var(--midgrey);
 }
 
+.gh-themes-container-labs {
+    margin-bottom: 40px;
+    background: var(--main-color-content-greybg);
+    border-radius: var(--border-radius);
+}
+
+.gh-themes-container-labs .apps-grid-cell {
+    background: none;
+}
+
+.gh-themes-container-labs .apps-grid-cell:hover {
+    background: var(--whitegrey-l1);
+}
+
+.gh-themes-container-labs .apps-card-app {
+    padding: 16px 24px;
+}
+
+.gh-themes-container-labs .apps-grid-cell:last-of-type .apps-card-app {
+    border-bottom: none;
+}
+
+.gh-themes-container-labs .apps-configured-action {
+    display: block;
+    margin-right: 16px;
+    padding: 2px 6px;
+    color: var(--green-d1);
+    border-radius: var(--border-radius);
+}
+
+.gh-themes-container-labs .gh-btn-icon {
+    background: none;
+}
+
+.gh-themes-container-labs .gh-btn-icon:hover {
+    background: var(--whitegrey-d1);
+}
+
+.gh-themes-container-labs .gh-btn-icon svg {
+    margin-right: 0;
+}
+
+.gh-list-delete {
+    color: var(--red-d1) !important;
+}
+
+@media (max-width: 500px) {
+    .gh-themes-container-labs .apps-configured {
+        justify-content: flex-end;
+    }
+    .gh-themes-container-labs .apps-card-meta {
+        flex-basis: auto;
+    }
+}
+
+.gh-theme-directory-container-labs {
+    padding: 8px 0 0;
+}
+
 /* Membership */
 @media (max-width: 1140px) {
     .gh-setting-members-canvas::before {
