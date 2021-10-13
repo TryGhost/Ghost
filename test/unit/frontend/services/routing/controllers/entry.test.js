@@ -2,8 +2,8 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/configUtils');
-const urlService = require('../../../../../../core/frontend/services/url');
 const urlUtils = require('../../../../../../core/shared/url-utils');
+const bootstrap = require('../../../../../../core/frontend/services/routing/bootstrap');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
 const EDITOR_URL = `/#/editor/post/`;
@@ -41,7 +41,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         sinon.stub(urlUtils, 'redirectToAdmin');
         sinon.stub(urlUtils, 'redirect301');
-        sinon.stub(urlService, 'getResourceById');
+        sinon.stub(bootstrap.internal, 'getResourceById');
 
         req = {
             path: '/',
@@ -81,7 +81,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         res.routerOptions.resourceType = 'posts';
 
-        urlService.getResourceById.withArgs(post.id).returns({
+        bootstrap.internal.getResourceById.withArgs(post.id).returns({
             config: {
                 type: 'posts'
             }
@@ -162,7 +162,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             req.path = post.url;
             res.routerOptions.resourceType = 'posts';
 
-            urlService.getResourceById.withArgs(post.id).returns({
+            bootstrap.internal.getResourceById.withArgs(post.id).returns({
                 config: {
                     type: 'pages'
                 }
@@ -186,7 +186,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             res.routerOptions.resourceType = 'posts';
 
-            urlService.getResourceById.withArgs(post.id).returns({
+            bootstrap.internal.getResourceById.withArgs(post.id).returns({
                 config: {
                     type: 'posts'
                 }
@@ -215,7 +215,7 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             res.routerOptions.resourceType = 'posts';
 
-            urlService.getResourceById.withArgs(post.id).returns({
+            bootstrap.internal.getResourceById.withArgs(post.id).returns({
                 config: {
                     type: 'posts'
                 }
