@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const security = require('@tryghost/security');
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
-const urlService = require('../../../../../../core/frontend/services/url');
+const bootstrap = require('../../../../../../core/frontend/services/routing/bootstrap');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
 
@@ -23,6 +23,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     let renderStub;
     let posts;
     let postsPerPage;
+    let ownsStub;
 
     beforeEach(function () {
         postsPerPage = 5;
@@ -55,8 +56,8 @@ describe('Unit - services/routing/controllers/collection', function () {
 
         sinon.stub(helpers, 'renderEntries').returns(renderStub);
 
-        sinon.stub(urlService, 'owns');
-        urlService.owns.withArgs('identifier', posts[0].id).returns(true);
+        ownsStub = sinon.stub(bootstrap.internal, 'owns');
+        ownsStub.withArgs('identifier', posts[0].id).returns(true);
 
         req = {
             path: '/',
@@ -93,7 +94,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
+            ownsStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -116,7 +117,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
+            ownsStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -141,7 +142,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
+            ownsStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -167,7 +168,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             fetchDataStub.calledOnce.should.be.true();
             renderStub.calledOnce.should.be.false();
             secureStub.calledOnce.should.be.false();
-            urlService.owns.calledOnce.should.be.false();
+            ownsStub.calledOnce.should.be.false();
             done();
         });
     });
@@ -190,7 +191,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             security.string.safe.calledOnce.should.be.true();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
+            ownsStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -213,7 +214,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledOnce.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
+            ownsStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -237,7 +238,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledTwice.should.be.true();
-            urlService.owns.calledOnce.should.be.true();
+            ownsStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -252,11 +253,11 @@ describe('Unit - services/routing/controllers/collection', function () {
 
         res.routerOptions.filter = 'featured:true';
 
-        urlService.owns.reset();
-        urlService.owns.withArgs('identifier', posts[0].id).returns(false);
-        urlService.owns.withArgs('identifier', posts[1].id).returns(true);
-        urlService.owns.withArgs('identifier', posts[2].id).returns(false);
-        urlService.owns.withArgs('identifier', posts[3].id).returns(false);
+        ownsStub.reset();
+        ownsStub.withArgs('identifier', posts[0].id).returns(false);
+        ownsStub.withArgs('identifier', posts[1].id).returns(true);
+        ownsStub.withArgs('identifier', posts[2].id).returns(false);
+        ownsStub.withArgs('identifier', posts[3].id).returns(false);
 
         fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
@@ -276,7 +277,7 @@ describe('Unit - services/routing/controllers/collection', function () {
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             secureStub.calledTwice.should.be.true();
-            urlService.owns.callCount.should.eql(4);
+            ownsStub.callCount.should.eql(4);
             done();
         }).catch(done);
     });
