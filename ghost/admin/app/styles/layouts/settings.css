@@ -1412,6 +1412,7 @@ p.theme-validation-details {
 
 .gh-nav-design-tab {
     display: flex;
+    position: relative;
     align-items: center;
     box-sizing: border-box;
     width: 100%;
