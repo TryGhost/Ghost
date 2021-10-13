@@ -1280,20 +1280,20 @@
     "@tryghost/tpl" "^0.1.4"
     lodash "^4.17.21"
 
-"@tryghost/debug@0.1.5", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.5.tgz#dc001fa7c39ccce71aeb4dc9b5b0efc92bde05dc"
-  integrity sha512-XMB1GgjdfO4ZrMQ1rPSIy+0kSKHKMuBjBpUBPBv3TTDQSyZ3OR/7q0xHmr3MhTeBRZi9lrZUBjrbjbiqEj9wCA==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.4"
-    debug "^4.3.1"
-
-"@tryghost/debug@^0.1.8":
+"@tryghost/debug@0.1.8", "@tryghost/debug@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.8.tgz#3d97634a14fd463a9a590a335e79f4d1f2cf189c"
   integrity sha512-vgf3n+wcaOxmuA7RhBl8YiG4cRQcHg7+XkQfJ2OzgUVm8XZaPlCfT5IagBT1q0sNThdS8fglFKFupcHZO5ZggA==
   dependencies:
     "@tryghost/root-utils" "^0.3.6"
+    debug "^4.3.1"
+
+"@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.5.tgz#dc001fa7c39ccce71aeb4dc9b5b0efc92bde05dc"
+  integrity sha512-XMB1GgjdfO4ZrMQ1rPSIy+0kSKHKMuBjBpUBPBv3TTDQSyZ3OR/7q0xHmr3MhTeBRZi9lrZUBjrbjbiqEj9wCA==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.4"
     debug "^4.3.1"
 
 "@tryghost/domain-events@^0.1.2":
