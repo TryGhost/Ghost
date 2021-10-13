@@ -187,7 +187,7 @@ function createApiInstance(config) {
         },
         stripeAPIService: stripeService.api,
         logger: logging,
-        offerRepository: offersService.repository,
+        offersAPI: offersService.api,
         labsService: labsService
     });
 
