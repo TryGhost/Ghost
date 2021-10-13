@@ -5,6 +5,6 @@ export default Model.extend({
     type: attr('string'),
     options: attr(),
     default: attr('string'),
-    value: attr('string'),
+    value: attr(),
     group: attr('string')
 });
