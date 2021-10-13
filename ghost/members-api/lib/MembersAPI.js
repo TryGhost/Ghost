@@ -55,7 +55,7 @@ module.exports = function MembersAPI({
         Settings
     },
     stripeAPIService,
-    offerRepository,
+    offersAPI,
     logger,
     labsService
 }) {
@@ -153,7 +153,7 @@ module.exports = function MembersAPI({
     });
 
     const routerController = new RouterController({
-        offerRepository,
+        offersAPI,
         productRepository,
         memberRepository,
         StripePrice,
