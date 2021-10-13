@@ -11,8 +11,11 @@ const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
 
 const redirectManager = new DynamicRedirectManager({
-    permanentMaxAge: config.get('caching:customRedirects:maxAge')
-}, urlUtils);
+    permanentMaxAge: config.get('caching:customRedirects:maxAge'),
+    getSubdirectoryURL: (pathname) => {
+        return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+    }
+});
 
 module.exports = {
     async init() {
