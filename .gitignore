@@ -123,7 +123,8 @@ test/coverage
 # Built asset files
 /core/built
 /core/server/web/admin/views/*.html
-/core/frontend/public/ghost.min.css
+/core/frontend/public/*.min.css
+/core/frontend/public/*.min.js
 
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
