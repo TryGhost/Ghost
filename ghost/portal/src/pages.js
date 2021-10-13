@@ -6,6 +6,7 @@ import LoadingPage from './components/pages/LoadingPage';
 import AccountPlanPage from './components/pages/AccountPlanPage';
 import AccountProfilePage from './components/pages/AccountProfilePage';
 import LinkPage from './components/pages/LinkPage';
+import OfferPage from './components/pages/OfferPage';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
@@ -18,7 +19,8 @@ const Pages = {
     accountProfile: AccountProfilePage,
     magiclink: MagicLinkPage,
     loading: LoadingPage,
-    links: LinkPage
+    links: LinkPage,
+    offer: OfferPage
 };
 
 /** Return page if valid, fallback to signup */
