@@ -9,9 +9,11 @@ export default class DesignMenuComponent extends Component {
     @service customThemeSettings;
     @service router;
     @service settings;
+    @service store;
     @service themeManagement;
 
     @tracked openSection = null;
+    @tracked themes = this.store.peekAll('theme');
 
     KNOWN_GROUPS = [{
         key: 'homepage',
@@ -27,6 +29,9 @@ export default class DesignMenuComponent extends Component {
         super(...arguments);
         this.fetchThemeSettingsTask.perform();
         this.themeManagement.updatePreviewHtmlTask.perform();
+
+        // fetch all themes in the background so we can show the active theme
+        this.store.findAll('theme');
     }
 
     get themeSettings() {
@@ -56,6 +61,10 @@ export default class DesignMenuComponent extends Component {
         });
 
         return groups;
+    }
+
+    get activeTheme() {
+        return this.themes.findBy('active', true);
     }
 
     @action
