@@ -678,7 +678,8 @@ module.exports = {
             nullable: false,
             validations: {
                 isIn: [[
-                    'select'
+                    'select',
+                    'boolean'
                 ]]
             }
         },
