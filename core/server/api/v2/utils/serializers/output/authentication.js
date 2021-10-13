@@ -1,13 +1,10 @@
-const tpl = require("@tryghost/tpl");
-const mapper = require("./utils/mapper");
-const debug = require("@tryghost/debug")(
-    "api:v2:utils:serializers:output:authentication"
-);
-
+const tpl = require('@tryghost/tpl');
+const mapper = require('./utils/mapper');
+const debug = require('@tryghost/debug')('api:v2:utils:serializers:output:authentication');
 const messages = {
-    checkEmailForInstructions: "Check your email for further instructions.",
-    passwordChanged: "Password changed successfully.",
-    invitationAccepted: "Invitation accepted.",
+    checkEmailForInstructions: 'Check your email for further instructions.',
+    passwordChanged: 'Password changed successfully.',
+    invitationAccepted: 'Invitation accepted.'
 };
 
 module.exports = {
@@ -39,21 +36,17 @@ module.exports = {
 
     generateResetToken(data, apiConfig, frame) {
         frame.response = {
-            passwordreset: [
-                {
-                    message: tpl(messages.checkEmailForInstructions),
-                },
-            ],
+            passwordreset: [{
+                message: tpl(messages.checkEmailForInstructions)
+            }]
         };
     },
 
     resetPassword(data, apiConfig, frame) {
         frame.response = {
-            passwordreset: [
-                {
-                    message: tpl(messages.passwordChanged),
-                },
-            ],
+            passwordreset: [{
+                message: tpl(messages.passwordChanged)
+            }]
         };
     },
 
@@ -62,10 +55,8 @@ module.exports = {
 
         frame.response = {
             invitation: [
-                {
-                    message: tpl(messages.invitationAccepted),
-                },
-            ],
+                {message: tpl(messages.invitationAccepted)}
+            ]
         };
     },
 

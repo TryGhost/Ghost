@@ -1,15 +1,15 @@
-const models = require("../../models");
-const tpl = require("@tryghost/tpl");
-const errors = require("@tryghost/errors");
-const getPostServiceInstance = require("../../services/posts/posts-service");
-const allowedIncludes = ["tags", "authors", "authors.roles", "email"];
-const unsafeAttrs = ["status", "authors", "visibility"];
-
-const postsService = getPostServiceInstance("v3");
+const models = require('../../models');
+const tpl = require('@tryghost/tpl');
+const errors = require('@tryghost/errors');
+const getPostServiceInstance = require('../../services/posts/posts-service');
+const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
+const unsafeAttrs = ['status', 'authors', 'visibility'];
 
 const messages = {
-    postNotFound: "Post not found.",
+    postNotFound: 'Post not found.'
 };
+
+const postsService = getPostServiceInstance('v3');
 
 module.exports = {
     docName: "posts",
@@ -73,7 +73,7 @@ module.exports = {
                 (model) => {
                     if (!model) {
                         throw new errors.NotFoundError({
-                            message: tpl(messages.postNotFound),
+                            message: tpl(messages.postNotFound)
                         });
                     }
 
@@ -183,11 +183,9 @@ module.exports = {
             return models.Post.destroy(frame.options)
                 .then(() => null)
                 .catch(models.Post.NotFoundError, () => {
-                    return Promise.reject(
-                        new errors.NotFoundError({
-                            message: tpl(messages.postNotFound),
-                        })
-                    );
+                    return Promise.reject(new errors.NotFoundError({
+                        message: tpl(messages.postNotFound)
+                    }));
                 });
         },
     },
