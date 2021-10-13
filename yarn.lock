@@ -828,7 +828,7 @@
     ee-log "^3.0.0"
     section-tests "^1.3.0"
 
-"@elastic/elasticsearch@^7.10.0":
+"@elastic/elasticsearch@^7.10.0", "@elastic/elasticsearch@^7.15.0":
   version "7.15.0"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.15.0.tgz#4b009a87e0b11b8cfd2e4f378f0292574bc17300"
   integrity sha512-FUKvjV2IKtIiWsvBy7D+wLbSEONsmNR15RRN7P/Sb30g4ObZRHH2qGOP5PPnzxdntEkzZ8HzY7nKKXFS+3Du1g==
@@ -1288,6 +1288,14 @@
     "@tryghost/root-utils" "^0.3.4"
     debug "^4.3.1"
 
+"@tryghost/debug@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.8.tgz#3d97634a14fd463a9a590a335e79f4d1f2cf189c"
+  integrity sha512-vgf3n+wcaOxmuA7RhBl8YiG4cRQcHg7+XkQfJ2OzgUVm8XZaPlCfT5IagBT1q0sNThdS8fglFKFupcHZO5ZggA==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.6"
+    debug "^4.3.1"
+
 "@tryghost/domain-events@^0.1.2":
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.2.tgz#95e88241c3a92675a8b18f9f61aa0a7847dae2ef"
@@ -1299,6 +1307,14 @@
   integrity sha512-ILhumzdwJNoRG44S0FkgzZQlkCYioTKWEiY+FFFQpTFWwZ3Jd5a6us5k8tEsd+Wf2rZOvul/ehV45j2c2l1BMw==
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
+
+"@tryghost/elasticsearch@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-0.1.2.tgz#a2d25ddbd7a9ab7a1a42b32cad7147fc264aaf9d"
+  integrity sha512-jAGTegtGc0P80uOpzHQpA9XERDanKxAkD4rSOhX3gOOqGsTVYIDUERssTrID7dFcCWXSMShOVdYPqDirtAQfVQ==
+  dependencies:
+    "@elastic/elasticsearch" "^7.15.0"
+    "@tryghost/debug" "^0.1.8"
 
 "@tryghost/email-analytics-provider-mailgun@1.0.3":
   version "1.0.3"
@@ -1564,12 +1580,14 @@
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 
-"@tryghost/metrics@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-0.2.0.tgz#e44ddea0ffc6b4092a7dd83f12911f4e3d00812c"
-  integrity sha512-pym7A2BDjVCNj6LPlxPg5qPXbrZNSamXWqTF5PxeUSUhF6kZpYkxSVU1L3ADkQlG1UqYsJQuO4FrEf0DBuntJg==
+"@tryghost/metrics@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-0.2.2.tgz#8254d7b3719e6136c57e62b23fa68ecb456ab925"
+  integrity sha512-XTawbbDtMiyWEnHAOgfY00r7gfN7sCHX7zkKRD5sEX0IpY6UzDxXjvBWQwFBezuapGxE4GQDgne3laatdggB7A==
   dependencies:
+    "@tryghost/elasticsearch" "^0.1.2"
     "@tryghost/pretty-stream" "^0.1.1"
+    "@tryghost/root-utils" "^0.3.6"
 
 "@tryghost/mobiledoc-kit@^0.12.4-ghost.1":
   version "0.12.4-ghost.1"
@@ -1653,6 +1671,14 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.1.0.tgz#7578cb5e57953316fef58edd43a152a86b719a8f"
   integrity sha512-zy3PSviwytjvjdMso86RYZLE2I4e2yL/s83fIEf/g17C8V8hsCcgE83cFOpCw3ISWDFX3Qi0IX9kI3or2pfGLg==
+  dependencies:
+    caller "^1.0.1"
+    find-root "^1.1.0"
+
+"@tryghost/root-utils@^0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.6.tgz#424b012fe94f68f4c137a510a4929639e5281a3a"
+  integrity sha512-fLUKGxpiwBQ8UCpxkbhT4L4VBRha8nU1YMOnWVdRa2LQPtaZ8+Nvs9LsAm86p1Qjsdr6x5PrNwpy5HBHEdNsYA==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
