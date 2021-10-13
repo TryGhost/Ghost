@@ -1,4 +1,5 @@
 const config = require('./core/shared/config');
+const ghostVersion = require('@tryghost/version');
 
 module.exports = {
     name: config.get('logging:name'),
@@ -13,7 +14,8 @@ module.exports = {
         metadata: {
             // Undefined if unavailable
             siteId: config.get('hostSettings:siteId'),
-            domain: config.get('url')
+            domain: config.get('url'),
+            version: ghostVersion.safe
         }
     },
     gelf: config.get('logging:gelf'),
