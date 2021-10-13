@@ -1,185 +1,181 @@
-const models = require('../../models');
-const i18n = require('../../../shared/i18n');
-const errors = require('@tryghost/errors');
-const getPostServiceInstance = require('../../services/posts/posts-service');
-const allowedIncludes = ['tags', 'authors', 'authors.roles', 'email'];
-const unsafeAttrs = ['status', 'authors', 'visibility'];
+const models = require("../../models");
+const tpl = require("@tryghost/tpl");
+const errors = require("@tryghost/errors");
+const getPostServiceInstance = require("../../services/posts/posts-service");
+const allowedIncludes = ["tags", "authors", "authors.roles", "email"];
+const unsafeAttrs = ["status", "authors", "visibility"];
 
-const postsService = getPostServiceInstance('v3');
+const postsService = getPostServiceInstance("v3");
+
+const messages = {
+    postNotFound: "Post not found.",
+};
 
 module.exports = {
-    docName: 'posts',
+    docName: "posts",
     browse: {
         options: [
-            'include',
-            'filter',
-            'fields',
-            'formats',
-            'limit',
-            'order',
-            'page',
-            'debug',
-            'absolute_urls'
+            "include",
+            "filter",
+            "fields",
+            "formats",
+            "limit",
+            "order",
+            "page",
+            "debug",
+            "absolute_urls",
         ],
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: allowedIncludes,
                 },
                 formats: {
-                    values: models.Post.allowedFormats
-                }
-            }
+                    values: models.Post.allowedFormats,
+                },
+            },
         },
         permissions: {
-            unsafeAttrs: unsafeAttrs
+            unsafeAttrs: unsafeAttrs,
         },
         query(frame) {
             return models.Post.findPage(frame.options);
-        }
+        },
     },
 
     read: {
         options: [
-            'include',
-            'fields',
-            'formats',
-            'debug',
-            'absolute_urls',
+            "include",
+            "fields",
+            "formats",
+            "debug",
+            "absolute_urls",
             // NOTE: only for internal context
-            'forUpdate',
-            'transacting'
+            "forUpdate",
+            "transacting",
         ],
-        data: [
-            'id',
-            'slug',
-            'uuid'
-        ],
+        data: ["id", "slug", "uuid"],
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: allowedIncludes,
                 },
                 formats: {
-                    values: models.Post.allowedFormats
-                }
-            }
+                    values: models.Post.allowedFormats,
+                },
+            },
         },
         permissions: {
-            unsafeAttrs: unsafeAttrs
+            unsafeAttrs: unsafeAttrs,
         },
         query(frame) {
-            return models.Post.findOne(frame.data, frame.options)
-                .then((model) => {
+            return models.Post.findOne(frame.data, frame.options).then(
+                (model) => {
                     if (!model) {
                         throw new errors.NotFoundError({
-                            message: i18n.t('errors.api.posts.postNotFound')
+                            message: tpl(messages.postNotFound),
                         });
                     }
 
                     return model;
-                });
-        }
+                }
+            );
+        },
     },
 
     add: {
         statusCode: 201,
         headers: {},
-        options: [
-            'include',
-            'formats',
-            'source'
-        ],
+        options: ["include", "formats", "source"],
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: allowedIncludes,
                 },
                 source: {
-                    values: ['html']
-                }
-            }
+                    values: ["html"],
+                },
+            },
         },
         permissions: {
-            unsafeAttrs: unsafeAttrs
+            unsafeAttrs: unsafeAttrs,
         },
         query(frame) {
-            return models.Post.add(frame.data.posts[0], frame.options)
-                .then((model) => {
-                    if (model.get('status') !== 'published') {
+            return models.Post.add(frame.data.posts[0], frame.options).then(
+                (model) => {
+                    if (model.get("status") !== "published") {
                         this.headers.cacheInvalidate = false;
                     } else {
                         this.headers.cacheInvalidate = true;
                     }
 
                     return model;
-                });
-        }
+                }
+            );
+        },
     },
 
     edit: {
         headers: {},
         options: [
-            'include',
-            'id',
-            'formats',
-            'source',
-            'email_recipient_filter',
-            'send_email_when_published',
-            'force_rerender',
+            "include",
+            "id",
+            "formats",
+            "source",
+            "email_recipient_filter",
+            "send_email_when_published",
+            "force_rerender",
             // NOTE: only for internal context
-            'forUpdate',
-            'transacting'
+            "forUpdate",
+            "transacting",
         ],
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: allowedIncludes,
                 },
                 id: {
-                    required: true
+                    required: true,
                 },
                 source: {
-                    values: ['html']
+                    values: ["html"],
                 },
                 send_email_when_published: {
-                    values: [true, false]
-                }
-            }
+                    values: [true, false],
+                },
+            },
         },
         permissions: {
-            unsafeAttrs: unsafeAttrs
+            unsafeAttrs: unsafeAttrs,
         },
         async query(frame) {
             let model = await postsService.editPost(frame);
 
-            this.headers.cacheInvalidate = postsService.handleCacheInvalidation(model);
+            this.headers.cacheInvalidate =
+                postsService.handleCacheInvalidation(model);
 
             return model;
-        }
+        },
     },
 
     destroy: {
         statusCode: 204,
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: true,
         },
-        options: [
-            'include',
-            'id'
-        ],
+        options: ["include", "id"],
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: allowedIncludes,
                 },
                 id: {
-                    required: true
-                }
-            }
+                    required: true,
+                },
+            },
         },
         permissions: {
-            unsafeAttrs: unsafeAttrs
+            unsafeAttrs: unsafeAttrs,
         },
         query(frame) {
             frame.options.require = true;
@@ -187,10 +183,12 @@ module.exports = {
             return models.Post.destroy(frame.options)
                 .then(() => null)
                 .catch(models.Post.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.posts.postNotFound')
-                    }));
+                    return Promise.reject(
+                        new errors.NotFoundError({
+                            message: tpl(messages.postNotFound),
+                        })
+                    );
                 });
-        }
-    }
+        },
+    },
 };
