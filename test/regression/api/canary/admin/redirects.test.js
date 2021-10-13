@@ -37,67 +37,6 @@ describe('Redirects API', function () {
             });
     };
 
-    describe('Download', function () {
-        afterEach(function () {
-            configUtils.config.set('paths:contentPath', originalContentPath);
-        });
-
-        it('file exists', async function () {
-            await startGhost({
-                redirectsFile: true,
-                redirectsFileExt: '.json',
-                forceStart: true
-            });
-
-            await request
-                .get(localUtils.API.getApiQuery('redirects/download/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /application\/json/)
-                .expect('Content-Disposition', 'Attachment; filename="redirects.json"')
-                .expect(200)
-                .then((res) => {
-                    res.headers['content-disposition'].should.eql('Attachment; filename="redirects.json"');
-                    res.headers['content-type'].should.eql('application/json; charset=utf-8');
-
-                    should.deepEqual(res.body, require('../../../../utils/fixtures/data/redirects.json'));
-                });
-        });
-    });
-
-    describe('Download yaml', function () {
-        // beforeEach(function () {
-        //     testUtils.setupRedirectsFile(config.get('paths:contentPath'), '.yaml');
-        // });
-
-        // afterEach(function () {
-        //     testUtils.setupRedirectsFile(config.get('paths:contentPath'), '.json');
-        // });
-
-        // 'file does not exist' doesn't have to be tested because it always returns .json file.
-        // TODO: But it should be written when the default redirects file type is changed to yaml.
-
-        it('file exists', async function () {
-            await startGhost({
-                redirectsFile: true,
-                redirectsFileExt: '.yaml',
-                forceStart: true
-            });
-
-            await request
-                .get(localUtils.API.getApiQuery('redirects/download/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /text\/html/)
-                .expect('Content-Disposition', 'Attachment; filename="redirects.yaml"')
-                .expect(200)
-                .then((res) => {
-                    res.headers['content-disposition'].should.eql('Attachment; filename="redirects.yaml"');
-                    res.headers['content-type'].should.eql('text/html; charset=utf-8');
-
-                    should.deepEqual(res.text, fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/data/redirects.yaml')).toString());
-                });
-        });
-    });
-
     describe('Upload', function () {
         describe('Error cases', function () {
             it('syntax error', function () {
