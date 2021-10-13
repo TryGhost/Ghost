@@ -125,7 +125,6 @@
 .gh-post-preview-iframe {
     transform: scale(0.8);
     transform-origin: 0 0;
-    overflow-x: hidden;
     width: 361px;
     height: 786px;
     padding: 0;
