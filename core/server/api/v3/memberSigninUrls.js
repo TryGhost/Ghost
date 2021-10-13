@@ -5,10 +5,6 @@ const messages = {
     memberNotFound: 'Member not found.'
 };
 
-const messages = {
-    memberNotFound: 'Member not found.'
-};
-
 module.exports = {
     docName: 'member_signin_urls',
     permissions: true,
