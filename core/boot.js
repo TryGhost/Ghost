@@ -141,6 +141,9 @@ async function initFrontend() {
     const helperService = require('./frontend/services/helpers');
     await helperService.init();
 
+    const cardAssetService = require('./frontend/services/card-assets');
+    await cardAssetService.init();
+
     debug('End: initFrontend');
 }
 

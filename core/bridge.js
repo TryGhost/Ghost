@@ -85,8 +85,22 @@ class Bridge {
         }
     }
 
+    getCardAssetConfig() {
+        if (this.getActiveTheme()) {
+            return this.getActiveTheme().config('card_assets');
+        } else {
+            return true;
+        }
+    }
+
     reloadFrontend() {
         const apiVersion = this.getFrontendApiVersion();
+        const cardAssetConfig = this.getCardAssetConfig();
+
+        debug('reload card assets config', cardAssetConfig);
+        const cardAssetService = require('./frontend/services/card-assets');
+        cardAssetService.load(cardAssetConfig);
+
         debug('reload frontend', apiVersion);
         const siteApp = require('./frontend/web/site');
         siteApp.reload({apiVersion});
