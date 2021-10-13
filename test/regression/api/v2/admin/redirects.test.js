@@ -32,23 +32,6 @@ describe('Redirects API', function () {
             configUtils.config.set('paths:contentPath', originalContentPath);
         });
 
-        it('file does not exist', function () {
-            // Just set any content folder, which does not contain a redirects file.
-            configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures/data'));
-
-            return request
-                .get(localUtils.API.getApiQuery('redirects/json/'))
-                .set('Origin', config.get('url'))
-                .expect(200)
-                .then((res) => {
-                    res.headers['content-disposition'].should.eql('Attachment; filename="redirects.json"');
-                    res.headers['content-type'].should.eql('application/json; charset=utf-8');
-                    should.not.exist(res.headers['x-cache-invalidate']);
-
-                    should.deepEqual(res.body, []);
-                });
-        });
-
         it('file exists', function () {
             return request
                 .get(localUtils.API.getApiQuery('redirects/json/'))
