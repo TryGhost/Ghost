@@ -1561,9 +1561,13 @@ p.theme-validation-details {
     height: 34px;
 }
 
+.gh-design-preview-mode span {
+    line-height: 28px;
+}
+
 .gh-design-preview-mode svg {
     max-width: 16px;
-    max-height: 16px;
+    height: 16px;
     vertical-align: middle;
     fill: var(--midgrey);
 }
