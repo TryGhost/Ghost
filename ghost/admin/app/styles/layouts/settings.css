@@ -1428,7 +1428,7 @@ p.theme-validation-details {
     background: var(--mainmenu-color-hover-bg);
 }
 
-.gh-nav-design-tab:focus {
+.gh-nav-design-tab.active {
     color: var(--black);
     font-weight: 600;
 }
