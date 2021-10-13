@@ -37,7 +37,7 @@
     </div>
 
     <div class="gh-nav-bottom">
-        <LinkTo class="gh-nav-design-tab flex-column" style="align-items: self-start" @route="settings.design.change-theme">
+        <LinkTo class="gh-nav-design-tab flex-column" style="align-items: self-start" @route="settings.design.change-theme" {{on "click" (fn this.toggleSection null)}}>
             <span class="db">{{svg-jar "settings"}}Change theme</span>
             <span class="db">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - V {{this.activeTheme.package.version}}{{/if}}</span>
         </LinkTo>
