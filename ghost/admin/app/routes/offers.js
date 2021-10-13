@@ -5,6 +5,10 @@ export default class offersRoute extends AuthenticatedRoute {
     @service store;
     @service feature;
 
+    queryParams = {
+        type: {refreshModel: true}
+    };
+
     // redirect to posts screen if:
     // - TODO: members is disabled?
     // - logged in user isn't owner/admin
