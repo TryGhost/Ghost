@@ -1434,6 +1434,10 @@ p.theme-validation-details {
     font-weight: 600;
 }
 
+.gh-nav-design .gh-nav-list .active svg {
+    fill: none;
+}
+
 .gh-nav-design .gh-nav-button-expand {
     top: auto;
     padding-top: 3px;
