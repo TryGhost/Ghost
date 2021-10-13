@@ -28,6 +28,10 @@ let _urlService;
  *   - if you change your route settings, we will re-initialise routing
  *
  * @param {Object} options
+ * @param {Boolean} [options.start] - flag controlling if the frontend Routes should be reinitialized
+ * @param {String} options.apiVersion - API version frontend Routes should communicate through
+ * @param {Object} options.routerSettings - JSON configuration to build frontend Routes
+ * @param {Object} options.urlService - service providing resouce URL utility functions such as owns, getUrlByResourceId, and getResourceById
  * @returns {ExpressRouter}
  */
 const init = ({start = false, routerSettings, apiVersion, urlService}) => {
