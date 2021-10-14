@@ -680,7 +680,8 @@ module.exports = {
                 isIn: [[
                     'select',
                     'boolean',
-                    'color'
+                    'color',
+                    'text'
                 ]]
             }
         },
