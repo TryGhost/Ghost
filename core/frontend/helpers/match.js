@@ -77,9 +77,13 @@ function match(...attrs) {
     });
 
     if (attrs.length === 1) {
-        // If we only have one attribute, treat it as simple true/false (like the if helper)
+        // CASE: single attribute, treat it as simple true/false (like the if helper)
         result = handleConditional(attrs[0], options);
+    } else if (attrs.length === 2) {
+        // CASE: two attributes, assume the operator is "="
+        result = handleMatch(attrs[0], '=', attrs[1]);
     } else if (attrs.length === 3) {
+        // CASE: three attributes, handle the match exactly
         result = handleMatch(attrs[0], attrs[1], attrs[2]);
     } else {
         logging.warn(tpl(messages.invalidAttribute));
