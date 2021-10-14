@@ -1532,8 +1532,14 @@ p.theme-validation-details {
     margin-bottom: 1rem;
 }
 
+.gh-design-page-preview-mode,
 .gh-design-page-preview-mode select {
     height: 34px;
+    min-width: 128px;
+}
+
+.gh-design-page-preview-mode svg {
+    margin-top: -.1em;
 }
 
 .gh-design-preview-mode span {
@@ -1616,7 +1622,7 @@ p.theme-validation-details {
     margin: 0 0 24px;
 }
 
-.gh-theme-toolbar {
+.gh-theme-browser {
     position: relative;
     width: 100%;
     height: 28px;
@@ -1625,7 +1631,7 @@ p.theme-validation-details {
     border-radius: 3px 3px 0 0;
 }
 
-.gh-theme-toolbar-button {
+.gh-theme-browser-button {
     position: relative;
     top: 11px;
     display: block;
@@ -1635,8 +1641,8 @@ p.theme-validation-details {
     border-radius: 50%;
 }
 
-.gh-theme-toolbar-button::before,
-.gh-theme-toolbar-button::after {
+.gh-theme-browser-button::before,
+.gh-theme-browser-button::after {
     content: "";
     position: absolute;
     width: 6px;
@@ -1645,11 +1651,11 @@ p.theme-validation-details {
     border-radius: 50%;
 }
 
-.gh-theme-toolbar-button::before {
+.gh-theme-browser-button::before {
     left: 12px;
 }
 
-.gh-theme-toolbar-button::after {
+.gh-theme-browser-button::after {
     left: 24px;
 }
 
