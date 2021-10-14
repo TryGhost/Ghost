@@ -21,7 +21,7 @@
                     <div class="gh-main-section-block no-margin">
                         <h4 class="gh-main-section-header small bn">Basic</h4>
                         <div class="gh-main-section-content grey">
-                            <GhFormGroup @errors={{this.errors}} @property="name">
+                            <GhFormGroup @errors={{this.errors}} @property="name" class="no-margin">
                                 <label for="name" class="fw6">Name</label>
                                 <GhTextInput
                                     @name="name"
@@ -85,7 +85,7 @@
                                     </div>
                                 </GhFormGroup>
                                 <div class="gh-offer-type">
-                                    <GhFormGroup @errors={{this.errors}} @property="offer-type">
+                                    <GhFormGroup @errors={{this.errors}} @property="offer-type" class="no-margin">
                                         <span class="gh-select">
                                             <OneWaySelect
                                                 @value={{this.offer.type}}
@@ -179,7 +179,7 @@
                                 </div>
                                 <GhErrorMessage @errors={{this.errors}} @property="url" />
                             </GhFormGroup>
-                            <GhFormGroup @errors={{this.errors}} @property="description">
+                            <GhFormGroup @errors={{this.errors}} @property="description" class="no-margin">
                                 <label for="description" class="fw6">Description</label>
                                 <GhTextarea
                                     @id="description"
