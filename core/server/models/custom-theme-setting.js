@@ -21,7 +21,6 @@ const CustomThemeSetting = ghostBookshelf.Model.extend({
 
         // transform URLs to absolute for image settings
         if (settingType === 'image' && attrs.value) {
-            console.log('.parse', attrs.value, urlUtils.transformReadyToAbsolute(attrs.value));
             attrs.value = urlUtils.transformReadyToAbsolute(attrs.value);
         }
 
