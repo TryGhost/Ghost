@@ -16,6 +16,7 @@ const config = require('./shared/config');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
+const frontendRouting = require('./frontend/services/routing/bootstrap');
 const settingsCache = require('./shared/settings-cache');
 
 // Listen to settings.lang.edited, similar to the member service and models/base/listeners
@@ -34,6 +35,13 @@ class Bridge {
         events.on('settings.lang.edited', (model) => {
             debug('Active theme init18n');
             this.getActiveTheme().initI18n({locale: model.get('value')});
+        });
+
+        // NOTE: eventually this event should somehow be listened on and handled by the URL Service
+        //       for now this eliminates the need for the frontend routing to listen to
+        //       server events
+        events.on('settings.timezone.edited', (model) => {
+            frontendRouting.handleTimezoneEdit(model);
         });
     }
 

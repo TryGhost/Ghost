@@ -61,7 +61,6 @@ describe('Unit: services/url/UrlGenerator', function () {
         const urlGenerator = new UrlGenerator(router, queue);
 
         queue.register.calledTwice.should.be.true();
-        router.addListener.calledOnce.should.be.true();
         should.not.exist(urlGenerator.filter);
     });
 
@@ -94,7 +93,8 @@ describe('Unit: services/url/UrlGenerator', function () {
             id: 'object-id-1'
         };
 
-        router.addListener.args[0][1]();
+        urlGenerator.regenerateResources();
+
         urls.removeResourceId.calledTwice.should.be.true();
         resource.release.calledOnce.should.be.true();
         resource2.release.calledOnce.should.be.true();
