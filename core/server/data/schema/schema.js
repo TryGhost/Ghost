@@ -679,7 +679,8 @@ module.exports = {
             validations: {
                 isIn: [[
                     'select',
-                    'boolean'
+                    'boolean',
+                    'color'
                 ]]
             }
         },
