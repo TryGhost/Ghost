@@ -10,6 +10,9 @@
             {{#if (eq setting.type "color")}}
                 <CustomThemeSettings::Color @setting={{setting}} @index={{index}} @onChange={{@updatePreview}} />
             {{/if}}
+            {{#if (eq setting.type "text")}}
+                <CustomThemeSettings::Text @setting={{setting}} @index={{index}} @onChange={{@updatePreview}} />
+            {{/if}}
         {{/each}}
     </form>
 </div>
