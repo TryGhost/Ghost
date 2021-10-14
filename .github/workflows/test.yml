@@ -108,6 +108,9 @@ jobs:
       - run: yarn test:e2e
         env:
           database__connection__filename: /dev/shm/ghost-test.db
+      - run: yarn test:integration
+        env:
+          database__connection__filename: /dev/shm/ghost-test.db
       - run: yarn test:unit
       - run: yarn test:regression
         env:
