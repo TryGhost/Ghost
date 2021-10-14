@@ -1,5 +1,5 @@
 import React from 'react';
-import {generateAccountPlanFixture} from '../../utils/fixtures';
+import {generateAccountPlanFixture, getSiteData, getProductsData} from '../../utils/fixtures';
 import {render, fireEvent} from '../../utils/test-utils';
 import AccountPlanPage from './AccountPlanPage';
 
@@ -52,7 +52,10 @@ describe('Account Plan Page', () => {
     });
 
     test('can choose plan and continue', async () => {
-        const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, continueBtn} = setup();
+        const siteData = getSiteData({
+            products: getProductsData({numOfProducts: 1})
+        });
+        const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, continueBtn} = setup({site: siteData});
         fireEvent.click(monthlyCheckboxEl);
         expect(monthlyCheckboxEl.checked).toEqual(false);
         fireEvent.click(yearlyCheckboxEl);
@@ -60,7 +63,7 @@ describe('Account Plan Page', () => {
         expect(continueBtn).toBeEnabled();
 
         fireEvent.click(continueBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: '6085adc776909b1a2382369a'});
+        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: siteData.products[0].monthlyPrice.id});
     });
 
     test('can cancel subscription for member on hidden tier', async () => {

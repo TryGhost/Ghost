@@ -97,7 +97,7 @@ function getMemberData({
     };
 }
 
-function getProductsData({numOfProducts = 3} = {}) {
+export function getProductsData({numOfProducts = 3} = {}) {
     const products = [
         getProductData({
             name: 'Bronze',
@@ -107,7 +107,7 @@ function getProductsData({numOfProducts = 3} = {}) {
                 amount: 700
             }),
             yearlyPrice: getPriceData({
-                interval: 'month',
+                interval: 'year',
                 amount: 7000
             }),
             numOfBenefits: 2
@@ -120,7 +120,7 @@ function getProductsData({numOfProducts = 3} = {}) {
                 amount: 1200
             }),
             yearlyPrice: getPriceData({
-                interval: 'month',
+                interval: 'year',
                 amount: 12000
             }),
             numOfBenefits: 3
@@ -133,7 +133,7 @@ function getProductsData({numOfProducts = 3} = {}) {
                 amount: 2000
             }),
             yearlyPrice: getPriceData({
-                interval: 'month',
+                interval: 'year',
                 amount: 17000
             }),
             numOfBenefits: 4
