@@ -31,7 +31,9 @@ export default class ThemeManagementService extends Service {
     }]
 
     get latestPublishedPost() {
-        return this.allPosts.toArray().filterBy('status', 'published').sortBy('publishedAtUTC').lastObject;
+        return this.allPosts.toArray().filterBy('status', 'published').sort((a, b) => {
+            return b.publishedAtUTC.valueOf() - a.publishedAtUTC.valueOf();
+        }).lastObject;
     }
 
     @action
@@ -167,7 +169,7 @@ export default class ThemeManagementService extends Service {
         if (this.previewType === 'post') {
             // in case we haven't loaded any posts so far
             if (!this.latestPublishedPost) {
-                yield this.store.query('post', {filter: 'status:published', order: 'created_at DESC', limit: 1});
+                yield this.store.query('post', {filter: 'status:published', order: 'published_at DESC', limit: 1});
             }
 
             frontendUrl = this.latestPublishedPost.url;
