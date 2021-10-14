@@ -100,12 +100,35 @@ describe('Match helper', function () {
         });
 
         // @TODO: Implement Implicit Equals
-        // describe('Implicit Equals', function () {
-        // runTests({
-        // '{{match string "Hello world"}}': 'true',
-        // '{{match string "Hello world!"}}': 'false',
-        // }, hash);
-        // });
+        describe('Implicit Equals', function () {
+            runTests({
+                '{{match string "Hello world"}}': 'true',
+                '{{match string "Hello world!"}}': 'false',
+                '{{match string_true "true"}}': 'true',
+                '{{match string_true true}}': 'false',
+                '{{match string_false "false"}}': 'true',
+                '{{match string_false false}}': 'false',
+                '{{match safestring_string_true "true"}}': 'true',
+                '{{match safestring_string_true true}}': 'false',
+                '{{match safestring_string_false "false"}}': 'true',
+                '{{match safestring_string_false false}}': 'false',
+                '{{match safestring_bool_true "true"}}': 'false',
+                '{{match safestring_bool_true true}}': 'true',
+                '{{match safestring_bool_false "false"}}': 'false',
+                '{{match safestring_bool_false false}}': 'true',
+                '{{match truthy_bool true}}': 'true',
+                '{{match truthy_bool false}}': 'false',
+                '{{match falsy_bool false}}': 'true',
+                '{{match falsy_bool true}}': 'false',
+                '{{match one 1}}': 'true',
+                '{{match one "1"}}': 'false',
+                '{{match zero 0}}': 'true',
+                '{{match zero "0"}}': 'false',
+
+                '{{match (title) "=" "The Title"}}': 'true',
+                '{{match (title) "=" "The Title!"}}': 'false'
+            }, hash);
+        });
 
         describe('Explicit Equals', function () {
             runTests({
