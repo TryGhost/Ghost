@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/configUtils');
-const events = require('../../../../../core/server/lib/common/events');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const RSSRouter = require('../../../../../core/frontend/services/routing/RSSRouter');
 const urlUtils = require('../../../../../core/shared/url-utils');
@@ -9,9 +8,6 @@ const urlUtils = require('../../../../../core/shared/url-utils');
 describe('UNIT - services/routing/RSSRouter', function () {
     describe('instantiate', function () {
         beforeEach(function () {
-            sinon.stub(events, 'emit');
-            sinon.stub(events, 'on');
-
             sinon.spy(RSSRouter.prototype, 'mountRoute');
             sinon.spy(RSSRouter.prototype, 'mountRouter');
 
@@ -29,9 +25,6 @@ describe('UNIT - services/routing/RSSRouter', function () {
             should.exist(rssRouter.router);
             rssRouter.route.value.should.eql('/rss/');
 
-            events.emit.calledOnce.should.be.false();
-            events.on.calledOnce.should.be.false();
-
             rssRouter.mountRoute.callCount.should.eql(2);
 
             rssRouter.mountRoute.args[0][0].should.eql('/rss/');
@@ -46,9 +39,6 @@ describe('UNIT - services/routing/RSSRouter', function () {
 
             should.exist(rssRouter.router);
             rssRouter.route.value.should.eql('/rss/');
-
-            events.emit.calledOnce.should.be.false();
-            events.on.calledOnce.should.be.false();
 
             rssRouter.mountRoute.callCount.should.eql(2);
 
