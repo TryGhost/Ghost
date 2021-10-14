@@ -102,7 +102,7 @@ export default class CustomThemeSettingsServices extends Service {
             const groupSettings = settings.filter(setting => setting.group === knownGroup.key);
 
             if (groupSettings.length) {
-                groups.push(Object.assign({}, knownGroup, {settings}));
+                groups.push(Object.assign({}, knownGroup, {settings: groupSettings}));
             }
         });
 
