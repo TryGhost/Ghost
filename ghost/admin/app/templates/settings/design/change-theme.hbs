@@ -15,10 +15,13 @@
         {{/if}}
 
         <div class="gh-theme-directory-container-labs">
-            <div class="theme-directory">
+            <div class="theme-directory-labs">
                 {{#each this.marketplaceThemes as |theme|}}
                     <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item">
-                        <div class="td-item-screenshot relative">
+                        <div class="gh-theme-toolbar">
+                            <span class="gh-theme-toolbar-button"></span>
+                        </div>
+                        <div class="td-item-screenshot-labs relative">
                             <img style="object-fit:contain;" src={{theme.image}} alt="{{theme.name}} Theme" />
                         </div>
                         <div class="td-item-desc">
@@ -33,7 +36,7 @@
 </section>
 
 <section class="gh-theme-directory-footer-container">
-    <a href="https://ghost.org/themes/" target="_blank" rel="noopener noreferrer" class="gh-theme-directory-footer">
-        See more themes, free and premium, in <span class="link">our official marketplace →</span>
-    </a>
+    <div class="gh-theme-directory-footer">
+        See more themes, free and premium, in <a href="https://ghost.org/themes/" target="_blank" rel="noopener noreferrer" class="link">our official marketplace →</a>
+    </div>
 </section>

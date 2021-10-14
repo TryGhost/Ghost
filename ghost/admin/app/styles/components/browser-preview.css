@@ -25,7 +25,7 @@
 }
 
 .gh-browserpreview-browser {
-    background: var(--whitegrey-d1);
+    background: var(--whitegrey-l1);
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
 }
@@ -49,12 +49,11 @@
     display: block;
     padding: 0;
     margin: 0;
-    margin-right: 8px;
-    background: var(--midgrey);
-    border-radius: 999px;
-    width: 12px;
-    height: 12px;
-    opacity: 0.3;
+    margin-right: 10px;
+    background: var(--lightgrey);
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
 }
 
 .gh-browserpreview-browser .tabs div {
@@ -66,7 +65,7 @@
     display: flex;
     align-items: center;
     font-size: 1.25rem;
-    background: var(--whitegrey-l1);
+    background: var(--white);
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
 }
