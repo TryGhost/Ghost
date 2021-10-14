@@ -15,18 +15,6 @@ export default class DesignMenuComponent extends Component {
     @tracked openSection = null;
     @tracked themes = this.store.peekAll('theme');
 
-    KNOWN_GROUPS = [{
-        key: 'homepage',
-        name: 'Homepage',
-        icon: 'house',
-        previewType: 'homepage'
-    }, {
-        key: 'post',
-        name: 'Post',
-        icon: 'post',
-        previewType: 'post'
-    }];
-
     constructor() {
         super(...arguments);
         this.fetchThemeSettingsTask.perform();
@@ -34,35 +22,6 @@ export default class DesignMenuComponent extends Component {
 
         // fetch all themes in the background so we can show the active theme
         this.store.findAll('theme');
-    }
-
-    get themeSettings() {
-        return this.customThemeSettings.settings;
-    }
-
-    get settingGroups() {
-        const groupKeys = this.KNOWN_GROUPS.map(g => g.key);
-        const groups = [];
-
-        const siteWideSettings = this.themeSettings.filter(setting => !groupKeys.includes(setting.group));
-        if (siteWideSettings.length) {
-            groups.push({
-                key: 'site-wide',
-                name: 'Site-wide',
-                icon: 'view-site',
-                settings: siteWideSettings
-            });
-        }
-
-        this.KNOWN_GROUPS.forEach((knownGroup) => {
-            const settings = this.themeSettings.filter(setting => setting.group === knownGroup.key);
-
-            if (settings.length) {
-                groups.push(Object.assign({}, knownGroup, {settings}));
-            }
-        });
-
-        return groups;
     }
 
     get activeTheme() {
@@ -76,7 +35,7 @@ export default class DesignMenuComponent extends Component {
         } else {
             this.openSection = section;
 
-            const group = this.KNOWN_GROUPS.findBy('key', section);
+            const group = this.customThemeSettings.KNOWN_GROUPS.findBy('key', section);
             if (group && group.previewType) {
                 this.themeManagement.setPreviewType(group.previewType);
             } else {

@@ -18,25 +18,23 @@
                 {{/if}}
             {{/let}}
 
-            {{#if this.themeSettings}}
-                {{#each this.settingGroups as |group|}}
-                    {{#let (eq this.openSection group.key) as |isOpen|}}
-                        <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection group.key)}}>
-                            <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-down-stroke" "arrow-right-stroke")}}</span>
-                            {{svg-jar group.icon}} {{group.name}}
-                        </button>
+            {{#each this.customThemeSettings.settingGroups as |group|}}
+                {{#let (eq this.openSection group.key) as |isOpen|}}
+                    <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection group.key)}}>
+                        <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-down-stroke" "arrow-right-stroke")}}</span>
+                        {{svg-jar group.icon}} {{group.name}}
+                    </button>
 
-                        {{#if isOpen}}
-                            <div class="gh-nav-design-settings">
-                                <Settings::Design::ThemeSettingsForm
-                                    @themeSettings={{group.settings}}
-                                    @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
-                                />
-                            </div>
-                        {{/if}}
-                    {{/let}}
-                {{/each}}
-            {{/if}}
+                    {{#if isOpen}}
+                        <div class="gh-nav-design-settings">
+                            <Settings::Design::ThemeSettingsForm
+                                @themeSettings={{group.settings}}
+                                @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                            />
+                        </div>
+                    {{/if}}
+                {{/let}}
+            {{/each}}
         </div>
     </div>
 
