@@ -152,7 +152,7 @@ module.exports = class RouterController {
                 }
 
                 coupon = {
-                    id: offer.stripeCouponId
+                    id: offer.stripe_coupon_id
                 };
             } catch (err) {
                 res.writeHead(500);
