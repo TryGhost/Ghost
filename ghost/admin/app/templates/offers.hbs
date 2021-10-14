@@ -1,7 +1,24 @@
 <section class="gh-canvas gh-offers">
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Offers</h2>
-        <section class="view-actions">
+        <section class="gh-offers-actions view-actions">
+            <div>
+                <div class="gh-contentfilter-menu gh-contentfilter-type {{if this.selectedType.value "gh-contentfilter-selected"}}" data-test-type-select="true">
+                    <PowerSelect
+                        @selected={{this.selectedType}}
+                        @options={{this.availableTypes}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.onTypeChange}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown"
+                        @matchTriggerWidth={{false}}
+                        as |type|
+                    >
+                        {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
+                    </PowerSelect>
+                </div>
+            </div>
             <LinkTo @route="offer.new" class="gh-btn gh-btn-primary"><span>New offer</span></LinkTo>
         </section>
     </GhCanvasHeader>
@@ -9,25 +26,6 @@
     <section class="view-container">
 
         {{#if this.offersExist}}
-           <section class="gh-offers-actions view-actions">
-               <div class="gh-contentfilter view-actions-bottom-row">
-                    <div class="gh-contentfilter-menu gh-contentfilter-type {{if this.selectedType.value "gh-contentfilter-selected"}}" data-test-type-select="true">
-                        <PowerSelect
-                            @selected={{this.selectedType}}
-                            @options={{this.availableTypes}}
-                            @searchEnabled={{false}}
-                            @onChange={{this.onTypeChange}}
-                            @triggerComponent="gh-power-select/trigger"
-                            @triggerClass="gh-contentfilter-menu-trigger"
-                            @dropdownClass="gh-contentfilter-menu-dropdown"
-                            @matchTriggerWidth={{false}}
-                            as |type|
-                        >
-                            {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
-                        </PowerSelect>
-                    </div>
-                </div>
-            </section>
             <table class="gh-list gh-offers-list">
                 <tr class="gh-list-row header">
                     <th class="gh-list-header">{{this.offersList.length}} offers</th>
