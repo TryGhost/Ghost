@@ -14,6 +14,8 @@ const events = require('../../../server/lib/common/events');
 
 const defaultApiVersion = 'v4';
 
+// This registry thing should be passed into here as a dependency once the module
+// is rewritten into the class + DI pattern
 const registry = require('./registry');
 let siteRouter;
 let _urlService;
@@ -119,6 +121,38 @@ const start = (apiVersion, routerSettings) => {
     debug('Routes:', registry.getAllRoutes());
 };
 
+/**
+ * This is a glue code to keep the implementation of routers away from
+ * this sort of logic. Ideally this method should not be ever called
+ * and handled completely on the URL Service layer without touching the frontend
+ * @param {Object} settingModel instance of the settings model
+ * @returns {void}
+ */
+const handleTimezoneEdit = (settingModel) => {
+    const newTimezone = settingModel.attributes.value;
+    const previousTimezone = settingModel._previousAttributes.value;
+
+    if (newTimezone === previousTimezone) {
+        return;
+    }
+
+    /**
+     * CASE: timezone changes
+     *
+     * If your permalink contains a date reference, we have to regenerate the urls.
+     *
+     * e.g. /:year/:month/:day/:slug/ or /:day/:slug/
+     */
+
+    // NOTE: timezone change only affects the collection router with dated permalinks
+    const collectionRouter = registry.getRouterByName('CollectionRouter');
+    if (collectionRouter.getPermalinks().getValue().match(/:year|:month|:day/)) {
+        debug('handleTimezoneEdit: trigger regeneration');
+
+        this.internal.routerUpdated(collectionRouter);
+    }
+};
+
 module.exports.internal = {
     owns: (routerId, id) => {
         return _urlService.owns(routerId, id);
@@ -135,7 +169,13 @@ module.exports.internal = {
         events.emit('router.created', this);
 
         _urlService.onRouterAddedType(router);
+    },
+    routerUpdated: (router) => {
+        _urlService.onRouterUpdated(router);
     }
 };
+
+// Public API methods called out by the backend
 module.exports.init = init;
 module.exports.start = start;
+module.exports.handleTimezoneEdit = handleTimezoneEdit;

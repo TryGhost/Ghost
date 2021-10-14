@@ -68,24 +68,24 @@ class UrlGenerator {
     }
 
     /**
+     * @NOTE: currently only used if the permalink setting changes and it's used for this url generator.
+     * @TODO: https://github.com/TryGhost/Ghost/issues/10699
+     */
+    regenerateResources() {
+        const myResources = this.urls.getByGeneratorId(this.uid);
+
+        myResources.forEach((object) => {
+            this.urls.removeResourceId(object.resource.data.id);
+            object.resource.release();
+            this._try(object.resource);
+        });
+    }
+
+    /**
      * @description Helper function to register listeners for each url generator instance.
      * @private
      */
     _listeners() {
-        /**
-         * @NOTE: currently only used if the permalink setting changes and it's used for this url generator.
-         * @TODO: https://github.com/TryGhost/Ghost/issues/10699
-         */
-        this.router.addListener('updated', () => {
-            const myResources = this.urls.getByGeneratorId(this.uid);
-
-            myResources.forEach((object) => {
-                this.urls.removeResourceId(object.resource.data.id);
-                object.resource.release();
-                this._try(object.resource);
-            });
-        });
-
         /**
          * Listen on two events:
          *
