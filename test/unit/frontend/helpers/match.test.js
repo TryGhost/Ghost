@@ -1,13 +1,16 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const match = require('../../../../core/frontend/helpers/match');
+const matchHelper = require('../../../../core/frontend/helpers/match');
+const titleHelper = require('../../../../core/frontend/helpers/title');
 const labs = require('../../../../core/shared/labs');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
+const {SafeString} = require('express-hbs');
 
 describe('Match helper', function () {
     before(function () {
-        handlebars.registerHelper('match', match);
+        handlebars.registerHelper('match', matchHelper);
+        handlebars.registerHelper('title', titleHelper);
     });
 
     afterEach(function () {
@@ -49,6 +52,13 @@ describe('Match helper', function () {
             zero: 0,
             one: 1,
             string: 'Hello world',
+            title: 'The Title',
+            string_true: 'true',
+            string_false: 'false',
+            safestring_string_true: new SafeString('true'),
+            safestring_string_false: new SafeString('false'),
+            safestring_bool_true: new SafeString(true),
+            safestring_bool_false: new SafeString(false),
             five: 5,
             string_five: '5',
             empty: '',
@@ -59,7 +69,6 @@ describe('Match helper', function () {
             }
         };
 
-        // @TODO: Fix this!
         describe('Basic values', function () {
             runTests({
                 '{{match truthy_bool}}': 'true',
@@ -67,11 +76,19 @@ describe('Match helper', function () {
                 '{{match one}}': 'true',
                 '{{match zero}}': 'false',
                 '{{match string}}': 'true',
+                '{{match string_true}}': 'true',
+                '{{match string_false}}': 'true',
+                '{{match safestring_string_true}}': 'true',
+                '{{match safestring_string_false}}': 'true',
+                '{{match safestring_bool_true}}': 'true',
+                '{{match safestring_bool_false}}': 'false',
                 '{{match empty}}': 'false',
                 '{{match null}}': 'false',
                 '{{match undefined}}': 'false',
                 '{{match unknown}}': 'false',
                 '{{match object}}': 'true',
+
+                '{{match (title)}}': 'true',
 
                 // Zero works if includeZero is set
                 '{{match zero includeZero=true}}': 'true',
@@ -94,6 +111,18 @@ describe('Match helper', function () {
             runTests({
                 '{{match string "=" "Hello world"}}': 'true',
                 '{{match string "=" "Hello world!"}}': 'false',
+                '{{match string_true "=" "true"}}': 'true',
+                '{{match string_true "=" true}}': 'false',
+                '{{match string_false "=" "false"}}': 'true',
+                '{{match string_false "=" false}}': 'false',
+                '{{match safestring_string_true "=" "true"}}': 'true',
+                '{{match safestring_string_true "=" true}}': 'false',
+                '{{match safestring_string_false "=" "false"}}': 'true',
+                '{{match safestring_string_false "=" false}}': 'false',
+                '{{match safestring_bool_true "=" "true"}}': 'false',
+                '{{match safestring_bool_true "=" true}}': 'true',
+                '{{match safestring_bool_false "=" "false"}}': 'false',
+                '{{match safestring_bool_false "=" false}}': 'true',
                 '{{match truthy_bool "=" true}}': 'true',
                 '{{match truthy_bool "=" false}}': 'false',
                 '{{match falsy_bool "=" false}}': 'true',
@@ -101,7 +130,10 @@ describe('Match helper', function () {
                 '{{match one "=" 1}}': 'true',
                 '{{match one "=" "1"}}': 'false',
                 '{{match zero "=" 0}}': 'true',
-                '{{match zero "=" "0"}}': 'false'
+                '{{match zero "=" "0"}}': 'false',
+
+                '{{match (title) "=" "The Title"}}': 'true',
+                '{{match (title) "=" "The Title!"}}': 'false'
             }, hash);
         });
 
@@ -109,6 +141,18 @@ describe('Match helper', function () {
             runTests({
                 '{{match string "!=" "Hello world"}}': 'false',
                 '{{match string "!=" "Hello world!"}}': 'true',
+                '{{match string_true "!=" true}}': 'true',
+                '{{match string_true "!=" "true"}}': 'false',
+                '{{match string_false "!=" false}}': 'true',
+                '{{match string_false "!=" "false"}}': 'false',
+                '{{match safestring_string_true "!=" "true"}}': 'false',
+                '{{match safestring_string_true "!=" true}}': 'true',
+                '{{match safestring_string_false "!=" "false"}}': 'false',
+                '{{match safestring_string_false "!=" false}}': 'true',
+                '{{match safestring_bool_true "!=" "true"}}': 'true',
+                '{{match safestring_bool_true "!=" true}}': 'false',
+                '{{match safestring_bool_false "!=" "false"}}': 'true',
+                '{{match safestring_bool_false "!=" false}}': 'false',
                 '{{match truthy_bool "!=" true}}': 'false',
                 '{{match truthy_bool "!=" false}}': 'true',
                 '{{match falsy_bool "!=" false}}': 'false',
@@ -116,8 +160,52 @@ describe('Match helper', function () {
                 '{{match one "!=" 1}}': 'false',
                 '{{match one "!=" "1"}}': 'true',
                 '{{match zero "!=" 0}}': 'false',
-                '{{match zero "!=" "0"}}': 'true'
+                '{{match zero "!=" "0"}}': 'true',
+
+                '{{match (title) "!=" "The Title"}}': 'false',
+                '{{match (title) "!=" "The Title!"}}': 'true'
             }, hash);
+        });
+
+        // SafeStrings represent the original value as an object for example:
+        // SafeString { string: true } vs SafeString { string: 'true' }
+        // allows us to know if the original value was a boolean or a string
+        // These tests make sure that we can compare to the _originaL_ value
+        // But that we don't start allowing weird things like boolean true being equal to string true
+        describe('SafeString behaviour makes sense(ish)', function () {
+            runTests({
+                // Title equals true value = true
+                '{{match (match title "=" "The Title") "=" "true"}}': 'false',
+                '{{match (match title "=" "The Title") "=" true}}': 'true',
+                '{{match (match title "=" "The Title")}}': 'true',
+                // With title as a helper that also outputs a SafeString
+                '{{match (match (title) "=" "The Title") "=" "true"}}': 'false',
+                '{{match (match (title) "=" "The Title") "=" true}}': 'true',
+                '{{match (match (title) "=" "The Title")}}': 'true',
+
+                // Title equals false value = true
+                '{{match (match title "=" "The Title!") "=" "false"}}': 'false',
+                '{{match (match title "=" "The Title!") "=" false}}': 'true',
+                '{{match (match title "=" "The Title!")}}': 'false',
+                // With title as a helper that also outputs a SafeString
+                '{{match (match (title) "=" "The Title!") "=" "false"}}': 'false',
+                '{{match (match (title) "=" "The Title!") "=" false}}': 'true',
+                '{{match (match (title) "=" "The Title!")}}': 'false',
+
+                // // Reverse, reverse!
+                // // Title not equals true value = false
+                '{{match (match title "!=" "The Title") "=" "false"}}': 'false',
+                '{{match (match title "!=" "The Title") "=" false}}': 'true',
+                '{{match (match title "!=" "The Title")}}': 'false',
+                // With title as a helper that also outputs a SafeString
+                '{{match (match (title) "!=" "The Title") "=" "false"}}': 'false',
+                '{{match (match (title) "!=" "The Title") "=" false}}': 'true',
+                '{{match (match (title) "!=" "The Title")}}': 'false',
+
+                // Yoda a complex example or two to prove this works
+                '{{match false "=" (match title "!=" "The Title")}}': 'true',
+                '{{match  "false" "=" (match (title) "!=" "The Title")}}': 'false'
+            }, {title: 'The Title'});
         });
     });
 
