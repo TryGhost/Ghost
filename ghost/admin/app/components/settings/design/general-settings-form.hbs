@@ -3,10 +3,6 @@
         <div class="flex-grow-1">
             <div class="gh-setting-title">Site description</div>
             <div class="gh-setting-desc mb3">Used in your theme, meta data and search results</div>
-            {{#each uploader.errors as |error|}}
-                <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
-            {{/each}}
-
             <div class="gh-setting-action" data-test-setting="description">
                 <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="description" @class="description-container-labs">
                     <GhTextInput
@@ -25,9 +21,6 @@
         <div class="gh-setting-content">
             <div class="gh-setting-title">Accent color</div>
             <div class="gh-setting-desc">Primary color used in your publication theme</div>
-            {{#each uploader.errors as |error|}}
-                <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
-            {{/each}}
             <div class="w-100 flex flex-column flex-row-ns">
                 <GhErrorMessage @errors={{settings.errors}} @property="accentColor" class="w-100 red"/>
             </div>
