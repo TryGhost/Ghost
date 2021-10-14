@@ -5,7 +5,6 @@ const rewire = require('rewire');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const models = require('../../core/server/models');
-const events = require('../../core/server/lib/common/events');
 const UrlService = rewire('../../core/frontend/services/url/UrlService');
 
 /**
@@ -111,10 +110,10 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            events.emit('router.created', router1);
-            events.emit('router.created', router2);
-            events.emit('router.created', router3);
-            events.emit('router.created', router4);
+            urlService.onRouterAddedType(router1);
+            urlService.onRouterAddedType(router2);
+            urlService.onRouterAddedType(router3);
+            urlService.onRouterAddedType(router4);
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -315,11 +314,11 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            events.emit('router.created', router1);
-            events.emit('router.created', router2);
-            events.emit('router.created', router3);
-            events.emit('router.created', router4);
-            events.emit('router.created', router5);
+            urlService.onRouterAddedType(router1);
+            urlService.onRouterAddedType(router2);
+            urlService.onRouterAddedType(router3);
+            urlService.onRouterAddedType(router4);
+            urlService.onRouterAddedType(router5);
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -513,11 +512,11 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            events.emit('router.created', router1);
-            events.emit('router.created', router2);
-            events.emit('router.created', router3);
-            events.emit('router.created', router4);
-            events.emit('router.created', router5);
+            urlService.onRouterAddedType(router1);
+            urlService.onRouterAddedType(router2);
+            urlService.onRouterAddedType(router3);
+            urlService.onRouterAddedType(router4);
+            urlService.onRouterAddedType(router5);
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();

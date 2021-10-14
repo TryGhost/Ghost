@@ -128,6 +128,13 @@ module.exports.internal = {
     },
     getResourceById: (resourceId) => {
         return _urlService.getResourceById(resourceId);
+    },
+    routerCreated: (router) => {
+        // NOTE: this event should be become an "internal frontend even"
+        //       and should not be consumed by the modules outside the frontend
+        events.emit('router.created', this);
+
+        _urlService.onRouterAddedType(router);
     }
 };
 module.exports.init = init;

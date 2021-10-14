@@ -5,9 +5,7 @@ const RSSRouter = require('./RSSRouter');
 const urlUtils = require('../../../shared/url-utils');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
-
-// This emits its own routing events
-const events = require('../../../server/lib/common/events');
+const bootstrap = require('./bootstrap');
 
 /**
  * @description Taxonomies are groupings of posts based on a common relation.
@@ -60,7 +58,7 @@ class TaxonomyRouter extends ParentRouter {
             this.mountRoute(urlUtils.urlJoin(this.permalinks.value, 'edit'), this._redirectEditOption.bind(this));
         }
 
-        events.emit('router.created', this);
+        bootstrap.internal.routerCreated(this);
     }
 
     /**

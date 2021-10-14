@@ -5,6 +5,7 @@ const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 const RSSRouter = require('./RSSRouter');
+const bootstrap = require('./bootstrap');
 
 // This emits its own routing events AND listens to settings.timezone.edited :(
 const events = require('../../../server/lib/common/events');
@@ -92,7 +93,7 @@ class CollectionRouter extends ParentRouter {
         // REGISTER: permalinks e.g. /:slug/, /podcast/:slug
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 
-        events.emit('router.created', this);
+        bootstrap.internal.routerCreated(this);
     }
 
     /**
