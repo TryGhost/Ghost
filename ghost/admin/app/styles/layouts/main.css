@@ -1004,7 +1004,8 @@
 }
 
 .gh-canvas-header {
-    margin: 0;
+    margin: 0 calc(-1 * var(--main-layout-content-sidepadding));
+    padding: 0 var(--main-layout-content-sidepadding);
     position: sticky;
     top: 0;
     background: var(--main-bg-color);
