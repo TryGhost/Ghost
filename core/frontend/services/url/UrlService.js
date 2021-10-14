@@ -90,6 +90,15 @@ class UrlService {
     }
 
     /**
+     * @description Router update handler - regenerates it's resources
+     * @param {ExpressRouter} router
+     */
+    onRouterUpdated(router) {
+        const generator = this.urlGenerators.find(g => g.router.id === router.id);
+        generator.regenerateResources();
+    }
+
+    /**
      * @description If the API version in the theme config changes, we have to reset urls and resources.
      * @private
      */
