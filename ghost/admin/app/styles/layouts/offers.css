@@ -5,6 +5,7 @@
 .gh-offers .view-container {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     padding-bottom: 0;
     min-height: calc(100vh - 195px);
 }
