@@ -1627,6 +1627,62 @@ p.theme-validation-details {
     padding: 8px 0 0;
 }
 
+.theme-directory-labs {
+    display: grid;
+    justify-content: space-between;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-column-gap: 40px;
+    grid-row-gap: 64px;
+    max-width: 1320px;
+    margin: 0 0 24px;
+}
+
+.gh-theme-toolbar {
+    position: relative;
+    width: 100%;
+    height: 28px;
+    padding: 0 12px;
+    background: var(--whitegrey-l1);
+    border-radius: 3px 3px 0 0;
+}
+
+.gh-theme-toolbar-button {
+    position: relative;
+    top: 11px;
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: var(--lightgrey);
+    border-radius: 50%;
+}
+
+.gh-theme-toolbar-button::before,
+.gh-theme-toolbar-button::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--lightgrey);
+    border-radius: 50%;
+}
+
+.gh-theme-toolbar-button::before {
+    left: 12px;
+}
+
+.gh-theme-toolbar-button::after {
+    left: 24px;
+}
+
+.td-item-screenshot-labs {
+    line-height: 0;
+    border-radius: 0 0 3px 3px;
+}
+
+.td-item-screenshot-labs img {
+    border-radius: 0 0 3px 3px;
+}
+
 .gh-theme-directory-footer-container {
     width: 100%;
     background: var(--main-color-content-greybg);
@@ -1655,13 +1711,6 @@ p.theme-validation-details {
 
 .gh-theme-preview .view-container {
     padding-bottom: 0;
-}
-
-.gh-theme-previewcontainer .site-frame {
-    width: 133.33333%;
-    height: 133.33333%;
-    transform: scale(0.75);
-    transform-origin: 0 0;
 }
 
 /* Membership */
