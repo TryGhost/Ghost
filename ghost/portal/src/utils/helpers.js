@@ -68,15 +68,6 @@ export function isPaidMember({member = {}}) {
     return (member && member.paid);
 }
 
-export function getUpgradePrices({site, member}) {
-    const activePrice = getMemberActivePrice({member});
-
-    if (activePrice) {
-        return getFilteredPrices({prices: this.prices, currency: activePrice.currency});
-    }
-    return getAvailablePrices({site});
-}
-
 export function getProductCurrency({product}) {
     if (!product?.monthlyPrice) {
         return null;
@@ -494,9 +485,8 @@ export const createPopupNotification = ({type, status, autoHide, duration, close
 };
 
 export function getPriceIdFromPageQuery({site, pageQuery}) {
-    const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
-    const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
-
+    const productMonthlyPriceQueryRegex = /^(?:(\S+?))?\/monthly$/;
+    const productYearlyPriceQueryRegex = /^(?:(\S+?))?\/yearly$/;
     if (productMonthlyPriceQueryRegex.test(pageQuery || '')) {
         const [, productId] = pageQuery.match(productMonthlyPriceQueryRegex);
         const product = getProductFromId({site, productId});
