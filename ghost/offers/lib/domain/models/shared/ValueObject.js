@@ -1,3 +1,5 @@
+const {isEqual} = require('lodash');
+
 /**
  * @template T
 */
@@ -29,7 +31,7 @@ class ValueObject {
         }
 
         if (other instanceof ValueObject) {
-            if (this.value === other.value) {
+            if (isEqual(this.props.value, other.props.value)) {
                 return true;
             }
         }
