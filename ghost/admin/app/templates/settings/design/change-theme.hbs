@@ -18,8 +18,8 @@
             <div class="theme-directory-labs">
                 {{#each this.marketplaceThemes as |theme|}}
                     <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item">
-                        <div class="gh-theme-toolbar">
-                            <span class="gh-theme-toolbar-button"></span>
+                        <div class="gh-theme-browser">
+                            <span class="gh-theme-browser-button"></span>
                         </div>
                         <div class="td-item-screenshot-labs relative">
                             <img style="object-fit:contain;" src={{theme.image}} alt="{{theme.name}} Theme" />
