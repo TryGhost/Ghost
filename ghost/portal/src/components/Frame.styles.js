@@ -17,6 +17,7 @@ import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {LinkPageStyles} from './pages/LinkPage';
 import {PopupNotificationStyles} from './common/PopupNotification';
+import {OfferPageStyles} from './pages/OfferPage';
 
 // Global styles
 const FrameStyles = `
@@ -332,13 +333,13 @@ const FrameStyles = `
         position: relative;
         overflow-y: scroll;
         padding: 24px 32px 32px;
-        max-height: 680px;
+        max-height: calc(100vh - 20vmin);
     }
 
     .gh-portal-content.with-footer {
         overflow-y: scroll;
         padding-bottom: 0;
-        max-height: calc(680px - 72px);
+        max-height: calc(100vh - 20vmin - 132px);
     }
 
     /* Hide scrollbar for Chrome, Safari and Opera */
@@ -892,6 +893,7 @@ export function getFrameStyles({site}) {
         MagicLinkStyles +
         LinkPageStyles +
         SignupPageStyles +
+        OfferPageStyles + 
         PopupNotificationStyles +
         MobileStyles +
         MultipleProductsGlobalStyles;
