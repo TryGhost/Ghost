@@ -39,12 +39,12 @@
                     <div class="tabs">
                         <ul><li></li><li></li><li></li></ul>
                         <div>
-                            {{#if @icon}}
-                                <span class="favicon"><img src={{@icon}} alt="icon"></span>
+                            {{#if this.settings.icon}}
+                                <span class="favicon"><img src={{this.settings.icon}} alt="icon"></span>
                             {{else}}
                                 <span class="favicon default">{{svg-jar "default-favicon"}}</span>
                             {{/if}}
-                            <span class="site-title">{{@title}}</span>
+                            <span class="site-title">{{this.settings.title}}</span>
                         </div>
                     </div>
                 </div>
