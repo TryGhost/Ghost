@@ -1,4 +1,3 @@
-const {labs} = require('../services/proxy');
 const {SafeString} = require('../services/rendering');
 
 const logging = require('@tryghost/logging');
@@ -53,7 +52,7 @@ const handleMatch = (data, operator, value) => {
     return result;
 };
 
-function match(...attrs) {
+module.exports = function match(...attrs) {
     // options = options || {};
     // options.hash = options.hash || {};
     // options.data = options.data || {};
@@ -101,18 +100,4 @@ function match(...attrs) {
 
     // Else return the result as a SafeString Eg.{string: false} || {string: true}
     return new SafeString(result);
-}
-
-module.exports = function matchLabsWrapper() {
-    let self = this;
-    let args = arguments;
-
-    return labs.enabledHelper({
-        flagKey: 'matchHelper',
-        flagName: 'Match helper',
-        helperName: 'match',
-        helpUrl: 'https://ghost.org/docs/themes/'
-    }, () => {
-        return match.apply(self, args);
-    });
 };

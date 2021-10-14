@@ -17,10 +17,6 @@ describe('Match helper', function () {
         sinon.restore();
     });
 
-    beforeEach(function () {
-        sinon.stub(labs, 'isSet').returns(true);
-    });
-
     function shouldCompileToExpected(templateString, hash, expected) {
         const template = handlebars.compile(templateString);
         const result = template(hash);
