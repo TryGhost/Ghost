@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const ghostBookshelf = require('./base');
+const urlUtils = require('../../shared/url-utils');
 
 const CustomThemeSetting = ghostBookshelf.Model.extend({
     tableName: 'custom_theme_settings',
@@ -16,6 +17,12 @@ const CustomThemeSetting = ghostBookshelf.Model.extend({
         // transform "false" to false for boolean type
         if (settingType === 'boolean' && (attrs.value === 'false' || attrs.value === 'true')) {
             attrs.value = JSON.parse(attrs.value);
+        }
+
+        // transform URLs to absolute for image settings
+        if (settingType === 'image' && attrs.value) {
+            console.log('.parse', attrs.value, urlUtils.transformReadyToAbsolute(attrs.value));
+            attrs.value = urlUtils.transformReadyToAbsolute(attrs.value);
         }
 
         return attrs;
@@ -39,6 +46,14 @@ const CustomThemeSetting = ghostBookshelf.Model.extend({
             if (_.isBoolean(attrs.value)) {
                 attrs.value = attrs.value.toString();
             }
+        }
+
+        return attrs;
+    },
+
+    formatOnWrite(attrs) {
+        if (attrs.type === 'image' && attrs.value) {
+            attrs.value = urlUtils.toTransformReady(attrs.value);
         }
 
         return attrs;
