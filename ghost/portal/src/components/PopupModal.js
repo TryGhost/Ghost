@@ -137,12 +137,15 @@ class PopupContent extends React.Component {
 
         const portalPlans = getSitePrices({site, pageQuery});
 
-        if (page === 'signup' || page === 'signin') {
+        if (page === 'signup' || page === 'signin' || page === 'offer') {
             if (!isInviteOnlySite({site, pageQuery}) && portalPlans.length === 3 && (page === 'signup' || page === 'signin')) {
                 popupWidthStyle = ' gh-portal-container-wide';
             }
             if (portalPlans.length <= 1 || !isStripeConfigured) {
                 popupWidthStyle = 'gh-portal-container-narrow';
+            }
+            if (page === 'offer') {
+                popupWidthStyle = ' gh-portal-container-wide';
             }
         }
         let cookieBannerText = '';
