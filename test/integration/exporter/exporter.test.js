@@ -50,6 +50,7 @@ describe('Exporter', function () {
                 'mobiledoc_revisions',
                 'oauth',
                 'offers',
+                'offer_redemptions',
                 'permissions',
                 'permissions_roles',
                 'permissions_users',
