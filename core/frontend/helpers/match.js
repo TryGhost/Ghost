@@ -29,10 +29,6 @@ const handleConditional = (conditional, options) => {
         conditional = conditional.call(this);
     }
 
-    if (conditional instanceof SafeString) {
-        conditional = conditional.string;
-    }
-
     // Default behavior is to render the positive path if the value is truthy and not empty.
     // The `includeZero` option may be set to treat the condtional as purely not empty based on the
     // behavior of isEmpty. Effectively this determines if 0 is handled by the positive path or negative.
@@ -71,11 +67,20 @@ function match(...attrs) {
         return;
     }
 
+    // If any of the attributes are safe strings, change them back to their original value
+    attrs = attrs.map((attr) => {
+        if (attr instanceof SafeString) {
+            return attr.string;
+        }
+
+        return attr;
+    });
+
     if (attrs.length === 1) {
         // If we only have one attribute, treat it as simple true/false (like the if helper)
         result = handleConditional(attrs[0], options);
     } else if (attrs.length === 3) {
-        result = handleMatch(attrs[0], attrs[1], attrs[2], options);
+        result = handleMatch(attrs[0], attrs[1], attrs[2]);
     } else {
         logging.warn(tpl(messages.invalidAttribute));
         return;
@@ -90,7 +95,7 @@ function match(...attrs) {
         return options.inverse(this);
     }
 
-    // Else return the result as a string
+    // Else return the result as a SafeString Eg.{string: false} || {string: true}
     return new SafeString(result);
 }
 
