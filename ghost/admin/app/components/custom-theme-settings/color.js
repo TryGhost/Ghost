@@ -7,15 +7,6 @@ import {task} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-const diagonalLineCss = `
-    linear-gradient(to top left,
-        rgba(0,0,0,0) 0%,
-        rgba(0,0,0,0) calc(50% - 0.8px),
-        rgba(255,0,0,1) 50%,
-        rgba(0,0,0,0) calc(50% + 0.8px),
-        rgba(0,0,0,0) 100%);
-`;
-
 export default class CustomThemeSettingsColorComponent extends Component {
     inputId = `input-${guidFor(this)}`;
     inputName = camelize(this.args.setting.key);
@@ -30,31 +21,17 @@ export default class CustomThemeSettingsColorComponent extends Component {
         return color;
     }
 
-    get colorInputValue() {
-        return this.args.setting.value || '#ffffff';
-    }
-
     get colorPickerBgStyle() {
-        if (this.args.setting.value) {
-            return htmlSafe(`background-color: ${this.args.setting.value}`);
-        }
-
-        return htmlSafe(`background: ${diagonalLineCss}; border: 1px solid lightgray;`);
-    }
-
-    get colorInputStyle() {
-        return htmlSafe(this.args.setting.value ? '' : 'opacity: 0;');
+        return htmlSafe(`background-color: ${this.args.setting.value || '#ffffff'}`);
     }
 
     @action
     updateValue(event) {
-        let newColor = event.target.value;
         const oldColor = this.args.setting.value;
+        let newColor = event.target.value;
 
         if (!newColor) {
-            this.isInvalid = false;
-            this.args.setting.set('value', null);
-            this.args.onChange?.();
+            this.isInvalid = true;
             return;
         }
 
