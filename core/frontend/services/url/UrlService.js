@@ -35,9 +35,6 @@ class UrlService {
      * @private
      */
     _listeners() {
-        this._onRouterAddedListener = this._onRouterAddedType.bind(this);
-        events.on('router.created', this._onRouterAddedListener);
-
         this._onThemeChangedListener = this._onThemeChangedListener.bind(this);
         events.on('services.themes.api.changed', this._onThemeChangedListener);
 
@@ -77,9 +74,8 @@ class UrlService {
     /**
      * @description Router was created, connect it with a url generator.
      * @param {ExpressRouter} router
-     * @private
      */
-    _onRouterAddedType(router) {
+    onRouterAddedType(router) {
         // CASE: there are router types which do not generate resource urls
         //       e.g. static route router
         //       we are listening on the general `router.created` event - every router throws this event
@@ -87,7 +83,7 @@ class UrlService {
             return;
         }
 
-        debug('router.created');
+        debug('Registering route: ', router.name);
 
         let urlGenerator = new UrlGenerator(router, this.queue, this.resources, this.urls, this.urlGenerators.length);
         this.urlGenerators.push(urlGenerator);
@@ -307,7 +303,6 @@ class UrlService {
         if (!options.keepListeners) {
             this._onQueueStartedListener && this.queue.removeListener('started', this._onQueueStartedListener);
             this._onQueueEndedListener && this.queue.removeListener('ended', this._onQueueEndedListener);
-            this._onRouterAddedListener && events.removeListener('router.created', this._onRouterAddedListener);
             this._onThemeChangedListener && events.removeListener('services.themes.api.changed', this._onThemeChangedListener);
         }
     }

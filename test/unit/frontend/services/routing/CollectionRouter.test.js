@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const express = require('../../../../../core/shared/express')._express;
-const settingsCache = require('../../../../../core/shared/settings-cache');
+const bootstrap = require('../../../../../core/frontend/services/routing/bootstrap');
 const events = require('../../../../../core/server/lib/common/events');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const CollectionRouter = require('../../../../../core/frontend/services/routing/CollectionRouter');
@@ -15,6 +15,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
     beforeEach(function () {
         sinon.stub(events, 'emit');
         sinon.stub(events, 'on');
+        sinon.stub(bootstrap.internal, 'routerCreated');
 
         sinon.spy(CollectionRouter.prototype, 'mountRoute');
         sinon.spy(CollectionRouter.prototype, 'mountRouter');
@@ -43,10 +44,8 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/:slug/');
 
-            events.emit.calledOnce.should.be.true();
-            events.emit.calledWith('router.created', collectionRouter).should.be.true();
-
-            events.on.calledTwice.should.be.false();
+            bootstrap.internal.routerCreated.calledOnce.should.be.true();
+            bootstrap.internal.routerCreated.calledWith(collectionRouter).should.be.true();
 
             collectionRouter.mountRoute.callCount.should.eql(3);
             express.Router.param.callCount.should.eql(2);
@@ -92,10 +91,8 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             collectionRouter.templates.should.eql([]);
             collectionRouter.getPermalinks().getValue().should.eql('/blog/:year/:slug/');
 
-            events.emit.calledOnce.should.be.true();
-            events.emit.calledWith('router.created', collectionRouter).should.be.true();
-
-            events.on.calledTwice.should.be.false();
+            bootstrap.internal.routerCreated.calledOnce.should.be.true();
+            bootstrap.internal.routerCreated.calledWith(collectionRouter).should.be.true();
 
             collectionRouter.mountRoute.callCount.should.eql(3);
 
