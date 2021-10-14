@@ -1730,7 +1730,7 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/tpl@0.1.7":
+"@tryghost/tpl@0.1.7", "@tryghost/tpl@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.7.tgz#f3821c1b5a00acf04d98464794ba32df6d3c08df"
   integrity sha512-mQjRN+m7KTIO2PCU5ywfzxg3Wt0DKeyD2ZT2QFfFhdEO0gpDrLoEHVKDJp64xiqCxROe1aQa0QEOvHEZl5vUxA==
@@ -1741,13 +1741,6 @@
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.5.tgz#736dbe49d085bf8a495963062e0a5ff72e68a18a"
   integrity sha512-uE4sQ07UdjAhxidEVPwZShLdmLRcaYlrIA/rbiaB37cJ9VtXEAYwcDLb/tdnlnoXuTQ3Y1vShCWgjyD4vGo5kA==
-  dependencies:
-    lodash.template "^4.5.0"
-
-"@tryghost/tpl@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.7.tgz#f3821c1b5a00acf04d98464794ba32df6d3c08df"
-  integrity sha512-mQjRN+m7KTIO2PCU5ywfzxg3Wt0DKeyD2ZT2QFfFhdEO0gpDrLoEHVKDJp64xiqCxROe1aQa0QEOvHEZl5vUxA==
   dependencies:
     lodash.template "^4.5.0"
 
@@ -1798,7 +1791,15 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/version@0.1.4", "@tryghost/version@^0.1.4":
+"@tryghost/version@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.6.tgz#c6ccce6a3ae5c7d24c41ef5b7e1f3e46673d6cc7"
+  integrity sha512-HHU5KOM0VZTaqzmTEhRMO+wJAO3gllym4PxktoUFkIiLJZHHpBczUDbuNFSaZkOX4fJIMcU2gM7ict9b4UbmIQ==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.6"
+    semver "^7.3.5"
+
+"@tryghost/version@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.4.tgz#d9ef66f4e3793979b4ab7196ee42ffcd8018bfd6"
   integrity sha512-52hb3FQp52fn0y+uxLwXDlB4q2NKkXbuJsZkvel3GPl+EfODhuB2mUczoUOqXIO3I6Q/CHHsW39KZf+UHmDVcA==
