@@ -29,8 +29,7 @@
                         type="color"
                         name={{this.inputName}}
                         class="color-picker"
-                        style={{this.colorInputStyle}}
-                        value={{this.colorInputValue}}
+                        value={{@setting.value}}
                         {{on "input" (perform this.debounceValueUpdate)}}
                     >
                 </div>
