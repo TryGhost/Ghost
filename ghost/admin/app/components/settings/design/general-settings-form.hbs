@@ -6,11 +6,8 @@
             {{#each uploader.errors as |error|}}
                 <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
             {{/each}}
-            <div class="w-100 flex flex-column flex-row-ns">
-                <GhErrorMessage @errors={{settings.errors}} @property="description" class="w-100 red"/>
-            </div>
 
-            <div class="gh-setting-action" class="flex flex-column" data-test-setting="description">
+            <div class="gh-setting-action" data-test-setting="description">
                 <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="description" @class="description-container-labs">
                     <GhTextInput
                         @value={{readonly this.settings.description}}
