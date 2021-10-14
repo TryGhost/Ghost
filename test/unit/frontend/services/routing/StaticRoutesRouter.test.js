@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const events = require('../../../../../core/server/lib/common/events');
+const bootstrap = require('../../../../../core/frontend/services/routing/bootstrap');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const StaticRoutesRouter = require('../../../../../core/frontend/services/routing/StaticRoutesRouter');
 const configUtils = require('../../../../utils/configUtils');
@@ -15,8 +15,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(events, 'emit');
-        sinon.stub(events, 'on');
+        sinon.stub(bootstrap.internal, 'routerCreated');
 
         sinon.spy(StaticRoutesRouter.prototype, 'mountRoute');
         sinon.spy(StaticRoutesRouter.prototype, 'mountRouter');
@@ -42,8 +41,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             staticRoutesRouter.templates.should.eql(['test']);
 
-            events.emit.calledOnce.should.be.true();
-            events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
+            bootstrap.internal.routerCreated.calledOnce.should.be.true();
+            bootstrap.internal.routerCreated.calledWith(staticRoutesRouter).should.be.true();
 
             staticRoutesRouter.mountRoute.callCount.should.eql(1);
 
@@ -52,7 +51,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             staticRoutesRouter.mountRoute.args[0][1].should.eql(controllers.static);
         });
 
-        it('initialise with data+filter', function () {
+        it('initialize with data+filter', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/about/', {
                 data: {query: {}, router: {}},
                 filter: 'tag:test'
@@ -64,8 +63,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             should.not.exist(staticRoutesRouter.getFilter());
             staticRoutesRouter.templates.should.eql([]);
 
-            events.emit.calledOnce.should.be.true();
-            events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
+            bootstrap.internal.routerCreated.calledOnce.should.be.true();
+            bootstrap.internal.routerCreated.calledWith(staticRoutesRouter).should.be.true();
 
             staticRoutesRouter.mountRoute.callCount.should.eql(1);
 
@@ -109,8 +108,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     });
 
     describe('channels', function () {
-        describe('initialise', function () {
-            it('initialise with controller+data+filter', function () {
+        describe('initialize', function () {
+            it('initialize with controller+data+filter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
                     controller: 'channel',
                     data: {query: {}, router: {}},
@@ -124,8 +123,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 staticRoutesRouter.templates.should.eql([]);
                 should.exist(staticRoutesRouter.data);
 
-                events.emit.calledOnce.should.be.true();
-                events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
+                bootstrap.internal.routerCreated.calledOnce.should.be.true();
+                bootstrap.internal.routerCreated.calledWith(staticRoutesRouter).should.be.true();
 
                 staticRoutesRouter.mountRoute.callCount.should.eql(2);
 
@@ -138,7 +137,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 staticRoutesRouter.mountRoute.args[1][1].should.eql(controllers.channel);
             });
 
-            it('initialise with controller+filter', function () {
+            it('initialize with controller+filter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
                     controller: 'channel',
                     filter: 'tag:test'
@@ -151,8 +150,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter.templates.should.eql([]);
 
-                events.emit.calledOnce.should.be.true();
-                events.emit.calledWith('router.created', staticRoutesRouter).should.be.true();
+                bootstrap.internal.routerCreated.calledOnce.should.be.true();
+                bootstrap.internal.routerCreated.calledWith(staticRoutesRouter).should.be.true();
 
                 staticRoutesRouter.mountRoute.callCount.should.eql(2);
 
@@ -165,7 +164,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 staticRoutesRouter.mountRoute.args[1][1].should.eql(controllers.channel);
             });
 
-            it('initialise with controller+data', function () {
+            it('initialize with controller+data', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
                     controller: 'channel',
                     data: {query: {}, router: {}}
@@ -174,7 +173,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 should.not.exist(staticRoutesRouter.getFilter());
             });
 
-            it('initialise on subdirectory with controller+data+filter', function () {
+            it('initialize on subdirectory with controller+data+filter', function () {
                 configUtils.set('url', 'http://localhost:2366/blog/');
 
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {

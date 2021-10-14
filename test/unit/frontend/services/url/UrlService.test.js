@@ -58,9 +58,8 @@ describe('Unit: services/url/UrlService', function () {
         urlService.queue.addListener.args[0][0].should.eql('started');
         urlService.queue.addListener.args[1][0].should.eql('ended');
 
-        events.on.calledTwice.should.be.true();
-        events.on.args[0][0].should.eql('router.created');
-        events.on.args[1][0].should.eql('services.themes.api.changed');
+        events.on.calledOnce.should.be.true();
+        events.on.args[0][0].should.eql('services.themes.api.changed');
     });
 
     it('fn: _onQueueStarted', function () {
@@ -73,8 +72,8 @@ describe('Unit: services/url/UrlService', function () {
         urlService.hasFinished().should.be.true();
     });
 
-    it('fn: _onRouterAddedType', function () {
-        urlService._onRouterAddedType({getPermalinks: sinon.stub().returns({})});
+    it('fn: onRouterAddedType', function () {
+        urlService.onRouterAddedType({getPermalinks: sinon.stub().returns({})});
         urlService.urlGenerators.length.should.eql(1);
     });
 

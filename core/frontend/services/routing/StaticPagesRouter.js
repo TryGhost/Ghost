@@ -2,9 +2,7 @@ const debug = require('@tryghost/debug')('routing:static-pages-router');
 const urlUtils = require('../../../shared/url-utils');
 const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');
-
-// This emits its own routing events
-const events = require('../../../server/lib/common/events');
+const bootstrap = require('./bootstrap');
 
 /**
  * @description Resource: pages
@@ -50,7 +48,7 @@ class StaticPagesRouter extends ParentRouter {
         // REGISTER: permalink for static pages
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 
-        events.emit('router.created', this);
+        bootstrap.internal.routerCreated(this);
     }
 
     /**

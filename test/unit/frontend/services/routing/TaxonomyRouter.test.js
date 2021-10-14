@@ -1,8 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const settingsCache = require('../../../../../core/shared/settings-cache');
-const events = require('../../../../../core/server/lib/common/events');
+const bootstrap = require('../../../../../core/frontend/services/routing/bootstrap');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const TaxonomyRouter = require('../../../../../core/frontend/services/routing/TaxonomyRouter');
 const RESOURCE_CONFIG_V2 = require('../../../../../core/frontend/services/routing/config/v2');
@@ -17,8 +16,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     beforeEach(function () {
         sinon.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
 
-        sinon.stub(events, 'emit');
-        sinon.stub(events, 'on');
+        sinon.stub(bootstrap.internal, 'routerCreated');
 
         sinon.spy(TaxonomyRouter.prototype, 'mountRoute');
         sinon.spy(TaxonomyRouter.prototype, 'mountRouter');
@@ -43,8 +41,8 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
         taxonomyRouter.taxonomyKey.should.eql('tag');
         taxonomyRouter.getPermalinks().getValue().should.eql('/tag/:slug/');
 
-        events.emit.calledOnce.should.be.true();
-        events.emit.calledWith('router.created', taxonomyRouter).should.be.true();
+        bootstrap.internal.routerCreated.calledOnce.should.be.true();
+        bootstrap.internal.routerCreated.calledWith(taxonomyRouter).should.be.true();
 
         taxonomyRouter.mountRouter.callCount.should.eql(1);
         taxonomyRouter.mountRouter.args[0][0].should.eql('/tag/:slug/');
