@@ -30,6 +30,9 @@ describe('Unit: models/custom-theme-setting', function () {
 
             returns = setting.parse({theme: 'test', key: 'something', value: 'null', type: 'select'});
             should.equal(returns.value, 'null');
+
+            returns = setting.parse({theme: 'test', key: 'something', value: '__GHOST_URL__/assets/image.jpg', type: 'image'});
+            should.equal(returns.value, 'http://127.0.0.1:2369/assets/image.jpg');
         });
     });
 
@@ -48,6 +51,13 @@ describe('Unit: models/custom-theme-setting', function () {
 
             returns = setting.format({theme: 'test', key: 'dark_mode', value: 'true', type: 'boolean'});
             should.equal(returns.value, 'true');
+        });
+
+        it('transforms urls when persisting to db', function () {
+            const setting = models.CustomThemeSetting.forge();
+
+            let returns = setting.formatOnWrite({theme: 'test', key: 'something', value: '/assets/image.jpg', type: 'image'});
+            should.equal(returns.value, '__GHOST_URL__/assets/image.jpg');
         });
     });
 });

@@ -681,7 +681,8 @@ module.exports = {
                     'select',
                     'boolean',
                     'color',
-                    'text'
+                    'text',
+                    'image'
                 ]]
             }
         },
