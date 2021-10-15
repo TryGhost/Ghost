@@ -150,7 +150,8 @@ class OfferRepository {
      * @returns {Promise<void>}
      */
     async save(offer, options) {
-        const model = this.OfferModel.forge({
+        /** @type any */
+        const data = {
             id: offer.id,
             name: offer.name.value,
             code: offer.code.value,
@@ -164,7 +165,7 @@ class OfferRepository {
             duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
             currency: offer.currency ? offer.currency.value : null,
             active: offer.status.equals(OfferStatus.create('active'))
-        });
+        };
 
         if (offer.codeChanged || offer.isNew) {
             const event = OfferCodeChangeEvent.create({
@@ -194,10 +195,10 @@ class OfferRepository {
             }
 
             const couponData = await this.stripeAPIService.createCoupon(coupon);
-            model.set('stripe_coupon_id', couponData.id);
-            await model.save(null, {method: 'insert', ...options});
+            data.stripe_coupon_id = couponData.id;
+            await this.OfferModel.add(data, options);
         } else {
-            await model.save(null, {method: 'update', ...options});
+            await this.OfferModel.edit(data, {...options, id: data.id});
         }
     }
 }
