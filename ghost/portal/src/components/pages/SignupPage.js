@@ -77,7 +77,7 @@ export const SignupPageStyles = `
         background: linear-gradient(#fff 30%,hsla(0,0%,100%,0)),
                     linear-gradient(hsla(0,0%,100%,0),#fff 70%) 0 100%,
                     linear-gradient(#fff,transparent),
-                    linear-gradient(transparent,rgba(0,0,0,.03)) 0 100%;
+                    linear-gradient(transparent,rgba(0,0,0,.06)) 0 100%;
         background-repeat: no-repeat;
         background-color: #fff;
         background-size: 100% 40px,100% 40px,100% 14px,100% 14px;
@@ -104,6 +104,7 @@ export const SignupPageStyles = `
         right: 0;
         height: 3px;
         background: #fff;
+        z-index: 9999;
     }
 
     .gh-portal-content.signup,
@@ -227,6 +228,12 @@ export const SignupPageStyles = `
         .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
         .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
             padding: 0 24px !important;
+        }
+    }
+
+    @media (max-height: 880px) {
+        footer.gh-portal-signup-footer {
+            height: 126px;
         }
     }
 `;

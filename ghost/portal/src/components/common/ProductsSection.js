@@ -418,7 +418,6 @@ export const ProductsSectionStyles = ({site}) => {
 
             .gh-portal-singleproduct-benefits .gh-portal-product-description {
                 text-align: center;
-                padding-bottom: 12px;
             }
 
             .gh-portal-product-price .currency-sign {

@@ -7,7 +7,7 @@ export const sites = {
 };
 
 export function getSiteData({
-    products = getProductsData({numOfProducts: 3}),
+    products = getProductsData({numOfProducts: 1}),
     portalProducts = products.map(p => p.id),
     portalPlans: portal_plans = ['free', 'monthly', 'yearly']
 } = {}) {
