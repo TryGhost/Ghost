@@ -234,6 +234,7 @@
     transition: all 0.3s ease-in-out;
 }
 
-.gh-offers-actions .gh-contentfilter {
+.gh-offers-actions .gh-contentfilter-menu {
     margin-left: 0;
+    margin-right: 6px;
 }

@@ -45,3 +45,13 @@
     box-shadow: none;
     text-shadow: none;
 }
+
+.gh-badge-title {
+    margin-left: 13px;
+    background: transparent;
+    font-weight: 400;
+    color: var(--midlightgrey-d2);
+    border: 1px solid var(--lightgrey-d1);
+    border-radius: 4px;
+    line-height: 25px;
+}
