@@ -23,6 +23,7 @@
  * @prop {null|number} duration_in_months
  *
  * @prop {'active'|'archived'} status
+ * @prop {number} redemptionCount
  *
  * @prop {string} stripe_coupon_id
  *
@@ -52,6 +53,7 @@ class OfferMapper {
             currency: offer.type.value === 'fixed' ? offer.currency.value : null,
             status: offer.status.value,
             stripe_coupon_id: offer.stripeCouponId,
+            redemptionCount: offer.redemptionCount,
             tier: {
                 id: offer.tier.id,
                 name: offer.tier.name
