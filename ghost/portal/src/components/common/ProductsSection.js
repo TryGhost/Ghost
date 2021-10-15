@@ -77,6 +77,7 @@ export const ProductsSectionStyles = ({site}) => {
             text-transform: uppercase;
             padding: 0px 4px;
             text-align: center;
+            white-space: nowrap;
         }
 
         .gh-portal-discount-label:before {
