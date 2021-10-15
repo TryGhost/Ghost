@@ -41,6 +41,8 @@ export default Component.extend({
 
     hasEmailPermission: or('session.user.isOwnerOnly', 'session.user.isAdminOnly', 'session.user.isEditor'),
 
+    emailOnly: computed.equal('distributionAction', 'send'),
+
     canSendEmail: computed('hasEmailPermission', 'post.{isPost,email}', 'settings.{editorDefaultEmailRecipients,membersSignupAccess,mailgunIsConfigured}', 'config.mailgunIsConfigured', function () {
         let isDisabled = this.settings.get('editorDefaultEmailRecipients') === 'disabled' || this.settings.get('membersSignupAccess') === 'none';
         let mailgunIsConfigured = this.settings.get('mailgunIsConfigured') || this.config.get('mailgunIsConfigured');
@@ -226,7 +228,6 @@ export default Component.extend({
 
         setDistributionAction(distributionAction) {
             this.set('distributionAction', distributionAction);
-            this.set('emailOnly', distributionAction === 'send');
 
             if (distributionAction === 'publish') {
                 this.set('sendEmailWhenPublished', 'none');
