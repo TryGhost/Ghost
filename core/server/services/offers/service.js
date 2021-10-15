@@ -21,6 +21,7 @@ module.exports = {
     async init() {
         const offersModule = OffersModule.create({
             OfferModel: models.Offer,
+            OfferRedemptionModel: models.OfferRedemption,
             redirectManager: redirectManager,
             stripeAPIService: stripeService.api
         });
