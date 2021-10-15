@@ -70,6 +70,23 @@ function setupGhostApi({siteUrl = window.location.origin}) {
                     throw new Error('Failed to fetch site data');
                 }
             });
+        },
+
+        offer({offerId}) {
+            const url = endpointFor({type: 'members', resource: 'offers'}) + offerId + '/';
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch offer data');
+                }
+            });
         }
     };
 
