@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "c8": "7.10.0",
-    "mocha": "9.1.2",
+    "mocha": "9.1.3",
     "supertest": "6.1.6"
   }
 }
