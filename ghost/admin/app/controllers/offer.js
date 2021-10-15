@@ -75,9 +75,11 @@ export default class OffersController extends Controller {
 
     get cadence() {
         if (this.offer.tier && this.offer.cadence) {
-            return `${this.offer.tier.id}-${this.offer.cadence}-${this.offer.currency}`;
+            const product = this.products.findBy('id', this.offer.tier.id);
+            return `${this.offer.tier.id}-${this.offer.cadence}-${product?.monthlyPrice?.currency}`;
         } else if (this.defaultProps) {
-            return `${this.defaultProps.tier.id}-${this.defaultProps.cadence}-${this.defaultProps.currency}`;
+            const product = this.products.findBy('id', this.defaultProps.tier.id);
+            return `${this.defaultProps.tier.id}-${this.defaultProps.cadence}-${product?.monthlyPrice?.currency}`;
         }
         return '';
     }
