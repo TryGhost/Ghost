@@ -16,7 +16,7 @@ module.exports = {
     // The local template thing, should this be merged with the channels one?
     templates: require('./theme-engine/handlebars/template'),
 
-    // Theme i18n is separate to common i18n
+    // Theme i18n
     themeI18n: require('./theme-engine/i18n'),
 
     // TODO: these need a more sensible home

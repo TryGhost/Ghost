@@ -107,7 +107,6 @@ const globalReset = () => {
         extend({
             attachResetToRequest: false,
             failCallback(req, res, next, nextValidRequestDate) {
-                // TODO use i18n again
                 return next(new errors.TooManyRequestsError({
                     message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                     context: tpl(messages.forgottenPasswordIp.error,
@@ -143,7 +142,6 @@ const userLogin = () => {
             failCallback(req, res, next, nextValidRequestDate) {
                 return next(new errors.TooManyRequestsError({
                     message: `Too many sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                    // TODO add more options to i18n
                     context: tpl(messages.tooManySigninAttempts.context),
                     help: tpl(messages.tooManySigninAttempts.context)
                 }));

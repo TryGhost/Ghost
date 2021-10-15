@@ -5,7 +5,6 @@ const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/configUtils');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const i18n = require('../../../../../core/shared/i18n');
 let mailer;
 
 // Mock SMTP config
@@ -39,8 +38,6 @@ const mailDataIncomplete = {
 };
 
 const sandbox = sinon.createSandbox();
-
-i18n.init();
 
 describe('Mail: Ghostmailer', function () {
     afterEach(function () {
