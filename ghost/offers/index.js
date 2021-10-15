@@ -46,11 +46,12 @@ class OffersModule {
      * @param {import('@tryghost/express-dynamic-redirects')} deps.redirectManager
      * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
      * @param {any} deps.OfferModel
+     * @param {any} deps.OfferRedemptionModel
      *
      * @returns {OffersModule}
      */
     static create(deps) {
-        const repository = new OfferRepository(deps.OfferModel, deps.stripeAPIService);
+        const repository = new OfferRepository(deps.OfferModel, deps.OfferRedemptionModel, deps.stripeAPIService);
         const offersAPI = new OffersAPI(repository);
         return new OffersModule(offersAPI, deps.redirectManager, repository);
     }
