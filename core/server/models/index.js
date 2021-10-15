@@ -30,6 +30,7 @@ const models = [
     'mobiledoc-revision',
     'member',
     'offer',
+    'offer-redemption',
     'product',
     'benefit',
     'stripe-product',
