@@ -192,20 +192,22 @@ class PopupContent extends React.Component {
 
         const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
         return (
-            <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
-                <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
-                    <CookieDisabledBanner message={cookieBannerText} />
-                    {this.renderPopupNotification()}
-                    {this.renderActivePage()}
+            <>
+                <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
+                    <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
+                        <CookieDisabledBanner message={cookieBannerText} />
+                        {this.renderPopupNotification()}
+                        {this.renderActivePage()}
+                    </div>
                 </div>
-                <div className={'gh-portal-powered' + (hasMode(['preview']) ? ' hidden' : '')}>
+                <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? ' hidden' : '') + pageClass}>
                     <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' onClick={() => {
                         window.open('https://ghost.org', '_blank');
                     }}>
                         <img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" alt="Publish with Ghost" />
                     </a>
                 </div>
-            </div>
+            </>
         );
     }
 }

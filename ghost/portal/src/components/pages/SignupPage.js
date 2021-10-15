@@ -90,9 +90,12 @@ export const SignupPageStyles = `
 
     footer.gh-portal-signup-footer,
     footer.gh-portal-signin-footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         position: relative;
         padding-top: 24px;
-        height: 132px;
+        height: unset;
     }
 
     /* Needed to cover small horizontal line glitch by the scroll shadow */
@@ -109,7 +112,7 @@ export const SignupPageStyles = `
 
     .gh-portal-content.signup,
     .gh-portal-content.signin {
-        max-height: calc(100vh - 12vw - 140px);
+        max-height: unset !important;
         padding-bottom: 0;
     }
 
@@ -154,6 +157,13 @@ export const SignupPageStyles = `
 
     footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
         margin-top: 0;
+    }
+
+    .gh-portal-popup-wrapper.multiple-products .gh-portal-powered {
+        display: flex;
+        margin-top: 24px;
+        margin-bottom: 0;
+        padding-bottom: 0;
     }
 
     .gh-portal-invite-only-notification {
@@ -201,9 +211,8 @@ export const SignupPageStyles = `
         padding-top: 24px;
     }
 
-    .gh-portal-popup-wrapper.multiple-products.signin .gh-portal-powered {
-        position: absolute;
-        bottom: 0;
+    .gh-portal-powered.multiple-products {
+        display: none;
     }
 
     @media (max-width: 480px) {
@@ -231,9 +240,20 @@ export const SignupPageStyles = `
         }
     }
 
-    @media (max-height: 880px) {
-        footer.gh-portal-signup-footer {
-            height: 126px;
+    @media (min-width: 480px) and (max-width: 820px) {
+        .gh-portal-powered.outside {
+            left: 50%; 
+            transform: translateX(-50%);
+        }
+
+        .gh-portal-popup-wrapper.signup {
+            padding-bottom: 20vmin;
+        }
+    }
+
+    @media (min-width: 480px) {
+        .gh-portal-popup-wrapper:not(.multiple-products) .gh-portal-powered {
+            display: none;
         }
     }
 `;
@@ -566,6 +586,7 @@ class SignupPage extends React.Component {
                 sectionClass = 'singleplan';
             }
         }
+
         return {sectionClass, footerClass};
     }
 
@@ -618,6 +639,13 @@ class SignupPage extends React.Component {
                 <footer className={'gh-portal-signup-footer ' + footerClass}>
                     {this.renderSubmitButton()}
                     {this.renderLoginMessage()}
+                    <div className="gh-portal-powered inside">
+                        <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' onClick={() => {
+                            window.open('https://ghost.org', '_blank');
+                        }}>
+                            <img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" alt="Publish with Ghost" />
+                        </a>
+                    </div>
                 </footer>
             </>
         );

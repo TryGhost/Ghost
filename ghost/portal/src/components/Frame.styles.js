@@ -232,8 +232,10 @@ const FrameStyles = `
 
     .gh-portal-popup-wrapper {
         position: relative;
-        padding: 10vmin 0 0;
+        padding: 10vmin 0;
         height: 100%;
+        max-height: 100vh;
+        overflow: scroll;
     }
 
     .gh-portal-popup-container {
@@ -783,7 +785,7 @@ const MobileStyles = `
     }
 }
 
-@media (min-width: 480px) and (max-height: 880px) {
+/*@media (min-width: 480px) and (max-height: 880px) {
     .gh-portal-popup-wrapper {
         padding-top: 4vmin;
     }
@@ -803,7 +805,7 @@ const MobileStyles = `
         max-height: unset !important;
         overflow: unset !important;
     }
-}
+}*/
 
 @keyframes popup-mobile {
     0% {
