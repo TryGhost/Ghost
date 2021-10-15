@@ -330,12 +330,6 @@ async function bootGhost() {
         require('./shared/sentry');
         debug('End: Load sentry');
 
-        // I18n is basically used to colocate all of our error message strings & required to log server start messages
-        debug('Begin: i18n');
-        const i18n = require('./shared/i18n');
-        i18n.init();
-        debug('End: i18n');
-
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
