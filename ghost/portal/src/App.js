@@ -19,7 +19,8 @@ const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
     member: Fixtures.member.free,
-    page: 'signup'
+    page: 'offer',
+    pageData: Fixtures.offer
 };
 
 function SentryErrorBoundary({site, children}) {
@@ -145,7 +146,7 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, page, showPopup, popupNotification, lastPage, pageQuery} = await this.fetchData();
+            const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
             const state = {
                 site,
                 member,
@@ -153,6 +154,7 @@ export default class App extends React.Component {
                 lastPage,
                 pageQuery,
                 showPopup,
+                pageData,
                 popupNotification,
                 action: 'init:success',
                 initStatus: 'success'

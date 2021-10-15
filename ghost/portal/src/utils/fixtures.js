@@ -258,7 +258,10 @@ export const testSite = getSiteData({
 });
 
 export const site = getSiteData({});
-export const offer = getOfferData({});
+export const offer = getOfferData({
+    tierId: site.products[0].id
+});
+
 export const member = {
     free: getMemberData(),
     paid: getMemberData({
