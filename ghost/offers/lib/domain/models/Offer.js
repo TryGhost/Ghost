@@ -27,6 +27,7 @@ const OfferStatus = require('./OfferStatus');
  * @prop {string} [stripe_coupon_id]
  * @prop {OfferStatus} status
  * @prop {OfferTier} tier
+ * @prop {number} redemptionCount
  */
 
 /**
@@ -44,6 +45,7 @@ const OfferStatus = require('./OfferStatus');
  * @prop {string} currency
  * @prop {string} [stripe_coupon_id]
  * @prop {string} status
+ * @prop {number} redemptionCount
  * @prop {TierProps|OfferTier} tier
  */
 
@@ -122,6 +124,10 @@ class Offer {
 
     get status() {
         return this.props.status;
+    }
+
+    get redemptionCount() {
+        return this.props.redemptionCount;
     }
 
     set status(value) {
@@ -261,6 +267,15 @@ class Offer {
         const duration = OfferDuration.create(data.duration, data.duration_in_months);
         const status = OfferStatus.create(data.status || 'active');
 
+        if (isNew && data.redemptionCount !== undefined) {
+            // TODO correct error
+            throw new errors.InvalidOfferCode({
+                message: 'An Offer cannot be created with redemptionCount'
+            });
+        }
+
+        const redemptionCount = data.redemptionCount || 0;
+
         if (cadence.value === 'year' && duration.value.type === 'repeating') {
             throw new errors.InvalidOfferDuration({
                 message: 'Offer `duration` must be "once" or "forever" for the "yearly" cadence.'
@@ -319,6 +334,7 @@ class Offer {
             currency,
             tier,
             stripe_coupon_id: couponId,
+            redemptionCount,
             status
         }, {isNew});
     }
