@@ -10,11 +10,8 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const urlUtils = require('../utils/urlUtils');
 const adminUtils = require('../utils/admin-utils');
-const i18n = require('../../core/shared/i18n');
 const config = require('../../core/shared/config');
 let request;
-
-i18n.init();
 
 function assertCorrectHeaders(res) {
     should.not.exist(res.headers['x-cache-invalidate']);

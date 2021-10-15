@@ -7,7 +7,7 @@ const BlogIcon = require('../../../../../core/server/lib/image/blog-icon');
 describe('lib/image: blog icon', function () {
     describe('getIconUrl', function () {
         it('custom uploaded ico blog icon', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
                 urlFor: (key, boolean) => [key, boolean]
             }, settingsCache: {
                 get: (key) => {
@@ -20,7 +20,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('custom uploaded png blog icon', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
                 urlFor: (key, boolean) => [key, boolean]
             }, settingsCache: {
                 get: (key) => {
@@ -33,7 +33,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('default ico blog icon', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
                 urlFor: key => key
             }, settingsCache: {
                 get: () => {}
@@ -43,7 +43,7 @@ describe('lib/image: blog icon', function () {
 
         describe('absolute URL', function () {
             it('custom uploaded ico blog icon', function () {
-                const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {
+                const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
                     urlFor: (key, boolean) => [key, boolean]
                 }, settingsCache: {
                     get: (key) => {
@@ -56,7 +56,7 @@ describe('lib/image: blog icon', function () {
             });
 
             it('custom uploaded png blog icon', function () {
-                const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {
+                const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
                     urlFor: (key, boolean) => [key, boolean]
                 }, settingsCache: {
                     get: (key) => {
@@ -69,7 +69,7 @@ describe('lib/image: blog icon', function () {
             });
 
             it('default ico blog icon', function () {
-                const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {
+                const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {
                     urlFor: (key, boolean) => [key, boolean]
                 }, settingsCache: {
                     get: () => {}
@@ -82,7 +82,7 @@ describe('lib/image: blog icon', function () {
     describe('getIconPath', function () {
         it('custom uploaded ico blog icon', function () {
             const stub = sinon.stub();
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {
                 getLocalFileStoragePath: stub
             }, urlUtils: {}, settingsCache: {
                 get: (key) => {
@@ -98,7 +98,7 @@ describe('lib/image: blog icon', function () {
 
         it('custom uploaded png blog icon', function () {
             const stub = sinon.stub();
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {
                 getLocalFileStoragePath: stub
             }, urlUtils: {}, settingsCache: {
                 get: (key) => {
@@ -120,7 +120,7 @@ describe('lib/image: blog icon', function () {
                         return root;
                     }
                 }
-            }, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
+            }, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: () => {}
             }});
             blogIcon.getIconPath().should.eql(path.join(root, 'favicon.ico'));
@@ -129,17 +129,17 @@ describe('lib/image: blog icon', function () {
 
     describe('isIcoImageType', function () {
         it('returns true, if icon is .ico filetype', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.isIcoImageType('icon.ico').should.be.true();
         });
 
         it('returns false, if icon is not .ico filetype', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.isIcoImageType('icon.png').should.be.false();
         });
 
         it('returns true, if icon is .ico filetype when using settingsCache', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: (key) => {
                     if (key === 'icon') {
                         return 'icon.ico';
@@ -150,7 +150,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('returns false, if icon is not .ico filetype when using settingsCache', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: (key) => {
                     if (key === 'icon') {
                         return 'icon.png';
@@ -163,17 +163,17 @@ describe('lib/image: blog icon', function () {
 
     describe('getIconType', function () {
         it('returns x-icon for ico icons', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconType('favicon.ico').should.eql('x-icon');
         });
 
         it('returns png for png icon', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconType('favicon.png').should.eql('png');
         });
 
         it('returns x-icon for ico icons when the icon is cached', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: (key) => {
                     if (key === 'icon') {
                         return 'favicon.ico';
@@ -184,7 +184,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('returns png for png icon when the icon is cached', function () {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
                 get: (key) => {
                     if (key === 'icon') {
                         return 'favicon.png';
@@ -197,7 +197,7 @@ describe('lib/image: blog icon', function () {
 
     describe('getIconDimensions', function () {
         it('[success] returns .ico dimensions', function (done) {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.ico'))
                 .then(function (result) {
                     should.exist(result);
@@ -210,7 +210,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('[success] returns .png dimensions', function (done) {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.png'))
                 .then(function (result) {
                     should.exist(result);
@@ -223,7 +223,7 @@ describe('lib/image: blog icon', function () {
         });
 
         it('[success] returns .ico dimensions for icon with multiple sizes', function (done) {
-            const blogIcon = new BlogIcon({config: {}, i18n: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
             blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes.ico'))
                 .then(function (result) {
                     should.exist(result);
