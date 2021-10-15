@@ -1371,22 +1371,43 @@ p.theme-validation-details {
 
 /* Design (Labs)
 /* ---------------------------------------------------- */
-.gh-nav-menu-title {
+.gh-nav-header {
+    height: 100px;
+    padding: 32px 32px 16px;
+}
+
+.gh-nav-menu-back-button {
     display: flex;
     align-items: center;
-    padding-left: 7px;
+    margin-bottom: 40px;
+    padding: 6px 0;
+    color: var(--darkgrey);
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: .2px;
+    background: none;
+}
+
+.gh-nav-menu-back-button svg {
+    display: block;
+    width: 9px;
+    height: 9px;
+    margin-right: 8px;
+}
+
+.gh-nav-menu-back-button:hover {
+    color: var(--black);
+}
+
+.gh-nav-design .gh-nav-menu-title {
+    display: flex;
+    align-items: center;
     overflow: hidden;
+    margin-bottom: 8px;
     color: var(--black);
     font-size: 1.5rem;
     font-weight: 700;
     line-height: 1.3em;
-}
-
-.gh-nav-menu-title svg {
-    width: 16px;
-    height: 16px;
-    margin-right: 17px;
-    fill: var(--black);
 }
 
 .gh-nav-design-tab {
@@ -1420,10 +1441,12 @@ p.theme-validation-details {
 .gh-nav-bottom .gh-nav-design-tab span {
     display: flex;
     align-items: center;
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 700;
 }
 
-.gh-nav-design-tab .active-theme {
-    margin-left: 33px;
+.gh-nav-bottom .gh-nav-design-tab .active-theme {
     color: var(--midgrey);
     font-size: 1.3rem;
     font-weight: 400;
@@ -1453,6 +1476,7 @@ p.theme-validation-details {
 }
 
 .gh-nav-design-settings {
+    margin: 16px 0;
     padding: 24px var(--mainmenu-padding) 32px calc(var(--mainmenu-padding) + 7px);
 }
 
