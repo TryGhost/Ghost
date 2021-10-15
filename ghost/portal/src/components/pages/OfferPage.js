@@ -9,6 +9,8 @@ const React = require('react');
 export const OfferPageStyles = `
     .gh-portal-offer {
         padding-bottom: 0;
+        overflow: unset;
+        max-height: unset;
     }
 
     .gh-portal-offer h4 {
@@ -40,7 +42,7 @@ export const OfferPageStyles = `
 
     .gh-portal-offer-bar {
         position: relative;
-        padding: 12px 16px;
+        padding: 16px 16px 12px;
     }
 
     .gh-portal-offer-bar::before {
@@ -57,9 +59,14 @@ export const OfferPageStyles = `
         z-index: -1;
     }
 
+    .gh-portal-offer-bar h4 {
+        font-weight: 500;
+        font-size: 1.7rem;
+    }
+
     .gh-portal-offer-tag {
         position: absolute;
-        top: 10px;
+        top: 14px;
         right: 0;
         background: var(--brandcolor);
         color: #fff;
@@ -294,6 +301,9 @@ export default class OfferPage extends React.Component {
 
     renderBenefits({product}) {
         const benefits = product.benefits || [];
+        if (!benefits) {
+            return;
+        }
         const benefitsUI = benefits.map((benefit, idx) => {
             return (
                 <div className="gh-portal-product-benefit" key={`${benefit.name}-${idx}`}>
@@ -354,7 +364,7 @@ export default class OfferPage extends React.Component {
 
                     <div className="gh-portal-offer-container">
                         <div className="gh-portal-offer-bar">
-                            <h4 className="gh-portal-plan-name">{offer.display_title}</h4>
+                            <h4>{offer.display_title}</h4>
                             {this.renderOfferTag()}
                             <p>{offer.display_description}</p>
                         </div>
