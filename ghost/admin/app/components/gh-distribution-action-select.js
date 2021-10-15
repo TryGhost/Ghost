@@ -9,11 +9,12 @@ export default class GhDistributionActionSelect extends Component {
     constructor(...args) {
         super(...args);
 
-        let distributionValue = this.args.post.emailOnly
+        let distributionValue = this.args.emailOnly
             ? 'send'
-            : (this.args.post.emailRecipientFilter !== 'none')
+            : (this.args.emailRecipientFilter !== 'none')
                 ? 'publish_send'
                 : 'publish';
+
         this.distributionValue = this.availablePublishActions.findBy('value', distributionValue);
     }
 
@@ -33,7 +34,6 @@ export default class GhDistributionActionSelect extends Component {
     @action
     setDistributionAction(newAction) {
         this.distributionValue = newAction;
-        this.args.post.emailOnly = (newAction.value === 'send') ? true : false;
         this.args.setDistributionAction(newAction.value);
     }
 }
