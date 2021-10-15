@@ -1,9 +1,9 @@
 import ActionButton from '../common/ActionButton';
-import {offer} from '../../utils/fixtures';
 import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
+import {getCurrencySymbol, getProductFromId} from '../../utils/helpers';
 const React = require('react');
 
 export const OfferPageStyles = `
@@ -134,7 +134,7 @@ export default class OfferPage extends React.Component {
     }
 
     getInputFields({state, fieldNames}) {
-        const {portal_name: portalName} = this.context.site;   
+        const {portal_name: portalName} = this.context.site;
 
         const errors = state.errors || {};
         const fields = [
@@ -280,7 +280,71 @@ export default class OfferPage extends React.Component {
         );
     }
 
+    renderOfferTag() {
+        const {pageData: offer} = this.context;
+        if (offer.type === 'fixed') {
+            return (
+                <h5 className="gh-portal-offer-tag">{getCurrencySymbol(offer.currency)}{offer.amount / 100} off</h5>
+            );
+        }
+        return (
+            <h5 className="gh-portal-offer-tag">{offer.amount}% off</h5>
+        );
+    }
+
+    renderBenefits({product}) {
+        const benefits = product.benefits || [];
+        const benefitsUI = benefits.map((benefit, idx) => {
+            return (
+                <div className="gh-portal-product-benefit" key={`${benefit.name}-${idx}`}>
+                    <CheckmarkIcon className='gh-portal-benefit-checkmark' />
+                    <span className="gh-portal-product-benefit">{benefit.name}</span>
+                </div>
+            );
+        });
+        return (
+            <div className="gh-portal-product-benefits">
+                {benefitsUI}
+            </div>
+        );
+    }
+
+    getOriginalPrice({offer, product}) {
+        const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
+        const originalAmount = price.amount / 100;
+        return `${getCurrencySymbol(price.currency)}${originalAmount}/${offer.cadence}`;
+    }
+
+    getUpdatedPrice({offer, product}) {
+        const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
+        const originalAmount = price.amount;
+        let updatedAmount;
+        if (offer.type === 'fixed' && offer.currency === price.currency) {
+            updatedAmount = ((originalAmount - offer.amount)) / 100;
+            return updatedAmount > 0 ? updatedAmount : 0;
+        } else if (offer.type === 'percent') {
+            updatedAmount = (originalAmount - ((originalAmount * offer.amount) / 100)) / 100;
+            return updatedAmount;
+        }
+        return originalAmount / 100;
+    }
+
+    getOffAmount({offer}) {
+        if (offer.type === 'fixed') {
+            return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
+        } else if (offer.type === 'percent') {
+            return `${offer.amount}%`;
+        }
+        return '';
+    }
+
     render() {
+        const {pageData: offer, site} = this.context;
+        if (!offer) {
+            return null;
+        }
+        const product = getProductFromId({site, productId: offer.tier.id});
+        const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
         return (
             <>
                 <div className='gh-portal-content gh-portal-offer'>
@@ -290,39 +354,22 @@ export default class OfferPage extends React.Component {
 
                     <div className="gh-portal-offer-container">
                         <div className="gh-portal-offer-bar">
-                            <h4 className="gh-portal-plan-name">Holiday special!</h4>
-                            <h5 className="gh-portal-offer-tag">20% off</h5>
-                            <p>Limited time offer! Sign up now with a massive discount and get full access to Ball is Life.</p>
+                            <h4 className="gh-portal-plan-name">{offer.display_title}</h4>
+                            {this.renderOfferTag()}
+                            <p>{offer.display_description}</p>
                         </div>
                         <div className="gh-portal-plans-container offer">
                             <div className="gh-portal-offer-details">
-                                <h4 className="gh-portal-plan-name">{offer.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
-                                <p>The bestest tier you can get with Ball is Life. Subscribe to this if you want it all.</p>
-                                <div className="gh-portal-product-benefits">
-                                    <div className="gh-portal-product-benefit">
-                                        <CheckmarkIcon className='gh-portal-benefit-checkmark' />
-                                        <span className="gh-portal-product-benefit">Limited early adopter pricing</span>
-                                    </div>
-                                    <div className="gh-portal-product-benefit">
-                                        <CheckmarkIcon className='gh-portal-benefit-checkmark' />
-                                        <span className="gh-portal-product-benefit">Latest gear reviews</span>
-                                    </div>
-                                    <div className="gh-portal-product-benefit">
-                                        <CheckmarkIcon className='gh-portal-benefit-checkmark' />
-                                        <span className="gh-portal-product-benefit">Weekly email newsletter</span>
-                                    </div>
-                                    <div className="gh-portal-product-benefit">
-                                        <CheckmarkIcon className='gh-portal-benefit-checkmark' />
-                                        <span className="gh-portal-product-benefit">Listen to my podcast</span>
-                                    </div>
-                                </div>
-                                <p className="footnote">20% off for first year. Renews at $75/year</p>
+                                <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
+                                <p>{product.description}</p>
+                                {this.renderBenefits({product})}
+                                <p className="footnote">{this.getOffAmount({offer})} off for first year. Renews at {this.getOriginalPrice({offer, product})}</p>
                             </div>
                             <div className="gh-portal-offer-price">
-                                <div className="old">$75</div>
+                                <div className="old">{getCurrencySymbol(price.currency)}{price.amount / 100}</div>
                                 <div className="new">
-                                    <span className="currency">$</span>
-                                    <span className="value">60</span>
+                                    <span className="currency">{getCurrencySymbol(price.currency)}</span>
+                                    <span className="value">{this.getUpdatedPrice({offer, product})}</span>
                                 </div>
                             </div>
                         </div>
