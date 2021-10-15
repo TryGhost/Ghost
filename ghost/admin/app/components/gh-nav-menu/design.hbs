@@ -1,9 +1,10 @@
-<header class="gh-nav-menu">
-    <LinkTo @route="settings" class="gh-nav-menu-title">{{svg-jar "arrow-left-tail"}}Site design</LinkTo>
+<header class="gh-nav-header">
+    <LinkTo @route="settings" class="gh-nav-menu-back-button">{{svg-jar "arrow-left-small"}} Settings</LinkTo>
 </header>
 <section class="gh-nav-body gh-nav-design">
     <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
         <div class="gh-nav-list gh-nav-main">
+            <LinkTo @route="settings.design" class="gh-nav-menu-title">Site design</LinkTo>
             {{#let (eq this.openSection "brand") as |isOpen|}}
                 <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection "brand")}}>
                     <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-down-stroke" "arrow-right-stroke")}}</span>
@@ -40,7 +41,7 @@
 
     <div class="gh-nav-bottom">
         <LinkTo class="gh-nav-design-tab" style="align-items: self-start" @route="settings.design.change-theme" {{on "click" (fn this.toggleSection null)}}>
-            <span>{{svg-jar "settings"}}Change theme</span>
+            <span>Themes</span>
             <span class="active-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - V {{this.activeTheme.package.version}}{{/if}}</span>
         </LinkTo>
     </div>
