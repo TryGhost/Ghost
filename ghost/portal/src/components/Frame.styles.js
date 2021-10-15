@@ -783,10 +783,25 @@ const MobileStyles = `
     }
 }
 
-@media (min-width: 768px) and (max-height: 768px) {
-    .gh-portal-signup-header,
-    .gh-portal-signin-header {
-        padding-bottom: 16px;
+@media (min-width: 480px) and (max-height: 880px) {
+    .gh-portal-popup-wrapper {
+        padding-top: 4vmin;
+    }
+
+    .gh-portal-content.signup {
+        max-height: calc(100vh - 8vmin - 126px);
+    }
+}
+
+@media (min-width: 480px) and (max-height: 650px) {
+    .gh-portal-popup-container {
+        overflow: scroll;
+        max-height: calc(100vh - 8vmin);
+    }
+
+    .gh-portal-content.signup {
+        max-height: unset !important;
+        overflow: unset !important;
     }
 }
 
