@@ -10,7 +10,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const handleDataAttributes = require('./data-attributes');
 const React = require('react');
@@ -517,22 +517,34 @@ export default class App extends React.Component {
         this.setState(updatedState);
     }
 
-    handleOfferQuery({site, offerId}) {
-        const prices = getAvailablePrices({site});
-        const priceId = prices?.[0]?.id;
-        const showOfferScreen = false;
-        if (showOfferScreen) {
-            this.dispatchAction('openPopup', {
-                page: 'offer'
-            });
-        } else {
-            removePortalLinkFromUrl();
-            if (this.state.member) {
-                this.dispatchAction('checkoutPlan', {plan: priceId, offerId});
-            } else {
-                this.dispatchAction('signup', {plan: priceId, offerId});
+    async handleOfferQuery({offerId}) {
+        removePortalLinkFromUrl();
+        if (!isPaidMember({member: this.state.member})) {
+            try {
+                const offerData = await this.GhostApi.site.offer({offerId});
+                this.dispatchAction('openPopup', {
+                    page: 'offer',
+                    pageData: offerData?.offers[0]
+                });
+            } catch (e) {
+                // ignore invalid portal url
             }
         }
+        // const prices = getAvailablePrices({site});
+        // const priceId = prices?.[0]?.id;
+        // const showOfferScreen = false;
+        // if (showOfferScreen) {
+        //     this.dispatchAction('openPopup', {
+        //         page: 'offer'
+        //     });
+        // } else {
+        //     removePortalLinkFromUrl();
+        //     if (this.state.member) {
+        //         this.dispatchAction('checkoutPlan', {plan: priceId, offerId});
+        //     } else {
+        //         this.dispatchAction('signup', {plan: priceId, offerId});
+        //     }
+        // }
     }
 
     /** Handle direct signup link for a price */
@@ -667,7 +679,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, popupNotification, customSiteUrl} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -676,6 +688,7 @@ export default class App extends React.Component {
             brandColor: this.getAccentColor(),
             page: contextPage,
             pageQuery,
+            pageData,
             member: contextMember,
             lastPage,
             showPopup,

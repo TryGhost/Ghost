@@ -41,7 +41,7 @@ export function getSiteData({
 }
 
 function getOfferData({
-    name = 'Black Friday 2',
+    name = 'Black Friday',
     code = 'black-friday',
     displayTitle = 'Black Friday Special',
     displayDescription = 'Black Friday Sale!',

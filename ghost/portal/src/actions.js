@@ -18,7 +18,8 @@ function openPopup({data}) {
     return {
         showPopup: true,
         page: data.page,
-        ...(data.pageQuery ? {pageQuery: data.pageQuery} : {})
+        ...(data.pageQuery ? {pageQuery: data.pageQuery} : {}),
+        ...(data.pageData ? {pageData: data.pageData} : {})
     };
 }
 
