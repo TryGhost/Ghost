@@ -670,7 +670,7 @@ export default Controller.extend({
     }).group('saveTasks'),
 
     // convenience method for saving the post and performing post-save cleanup
-    _savePostTask: task(function* (options) {
+    _savePostTask: task(function* (options = {}) {
         let {post} = this;
 
         const previousEmailOnlyValue = this.post.emailOnly;
