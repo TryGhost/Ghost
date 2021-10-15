@@ -226,13 +226,12 @@ export default Component.extend({
 
         setDistributionAction(distributionAction) {
             this.set('distributionAction', distributionAction);
+            this.set('emailOnly', distributionAction === 'send');
 
             if (distributionAction === 'publish') {
-                this.set('sendEmailWhenPublished', false);
-                this.set('post.emailRecipientFilter', 'none');
+                this.set('sendEmailWhenPublished', 'none');
             } else {
                 this.set('sendEmailWhenPublished', this.defaultEmailRecipients);
-                this.set('post.emailRecipientFilter', this.defaultEmailRecipients);
             }
         },
 
@@ -390,6 +389,7 @@ export default Component.extend({
     save: task(function* ({dropdown} = {}) {
         let {
             post,
+            emailOnly,
             sendEmailWhenPublished,
             sendEmailConfirmed,
             saveType,
@@ -435,7 +435,7 @@ export default Component.extend({
 
         try {
             // will show alert for non-date related failed validations
-            post = yield this.saveTask.perform({sendEmailWhenPublished});
+            post = yield this.saveTask.perform({sendEmailWhenPublished, emailOnly});
 
             this._cachePublishedAtBlogTZ();
             return post;
@@ -452,6 +452,7 @@ export default Component.extend({
     },
 
     _cleanup() {
+        this.set('distributionAction', 'publish_send');
         this.set('showConfirmEmailModal', false);
 
         // when closing the menu we reset the publishedAtBlogTZ date so that the
