@@ -62,7 +62,8 @@ describe('Match helper', function () {
             object: {
                 foo: 'foo',
                 bar: 'bar'
-            }
+            },
+            array: ['foo', 'bar']
         };
 
         describe('Basic values', function () {
@@ -83,6 +84,7 @@ describe('Match helper', function () {
                 '{{match undefined}}': 'false',
                 '{{match unknown}}': 'false',
                 '{{match object}}': 'true',
+                '{{match array}}': 'true',
 
                 '{{match (title)}}': 'true',
 
@@ -121,8 +123,14 @@ describe('Match helper', function () {
                 '{{match zero 0}}': 'true',
                 '{{match zero "0"}}': 'false',
 
-                '{{match (title) "=" "The Title"}}': 'true',
-                '{{match (title) "=" "The Title!"}}': 'false'
+                '{{match (title) "The Title"}}': 'true',
+                '{{match (title) "The Title!"}}': 'false',
+
+                '{{match object "foo"}}': 'false',
+                '{{match object.foo "foo"}}': 'true',
+                '{{match array "foo"}}': 'false',
+                '{{match array.[0] "foo"}}': 'true'
+
             }, hash);
         });
 
@@ -152,7 +160,12 @@ describe('Match helper', function () {
                 '{{match zero "=" "0"}}': 'false',
 
                 '{{match (title) "=" "The Title"}}': 'true',
-                '{{match (title) "=" "The Title!"}}': 'false'
+                '{{match (title) "=" "The Title!"}}': 'false',
+
+                '{{match object "=" "foo"}}': 'false',
+                '{{match object.foo "=" "foo"}}': 'true',
+                '{{match array "=" "foo"}}': 'false',
+                '{{match array.[0] "=" "foo"}}': 'true'
             }, hash);
         });
 
@@ -182,7 +195,12 @@ describe('Match helper', function () {
                 '{{match zero "!=" "0"}}': 'true',
 
                 '{{match (title) "!=" "The Title"}}': 'false',
-                '{{match (title) "!=" "The Title!"}}': 'true'
+                '{{match (title) "!=" "The Title!"}}': 'true',
+
+                '{{match object "!=" "foo"}}': 'true',
+                '{{match object.foo "!=" "foo"}}': 'false',
+                '{{match array "!=" "foo"}}': 'true',
+                '{{match array.[0] "!=" "foo"}}': 'false'
             }, hash);
         });
 
