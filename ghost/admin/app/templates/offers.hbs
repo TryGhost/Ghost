@@ -3,7 +3,7 @@
         <h2 class="gh-canvas-title" data-test-screen-title>Offers</h2>
         <section class="gh-offers-actions view-actions">
             <div>
-                <div class="gh-contentfilter-menu gh-contentfilter-type {{if this.selectedType.value "gh-contentfilter-selected"}}" data-test-type-select="true">
+                <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
                     <PowerSelect
                         @selected={{this.selectedType}}
                         @options={{this.availableTypes}}
@@ -15,7 +15,7 @@
                         @matchTriggerWidth={{false}}
                         as |type|
                     >
-                        {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
+                        {{#if type.name}}{{type.name}} offers{{else}}<span class="red">Unknown type</span>{{/if}}
                     </PowerSelect>
                 </div>
             </div>
@@ -25,10 +25,16 @@
 
     <section class="view-container">
 
-        {{#if this.offersExist}}
+        {{#if (and this.offersExist this.filteredOffers.length)}}
             <table class="gh-list gh-offers-list">
                 <tr class="gh-list-row header">
-                    <th class="gh-list-header">{{this.offersList.length}} offers</th>
+                    <th class="gh-list-header">
+                        {{#if (eq this.selectedType.value "active")}}
+                            {{gh-pluralize this.filteredOffers.length "active offer"}}
+                        {{else}}
+                            {{gh-pluralize this.filteredOffers.length "archived offer"}}
+                        {{/if}}
+                    </th>
                     <th class="gh-list-header">Tier</th>
                     <th class="gh-list-header">Terms</th>
                     <th class="gh-list-header">Redemptions</th>
@@ -75,52 +81,65 @@
                 {{/each}}
             </table>
         {{else}}
-            <div class="gh-offers-list-cta">
-                {{svg-jar "discount-bubble" class="discount-bubble"}}
-                <h4>Provide special offers to new signups</h4>
-                <p>
-                    Boost your subscriptions by creating targeted discounts to potential members.
-                </p>
-                <LinkTo @route="offer.new" class="gh-btn gh-btn-green gh-btn-icon">
-                    <span>{{svg-jar "add"}} Add offer</span>
-                </LinkTo>
-            </div>
+            {{#if (eq this.selectedType.value "active")}}
+                <div class="gh-offers-list-cta">
+                    {{svg-jar "discount-bubble" class="discount-bubble"}}
+                    <h4>Provide special offers to new signups</h4>
+                    <p>
+                        Boost your subscriptions by creating targeted discounts to potential members.
+                    </p>
+                    <LinkTo @route="offer.new" class="gh-btn gh-btn-green gh-btn-icon">
+                        <span>{{svg-jar "add"}} Add offer</span>
+                    </LinkTo>
+                </div>
+            {{else}}
+                <div class="no-posts-box">
+                    <div class="no-posts">
+                        <h3>You have no archived offers.</h3>
+                        <LinkTo @route="offers" @query={{hash type=null author=null tag=null}} class="gh-btn gh-btn-lg">
+                            <span>Show active offers</span>
+                        </LinkTo>
+                    </div>
+                </div>
+            {{/if}}
         {{/if}}
 
-        <div class="gh-main-section gh-offers-help">
-            <h2 class="gh-main-section-header small bn">Get the most out of offers</h2>
-            <div class="gh-main-section-block">
-                <div class="gh-main-section-content grey">
-                    <a href="https://ghost.org/resources" target="_blank" class="gh-offers-help-card">
-                        <div>
-                            <div class="thumbnail" style="background-image: url(assets/img/dashboard/bp1.jpg);"></div>
-                            <h3>Discounts right on the beat</h3>
-                            <p>Setting up the right timing for your offers is as critical as finding the right amount.</p>
-                        </div>
-                        <div class="gh-btn"><span>Read more</span></div>
-                    </a>
+        {{#if (eq this.selectedType.value "active")}}
+            <div class="gh-main-section gh-offers-help">
+                <h2 class="gh-main-section-header small bn">Get the most out of offers</h2>
+                <div class="gh-main-section-block">
+                    <div class="gh-main-section-content grey">
+                        <a href="https://ghost.org/resources" target="_blank" class="gh-offers-help-card">
+                            <div>
+                                <div class="thumbnail" style="background-image: url(assets/img/dashboard/bp1.jpg);"></div>
+                                <h3>Discounts right on the beat</h3>
+                                <p>Setting up the right timing for your offers is as critical as finding the right amount.</p>
+                            </div>
+                            <div class="gh-btn"><span>Read more</span></div>
+                        </a>
 
-                    <a href="https://ghost.org/resources" target="_blank" class="gh-offers-help-card">
-                        <div>
-                            <div class="thumbnail" style="background-image: url(assets/img/dashboard/bp2.jpg);"></div>
-                            <h3>How The Browser grow their audience with special offers</h3>
-                            <p>Learn about how The Browser work with offers</p>
-                        </div>
-                        <div class="gh-btn"><span>Read more</span></div>
-                    </a>
+                        <a href="https://ghost.org/resources" target="_blank" class="gh-offers-help-card">
+                            <div>
+                                <div class="thumbnail" style="background-image: url(assets/img/dashboard/bp2.jpg);"></div>
+                                <h3>How The Browser grow their audience with special offers</h3>
+                                <p>Learn about how The Browser work with offers</p>
+                            </div>
+                            <div class="gh-btn"><span>Read more</span></div>
+                        </a>
 
-                    <a href="https://ghost.org/resources" target="_blank" class="gh-offers-help-card">
-                        <div>
-                            <div class="thumbnail" style="background-image: url(assets/img/dashboard/join-community.jpg)"></div>
-                            <h3>Read more about offers</h3>
-                            <p>Check out the Ghost blog for more tips about how offers can boost your subscriptions.</p>
-                        </div>
-                        <div class="gh-btn"><span>Read more</span></div>
-                    </a>
+                        <a href="https://ghost.org/resources" target="_blank" class="gh-offers-help-card">
+                            <div>
+                                <div class="thumbnail" style="background-image: url(assets/img/dashboard/join-community.jpg)"></div>
+                                <h3>Read more about offers</h3>
+                                <p>Check out the Ghost blog for more tips about how offers can boost your subscriptions.</p>
+                            </div>
+                            <div class="gh-btn"><span>Read more</span></div>
+                        </a>
 
+                    </div>
                 </div>
             </div>
-        </div>
+        {{/if}}
 
     </section>
 </section>

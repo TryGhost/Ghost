@@ -6,7 +6,10 @@
             {{#if this.offer.isNew}}
                 New Offer
             {{else}}
-                {{this.offer.name}}
+                {{this.offer.name}} 
+                {{#if (eq this.offer.status "archived")}}
+                <span class="gh-badge gh-badge-title">Archived</span>
+                {{/if}}
             {{/if}}
         </h2>
         <section class="view-actions">
@@ -206,13 +209,15 @@
         <div class="gh-main-section">
             <div class="gh-main-section-block">
                 {{#if (eq this.offer.status "active")}}
-                    <button
-                        type="button"
-                        class="gh-btn gh-btn-black gh-btn-icon"
-                        {{on "click" this.openConfirmArchiveModal}}
-                    >
-                        <span>Archive offer</span>
-                    </button>
+                    {{#if (not this.offer.isNew)}}
+                        <button
+                            type="button"
+                            class="gh-btn gh-btn-red gh-btn-icon"
+                            {{on "click" this.openConfirmArchiveModal}}
+                        >
+                            <span>Archive offer</span>
+                        </button>
+                    {{/if}}
                 {{else}}
                     <button
                         type="button"
