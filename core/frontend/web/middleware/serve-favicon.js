@@ -1,11 +1,11 @@
 const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
-const config = require('../../../../shared/config');
-const {blogIcon} = require('../../../lib/image');
-const storage = require('../../../adapters/storage');
-const urlUtils = require('../../../../shared/url-utils');
-const settingsCache = require('../../../../shared/settings-cache');
+const config = require('../../../shared/config');
+const {blogIcon} = require('../../../server/lib/image');
+const storage = require('../../../server/adapters/storage');
+const urlUtils = require('../../../shared/url-utils');
+const settingsCache = require('../../../shared/settings-cache');
 
 let content;
 

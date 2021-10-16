@@ -19,7 +19,7 @@ module.exports = (options) => {
     frontendApp.use(shared.middlewares.urlRedirects.frontendSSLRedirect);
 
     frontendApp.lazyUse('/members', require('../members'));
-    frontendApp.use('/', require('../site')(options));
+    frontendApp.use('/', require('../../../frontend/web')(options));
 
     return frontendApp;
 };

@@ -2,9 +2,9 @@ const _ = require('lodash');
 const path = require('path');
 const {GhostError} = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
-const storage = require('../../../adapters/storage');
-const activeTheme = require('../../../../frontend/services/theme-engine/active');
-const config = require('../../../../shared/config');
+const storage = require('../../../server/adapters/storage');
+const activeTheme = require('../../services/theme-engine/active');
+const config = require('../../../shared/config');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 const TRAILING_SLASH_REGEX = /\/+$/;
