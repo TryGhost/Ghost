@@ -10,7 +10,7 @@
         "internalAppPath": "core/frontend/apps/",
         "internalAdaptersPath": "core/server/adapters/",
         "migrationPath": "core/server/data/migrations",
-        "publicFilePath": "core/server/public"
+        "publicFilePath": "core/frontend/public"
     },
     "apps": {
         "internal": [
