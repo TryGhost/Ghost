@@ -106,10 +106,6 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(mw.servePublicFile('public/ghost.css', 'text/css', constants.ONE_HOUR_S));
     siteApp.use(mw.servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
 
-    // Serve images for default templates
-    siteApp.use(mw.servePublicFile('public/404-ghost@2x.png', 'image/png', constants.ONE_HOUR_S));
-    siteApp.use(mw.servePublicFile('public/404-ghost.png', 'image/png', constants.ONE_HOUR_S));
-
     // Serve blog images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage().serve());
 
