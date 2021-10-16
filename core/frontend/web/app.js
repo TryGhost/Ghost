@@ -1,24 +1,24 @@
 const debug = require('@tryghost/debug')('frontend');
 const path = require('path');
-const express = require('../../../shared/express');
+const express = require('../../shared/express');
 const cors = require('cors');
 const {URL} = require('url');
 const errors = require('@tryghost/errors');
 
 // App requires
-const config = require('../../../shared/config');
+const config = require('../../shared/config');
 const constants = require('@tryghost/constants');
-const storage = require('../../adapters/storage');
-const urlService = require('../../services/url');
-const urlUtils = require('../../../shared/url-utils');
-const sitemapHandler = require('../../../frontend/services/sitemap/handler');
-const appService = require('../../../frontend/services/apps');
-const themeEngine = require('../../../frontend/services/theme-engine');
+const storage = require('../../server/adapters/storage');
+const urlService = require('../../server/services/url');
+const urlUtils = require('../../shared/url-utils');
+const sitemapHandler = require('../services/sitemap/handler');
+const appService = require('../services/apps');
+const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
-const membersService = require('../../services/members');
-const offersService = require('../../services/offers');
+const membersService = require('../../server/services/members');
+const offersService = require('../../server/services/offers');
 const siteRoutes = require('./routes');
-const shared = require('../shared');
+const shared = require('../../server/web/shared');
 const mw = require('./middleware');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;

@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const express = require('../../../../../../core/shared/express');
-const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
-const staticTheme = require('../../../../../../core/server/web/site/middleware/static-theme');
+const express = require('../../../../../core/shared/express');
+const themeEngine = require('../../../../../core/frontend/services/theme-engine');
+const staticTheme = require('../../../../../core/frontend/web/middleware/static-theme');
 
 describe('staticTheme', function () {
     let expressStaticStub;
