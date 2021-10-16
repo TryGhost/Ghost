@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
-const storage = require('../../../../../../core/server/adapters/storage');
-const activeTheme = require('../../../../../../core/frontend/services/theme-engine/active');
-const handleImageSizes = require('../../../../../../core/server/web/site/middleware/handle-image-sizes.js');
+const storage = require('../../../../../core/server/adapters/storage');
+const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
+const handleImageSizes = require('../../../../../core/frontend/web/middleware/handle-image-sizes.js');
 
 // @TODO make these tests lovely and non specific to implementation
 describe('handleImageSizes middleware', function () {
