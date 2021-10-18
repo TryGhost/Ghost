@@ -4,6 +4,7 @@ import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg'
 import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
 import {getCurrencySymbol, getProductFromId} from '../../utils/helpers';
+import {ValidateInputForm} from '../../utils/form';
 const React = require('react');
 
 export const OfferPageStyles = `
@@ -199,7 +200,31 @@ export default class OfferPage extends React.Component {
     }
 
     handleSignup(e) {
-        return;
+        e.preventDefault();
+        const {pageData: offer, site} = this.context;
+        if (!offer) {
+            return null;
+        }
+        const product = getProductFromId({site, productId: offer.tier.id});
+        const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
+        this.setState((state) => {
+            return {
+                errors: ValidateInputForm({fields: this.getInputFields({state})})
+            };
+        }, () => {
+            const {onAction} = this.context;
+            const {name, email, errors} = this.state;
+            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
+            if (!hasFormErrors) {
+                onAction('signup', {
+                    name, email, plan: price?.id,
+                    offerId: offer?.id
+                });
+                this.setState({
+                    errors: {}
+                });
+            }
+        });
     }
 
     handleInputChange(e, field) {
