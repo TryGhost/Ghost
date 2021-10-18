@@ -155,7 +155,15 @@ export default class ChangeThemeController extends Controller {
     }
 
     @action
-    toggleAdvanced() {
+    toggleAdvanced(event) {
         this.showAdvanced = !this.showAdvanced;
+
+        if (this.showAdvanced) {
+            const mainContainer = event?.target.closest('.gh-main');
+
+            if (mainContainer) {
+                mainContainer.scrollTop = 0;
+            }
+        }
     }
 }
