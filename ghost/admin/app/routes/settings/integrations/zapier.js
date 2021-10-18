@@ -6,7 +6,6 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
     router: service(),
     config: service(),
-    feature: service(),
 
     init() {
         this._super(...arguments);
@@ -41,11 +40,7 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
     transitionDisabled() {
         if (this.get('disabled')) {
-            if (this.feature.get('offers')) {
-                this.transitionTo('settings.integrations');
-            } else {
-                this.transitionTo('integrations');
-            }
+            this.transitionTo('settings.integrations');
         }
     },
 
