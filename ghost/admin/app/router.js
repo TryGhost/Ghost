@@ -58,6 +58,19 @@ Router.map(function () {
         this.route('user', {path: ':user_slug'});
     });
 
+    this.route('settings.integrations', {path: '/settings/integrations'}, function () {
+        this.route('new');
+    });
+    this.route('settings.integration', {path: '/settings/integrations/:integration_id'}, function () {
+        this.route('webhooks.new', {path: 'webhooks/new'});
+        this.route('webhooks.edit', {path: 'webhooks/:webhook_id'});
+    });
+    this.route('settings.integrations.slack', {path: '/settings/integrations/slack'});
+    this.route('settings.integrations.amp', {path: '/settings/integrations/amp'});
+    this.route('settings.integrations.firstpromoter', {path: '/settings/integrations/firstpromoter'});
+    this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
+    this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
+
     this.route('settings.theme', {path: '/settings/theme'}, function () {
         this.route('uploadtheme');
         this.route('install');

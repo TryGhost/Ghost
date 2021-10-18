@@ -8,6 +8,7 @@ import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
     router: service(),
+    feature: service(),
 
     availableEvents: null,
     error: null,
@@ -48,7 +49,11 @@ export default ModalComponent.extend({
         try {
             let webhook = yield this.confirm();
             let integration = yield webhook.get('integration');
-            this.router.transitionTo('integration', integration);
+            if (this.feature.get('offers')) {
+                this.router.transitionTo('settings.integration', integration);
+            } else {
+                this.router.transitionTo('integration', integration);
+            }
         } catch (e) {
             // TODO: server-side validation errors should be serialized
             // properly so that errors are added to model.errors automatically
