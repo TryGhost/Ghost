@@ -11,6 +11,12 @@ export default class ChangeThemeController extends Controller {
     @tracked themes = this.store.peekAll('theme');
 
     marketplaceThemes = [{
+        name: 'Casper',
+        category: 'Blog',
+        previewUrl: 'https://casper.ghost.io/',
+        ref: 'default',
+        image: 'assets/img/themes/Casper.jpg'
+    }, {
         name: 'Journal',
         category: 'Newsletter',
         url: 'https://github.com/TryGhost/Journal',
