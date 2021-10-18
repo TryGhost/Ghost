@@ -301,7 +301,7 @@ export default class OfferPage extends React.Component {
 
     renderBenefits({product}) {
         const benefits = product.benefits || [];
-        if (!benefits) {
+        if (!benefits?.length) {
             return;
         }
         const benefitsUI = benefits.map((benefit, idx) => {
