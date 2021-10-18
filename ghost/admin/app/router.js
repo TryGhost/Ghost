@@ -54,6 +54,14 @@ Router.map(function () {
         });
     });
 
+    this.route('settings.staff', {path: '/settings/staff'}, function () {
+        this.route('user', {path: ':user_slug'});
+    });
+
+    // this.route('staff', function () {
+    //     this.route('user', {path: ':user_slug'});
+    // });
+
     // this.route('settings.products', {path: '/settings/products'});
     // this.route('settings.product.new', {path: '/settings/product/new'});
     // this.route('settings.product', {path: '/settings/product/:product_id'});

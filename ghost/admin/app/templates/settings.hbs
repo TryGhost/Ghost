@@ -48,7 +48,7 @@
             </LinkTo>
             
             {{#if (feature "offers")}}
-            <LinkTo class="gh-setting-group" @route="staff" data-test-nav="navigation">
+            <LinkTo class="gh-setting-group" @route="settings.staff" data-test-nav="navigation">
                 <span class="green">{{svg-jar "staff"}}</span>
                 <div>
                     <h4>Staff</h4>
@@ -78,6 +78,16 @@
 
         <div class="gh-setting-header">Advanced</div>
         <div class="gh-settings-main-grid">
+            {{#if (feature "offers")}}
+            <LinkTo class="gh-setting-group" @route="integrations" data-test-nav="navigation">
+                <span class="yellow">{{svg-jar "module"}}</span>
+                <div>
+                    <h4>Integrations</h4>
+                    <p>Make Ghost work with apps and tools</p>
+                </div>
+            </LinkTo>
+            {{/if}}
+
             <LinkTo class="gh-setting-group" @route="settings.code-injection" data-test-nav="code-injection">
                 <span class="green">{{svg-jar "brackets"}}</span>
                 <div>
@@ -85,16 +95,6 @@
                     <p>Add code to your publication</p>
                 </div>
             </LinkTo>
-            
-            {{#if (feature "offers")}}
-            <LinkTo class="gh-setting-group" @route="integrations" data-test-nav="navigation">
-                <span class="blue">{{svg-jar "module"}}</span>
-                <div>
-                    <h4>Integrations</h4>
-                    <p>Make Ghost work with apps and tools</p>
-                </div>
-            </LinkTo>
-            {{/if}}
 
             <LinkTo class="gh-setting-group" @route="settings.labs" data-test-nav="labs">
                 <span class="pink">{{svg-jar "labs"}}</span>
