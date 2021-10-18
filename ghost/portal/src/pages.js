@@ -19,7 +19,6 @@ const Pages = {
     accountProfile: AccountProfilePage,
     magiclink: MagicLinkPage,
     loading: LoadingPage,
-    links: LinkPage,
     offer: OfferPage
 };
 
