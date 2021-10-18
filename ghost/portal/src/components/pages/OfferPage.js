@@ -358,7 +358,7 @@ export default class OfferPage extends React.Component {
 
     getOriginalPrice({offer, product}) {
         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
-        const originalAmount = price.amount / 100;
+        const originalAmount = this.renderRoundedPrice(price.amount / 100);
         return `${getCurrencySymbol(price.currency)}${originalAmount}/${offer.cadence}`;
     }
 
@@ -374,6 +374,14 @@ export default class OfferPage extends React.Component {
             return updatedAmount;
         }
         return originalAmount / 100;
+    }
+
+    renderRoundedPrice(price) {
+        if (price % 1 !== 0) {
+            const roundedPrice = Math.round(price * 100) / 100;
+            return Number(roundedPrice).toFixed(2);
+        }
+        return price;
     }
 
     getOffAmount({offer}) {
@@ -392,6 +400,8 @@ export default class OfferPage extends React.Component {
         }
         const product = getProductFromId({site, productId: offer.tier.id});
         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
+        const updatedPrice = this.getUpdatedPrice({offer, product});
+        const originalPrice = this.getOriginalPrice({offer, product});
         return (
             <>
                 <div className='gh-portal-content gh-portal-offer'>
@@ -418,7 +428,7 @@ export default class OfferPage extends React.Component {
                                 <div className="old">{getCurrencySymbol(price.currency)}{price.amount / 100}</div>
                                 <div className="new">
                                     <span className="currency">{getCurrencySymbol(price.currency)}</span>
-                                    <span className="value">{this.getUpdatedPrice({offer, product})}</span>
+                                    <span className="value">{this.renderRoundedPrice(updatedPrice)}</span>
                                 </div>
                             </div>
                         </div>
