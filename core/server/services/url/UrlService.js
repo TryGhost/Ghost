@@ -9,7 +9,7 @@ const Resources = require('./Resources');
 const urlUtils = require('../../../shared/url-utils');
 
 // This listens to services.themes.api.changed, routing events, and it's own queue events
-const events = require('../../../server/lib/common/events');
+const events = require('../../lib/common/events');
 
 /**
  * The url service class holds all instances in a centralized place.

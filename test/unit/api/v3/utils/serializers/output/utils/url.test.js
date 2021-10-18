@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
-const urlService = require('../../../../../../../../core/frontend/services/url');
+const urlService = require('../../../../../../../../core/server/services/url');
 const urlUtils = require('../../../../../../../../core/shared/url-utils');
 const urlUtil = require('../../../../../../../../core/server/api/v3/utils/serializers/output/utils/url');
 

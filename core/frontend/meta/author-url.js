@@ -1,4 +1,4 @@
-const urlService = require('../services/url');
+const urlService = require('../../server/services/url');
 const getContextObject = require('./context-object.js');
 
 function getAuthorUrl(data, absolute) {

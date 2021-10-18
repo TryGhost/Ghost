@@ -6,7 +6,7 @@ const configUtils = require('../../../../../utils/configUtils');
 const api = require('../../../../../../core/server/api');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
-const urlService = require('../../../../../../core/frontend/services/url');
+const urlService = require('../../../../../../core/server/services/url');
 const urlUtils = require('../../../../../../core/shared/url-utils');
 const EDITOR_URL = '/#/editor/post/';
 

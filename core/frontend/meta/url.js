@@ -1,6 +1,6 @@
 const schema = require('../../server/data/schema').checks;
 const urlUtils = require('../../shared/url-utils');
-const urlService = require('../services/url');
+const urlService = require('../../server/services/url');
 
 // This cleans the url from any `/amp` postfixes, so we'll never
 // output a url with `/amp` in the end, except for the needed `amphtml`

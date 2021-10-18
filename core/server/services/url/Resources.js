@@ -3,10 +3,10 @@ const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('services:url:resources');
 const Resource = require('./Resource');
 const config = require('../../../shared/config');
-const models = require('../../../server/models');
+const models = require('../../models');
 
 // This listens to all manner of model events to find new content that needs a URL...
-const events = require('../../../server/lib/common/events');
+const events = require('../../lib/common/events');
 
 /**
  * @description At the moment the resources class is directly responsible for data population

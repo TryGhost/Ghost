@@ -46,6 +46,6 @@ module.exports = {
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),
     // URGH... Yuk (unhelpful comment :D)
-    urlService: require('./url'),
+    urlService: require('../../server/services/url'),
     urlUtils: require('../../shared/url-utils')
 };

@@ -1,4 +1,4 @@
-const urlService = require('../../../../../../../frontend/services/url');
+const urlService = require('../../../../../../services/url');
 const urlUtils = require('../../../../../../../shared/url-utils');
 const localUtils = require('../../../index');
 

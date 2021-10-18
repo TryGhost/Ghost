@@ -6,7 +6,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 // Dirty requires
-const urlService = require('../../../services/url');
+const urlService = require('../../../../server/services/url');
 const helpers = require('../../../services/routing/helpers');
 const templateName = 'amp';
 

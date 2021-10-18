@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
-const urlService = require('../../../../core/frontend/services/url');
+const urlService = require('../../../../core/server/services/url');
 const models = require('../../../../core/server/models');
 const tagsHelper = require('../../../../core/frontend/helpers/tags');
 
