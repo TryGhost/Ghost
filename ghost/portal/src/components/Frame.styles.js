@@ -15,7 +15,6 @@ import {PlanSectionStyles} from './common/PlansSection';
 import {ProductsSectionStyles} from './common/ProductsSection';
 import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
-import {LinkPageStyles} from './pages/LinkPage';
 import {PopupNotificationStyles} from './common/PopupNotification';
 import {OfferPageStyles} from './pages/OfferPage';
 
@@ -846,20 +845,20 @@ const MultipleProductsGlobalStyles = `
     z-index: 10000;
     padding-bottom: 32px;
 }
-    
+
 .gh-portal-popup-wrapper.multiple-products .gh-portal-content {
     position: unset;
     overflow-y: visible;
     max-height: unset !important;
 }
-    
+
 @media (max-width: 960px) {
     .gh-portal-popup-wrapper.multiple-products {
         margin: 20px;
         height: calc(100vh - 40px) !important;
     }
 }
-    
+
 @media (max-width: 480px) {
     .gh-portal-popup-wrapper.multiple-products {
         margin: 0;
@@ -896,9 +895,8 @@ export function getFrameStyles({site}) {
         BackButtonStyles +
         AvatarStyles +
         MagicLinkStyles +
-        LinkPageStyles +
         SignupPageStyles +
-        OfferPageStyles + 
+        OfferPageStyles +
         PopupNotificationStyles +
         MobileStyles +
         MultipleProductsGlobalStyles;
