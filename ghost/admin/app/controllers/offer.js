@@ -183,10 +183,29 @@ export default class OffersController extends Controller {
     }
 
     @action
-    portalPreviewInserted() {}
+    portalPreviewInserted(iframe) {
+        this.portalPreviewIframe = iframe;
+
+        if (!this.portalMessageListener) {
+            this.portalMessageListener = (event) => {
+                const resizeEvents = ['portal-ready', 'portal-preview-updated'];
+                if (resizeEvents.includes(event.data.type) && event.data.payload?.height) {
+                    this.portalPreviewIframe.parentNode.style.height = `${event.data.payload.height}px`;
+                }
+            };
+
+            window.addEventListener('message', this.portalMessageListener, true);
+        }
+    }
 
     @action
-    portalPreviewDestroyed() {}
+    portalPreviewDestroyed() {
+        this.portalPreviewIframe = null;
+
+        if (this.portalMessageListener) {
+            window.removeEventListener('message', this.portalMessageListener);
+        }
+    }
 
     @action
     updatePortalPreview({forceRefresh} = {forceRefresh: false}) {
