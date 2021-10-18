@@ -10,7 +10,7 @@ const themeEngine = require('../../../../core/frontend/services/theme-engine');
 const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
-const urlService = require('../../../../core/frontend/services/url');
+const urlService = require('../../../../core/server/services/url');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const {settingsCache} = require('../../../../core/frontend/services/proxy');

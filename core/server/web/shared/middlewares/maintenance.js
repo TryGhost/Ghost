@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
-const urlService = require('../../../../frontend/services/url');
+const urlService = require('../../../services/url');
 
 const messages = {
     maintenance: 'Site is currently undergoing maintenance, please wait a moment then retry.',
