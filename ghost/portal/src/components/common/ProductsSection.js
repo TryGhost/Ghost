@@ -292,12 +292,13 @@ export const ProductsSectionStyles = ({site}) => {
         /* Vertical card style - for smaller screens sizes*/
         .gh-portal-product-card.vertical {
             display: none !important;
-            grid-template-columns: 16px auto minmax(0, 300px);
+            grid-template-columns: 16px minmax(0, 1fr) auto;
             column-gap: 12px;
             row-gap: 8px;
             align-items: center;
             min-height: 68px;
             padding: 12px 20px;
+            justify-content: unset;
         }
 
         .gh-portal-product-card.vertical .gh-portal-plan-checkbox {
@@ -320,7 +321,7 @@ export const ProductsSectionStyles = ({site}) => {
             font-weight: 500;
             text-transform: none;
             text-align: left;
-            margin: 4px 0;
+            margin: 4px 12px 4px 0;
             padding: 0;
             border-bottom: none;
             min-height: unset;

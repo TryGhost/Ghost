@@ -12,7 +12,7 @@ function objectId() {
 }
 
 export function getSiteData({
-    products = getProductsData({numOfProducts: 1}),
+    products = getProductsData({numOfProducts: 3}),
     portalProducts = products.map(p => p.id),
     portalPlans: portal_plans = ['free', 'monthly', 'yearly']
 } = {}) {
@@ -131,11 +131,11 @@ export function getProductsData({numOfProducts = 3} = {}) {
             numOfBenefits: 3
         }),
         getProductData({
-            name: 'Gold',
+            name: 'Friends of the browser',
             description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
             monthlyPrice: getPriceData({
                 interval: 'month',
-                amount: 2000
+                amount: 18000
             }),
             yearlyPrice: getPriceData({
                 interval: 'year',
