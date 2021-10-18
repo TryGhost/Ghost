@@ -652,14 +652,18 @@ const MobileStyles = `
     }
 
     .gh-portal-powered {
+        display: flex;
         position: relative;
         bottom: unset;
         left: unset;
         background: var(--white);
-        display: flex;
         justify-content: center;
         width: 100%;
         padding-top: 32px;
+    }
+
+    .gh-portal-popup-container.preview .gh-portal-powered {
+        display: none;
     }
 
     .gh-portal-popup-wrapper.account-home .gh-portal-powered {
