@@ -407,7 +407,6 @@ export default class OfferPage extends React.Component {
         const product = getProductFromId({site, productId: offer.tier.id});
         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
         const updatedPrice = this.getUpdatedPrice({offer, product});
-        const originalPrice = this.getOriginalPrice({offer, product});
         return (
             <>
                 <div className='gh-portal-content gh-portal-offer'>
