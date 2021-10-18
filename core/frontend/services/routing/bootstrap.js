@@ -168,6 +168,12 @@ module.exports.internal = {
         //       and should not be consumed by the modules outside the frontend
         events.emit('router.created', this);
 
+        // CASE: there are router types which do not generate resource urls
+        //       e.g. static route router, in this case we don't want ot notify the URL service
+        if (!router || !router.getPermalinks()) {
+            return;
+        }
+
         _urlService.onRouterAddedType(router);
     },
     routerUpdated: (router) => {
