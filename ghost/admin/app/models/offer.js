@@ -14,7 +14,7 @@ export default Model.extend(ValidationEngine, {
     currency: attr('string'),
     type: attr('string', {defaultValue: 'percent'}),
     amount: attr('number'),
-    duration: attr('string', {defaultValue: 'forever'}),
+    duration: attr('string', {defaultValue: 'once'}),
     durationInMonths: attr('number'),
     displayTitle: attr('string'),
     displayDescription: attr('string'),
