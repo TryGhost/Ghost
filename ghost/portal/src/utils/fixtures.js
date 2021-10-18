@@ -1,10 +1,15 @@
-import {v4 as uuidv4} from 'uuid';
-
 export const sites = {
     singleProduct: getSiteData({
         products: getProductsData({numOfProducts: 1})
     })
 };
+
+function objectId() {
+    const timestamp = (new Date().getTime() / 1000 | 0).toString(16);
+    return timestamp + 'xxxxxxxxxxxxxxxx'.replace(/[x]/g, function () {
+        return (Math.random() * 16 | 0).toString(16);
+    }).toLowerCase();
+}
 
 export function getSiteData({
     products = getProductsData({numOfProducts: 1}),
@@ -50,13 +55,13 @@ function getOfferData({
     amount = 50,
     duration = 'once',
     durationInMonths = null,
-    currencyRestruction = false,
+    currencyRestriction = false,
     currency = null,
     status = 'active',
     tierId = ''
 } = {}) {
     return {
-        id: `offer_${uuidv4()}`,
+        id: `offer_${objectId()}`,
         name,
         code,
         display_title: displayTitle,
@@ -66,7 +71,7 @@ function getOfferData({
         amount,
         duration,
         duration_in_months: durationInMonths,
-        currency_restriction: currencyRestruction,
+        currency_restriction: currencyRestriction,
         currency,
         status,
         tier: {
@@ -86,7 +91,7 @@ function getMemberData({
     subscribed = true
 } = {}) {
     return {
-        uuid: `member_${uuidv4()}`,
+        uuid: `member_${objectId()}`,
         email,
         name,
         firstname,
@@ -145,7 +150,7 @@ export function getProductsData({numOfProducts = 3} = {}) {
 function getProductData({
     name = 'Basic',
     description = '',
-    id = `product_${uuidv4()}`,
+    id = `product_${objectId()}`,
     monthlyPrice = getPriceData(),
     yearlyPrice = getPriceData({interval: 'year'}),
     numOfBenefits = 2
@@ -172,7 +177,7 @@ function getBenefits({numOfBenefits}) {
 }
 
 function getBenefitData({
-    id = `benefit_${uuidv4()}`,
+    id = `benefit_${objectId()}`,
     name = 'Benefit'
 }) {
     return {
@@ -188,7 +193,7 @@ function getPriceData({
     description = null,
     currency = 'usd',
     active = true,
-    id = `price_${uuidv4()}`
+    id = `price_${objectId()}`
 }) {
     return {
         id: id,
@@ -198,21 +203,21 @@ function getPriceData({
         amount,
         interval,
         description,
-        stripe_price_id: `price_${uuidv4()}`,
-        stripe_product_id: `prod_${uuidv4()}`,
+        stripe_price_id: `price_${objectId()}`,
+        stripe_product_id: `prod_${objectId()}`,
         type: 'recurring'
     };
 }
 
 function getSubscriptionData({
-    id = `sub_${uuidv4()}`,
+    id = `sub_${objectId()}`,
     status = 'active',
     currency = 'USD',
     interval = 'month',
     amount = (interval === 'month' ? 500 : 5000),
     nickname = (interval === 'month' ? 'Monthly' : 'Yearly'),
     cardLast4 = '4242',
-    priceId: price_id = `price_${uuidv4()}`,
+    priceId: price_id = `price_${objectId()}`,
     startDate: start_date = '2021-10-05T03:18:30.000Z',
     currentPeriodEnd: current_period_end = '2022-10-05T03:18:30.000Z',
     cancelAtPeriodEnd: cancel_at_period_end = false
@@ -220,12 +225,12 @@ function getSubscriptionData({
     return {
         id,
         customer: {
-            id: `cus_${uuidv4()}`,
+            id: `cus_${objectId()}`,
             name: 'Jamie',
             email: 'jamie@example.com'
         },
         plan: {
-            id: `price_${uuidv4()}`,
+            id: `price_${objectId()}`,
             nickname,
             amount,
             interval,
@@ -238,7 +243,7 @@ function getSubscriptionData({
         cancellation_reason: null,
         current_period_end,
         price: {
-            id: `stripe_price_${uuidv4()}`,
+            id: `stripe_price_${objectId()}`,
             price_id,
             nickname,
             amount,
@@ -246,8 +251,8 @@ function getSubscriptionData({
             type: 'recurring',
             currency,
             product: {
-                id: `stripe_prod_${uuidv4()}`,
-                product_id: `prod_${uuidv4()}`
+                id: `stripe_prod_${objectId()}`,
+                product_id: `prod_${objectId()}`
             }
         }
     };

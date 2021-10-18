@@ -25,8 +25,7 @@
     "@testing-library/user-event": "13.3.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-scripts": "4.0.3",
-    "uuid": "^8.3.2"
+    "react-scripts": "4.0.3"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
