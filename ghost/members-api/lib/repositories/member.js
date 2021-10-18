@@ -519,6 +519,15 @@ module.exports = class MemberRepository {
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'link Stripe Subscription'}));
         }
+
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.linkSubscription(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
         const member = await this._Member.findOne({
             id: data.id
         }, options);
