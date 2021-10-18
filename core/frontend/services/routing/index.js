@@ -1,7 +1,9 @@
+const registry = require('./registry');
+const RouterManager = require('./bootstrap');
+const routerManager = new RouterManager({registry});
+
 module.exports = {
-    get bootstrap() {
-        return require('./bootstrap');
-    },
+    bootstrap: routerManager,
 
     get registry() {
         return require('./registry');
