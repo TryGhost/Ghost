@@ -12,7 +12,7 @@ function objectId() {
 }
 
 export function getSiteData({
-    products = getProductsData({numOfProducts: 3}),
+    products = getProductsData({numOfProducts: 1}),
     portalProducts = products.map(p => p.id),
     portalPlans: portal_plans = ['free', 'monthly', 'yearly']
 } = {}) {
@@ -49,7 +49,7 @@ function getOfferData({
     name = 'Black Friday',
     code = 'black-friday',
     displayTitle = 'Black Friday Special',
-    displayDescription = 'Black Friday Sale!',
+    displayDescription = 'Black Friday Special deal only today!',
     type = 'percent',
     cadence = 'month',
     amount = 50,
