@@ -1,18 +1,18 @@
 const should = require('should');
 const sinon = require('sinon');
 const CollectionRouter = require('../../../../../core/frontend/services/routing/CollectionRouter');
-const bootstrap = require('../../../../../core/frontend/services/routing/bootstrap');
+const RouterManager = require('../../../../../core/frontend/services/routing/bootstrap');
 const registry = require('../../../../../core/frontend/services/routing/registry');
 
 const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
 
 describe('UNIT: services/routing/bootstrap', function () {
-    let routesUpdatedStub;
+    let routerUpdatedSpy;
     let routerCreatedSpy;
 
     beforeEach(function () {
         routerCreatedSpy = sinon.spy();
-        routesUpdatedStub = sinon.stub(bootstrap.internal, 'routerUpdated').returns();
+        routerUpdatedSpy = sinon.spy();
     });
 
     afterEach(function () {
@@ -25,24 +25,38 @@ describe('UNIT: services/routing/bootstrap', function () {
                 const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
                 sinon.stub(registry, 'getRouterByName').withArgs('CollectionRouter').returns(collectionRouter);
 
-                bootstrap.handleTimezoneEdit({
+                const routerManager = new RouterManager({registry});
+                routerManager.init({
+                    urlService: {
+                        onRouterUpdated: routerUpdatedSpy
+                    }
+                });
+
+                routerManager.handleTimezoneEdit({
                     attributes: {value: 'America/Los_Angeles'},
                     _previousAttributes: {value: 'Europe/London'}
                 });
 
-                routesUpdatedStub.called.should.be.false();
+                routerUpdatedSpy.called.should.be.false();
             });
 
             it('tz has not changed', function () {
                 const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
                 sinon.stub(registry, 'getRouterByName').withArgs('CollectionRouter').returns(collectionRouter);
 
-                bootstrap.handleTimezoneEdit({
+                const routerManager = new RouterManager({registry});
+                routerManager.init({
+                    urlService: {
+                        onRouterUpdated: routerUpdatedSpy
+                    }
+                });
+
+                routerManager.handleTimezoneEdit({
                     attributes: {value: 'America/Los_Angeles'},
                     _previousAttributes: {value: 'America/Los_Angeles'}
                 });
 
-                routesUpdatedStub.called.should.be.false();
+                routerUpdatedSpy.called.should.be.false();
             });
         });
 
@@ -51,24 +65,38 @@ describe('UNIT: services/routing/bootstrap', function () {
                 const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
                 sinon.stub(registry, 'getRouterByName').withArgs('CollectionRouter').returns(collectionRouter);
 
-                bootstrap.handleTimezoneEdit({
+                const routerManager = new RouterManager({registry});
+                routerManager.init({
+                    urlService: {
+                        onRouterUpdated: routerUpdatedSpy
+                    }
+                });
+
+                routerManager.handleTimezoneEdit({
                     attributes: {value: 'America/Los_Angeles'},
                     _previousAttributes: {value: 'Europe/London'}
                 });
 
-                routesUpdatedStub.called.should.be.true();
+                routerUpdatedSpy.called.should.be.true();
             });
 
             it('tz has not changed', function () {
                 const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
                 sinon.stub(registry, 'getRouterByName').withArgs('CollectionRouter').returns(collectionRouter);
 
-                bootstrap.handleTimezoneEdit({
+                const routerManager = new RouterManager({registry});
+                routerManager.init({
+                    urlService: {
+                        onRouterUpdated: routerUpdatedSpy
+                    }
+                });
+
+                routerManager.handleTimezoneEdit({
                     attributes: {value: 'America/Los_Angeles'},
                     _previousAttributes: {value: 'America/Los_Angeles'}
                 });
 
-                routesUpdatedStub.called.should.be.false();
+                routerUpdatedSpy.called.should.be.false();
             });
         });
     });
