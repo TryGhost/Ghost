@@ -155,15 +155,16 @@ export default class OfferPage extends React.Component {
 
     getInputFields({state, fieldNames}) {
         const {portal_name: portalName} = this.context.site;
-
+        const {member} = this.context;
         const errors = state.errors || {};
         const fields = [
             {
                 type: 'email',
-                value: state.email,
+                value: member?.email || state.email,
                 placeholder: 'jamie@example.com',
                 label: 'Email',
                 name: 'email',
+                disabled: !!member,
                 required: true,
                 tabindex: 2,
                 errorMessage: errors.email || ''
@@ -174,10 +175,11 @@ export default class OfferPage extends React.Component {
         if (portalName) {
             fields.unshift({
                 type: 'text',
-                value: state.name,
+                value: member?.name || state.name,
                 placeholder: 'Jamie Larson',
                 label: 'Name',
                 name: 'name',
+                disabled: !!member,
                 required: true,
                 tabindex: 1,
                 errorMessage: errors.name || ''
@@ -309,6 +311,10 @@ export default class OfferPage extends React.Component {
     }
 
     renderLoginMessage() {
+        const {member} = this.context;
+        if (member) {
+            return null;
+        }
         const {brandColor, onAction} = this.context;
         return (
             <div className='gh-portal-signup-message'>
