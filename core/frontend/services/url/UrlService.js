@@ -76,13 +76,6 @@ class UrlService {
      * @param {ExpressRouter} router
      */
     onRouterAddedType(router) {
-        // CASE: there are router types which do not generate resource urls
-        //       e.g. static route router
-        //       we are listening on the general `router.created` event - every router throws this event
-        if (!router || !router.getPermalinks()) {
-            return;
-        }
-
         debug('Registering route: ', router.name);
 
         let urlGenerator = new UrlGenerator(router, this.queue, this.resources, this.urls, this.urlGenerators.length);
