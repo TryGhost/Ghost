@@ -27,13 +27,13 @@ let _urlService;
  * CASES:
  *   - if Ghost starts, it will first init the site app with the wrapper router and then call `start`
  *     separately, because it could be that your blog goes into maintenance mode
- *   - if you change your route settings, we will re-initialise routing
+ *   - if you change your route settings, we will re-initialize routing
  *
  * @param {Object} options
  * @param {Boolean} [options.start] - flag controlling if the frontend Routes should be reinitialized
  * @param {String} options.apiVersion - API version frontend Routes should communicate through
  * @param {Object} options.routerSettings - JSON configuration to build frontend Routes
- * @param {Object} options.urlService - service providing resouce URL utility functions such as owns, getUrlByResourceId, and getResourceById
+ * @param {Object} options.urlService - service providing resource URL utility functions such as owns, getUrlByResourceId, and getResourceById
  * @returns {ExpressRouter}
  */
 const init = ({start = false, routerSettings, apiVersion, urlService}) => {
