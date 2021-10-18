@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const DomainEvents = require('@tryghost/domain-events');
+const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid');
 
 const messages = {
@@ -42,6 +44,7 @@ module.exports = class MemberRepository {
         MemberProductEvent,
         StripeCustomer,
         StripeCustomerSubscription,
+        OfferRedemption,
         stripeAPIService,
         productRepository,
         tokenService,
@@ -59,6 +62,18 @@ module.exports = class MemberRepository {
         this._productRepository = productRepository;
         this.tokenService = tokenService;
         this._logging = logger;
+
+        DomainEvents.subscribe(SubscriptionCreatedEvent, async function (event) {
+            if (!event.data.offerId) {
+                return;
+            }
+
+            await OfferRedemption.add({
+                member_id: event.data.memberId,
+                subscription_id: event.data.subscriptionId,
+                offer_id: event.data.offerId
+            });
+        });
     }
 
     isActiveSubscriptionStatus(status) {
@@ -492,7 +507,15 @@ module.exports = class MemberRepository {
         }
     }
 
-    async linkSubscription(data, options) {
+    async getSubscriptionByStripeID(id, options) {
+        const subscription = await this._StripeCustomerSubscription.findOne({
+            subscription_id: id
+        }, options);
+
+        return subscription;
+    }
+
+    async linkSubscription(data, options = {}) {
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'link Stripe Subscription'}));
         }
@@ -522,9 +545,8 @@ module.exports = class MemberRepository {
         }
         const paymentMethod = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
 
-        const model = await this._StripeCustomerSubscription.findOne({
-            subscription_id: subscription.id
-        }, options);
+        const model = await this.getSubscriptionByStripeID(subscription.id, options);
+
         const subscriptionPriceData = _.get(subscription, 'items.data[0].price');
         let ghostProduct;
         try {
