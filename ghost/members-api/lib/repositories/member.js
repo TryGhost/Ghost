@@ -625,15 +625,13 @@ module.exports = class MemberRepository {
             } else {
                 status = 'paid';
             }
-            if (!model) {
-                // This is a new subscription! Add the product
-                if (ghostProduct) {
-                    memberProducts.push(ghostProduct.toJSON());
-                }
-            } else {
+            // This is an active subscription! Add the product
+            if (ghostProduct) {
+                memberProducts.push(ghostProduct.toJSON());
+            }
+            if (model) {
                 if (model.get('stripe_price_id') !== subscriptionData.stripe_price_id) {
                     // The subscription has changed plan - we may need to update the products
-                    memberProducts.push(ghostProduct.toJSON());
 
                     const subscriptions = await member.related('stripeSubscriptions').fetch(options);
                     const changedProduct = await this._productRepository.get({
