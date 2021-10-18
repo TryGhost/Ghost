@@ -1,4 +1,5 @@
 import Service from '@ember/service';
+import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
@@ -60,6 +61,10 @@ export default class CustomThemeSettingsServices extends Service {
 
     @task
     *saveTask() {
+        if (isEmpty(this.settings)) {
+            return this.settings;
+        }
+
         // save all records in a single request to `/custom_theme_settings`
         const listRecord = this.store.createRecord('custom-theme-setting-list', {customThemeSettings: this.settings});
         yield listRecord.save();
