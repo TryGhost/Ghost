@@ -118,19 +118,21 @@ export default class OffersController extends Controller {
         });
         this.cadences = cadences;
         const defaultCadence = this.cadences[0]?.name;
+        const [,interval, defaultCurrency] = (defaultCadence || '').split('-');
+
+        this.updateDurations(interval);
         if (this.offer && !this.offer.tier) {
             this.defaultProps = {};
-            this.updateCadence(this.cadences[0]?.name, this.defaultProps);
+            this.updateCadence(defaultCadence, this.defaultProps);
             this.updatePortalPreview({forceRefresh: false});
         } else if (defaultCadence) {
-            const [,, currency] = (defaultCadence || '').split('-');
             this.offertypes = [
                 {
                     label: '%',
                     offertype: 'percent'
                 },
                 {
-                    label: currency.toUpperCase(),
+                    label: defaultCurrency.toUpperCase(),
                     offertype: 'fixed'
                 }
             ];
@@ -371,6 +373,42 @@ export default class OffersController extends Controller {
     }
 
     @action
+    updateDurations(cadence) {
+        if (cadence) {
+            if (cadence === 'month') {
+                this.durations = [
+                    {
+                        label: 'Once',
+                        duration: 'once'
+                    },
+                    {
+                        label: 'Forever',
+                        duration: 'forever'
+                    },
+                    {
+                        label: 'Multiple months',
+                        duration: 'repeating'
+                    }
+                ];
+            } else {
+                this.durations = [
+                    {
+                        label: 'Forever',
+                        duration: 'forever'
+                    },
+                    {
+                        label: 'Once',
+                        duration: 'once'
+                    }
+                ];
+                if (this.offer.duration === 'repeating') {
+                    this._saveOfferProperty('duration', 'once');
+                }
+            }
+        }
+    }
+
+    @action
     updateCadence(cadence, offerObj) {
         offerObj = offerObj || this.offer;
         if (cadence) {
@@ -390,6 +428,7 @@ export default class OffersController extends Controller {
                     offertype: 'fixed'
                 }
             ];
+            this.updateDurations(tierCadence);
             this.updatePortalPreview({forceRefresh: false});
         }
     }
