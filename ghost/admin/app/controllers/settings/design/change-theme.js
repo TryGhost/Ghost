@@ -10,7 +10,7 @@ export default class ChangeThemeController extends Controller {
     @tracked showAdvanced = false;
     @tracked themes = this.store.peekAll('theme');
 
-    marketplaceThemes = [{
+    officialThemes = [{
         name: 'Casper',
         category: 'Blog',
         previewUrl: 'https://casper.ghost.io/',
@@ -115,6 +115,44 @@ export default class ChangeThemeController extends Controller {
         ref: 'TryGhost/Massively',
         image: 'assets/img/themes/Massively.jpg'
     }]
+
+    get themesList() {
+        const activeTheme = this.themes.findBy('active', true);
+
+        // decorate themes based on current usage
+        let themesList = this.officialThemes.map((theme) => {
+            const decoratedTheme = Object.assign({}, theme);
+
+            if (theme.ref === 'default') {
+                decoratedTheme.isDefault = true;
+            }
+
+            if (theme.name.toLowerCase() === activeTheme.name) {
+                decoratedTheme.isActive = true;
+            }
+
+            return decoratedTheme;
+        });
+
+        // move default themes to the beginning of the list
+        themesList.sort((a, b) => {
+            if (b.isDefault) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        // ensure active theme is always first
+        const activeThemeInList = themesList.find(theme => theme.isActive);
+        const activeThemeIndex = themesList.indexOf(activeThemeInList);
+        if (activeThemeIndex > 0) {
+            themesList.splice(activeThemeIndex, 1);
+            themesList.unshift(activeThemeInList);
+        }
+
+        return themesList;
+    }
 
     @action
     toggleAdvanced() {
