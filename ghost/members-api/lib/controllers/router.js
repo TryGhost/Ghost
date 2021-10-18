@@ -123,6 +123,7 @@ module.exports = class RouterController {
         let ghostPriceId = req.body.priceId;
         const identity = req.body.identity;
         const offerId = req.body.offerId;
+        const metadata = req.body.metadata;
 
         if (!ghostPriceId && !offerId) {
             res.writeHead(400);
@@ -154,6 +155,8 @@ module.exports = class RouterController {
                 coupon = {
                     id: offer.stripe_coupon_id
                 };
+
+                metadata.offer = offer.id;
             } catch (err) {
                 res.writeHead(500);
                 return res.end('Could not use Offer.');
@@ -193,7 +196,7 @@ module.exports = class RouterController {
                 successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
                 cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 customerEmail: req.body.customerEmail,
-                metadata: req.body.metadata
+                metadata: metadata
             });
             const publicKey = this._stripeAPIService.getPublicKey();
 
@@ -237,7 +240,7 @@ module.exports = class RouterController {
                 coupon,
                 successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
                 cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
-                metadata: req.body.metadata
+                metadata: metadata
             });
             const publicKey = this._stripeAPIService.getPublicKey();
 

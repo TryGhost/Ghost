@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
+const DomainEvents = require('@tryghost/domain-events');
+const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 module.exports = class StripeWebhookService {
     /**
@@ -273,6 +275,16 @@ module.exports = class StripeWebhookService {
                     subscription
                 });
             }
+
+            const subscription = await this._memberRepository.getSubscriptionByStripeID(session.subscription);
+
+            const event = SubscriptionCreatedEvent.create({
+                memberId: member.id,
+                subscriptionId: subscription.id,
+                offerId: session.metadata.offer || null
+            });
+
+            DomainEvents.dispatch(event);
 
             if (checkoutType !== 'upgrade') {
                 const emailType = 'signup';
