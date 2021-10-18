@@ -206,7 +206,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
     @task({restartable: true})
     *fetchOffersTask() {
-        this.offers = yield this.store.query('offer', {limit: 'all'});
+        this.offers = yield this.store.query('offer', {limit: 'all', filter: 'status:active'});
     }
 
     _updatePayloadAttr(attr, value) {
