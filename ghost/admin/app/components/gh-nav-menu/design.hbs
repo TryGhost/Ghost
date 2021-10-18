@@ -10,13 +10,13 @@
                     <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-down-stroke" "arrow-right-stroke")}}</span>
                     {{svg-jar "paintbrush"}}Brand
                 </button>
-                {{#if isOpen}}
+                {{#liquid-if isOpen}}
                     <div class="gh-nav-design-settings">
                         <Settings::Design::GeneralSettingsForm
                             @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                         />
                     </div>
-                {{/if}}
+                {{/liquid-if}}
             {{/let}}
 
             {{#each this.customThemeSettings.settingGroups as |group|}}
@@ -26,14 +26,14 @@
                         {{svg-jar group.icon}} {{group.name}}
                     </button>
 
-                    {{#if isOpen}}
+                    {{#liquid-if isOpen}}
                         <div class="gh-nav-design-settings">
                             <Settings::Design::ThemeSettingsForm
                                 @themeSettings={{group.settings}}
                                 @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                             />
                         </div>
-                    {{/if}}
+                    {{/liquid-if}}
                 {{/let}}
             {{/each}}
         </div>
