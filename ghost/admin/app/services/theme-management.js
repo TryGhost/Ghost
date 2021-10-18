@@ -65,7 +65,7 @@ export default class ThemeManagementService extends Service {
     }
 
     @task
-    *activateTask(theme, options) {
+    *activateTask(theme, options = {}) {
         let resultModal = null;
 
         try {

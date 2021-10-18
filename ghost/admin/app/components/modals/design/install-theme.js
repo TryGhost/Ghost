@@ -27,8 +27,12 @@ export default class InstallThemeModalComponent extends Component {
         return this.args.data.theme.name;
     }
 
+    get isDefaultTheme() {
+        return this.args.data.theme.ref === 'default';
+    }
+
     get isConfirming() {
-        return !this.installSuccess && !this.installError && !this.installFailure && !this.willOverwriteDefault;
+        return !this.installSuccess && !this.installError && !this.installFailure;
     }
 
     get installSuccess() {
@@ -39,12 +43,8 @@ export default class InstallThemeModalComponent extends Component {
         return !this.installSuccess && (this.validationErrors.length || this.fatalValidationErrors.length);
     }
 
-    get willOverwriteDefault() {
-        return this.themeName.toLowerCase() === 'casper';
-    }
-
     get willOverwriteExisting() {
-        return this.themes.findBy('name', this.themeName.toLowerCase());
+        return !this.isDefaultTheme && this.themes.findBy('name', this.themeName.toLowerCase());
     }
 
     get hasWarningsOrErrors() {
@@ -52,7 +52,7 @@ export default class InstallThemeModalComponent extends Component {
     }
 
     get shouldShowInstall() {
-        return !this.installSuccess && !this.installFailure && !this.willOverwriteDefault;
+        return !this.installSuccess && !this.installFailure;
     }
 
     @task
@@ -63,6 +63,18 @@ export default class InstallThemeModalComponent extends Component {
     @task
     *installThemeTask() {
         try {
+            if (this.isDefaultTheme) {
+                // default theme can't be installed, only activated
+                const defaultTheme = this.store.peekRecord('theme', this.args.data.theme.name.toLowerCase());
+                yield this.themeManagement.activateTask.perform(defaultTheme, {skipErrors: true});
+                this.installedTheme = defaultTheme;
+
+                // let modal opener do any other background stuff
+                this.args.data.onSuccess?.();
+
+                return true;
+            }
+
             const url = this.ghostPaths.url.api('themes/install') + `?source=github&ref=${this.args.data.theme.ref}`;
             const result = yield this.ajax.post(url);
 
