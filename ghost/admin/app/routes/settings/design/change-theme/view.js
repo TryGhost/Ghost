@@ -8,7 +8,7 @@ export default class ViewThemeRoute extends Route {
 
     model(params, transition) {
         const changeThemeController = this.controllerFor('settings.design.change-theme');
-        const knownThemes = changeThemeController.marketplaceThemes;
+        const knownThemes = changeThemeController.officialThemes;
 
         const foundTheme = knownThemes.find(theme => theme.name === params.theme_name);
 

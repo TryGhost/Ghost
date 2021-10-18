@@ -5,6 +5,6 @@ export default class ChangeThemeRoute extends AuthenticatedRoute {
     @service store;
 
     model() {
-        this.store.findAll('theme');
+        return this.store.findAll('theme');
     }
 }

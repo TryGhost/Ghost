@@ -16,7 +16,7 @@
 
         <div class="gh-theme-directory-container-labs">
             <div class="theme-directory-labs">
-                {{#each this.marketplaceThemes as |theme|}}
+                {{#each this.themesList as |theme|}}
                     <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item">
                         <div class="gh-theme-browser">
                             <span class="gh-theme-browser-button"></span>
@@ -27,6 +27,11 @@
                         <div class="td-item-desc">
                             <div>{{theme.name}}</div>
                             <span>• {{theme.category}}</span>
+                            {{#if theme.isActive}}
+                                <span class="gh-badge">Active</span>
+                            {{else if theme.isDefault}}
+                                <span class="gh-badge">Default</span>
+                            {{/if}}
                         </div>
                     </LinkTo>
                 {{/each}}
