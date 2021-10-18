@@ -1393,6 +1393,11 @@ p.theme-validation-details {
     width: 9px;
     height: 9px;
     margin-right: 8px;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);;
+}
+
+.gh-nav-menu-back-button:hover svg {
+    transform: translateX(-3px)
 }
 
 .gh-nav-menu-back-button:hover {
@@ -1404,10 +1409,15 @@ p.theme-validation-details {
     align-items: center;
     overflow: hidden;
     margin-bottom: 8px;
+    padding: 8px var(--mainmenu-padding) 8px calc(var(--mainmenu-padding) + 7px);
     color: var(--black);
     font-size: 1.5rem;
     font-weight: 700;
     line-height: 1.3em;
+}
+
+.gh-nav-design .gh-nav-menu-title:hover {
+    background: var(--mainmenu-color-hover-bg);
 }
 
 .gh-nav-design-tab {
@@ -1581,6 +1591,12 @@ p.theme-validation-details {
     margin-bottom: 40px;
     background: var(--main-color-content-greybg);
     border-radius: var(--border-radius);
+    animation: unfold .2s ease;
+}
+
+@keyframes unfold {
+    0% { opacity: 0; -webkit-transform: translateY(-50%); }   
+    100% { opacity: 1; -webkit-transform: translateY(0); }
 }
 
 .gh-themes-container-labs .apps-grid-cell {
