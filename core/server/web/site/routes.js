@@ -1,7 +1,6 @@
 const debug = require('@tryghost/debug')('routing');
 const routing = require('../../../frontend/services/routing');
-// NOTE: temporary import from the frontend, will become a backend service soon
-const urlService = require('../../../frontend/services/url');
+const urlService = require('../../services/url');
 const routeSettings = require('../../services/route-settings');
 
 module.exports = function siteRoutes(options = {}) {

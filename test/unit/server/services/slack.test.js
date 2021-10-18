@@ -10,7 +10,7 @@ const slack = rewire('../../../../core/server/services/slack');
 const events = require('../../../../core/server/lib/common/events');
 const logging = require('@tryghost/logging');
 const imageLib = require('../../../../core/server/lib/image');
-const urlService = require('../../../../core/frontend/services/url');
+const urlService = require('../../../../core/server/services/url');
 const schema = require('../../../../core/server/data/schema').checks;
 const settingsCache = require('../../../../core/shared/settings-cache');
 
