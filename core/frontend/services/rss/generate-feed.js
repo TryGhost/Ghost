@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 const cheerio = require('cheerio');
 const RSS = require('rss');
 const urlUtils = require('../../../shared/url-utils');
-const {bootstrap} = require('../routing');
+const {routerManager} = require('../routing');
 
 const generateTags = function generateTags(data) {
     if (data.tags) {
@@ -19,7 +19,7 @@ const generateTags = function generateTags(data) {
 };
 
 const generateItem = function generateItem(post, secure) {
-    const itemUrl = bootstrap.getUrlByResourceId(post.id, {secure, absolute: true});
+    const itemUrl = routerManager.getUrlByResourceId(post.id, {secure, absolute: true});
     const htmlContent = cheerio.load(post.html || '');
     const item = {
         title: post.title,

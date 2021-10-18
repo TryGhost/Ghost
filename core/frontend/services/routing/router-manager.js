@@ -64,7 +64,7 @@ class RouterManager {
      */
     init({start = false, routerSettings, apiVersion, urlService}) {
         this.urlService = urlService;
-        debug('bootstrap init', start, apiVersion, routerSettings);
+        debug('routing init', start, apiVersion, routerSettings);
 
         this.registry.resetAllRouters();
         this.registry.resetAllRoutes();
@@ -101,7 +101,7 @@ class RouterManager {
      * @param {object} routerSettings
      */
     start(apiVersion, routerSettings) {
-        debug('bootstrap start', apiVersion, routerSettings);
+        debug('routing start', apiVersion, routerSettings);
         const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
         const unsubscribeRouter = new UnsubscribeRouter();

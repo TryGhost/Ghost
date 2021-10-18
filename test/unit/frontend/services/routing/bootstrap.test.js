@@ -1,12 +1,12 @@
 const should = require('should');
 const sinon = require('sinon');
 const CollectionRouter = require('../../../../../core/frontend/services/routing/CollectionRouter');
-const RouterManager = require('../../../../../core/frontend/services/routing/bootstrap');
+const RouterManager = require('../../../../../core/frontend/services/routing/router-manager');
 const registry = require('../../../../../core/frontend/services/routing/registry');
 
 const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}};
 
-describe('UNIT: services/routing/bootstrap', function () {
+describe('UNIT: services/routing/router-manager', function () {
     let routerUpdatedSpy;
     let routerCreatedSpy;
 

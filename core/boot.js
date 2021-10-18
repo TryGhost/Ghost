@@ -158,7 +158,7 @@ async function initExpressApps() {
 
 /**
  * Dynamic routing is generated from the routes.yaml file
- * When Ghost's DB and core are loaded, we can access this file and call routing.bootstrap.start
+ * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
  * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
  * Routing is currently tightly coupled between the frontend and backend
  */
@@ -173,7 +173,7 @@ async function initDynamicRouting() {
     const routeSettings = await routeSettingsService.loadRouteSettings();
     debug(`Frontend API Version: ${apiVersion}`);
 
-    routing.bootstrap.start(apiVersion, routeSettings);
+    routing.routerManager.start(apiVersion, routeSettings);
     const getRoutesHash = () => routeSettingsService.api.getCurrentHash();
 
     const settings = require('./server/services/settings');
