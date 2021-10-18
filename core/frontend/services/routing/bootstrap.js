@@ -43,6 +43,8 @@ const init = ({start = false, routerSettings, apiVersion, urlService}) => {
     registry.resetAllRouters();
     registry.resetAllRoutes();
 
+    // NOTE: this event could become an "internal frontend" in the future, it's used has been kept to prevent
+    //       from tying up this module with sitemaps
     events.emit('routers.reset');
 
     siteRouter = new ParentRouter('SiteRouter');
