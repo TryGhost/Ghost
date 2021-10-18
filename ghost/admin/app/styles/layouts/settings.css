@@ -1502,7 +1502,6 @@ p.theme-validation-details {
 }
 
 .gh-nav-design-settings {
-    margin: 16px 0;
     padding: 24px var(--mainmenu-padding) 32px calc(var(--mainmenu-padding) + 7px);
 }
 
@@ -1512,6 +1511,7 @@ p.theme-validation-details {
 
 .gh-nav-design .gh-setting-title {
     font-size: 1.45rem;
+    font-weight: 500;
 }
 
 .gh-nav-design .gh-setting-action {
