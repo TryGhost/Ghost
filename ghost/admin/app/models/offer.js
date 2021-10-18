@@ -10,6 +10,7 @@ export default Model.extend(ValidationEngine, {
     status: attr('string', {defaultValue: 'active'}),
     tier: attr(),
     stripeCouponId: attr('string'),
+    redemptionCount: attr('number'),
     currency: attr('string'),
     type: attr('string', {defaultValue: 'percent'}),
     amount: attr('number'),
