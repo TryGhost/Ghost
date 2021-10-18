@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const security = require('@tryghost/security');
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
-const bootstrap = require('../../../../../../core/frontend/services/routing/bootstrap');
+const bootstrap = require('../../../../../../core/frontend/services/routing/').bootstrap;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
 
@@ -56,7 +56,7 @@ describe('Unit - services/routing/controllers/collection', function () {
 
         sinon.stub(helpers, 'renderEntries').returns(renderStub);
 
-        ownsStub = sinon.stub(bootstrap.internal, 'owns');
+        ownsStub = sinon.stub(bootstrap, 'owns');
         ownsStub.withArgs('identifier', posts[0].id).returns(true);
 
         req = {

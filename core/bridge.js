@@ -16,7 +16,7 @@ const config = require('./shared/config');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
-const frontendRouting = require('./frontend/services/routing/bootstrap');
+const frontendRouting = require('./frontend/services/routing').bootstrap;
 const settingsCache = require('./shared/settings-cache');
 
 // Listen to settings.lang.edited, similar to the member service and models/base/listeners
