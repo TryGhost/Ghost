@@ -141,4 +141,45 @@ export default class MembersUtilsService extends Service {
 
         return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
     }
+
+    getOfferPortalPreviewUrl(overrides) {
+        const {
+            disableBackground = false,
+            name,
+            code,
+            displayTitle = 'Offer Name',
+            displayDescription = 'Offer description',
+            type,
+            cadence,
+            amount = 0,
+            duration,
+            durationInMonths,
+            currency = 'usd',
+            status,
+            tierId
+        } = overrides;
+
+        const baseUrl = this.config.get('blogUrl');
+        const portalBase = '/#/portal/preview/offer';
+        const settingsParam = new URLSearchParams();
+
+        settingsParam.append('name', encodeURIComponent(name));
+        settingsParam.append('code', encodeURIComponent(code));
+        settingsParam.append('display_title', encodeURIComponent(displayTitle));
+        settingsParam.append('display_description', encodeURIComponent(displayDescription));
+        settingsParam.append('type', encodeURIComponent(type));
+        settingsParam.append('cadence', encodeURIComponent(cadence));
+        settingsParam.append('amount', encodeURIComponent(amount));
+        settingsParam.append('duration', encodeURIComponent(duration));
+        settingsParam.append('duration_in_months', encodeURIComponent(durationInMonths));
+        settingsParam.append('currency', encodeURIComponent(currency));
+        settingsParam.append('status', encodeURIComponent(status));
+        settingsParam.append('tier_id', encodeURIComponent(tierId));
+
+        if (disableBackground) {
+            settingsParam.append('disableBackground', 'true');
+        }
+
+        return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
+    }
 }

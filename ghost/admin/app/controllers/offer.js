@@ -16,10 +16,12 @@ export default class OffersController extends Controller {
     @service settings;
     @service store;
     @service modals;
+    @service membersUtils;
     @service notifications;
 
     @tracked cadences = [];
     @tracked products = [];
+    @tracked portalPreviewUrl = '';
     @tracked showUnsavedChangesModal = false;
 
     @tracked durations = [
@@ -51,6 +53,7 @@ export default class OffersController extends Controller {
     @tracked defaultProps = null;
 
     leaveScreenTransition = null;
+    portalPreviewGuid = Date.now().valueOf();
 
     constructor() {
         super(...arguments);
@@ -114,9 +117,24 @@ export default class OffersController extends Controller {
             });
         });
         this.cadences = cadences;
+        const defaultCadence = this.cadences[0]?.name;
         if (this.offer && !this.offer.tier) {
             this.defaultProps = {};
             this.updateCadence(this.cadences[0]?.name, this.defaultProps);
+            this.updatePortalPreview({forceRefresh: false});
+        } else if (defaultCadence) {
+            const [,, currency] = (defaultCadence || '').split('-');
+            this.offertypes = [
+                {
+                    label: '%',
+                    offertype: 'percent'
+                },
+                {
+                    label: currency.toUpperCase(),
+                    offertype: 'fixed'
+                }
+            ];
+            this.updatePortalPreview({forceRefresh: false});
         }
     }
 
@@ -165,6 +183,37 @@ export default class OffersController extends Controller {
     }
 
     @action
+    portalPreviewInserted() {}
+
+    @action
+    portalPreviewDestroyed() {}
+
+    @action
+    updatePortalPreview({forceRefresh} = {forceRefresh: false}) {
+        const newUrl = new URL(this.membersUtils.getOfferPortalPreviewUrl({
+            name: this.offer.name || 'No Name',
+            code: this.offer.code || 'no-code',
+            displayTitle: this.offer.displayTitle,
+            displayDescription: this.offer.displayDescription,
+            type: this.offer.type,
+            cadence: this.offer.cadence || this.defaultProps?.cadence,
+            amount: this.offer.amount,
+            duration: this.offer.duration,
+            durationInMonths: '',
+            currency: this.offer.currency || this.defaultProps?.currency,
+            status: this.offer.currency,
+            tierId: this.offer?.tier?.id || this.defaultProps?.tier?.id
+        }));
+
+        if (forceRefresh) {
+            this.portalPreviewGuid = Date.now().valueOf();
+        }
+        newUrl.searchParams.set('v', `${this.portalPreviewGuid}`);
+
+        this.portalPreviewUrl = newUrl;
+    }
+
+    @action
     save() {
         return this.saveTask.perform();
     }
@@ -203,7 +252,6 @@ export default class OffersController extends Controller {
     @action
     setup() {
         this.fetchProducts.perform();
-        // this.fetchOfferTask.perform();
     }
 
     @action
@@ -215,11 +263,12 @@ export default class OffersController extends Controller {
     setDiscountType(discountType) {
         if (!this.isDiscountSectionDisabled) {
             this._saveOfferProperty('type', discountType);
-        }
-        if (this.offer.type === 'fixed' && this.offer.amount !== '') {
-            this.offer.amount = this.offer.amount * 100;
-        } else if (this.offer.amount !== '') {
-            this.offer.amount = this.offer.amount / 100;
+            if (this.offer.type === 'fixed' && this.offer.amount !== '') {
+                this.offer.amount = this.offer.amount * 100;
+            } else if (this.offer.amount !== '') {
+                this.offer.amount = this.offer.amount / 100;
+            }
+            this.updatePortalPreview({forceRefresh: false});
         }
     }
 
@@ -322,6 +371,7 @@ export default class OffersController extends Controller {
                     offertype: 'fixed'
                 }
             ];
+            this.updatePortalPreview({forceRefresh: false});
         }
     }
 
@@ -341,5 +391,6 @@ export default class OffersController extends Controller {
         }
 
         this.offer[propKey] = newValue;
+        this.updatePortalPreview({forceRefresh: false});
     }
 }

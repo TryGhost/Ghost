@@ -6,7 +6,7 @@
             {{#if this.offer.isNew}}
                 New Offer
             {{else}}
-                {{this.offer.name}} 
+                {{this.offer.name}}
                 {{#if (eq this.offer.status "archived")}}
                 <span class="gh-badge gh-badge-title">Archived</span>
                 {{/if}}
@@ -201,7 +201,16 @@
             <div class="gh-offer-portal-preview">
                 <div>
                     <h4 class="gh-main-section-header small bn">Preview</h4>
-                    <div class="gh-offer-portal-preview-mock">Portal preview</div>
+                    <div class="gh-setting-members-portalpreview">
+                        <div class="gh-setting-members-portal-mock">
+                            <GhSiteIframe
+                                scrolling="no"
+                                @src={{this.portalPreviewUrl}}
+                                @invisibleUntilLoaded="portal-ready"
+                                @onInserted={{this.portalPreviewInserted}}
+                                @onDestroyed={{this.portalPreviewDestroyed}} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
