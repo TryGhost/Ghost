@@ -7,5 +7,5 @@ module.exports = function siteRoutes(options = {}) {
     debug('site Routes', options);
     options.routerSettings = routeSettings.loadRouteSettingsSync();
     options.urlService = urlService;
-    return routing.bootstrap.init(options);
+    return routing.routerManager.init(options);
 };
