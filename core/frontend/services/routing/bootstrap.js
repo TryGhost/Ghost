@@ -91,25 +91,25 @@ const start = (apiVersion, routerSettings) => {
     registry.setRouter('previewRouter', previewRouter);
 
     _.each(routerSettings.routes, (value, key) => {
-        const staticRoutesRouter = new StaticRoutesRouter(key, value);
+        const staticRoutesRouter = new StaticRoutesRouter(key, value, this.internal.routerCreated);
         siteRouter.mountRouter(staticRoutesRouter.router());
 
         registry.setRouter(staticRoutesRouter.identifier, staticRoutesRouter);
     });
 
     _.each(routerSettings.collections, (value, key) => {
-        const collectionRouter = new CollectionRouter(key, value, RESOURCE_CONFIG);
+        const collectionRouter = new CollectionRouter(key, value, RESOURCE_CONFIG, this.internal.routerCreated);
         siteRouter.mountRouter(collectionRouter.router());
         registry.setRouter(collectionRouter.identifier, collectionRouter);
     });
 
-    const staticPagesRouter = new StaticPagesRouter(RESOURCE_CONFIG);
+    const staticPagesRouter = new StaticPagesRouter(RESOURCE_CONFIG, this.internal.routerCreated);
     siteRouter.mountRouter(staticPagesRouter.router());
 
     registry.setRouter('staticPagesRouter', staticPagesRouter);
 
     _.each(routerSettings.taxonomies, (value, key) => {
-        const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG);
+        const taxonomyRouter = new TaxonomyRouter(key, value, RESOURCE_CONFIG, this.internal.routerCreated);
         siteRouter.mountRouter(taxonomyRouter.router());
 
         registry.setRouter(taxonomyRouter.identifier, taxonomyRouter);

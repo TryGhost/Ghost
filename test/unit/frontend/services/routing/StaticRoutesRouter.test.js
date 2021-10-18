@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const bootstrap = require('../../../../../core/frontend/services/routing/bootstrap');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const StaticRoutesRouter = require('../../../../../core/frontend/services/routing/StaticRoutesRouter');
 const configUtils = require('../../../../utils/configUtils');
@@ -9,13 +8,14 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     let req;
     let res;
     let next;
+    let routerCreatedSpy;
 
     afterEach(function () {
         configUtils.restore();
     });
 
     beforeEach(function () {
-        sinon.stub(bootstrap.internal, 'routerCreated');
+        routerCreatedSpy = sinon.spy();
 
         sinon.spy(StaticRoutesRouter.prototype, 'mountRoute');
         sinon.spy(StaticRoutesRouter.prototype, 'mountRouter');
@@ -33,7 +33,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
     describe('static routes', function () {
         it('instantiate: default', function () {
-            const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: ['test']});
+            const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: ['test']}, routerCreatedSpy);
             should.exist(staticRoutesRouter.router);
 
             should.not.exist(staticRoutesRouter.getFilter());
@@ -41,8 +41,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
             staticRoutesRouter.templates.should.eql(['test']);
 
-            bootstrap.internal.routerCreated.calledOnce.should.be.true();
-            bootstrap.internal.routerCreated.calledWith(staticRoutesRouter).should.be.true();
+            routerCreatedSpy.calledOnce.should.be.true();
+            routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
 
             staticRoutesRouter.mountRoute.callCount.should.eql(1);
 
@@ -55,7 +55,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/about/', {
                 data: {query: {}, router: {}},
                 filter: 'tag:test'
-            });
+            }, routerCreatedSpy);
 
             should.exist(staticRoutesRouter.router);
 
@@ -63,8 +63,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             should.not.exist(staticRoutesRouter.getFilter());
             staticRoutesRouter.templates.should.eql([]);
 
-            bootstrap.internal.routerCreated.calledOnce.should.be.true();
-            bootstrap.internal.routerCreated.calledWith(staticRoutesRouter).should.be.true();
+            routerCreatedSpy.calledOnce.should.be.true();
+            routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
 
             staticRoutesRouter.mountRoute.callCount.should.eql(1);
 
@@ -74,7 +74,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
         });
 
         it('fn: _prepareStaticRouteContext', function () {
-            const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: []});
+            const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: []}, routerCreatedSpy);
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             next.called.should.be.true();
@@ -91,7 +91,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
         });
 
         it('fn: _prepareStaticRouteContext', function () {
-            const staticRoutesRouter = new StaticRoutesRouter('/', {templates: []});
+            const staticRoutesRouter = new StaticRoutesRouter('/', {templates: []}, routerCreatedSpy);
 
             staticRoutesRouter._prepareStaticRouteContext(req, res, next);
             next.called.should.be.true();
@@ -114,7 +114,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     controller: 'channel',
                     data: {query: {}, router: {}},
                     filter: 'tag:test'
-                });
+                }, routerCreatedSpy);
 
                 should.exist(staticRoutesRouter.router);
 
@@ -123,8 +123,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 staticRoutesRouter.templates.should.eql([]);
                 should.exist(staticRoutesRouter.data);
 
-                bootstrap.internal.routerCreated.calledOnce.should.be.true();
-                bootstrap.internal.routerCreated.calledWith(staticRoutesRouter).should.be.true();
+                routerCreatedSpy.calledOnce.should.be.true();
+                routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
 
                 staticRoutesRouter.mountRoute.callCount.should.eql(2);
 
@@ -141,7 +141,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
                     controller: 'channel',
                     filter: 'tag:test'
-                });
+                }, routerCreatedSpy);
 
                 should.exist(staticRoutesRouter.router);
 
@@ -150,8 +150,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
 
                 staticRoutesRouter.templates.should.eql([]);
 
-                bootstrap.internal.routerCreated.calledOnce.should.be.true();
-                bootstrap.internal.routerCreated.calledWith(staticRoutesRouter).should.be.true();
+                routerCreatedSpy.calledOnce.should.be.true();
+                routerCreatedSpy.calledWith(staticRoutesRouter).should.be.true();
 
                 staticRoutesRouter.mountRoute.callCount.should.eql(2);
 
@@ -168,7 +168,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
                     controller: 'channel',
                     data: {query: {}, router: {}}
-                });
+                }, routerCreatedSpy);
 
                 should.not.exist(staticRoutesRouter.getFilter());
             });
@@ -180,7 +180,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     controller: 'channel',
                     data: {query: {}, router: {}},
                     filter: 'author:michi'
-                });
+                }, routerCreatedSpy);
 
                 staticRoutesRouter.mountRoute.callCount.should.eql(2);
 
@@ -200,7 +200,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     controller: 'channel',
                     data: {query: {}, router: {}},
                     filter: 'tag:test'
-                });
+                }, routerCreatedSpy);
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 next.calledOnce.should.eql(true);
@@ -220,7 +220,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/nothingcomparestoyou/', {
                     controller: 'channel',
                     data: {query: {type: 'read'}, router: {}}
-                });
+                }, routerCreatedSpy);
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 next.calledOnce.should.eql(true);
@@ -240,7 +240,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 const staticRoutesRouter = new StaticRoutesRouter('/channel/', {
                     controller: 'channel',
                     filter: 'tag:test'
-                });
+                }, routerCreatedSpy);
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 next.calledOnce.should.eql(true);
@@ -262,7 +262,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     filter: 'tag:test',
                     limit: 2,
                     order: 'published_at asc'
-                });
+                }, routerCreatedSpy);
 
                 staticRoutesRouter._prepareChannelContext(req, res, next);
                 next.calledOnce.should.eql(true);
