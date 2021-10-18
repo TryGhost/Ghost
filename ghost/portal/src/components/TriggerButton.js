@@ -9,6 +9,7 @@ import {ReactComponent as ButtonIcon4} from '../images/icons/button-icon-4.svg';
 import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
 import TriggerButtonStyle from './TriggerButton.styles';
 import {isInviteOnlySite} from '../utils/helpers';
+import {hasMode} from '../utils/check-mode';
 
 const React = require('react');
 
@@ -235,7 +236,7 @@ export default class TriggerButton extends React.Component {
         const {portal_button: portalButton} = this.context.site;
         const {showPopup} = this.context;
 
-        if (!portalButton) {
+        if (!portalButton || hasMode(['offerPreview'])) {
             return null;
         }
 

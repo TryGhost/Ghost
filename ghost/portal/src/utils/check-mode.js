@@ -1,6 +1,11 @@
 export const isPreviewMode = function () {
     const [path, qs] = window.location.hash.substr(1).split('?');
-    return (path === '/portal/preview') || (path === '/portal' && qs);
+    return (path === '/portal/preview') || (path === '/portal/preview/offer') || (path === '/portal' && qs);
+};
+
+export const isOfferPreviewMode = function () {
+    const [path] = window.location.hash.substr(1).split('?');
+    return (path === '/portal/preview/offer');
 };
 
 export const isDevMode = function ({customSiteUrl = ''} = {}) {
@@ -16,6 +21,7 @@ export const isTestMode = function () {
 
 const modeFns = {
     preview: isPreviewMode,
+    offerPreview: isOfferPreviewMode,
     dev: isDevMode,
     test: isTestMode
 };
