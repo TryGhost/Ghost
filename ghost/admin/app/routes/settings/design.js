@@ -55,6 +55,12 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
         this.hasConfirmed = false;
     }
 
+    buildRouteInfoMetadata() {
+        return {
+            mainClasses: ['gh-main-fullwidth']
+        };
+    }
+
     confirmUnsavedChanges() {
         if (!this.settings.get('hasDirtyAttributes') && !this.customThemeSettings.isDirty) {
             return Promise.resolve(true);
