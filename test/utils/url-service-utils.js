@@ -1,4 +1,4 @@
-const urlService = require('../../core/frontend/services/url');
+const urlService = require('../../core/server/services/url');
 
 module.exports.isFinished = async (options = {disableDbReadyEvent: false}) => {
     let timeout;

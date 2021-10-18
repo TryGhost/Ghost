@@ -4,7 +4,7 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const knex = require('../../../../core/server/data/db').knex;
-const urlService = require('../../../../core/frontend/services/url');
+const urlService = require('../../../../core/server/services/url');
 const models = require('../../../../core/server/models');
 const security = require('@tryghost/security');
 
