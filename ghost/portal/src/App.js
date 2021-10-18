@@ -611,8 +611,7 @@ export default class App extends React.Component {
             priceId = getPriceIdFromPageQuery({site, pageQuery});
         }
         const queryPrice = getQueryPrice({site: site, priceId});
-        if (!this.state.member
-            && pageQuery
+        if (pageQuery
             && pageQuery !== 'free'
         ) {
             removePortalLinkFromUrl();
