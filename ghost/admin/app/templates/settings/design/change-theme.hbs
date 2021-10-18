@@ -8,11 +8,11 @@
     </GhCanvasHeader>
 
     <section class="view-container">
-        {{#if this.showAdvanced}}
+        {{#liquid-if this.showAdvanced}}
             <div class="gh-themes-container-labs">
                 <GhThemeTableLabs @themes={{this.themes}} />
             </div>
-        {{/if}}
+        {{/liquid-if}}
 
         <div class="gh-theme-directory-container-labs">
             <div class="theme-directory-labs">
