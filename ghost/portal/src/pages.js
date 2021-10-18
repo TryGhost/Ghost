@@ -5,7 +5,6 @@ import MagicLinkPage from './components/pages/MagicLinkPage';
 import LoadingPage from './components/pages/LoadingPage';
 import AccountPlanPage from './components/pages/AccountPlanPage';
 import AccountProfilePage from './components/pages/AccountProfilePage';
-import LinkPage from './components/pages/LinkPage';
 import OfferPage from './components/pages/OfferPage';
 
 /** List of all available pages in Portal, mapped to their UI component
