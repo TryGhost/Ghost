@@ -17,7 +17,7 @@
         <div class="gh-theme-directory-container-labs">
             <div class="theme-directory-labs">
                 {{#each this.themesList as |theme|}}
-                    <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item">
+                    <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item td-item-labs">
                         <div class="gh-theme-browser">
                             <span class="gh-theme-browser-button"></span>
                         </div>
@@ -25,13 +25,15 @@
                             <img style="object-fit:contain;" src={{theme.image}} alt="{{theme.name}} Theme" />
                         </div>
                         <div class="td-item-desc">
-                            <div>{{theme.name}}</div>
-                            <span>• {{theme.category}}</span>
-                            {{#if theme.isActive}}
-                                <span class="gh-badge">Active</span>
-                            {{else if theme.isDefault}}
-                                <span class="gh-badge">Default</span>
-                            {{/if}}
+                            <div class="td-item-name">{{theme.name}}
+                                {{#if theme.isDefault}}
+                                    (Default)
+                                {{/if}}
+                                {{#if theme.isActive}}
+                                    <span class="gh-badge">Active</span>
+                                {{/if}}
+                            </div>
+                            <div class="td-item-category">{{theme.category}}</div>
                         </div>
                     </LinkTo>
                 {{/each}}
