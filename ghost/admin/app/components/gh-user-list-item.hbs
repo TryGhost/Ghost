@@ -1,5 +1,5 @@
 <div class="apps-grid-cell tooltip-centered" data-tooltip="{{ if user.isLocked 'Requires password reset to log in'}}">
-    <LinkTo @route="staff.user" @model={{user.slug}} data-test-user-id={{user.id}}>
+    <LinkTo @route={{if (feature "offers") "settings.staff.user" "staff.user"}} @model={{user.slug}} data-test-user-id={{user.id}}>
     <article class="apps-card-app">
         <div class="apps-card-left">
             <span class="user-list-item-figure" style={{background-image-style user.profileImageUrl}}>
