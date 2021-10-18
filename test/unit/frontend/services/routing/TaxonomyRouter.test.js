@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
-const bootstrap = require('../../../../../core/frontend/services/routing/bootstrap');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const TaxonomyRouter = require('../../../../../core/frontend/services/routing/TaxonomyRouter');
 const RESOURCE_CONFIG_V2 = require('../../../../../core/frontend/services/routing/config/v2');
@@ -12,11 +11,12 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     let req;
     let res;
     let next;
+    let routerCreatedSpy;
 
     beforeEach(function () {
         sinon.stub(settingsCache, 'get').withArgs('permalinks').returns('/:slug/');
 
-        sinon.stub(bootstrap.internal, 'routerCreated');
+        routerCreatedSpy = sinon.spy();
 
         sinon.spy(TaxonomyRouter.prototype, 'mountRoute');
         sinon.spy(TaxonomyRouter.prototype, 'mountRouter');
@@ -33,7 +33,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     });
 
     it('instantiate', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/');
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', {}, routerCreatedSpy);
 
         should.exist(taxonomyRouter.router);
         should.exist(taxonomyRouter.rssRouter);
@@ -41,8 +41,8 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
         taxonomyRouter.taxonomyKey.should.eql('tag');
         taxonomyRouter.getPermalinks().getValue().should.eql('/tag/:slug/');
 
-        bootstrap.internal.routerCreated.calledOnce.should.be.true();
-        bootstrap.internal.routerCreated.calledWith(taxonomyRouter).should.be.true();
+        routerCreatedSpy.calledOnce.should.be.true();
+        routerCreatedSpy.calledWith(taxonomyRouter).should.be.true();
 
         taxonomyRouter.mountRouter.callCount.should.eql(1);
         taxonomyRouter.mountRouter.args[0][0].should.eql('/tag/:slug/');
@@ -64,7 +64,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     });
 
     it('v2:fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_V2);
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_V2, routerCreatedSpy);
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 
@@ -82,7 +82,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     });
 
     it('canary:fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_CANARY);
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_CANARY, routerCreatedSpy);
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 
@@ -100,7 +100,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     });
 
     it('v3:fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_V3);
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_V3, routerCreatedSpy);
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 

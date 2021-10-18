@@ -5,19 +5,19 @@ const RSSRouter = require('./RSSRouter');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 const ParentRouter = require('./ParentRouter');
-const bootstrap = require('./bootstrap');
 
 /**
  * @description Template routes allow you to map individual URLs to specific template files within a Ghost theme
  */
 class StaticRoutesRouter extends ParentRouter {
-    constructor(mainRoute, object) {
+    constructor(mainRoute, object, routerCreated) {
         super('StaticRoutesRouter');
 
         this.route = {value: mainRoute};
         this.templates = object.templates || [];
         this.data = object.data || {query: {}, router: {}};
         this.routerName = mainRoute === '/' ? 'index' : mainRoute.replace(/\//g, '');
+        this.routerCreated = routerCreated;
 
         debug(this.route.value, this.templates);
 
@@ -62,7 +62,7 @@ class StaticRoutesRouter extends ParentRouter {
         this.router().param('page', middlewares.pageParam);
         this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers[this.controller]);
 
-        bootstrap.internal.routerCreated(this);
+        this.routerCreated(this);
     }
 
     /**
@@ -98,7 +98,7 @@ class StaticRoutesRouter extends ParentRouter {
         // REGISTER: static route
         this.mountRoute(this.route.value, controllers.static);
 
-        bootstrap.internal.routerCreated(this);
+        this.routerCreated(this);
     }
 
     /**
