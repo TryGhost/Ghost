@@ -19,7 +19,7 @@ const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
     member: Fixtures.member.free,
-    page: 'signup',
+    page: 'offer',
     pageData: Fixtures.offer
 };
 
@@ -219,48 +219,6 @@ export default class App extends React.Component {
         return {};
     }
 
-    /**Fetch state from Offer Preview mode query string*/
-    fetchOfferQueryStrData(qs = '') {
-        const qsParams = new URLSearchParams(qs);
-        const data = {};
-        // Handle the query params key/value pairs
-        for (let pair of qsParams.entries()) {
-            const key = pair[0];
-            const value = decodeURIComponent(pair[1]);
-            if (key === 'name') {
-                data.name = value || '';
-            } else if (key === 'code') {
-                data.code = value || '';
-            } else if (key === 'display_title') {
-                data.display_title = value || '';
-            } else if (key === 'display_description') {
-                data.display_description = value || '';
-            } else if (key === 'type') {
-                data.type = value || '';
-            } else if (key === 'cadence') {
-                data.cadence = value || '';
-            } else if (key === 'duration') {
-                data.duration = value || '';
-            } else if (key === 'duration_in_months' && !isNaN(Number(value))) {
-                data.duration_in_months = Number(value);
-            } else if (key === 'amount' && !isNaN(Number(value))) {
-                data.amount = Number(value);
-            } else if (key === 'currency') {
-                data.currency = value || '';
-            } else if (key === 'status') {
-                data.status = value || '';
-            } else if (key === 'tier_id') {
-                data.tier = {
-                    id: value || Fixtures.offer.tier.id
-                };
-            }
-        }
-        return {
-            page: 'offer',
-            pageData: data
-        };
-    }
-
     /** Fetch state from Preview mode Query String */
     fetchQueryStrData(qs = '') {
         const qsParams = new URLSearchParams(qs);
@@ -406,16 +364,9 @@ export default class App extends React.Component {
     fetchPreviewData() {
         const [, qs] = window.location.hash.substr(1).split('?');
         if (hasMode(['preview'])) {
-            let data = {};
-            if (hasMode(['offerPreview'])) {
-                data = this.fetchOfferQueryStrData(qs);
-            } else {
-                data = this.fetchQueryStrData(qs);
-            }
-            return {
-                ...data,
-                showPopup: true
-            };
+            const data = this.fetchQueryStrData(qs);
+            data.showPopup = true;
+            return data;
         }
         return {};
     }
