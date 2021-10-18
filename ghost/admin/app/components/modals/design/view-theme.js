@@ -1,10 +1,21 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 export default class ViewThemeModalComponent extends Component {
     @service modals;
     @service router;
+
+    @tracked previewSize = 'desktop';
+
+    get isDesktopPreview() {
+        return this.previewSize === 'desktop';
+    }
+
+    get isMobilePreview() {
+        return this.previewSize === 'mobile';
+    }
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -26,5 +37,10 @@ export default class ViewThemeModalComponent extends Component {
                 this.router.transitionTo('settings.design');
             }
         });
+    }
+
+    @action
+    setPreviewSize(size) {
+        this.previewSize = size;
     }
 }
