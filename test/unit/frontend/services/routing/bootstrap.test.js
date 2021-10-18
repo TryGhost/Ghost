@@ -8,9 +8,10 @@ const RESOURCE_CONFIG = {QUERY: {post: {controller: 'posts', resource: 'posts'}}
 
 describe('UNIT: services/routing/bootstrap', function () {
     let routesUpdatedStub;
+    let routerCreatedSpy;
 
     beforeEach(function () {
-        sinon.stub(bootstrap.internal, 'routerCreated').returns();
+        routerCreatedSpy = sinon.spy();
         routesUpdatedStub = sinon.stub(bootstrap.internal, 'routerUpdated').returns();
     });
 
@@ -21,7 +22,7 @@ describe('UNIT: services/routing/bootstrap', function () {
     describe('timezone changes', function () {
         describe('no dated permalink', function () {
             it('default', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
                 sinon.stub(registry, 'getRouterByName').withArgs('CollectionRouter').returns(collectionRouter);
 
                 bootstrap.handleTimezoneEdit({
@@ -33,7 +34,7 @@ describe('UNIT: services/routing/bootstrap', function () {
             });
 
             it('tz has not changed', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG);
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
                 sinon.stub(registry, 'getRouterByName').withArgs('CollectionRouter').returns(collectionRouter);
 
                 bootstrap.handleTimezoneEdit({
@@ -47,7 +48,7 @@ describe('UNIT: services/routing/bootstrap', function () {
 
         describe('with dated permalink', function () {
             it('default', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG);
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
                 sinon.stub(registry, 'getRouterByName').withArgs('CollectionRouter').returns(collectionRouter);
 
                 bootstrap.handleTimezoneEdit({
@@ -59,7 +60,7 @@ describe('UNIT: services/routing/bootstrap', function () {
             });
 
             it('tz has not changed', function () {
-                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG);
+                const collectionRouter = new CollectionRouter('/magic/', {permalink: '/:year/:slug/'}, RESOURCE_CONFIG, routerCreatedSpy);
                 sinon.stub(registry, 'getRouterByName').withArgs('CollectionRouter').returns(collectionRouter);
 
                 bootstrap.handleTimezoneEdit({
