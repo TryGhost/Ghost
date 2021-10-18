@@ -42,7 +42,7 @@ export const OfferPageStyles = `
 
     .gh-portal-offer-bar {
         position: relative;
-        padding: 16px 16px 12px;
+        padding: 16px;
     }
 
     .gh-portal-offer-bar::before {
@@ -59,15 +59,20 @@ export const OfferPageStyles = `
         z-index: -1;
     }
 
-    .gh-portal-offer-bar h4 {
+    .gh-portal-offer-title {
+        display: flex;
+        justify-content: space-between;
+        margin-right: -16px;
+    }
+
+    .gh-portal-offer-title h4 {
         font-weight: 500;
         font-size: 1.7rem;
+        margin-bottom: 0;
+        line-height: 1.3em;
     }
 
     .gh-portal-offer-tag {
-        position: absolute;
-        top: 14px;
-        right: 0;
         background: var(--brandcolor);
         color: #fff;
         padding: 4px 8px 4px 12px;
@@ -76,6 +81,13 @@ export const OfferPageStyles = `
         text-transform: uppercase;
         letter-spacing: 0.5px;
         border-radius: 999px 0 0 999px;
+        max-height: 22px;
+        white-space: nowrap;
+    }
+
+    .gh-portal-offer-bar p {
+        margin: 12px 0 0;
+        padding-bottom: 0;
     }
 
     .gh-portal-offer-details .gh-portal-plan-name,
@@ -364,9 +376,11 @@ export default class OfferPage extends React.Component {
 
                     <div className="gh-portal-offer-container">
                         <div className="gh-portal-offer-bar">
-                            <h4>{offer.display_title}</h4>
-                            {this.renderOfferTag()}
-                            <p>{offer.display_description}</p>
+                            <div className="gh-portal-offer-title">
+                                <h4>{offer.display_title}</h4>
+                                {this.renderOfferTag()}
+                            </div>
+                            {(offer.display_description ? <p>{offer.display_description}</p> : '')}
                         </div>
                         <div className="gh-portal-plans-container offer">
                             <div className="gh-portal-offer-details">
