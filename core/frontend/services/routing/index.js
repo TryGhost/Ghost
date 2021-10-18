@@ -6,18 +6,10 @@ module.exports = {
     routerManager: routerManager,
 
     get registry() {
-        return require('./registry');
+        return registry;
     },
 
     get helpers() {
         return require('./helpers');
-    },
-
-    get CollectionRouter() {
-        return require('./CollectionRouter');
-    },
-
-    get TaxonomyRouter() {
-        return require('./TaxonomyRouter');
     }
 };
