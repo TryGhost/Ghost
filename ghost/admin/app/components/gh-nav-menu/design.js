@@ -55,4 +55,9 @@ export default class DesignMenuComponent extends Component {
             this.router.transitionTo('settings.design.index');
         }
     }
+
+    @action
+    closeAllSections() {
+        this.openSection = null;
+    }
 }
