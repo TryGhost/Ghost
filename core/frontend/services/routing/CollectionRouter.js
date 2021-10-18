@@ -5,7 +5,6 @@ const ParentRouter = require('./ParentRouter');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 const RSSRouter = require('./RSSRouter');
-const bootstrap = require('./bootstrap');
 
 /**
  * @description Collection Router for post resource.
@@ -13,7 +12,7 @@ const bootstrap = require('./bootstrap');
  * Fundamental router to define where resources live and how their url structure is.
  */
 class CollectionRouter extends ParentRouter {
-    constructor(mainRoute, object, RESOURCE_CONFIG) {
+    constructor(mainRoute, object, RESOURCE_CONFIG, routerCreated) {
         super('CollectionRouter');
 
         this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.post;
@@ -53,6 +52,7 @@ class CollectionRouter extends ParentRouter {
         };
 
         this.context = [this.routerName];
+        this.routerCreated = routerCreated;
 
         debug(this.name, this.route, this.permalinks);
 
@@ -89,7 +89,7 @@ class CollectionRouter extends ParentRouter {
         // REGISTER: permalinks e.g. /:slug/, /podcast/:slug
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 
-        bootstrap.internal.routerCreated(this);
+        this.routerCreated(this);
     }
 
     /**
