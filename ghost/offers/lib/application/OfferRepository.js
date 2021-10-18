@@ -101,7 +101,7 @@ class OfferRepository {
     async mapToOffer(model, options) {
         const json = model.toJSON();
 
-        const count = await this.OfferRedemptionModel.forge({offer_id: json.id}).count('id', {
+        const count = await this.OfferRedemptionModel.where({offer_id: json.id}).count('id', {
             transacting: options.transacting
         });
         return Offer.create({
