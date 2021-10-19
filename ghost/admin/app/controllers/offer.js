@@ -24,6 +24,8 @@ export default class OffersController extends Controller {
     @tracked portalPreviewUrl = '';
     @tracked showUnsavedChangesModal = false;
 
+    @tracked defaultSiteUrl = this.config.get('blogUrl');
+
     @tracked durations = [
         {
             label: 'Forever',
