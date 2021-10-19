@@ -192,7 +192,7 @@ export default class OffersController extends Controller {
         if (!this.portalMessageListener) {
             this.portalMessageListener = (event) => {
                 const resizeEvents = ['portal-ready', 'portal-preview-updated'];
-                if (resizeEvents.includes(event.data.type) && event.data.payload?.height) {
+                if (resizeEvents.includes(event.data.type) && event.data.payload?.height && this.portalPreviewIframe.parentNode) {
                     this.portalPreviewIframe.parentNode.style.height = `${event.data.payload.height}px`;
                 }
             };
@@ -298,7 +298,7 @@ export default class OffersController extends Controller {
     setDiscountAmount(e) {
         let amount = e.target.value;
         if (this.offer.type === 'fixed' && amount !== '') {
-            amount = parseInt(amount) * 100;
+            amount = parseFloat(amount) * 100;
         }
         this._saveOfferProperty('amount', amount);
     }
