@@ -159,7 +159,7 @@ export default class App extends React.Component {
                 action: 'init:success',
                 initStatus: 'success'
             };
-            this.handleSignupQuery({site, pageQuery});
+            this.handleSignupQuery({site, pageQuery, member});
 
             this.setState(state);
 
@@ -568,9 +568,9 @@ export default class App extends React.Component {
         this.setState(updatedState);
     }
 
-    async handleOfferQuery({offerId}) {
+    async handleOfferQuery({offerId, member = this.state.member}) {
         removePortalLinkFromUrl();
-        if (!isPaidMember({member: this.state.member})) {
+        if (!isPaidMember({member})) {
             try {
                 const offerData = await this.GhostApi.site.offer({offerId});
                 this.dispatchAction('openPopup', {
@@ -599,12 +599,12 @@ export default class App extends React.Component {
     }
 
     /** Handle direct signup link for a price */
-    handleSignupQuery({site, pageQuery}) {
+    handleSignupQuery({site, pageQuery, member}) {
         const offerQueryRegex = /^offers\/(\w+?)\/?$/;
         let priceId = pageQuery;
         if (offerQueryRegex.test(pageQuery || '')) {
             const [, offerId] = pageQuery.match(offerQueryRegex);
-            this.handleOfferQuery({site, offerId});
+            this.handleOfferQuery({site, offerId, member});
             return;
         }
         if (getPriceIdFromPageQuery({site, pageQuery})) {
