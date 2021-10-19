@@ -18,6 +18,9 @@ export default class ConfirmDeleteThemeComponent extends Component {
     *deleteThemeTask() {
         try {
             yield this.args.data.theme.destroyRecord();
+            // we need to unload from the store here so that uploading another
+            // theme with the same "id" doesn't attempt to update the deleted record
+            this.args.data.theme.unloadRecord();
             this.args.close();
             return true;
         } catch (error) {
