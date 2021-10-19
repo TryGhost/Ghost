@@ -45,9 +45,7 @@ export default class ThemeManagementService extends Service {
     }
 
     @action
-    async upload(event) {
-        event?.preventDefault();
-
+    async upload(options = {}) {
         try {
             // Sending a bad string to make sure it fails (empty string isn't valid)
             await this.limit.limiter.errorIfWouldGoOverLimit('customThemes', {value: '.'});
@@ -61,7 +59,7 @@ export default class ThemeManagementService extends Service {
             throw error;
         }
 
-        return this.modals.open('modals/design/upload-theme');
+        return this.modals.open('modals/design/upload-theme', options);
     }
 
     @task

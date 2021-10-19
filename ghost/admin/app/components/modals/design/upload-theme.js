@@ -151,6 +151,7 @@ export default class UploadThemeModalComponent extends Component {
     @action
     activate() {
         this.themeManagement.activateTask.perform(this.theme);
+        this.args.data.onActivationSuccess?.();
         this.args.close();
     }
 

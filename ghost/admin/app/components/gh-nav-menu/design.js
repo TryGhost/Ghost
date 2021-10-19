@@ -13,7 +13,8 @@ export default class DesignMenuComponent extends Component {
     @service themeManagement;
 
     @tracked openSection = null;
-    @tracked themes = this.store.peekAll('theme');
+
+    themes = this.store.peekAll('theme');
 
     constructor() {
         super(...arguments);
