@@ -36,3 +36,4 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
             mainClasses: ['gh-main-fullwidth']
         };
     }
+}
