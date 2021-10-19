@@ -3,15 +3,16 @@ const _ = require('lodash');
 const path = require('path');
 const fs = require('fs').promises;
 
-const defaultConfig = false;
-
 class CardAssetService {
     constructor(options = {}) {
         // @TODO: use our config paths concept
         this.src = options.src || path.join(__dirname, '../../src/cards');
         this.dest = options.dest || path.join(__dirname, '../../public');
-        this.config = 'config' in options ? options.config : defaultConfig;
         this.minifier = new Minifier({src: this.src, dest: this.dest});
+
+        if ('config' in options) {
+            this.config = options.config;
+        }
 
         this.files = [];
     }

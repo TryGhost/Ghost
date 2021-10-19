@@ -13,7 +13,9 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: false
+                card_assets: {
+                    exclude: ['bookmark', 'gallery']
+                }
             });
         });
 
@@ -22,16 +24,18 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: false
+                card_assets: {
+                    exclude: ['bookmark', 'gallery']
+                }
             });
         });
 
-        it('handles allows package.json to overrideg default', function () {
-            const config = themeConfig.create({name: 'casper', config: {posts_per_page: 3}});
+        it('handles allows package.json to override default', function () {
+            const config = themeConfig.create({name: 'casper', config: {posts_per_page: 3, card_assets: true}});
 
             config.should.eql({
                 posts_per_page: 3,
-                card_assets: false
+                card_assets: true
             });
         });
 
@@ -40,7 +44,9 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: false
+                card_assets: {
+                    exclude: ['bookmark', 'gallery']
+                }
             });
         });
     });
