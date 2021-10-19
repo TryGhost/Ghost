@@ -5383,10 +5383,10 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.8.1:
-  version "4.8.1"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.8.1.tgz#375fcc69cb186c20e70527acb5ad94fa39672f92"
-  integrity sha512-7RsDjryid2waUvmkr5QO2awghGp8EUgzNf95fE8rXr9rKjDjpUrrFTrXxlKq/CiEb1ThKJre0Jm029mcTiUcbw==
+gscan@4.9.0:
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.9.0.tgz#1e9c7aeb1cced58c5e9006b0a969908bd6395f78"
+  integrity sha512-4aaQ5rd3vqlqzhCSpf1EtuMqD7CA31LBjKWLqMeOzZJF4hr9Ngxayxix5tZeVT4gn2gQqPMyXhFxARc/0g1FgA==
   dependencies:
     "@sentry/node" "6.13.3"
     "@tryghost/pretty-cli" "1.2.21"
