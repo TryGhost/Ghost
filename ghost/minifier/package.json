@@ -29,7 +29,7 @@
     "@tryghost/errors": "^0.2.16",
     "@tryghost/tpl": "^0.1.7",
     "csso": "4.2.0",
-    "tiny-glob": "^0.2.9",
-    "uglify-js": "3.14.2"
+    "terser": "^5.9.0",
+    "tiny-glob": "^0.2.9"
   }
 }
