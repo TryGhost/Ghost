@@ -4,11 +4,13 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class ChangeThemeController extends Controller {
+    @service router;
     @service store;
     @service themeManagement;
 
     @tracked showAdvanced = false;
-    @tracked themes = this.store.peekAll('theme');
+
+    themes = this.store.peekAll('theme');
 
     officialThemes = [{
         name: 'Casper',
@@ -152,6 +154,17 @@ export default class ChangeThemeController extends Controller {
         }
 
         return themesList;
+    }
+
+    @action
+    startThemeUpload(event) {
+        event?.preventDefault();
+
+        this.themeManagement.upload({
+            onActivationSuccess: () => {
+                this.router.transitionTo('settings.design');
+            }
+        });
     }
 
     @action
