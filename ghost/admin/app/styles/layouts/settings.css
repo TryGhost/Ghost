@@ -170,7 +170,7 @@
 }
 
 .gh-setting-first .description-container-labs {
-    margin-bottom: 12px;
+    margin-bottom: 0;
 }
 
 .gh-setting-last {
@@ -1371,6 +1371,11 @@ p.theme-validation-details {
 
 /* Design (Labs)
 /* ---------------------------------------------------- */
+
+.gh-nav-contextual {
+    flex: 0 0 400px;
+}
+
 .gh-nav-header {
     height: 100px;
     padding: 32px 32px 16px;
@@ -1504,11 +1509,17 @@ p.theme-validation-details {
 }
 
 .gh-nav-design-settings {
-    padding: 24px var(--mainmenu-padding) 32px calc(var(--mainmenu-padding) + 7px);
+    padding: 32px var(--mainmenu-padding) 16px calc(var(--mainmenu-padding) + 7px);
+    background: var(--mainmenu-color-hover-bg);
+    border-radius: var(--border-radius);
 }
 
 .gh-nav-design .gh-stack-item {
     flex-direction: column;
+}
+
+.gh-nav-design .gh-setting {
+    padding: 12px 0;
 }
 
 .gh-nav-design .gh-setting-title {
@@ -1577,6 +1588,12 @@ p.theme-validation-details {
 
 .gh-nav-design .gh-setting-action-largeimg-delete svg,
 .gh-nav-design .gh-setting-action-smallimg-delete svg {
+    margin: 0;
+}
+
+.gh-nav-design .for-switch label {
+    width: 34px !important;
+    height: 22px !important;
     margin: 0;
 }
 

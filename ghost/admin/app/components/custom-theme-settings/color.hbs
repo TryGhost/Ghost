@@ -1,11 +1,11 @@
-<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first"}}">
-    <div class="flex-grow-1">
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+    <div class="flex flex-grow-1 justify-between">
         <div class="flex justify-between items-center relative">
-            <span class="gh-setting-title gh-theme-setting-title" for={{this.inputId}}>
+            <span class="gh-setting-title" for={{this.inputId}}>
                 {{humanize-setting-key @setting.key}}
             </span>
         </div>
-        <div class="form-group">
+        <div>
             <div class="input-color">
                 <input
                     type="text"
