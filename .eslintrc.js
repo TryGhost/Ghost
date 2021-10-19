@@ -51,7 +51,7 @@ module.exports = {
                     // },
                     // These are critical refactoring issues that we need to tackle ASAP
                     {
-                        name: [path.resolve(__dirname, 'core/server/**'), `!${path.resolve(__dirname, 'core/server/lib/common/**')}`],
+                        name: [path.resolve(__dirname, 'core/server/**')],
                         message: 'Invalid require of core/server from core/frontend.'
                     }
                 ]]
@@ -63,7 +63,7 @@ module.exports = {
                 'ghost/node/no-restricted-require': ['off', [
                     {
                         // Throw an error for all requires of the frontend, _except_ the url service which will be moved soon
-                        name: [path.resolve(__dirname, 'core/frontend/**'), `!${path.resolve(__dirname, 'core/frontend/services/url/**')}`],
+                        name: [path.resolve(__dirname, 'core/frontend/**')],
                         message: 'Invalid require of core/frontend from core/server.'
                     }
                 ]]
