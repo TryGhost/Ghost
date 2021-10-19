@@ -1,4 +1,6 @@
 {
     "posts_per_page": 5,
-    "card_assets": false
+    "card_assets": {
+        "exclude": ["bookmark", "gallery"]
+    }
 }
