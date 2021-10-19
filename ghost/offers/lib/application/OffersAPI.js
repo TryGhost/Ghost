@@ -67,27 +67,27 @@ class OffersAPI {
 
             const offer = await this.repository.getById(data.id, options);
 
-            if (data.name) {
+            if (Reflect.has(data, 'name')) {
                 const name = OfferName.create(data.name);
                 await offer.updateName(name, uniqueChecker);
             }
 
-            if (data.code) {
+            if (Reflect.has(data, 'code')) {
                 const code = OfferCode.create(data.code);
                 await offer.updateCode(code, uniqueChecker);
             }
 
-            if (data.display_title) {
+            if (Reflect.has(data, 'display_title')) {
                 const title = OfferTitle.create(data.display_title);
                 offer.displayTitle = title;
             }
 
-            if (data.display_description) {
+            if (Reflect.has(data, 'display_description')) {
                 const description = OfferDescription.create(data.display_description);
                 offer.displayDescription = description;
             }
 
-            if (data.status) {
+            if (Reflect.has(data, 'status')) {
                 const status = OfferStatus.create(data.status);
                 offer.status = status;
             }
