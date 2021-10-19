@@ -79,10 +79,7 @@ export default class CustomThemeSettingsServices extends Service {
     }
 
     rollback() {
-        run(() => this.store.unloadAll('custom-theme-setting'));
-
-        this.settings = [];
-        this.settingGroups = [];
+        this.settings.forEach(setting => setting.rollbackAttributes());
     }
 
     _buildSettingGroups(settings) {
