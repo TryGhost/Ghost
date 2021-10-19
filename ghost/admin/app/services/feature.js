@@ -52,11 +52,10 @@ export default Service.extend({
     emailAnalytics: feature('emailAnalytics'),
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
     launchComplete: feature('launchComplete', {user: true}),
-    matchHelper: feature('matchHelper'),
     multipleProducts: feature('multipleProducts'),
     offers: feature('offers', {developer: true}),
     oauthLogin: feature('oauthLogin', {developer: true}),
-    customThemeSettings: feature('customThemeSettings', {developer: true, requires: ['matchHelper']}),
+    customThemeSettings: feature('customThemeSettings', {developer: true}),
     membersActivity: feature('membersActivity', {developer: true}),
 
     _user: null,
