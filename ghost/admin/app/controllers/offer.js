@@ -160,6 +160,7 @@ export default class OffersController extends Controller {
         }
 
         try {
+            yield this.offer.validate();
             yield offer.save();
 
             // replace 'offer.new' route with 'offer' route
