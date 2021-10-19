@@ -15,12 +15,12 @@ describe('Minifier', function () {
 
         minifier = new Minifier({
             src: path.join(__dirname, 'fixtures', 'basic-cards'),
-            dest: path.join(os.tmpdir(), 'minifier-tests')
+            dest: testDir
         });
     });
 
     after(async function () {
-        await fs.rmdir(testDir);
+        await fs.rmdir(testDir, {recursive: true, force: true});
     });
 
     describe('getMatchingFiles expands globs correctly', function () {
