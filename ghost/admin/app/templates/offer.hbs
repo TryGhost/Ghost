@@ -24,7 +24,7 @@
                     <div class="gh-main-section-block no-margin">
                         <h4 class="gh-main-section-header small bn">Basic</h4>
                         <div class="gh-main-section-content grey">
-                            <GhFormGroup @errors={{this.errors}} @property="name" class="no-margin">
+                            <GhFormGroup @errors={{this.offer.errors}} @property="name" @hasValidated={{this.offer.hasValidated}} class="no-margin">
                                 <label for="name" class="fw6">Name</label>
                                 <GhTextInput
                                     @name="name"
@@ -34,8 +34,10 @@
                                     @input={{this.setOfferName}}
                                     data-test-input="offer-name"
                                     @class="gh-input" />
-                                <GhErrorMessage @errors={{this.errors}} @property="name" />
-                                <p>Will be shown to members on the Stripe Checkout page</p>
+                                <span class="error">
+                                    <GhErrorMessage @errors={{this.offer.errors}} @property="name" />
+                                </span>
+                                <p>Visible to members on Stripe Checkout page.</p>
                             </GhFormGroup>
                         </div>
 
@@ -58,7 +60,7 @@
                                 <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
                             </GhFormGroup>
                             <div class="gh-offer-discount">
-                                <GhFormGroup @errors={{this.errors}} @property="amount">
+                                <GhFormGroup @errors={{this.offer.errors}} @property="amount" @hasValidated={{this.offer.hasValidated}}>
                                     <label for="amount" class="fw6">Amount off</label>
                                     <div class="gh-offer-value percentage">
                                         {{#if (eq this.offer.type 'fixed')}}
@@ -84,11 +86,13 @@
                                                 @class="gh-input"
                                             />
                                         {{/if}}
-                                        <GhErrorMessage @errors={{this.errors}} @property="amount" />
                                     </div>
+                                    <span class="error">
+                                        <GhErrorMessage @errors={{this.offer.errors}} @property="amount" />
+                                    </span>
                                 </GhFormGroup>
                                 <div class="gh-offer-type">
-                                    <GhFormGroup @errors={{this.errors}} @property="offer-type" class="no-margin">
+                                    <GhFormGroup @errors={{this.offer.errors}} @property="type" @hasValidated={{this.offer.hasValidated}} class="no-margin">
                                         <span class="gh-select">
                                             <OneWaySelect
                                                 @value={{this.offer.type}}
@@ -101,7 +105,7 @@
                                             />
                                             {{svg-jar "arrow-down-small"}}
                                         </span>
-                                        <GhErrorMessage @errors={{this.errors}} @property="duration" />
+                                        <GhErrorMessage @errors={{this.offer.errors}} @property="type" />
                                     </GhFormGroup>
                                 </div>
                             </div>
@@ -120,10 +124,12 @@
                                         />
                                         {{svg-jar "arrow-down-small"}}
                                     </span>
-                                    <GhErrorMessage @errors={{this.errors}} @property="duration" />
+                                    <span class="error">
+                                        <GhErrorMessage @errors={{this.errors}} @property="duration" />
+                                    </span>
                                 </GhFormGroup>
                                 {{#if (eq this.offer.duration "repeating")}}
-                                <GhFormGroup @errors={{this.errors}} @property="duration-months" @class="duration-months">
+                                <GhFormGroup @errors={{this.offer.errors}} @property="durationInMonths" @class="duration-months">
                                     <label for="duration-months" class="fw6">Number of months</label>
                                     <GhTextInput
                                         @name="duration-months"
@@ -132,7 +138,9 @@
                                         @disabled={{this.isDiscountSectionDisabled}}
                                         @id="duration-months"
                                         @class="gh-input" />
-                                    <GhErrorMessage @errors={{this.errors}} @property="duration-months" />
+                                    <span class="error">
+                                        <GhErrorMessage @errors={{this.offer.errors}} @property="durationInMonths" />
+                                    </span>
                                 </GhFormGroup>
                                 {{/if}}
                             </div>
@@ -141,7 +149,7 @@
                         <h4 class="gh-main-section-header small bn">Portal settings</h4>
                         <div class="gh-main-section-content grey">
                             <div class="form-col2">
-                                <GhFormGroup @errors={{this.errors}} @property="display-title">
+                                <GhFormGroup @errors={{this.offer.errors}} @property="displayTitle" @hasValidated={{this.offer.hasValidated}}>
                                     <label for="display-title" class="fw6">Display title</label>
                                     <GhTextInput
                                         @name="display-title"
@@ -150,9 +158,11 @@
                                         @placeholder="Black Friday Special"
                                         @id="display-title"
                                         @class="gh-input" />
-                                    <GhErrorMessage @errors={{this.errors}} @property="display-title" />
+                                    <span class="error">
+                                        <GhErrorMessage @errors={{this.offer.errors}} @property="displayTitle" />
+                                    </span>
                                 </GhFormGroup>
-                                <GhFormGroup @errors={{this.errors}} @property="code">
+                                <GhFormGroup @errors={{this.offer.errors}} @property="code" @hasValidated={{this.offer.hasValidated}}>
                                     <label for="code" class="fw6">Offer code</label>
                                     <GhTextInput
                                         @name="code"
@@ -161,7 +171,9 @@
                                         @input={{this.setOfferCode}}
                                         @id="code"
                                         @class="gh-input" />
-                                    <GhErrorMessage @errors={{this.errors}} @property="code" />
+                                    <span class="error">
+                                        <GhErrorMessage @errors={{this.offer.errors}} @property="code" />
+                                    </span>
                                 </GhFormGroup>
                             </div>
                             <GhFormGroup @errors={{this.errors}} @property="url" @class="gh-offer-url">
@@ -182,16 +194,19 @@
                                 </div>
                                 <GhErrorMessage @errors={{this.errors}} @property="url" />
                             </GhFormGroup>
-                            <GhFormGroup @errors={{this.errors}} @property="description" class="no-margin">
+                            <GhFormGroup @errors={{this.offer.errors}} @property="displayDescription" class="no-margin">
                                 <label for="description" class="fw6">Description</label>
                                 <GhTextarea
                                     @id="description"
                                     @name="description"
+                                    @placeholder="Take advantage of this limited-time offer."
                                     @value={{this.offer.displayDescription}}
                                     @input={{this.setPortalDescription}}
                                     @stopEnterKeyDownPropagation="true"
                                 />
-                                <GhErrorMessage @errors={{this.errors}} @property="description" />
+                                <span class="error">
+                                    <GhErrorMessage @errors={{this.offer.errors}} @property="displayDescription" />
+                                </span>
                             </GhFormGroup>
                         </div>
                     </div>
