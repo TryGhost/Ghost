@@ -74,7 +74,9 @@
                                 >
                                     <span>{{svg-jar "link"}}</span>
                                 </div>
-                                <span class="nr2 lh-1">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+                                <LinkTo @route="offer" @model={{offer}}>
+                                    <span class="nr2 lh-1">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+                                </LinkTo>
                             </div>
                         </div>
                     </tr>
