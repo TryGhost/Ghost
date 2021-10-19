@@ -265,7 +265,7 @@ export default class MembersAccessController extends Controller {
                 }
 
                 const resizeEvents = ['portal-ready', 'portal-preview-updated'];
-                if (resizeEvents.includes(event.data.type) && event.data.payload?.height) {
+                if (resizeEvents.includes(event.data.type) && event.data.payload?.height && this.portalPreviewIframe.parentNode) {
                     this.portalPreviewIframe.parentNode.style.height = `${event.data.payload.height}px`;
                 }
             };
