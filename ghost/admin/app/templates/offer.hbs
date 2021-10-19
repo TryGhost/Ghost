@@ -133,7 +133,7 @@
                                     <label for="duration-months" class="fw6">Number of months</label>
                                     <GhTextInput
                                         @name="duration-months"
-                                        @value={{this.offer.durationInMonths}}
+                                        @value={{readonly this.offer.durationInMonths}}
                                         @input={{this.setDurationInMonths}}
                                         @disabled={{this.isDiscountSectionDisabled}}
                                         @id="duration-months"
@@ -153,7 +153,7 @@
                                     <label for="display-title" class="fw6">Display title</label>
                                     <GhTextInput
                                         @name="display-title"
-                                        @value={{this.offer.displayTitle}}
+                                        @value={{readonly this.offer.displayTitle}}
                                         @input={{this.setPortalTitle}}
                                         @placeholder="Black Friday Special"
                                         @id="display-title"
@@ -167,7 +167,7 @@
                                     <GhTextInput
                                         @name="code"
                                         @placeholder="black-friday"
-                                        @value={{this.offer.code}}
+                                        @value={{readonly this.offer.code}}
                                         @input={{this.setOfferCode}}
                                         @id="code"
                                         @class="gh-input" />
@@ -181,7 +181,7 @@
                                 <div class="gh-input-group">
                                     <GhTextInput
                                         @name="url"
-                                        @value={{this.offerUrl}}
+                                        @value={{readonly this.offerUrl}}
                                         @id="url"
                                         @disabled="disabled"
                                         @class="gh-input" />
@@ -200,7 +200,7 @@
                                     @id="description"
                                     @name="description"
                                     @placeholder="Take advantage of this limited-time offer."
-                                    @value={{this.offer.displayDescription}}
+                                    @value={{readonly this.offer.displayDescription}}
                                     @input={{this.setPortalDescription}}
                                     @stopEnterKeyDownPropagation="true"
                                 />
