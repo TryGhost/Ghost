@@ -9,6 +9,7 @@ const cardAssetService = require('../../../../core/frontend/services/card-assets
 const CardAssetService = require('../../../../core/frontend/services/card-assets/service');
 
 const themeEngine = require('../../../../core/frontend/services/theme-engine');
+const themeDefaults = require('../../../../core/frontend/services/theme-engine/config/defaults.json');
 
 describe('Card Asset Init', function () {
     it('calls loader with config', function () {
@@ -107,11 +108,21 @@ describe('Card Asset Service', function () {
     });
 
     describe('Generate the correct glob strings', function () {
-        // @TODO: change the default
-        it('DEFAULT CASE: do nothing [temp]', function () {
+        it('CARD ASSET SERVICE DEFAULT CASE: do nothing', function () {
             const cardAssets = new CardAssetService();
 
             cardAssets.generateGlobs().should.eql({});
+        });
+
+        it('GHOST DEFAULT CASE: exclude bookmark and gallery', function () {
+            const cardAssets = new CardAssetService({
+                config: themeDefaults.card_assets
+            });
+
+            cardAssets.generateGlobs().should.eql({
+                'cards.min.css': 'css/!(bookmark|gallery).css',
+                'cards.min.js': 'js/!(bookmark|gallery).js'
+            });
         });
 
         it('CASE: card_assets = true, all cards assets should be included', function () {

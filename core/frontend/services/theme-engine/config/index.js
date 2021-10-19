@@ -9,9 +9,5 @@ module.exports.create = function configLoader(packageJson) {
         config = _.assign(config, _.pick(packageJson.config, allowedKeys));
     }
 
-    // @TOD0: remove this guard when we're ready
-    // Temporary override to prevent themes from controlling this until we're ready
-    config.card_assets = defaultConfig.card_assets;
-
     return config;
 };
