@@ -1428,7 +1428,8 @@ p.theme-validation-details {
     background: var(--mainmenu-color-hover-bg);
 }
 
-.gh-nav-design .gh-nav-menu-title:focus {
+.gh-nav-design .gh-nav-menu-title:focus,
+.gh-nav-design .gh-nav-menu-title.active {
     font-weight: 700;
 }
 
@@ -1468,7 +1469,8 @@ p.theme-validation-details {
     font-weight: 500;
 }
 
-.gh-nav-bottom .gh-nav-design-tab:focus span {
+.gh-nav-bottom .gh-nav-design-tab:focus span,
+.gh-nav-bottom .gh-nav-design-tab.active span {
     font-weight: 700;
 }
 
@@ -1621,7 +1623,7 @@ p.theme-validation-details {
 }
 
 @keyframes unfold {
-    0% { opacity: 0; -webkit-transform: translateY(-50%); }   
+    0% { opacity: 0; -webkit-transform: translateY(-50%); }
     100% { opacity: 1; -webkit-transform: translateY(0); }
 }
 
