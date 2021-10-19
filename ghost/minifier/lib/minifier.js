@@ -1,8 +1,8 @@
 const errors = require('@tryghost/errors');
-const debug = require('@tryghost/debug')('affsfdfsdfsdfsdffsdsdfsd');
+const debug = require('@tryghost/debug')('minifier');
 const tpl = require('@tryghost/tpl');
 const csso = require('csso');
-const uglify = require('uglify-js');
+const terser = require('terser');
 const glob = require('tiny-glob');
 const path = require('path');
 const fs = require('fs').promises;
@@ -49,7 +49,7 @@ class Minifier {
     }
 
     async minifyCSS(contents) {
-        const result = csso.minify(contents);
+        const result = await csso.minify(contents);
         if (result && result.css) {
             return result.css;
         }
@@ -57,11 +57,10 @@ class Minifier {
     }
 
     async minifyJS(contents) {
-        const result = uglify.minify(contents);
+        const result = await terser.minify(contents);
         if (result && result.code) {
             return result.code;
         }
-
         return null;
     }
 
@@ -112,7 +111,7 @@ class Minifier {
 
             const result = await this.writeFile(minifiedContents, dest);
             if (result) {
-                minifiedFiles.push(result);
+                minifiedFiles.push(dest);
             }
         }
 
