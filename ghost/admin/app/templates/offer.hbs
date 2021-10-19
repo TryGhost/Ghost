@@ -41,7 +41,9 @@
                             </GhFormGroup>
                         </div>
 
-                        <h4 class="gh-main-section-header small bn">Discount info</h4>
+                        <h4 class="gh-main-section-header small bn">
+                            Discount information <span class="midgrey"> – Read only {{if this.offer.isNew "once offer is saved"}}</span>
+                        </h4>
                         <div class="gh-main-section-content grey">
                             <GhFormGroup @errors={{this.errors}} @property="product-cadence">
                                 <label for="product-cadence" class="fw6">Tier – cadence</label>
@@ -176,25 +178,7 @@
                                     </span>
                                 </GhFormGroup>
                             </div>
-                            <GhFormGroup @errors={{this.errors}} @property="url" @class="gh-offer-url">
-                                <label for="url" class="fw6">URL</label>
-                                <div class="gh-input-group">
-                                    <GhTextInput
-                                        @name="url"
-                                        @value={{readonly this.offerUrl}}
-                                        @id="url"
-                                        @disabled="disabled"
-                                        @class="gh-input" />
-
-                                    <GhTaskButton
-                                        @buttonText="Copy link"
-                                        @task={{this.copyOfferUrl}}
-                                        @successText="Link copied"
-                                        @class="gh-btn gh-btn-icon" />
-                                </div>
-                                <GhErrorMessage @errors={{this.errors}} @property="url" />
-                            </GhFormGroup>
-                            <GhFormGroup @errors={{this.offer.errors}} @property="displayDescription" class="no-margin">
+                            <GhFormGroup @errors={{this.offer.errors}} @property="displayDescription">
                                 <label for="description" class="fw6">Description</label>
                                 <GhTextarea
                                     @id="description"
@@ -207,6 +191,26 @@
                                 <span class="error">
                                     <GhErrorMessage @errors={{this.offer.errors}} @property="displayDescription" />
                                 </span>
+                            </GhFormGroup>
+                            <GhFormGroup @errors={{this.errors}} @property="url" @class="gh-offer-url" class="no-margin">
+                                <label for="url" class="fw6">URL</label>
+                                <div class="gh-input-group">
+                                    <GhTextInput
+                                        @name="url"
+                                        @value={{readonly this.offerUrl}}
+                                        @id="url"
+                                        @disabled="disabled"
+                                        @placeholder={{this.defaultSiteUrl}}
+                                        @class="gh-input" />
+
+                                    <GhTaskButton
+                                        @buttonText="Copy link"
+                                        @task={{this.copyOfferUrl}}
+                                        @successText="Link copied"
+                                        @disabled={{unless this.offerUrl "disabled"}}
+                                        @class="gh-btn gh-btn-icon" />
+                                </div>
+                                <GhErrorMessage @errors={{this.errors}} @property="url" />
                             </GhFormGroup>
                         </div>
                     </div>
