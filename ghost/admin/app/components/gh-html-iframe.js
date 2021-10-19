@@ -62,6 +62,7 @@ export default class GhHtmlIframeComponent extends Component {
         window.clearTimeout(this.swapTimeout);
 
         if (this.iframes.indexOf(renderedIframe) !== this.renderedIframe) {
+            this.iframes[this.toRenderIframe].contentDocument.body.scrollTop = this.iframes[this.renderedIframe].contentDocument.body.scrollTop;
             this.iframes[this.toRenderIframe].style = this.visibleIframeStyle;
             this.renderedIframe = this.toRenderIframe;
             this.toRenderIframe = this.toRenderIframe === 0 ? 1 : 0;
