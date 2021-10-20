@@ -1,5 +1,6 @@
 const AdapterManager = require('@tryghost/adapter-manager');
 const getAdapterServiceConfig = require('./config');
+const resolveAdapterOptions = require('./options-resolver');
 const config = require('../../../shared/config');
 
 const adapterManager = new AdapterManager({
@@ -16,13 +17,16 @@ adapterManager.registerAdapter('scheduling', require('../../adapters/scheduling/
 adapterManager.registerAdapter('sso', require('../../adapters/sso/Base'));
 
 module.exports = {
-    getAdapter(adapterType) {
+    /**
+     *
+     * @param {String} name - one of 'storage', 'scheduling', 'sso' etc. Or can contain a "resource" extension like "storage:image"
+     * @returns {Object} instance of an adapter
+     */
+    getAdapter(name) {
         const adapterServiceConfig = getAdapterServiceConfig(config);
 
-        const adapterSettings = adapterServiceConfig[adapterType];
-        const activeAdapter = adapterSettings.active;
-        const activeAdapterConfig = adapterSettings[activeAdapter];
+        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        return adapterManager.getAdapter(adapterType, activeAdapter, activeAdapterConfig);
+        return adapterManager.getAdapter(adapterType, adapterName, adapterConfig);
     }
 };
