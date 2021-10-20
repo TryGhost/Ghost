@@ -119,7 +119,7 @@
     "grunt": "1.4.1",
     "grunt-shell": "3.0.1",
     "keymaster": "https://github.com/madrobby/keymaster.git",
-    "liquid-fire": "0.31.0",
+    "liquid-fire": "0.32.0",
     "liquid-wormhole": "2.1.5",
     "loader.js": "4.7.0",
     "markdown-it": "12.2.0",
