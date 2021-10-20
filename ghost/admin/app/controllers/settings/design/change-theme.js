@@ -179,4 +179,8 @@ export default class ChangeThemeController extends Controller {
             }
         }
     }
+
+    reset() {
+        this.showAdvanced = false;
+    }
 }
