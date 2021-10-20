@@ -30,6 +30,8 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
     deactivate() {
         this.confirmModal = null;
         this.hasConfirmed = false;
+
+        this.controllerFor('settings.design.index').reset();
     }
 
     confirmUnsavedChanges() {
