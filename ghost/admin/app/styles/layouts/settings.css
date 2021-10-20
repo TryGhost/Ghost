@@ -1546,6 +1546,21 @@ p.theme-validation-details {
     align-self: flex-start;
 }
 
+.gh-nav-design .gh-select svg {
+    position: absolute;
+    top: 50%;
+    right: 1.2rem;
+    left: inherit;
+    width: 12px;
+    height: 6px;
+    margin-top: -0.2em;
+    margin-right: 0;
+    transform: inherit;
+    pointer-events: none;
+
+    speak: none;
+}
+
 .gh-nav-design .input-color input {
     position: relative;
     height: 30px;
