@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "test": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache",
     "posttest": "yarn lint"
   },
@@ -25,5 +25,8 @@
     "mobiledoc-dom-renderer": "^0.7.0",
     "semver": "^7.3.4",
     "simple-dom": "^1.4.0"
+  },
+  "devDependencies": {
+    "c8": "7.10.0"
   }
 }

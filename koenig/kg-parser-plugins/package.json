@@ -19,7 +19,7 @@
     "build": "rollup -c",
     "prepare": "NODE_ENV=production yarn build",
     "pretest": "yarn build",
-    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "test": "NODE_ENV=testing c8 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache",
     "posttest": "yarn lint"
   },
@@ -33,6 +33,7 @@
     "@babel/core": "7.15.8",
     "@babel/preset-env": "7.15.8",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
+    "c8": "7.10.0",
     "jsdom": "18.0.0",
     "mocha": "9.1.3",
     "rollup": "2.58.0",
