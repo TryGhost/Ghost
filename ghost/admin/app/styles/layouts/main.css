@@ -824,6 +824,11 @@
     .gh-nav {
         flex-basis: 280px;
     }
+
+    .gh-nav-main-enter-active,
+    .gh-nav-main-leave-active {
+        width: calc(280px - 1px);
+    }
 }
 
 /* Mobile Nav Menu (Slides out)
