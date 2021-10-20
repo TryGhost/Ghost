@@ -63,7 +63,7 @@ module.exports = function (req, res, next) {
         return redirectToOriginal();
     }
 
-    const storageInstance = storage.getStorage();
+    const storageInstance = storage.getStorage('images');
     // CASE: unsupported storage adapter
     if (typeof storageInstance.saveRaw !== 'function') {
         return redirectToOriginal();
