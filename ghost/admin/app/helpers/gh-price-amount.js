@@ -2,7 +2,12 @@ import {helper} from '@ember/component/helper';
 
 export function ghPriceAmount(amount) {
     if (amount) {
-        return Math.round(amount / 100);
+        let price = amount / 100;
+        if (price % 1 === 0) {
+            return price;
+        } else {
+            return Math.round(price * 100) / 100;
+        }
     }
     return 0;
 }
