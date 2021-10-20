@@ -107,7 +107,7 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(mw.servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
 
     // Serve blog images using the storage adapter
-    siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage().serve());
+    siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
 
     // @TODO find this a better home
     // We do this here, at the top level, because helpers require so much stuff.

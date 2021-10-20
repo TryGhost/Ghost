@@ -216,7 +216,7 @@ class ImageSize {
         // get the storage readable filePath
         filePath = this.storageUtils.getLocalFileStoragePath(imagePath);
 
-        return this.storage.getStorage()
+        return this.storage.getStorage('images')
             .read({path: filePath})
             .then((buf) => {
                 debug('Image fetched (storage):', filePath);
@@ -267,7 +267,7 @@ class ImageSize {
         }
 
         const originalImagePath = path.join(dir, `${imageName}_o${imageNumber || ''}${ext}`);
-        const originalImageExists = await this.storage.getStorage().exists(originalImagePath);
+        const originalImageExists = await this.storage.getStorage('images').exists(originalImagePath);
 
         return this.getImageSizeFromStoragePath(originalImageExists ? originalImagePath : imagePath);
     }
