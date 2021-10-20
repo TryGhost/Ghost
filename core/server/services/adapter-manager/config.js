@@ -1,4 +1,5 @@
 /**
+ * Maps configuration from the config file to a unified adapter config in following form:
  * {
  *   [adapterType]: {
  *     active: [adapterName],
