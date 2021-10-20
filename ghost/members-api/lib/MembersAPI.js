@@ -120,6 +120,7 @@ module.exports = function MembersAPI({
     });
 
     const memberBREADService = new MemberBREADService({
+        offersAPI,
         memberRepository,
         emailService: {
             sendEmailWithMagicLink
