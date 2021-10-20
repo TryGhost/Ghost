@@ -9,6 +9,7 @@ const moment = require('moment');
 const path = require('path');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
+const urlServiceUtils = require('../../utils/url-service-utils');
 const cheerio = require('cheerio');
 const config = require('../../../core/shared/config');
 const api = require('../../../core/server/api');
@@ -643,7 +644,7 @@ describe('Dynamic Routing', function () {
                     path: path.join(config.get('paths:appRoot'), 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
                 }
             }).then(() => {
-                return testUtils.integrationTesting.urlService.isFinished({disableDbReadyEvent: true});
+                return urlServiceUtils.isFinished({disableDbReadyEvent: true});
             });
         });
 
