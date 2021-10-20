@@ -1,4 +1,5 @@
 /* eslint-env node */
 module.exports = {
-    parallel: true
+    parallel: true,
+    reporters: ['cobertura']
 };
