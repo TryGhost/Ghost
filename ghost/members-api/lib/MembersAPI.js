@@ -49,6 +49,7 @@ module.exports = function MembersAPI({
         MemberProductEvent,
         MemberEmailChangeEvent,
         MemberAnalyticEvent,
+        Offer,
         OfferRedemption,
         StripeProduct,
         StripePrice,
@@ -191,6 +192,9 @@ module.exports = function MembersAPI({
         await StripePrice.forge().query().del();
         await StripeProduct.forge().query().del();
         await StripeCustomer.forge().query().del();
+        await Offer.forge().query().update({
+            stripe_coupon_id: null
+        });
     }
 
     const ready = stripeAPIService.configured ? Promise.all([
