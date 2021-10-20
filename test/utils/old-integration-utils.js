@@ -8,6 +8,10 @@ const settingsService = require('../../core/server/services/settings');
 const settingsCache = require('../../core/shared/settings-cache');
 const imageLib = require('../../core/server/lib/image');
 const themeService = require('../../core/server/services/themes');
+const helperService = require('../../core/frontend/services/helpers');
+const appService = require('../../core/frontend/services/apps');
+
+const siteApp = require('../../core/server/web/parent/app');
 
 // Other Test Utilities
 const configUtils = require('./configUtils');
@@ -39,25 +43,30 @@ module.exports = {
         sandbox.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
     },
 
-    initGhost: () => {
+    /**
+     * This is a really rough frontend-only version of Ghost boot
+     * In order for this test pattern to be really considered the right pattern this needs to be replaced
+     * With something based on the real boot
+     * @returns {object} express App
+     */
+    initGhost: async () => {
         models.init();
+        await settingsService.init();
+        urlServiceUtils.init();
+        await themeService.init();
+        await helperService.init();
 
-        return settingsService.init()
-            .then(() => {
-                return themeService.init();
-            });
+        const app = siteApp({start: true});
+        await appService.init();
+        await urlServiceUtils.isFinished();
+
+        return app;
     },
 
     routing: {
         reset: function () {
             routingService.registry.resetAll();
         }
-    },
-
-    // Temporary function just for test/regression/site/site_spec.js
-    async urlServiceInitAndWait() {
-        urlServiceUtils.init();
-        return await urlServiceUtils.isFinished();
     },
 
     urlService: urlServiceUtils

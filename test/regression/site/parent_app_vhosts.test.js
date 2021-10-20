@@ -25,7 +25,7 @@ describe('Integration - Web - vhosts', function () {
     });
 
     describe('no separate admin', function () {
-        before(function () {
+        before(async function () {
             testUtils.integrationTesting.urlService.resetGenerators();
             testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
             testUtils.integrationTesting.overrideGhostConfig(configUtils);
@@ -33,17 +33,10 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', null);
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                    sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
+            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+            sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-                    app = siteApp({start: true});
-                    return testUtils.integrationTesting.urlServiceInitAndWait();
-                })
-                .then(() => {
-                    return appService.init();
-                });
+            app = await testUtils.integrationTesting.initGhost();
         });
 
         before(function () {
@@ -144,7 +137,7 @@ describe('Integration - Web - vhosts', function () {
     });
 
     describe('separate admin host', function () {
-        before(function () {
+        before(async function () {
             testUtils.integrationTesting.urlService.resetGenerators();
             testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
             testUtils.integrationTesting.overrideGhostConfig(configUtils);
@@ -152,17 +145,10 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://admin.example.com');
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                    sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
+            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+            sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-                    app = siteApp({start: true});
-                    return testUtils.integrationTesting.urlServiceInitAndWait();
-                })
-                .then(() => {
-                    return appService.init();
-                });
+            app = await testUtils.integrationTesting.initGhost();
         });
 
         before(function () {
@@ -305,7 +291,7 @@ describe('Integration - Web - vhosts', function () {
     });
 
     describe('separate admin host w/ admin redirects disabled', function () {
-        before(function () {
+        before(async function () {
             testUtils.integrationTesting.urlService.resetGenerators();
             testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
             testUtils.integrationTesting.overrideGhostConfig(configUtils);
@@ -314,17 +300,10 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('admin:url', 'https://admin.example.com');
             configUtils.set('admin:redirects', false);
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                    sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
+            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+            sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-                    app = siteApp({start: true});
-                    return testUtils.integrationTesting.urlServiceInitAndWait();
-                })
-                .then(() => {
-                    return appService.init();
-                });
+            app = await testUtils.integrationTesting.initGhost();
         });
 
         before(function () {
@@ -353,7 +332,7 @@ describe('Integration - Web - vhosts', function () {
     });
 
     describe('same host separate protocol', function () {
-        before(function () {
+        before(async function () {
             testUtils.integrationTesting.urlService.resetGenerators();
             testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
             testUtils.integrationTesting.overrideGhostConfig(configUtils);
@@ -361,17 +340,10 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://example.com');
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-                    sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
+            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+            sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-                    app = siteApp({start: true});
-                    return testUtils.integrationTesting.urlServiceInitAndWait();
-                })
-                .then(() => {
-                    return appService.init();
-                });
+            app = await testUtils.integrationTesting.initGhost();
         });
 
         before(function () {
