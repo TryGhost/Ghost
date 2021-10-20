@@ -12,7 +12,7 @@ const e2eUtils = require('./e2e-utils');
 const APIUtils = require('./api');
 const dbUtils = require('./db-utils');
 const fixtureUtils = require('./fixture-utils');
-const oldIntegrationUtils = require('./old-integration-utils');
+const oldIntegrationUtils = require('../regression/mock-express-style/utils/setup');
 const redirects = require('./redirects');
 const cacheRules = require('./fixtures/cache-rules');
 const context = require('./fixtures/context');
@@ -103,8 +103,6 @@ module.exports = {
     createUser: createUser,
     createPost: createPost,
     createEmailedPost,
-
-    integrationTesting: oldIntegrationUtils,
 
     /**
      * renderObject:    res.render(view, dbResponse)

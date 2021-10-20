@@ -2,31 +2,31 @@
 const path = require('path');
 
 // Ghost Internals
-const models = require('../../core/server/models');
-const routingService = require('../../core/frontend/services/routing');
-const settingsService = require('../../core/server/services/settings');
-const settingsCache = require('../../core/shared/settings-cache');
-const imageLib = require('../../core/server/lib/image');
-const themeService = require('../../core/server/services/themes');
-const helperService = require('../../core/frontend/services/helpers');
-const appService = require('../../core/frontend/services/apps');
+const models = require('../../../../core/server/models');
+const routingService = require('../../../../core/frontend/services/routing');
+const settingsService = require('../../../../core/server/services/settings');
+const settingsCache = require('../../../../core/shared/settings-cache');
+const imageLib = require('../../../../core/server/lib/image');
+const themeService = require('../../../../core/server/services/themes');
+const helperService = require('../../../../core/frontend/services/helpers');
+const appService = require('../../../../core/frontend/services/apps');
 
-const siteApp = require('../../core/server/web/parent/app');
+const siteApp = require('../../../../core/server/web/parent/app');
 
 // Other Test Utilities
-const configUtils = require('./configUtils');
-const urlServiceUtils = require('./url-service-utils');
+const configUtils = require('../../../utils/configUtils');
+const urlServiceUtils = require('../../../utils/url-service-utils');
 
 module.exports = {
     overrideGhostConfig: (utils) => {
-        utils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
+        utils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures'));
         utils.set('times:getImageSizeTimeoutInMS', 1);
     },
 
     defaultMocks: (sandbox, options) => {
         options = options || {};
 
-        configUtils.set('paths:contentPath', path.join(__dirname, 'fixtures'));
+        configUtils.set('paths:contentPath', path.join(__dirname, '../../../utils/fixtures'));
 
         const cacheStub = sandbox.stub(settingsCache, 'get');
 

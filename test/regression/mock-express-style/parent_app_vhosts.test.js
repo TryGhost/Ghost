@@ -2,18 +2,16 @@ const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const testUtils = require('../../utils');
+const localUtils = require('./utils');
 const adminUtils = require('../../utils/admin-utils');
-const mockUtils = require('../../utils/mocks');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
-const appService = require('../../../core/frontend/services/apps');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
-const siteApp = require('../../../core/server/web/parent/app');
 
 describe('Integration - Web - vhosts', function () {
     let app;
 
-    before(testUtils.integrationTesting.urlService.resetGenerators);
+    before(localUtils.urlService.resetGenerators);
     before(testUtils.teardownDb);
     before(testUtils.setup('users:roles', 'posts'));
     before(adminUtils.stubClientFiles);
@@ -26,9 +24,9 @@ describe('Integration - Web - vhosts', function () {
 
     describe('no separate admin', function () {
         before(async function () {
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            localUtils.urlService.resetGenerators();
+            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', null);
@@ -36,7 +34,7 @@ describe('Integration - Web - vhosts', function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-            app = await testUtils.integrationTesting.initGhost();
+            app = await localUtils.initGhost();
         });
 
         before(function () {
@@ -59,7 +57,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -73,7 +71,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -87,7 +85,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -101,7 +99,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -115,7 +113,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -129,7 +127,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -138,9 +136,9 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host', function () {
         before(async function () {
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            localUtils.urlService.resetGenerators();
+            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://admin.example.com');
@@ -148,7 +146,7 @@ describe('Integration - Web - vhosts', function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-            app = await testUtils.integrationTesting.initGhost();
+            app = await localUtils.initGhost();
         });
 
         before(function () {
@@ -169,7 +167,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -183,7 +181,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -197,7 +195,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
                     response.headers.location.should.eql('https://admin.example.com/ghost/');
@@ -212,7 +210,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(404);
                 });
@@ -226,7 +224,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(404);
                 });
@@ -240,7 +238,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'admin.example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -254,7 +252,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'admin.example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -268,7 +266,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'admin.example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
                     response.headers.location.should.eql('https://admin.example.com/ghost/');
@@ -283,7 +281,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'admin.example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(404);
                 });
@@ -292,9 +290,9 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host w/ admin redirects disabled', function () {
         before(async function () {
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            localUtils.urlService.resetGenerators();
+            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://admin.example.com');
@@ -303,7 +301,7 @@ describe('Integration - Web - vhosts', function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-            app = await testUtils.integrationTesting.initGhost();
+            app = await localUtils.initGhost();
         });
 
         before(function () {
@@ -324,7 +322,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(404);
                 });
@@ -333,9 +331,9 @@ describe('Integration - Web - vhosts', function () {
 
     describe('same host separate protocol', function () {
         before(async function () {
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            localUtils.urlService.resetGenerators();
+            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://example.com');
@@ -343,7 +341,7 @@ describe('Integration - Web - vhosts', function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-            app = await testUtils.integrationTesting.initGhost();
+            app = await localUtils.initGhost();
         });
 
         before(function () {
@@ -358,7 +356,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -372,7 +370,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -386,7 +384,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -400,7 +398,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
                     response.headers.location.should.eql('https://example.com/ghost/');
@@ -415,7 +413,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
                     response.headers.location.should.eql('https://example.com/ghost/');
@@ -430,7 +428,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
                     response.headers.location.should.eql('https://example.com/ghost/api/v2/admin/site/');
@@ -445,7 +443,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -459,7 +457,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
                     response.headers.location.should.eql('https://example.com/ghost/');
@@ -474,7 +472,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -488,7 +486,7 @@ describe('Integration - Web - vhosts', function () {
                 host: 'localhost'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
                     response.headers.location.should.eql('https://example.com/ghost/api/v2/admin/site/');
