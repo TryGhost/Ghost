@@ -25,8 +25,6 @@
  * @prop {'active'|'archived'} status
  * @prop {number} redemption_count
  *
- * @prop {string} stripe_coupon_id
- *
  * @prop {object} tier
  * @prop {string} tier.id
  * @prop {string} tier.name
@@ -52,7 +50,6 @@ class OfferMapper {
             currency_restriction: offer.type.value === 'fixed',
             currency: offer.type.value === 'fixed' ? offer.currency.value : null,
             status: offer.status.value,
-            stripe_coupon_id: offer.stripeCouponId,
             redemption_count: offer.redemptionCount,
             tier: {
                 id: offer.tier.id,

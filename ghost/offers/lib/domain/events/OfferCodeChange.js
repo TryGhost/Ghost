@@ -1,4 +1,4 @@
-/** @typedef {import('../domain/models/OfferCode')} OfferCode */
+/** @typedef {import('../models/OfferCode')} OfferCode */
 
 /**
  * @typedef {object} OfferCodeChangeEventData
