@@ -16,7 +16,7 @@ describe('Custom Theme Settings API', function () {
         // require here so we know it's already been set up with models
         const customThemeSettingsService = require('../../../core/server/services/custom-theme-settings');
         // fake a theme activation with custom settings - settings match fixtures
-        await customThemeSettingsService.api.activateTheme({
+        await customThemeSettingsService.api.activateTheme('casper', {
             name: 'casper',
             customSettings: {
                 header_typography: {
