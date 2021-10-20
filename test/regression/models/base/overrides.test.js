@@ -73,7 +73,7 @@ describe('Models: Base plugins: Overrides', function () {
             // sanity check
             modelInstance.get('value').should.equal('http://127.0.0.1:2369/image.png');
 
-            // called twice becase format is also called on fetch
+            // called twice because format is also called on fetch
             // see https://github.com/TryGhost/Ghost/commit/426cbeec0f57886fbb4c7a1ebd2ce696913b03eb
             format.callCount.should.equal(2);
 
