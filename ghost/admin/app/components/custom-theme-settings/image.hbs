@@ -4,7 +4,7 @@
         @onComplete={{this.imageUploaded}}
         as |uploader|
     >
-        <div class="{{if @setting.value "" "flex items-center justify-between"}}">
+        <div class="{{if @setting.value "" "flex flex-grow-1 items-center justify-between"}}">
             <div class="gh-setting-content">
                 <div class="gh-setting-title {{if @setting.value "gh-theme-setting-title"}}">{{humanize-setting-key @setting.key}}</div>
                 {{#each uploader.errors as |error|}}
