@@ -13,7 +13,7 @@ ImageHandler = {
     directories: ['images', 'content'],
 
     loadFile: function (files, baseDir) {
-        const store = storage.getStorage();
+        const store = storage.getStorage('images');
         const baseDirRegex = baseDir ? new RegExp('^' + baseDir + '/') : new RegExp('');
 
         const imageFolderRegexes = _.map(urlUtils.STATIC_IMAGE_URL_PREFIX.split('/'), function (dir) {

@@ -49,7 +49,7 @@ function serveFavicon() {
                     return res.redirect(302, urlUtils.urlFor({relativeUrl: `/favicon${originalExtension}`}));
                 }
 
-                storage.getStorage()
+                storage.getStorage('images')
                     .read({path: filePath})
                     .then((buf) => {
                         iconType = blogIcon.getIconType();
