@@ -399,6 +399,30 @@ export default class OfferPage extends React.Component {
         return '';
     }
 
+    renderOfferMessage({offer, product}) {
+        const discountDuration = offer.duration;
+        let durationLabel = '';
+        const originalPrice = this.getOriginalPrice({offer, product});
+        let renewsLabel = '';
+        if (discountDuration === 'once') {
+            durationLabel = `for first ${offer.cadence}`;
+            renewsLabel = `Renews at ${originalPrice}.`;
+        } else if (discountDuration === 'forever') {
+            durationLabel = `forever`;
+        } else if (discountDuration === 'repeating') {
+            const durationInMonths = offer.duration_in_months;
+            if (durationInMonths === 1) {
+                durationLabel = `for first month`;
+            } else {
+                durationLabel = `for first ${durationInMonths} months`;
+            }
+            renewsLabel = `Renews at ${originalPrice}.`;
+        }
+        return (
+            <p className="footnote">{this.getOffAmount({offer})} off {durationLabel}. {renewsLabel}</p>
+        );
+    }
+
     render() {
         const {pageData: offer, site} = this.context;
         if (!offer) {
@@ -427,7 +451,7 @@ export default class OfferPage extends React.Component {
                                 <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
                                 <p>{product.description}</p>
                                 {this.renderBenefits({product})}
-                                <p className="footnote">{this.getOffAmount({offer})} off for first year. Renews at {this.getOriginalPrice({offer, product})}</p>
+                                {this.renderOfferMessage({offer, product})}
                             </div>
                             <div className="gh-portal-offer-price">
                                 <div className="old">{getCurrencySymbol(price.currency)}{price.amount / 100}</div>
