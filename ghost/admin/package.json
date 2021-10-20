@@ -79,6 +79,7 @@
     "ember-composable-helpers": "4.5.0",
     "ember-concurrency": "2.1.2",
     "ember-concurrency-decorators": "2.0.3",
+    "ember-css-transitions": "2.1.1",
     "ember-data": "3.21.2",
     "ember-decorators": "6.1.1",
     "ember-drag-drop": "0.4.8",

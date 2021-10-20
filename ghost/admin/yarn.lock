@@ -6867,6 +6867,15 @@ ember-cookies@^0.5.0:
     ember-cli-babel "^7.1.0"
     ember-getowner-polyfill "^1.1.0 || ^2.0.0"
 
+ember-css-transitions@2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-2.1.1.tgz#616069b8adef0175ec310cf504587587e8789f65"
+  integrity sha512-Kue3tMUHlmeEQvnV1YXoJSjk/wIKiywAT72ny89Yl7rRzEjgjOMcUD69HSg3ShsQNOpyzU0eOCANVtk00FjJig==
+  dependencies:
+    ember-cli-babel "^7.22.1"
+    ember-cli-htmlbars "^5.3.1"
+    ember-modifier "^2.1.0"
+
 ember-data@3.21.2:
   version "3.21.2"
   resolved "https://registry.yarnpkg.com/ember-data/-/ember-data-3.21.2.tgz#d3537319a8d1c80a8a567f08d86b740722d502fe"
