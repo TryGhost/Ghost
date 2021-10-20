@@ -11,5 +11,10 @@ export default Factory.extend({
     amount() { return faker.datatype.number({min: 1, max: 10}); },
     displayTitle() { return faker.lorem.word(); },
     code() { return faker.lorem.slug(); },
-    createdAt() { return randomDate(); }
+    createdAt() { return randomDate(); },
+    tier() {
+        return {
+            id: '1'
+        };
+    }
 });
