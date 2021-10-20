@@ -46,15 +46,12 @@ class OfferRepository {
     /**
      * @param {{forge: (data: object) => import('bookshelf').Model<Offer.OfferProps>}} OfferModel
      * @param {{forge: (data: object) => import('bookshelf').Model<any>}} OfferRedemptionModel
-     * @param {import('@tryghost/members-stripe-service')} stripeAPIService
      */
-    constructor(OfferModel, OfferRedemptionModel, stripeAPIService) {
+    constructor(OfferModel, OfferRedemptionModel) {
         /** @private */
         this.OfferModel = OfferModel;
         /** @private */
         this.OfferRedemptionModel = OfferRedemptionModel;
-        /** @private */
-        this.stripeAPIService = stripeAPIService;
     }
 
     /**
@@ -117,7 +114,6 @@ class OfferRepository {
             duration: json.duration,
             duration_in_months: json.duration_in_months,
             redemptionCount: count,
-            stripe_coupon_id: json.stripe_coupon_id,
             status: json.active ? 'active' : 'archived',
             tier: {
                 id: json.product.id,
@@ -193,25 +189,6 @@ class OfferRepository {
         }
 
         if (offer.isNew) {
-            /** @type {import('stripe').Stripe.CouponCreateParams} */
-            const coupon = {
-                name: offer.name.value,
-                duration: offer.duration.value.type
-            };
-
-            if (offer.duration.value.type === 'repeating') {
-                coupon.duration_in_months = offer.duration.value.months;
-            }
-
-            if (offer.type.value === 'percent') {
-                coupon.percent_off = offer.amount.value;
-            } else {
-                coupon.amount_off = offer.amount.value;
-                coupon.currency = offer.currency.value;
-            }
-
-            const couponData = await this.stripeAPIService.createCoupon(coupon);
-            data.stripe_coupon_id = couponData.id;
             await this.OfferModel.add(data, options);
         } else {
             await this.OfferModel.edit(data, {...options, id: data.id});
