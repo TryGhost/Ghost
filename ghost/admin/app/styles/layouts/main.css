@@ -103,6 +103,7 @@
     transform: translateX(0);
     border-right: 1px solid var(--main-color-area-divider);
     transition: flex-basis 250ms;
+    overflow: hidden;
 }
 
 .gh-nav-menu {
@@ -197,6 +198,49 @@
     flex-grow: 1;
     overflow-y: auto;
     padding: 0;
+}
+
+.gh-nav-main-enter-active,
+.gh-nav-main-leave-active,
+.gh-nav-contextual-enter-active,
+.gh-nav-contextual-leave-active {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: transform 800ms ease;
+}
+
+.gh-nav-main-enter-active,
+.gh-nav-main-leave-active {
+    width: calc(var(--mainmenu-width) - 1px);
+}
+
+.gh-nav-main-enter,
+.gh-nav-main-leave-to {
+    transform: translateX(-100%);
+}
+
+.gh-nav-contextual-enter-active,
+.gh-nav-contextual-leave-active {
+    width: calc(420px - 1px);
+}
+
+/* For some reason the animate-in transition wasn't working with pure transforms */
+/* Using `left` correctly positioned the starting state so we could then use opposite transforms */
+.gh-nav-contextual-enter-active {
+    left: calc(420px - 1px);
+}
+
+.gh-nav-contextual-enter-to {
+    transform: translateX(-100%);
+}
+
+.gh-nav-contextual-leave {
+    transform: translateX(0);
+}
+
+.gh-nav-contextual-leave-to {
+    transform: translateX(calc(var(--mainmenu-width) - 1px));
 }
 
 .gh-account-menu-header {

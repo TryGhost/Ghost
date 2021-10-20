@@ -1,48 +1,50 @@
-<header class="gh-nav-header">
-    <LinkTo @route="settings" class="gh-nav-menu-back-button">{{svg-jar "arrow-left-small"}} Settings</LinkTo>
-</header>
-<section class="gh-nav-body gh-nav-design">
-    <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
-        <div class="gh-nav-list gh-nav-main">
-            <LinkTo @route="settings.design" class="gh-nav-menu-title" @current-when="settings.design.index" {{on "click" this.closeAllSections}}>Site design</LinkTo>
-            {{#let (eq this.openSection "brand") as |isOpen|}}
-                <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection "brand")}}>
-                    {{svg-jar "paintbrush"}}Brand
-                    <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
-                </button>
-                {{#liquid-if isOpen}}
-                    <div class="gh-nav-design-settings">
-                        <Settings::Design::GeneralSettingsForm
-                            @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
-                        />
-                    </div>
-                {{/liquid-if}}
-            {{/let}}
-
-            {{#each this.customThemeSettings.settingGroups as |group|}}
-                {{#let (eq this.openSection group.key) as |isOpen|}}
-                    <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection group.key)}}>
-                        {{svg-jar group.icon}} {{group.name}}
+<div class="flex flex-column h-100" {{css-transition "gh-nav-contextual"}} ...attributes>
+    <header class="gh-nav-header">
+        <LinkTo @route="settings" class="gh-nav-menu-back-button">{{svg-jar "arrow-left-small"}} Settings</LinkTo>
+    </header>
+    <section class="gh-nav-body gh-nav-design">
+        <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
+            <div class="gh-nav-list gh-nav-main">
+                <LinkTo @route="settings.design" class="gh-nav-menu-title" @current-when="settings.design.index" {{on "click" this.closeAllSections}}>Site design</LinkTo>
+                {{#let (eq this.openSection "brand") as |isOpen|}}
+                    <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection "brand")}}>
+                        {{svg-jar "paintbrush"}}Brand
                         <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
                     </button>
-
                     {{#liquid-if isOpen}}
                         <div class="gh-nav-design-settings">
-                            <Settings::Design::ThemeSettingsForm
-                                @themeSettings={{group.settings}}
+                            <Settings::Design::GeneralSettingsForm
                                 @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                             />
                         </div>
                     {{/liquid-if}}
                 {{/let}}
-            {{/each}}
-        </div>
-    </div>
 
-    <div class="gh-nav-bottom">
-        <LinkTo class="gh-nav-design-tab" style="align-items: self-start" @route="settings.design.change-theme" {{on "click" (fn this.toggleSection null)}}>
-            <span>Themes</span>
-            <span class="active-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}</span>
-        </LinkTo>
-    </div>
-</section>
+                {{#each this.customThemeSettings.settingGroups as |group|}}
+                    {{#let (eq this.openSection group.key) as |isOpen|}}
+                        <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection group.key)}}>
+                            {{svg-jar group.icon}} {{group.name}}
+                            <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
+                        </button>
+
+                        {{#liquid-if isOpen}}
+                            <div class="gh-nav-design-settings">
+                                <Settings::Design::ThemeSettingsForm
+                                    @themeSettings={{group.settings}}
+                                    @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                                />
+                            </div>
+                        {{/liquid-if}}
+                    {{/let}}
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="gh-nav-bottom">
+            <LinkTo class="gh-nav-design-tab" style="align-items: self-start" @route="settings.design.change-theme" {{on "click" (fn this.toggleSection null)}}>
+                <span>Themes</span>
+                <span class="active-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}</span>
+            </LinkTo>
+        </div>
+    </section>
+</div>
