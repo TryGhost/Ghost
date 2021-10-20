@@ -88,7 +88,7 @@
                         {{/if}}
                     </li>
 
-                    {{#if (feature "offers")}}
+                    {{#if (and this.isStripeConnected (feature "offers"))}}
                     <li>
                         <LinkTo @route="offers" @alt="Offers">{{svg-jar "percentage"}}Offers</LinkTo>
                     </li>

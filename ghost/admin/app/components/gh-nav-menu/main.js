@@ -20,6 +20,7 @@ export default Component.extend(ShortcutsMixin, {
     ui: service(),
     whatsNew: service(),
     membersStats: service(),
+    settings: service(),
 
     tagName: '',
 
@@ -41,6 +42,7 @@ export default Component.extend(ShortcutsMixin, {
     showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwnerOnly'),
     showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwnerOnly'),
     showBilling: computed.reads('config.hostSettings.billing.enabled'),
+    isStripeConnected: computed.reads('settings.stripeConnectAccountId'),
 
     init() {
         this._super(...arguments);
