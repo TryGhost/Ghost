@@ -6,12 +6,12 @@ const moment = require('moment');
 const Promise = require('bluebird');
 const path = require('path');
 const LocalFileStore = require('../../../../../core/server/adapters/storage/LocalFileStorage');
-let localFileStore;
 const configUtils = require('../../../../utils/configUtils');
 
 describe('Local File System Storage', function () {
     let image;
     let momentStub;
+    let localFileStore;
 
     function fakeDate(mm, yyyy) {
         const month = parseInt(mm, 10);
