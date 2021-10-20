@@ -94,6 +94,11 @@ const Member = ghostBookshelf.Model.extend({
             });
     },
 
+    offerRedemptions() {
+        return this.hasMany('OfferRedemption', 'member_id', 'id')
+            .query('orderBy', 'created_at', 'DESC');
+    },
+
     labels: function labels() {
         return this.belongsToMany('Label', 'members_labels', 'member_id', 'label_id')
             .withPivot('sort_order')
