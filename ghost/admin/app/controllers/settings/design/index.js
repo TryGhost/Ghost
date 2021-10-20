@@ -53,4 +53,9 @@ export default class SettingsDesignIndexController extends Controller {
             }
         }
     }
+
+    reset() {
+        this.previewSize = 'desktop';
+        this.themeManagement.setPreviewType('homepage');
+    }
 }
