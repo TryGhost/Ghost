@@ -92,16 +92,17 @@ describe('Service', function () {
     });
 
     describe('activateTheme()', function () {
-        it('sets .activeThemeName', function () {
+        it('sets .activeThemeName correctly', function () {
             should(service.activeThemeName).equal(null);
 
-            service.activateTheme({name: 'test'});
+            // theme names do not always match the name in package.json
+            service.activateTheme('Test-test', {name: 'test'});
 
-            service.activeThemeName.should.equal('test');
+            service.activeThemeName.should.equal('Test-test');
         });
 
         it('handles known settings not seen in theme', async function () {
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     // 'one' custom setting no longer exists
@@ -139,7 +140,7 @@ describe('Service', function () {
         });
 
         it('handles known settings that change type', async function () {
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     // no change
@@ -192,7 +193,7 @@ describe('Service', function () {
         });
 
         it('handles value of select not matching updated options', async function () {
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     // no change
@@ -217,7 +218,7 @@ describe('Service', function () {
         });
 
         it('handles new settings', async function () {
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     // no change
@@ -284,7 +285,7 @@ describe('Service', function () {
 
         it('handles activation of new theme when already activated', async function () {
             // activate known theme
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -301,7 +302,7 @@ describe('Service', function () {
             });
 
             // activate new theme
-            await service.activateTheme({
+            await service.activateTheme('new', {
                 name: 'new',
                 customSettings: {
                     typography: {
@@ -366,9 +367,7 @@ describe('Service', function () {
         });
 
         it('exits early if both repository and theme have no settings', async function () {
-            await service.activateTheme({
-                name: 'no-custom'
-            });
+            await service.activateTheme('no-custom', {name: 'no-custom'});
 
             model.findAll.callCount.should.equal(1);
         });
@@ -383,7 +382,7 @@ describe('Service', function () {
     describe('updateSettings()', function () {
         it('saves new values', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -468,7 +467,7 @@ describe('Service', function () {
 
         it('ignores everything except keys and values', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -553,7 +552,7 @@ describe('Service', function () {
 
         it('errors on unknown setting', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -591,7 +590,7 @@ describe('Service', function () {
 
         it('errors on unallowed select value', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -622,7 +621,7 @@ describe('Service', function () {
 
         it('allows any valid color value', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -653,7 +652,7 @@ describe('Service', function () {
 
         it('errors on invalid color values', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -677,7 +676,7 @@ describe('Service', function () {
 
         it('allows any valid boolean value', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -708,7 +707,7 @@ describe('Service', function () {
 
         it('errors on invalid boolean values', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {
@@ -732,7 +731,7 @@ describe('Service', function () {
 
         it('allows any text value', async function () {
             // activate theme so settings are loaded in internal cache
-            await service.activateTheme({
+            await service.activateTheme('test', {
                 name: 'test',
                 customSettings: {
                     one: {

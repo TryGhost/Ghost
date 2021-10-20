@@ -29,13 +29,14 @@ module.exports = class CustomThemeSettingsService {
      * The service only deals with one theme at a time,
      * that theme is changed by calling this method with the output from gscan
      *
+     * @param {string} name - the name of the theme (Ghost has different names to themes with duplicate package.json names)
      * @param {Object} theme - checked theme output from gscan
      */
-    async activateTheme(theme) {
-        this.activeThemeName = theme.name;
+    async activateTheme(name, theme) {
+        this.activeThemeName = name;
 
         // add/remove/edit key/value records in the respository to match theme settings
-        const settings = await this._syncRepositoryWithTheme(theme);
+        const settings = await this._syncRepositoryWithTheme(name, theme);
 
         // populate the shared cache with all key/value pairs for this theme
         this._populateValueCacheForTheme(theme, settings);
@@ -127,10 +128,10 @@ module.exports = class CustomThemeSettingsService {
      * @returns {Array} - list of stored theme record objects
      * @private
      */
-    async _syncRepositoryWithTheme(theme) {
+    async _syncRepositoryWithTheme(name, theme) {
         const themeSettings = theme.customSettings || {};
 
-        const settingsCollection = await this._repository.browse({filter: `theme:${theme.name}`});
+        const settingsCollection = await this._repository.browse({filter: `theme:${name}`});
         let knownSettings = settingsCollection.toJSON();
 
         // exit early if there's nothing to sync for this theme
@@ -148,7 +149,7 @@ module.exports = class CustomThemeSettingsService {
             const hasChangedType = themeSetting && themeSetting.type !== knownSetting.type;
 
             if (hasBeenRemoved || hasChangedType) {
-                debug(`Removing custom theme setting '${theme.name}.${knownSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`);
+                debug(`Removing custom theme setting '${name}.${knownSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`);
                 await this._repository.destroy({id: knownSetting.id});
                 removedIds.push(knownSetting.id);
                 continue;
@@ -156,7 +157,7 @@ module.exports = class CustomThemeSettingsService {
 
             // replace value with default if it's not a valid select option
             if (themeSetting.options && !themeSetting.options.includes(knownSetting.value)) {
-                debug(`Resetting custom theme setting value '${theme.name}.${themeSetting.key}' - "${knownSetting.value}" is not a valid option`);
+                debug(`Resetting custom theme setting value '${name}.${themeSetting.key}' - "${knownSetting.value}" is not a valid option`);
                 await this._repository.edit({value: themeSetting.default}, {id: knownSetting.id});
             }
         }
@@ -170,18 +171,18 @@ module.exports = class CustomThemeSettingsService {
         for (const [key, setting] of Object.entries(themeSettings)) {
             if (!knownSettingsKeys.includes(key)) {
                 const newSettingValues = {
-                    theme: theme.name,
+                    theme: name,
                     key,
                     type: setting.type,
                     value: setting.default
                 };
 
-                debug(`Adding custom theme setting '${theme.name}.${key}'`);
+                debug(`Adding custom theme setting '${name}.${key}'`);
                 await this._repository.add(newSettingValues);
             }
         }
 
-        const updatedSettingsCollection = await this._repository.browse({filter: `theme:${theme.name}`});
+        const updatedSettingsCollection = await this._repository.browse({filter: `theme:${name}`});
         return updatedSettingsCollection.toJSON();
     }
 
