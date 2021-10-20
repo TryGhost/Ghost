@@ -24,7 +24,6 @@ const OfferStatus = require('./OfferStatus');
  * @prop {OfferAmount} amount
  * @prop {OfferDuration} duration
  * @prop {OfferCurrency} [currency]
- * @prop {string} [stripe_coupon_id]
  * @prop {OfferStatus} status
  * @prop {OfferTier} tier
  * @prop {number} redemptionCount
@@ -43,7 +42,6 @@ const OfferStatus = require('./OfferStatus');
  * @prop {string} duration
  * @prop {number} duration_in_months
  * @prop {string} currency
- * @prop {string} [stripe_coupon_id]
  * @prop {string} status
  * @prop {number} redemptionCount
  * @prop {TierProps|OfferTier} tier
@@ -178,10 +176,6 @@ class Offer {
         return !!this.options.isNew;
     }
 
-    get stripeCouponId() {
-        return this.props.stripe_coupon_id;
-    }
-
     /**
      * @param {OfferCode} code
      * @param {UniqueChecker} uniqueChecker
@@ -307,18 +301,6 @@ class Offer {
             }
         }
 
-        if (isNew && data.stripe_coupon_id) {
-            throw new errors.InvalidOfferCoupon({
-                message: 'Cannot supply a stripe_coupon_id for new Offers.'
-            });
-        }
-        if (!isNew && !data.stripe_coupon_id) {
-            throw new errors.InvalidOfferCoupon({
-                message: 'Offers must have a stripe_coupon_id.'
-            });
-        }
-        const couponId = data.stripe_coupon_id;
-
         const tier = OfferTier.create(data.tier);
 
         return new Offer({
@@ -333,7 +315,6 @@ class Offer {
             duration,
             currency,
             tier,
-            stripe_coupon_id: couponId,
             redemptionCount,
             status
         }, {isNew});
