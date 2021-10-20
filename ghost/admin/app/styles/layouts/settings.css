@@ -1431,7 +1431,7 @@ p.theme-validation-details {
 }
 
 .gh-nav-design .gh-nav-menu-title:hover {
-    background: var(--mainmenu-color-hover-bg);
+    background: none !important;
 }
 
 .gh-nav-design .gh-nav-menu-title:focus,
@@ -1455,13 +1455,12 @@ p.theme-validation-details {
 }
 
 .gh-nav-design-tab:hover {
-    background: var(--mainmenu-color-hover-bg);
+    color: var(--black);
 }
 
 .gh-nav-design-tab.active {
     color: var(--black);
     font-weight: 600;
-    background: var(--mainmenu-color-hover-bg);
     border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
@@ -1534,9 +1533,13 @@ p.theme-validation-details {
     padding: 12px 0;
 }
 
+.gh-nav-design .gh-setting-first {
+    padding-bottom: 12px;
+}
+
 .gh-nav-design .gh-setting-title {
-    font-size: 1.45rem;
-    font-weight: 500;
+    font-size: 1.3rem;
+    font-weight: 600;
 }
 
 .gh-nav-design .gh-setting-action {
@@ -1802,17 +1805,12 @@ p.theme-validation-details {
     text-transform: uppercase;
 }
 
-.gh-theme-directory-footer-container {
-    width: 100%;
-    border-top: 1px solid var(--main-color-area-divider)
-}
-
-
 .gh-theme-directory-footer {
     display: block;
     padding: 58px var(--main-layout-content-sidepadding);
     color: var(--darkgrey-l1);
     font-size: 1.6rem;
+    background: var(--main-color-content-greybg);
 }
 
 .gh-theme-directory-footer .link {
