@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const testUtils = require('../../../utils');
-const mockUtils = require('../../../utils/mocks');
+const localUtils = require('../utils');
 const configUtils = require('../../../utils/configUtils');
 const urlUtils = require('../../../utils/urlUtils');
 
@@ -13,7 +13,7 @@ const themeEngine = require('../../../../core/frontend/services/theme-engine');
 describe('Integration - Web - Site canary', function () {
     let app;
 
-    before(testUtils.integrationTesting.urlService.resetGenerators);
+    before(localUtils.urlService.resetGenerators);
     before(testUtils.teardownDb);
     before(testUtils.setup('users:roles', 'posts'));
 
@@ -21,11 +21,11 @@ describe('Integration - Web - Site canary', function () {
 
     describe('default routes.yaml', function () {
         before(async function () {
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            localUtils.urlService.resetGenerators();
+            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.overrideGhostConfig(configUtils);
 
-            app = await testUtils.integrationTesting.initGhost();
+            app = await localUtils.initGhost();
         });
 
         before(function () {
@@ -60,7 +60,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('post');
@@ -75,7 +75,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.match(/amp\.hbs/);
@@ -91,7 +91,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                         response.template.should.eql('error-404');
@@ -106,7 +106,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('page');
@@ -121,7 +121,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -140,7 +140,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('tag');
@@ -159,7 +159,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -173,7 +173,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -200,7 +200,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -221,7 +221,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -237,7 +237,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('/prettify-me/');
@@ -255,7 +255,7 @@ describe('Integration - Web - Site canary', function () {
                         url: '/page/1/'
                     };
 
-                    return mockUtils.express.invoke(app, req)
+                    return localUtils.mockExpress.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/');
@@ -272,7 +272,7 @@ describe('Integration - Web - Site canary', function () {
                         url: '/feed/'
                     };
 
-                    return mockUtils.express.invoke(app, req)
+                    return localUtils.mockExpress.invoke(app, req)
                         .then(function (response) {
                             response.statusCode.should.eql(301);
                             response.headers.location.should.eql('/rss/');
@@ -302,7 +302,7 @@ describe('Integration - Web - Site canary', function () {
                     url: '/html-ipsum'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/html-ipsum/');
@@ -317,7 +317,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/html-ipsum/');
@@ -334,7 +334,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/favicon.png');
@@ -349,7 +349,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('https://example.com/assets/css/main.css');
@@ -384,14 +384,14 @@ describe('Integration - Web - Site canary', function () {
                     }
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon, {theme: 'test-theme'});
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -411,7 +411,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('home');
@@ -426,7 +426,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -440,7 +440,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('post');
@@ -455,7 +455,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -474,7 +474,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -496,14 +496,14 @@ describe('Integration - Web - Site canary', function () {
                     taxonomies: {}
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon, {theme: 'test-theme'});
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -523,7 +523,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('something');
@@ -550,14 +550,14 @@ describe('Integration - Web - Site canary', function () {
                     taxonomies: {}
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon);
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon);
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -577,7 +577,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         // We can't find a post with the slug "featured"
                         response.statusCode.should.eql(404);
@@ -593,7 +593,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('post');
@@ -608,7 +608,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                         response.template.should.eql('error-404');
@@ -623,7 +623,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                         response.template.should.eql('error-404');
@@ -645,14 +645,14 @@ describe('Integration - Web - Site canary', function () {
                     taxonomies: {}
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon);
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon);
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -672,7 +672,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('post');
@@ -687,7 +687,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                         response.template.should.eql('error-404');
@@ -702,7 +702,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('page');
@@ -724,14 +724,14 @@ describe('Integration - Web - Site canary', function () {
                     taxonomies: {}
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon);
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon);
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -751,7 +751,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('post');
@@ -766,7 +766,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                         response.template.should.eql('error-404');
@@ -781,7 +781,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(404);
                         response.template.should.eql('error-404');
@@ -796,7 +796,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('page');
@@ -875,14 +875,14 @@ describe('Integration - Web - Site canary', function () {
                     }
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon);
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon);
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -902,7 +902,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('index');
@@ -917,7 +917,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                     });
@@ -931,7 +931,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('index');
@@ -946,7 +946,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -960,7 +960,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -985,14 +985,14 @@ describe('Integration - Web - Site canary', function () {
                     }
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon);
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon);
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -1009,7 +1009,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('default');
@@ -1024,7 +1024,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('index');
@@ -1045,14 +1045,14 @@ describe('Integration - Web - Site canary', function () {
                     }
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon);
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon);
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -1072,7 +1072,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('default');
@@ -1097,14 +1097,14 @@ describe('Integration - Web - Site canary', function () {
                     }
                 });
 
-                testUtils.integrationTesting.urlService.resetGenerators();
-                testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
+                localUtils.urlService.resetGenerators();
+                localUtils.defaultMocks(sinon, {theme: 'test-theme'});
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -1121,7 +1121,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('home');
@@ -1136,7 +1136,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('something');
@@ -1147,12 +1147,12 @@ describe('Integration - Web - Site canary', function () {
 
     describe('extended routes.yaml: routes', function () {
         describe('channels', function () {
-            before(testUtils.integrationTesting.urlService.resetGenerators);
+            before(localUtils.urlService.resetGenerators);
             before(testUtils.teardownDb);
             before(testUtils.setup('users:roles', 'posts'));
 
             before(async function () {
-                testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
+                localUtils.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
@@ -1276,12 +1276,12 @@ describe('Integration - Web - Site canary', function () {
                     }
                 });
 
-                app = await testUtils.integrationTesting.initGhost();
+                app = await localUtils.initGhost();
                 sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(10);
             });
 
             beforeEach(function () {
-                testUtils.integrationTesting.overrideGhostConfig(configUtils);
+                localUtils.overrideGhostConfig(configUtils);
             });
 
             afterEach(function () {
@@ -1301,7 +1301,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -1320,7 +1320,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                         response.headers['content-type'].should.eql('text/xml; charset=UTF-8');
@@ -1335,7 +1335,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -1355,7 +1355,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -1372,7 +1372,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -1391,7 +1391,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -1410,7 +1410,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         const $ = cheerio.load(response.body);
 
@@ -1429,7 +1429,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('/channel1/');
@@ -1444,7 +1444,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(301);
                         response.headers.location.should.eql('/channel6/');
@@ -1459,7 +1459,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -1473,7 +1473,7 @@ describe('Integration - Web - Site canary', function () {
                     host: 'example.com'
                 };
 
-                return mockUtils.express.invoke(app, req)
+                return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
                         response.statusCode.should.eql(200);
                     });
@@ -1517,14 +1517,14 @@ describe('Integration - Web - Site canary', function () {
                 taxonomies: {}
             });
 
-            testUtils.integrationTesting.urlService.resetGenerators();
-            testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
+            localUtils.urlService.resetGenerators();
+            localUtils.defaultMocks(sinon, {theme: 'test-theme'});
 
-            app = await testUtils.integrationTesting.initGhost();
+            app = await localUtils.initGhost();
         });
 
         beforeEach(function () {
-            testUtils.integrationTesting.overrideGhostConfig(configUtils);
+            localUtils.overrideGhostConfig(configUtils);
         });
 
         afterEach(function () {
@@ -1544,7 +1544,7 @@ describe('Integration - Web - Site canary', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -1558,7 +1558,7 @@ describe('Integration - Web - Site canary', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(404);
                 });
@@ -1572,7 +1572,7 @@ describe('Integration - Web - Site canary', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(404);
                 });
@@ -1586,7 +1586,7 @@ describe('Integration - Web - Site canary', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                 });
@@ -1600,7 +1600,7 @@ describe('Integration - Web - Site canary', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(200);
                     response.template.should.eql('podcast/rss');
@@ -1617,7 +1617,7 @@ describe('Integration - Web - Site canary', function () {
                 host: 'example.com'
             };
 
-            return mockUtils.express.invoke(app, req)
+            return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     const $ = cheerio.load(response.body);
                     response.statusCode.should.eql(200);
