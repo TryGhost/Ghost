@@ -448,7 +448,7 @@
 }
 
 /* Icons */
-.gh-nav-list svg:not(.gh-select svg):not(.gh-nav-button-expand svg) {
+.gh-nav-list svg {
     margin-right: 17px;
     width: 16px;
     height: 16px;
