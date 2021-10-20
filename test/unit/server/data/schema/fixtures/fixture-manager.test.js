@@ -1,11 +1,13 @@
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const rewire = require('rewire');
+
 const models = require('../../../../../../core/server/models');
 const baseUtils = require('../../../../../../core/server/models/base/utils');
-const fixtureUtils = rewire('../../../../../../core/server/data/schema/fixtures/utils');
-const fixtures = require('../../../../../../core/server/data/schema/fixtures/fixtures');
+const {FixtureManager} = require('../../../../../../core/server/data/schema/fixtures');
+const fixtures = require('../../../../../utils/fixtures/fixtures.json');
+
+const fixtureManager = new FixtureManager(fixtures);
 
 describe('Migration Fixture Utils', function () {
     let loggerStub;
@@ -24,7 +26,7 @@ describe('Migration Fixture Utils', function () {
     });
 
     describe('Match Func', function () {
-        const matchFunc = fixtureUtils.__get__('matchFunc');
+        const matchFunc = FixtureManager.matchFunc;
         let getStub;
 
         beforeEach(function () {
@@ -104,7 +106,7 @@ describe('Migration Fixture Utils', function () {
                 return modelFixture.name === 'Post';
             });
 
-            fixtureUtils.addFixturesForModel(postFixtures).then(function (result) {
+            fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 11);
@@ -125,7 +127,7 @@ describe('Migration Fixture Utils', function () {
                 return modelFixture.name === 'Post';
             });
 
-            fixtureUtils.addFixturesForModel(postFixtures).then(function (result) {
+            fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 11);
@@ -157,7 +159,7 @@ describe('Migration Fixture Utils', function () {
             const permsAllStub = sinon.stub(models.Permission, 'findAll').returns(Promise.resolve(dataMethodStub));
             const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureUtils.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
+            fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 82);
@@ -194,7 +196,7 @@ describe('Migration Fixture Utils', function () {
             const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
+            fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 7);
@@ -231,7 +233,7 @@ describe('Migration Fixture Utils', function () {
             const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureUtils.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
+            fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', 7);
@@ -256,7 +258,7 @@ describe('Migration Fixture Utils', function () {
 
     describe('findModelFixtureEntry', function () {
         it('should fetch a single fixture entry', function () {
-            const foundFixture = fixtureUtils.findModelFixtureEntry('Integration', {slug: 'zapier'});
+            const foundFixture = fixtureManager.findModelFixtureEntry('Integration', {slug: 'zapier'});
             foundFixture.should.be.an.Object();
             foundFixture.should.eql({
                 slug: 'zapier',
@@ -270,7 +272,7 @@ describe('Migration Fixture Utils', function () {
 
     describe('findModelFixtures', function () {
         it('should fetch a fixture with multiple entries', function () {
-            const foundFixture = fixtureUtils.findModelFixtures('Permission', {object_type: 'db'});
+            const foundFixture = fixtureManager.findModelFixtures('Permission', {object_type: 'db'});
             foundFixture.should.be.an.Object();
             foundFixture.entries.should.be.an.Array().with.lengthOf(4);
             foundFixture.entries[0].should.eql({
@@ -288,7 +290,7 @@ describe('Migration Fixture Utils', function () {
 
     describe('findPermissionRelationsForObject', function () {
         it('should fetch a fixture with multiple entries', function () {
-            const foundFixture = fixtureUtils.findPermissionRelationsForObject('db');
+            const foundFixture = fixtureManager.findPermissionRelationsForObject('db');
             foundFixture.should.be.an.Object();
             foundFixture.entries.should.be.an.Object();
             foundFixture.entries.should.have.property('Administrator', {db: 'all'});
