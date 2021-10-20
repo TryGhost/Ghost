@@ -5,11 +5,13 @@ const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
 const {config} = require('../../../../utils/configUtils');
-const schema = require('../../../../../core/server/data/schema');
-const fixtures = require('../../../../../core/server/data/schema/fixtures');
+const schema = require('../../../../../core/server/data/schema/schema');
+const fixtures = require('../../../../../core/server/data/schema/fixtures/fixtures.json');
+const defaultSettings = require('../../../../../core/server/data/schema/default-settings.json');
+
+// Routes are yaml so we can require the file directly
 const routeSettings = require('../../../../../core/server/services/route-settings');
 const validateRouteSettings = require('../../../../../core/server/services/route-settings/validate');
-const defaultSettings = require('../../../../../core/server/data/schema/default-settings');
 
 /**
  * @NOTE
@@ -33,7 +35,7 @@ const defaultSettings = require('../../../../../core/server/data/schema/default-
 describe('DB version integrity', function () {
     // Only these variables should need updating
     const currentSchemaHash = '06c1007b471faba9bb82d053f6ba6cc1';
-    const currentFixturesHash = 'c064a1b57c594e6a8d36f9e884df0a2a';
+    const currentFixturesHash = '07d4b0c4cf159b34344a6b5e88c74e9f';
     const currentSettingsHash = 'aa3fcbc8ab119b630aeda7366ead5493';
     const currentRoutesHash = '3d180d52c663d173a6be791ef411ed01';
 
@@ -43,7 +45,7 @@ describe('DB version integrity', function () {
         const routesPath = path.join(config.get('paths').defaultSettings, 'default-routes.yaml');
         const defaultRoutes = validateRouteSettings(yaml.load(fs.readFileSync(routesPath, 'utf-8')));
 
-        const tablesNoValidation = _.cloneDeep(schema.tables);
+        const tablesNoValidation = _.cloneDeep(schema);
         let schemaHash;
         let fixturesHash;
         let settingsHash;
