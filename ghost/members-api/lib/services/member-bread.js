@@ -26,11 +26,13 @@ module.exports = class MemberBREADService {
     /**
      * @param {object} deps
      * @param {import('../repositories/member')} deps.memberRepository
+     * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
      * @param {ILabsService} deps.labsService
      * @param {IEmailService} deps.emailService
      * @param {IStripeService} deps.stripeService
      */
-    constructor({memberRepository, labsService, emailService, stripeService}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI}) {
+        this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
         /** @private */
@@ -97,6 +99,21 @@ module.exports = class MemberBREADService {
         }
     }
 
+    /**
+     * @private
+     */
+    attachOffersToSubscriptions(member, subscriptionOffers) {
+        member.subscriptions = member.subscriptions.map((subscription) => {
+            const offer = subscriptionOffers[subscription.id];
+            if (offer) {
+                subscription.offer = offer;
+            } else {
+                subscription.offer = null;
+            }
+            return subscription;
+        });
+    }
+
     async read(data, options = {}) {
         const defaultWithRelated = [
             'labels',
@@ -104,7 +121,8 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.customer',
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
-            'products'
+            'products',
+            'offerRedemptions'
         ];
 
         const withRelated = new Set((options.withRelated || []).concat(defaultWithRelated));
@@ -126,9 +144,37 @@ module.exports = class MemberBREADService {
             return null;
         }
 
+        const subscriptionOffers = await model.related('offerRedemptions').toJSON().reduce(async (promiseObj, offerRedemption) => {
+            const obj = await promiseObj;
+            const offer = await this.offersAPI.getOffer({id: offerRedemption.offer_id});
+            return {
+                ...obj,
+                [offerRedemption.subscription_id]: offer
+            };
+        }, Promise.resolve({}));
+
+        model.related('stripeSubscriptions').forEach((subscriptionModel) => {
+            const offer = subscriptionOffers[subscriptionModel.id];
+            if (!offer) {
+                return;
+            }
+
+            if (offer.cadence !== subscriptionModel.related('stripePrice').get('interval')) {
+                return;
+            }
+
+            if (offer.tier.id !== subscriptionModel.related('stripePrice').related('stripeProduct').get('product_id')) {
+                return;
+            }
+
+            subscriptionOffers[subscriptionModel.get('subscription_id')] = offer;
+        });
+
         const member = model.toJSON(options);
 
         this.attachSubscriptionsToMember(member);
+
+        this.attachOffersToSubscriptions(member, subscriptionOffers);
 
         return member;
     }
