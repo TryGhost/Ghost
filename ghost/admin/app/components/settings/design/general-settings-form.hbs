@@ -107,33 +107,33 @@
             @onComplete={{fn this.imageUploaded "logo"}}
             as |uploader|
         >
-        <div>
-            <div class="gh-setting-title">Publication logo</div>
-            <div class="gh-setting-desc mb3">The primary logo, should be transparent and at least 600x72px</div>
+            <div>
+                <div class="gh-setting-title">Publication logo</div>
+                <div class="gh-setting-desc mb3">The primary logo, should be transparent and at least 600x72px</div>
 
-            <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg flex flex-column">
-                {{#each uploader.errors as |error|}}
-                    <div class="gh-setting-error" data-test-error="logo">{{or error.context error.message}}</div>
-                {{/each}}
-                {{#if uploader.isUploading}}
-                    {{uploader.progressBar}}
-                {{else if this.settings.logo}}
-                    <div class="gh-branding-image-container largeimg justify-center transparent-bg">
-                        <img class="blog-logo" src="{{this.settings.logo}}" {{on "click" this.triggerFileDialog}} alt="logo" data-test-logo-img>
-                        <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.updateSetting "logo" null)}} data-test-delete-image="logo">
-                            {{svg-jar "trash" class="w4 h4 fill-white"}}
+                <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg flex flex-column">
+                    {{#each uploader.errors as |error|}}
+                        <div class="gh-setting-error" data-test-error="logo">{{or error.context error.message}}</div>
+                    {{/each}}
+                    {{#if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else if this.settings.logo}}
+                        <div class="gh-branding-image-container largeimg justify-center transparent-bg">
+                            <img class="blog-logo" src="{{this.settings.logo}}" {{on "click" this.triggerFileDialog}} alt="logo" data-test-logo-img>
+                            <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.updateSetting "logo" null)}} data-test-delete-image="logo">
+                                {{svg-jar "trash" class="w4 h4 fill-white"}}
+                            </button>
+                        </div>
+                    {{else}}
+                        <button type="button" class="gh-btn gh-btn-white self-start" {{on "click" this.triggerFileDialog}} data-test-image-upload-btn="logo">
+                            <span>Upload logo</span>
                         </button>
+                    {{/if}}
+                    <div style="display:none">
+                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} data-test-file-input="logo" />
                     </div>
-                {{else}}
-                    <button type="button" class="gh-btn gh-btn-white self-start" {{on "click" this.triggerFileDialog}} data-test-image-upload-btn="logo">
-                        <span>Upload logo</span>
-                    </button>
-                {{/if}}
-                <div style="display:none">
-                    <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} data-test-file-input="logo" />
                 </div>
             </div>
-        </div>
         </GhUploader>
     </div>
 
@@ -161,7 +161,7 @@
                         </button>
                     </div>
                 {{else}}
-                    <button type="button" class="gh-btn self-start" {{on "click" this.triggerFileDialog}} data-test-image-upload-btn="coverImage">
+                    <button type="button" class="gh-btn gh-btn-white self-start" {{on "click" this.triggerFileDialog}} data-test-image-upload-btn="coverImage">
                         <span>Upload cover</span>
                     </button>
                 {{/if}}
