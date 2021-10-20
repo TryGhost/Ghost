@@ -589,7 +589,7 @@ describe('Service', function () {
             ).should.be.rejectedWith(ValidationError, {message: 'Unknown setting: test.'});
         });
 
-        it('errors on invalid select value', async function () {
+        it('errors on unallowed select value', async function () {
             // activate theme so settings are loaded in internal cache
             await service.activateTheme({
                 name: 'test',
@@ -617,7 +617,156 @@ describe('Service', function () {
                     default: '2',
                     value: 'invalid'
                 }]
-            ).should.be.rejectedWith(ValidationError, {message: 'Invalid value for \'one\'. Allowed values: 1, 2.'});
+            ).should.be.rejectedWith(ValidationError, {message: 'Unallowed value for \'one\'. Allowed values: 1, 2.'});
+        });
+
+        it('allows any valid color value', async function () {
+            // activate theme so settings are loaded in internal cache
+            await service.activateTheme({
+                name: 'test',
+                customSettings: {
+                    one: {
+                        type: 'color',
+                        default: '#123456'
+                    }
+                }
+            });
+
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'image',
+                    value: '#123456'
+                }]
+            ).should.be.resolved();
+
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'image',
+                    value: '#FFFFff'
+                }]
+            ).should.be.resolved();
+        });
+
+        it('errors on invalid color values', async function () {
+            // activate theme so settings are loaded in internal cache
+            await service.activateTheme({
+                name: 'test',
+                customSettings: {
+                    one: {
+                        type: 'color',
+                        default: '#123456'
+                    }
+                }
+            });
+
+            // update with invalid option value
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'color',
+                    default: '#FFFFFF',
+                    value: '#FFFFFFAA'
+                }]
+            ).should.be.rejectedWith(ValidationError, {message: 'Invalid value for \'one\'. The value must follow this format: #1234AF.'});
+        });
+
+        it('allows any valid boolean value', async function () {
+            // activate theme so settings are loaded in internal cache
+            await service.activateTheme({
+                name: 'test',
+                customSettings: {
+                    one: {
+                        type: 'boolean',
+                        default: true
+                    }
+                }
+            });
+
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'boolean',
+                    value: true
+                }]
+            ).should.be.resolved();
+
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'boolean',
+                    value: false
+                }]
+            ).should.be.resolved();
+        });
+
+        it('errors on invalid boolean values', async function () {
+            // activate theme so settings are loaded in internal cache
+            await service.activateTheme({
+                name: 'test',
+                customSettings: {
+                    one: {
+                        type: 'boolean',
+                        default: 'false'
+                    }
+                }
+            });
+
+            // update with invalid option value
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'boolean',
+                    default: 'false',
+                    value: 'true'
+                }]
+            ).should.be.rejectedWith(ValidationError, {message: 'Unallowed value for \'one\'. Allowed values: true, false.'});
+        });
+
+        it('allows any text value', async function () {
+            // activate theme so settings are loaded in internal cache
+            await service.activateTheme({
+                name: 'test',
+                customSettings: {
+                    one: {
+                        type: 'text'
+                    }
+                }
+            });
+
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'text',
+                    value: ''
+                }]
+            ).should.be.resolved();
+
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'text',
+                    value: null
+                }]
+            ).should.be.resolved();
+
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: 'one',
+                    type: 'text',
+                    value: 'Long string Long string Long string Long string Long string Long string Long string Long string'
+                }]
+            ).should.be.resolved();
         });
     });
 });

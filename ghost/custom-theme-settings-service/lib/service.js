@@ -6,7 +6,8 @@ const debug = require('@tryghost/debug')('custom-theme-settings-service');
 
 const messages = {
     problemFindingSetting: 'Unknown setting: {key}.',
-    invalidOptionForSetting: 'Invalid value for \'{key}\'. Allowed values: {allowedValues}.'
+    unallowedValueForSetting: 'Unallowed value for \'{key}\'. Allowed values: {allowedValues}.',
+    invalidValueForSetting: 'Invalid value for \'{key}\'. The value must follow this format: {format}.'
 };
 
 module.exports = class CustomThemeSettingsService {
@@ -66,19 +67,34 @@ module.exports = class CustomThemeSettingsService {
             });
         }
 
-        // abort if any select settings have unknown option values
-        const firstInvalidOption = settings.find((setting) => {
-            const knownSetting = this._activeThemeSettings[setting.key];
-            return knownSetting.type === 'select' && !knownSetting.options.includes(setting.value);
+        settings.forEach((setting) => {
+            const definition = this._activeThemeSettings[setting.key];
+            switch (definition.type) {
+            case 'select':
+                if (!definition.options.includes(setting.value)) {
+                    throw new ValidationError({
+                        message: tpl(messages.unallowedValueForSetting, {key: setting.key, allowedValues: definition.options.join(', ')})
+                    });
+                }
+                break;
+            case 'boolean':
+                if (![true, false].includes(setting.value)) {
+                    throw new ValidationError({
+                        message: tpl(messages.unallowedValueForSetting, {key: setting.key, allowedValues: [true, false].join(', ')})
+                    });
+                }
+                break;
+            case 'color':
+                if (!/^#[0-9a-f]{6}$/i.test(setting.value)) {
+                    throw new ValidationError({
+                        message: tpl(messages.invalidValueForSetting, {key: setting.key, format: '#1234AF'})
+                    });
+                }
+                break;
+            default:
+                break;
+            }
         });
-
-        if (firstInvalidOption) {
-            const knownSetting = this._activeThemeSettings[firstInvalidOption.key];
-
-            throw new ValidationError({
-                message: tpl(messages.invalidOptionForSetting, {key: firstInvalidOption.key, allowedValues: knownSetting.options.join(', ')})
-            });
-        }
 
         // save the new values
         for (const setting of settings) {
