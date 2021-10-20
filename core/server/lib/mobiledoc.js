@@ -36,9 +36,10 @@ module.exports = {
                 canTransformImage(storagePath) {
                     const {ext} = path.parse(storagePath);
 
+                    // NOTE: the "saveRaw" check is smelly
                     return imageTransform.canTransformFiles()
                         && imageTransform.canTransformFileExtension(ext)
-                        && typeof storage.getStorage().saveRaw === 'function';
+                        && typeof storage.getStorage('images').saveRaw === 'function';
                 }
             });
 

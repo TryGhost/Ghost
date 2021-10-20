@@ -7,7 +7,7 @@ module.exports = {
         statusCode: 201,
         permissions: false,
         query(frame) {
-            const store = storage.getStorage();
+            const store = storage.getStorage('images');
 
             if (frame.files) {
                 return Promise
