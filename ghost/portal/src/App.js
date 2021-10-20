@@ -10,7 +10,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductFromId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const handleDataAttributes = require('./data-attributes');
 const React = require('react');
@@ -568,34 +568,30 @@ export default class App extends React.Component {
         this.setState(updatedState);
     }
 
-    async handleOfferQuery({offerId, member = this.state.member}) {
+    /** Handle Portal offer urls */
+    async handleOfferQuery({site, offerId, member = this.state.member}) {
+        const {portal_button: portalButton} = site;
         removePortalLinkFromUrl();
         if (!isPaidMember({member})) {
             try {
                 const offerData = await this.GhostApi.site.offer({offerId});
-                this.dispatchAction('openPopup', {
-                    page: 'offer',
-                    pageData: offerData?.offers[0]
-                });
+                const offer = offerData?.offers[0];
+                if (offer) {
+                    if (!portalButton) {
+                        const product = getProductFromId({site, productId: offer.tier.id});
+                        const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
+                        this.dispatchAction('checkoutPlan', {plan: price.id, offerId});
+                    } else {
+                        this.dispatchAction('openPopup', {
+                            page: 'offer',
+                            pageData: offerData?.offers[0]
+                        });
+                    }
+                }
             } catch (e) {
                 // ignore invalid portal url
             }
         }
-        // const prices = getAvailablePrices({site});
-        // const priceId = prices?.[0]?.id;
-        // const showOfferScreen = false;
-        // if (showOfferScreen) {
-        //     this.dispatchAction('openPopup', {
-        //         page: 'offer'
-        //     });
-        // } else {
-        //     removePortalLinkFromUrl();
-        //     if (this.state.member) {
-        //         this.dispatchAction('checkoutPlan', {plan: priceId, offerId});
-        //     } else {
-        //         this.dispatchAction('signup', {plan: priceId, offerId});
-        //     }
-        // }
     }
 
     /** Handle direct signup link for a price */
