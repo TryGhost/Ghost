@@ -207,7 +207,7 @@
     position: absolute;
     top: 0;
     height: 100%;
-    transition: transform 800ms ease;
+    transition: transform 400ms ease;
 }
 
 .gh-nav-main-enter-active,
