@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const merge = require('lodash/merge');
 const models = require('../../../../models');
-const utils = require('../../../schema/fixtures/utils');
+const {fixtureManager} = require('../../../schema/fixtures');
 
 const resource = 'post';
 const _private = {};
@@ -16,12 +16,12 @@ _private.printResult = function printResult(result, message) {
 
 _private.addSchedulerRole = (options) => {
     const message = 'Adding "Scheduler Integration" role to roles table';
-    const apiKeyRole = utils.findModelFixtureEntry('Role', {name: 'Scheduler Integration'});
+    const apiKeyRole = fixtureManager.findModelFixtureEntry('Role', {name: 'Scheduler Integration'});
 
     return models.Role.findOne({name: apiKeyRole.name}, options)
         .then((role) => {
             if (!role) {
-                return utils.addFixturesForModel({
+                return fixtureManager.addFixturesForModel({
                     name: 'Role',
                     entries: [apiKeyRole]
                 }, options).then(result => _private.printResult(result, message));
@@ -32,19 +32,19 @@ _private.addSchedulerRole = (options) => {
 };
 
 _private.addPublishPermission = (options) => {
-    const modelToAdd = utils.findModelFixtures('Permission', {object_type: resource, action_type: 'publish'});
+    const modelToAdd = fixtureManager.findModelFixtures('Permission', {object_type: resource, action_type: 'publish'});
 
-    return utils.addFixturesForModel(modelToAdd, options)
+    return fixtureManager.addFixturesForModel(modelToAdd, options)
         .then(result => _private.printResult(result, `Adding "publish" permissions fixtures for ${resource}s`));
 };
 
 _private.removeApiKeyPermissionsAndRole = (options) => {
     const message = 'Rollback: Removing "Scheduler Integration" role and permissions';
 
-    const modelToRemove = utils.findModelFixtures('Permission', {object_type: resource, action_type: 'publish'});
+    const modelToRemove = fixtureManager.findModelFixtures('Permission', {object_type: resource, action_type: 'publish'});
 
     // permission model automatically cleans up permissions_roles on .destroy()
-    return utils.removeFixturesForModel(modelToRemove, options)
+    return fixtureManager.removeFixturesForModel(modelToRemove, options)
         .then(result => _private.printResult(result, `Removing "publish" permissions fixtures for ${resource}s`))
         .then(() => models.Role.findOne({name: 'Scheduler Integration'}, options))
         .then((role) => {

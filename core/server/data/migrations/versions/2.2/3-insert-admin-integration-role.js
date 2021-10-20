@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const merge = require('lodash/merge');
 const models = require('../../../../models');
-const utils = require('../../../schema/fixtures/utils');
+const {fixtureManager} = require('../../../schema/fixtures');
 
 const _private = {};
 
@@ -15,12 +15,12 @@ _private.printResult = function printResult(result, message) {
 
 _private.addApiKeyRole = (options) => {
     const message = 'Adding "Admin Integration" role to roles table';
-    const apiKeyRole = utils.findModelFixtureEntry('Role', {name: 'Admin Integration'});
+    const apiKeyRole = fixtureManager.findModelFixtureEntry('Role', {name: 'Admin Integration'});
 
     return models.Role.findOne({name: apiKeyRole.name}, options)
         .then((role) => {
             if (!role) {
-                return utils.addFixturesForModel({
+                return fixtureManager.addFixturesForModel({
                     name: 'Role',
                     entries: [apiKeyRole]
                 }, options).then(result => _private.printResult(result, message));
@@ -32,9 +32,9 @@ _private.addApiKeyRole = (options) => {
 
 _private.addApiKeyPermissions = (options) => {
     const message = 'Adding permissions for the "Admin Integration" role';
-    const relations = utils.findRelationFixture('Role', 'Permission');
+    const relations = fixtureManager.findRelationFixture('Role', 'Permission');
 
-    return utils.addFixturesForRelation({
+    return fixtureManager.addFixturesForRelation({
         from: relations.from,
         to: relations.to,
         entries: {

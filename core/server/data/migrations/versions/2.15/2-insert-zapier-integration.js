@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const merge = require('lodash/merge');
 const models = require('../../../../models');
-const utils = require('../../../schema/fixtures/utils');
+const {fixtureManager} = require('../../../schema/fixtures');
 
 const _private = {};
 
@@ -15,12 +15,12 @@ _private.printResult = function printResult(result, message) {
 
 _private.addZapierIntegration = (options) => {
     const message = 'Adding "Zapier" integration';
-    const fixtureIntegration = utils.findModelFixtureEntry('Integration', {slug: 'zapier'});
+    const fixtureIntegration = fixtureManager.findModelFixtureEntry('Integration', {slug: 'zapier'});
 
     return models.Integration.findOne({slug: fixtureIntegration.slug}, options)
         .then((integration) => {
             if (!integration) {
-                return utils.addFixturesForModel({
+                return fixtureManager.addFixturesForModel({
                     name: 'Integration',
                     entries: [fixtureIntegration]
                 }, options).then(result => _private.printResult(result, message));
