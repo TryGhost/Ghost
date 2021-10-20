@@ -69,6 +69,7 @@
   },
   "jest": {
     "coverageReporters": [
+      "cobertura",
       "text-summary",
       "html"
     ]
