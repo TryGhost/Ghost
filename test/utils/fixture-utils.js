@@ -10,7 +10,7 @@ const knexMigrator = new KnexMigrator();
 
 // Ghost Internals
 const models = require('../../core/server/models');
-const fixtureUtils = require('../../core/server/data/schema/fixtures/utils');
+const {fixtureManager} = require('../../core/server/data/schema/fixtures');
 const emailAnalyticsService = require('../../core/server/services/email-analytics');
 const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings');
@@ -370,8 +370,8 @@ const fixtures = {
     },
 
     permissionsFor: function permissionsFor(obj) {
-        let permsToInsert = _.cloneDeep(fixtureUtils.findModelFixtures('Permission', {object_type: obj}).entries);
-        const permsRolesToInsert = fixtureUtils.findPermissionRelationsForObject(obj).entries;
+        let permsToInsert = _.cloneDeep(fixtureManager.findModelFixtures('Permission', {object_type: obj}).entries);
+        const permsRolesToInsert = fixtureManager.findPermissionRelationsForObject(obj).entries;
         const actions = [];
         const permissionsRoles = {};
 
@@ -461,7 +461,7 @@ const fixtures = {
         return Promise.map(DataGenerator.forKnex.labels, function (label) {
             return models.Label.add(label, context.internal);
         }).then(function () {
-            let productsToInsert = fixtureUtils.findModelFixtures('Product').entries;
+            let productsToInsert = fixtureManager.findModelFixtures('Product').entries;
             return Promise.map(productsToInsert, async (product) => {
                 const found = await models.Product.findOne(product, context.internal);
                 if (!found) {
