@@ -6,6 +6,9 @@ export default class CurrencySymbolHelper extends Helper {
     @service feature;
 
     compute([currency]) {
-        return getSymbol(currency);
+        if (currency) {
+            return getSymbol(currency);
+        }
+        return '';
     }
 }
