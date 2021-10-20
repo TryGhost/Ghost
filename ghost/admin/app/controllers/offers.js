@@ -17,6 +17,7 @@ export default class MembersController extends Controller {
     @service router;
 
     @tracked offers = [];
+    @tracked products = [];
     @tracked type = 'active';
 
     queryParams = [
@@ -31,6 +32,15 @@ export default class MembersController extends Controller {
     get filteredOffers() {
         return this.offers.filter((offer) => {
             return offer.status === this.type;
+        }).map((offer) => {
+            const product = this.products.find((p) => {
+                return p.id === offer.tier.id;
+            });
+            const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
+            offer.finalCurrency = offer.currency || price.currency;
+            offer.originalPrice = price.amount;
+            offer.updatedPrice = offer.type === 'fixed' ? (price.amount - offer.amount) : (price.amount - ((price.amount * offer.amount) / 100));
+            return offer;
         });
     }
 
@@ -60,6 +70,8 @@ export default class MembersController extends Controller {
 
     @task({restartable: true})
     *fetchOffersTask() {
+        this.products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
         this.offers = yield this.store.query('offer', {limit: 'all'});
+        return this.offers;
     }
 }
