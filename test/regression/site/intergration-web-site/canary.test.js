@@ -6,10 +6,9 @@ const testUtils = require('../../../utils');
 const mockUtils = require('../../../utils/mocks');
 const configUtils = require('../../../utils/configUtils');
 const urlUtils = require('../../../utils/urlUtils');
-const appService = require('../../../../core/frontend/services/apps');
+
 const routeSettingsService = require('../../../../core/server/services/route-settings');
 const themeEngine = require('../../../../core/frontend/services/theme-engine');
-const siteApp = require('../../../../core/server/web/parent/app');
 
 describe('Integration - Web - Site canary', function () {
     let app;
@@ -21,19 +20,12 @@ describe('Integration - Web - Site canary', function () {
     let postSpy;
 
     describe('default routes.yaml', function () {
-        before(function () {
+        before(async function () {
             testUtils.integrationTesting.urlService.resetGenerators();
             testUtils.integrationTesting.defaultMocks(sinon, {amp: true});
             testUtils.integrationTesting.overrideGhostConfig(configUtils);
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    app = siteApp({start: true});
-                    return testUtils.integrationTesting.urlServiceInitAndWait();
-                })
-                .then(() => {
-                    return appService.init();
-                });
+            app = await testUtils.integrationTesting.initGhost();
         });
 
         before(function () {
@@ -368,7 +360,7 @@ describe('Integration - Web - Site canary', function () {
 
     describe('extended routes.yaml: collections', function () {
         describe('2 collections', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
                         '/': {templates: ['home']}
@@ -395,11 +387,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -497,7 +485,7 @@ describe('Integration - Web - Site canary', function () {
         });
 
         describe('no collections', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
                         '/something/': {
@@ -511,11 +499,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -548,7 +532,7 @@ describe('Integration - Web - Site canary', function () {
         });
 
         describe('static permalink route', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
@@ -569,11 +553,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon);
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -652,7 +632,7 @@ describe('Integration - Web - Site canary', function () {
         });
 
         describe('primary author permalink', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
@@ -668,11 +648,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon);
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -735,7 +711,7 @@ describe('Integration - Web - Site canary', function () {
         });
 
         describe('primary tag permalink', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
@@ -751,11 +727,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon);
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -833,7 +805,7 @@ describe('Integration - Web - Site canary', function () {
         });
 
         describe('collection/routes with data key', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {
                         '/my-page/': {
@@ -906,11 +878,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon);
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -1002,7 +970,7 @@ describe('Integration - Web - Site canary', function () {
 
     describe('extended routes.yaml: templates', function () {
         describe('default template, no template', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
@@ -1020,11 +988,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon);
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -1069,7 +1033,7 @@ describe('Integration - Web - Site canary', function () {
         });
 
         describe('two templates', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
@@ -1084,11 +1048,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon);
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -1121,7 +1081,7 @@ describe('Integration - Web - Site canary', function () {
         });
 
         describe('home.hbs priority', function () {
-            before(function () {
+            before(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                     routes: {},
 
@@ -1140,11 +1100,7 @@ describe('Integration - Web - Site canary', function () {
                 testUtils.integrationTesting.urlService.resetGenerators();
                 testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
             });
 
             beforeEach(function () {
@@ -1195,7 +1151,7 @@ describe('Integration - Web - Site canary', function () {
             before(testUtils.teardownDb);
             before(testUtils.setup('users:roles', 'posts'));
 
-            before(function () {
+            before(async function () {
                 testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
                 sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
@@ -1320,13 +1276,8 @@ describe('Integration - Web - Site canary', function () {
                     }
                 });
 
-                return testUtils.integrationTesting.initGhost()
-                    .then(function () {
-                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(10);
-
-                        app = siteApp({start: true});
-                        return testUtils.integrationTesting.urlServiceInitAndWait();
-                    });
+                app = await testUtils.integrationTesting.initGhost();
+                sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(10);
             });
 
             beforeEach(function () {
@@ -1531,7 +1482,7 @@ describe('Integration - Web - Site canary', function () {
     });
 
     describe('extended routes.yaml (5): rss override', function () {
-        before(function () {
+        before(async function () {
             sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
                 routes: {
                     '/podcast/rss/': {
@@ -1569,11 +1520,7 @@ describe('Integration - Web - Site canary', function () {
             testUtils.integrationTesting.urlService.resetGenerators();
             testUtils.integrationTesting.defaultMocks(sinon, {theme: 'test-theme'});
 
-            return testUtils.integrationTesting.initGhost()
-                .then(function () {
-                    app = siteApp({start: true});
-                    return testUtils.integrationTesting.urlServiceInitAndWait();
-                });
+            app = await testUtils.integrationTesting.initGhost();
         });
 
         beforeEach(function () {
