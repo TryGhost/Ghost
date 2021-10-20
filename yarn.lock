@@ -1270,10 +1270,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.11.tgz#ffcc6ccb10a768aaa9276c3a22b2dea9f560e247"
   integrity sha512-ml1aJ4nJmfA8MRAJ3l9+iTdccGDQiUN1En8XwYwypfrKlECR8Mw/kKRPnqHge598+ED6J1+at5gArSq6bLKbug==
 
-"@tryghost/custom-theme-settings-service@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/custom-theme-settings-service/-/custom-theme-settings-service-0.2.0.tgz#d48614608646a4168e4184ebd55748526849971e"
-  integrity sha512-JF9IqjwN+8gPCG0KiAyCtwXvAk4dealz31g+ldxSTvn+iR/+2NPrJwPqeTwjZWTY1jTFoz1UtAsEwWkNuId55Q==
+"@tryghost/custom-theme-settings-service@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/custom-theme-settings-service/-/custom-theme-settings-service-0.3.0.tgz#dfe937666c4eb9b134d78d2d1a6bb95def6004f5"
+  integrity sha512-iNy9Bv/u76R1uMNcCpxfU9uWESi/cqZRPXh1uAFctBDijlI7yMkZvWIAvTn3DOplg3gMeq3xkGhL+0fNY20p9A==
   dependencies:
     "@tryghost/debug" "^0.1.5"
     "@tryghost/errors" "^0.2.14"
