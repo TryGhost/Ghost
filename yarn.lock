@@ -2069,14 +2069,14 @@ amperize@0.6.1:
     uuid "^7.0.1"
     validator "^12.0.0"
 
-analytics-node@5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-5.1.0.tgz#69f2183af07b7e9aeef129232c6c1e44ef2f28d9"
-  integrity sha512-qojiIIQs+ruKS4BEb7+nLIim0TpmifMnYQYYQWBHcYBurv/IXRs3bL28wCuv1aKpRKpyDjAvugYSA7V7pw8t8g==
+analytics-node@5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/analytics-node/-/analytics-node-5.1.2.tgz#317841d432eda3e8855b50fdad1d70eb31d28e4e"
+  integrity sha512-WZ8gkXtLuqD2Q2xEOr/2/LJiR0AnhWHfXZhfPnMZpB7vEwCsh3HapYAUmA1cPj1abrhAqBX7POWuWo/1wUu/Fw==
   dependencies:
     "@segment/loosely-validate-event" "^2.0.0"
     axios "^0.21.4"
-    axios-retry "^3.0.2"
+    axios-retry "3.2.0"
     lodash.isstring "^4.0.1"
     md5 "^2.2.1"
     ms "^2.0.0"
@@ -2335,7 +2335,7 @@ aws4@^1.8.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.11.0.tgz#d61f46d83b2519250e2784daf5b09479a8b41c59"
   integrity sha512-xh1Rl34h6Fi1DC2WWKfxUTVqRsNnr6LsKz2+hfwDxQJWmrx8+c7ylaqBMcHfl1U1r2dsifOvKX3LQuLNZ+XSvA==
 
-axios-retry@^3.0.2:
+axios-retry@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/axios-retry/-/axios-retry-3.2.0.tgz#eb48e72f90b177fde62329b2896aa8476cfb90ba"
   integrity sha512-RK2cLMgIsAQBDhlIsJR5dOhODPigvel18XUv1dDXW+4k1FzebyfRk+C+orot6WPZOYFKSfhLwHPwVmTVOODQ5w==
