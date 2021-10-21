@@ -1,5 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('./lib/domain/events/OfferCodeChange');
+const OfferCreatedEvent = require('./lib/domain/events/OfferCreated');
 const OfferRepository = require('./lib/application/OfferRepository');
 const OffersAPI = require('./lib/application/OffersAPI');
 
@@ -30,6 +31,14 @@ class OffersModule {
             );
         });
 
+        DomainEvents.subscribe(OfferCreatedEvent, (event) => {
+            this.redirectManager.addRedirect(
+                `/${event.data.offer.code.value}`,
+                `/#/portal/offers/${event.data.offer.id}`,
+                {permanent: false}
+            );
+        });
+
         const offers = await this.repository.getAll();
 
         for (const offer of offers) {
@@ -54,6 +63,15 @@ class OffersModule {
         const offersAPI = new OffersAPI(repository);
         return new OffersModule(offersAPI, deps.redirectManager, repository);
     }
+
+    static events = {
+        OfferCreatedEvent,
+        OfferCodeChangeEvent
+    };
+
+    static OfferRepository = OfferRepository;
+
+    static OffersAPI = OffersAPI;
 }
 
 module.exports = OffersModule;
