@@ -110,11 +110,6 @@
     stroke: var(--black);
 }
 
-.gh-offer-discount {
-    display: flex;
-    align-items: flex-end;
-}
-
 .gh-offer-type {
     width: 160px;
     margin-bottom: 23px;
@@ -127,7 +122,7 @@
 }
 
 .gh-offer-value {
-    position: relative;
+    flex: auto;
 }
 
 .gh-offer-value .gh-input {
