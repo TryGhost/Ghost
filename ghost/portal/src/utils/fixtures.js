@@ -14,7 +14,7 @@ function objectId() {
 export function getSiteData({
     products = getProductsData({numOfProducts: 1}),
     portalProducts = products.map(p => p.id),
-    portalPlans: portal_plans = ['free', 'monthly', 'yearly']
+    portalPlans: portal_plans = ['yearly']
 } = {}) {
     return {
         title: 'The Blueprint',
@@ -48,8 +48,8 @@ export function getSiteData({
 function getOfferData({
     name = 'Black Friday',
     code = 'black-friday',
-    displayTitle = 'Black Friday Special',
-    displayDescription = 'Black Friday Special deal only today!',
+    displayTitle = 'Black Friday',
+    displayDescription = 'Special deal',
     type = 'percent',
     cadence = 'month',
     amount = 50,
