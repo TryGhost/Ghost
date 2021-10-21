@@ -3,7 +3,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
-import {getCurrencySymbol, getProductFromId} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 const React = require('react');
 
@@ -94,7 +94,7 @@ export const OfferPageStyles = `
 
     .gh-portal-offer-title h4 + p {
         margin: 12px 0 0;
-    } 
+    }
 
     .gh-portal-offer-details .gh-portal-plan-name,
     .gh-portal-offer-details p {
@@ -147,21 +147,21 @@ export const OfferPageStyles = `
         align-items: flex-end;
         margin: 0;
     }
-    
+
     .gh-portal-offer-price .old {
         text-decoration: line-through;
         color: var(--grey5);
         line-height: 1;
         white-space: nowrap;
     }
-    
+
     .gh-portal-offer-price .new {
         display: flex;
         align-items: flex-start;
         margin-top: 6px;
         white-space: nowrap;
     }
-    
+
     .gh-portal-offer-price .new .currency {
         font-weight: 500;
         line-height: 1;
@@ -169,17 +169,17 @@ export const OfferPageStyles = `
         margin-right: 1px;
         white-space: nowrap;
     }
-    
+
     .gh-portal-offer-price .new .value {
         font-size: 2.4rem;
         font-weight: 500;
         white-space: nowrap;
     }
-    
+
     .gh-portal-offer-details p {
         margin-bottom: 12px;
     }
-    
+
     .gh-portal-offer .gh-portal-product-benefit {
         margin-bottom: 4px;
     }
@@ -496,6 +496,19 @@ export default class OfferPage extends React.Component {
         );
     }
 
+    renderProductLabel({product, offer}) {
+        const {site} = this.context;
+
+        if (hasMultipleProductsFeature({site})) {
+            return (
+                <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
+            );
+        }
+        return (
+            <h4 className="gh-portal-plan-name">{(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
+        );
+    }
+
     render() {
         const {pageData: offer, site} = this.context;
         if (!offer) {
@@ -513,11 +526,11 @@ export default class OfferPage extends React.Component {
                     <CloseButton />
                     {this.renderFormHeader()}
 
-                    {(offer.display_title || offer.display_description ? 
+                    {(offer.display_title || offer.display_description ?
                         <div className="gh-portal-offer-bar">
                             <div className="gh-portal-offer-title">
                                 <div>
-                                    {(offer.display_title ? 
+                                    {(offer.display_title ?
                                         <h4>{offer.display_title}</h4>
                                         : '')}
 
@@ -534,11 +547,11 @@ export default class OfferPage extends React.Component {
                     <div className={planNameContainerClass}>
                         <div className="gh-portal-plan-section">
                             <div className="gh-portal-offer-planname">
-                                {(!offer.display_title && !offer.display_description ? 
+                                {(!offer.display_title && !offer.display_description ?
                                     this.renderOfferTag()
                                     : '')}
                                 <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
-                                {(!benefits.length && !product.description ? 
+                                {(!benefits.length && !product.description ?
                                     this.renderOfferMessage({offer, product})
                                     : '')}
                             </div>
@@ -556,16 +569,16 @@ export default class OfferPage extends React.Component {
                         </div>
                     </div>
 
-                    {(benefits.length || product.description ? 
+                    {(benefits.length || product.description ?
                         <div className="gh-portal-singleproduct-benefits gh-portal-product-benefits">
-                            {(product.description ? 
+                            {(product.description ?
                                 <div className="gh-portal-product-description">{product.description}</div>
                                 : '')}
 
-                            {(benefits.length ? 
+                            {(benefits.length ?
                                 this.renderBenefits({product})
-                                : '')}    
-                            
+                                : '')}
+
                             {this.renderOfferMessage({offer, product})}
                         </div>
                         : '')}
