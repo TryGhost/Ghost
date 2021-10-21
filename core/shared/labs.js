@@ -15,7 +15,8 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
-    'customThemeSettings'
+    'customThemeSettings',
+    'offers'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -27,8 +28,7 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'oauthLogin',
-    'membersActivity',
-    'offers'
+    'membersActivity'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -86,7 +86,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
     }
 
     // Else, the helper is not active and we need to handle this as an error
-    errDetails.message = tpl(options.errorMessage || messages.errorMessage, {helperName: options.helperName}),
+    errDetails.message = tpl(options.errorMessage || messages.errorMessage, {helperName: options.helperName});
     errDetails.context = tpl(options.errorContext || messages.errorContext, {
         helperName: options.helperName,
         flagName: options.flagName
