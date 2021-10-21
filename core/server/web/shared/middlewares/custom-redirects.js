@@ -7,7 +7,6 @@ const urlUtils = require('../../../../shared/url-utils');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const redirectsService = require('../../../services/redirects');
-const labsService = require('../../../../shared/labs');
 
 const messages = {
     customRedirectsRegistrationFailure: 'Could not register custom redirects.'
@@ -26,13 +25,6 @@ let customRedirectsRouter;
  */
 _private.registerRoutes = (router, redirects) => {
     debug('redirects loading');
-
-    if (labsService.isSet('offers')) {
-        redirects.unshift({
-            from: '/zimo50',
-            to: '/#/portal/offers/abcdefuckoff'
-        });
-    }
 
     redirects.forEach((redirect) => {
         /**

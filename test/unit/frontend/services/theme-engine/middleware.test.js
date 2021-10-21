@@ -55,7 +55,8 @@ describe('Themes middleware', function () {
             // if we want to compare it
             // we will need some unique content
             members: true,
-            customThemeSettings: true
+            customThemeSettings: true,
+            offers: true
         };
 
         fakeCustomThemeSettingsData = {
