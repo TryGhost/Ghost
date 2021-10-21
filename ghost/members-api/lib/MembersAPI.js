@@ -5,6 +5,7 @@ const common = require('./common');
 
 const MemberAnalyticsService = require('@tryghost/member-analytics-service');
 const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
+const PaymentsService = require('@tryghost/members-payments');
 
 const StripeWebhookService = require('./services/stripe-webhook');
 const TokenService = require('./services/token');
@@ -155,8 +156,15 @@ module.exports = function MembersAPI({
         allowSelfSignup
     });
 
+    const paymentsService = new PaymentsService({
+        Offer,
+        offersAPI,
+        stripeAPIService
+    });
+
     const routerController = new RouterController({
         offersAPI,
+        paymentsService,
         productRepository,
         memberRepository,
         StripePrice,
