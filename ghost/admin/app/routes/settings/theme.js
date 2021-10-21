@@ -4,11 +4,16 @@ import RSVP from 'rsvp';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend(CurrentUserSettings, {
+    feature: service(),
     settings: service(),
 
     beforeModel() {
         this._super(...arguments);
         this.transitionAuthor(this.session.user);
+
+        if (this.feature.customThemeSettings) {
+            this.transitionTo('settings.design');
+        }
     },
 
     model() {
