@@ -60,7 +60,7 @@ module.exports = {
         {
             files: 'core/server/**',
             rules: {
-                'ghost/node/no-restricted-require': ['off', [
+                'ghost/node/no-restricted-require': ['warn', [
                     {
                         // Throw an error for all requires of the frontend, _except_ the url service which will be moved soon
                         name: [path.resolve(__dirname, 'core/frontend/**')],
