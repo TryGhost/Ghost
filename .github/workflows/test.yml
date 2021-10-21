@@ -119,7 +119,7 @@ jobs:
         env:
           database__connection__filename: /dev/shm/ghost-test.db
 
-      # Get time in seconds for test suite
+      # Get runtime in seconds for test suite
       - run: |
           startTime="$(cat ${{ runner.temp }}/startTime)"
           endTime="$(date +%s)"
