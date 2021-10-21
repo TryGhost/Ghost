@@ -88,7 +88,7 @@ class Bridge {
     reloadFrontend() {
         const apiVersion = this.getFrontendApiVersion();
         debug('reload frontend', apiVersion);
-        const siteApp = require('./frontend/web/app');
+        const siteApp = require('./frontend/web/site');
         siteApp.reload({apiVersion});
     }
 }
