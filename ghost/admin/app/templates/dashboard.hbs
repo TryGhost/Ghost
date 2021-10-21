@@ -164,13 +164,18 @@
             <div class="gh-dashboard-container col-2">
                 <div class="gh-dashboard-box">
                     <div class="content">
-                        <h2>Customize your site design</h2>
+                        <h2>Customize your site{{unless this.feature.customThemeSettings " design"}}</h2>
                         <p>Stand out from the crowd. Ghost lets you customize everything so you can create a publication that doesn’t just look the same as what everyone else has.</p>
                     </div>
                     <div class="footer">
+                        {{#if this.feature.customThemeSettings}}
+                        <LinkTo class="gh-btn gh-btn-outline mt2 mr2" @route="settings.design"><span>Design</span></LinkTo>
+                        <LinkTo class="gh-btn gh-btn-outline mt2" @route="settings.members-email"><span>Email</span></LinkTo>
+                        {{else}}
                         <LinkTo class="gh-btn gh-btn-outline mt2 mr2" @route="settings"><span>Brand</span></LinkTo>
                         <LinkTo class="gh-btn gh-btn-outline mt2 mr2" @route="settings.members-email"><span>Email</span></LinkTo>
                         <LinkTo class="gh-btn gh-btn-outline mt2" @route="settings.theme"><span>Theme</span></LinkTo>
+                        {{/if}}
                     </div>
                 </div>
                 <div class="gh-dashboard-box">
