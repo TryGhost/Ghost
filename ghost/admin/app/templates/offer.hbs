@@ -42,14 +42,18 @@
                         </div>
 
                         <h4 class="gh-main-section-header small bn">
-                            Discount information 
+                            Discount information
                             {{#if this.offer.isNew}}
                                 <span class="midgrey"> – Once saved, this cannot be changed.</span>
                             {{/if}}
                         </h4>
                         <div class="gh-main-section-content grey">
                             <GhFormGroup @errors={{this.errors}} @property="product-cadence">
+                                {{#if (feature "multipleProducts")}}
                                 <label for="product-cadence" class="fw6">Tier – cadence</label>
+                                {{else}}
+                                <label for="product-cadence" class="fw6">Cadence</label>
+                                {{/if}}
                                 <span class="gh-select">
                                     <OneWaySelect
                                         @value={{this.cadence}}

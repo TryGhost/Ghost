@@ -16,6 +16,7 @@ export default class OffersController extends Controller {
     @service settings;
     @service store;
     @service modals;
+    @service feature;
     @service membersUtils;
     @service notifications;
 
@@ -104,9 +105,13 @@ export default class OffersController extends Controller {
             let yearlyLabel;
             const productCurrency = product.monthlyPrice.currency;
             const productCurrencySymbol = productCurrency.toUpperCase();
-
-            monthlyLabel = `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${productCurrencySymbol})`;
-            yearlyLabel = `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${productCurrencySymbol})`;
+            if (this.feature.get('multipleProducts')) {
+                monthlyLabel = `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${productCurrencySymbol})`;
+                yearlyLabel = `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${productCurrencySymbol})`;
+            } else {
+                monthlyLabel = `Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${productCurrencySymbol})`;
+                yearlyLabel = `Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${productCurrencySymbol})`;
+            }
 
             cadences.push({
                 label: monthlyLabel,
