@@ -228,7 +228,7 @@ export default class OffersController extends Controller {
             cadence: this.offer.cadence || this.defaultProps?.cadence,
             amount: this.offer.amount,
             duration: this.offer.duration,
-            durationInMonths: '',
+            durationInMonths: this.offer.durationInMonths,
             currency: this.offer.currency || this.defaultProps?.currency,
             status: this.offer.currency,
             tierId: this.offer?.tier?.id || this.defaultProps?.tier?.id
