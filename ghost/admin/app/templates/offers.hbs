@@ -47,8 +47,11 @@
                             <h3>{{offer.name}}</h3>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
-                            <span>{{offer.tier.name}}</span>
-                            <span class="midgrey">- {{if (eq offer.cadence 'month') 'Monthly' 'Yearly'}} </span>
+                            {{#if (feature "multipleProducts")}}
+                                <span>{{offer.tier.name}}</span>
+                                <span class="midgrey">-</span>
+                            {{/if}}
+                            <span class="midgrey">{{if (eq offer.cadence 'month') 'Monthly' 'Yearly'}} </span>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <span class="offer-value">
@@ -65,7 +68,7 @@
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <span>{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.updatedPrice}}</span>
-                            <span class="midgrey strike ml2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span> 
+                            <span class="midgrey strike ml2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <span class="midgrey">{{offer.redemptionCount}}</span>
