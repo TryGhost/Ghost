@@ -30,7 +30,7 @@ module.exports.loadAndActivate = async (themeName) => {
             logging.warn(validate.getThemeValidationError('activeThemeHasErrors', themeName, checkedTheme));
         }
 
-        activator.activateFromBoot(themeName, loadedTheme, checkedTheme);
+        await activator.activateFromBoot(themeName, loadedTheme, checkedTheme);
     } catch (err) {
         if (err instanceof errors.NotFoundError) {
             // CASE: active theme is missing, we don't want to exit because the admin panel will still work
@@ -56,7 +56,7 @@ module.exports.activate = async (themeName) => {
     // Validate
     const checkedTheme = await validate.checkSafe(themeName, loadedTheme);
     // Activate
-    activator.activateFromAPI(themeName, loadedTheme, checkedTheme);
+    await activator.activateFromAPI(themeName, loadedTheme, checkedTheme);
     // Return the checked theme
     return checkedTheme;
 };
