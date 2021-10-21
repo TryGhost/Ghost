@@ -135,7 +135,7 @@ jobs:
         with:
           metricName: 'test-time'
           metricValue: ${{ env.test_time }}
-          config: |
+          configuration: |
             {
               "metrics": {
                 "transports": ["elasticsearch"]
