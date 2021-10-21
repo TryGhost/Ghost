@@ -35,6 +35,7 @@
     "@tryghost/member-events": "^0.3.0",
     "@tryghost/members-analytics-ingress": "^0.1.4",
     "@tryghost/members-stripe-service": "^0.3.0",
+    "@tryghost/members-payments": "^0.0.0",
     "@tryghost/tpl": "^0.1.2",
     "@types/jsonwebtoken": "^8.5.1",
     "bluebird": "^3.5.4",
