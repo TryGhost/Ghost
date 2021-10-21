@@ -2,6 +2,7 @@ const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@nexes/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('../domain/events/OfferCodeChange');
+const OfferCreatedEvent = require('../domain/events/OfferCreated');
 const Offer = require('../domain/models/Offer');
 const OfferStatus = require('../domain/models/OfferStatus');
 
@@ -179,7 +180,7 @@ class OfferRepository {
             active: offer.status.equals(OfferStatus.create('active'))
         };
 
-        if (offer.codeChanged || offer.isNew) {
+        if (offer.codeChanged) {
             const event = OfferCodeChangeEvent.create({
                 offerId: offer.id,
                 previousCode: offer.oldCode,
@@ -189,7 +190,9 @@ class OfferRepository {
         }
 
         if (offer.isNew) {
+            const event = OfferCreatedEvent.create({offer});
             await this.OfferModel.add(data, options);
+            DomainEvents.dispatch(event);
         } else {
             await this.OfferModel.edit(data, {...options, id: data.id});
         }
