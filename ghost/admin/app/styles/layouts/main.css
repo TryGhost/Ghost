@@ -1330,13 +1330,13 @@
 }
 
 /* Grey background modifiers */
-.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-black):not(.gh-btn-link):not(.gh-btn-text),
-.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-black):not(.gh-btn-link):not(.gh-btn-text) {
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-black):not(.gh-btn-link):not(.gh-btn-text):not(.gh-btn-outline),
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-black):not(.gh-btn-link):not(.gh-btn-text):not(.gh-btn-outline) {
     background: var(--whitegrey-d2);
 }
 
-.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):hover,
-.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-link):not(.gh-btn-text):hover {
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-outline):hover,
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-link):not(.gh-btn-text):not(.gh-btn-outline):hover {
     background: color-mod(var(--whitegrey-d2) l(-4%));
 }
 
