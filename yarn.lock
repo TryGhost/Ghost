@@ -8833,10 +8833,10 @@ postcss-value-parser@^4.0.2, postcss-value-parser@^4.1.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.1.0.tgz#443f6a20ced6481a2bda4fa8532a6e55d789a2cb"
   integrity sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
 
-postcss@8.3.10:
-  version "8.3.10"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.3.10.tgz#4d614e108ccc69c65c2f6dc6cec23dd5c85b73af"
-  integrity sha512-YYfvfUdWx+ECpr5Hgc6XRfsaux8LksL5ey8qTtWiuRXOpOF1YYMwAySdh0nSmwhZAFvvJ6rgiIkKVShu4x2T1Q==
+postcss@8.3.11:
+  version "8.3.11"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.3.11.tgz#c3beca7ea811cd5e1c4a3ec6d2e7599ef1f8f858"
+  integrity sha512-hCmlUAIlUiav8Xdqw3Io4LcpA1DOt7h3LSTAC4G6JGHFFaWzI6qvFt9oilvl8BmkbBRX1IhM90ZAmpk68zccQA==
   dependencies:
     nanoid "^3.1.30"
     picocolors "^1.0.0"
