@@ -167,7 +167,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
                         value={reason}
                         onChange={e => setReason(e.target.value)}
                         rows="2"
-                        maxlength="500"
+                        maxLength="500"
                     />
                 </section>
                 <ActionButton
