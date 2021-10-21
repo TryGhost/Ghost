@@ -246,6 +246,12 @@ ul.nostyle li {
     flex-grow: 1;
 }
 
+.gh-list-chevron a {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
 
 /* Fake loading list
 /* -------------------------------------------------- */
