@@ -43,11 +43,12 @@ export const OfferPageStyles = `
 
     .gh-portal-offer-bar {
         position: relative;
-        padding: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
     }
 
     .gh-portal-offer-bar::before {
-        border-radius: 5px 5px 0 0;
+        border-radius: 5px;
         position: absolute;
         display: block;
         content: "";
@@ -63,7 +64,7 @@ export const OfferPageStyles = `
     .gh-portal-offer-title {
         display: flex;
         justify-content: space-between;
-        margin-right: -16px;
+        margin-right: -20px;
     }
 
     .gh-portal-offer-title h4 {
@@ -87,57 +88,129 @@ export const OfferPageStyles = `
     }
 
     .gh-portal-offer-bar p {
-        margin: 12px 0 0;
         padding-bottom: 0;
+        font-size: 1.35rem;
     }
+
+    .gh-portal-offer-title h4 + p {
+        margin: 12px 0 0;
+    } 
 
     .gh-portal-offer-details .gh-portal-plan-name,
     .gh-portal-offer-details p {
         margin-right: 8px;
     }
 
+    .gh-portal-offer .gh-portal-plan-section {
+        cursor: auto;
+        padding: 20px;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .gh-portal-offer .gh-portal-plan-section:before {
+        display: none;
+    }
+
+    .gh-portal-offer-container.bordered {
+        border: 1px solid var(--grey11) !important;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+
+    .gh-portal-offer-container.bordered p.footnote {
+        margin: 0;
+    }
+
+    .gh-portal-offer-container.bordered .gh-portal-plan-section {
+        padding: 12px 20px;
+    }
+
+    .gh-portal-offer-planname {
+        padding-right: 20px;
+    }
+
+    .gh-portal-offer .gh-portal-plan-name {
+        margin: 0;
+        text-align: left;
+        line-height: 1.5em;
+    }
+
+    .gh-portal-offer .footnote {
+        color: var(--grey7);
+        margin: 0 0 12px;
+    }
+
     .gh-portal-offer-price {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        padding-left: 20px;
+        margin: 0;
     }
-
+    
     .gh-portal-offer-price .old {
         text-decoration: line-through;
-        color: var(--grey8);
-        line-height: 1.4;
+        color: var(--grey5);
+        line-height: 1;
+        white-space: nowrap;
     }
-
+    
     .gh-portal-offer-price .new {
         display: flex;
         align-items: flex-start;
         margin-top: 6px;
+        white-space: nowrap;
     }
-
+    
     .gh-portal-offer-price .new .currency {
         font-weight: 500;
-        line-height: 1.3;
+        line-height: 1;
         font-size: 1.5rem;
         margin-right: 1px;
+        white-space: nowrap;
     }
-
+    
     .gh-portal-offer-price .new .value {
         font-size: 2.4rem;
         font-weight: 500;
+        white-space: nowrap;
     }
-
+    
     .gh-portal-offer-details p {
         margin-bottom: 12px;
     }
-
-    .gh-portal-offer-details .footnote {
-        color: var(--grey7);
-        margin-bottom: 0;
-    }
-
+    
     .gh-portal-offer .gh-portal-product-benefit {
         margin-bottom: 4px;
+    }
+
+    .gh-portal-offer .gh-portal-singleproduct-benefits {
+        padding: 16px 20px 12px !important
+    }
+
+    .gh-portal-offer .gh-portal-singleproduct-benefits:not(.no-benefits) .gh-portal-product-description {
+        text-align: left;
+        padding-left: 0;
+    }
+
+    .gh-portal-offer .gh-portal-singleproduct-benefits .gh-portal-product-benefit {
+        padding: 0;
+    }
+
+    .gh-portal-offer .gh-portal-singleproduct-benefits:not(.no-benefits) .gh-portal-product-description {
+        border: none;
+        padding-bottom: 0;
+    }
+
+    .gh-portal-offer .gh-portal-product-benefits {
+        padding-bottom: 0;
+    }
+
+    .gh-portal-offer-planname .gh-portal-offer-tag {
+        display: inline-block;
+        border-radius: 0 999px 999px 0;
+        margin: -8px 0 0 -20px;
+        padding-left: 20px;
     }
 `;
 
@@ -431,37 +504,71 @@ export default class OfferPage extends React.Component {
         const product = getProductFromId({site, productId: offer.tier.id});
         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
         const updatedPrice = this.getUpdatedPrice({offer, product});
+        const benefits = product.benefits || [];
+        let planNameContainerClass = 'gh-portal-plans-container gh-portal-offer-container has-multiple-products';
+        planNameContainerClass += !benefits.length && !product.description ? ' bordered' : '';
         return (
             <>
                 <div className='gh-portal-content gh-portal-offer'>
                     <CloseButton />
                     {this.renderFormHeader()}
-                    {this.renderForm()}
 
-                    <div className="gh-portal-offer-container">
+                    {(offer.display_title || offer.display_description ? 
                         <div className="gh-portal-offer-bar">
                             <div className="gh-portal-offer-title">
-                                <h4>{offer.display_title}</h4>
+                                <div>
+                                    {(offer.display_title ? 
+                                        <h4>{offer.display_title}</h4>
+                                        : '')}
+
+                                    {(offer.display_description ? <p>{offer.display_description}</p> : '')}
+                                </div>
+
                                 {this.renderOfferTag()}
                             </div>
-                            {(offer.display_description ? <p>{offer.display_description}</p> : '')}
                         </div>
-                        <div className="gh-portal-plans-container offer">
-                            <div className="gh-portal-offer-details">
+                        : '')}
+
+                    {this.renderForm()}
+
+                    <div className={planNameContainerClass}>
+                        <div className="gh-portal-plan-section">
+                            <div className="gh-portal-offer-planname">
+                                {(!offer.display_title && !offer.display_description ? 
+                                    this.renderOfferTag()
+                                    : '')}
                                 <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
-                                <p>{product.description}</p>
-                                {this.renderBenefits({product})}
-                                {this.renderOfferMessage({offer, product})}
+                                {(!benefits.length && !product.description ? 
+                                    this.renderOfferMessage({offer, product})
+                                    : '')}
                             </div>
-                            <div className="gh-portal-offer-price">
-                                <div className="old">{getCurrencySymbol(price.currency)}{price.amount / 100}</div>
-                                <div className="new">
-                                    <span className="currency">{getCurrencySymbol(price.currency)}</span>
-                                    <span className="value">{this.renderRoundedPrice(updatedPrice)}</span>
+                            <div className="gh-portal-plan-pricelabel">
+                                <div className="gh-portal-plan-pricecontainer">
+                                    <div className="gh-portal-offer-price">
+                                        <div className="old">{getCurrencySymbol(price.currency)}{price.amount / 100}</div>
+                                        <div className="new">
+                                            <span className="currency">{getCurrencySymbol(price.currency)}</span>
+                                            <span className="value">{this.renderRoundedPrice(updatedPrice)}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {(benefits.length || product.description ? 
+                        <div className="gh-portal-singleproduct-benefits gh-portal-product-benefits">
+                            {(product.description ? 
+                                <div className="gh-portal-product-description">{product.description}</div>
+                                : '')}
+
+                            {(benefits.length ? 
+                                this.renderBenefits({product})
+                                : '')}    
+                            
+                            {this.renderOfferMessage({offer, product})}
+                        </div>
+                        : '')}
                 </div>
                 <footer className='gh-portal-signup-footer'>
                     {this.renderSubmitButton()}
