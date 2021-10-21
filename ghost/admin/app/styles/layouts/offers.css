@@ -84,6 +84,7 @@
 .gh-offer-link-button {
     opacity: 0;
     cursor: pointer;
+    margin-bottom: 1px;
 }
 
 .gh-offers .gh-list-row:hover .gh-offer-link-button {
