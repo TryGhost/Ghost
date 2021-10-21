@@ -483,7 +483,7 @@ export default class OfferPage extends React.Component {
         } else if (discountDuration === 'forever') {
             durationLabel = `forever`;
         } else if (discountDuration === 'repeating') {
-            const durationInMonths = offer.duration_in_months;
+            const durationInMonths = offer.duration_in_months || '';
             if (durationInMonths === 1) {
                 durationLabel = `for first month`;
             } else {
