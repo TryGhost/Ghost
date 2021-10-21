@@ -50,7 +50,7 @@
             {{/if}}
             <div class="{{if this.isMobilePreview "gh-pe-mobile-bezel" "gh-browserpreview-iframecontainer"}}">
                 <div class="{{if this.isMobilePreview "gh-pe-mobile-screen"}}">
-                    <GhHtmlIframe class={{if this.isMobilePreview "gh-post-preview-iframe" "site-frame"}} @html={{this.themeManagement.previewHtml}} />
+                    <GhHtmlIframe class={{if this.isMobilePreview "gh-post-preview-iframe" "site-frame"}} @html={{this.themeManagement.previewHtml}} @pageId={{this.themeManagement.previewType}} />
                 </div>
             </div>
         </div>
