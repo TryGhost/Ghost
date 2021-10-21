@@ -544,6 +544,14 @@ input:focus,
     background: var(--whitegrey-l1);
 }
 
+.gh-themes-container-labs {
+    background: var(--whitegrey-l2);
+}
+
+.gh-themes-container-labs .apps-grid {
+    background: none;
+}
+
 .settings-code-editor .CodeMirror-gutters,
 .settings-code code,
 .form-group code {
