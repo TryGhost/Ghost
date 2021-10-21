@@ -64,7 +64,8 @@
                             </span>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
-                            <span class="midgrey strike mr2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span> <span>{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.updatedPrice}}</span>
+                            <span>{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.updatedPrice}}</span>
+                            <span class="midgrey strike ml2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span> 
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
                             <span class="midgrey">{{offer.redemptionCount}}</span>
