@@ -24,16 +24,8 @@ export default class GhPublishMenuDraftComponent extends Component {
         return this.session.user.isAdmin && (this.totalMemberCount === 0 || this.countTotalMembersTask.isRunning);
     }
 
-    get nextActionName() {
-        return this.args.emailOnly ? 'send' : 'publish';
-    }
-
     get showEmailSection() {
-        return this.args.canSendEmail && this.args.recipientsFilter !== 'none';
-    }
-
-    get showEmailOnlyInput() {
-        return this.args.post.isPost;
+        return this.args.canSendEmail && this.args.distributionAction !== 'publish';
     }
 
     constructor() {

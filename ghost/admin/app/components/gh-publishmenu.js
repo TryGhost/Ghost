@@ -98,16 +98,24 @@ export default Component.extend({
         return runningText || 'Publishing';
     }),
 
-    buttonText: computed('postState', 'saveType', 'distributionAction', function () {
+    buttonText: computed('postState', 'saveType', 'distributionAction', 'sendEmailWhenPublished', function () {
         let saveType = this.saveType;
         let postState = this.postState;
-        let distributionAction = this.get('distributionAction');
+        let distributionAction = this.distributionAction;
         let buttonText;
 
         if (postState === 'draft') {
             switch (distributionAction) {
             case 'publish_send':
-                buttonText = (saveType === 'publish') ? 'Publish & send' : 'Schedule';
+                if (saveType === 'publish') {
+                    buttonText = 'Publish';
+
+                    if (this.canSendEmail && this.sendEmailWhenPublished && this.sendEmailWhenPublished !== 'none') {
+                        buttonText = `${buttonText} & send`;
+                    }
+                } else {
+                    buttonText = 'Schedule';
+                }
                 break;
             case 'publish':
                 buttonText = (saveType === 'publish') ? 'Publish' : 'Schedule';
