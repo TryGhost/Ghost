@@ -65,7 +65,7 @@
     "@tryghost/custom-theme-settings-service": "0.3.0",
     "@tryghost/debug": "0.1.8",
     "@tryghost/email-analytics-provider-mailgun": "1.0.3",
-    "@tryghost/email-analytics-service": "1.0.2",
+    "@tryghost/email-analytics-service": "1.0.3",
     "@tryghost/errors": "0.2.16",
     "@tryghost/express-dynamic-redirects": "0.2.0",
     "@tryghost/helpers": "1.1.52",
