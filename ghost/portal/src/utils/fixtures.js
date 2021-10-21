@@ -14,7 +14,7 @@ function objectId() {
 export function getSiteData({
     products = getProductsData({numOfProducts: 1}),
     portalProducts = products.map(p => p.id),
-    portalPlans: portal_plans = ['yearly']
+    portalPlans: portal_plans = ['free', 'monthly', 'yearly']
 } = {}) {
     return {
         title: 'The Blueprint',
