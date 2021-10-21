@@ -1,6 +1,6 @@
-const htmlToText = require('html-to-text');
-
 module.exports = function htmlToPlaintext(html) {
+    const htmlToText = require('html-to-text');
+
     return htmlToText.fromString(html, {
         wordwrap: 80,
         ignoreImage: true,

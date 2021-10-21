@@ -8,7 +8,6 @@ const limitService = require('../services/limits');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
-const {gravatar} = require('../lib/image');
 const {pipeline} = require('@tryghost/promise');
 const validatePassword = require('../lib/validate-password');
 const permissions = require('../services/permissions');
@@ -191,6 +190,8 @@ User = ghostBookshelf.Model.extend({
         // If the user's email is set & has changed & we are not importing
         if (self.hasChanged('email') && self.get('email') && !options.importing) {
             tasks.gravatar = (function lookUpGravatar() {
+                const {gravatar} = require('../lib/image');
+
                 return gravatar.lookup({
                     email: self.get('email')
                 }).then(function (response) {
