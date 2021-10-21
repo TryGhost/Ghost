@@ -239,3 +239,23 @@
     margin-left: 0;
     margin-right: 6px;
 }
+
+@media (max-width: 1280px) {
+    .gh-offer-portal-preview {
+        display: none;
+    }
+
+    .gh-offer.circle-bg::before {
+        display: none;
+    }
+
+    .gh-offer.circle-bg .gh-canvas-header {
+        background: var(--main-bg-color);
+        position: sticky;
+    }
+
+    .gh-offer .gh-main-layout.content-preview {
+        display: flex;
+        flex-direction: column;
+    }
+}

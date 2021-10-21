@@ -1,4 +1,4 @@
-<section class="gh-canvas circle-bg" {{did-insert this.setup}}>
+<section class="gh-canvas gh-offer circle-bg" {{did-insert this.setup}}>
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             <LinkTo @route="offers" data-test-link="offers-back">Offers</LinkTo>
@@ -186,7 +186,7 @@
                                 </GhFormGroup>
                             </div>
                             <GhFormGroup @errors={{this.offer.errors}} @property="displayDescription">
-                                <label for="description" class="fw6">Description</label>
+                                <label for="description" class="fw6">Display description</label>
                                 <GhTextarea
                                     @id="description"
                                     @name="description"
