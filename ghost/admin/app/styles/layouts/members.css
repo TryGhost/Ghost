@@ -1679,10 +1679,11 @@ p.gh-members-import-errordetail:first-of-type {
 
 /* Member's product list */
 .gh-member-product-container {
-    border: 1px solid var(--whitegrey);
-    border-radius: 3px;
-    margin-bottom: 20px;
-    padding: 24px;
+    grid-row-gap: 24px;
+}
+
+.gh-cp-memberproduct {
+    margin-bottom: 0 !important;
 }
 
 .gh-memberproduct-name {
@@ -1804,8 +1805,17 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-memberproduct-subscription {
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+}
+
+.gh-memberproduct-price-container {
+    display: flex;
+    align-items: flex-start;
+}
+
+.gh-cp-memberproduct:not(.multiple-subs) .gh-memberproduct-price-container {
+    margin-top: -19px;
 }
 
 .gh-cp-memberproduct .gh-product-card-price {
@@ -1813,12 +1823,11 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-cp-memberproduct:not(.multiple-subs) .gh-product-card-price {
-    margin-top: -19px;
     padding: 15px 18px;
 }
 
 .product-actions-menu {
-    top: calc(100% - 16px);
+    top: calc(100% - 36px);
     right: 0px;
     left: auto;
 }
@@ -1827,16 +1836,9 @@ p.gh-members-import-errordetail:first-of-type {
     top: calc(100% + 6px);
 }
 
-.gh-cp-memberproduct .gh-memberproduct-subscription .action-menu {
-    margin-left: 3vw;
-}
-
-.gh-cp-memberproduct:not(.multiple-subs) .gh-memberproduct-subscription .action-menu {
-    margin-top: -28px;
-}
-
 .gh-memberproduct-subscription .action-menu .gh-btn-subscription-action:not(:hover) {
-    border-color: var(--main-bg-color);
+    border: 1px solid var(--whitegrey);
+    background: var(--main-bg-color) !important;
     box-shadow: none;
 }
 

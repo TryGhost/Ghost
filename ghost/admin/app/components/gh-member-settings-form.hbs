@@ -147,8 +147,8 @@
             {{/unless}}
 
             {{#each this.products as |product|}}
-                <div class="gh-member-product-container">
-                    <div class="gh-cp-memberproduct {{if (gt product.subscriptions.length 1) "multiple-subs" ""}}">
+                <div class="gh-main-section-content grey gh-member-product-container">
+                    <div class="gh-main-content-card gh-cp-memberproduct {{if (gt product.subscriptions.length 1) "multiple-subs" ""}}">
                         <h3 class="gh-memberproduct-name">
                             {{product.name}}
                             {{#if (gt product.subscriptions.length 1)}}
@@ -175,19 +175,22 @@
                                     {{/if}}
                                     {{#if sub.offer}}
                                         <div>
-                                            <span style="font-weight: bold;"> {{sub.offer.name}} </span>
+                                            <span class="gh-cp-memberproduct-pricelabel"> {{sub.offer.name}} </span>
                                             offer
                                             {{#if (eq sub.offer.type 'fixed')}}
                                                 ({{currency-symbol sub.offer.currency}}{{gh-price-amount sub.offer.amount}} off)
                                             {{else}}
                                                 ({{sub.offer.amount}}% off)
                                             {{/if}}
-                                            applied to subscription</div>
+                                            applied to subscription
+                                        </div>
                                     {{/if}}
-                                    <div class="gh-memberproduct-created">Created on {{sub.startDate}}</div>
+                                    <div class="gh-memberproduct-created">
+                                        Created on {{sub.startDate}}
+                                    </div>
                                 </div>
 
-                                <div class="flex items-center">
+                                <div class="gh-memberproduct-price-container">
                                     <div class="gh-product-card-price">
                                         <div class="flex items-start">
                                             <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
