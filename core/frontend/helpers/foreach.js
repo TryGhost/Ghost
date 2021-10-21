@@ -2,14 +2,23 @@
 // Usage: `{{#foreach data}}{{/foreach}}`
 //
 // Block helper designed for looping through posts
+const {checks} = require('../services/proxy');
+const {hbs} = require('../services/rendering');
+
 const _ = require('lodash');
-const {logging, i18n, hbs, checks} = require('../services/proxy');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
+
 const {Utils: hbsUtils, handlebars: {createFrame}} = hbs;
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 
+const messages = {
+    iteratorNeeded: 'Need to pass an iterator to {{#foreach}}'
+};
+
 module.exports = function foreach(items, options) {
     if (!options) {
-        logging.warn(i18n.t('warnings.helpers.foreach.iteratorNeeded'));
+        logging.warn(tpl(messages.iteratorNeeded));
     }
 
     if (hbsUtils.isFunction(items)) {

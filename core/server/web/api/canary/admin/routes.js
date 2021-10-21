@@ -4,6 +4,7 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
 const shared = require('../../../shared');
+const labs = require('../../../../../shared/labs');
 
 module.exports = function apiRoutes() {
     const router = express.Router('canary admin');
@@ -97,6 +98,12 @@ module.exports = function apiRoutes() {
     router.get('/members', mw.authAdminApi, http(api.members.browse));
     router.post('/members', mw.authAdminApi, http(api.members.add));
     router.del('/members', mw.authAdminApi, http(api.members.bulkDestroy));
+    router.put('/members/bulk', mw.authAdminApi, http(api.members.bulkEdit));
+
+    router.get('/offers', labs.enabledMiddleware('offers'), mw.authAdminApi, http(api.offers.browse));
+    router.post('/offers', labs.enabledMiddleware('offers'), mw.authAdminApi, http(api.offers.add));
+    router.get('/offers/:id', labs.enabledMiddleware('offers'), mw.authAdminApi, http(api.offers.read));
+    router.put('/offers/:id', labs.enabledMiddleware('offers'), mw.authAdminApi, http(api.offers.edit));
 
     router.get('/members/stats/count', mw.authAdminApi, http(api.members.memberStats));
     router.get('/members/stats/mrr', mw.authAdminApi, http(api.members.mrrStats));
@@ -270,6 +277,10 @@ module.exports = function apiRoutes() {
     router.post('/snippets', mw.authAdminApi, http(api.snippets.add));
     router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
     router.del('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
+
+    // ## Custom theme settings
+    router.get('/custom_theme_settings', mw.authAdminApi, labs.enabledMiddleware('customThemeSettings'), http(api.customThemeSettings.browse));
+    router.put('/custom_theme_settings', mw.authAdminApi, labs.enabledMiddleware('customThemeSettings'), http(api.customThemeSettings.edit));
 
     return router;
 };

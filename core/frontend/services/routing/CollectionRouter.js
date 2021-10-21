@@ -6,16 +6,13 @@ const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 const RSSRouter = require('./RSSRouter');
 
-// This emits its own routing events AND listens to settings.timezone.edited :(
-const events = require('../../../server/lib/common/events');
-
 /**
  * @description Collection Router for post resource.
  *
  * Fundamental router to define where resources live and how their url structure is.
  */
 class CollectionRouter extends ParentRouter {
-    constructor(mainRoute, object, RESOURCE_CONFIG) {
+    constructor(mainRoute, object, RESOURCE_CONFIG, routerCreated) {
         super('CollectionRouter');
 
         this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.post;
@@ -55,11 +52,11 @@ class CollectionRouter extends ParentRouter {
         };
 
         this.context = [this.routerName];
+        this.routerCreated = routerCreated;
 
         debug(this.name, this.route, this.permalinks);
 
         this._registerRoutes();
-        this._listeners();
     }
 
     /**
@@ -92,7 +89,7 @@ class CollectionRouter extends ParentRouter {
         // REGISTER: permalinks e.g. /:slug/, /podcast/:slug
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 
-        events.emit('router.created', this);
+        this.routerCreated(this);
     }
 
     /**
@@ -128,43 +125,6 @@ class CollectionRouter extends ParentRouter {
     }
 
     /**
-     * @description This router has listeners to react on changes which happen in Ghost.
-     * @private
-     */
-    _listeners() {
-        /**
-         * CASE: timezone changes
-         *
-         * If your permalink contains a date reference, we have to regenerate the urls.
-         *
-         * e.g. /:year/:month/:day/:slug/ or /:day/:slug/
-         */
-        this._onTimezoneEditedListener = this._onTimezoneEdited.bind(this);
-        events.on('settings.timezone.edited', this._onTimezoneEditedListener);
-    }
-
-    /**
-     * @description Helper function to handle a timezone change.
-     * @param settingModel
-     * @private
-     */
-    _onTimezoneEdited(settingModel) {
-        const newTimezone = settingModel.attributes.value;
-        const previousTimezone = settingModel._previousAttributes.value;
-
-        if (newTimezone === previousTimezone) {
-            return;
-        }
-
-        if (this.getPermalinks().getValue().match(/:year|:month|:day/)) {
-            debug('_onTimezoneEdited: trigger regeneration');
-
-            // @NOTE: The connected url generator will listen on this event and regenerate urls.
-            this.emit('updated');
-        }
-    }
-
-    /**
      * @description Get resource type of this router (always "posts")
      * @returns {string}
      */
@@ -195,12 +155,6 @@ class CollectionRouter extends ParentRouter {
         }
 
         return urlUtils.createUrl(urlUtils.urlJoin(this.route.value, this.rssRouter.route.value), options.absolute, options.secure);
-    }
-
-    reset() {
-        if (this._onTimezoneEditedListener) {
-            events.removeListener('settings.timezone.edited', this._onTimezoneEditedListener);
-        }
     }
 }
 

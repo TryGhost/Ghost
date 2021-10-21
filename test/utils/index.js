@@ -8,11 +8,11 @@ const _ = require('lodash');
 const models = require('../../core/server/models');
 
 // Other Test Utilities
-const acceptanceUtils = require('./acceptance-utils');
+const e2eUtils = require('./e2e-utils');
 const APIUtils = require('./api');
 const dbUtils = require('./db-utils');
 const fixtureUtils = require('./fixture-utils');
-const oldIntegrationUtils = require('./old-integration-utils');
+const oldIntegrationUtils = require('../regression/mock-express-style/utils/setup');
 const redirects = require('./redirects');
 const cacheRules = require('./fixtures/cache-rules');
 const context = require('./fixtures/context');
@@ -93,9 +93,9 @@ const createEmailedPost = async function createEmailedPost({postOptions, emailOp
 };
 
 module.exports = {
-    startGhost: acceptanceUtils.startGhost,
-    stopGhost: acceptanceUtils.stopGhost,
-    getExistingData: acceptanceUtils.getExistingData,
+    startGhost: e2eUtils.startGhost,
+    stopGhost: e2eUtils.stopGhost,
+    getExistingData: e2eUtils.getExistingData,
 
     teardownDb: dbUtils.teardown,
     truncate: dbUtils.truncate,
@@ -103,8 +103,6 @@ module.exports = {
     createUser: createUser,
     createPost: createPost,
     createEmailedPost,
-
-    integrationTesting: oldIntegrationUtils,
 
     /**
      * renderObject:    res.render(view, dbResponse)

@@ -1,8 +1,14 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
-const i18n = require('../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    invalidJsonFormat: 'Invalid JSON format, expected `{ db: [exportedData] }`',
+    checkImportJsonIsValid: 'check that the import file is valid JSON.'
+};
+
 let JSONHandler;
 
 JSONHandler = {
@@ -25,7 +31,7 @@ JSONHandler = {
                 if (_.keys(importData).length === 1) {
                     if (!importData.db || !Array.isArray(importData.db)) {
                         throw new errors.GhostError({
-                            message: i18n.t('errors.data.importer.handlers.json.invalidJsonFormat')
+                            message: tpl(messages.invalidJsonFormat)
                         });
                     }
 
@@ -37,7 +43,7 @@ JSONHandler = {
                 return Promise.reject(new errors.BadRequestError({
                     err: err,
                     message: err.message,
-                    help: i18n.t('errors.data.importer.handlers.json.checkImportJsonIsValid')
+                    help: tpl(messages.checkImportJsonIsValid)
                 }));
             }
         });

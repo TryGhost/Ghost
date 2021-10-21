@@ -48,6 +48,15 @@ const Member = ghostBookshelf.Model.extend({
                 joinTable: 'members_products',
                 joinFrom: 'member_id',
                 joinTo: 'product_id'
+            },
+            subscriptions: {
+                tableName: 'members_stripe_customers_subscriptions',
+                tableNameAs: 'subscriptions',
+                type: 'manyToMany',
+                joinTable: 'members_stripe_customers',
+                joinFrom: 'member_id',
+                joinTo: 'customer_id',
+                joinToForeign: 'customer_id'
             }
         };
     },
@@ -67,6 +76,11 @@ const Member = ghostBookshelf.Model.extend({
         labels: 'labels',
         stripeCustomers: 'members_stripe_customers',
         email_recipients: 'email_recipients'
+    },
+
+    productEvents() {
+        return this.hasMany('MemberProductEvent', 'member_id', 'id')
+            .query('orderBy', 'created_at', 'DESC');
     },
 
     products() {
@@ -126,13 +140,13 @@ const Member = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
-    onCreated: function onCreated(model, attrs, options) {
+    onCreated: function onCreated(model, options) {
         ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
         model.emitChange('added', options);
     },
 
-    onUpdated: function onUpdated(model, attrs, options) {
+    onUpdated: function onUpdated(model, options) {
         ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.emitChange('edited', options);
@@ -319,6 +333,19 @@ const Member = ghostBookshelf.Model.extend({
             });
         }
         return ghostBookshelf.Model.destroy.call(this, unfilteredOptions);
+    },
+
+    getLabelRelations(data, unfilteredOptions = {}) {
+        const query = ghostBookshelf.knex('members_labels')
+            .select('id')
+            .where('label_id', data.labelId)
+            .whereIn('member_id', data.memberIds);
+
+        if (unfilteredOptions.transacting) {
+            query.transacting(unfilteredOptions.transacting);
+        }
+
+        return query;
     }
 });
 

@@ -64,7 +64,7 @@ ImageImporter = {
         return importData;
     },
     doImport: function (imageData) {
-        const store = storage.getStorage();
+        const store = storage.getStorage('images');
 
         return Promise.map(imageData, function (image) {
             return store.save(image, image.targetDir).then(function (result) {

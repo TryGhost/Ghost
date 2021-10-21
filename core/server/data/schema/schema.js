@@ -384,6 +384,24 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
+    offers: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        active: {type: 'boolean', nullable: false, defaultTo: true},
+        name: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        code: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id'},
+        stripe_coupon_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
+        interval: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['month', 'year']]}},
+        currency: {type: 'string', maxlength: 50, nullable: true},
+        discount_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['percent', 'amount']]}},
+        discount_amount: {type: 'integer', nullable: false},
+        duration: {type: 'string', maxlength: 50, nullable: false},
+        duration_in_months: {type: 'integer', nullable: true},
+        portal_title: {type: 'string', maxlength: 191, nullable: false},
+        portal_description: {type: 'string', maxlength: 2000, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
     benefits: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},
@@ -434,6 +452,17 @@ module.exports = {
         to_status: {
             type: 'string', maxlength: 50, nullable: true, validations: {
                 isIn: [['free', 'paid', 'comped']]
+            }
+        },
+        created_at: {type: 'dateTime', nullable: false}
+    },
+    members_product_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id', cascadeDelete: false},
+        action: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
+                isIn: [['added', 'removed']]
             }
         },
         created_at: {type: 'dateTime', nullable: false}
@@ -499,6 +528,13 @@ module.exports = {
         plan_interval: {type: 'string', maxlength: 50, nullable: false},
         plan_amount: {type: 'integer', nullable: false},
         plan_currency: {type: 'string', maxLength: 3, nullable: false}
+    },
+    offer_redemptions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        offer_id: {type: 'string', maxlength: 24, nullable: false, references: 'offers.id', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        subscription_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_stripe_customers_subscriptions.id', cascadeDelete: true},
+        created_at: {type: 'dateTime', nullable: false}
     },
     members_subscribe_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -622,5 +658,35 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
+    },
+    temp_member_analytic_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        event_name: {type: 'string', maxlength: 50, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        member_id: {type: 'string', maxlength: 24, nullable: false},
+        member_status: {type: 'string', maxlength: 50, nullable: false},
+        entry_id: {type: 'string', maxlength: 24, nullable: true},
+        source_url: {type: 'string', maxlength: 2000, nullable: true},
+        metadata: {type: 'string', maxlength: 191, nullable: true}
+    },
+    custom_theme_settings: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        theme: {type: 'string', maxlength: 191, nullable: false},
+        key: {type: 'string', maxlength: 191, nullable: false},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            validations: {
+                isIn: [[
+                    'select',
+                    'boolean',
+                    'color',
+                    'text',
+                    'image'
+                ]]
+            }
+        },
+        value: {type: 'text', maxlength: 65535, nullable: true}
     }
 };

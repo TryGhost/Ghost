@@ -19,15 +19,24 @@ module.exports = function (Bookshelf) {
             const originalInsertSync = parentSync.insert;
             const self = this;
 
-            // deep clone attrs to avoid modifying underlying model attributes by reference
             parentSync.update = function update(attrs) {
-                attrs = self.formatOnWrite(_.cloneDeep(attrs));
-                return originalUpdateSync.apply(this, [attrs]);
+                self._isWriting = true;
+
+                const originalPromise = originalUpdateSync.apply(this, [attrs]);
+
+                return originalPromise.finally(function () {
+                    self._isWriting = false;
+                });
             };
 
-            parentSync.insert = function insert(attrs) {
-                attrs = self.formatOnWrite(_.cloneDeep(attrs));
-                return originalInsertSync.apply(this, [attrs]);
+            parentSync.insert = function insert() {
+                self._isWriting = true;
+
+                const originalPromise = originalInsertSync.apply(this);
+
+                return originalPromise.finally(function () {
+                    self._isWriting = false;
+                });
             };
 
             return parentSync;
@@ -42,6 +51,10 @@ module.exports = function (Bookshelf) {
 
         // format date before writing to DB, bools work
         format: function format(attrs) {
+            if (this._isWriting) {
+                attrs = this.formatOnWrite(attrs);
+            }
+
             return this.fixDatesWhenSave(attrs);
         },
 

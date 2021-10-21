@@ -2,6 +2,7 @@ const debug = require('@tryghost/debug')('themes');
 const _ = require('lodash');
 const fs = require('fs-extra');
 const config = require('../../../shared/config');
+const labs = require('../../../shared/labs');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
@@ -27,12 +28,14 @@ const check = async function check(theme, isZip) {
         debug('zip mode');
         checkedTheme = await gscan.checkZip(theme, {
             keepExtractedDir: true,
-            checkVersion: 'canary'
+            checkVersion: 'canary',
+            labs: labs.getAll()
         });
     } else {
         debug('non-zip mode');
         checkedTheme = await gscan.check(theme.path, {
-            checkVersion: 'canary'
+            checkVersion: 'canary',
+            labs: labs.getAll()
         });
     }
 

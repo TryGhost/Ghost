@@ -1,14 +1,21 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const i18n = require('../../../../../../shared/i18n');
-const {NotFoundError, ValidationError} = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+const {NotFoundError, ValidationError, BadRequestError} = require('@tryghost/errors');
+const validator = require('@tryghost/validator');
+
+const messages = {
+    invalidEmailReceived: 'Please send a valid email',
+    invalidEmailTypeReceived: 'Invalid email type received',
+    problemFindingSetting: 'Problem finding setting: {key}'
+};
 
 module.exports = {
     read(apiConfig, frame) {
         // @NOTE: was removed https://github.com/TryGhost/Ghost/issues/10373
         if (frame.options.key === 'ghost_head' || frame.options.key === 'ghost_foot') {
             return Promise.reject(new NotFoundError({
-                message: i18n.t('errors.api.settings.problemFindingSetting', {
+                message: tpl(messages.problemFindingSetting, {
                     key: frame.options.key
                 })
             }));
@@ -22,7 +29,7 @@ module.exports = {
             if (setting.key === 'ghost_head' || setting.key === 'ghost_foot') {
                 // @NOTE: was removed https://github.com/TryGhost/Ghost/issues/10373
                 errors.push(new NotFoundError({
-                    message: i18n.t('errors.api.settings.problemFindingSetting', {
+                    message: tpl(messages.problemFindingSetting, {
                         key: setting.key
                     })
                 }));
@@ -61,6 +68,22 @@ module.exports = {
 
         if (errors.length) {
             return Promise.reject(errors[0]);
+        }
+    },
+
+    updateMembersEmail(apiConfig, frame) {
+        const {email, type} = frame.data;
+
+        if (typeof email !== 'string' || !validator.isEmail(email)) {
+            throw new BadRequestError({
+                message: messages.invalidEmailReceived
+            });
+        }
+
+        if (!type || !['fromAddressUpdate', 'supportAddressUpdate'].includes(type)) {
+            throw new BadRequestError({
+                message: messages.invalidEmailTypeReceived
+            });
         }
     }
 };

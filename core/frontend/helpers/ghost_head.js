@@ -2,7 +2,10 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, escapeExpression, SafeString, logging, settingsCache, config, blogIcon, urlUtils} = require('../services/proxy');
+const {metaData, settingsCache, config, blogIcon, urlUtils, labs} = require('../services/proxy');
+const {escapeExpression, SafeString} = require('../services/rendering');
+
+const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
@@ -176,6 +179,12 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
             head.push('<meta name="generator" content="Ghost ' +
                 escapeExpression(safeVersion) + '" />');
 
+            // Ghost analytics tag
+            if (labs.isSet('membersActivity')) {
+                const postId = (dataRoot && dataRoot.post) ? dataRoot.post.id : '';
+                head.push(writeMetaTag('ghost-analytics-id', postId, 'name'));
+            }
+
             head.push('<link rel="alternate" type="application/rss+xml" title="' +
                 escapeExpression(meta.site.title) + '" href="' +
                 escapeExpression(meta.rssUrl) + '" />');
@@ -220,3 +229,5 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
             return new SafeString(head.join('\n    ').trim());
         });
 };
+
+module.exports.async = true;

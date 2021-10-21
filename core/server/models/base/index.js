@@ -21,6 +21,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
     // Bookshelf `hasTimestamps` - handles created_at and updated_at properties
     hasTimestamps: true,
 
+    requireFetch: false,
+
     // https://github.com/bookshelf/bookshelf/commit/a55db61feb8ad5911adb4f8c3b3d2a97a45bd6db
     parsedIdAttribute: function () {
         return false;
@@ -62,6 +64,16 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         return true;
+    }
+}, {
+    /**
+     * @template T
+     * @param {(transaction: import('knex').Transaction) => Promise<T>} fn
+     *
+     * @returns {Promise<T>}
+     */
+    transaction(fn) {
+        return ghostBookshelf.transaction(fn);
     }
 });
 

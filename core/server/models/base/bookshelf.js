@@ -10,9 +10,6 @@ const db = require('../../data/db');
 // Initializes a new Bookshelf instance called ghostBookshelf, for reference elsewhere in Ghost.
 const ghostBookshelf = bookshelf(db.knex);
 
-// Load the Bookshelf registry plugin, which helps us avoid circular dependencies
-ghostBookshelf.plugin('registry');
-
 ghostBookshelf.plugin(plugins.eagerLoad);
 
 // Add committed/rollback events.

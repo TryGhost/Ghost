@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:entry');
 const url = require('url');
 const config = require('../../../../shared/config');
-const urlService = require('../../../services/url');
+const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
 const helpers = require('../helpers');
 
@@ -60,7 +60,7 @@ module.exports = function entryController(req, res, next) {
              *
              * That's why we have to check against the router type.
              */
-            if (urlService.getResourceById(entry.id).config.type !== res.routerOptions.resourceType) {
+            if (routerManager.getResourceById(entry.id).config.type !== res.routerOptions.resourceType) {
                 debug('not my resource type');
                 return next();
             }

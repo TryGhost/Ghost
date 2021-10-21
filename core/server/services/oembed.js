@@ -1,9 +1,15 @@
 const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const {extract, hasProvider} = require('oembed-parser');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 const {CookieJar} = require('tough-cookie');
+
+const messages = {
+    noUrlProvided: 'No url provided.',
+    insufficientMetadata: 'URL contains insufficient metadata.'
+};
 
 const findUrlWithProvider = (url) => {
     let provider;
@@ -30,11 +36,6 @@ const findUrlWithProvider = (url) => {
 };
 
 /**
- * @typedef {Object} Ii18n
- * @prop {(key: string) => string} t
- */
-
-/**
  * @typedef {Object} IConfig
  * @prop {(key: string) => string} get
  */
@@ -47,19 +48,17 @@ class OEmbed {
     /**
      *
      * @param {Object} dependencies
-     * @param {Ii18n} dependencies.i18n
      * @param {IConfig} dependencies.config
      * @param {IExternalRequest} dependencies.externalRequest
      */
-    constructor({config, externalRequest, i18n}) {
+    constructor({config, externalRequest}) {
         this.config = config;
         this.externalRequest = externalRequest;
-        this.i18n = i18n;
     }
 
     unknownProvider(url) {
         return Promise.reject(new errors.ValidationError({
-            message: this.i18n.t('errors.api.oembed.unknownProvider'),
+            message: tpl(messages.unknownProvider),
             context: url
         }));
     }
@@ -101,8 +100,13 @@ class OEmbed {
         try {
             const cookieJar = new CookieJar();
             const response = await this.externalRequest(url, {cookieJar});
-            const html = response.body;
-            scraperResponse = await metascraper({html, url});
+
+            if (this.isIpOrLocalhost(response.url)) {
+                scraperResponse = {};
+            } else {
+                const html = response.body;
+                scraperResponse = await metascraper({html, url});
+            }
         } catch (err) {
             return Promise.reject(err);
         }
@@ -124,7 +128,7 @@ class OEmbed {
         }
 
         return Promise.reject(new errors.ValidationError({
-            message: this.i18n.t('errors.api.oembed.insufficientMetadata'),
+            message: tpl(messages.insufficientMetadata),
             context: url
         }));
     }
@@ -153,6 +157,12 @@ class OEmbed {
         }
     }
 
+    /**
+     * @param {string} _url
+     * @param {string} [cardType]
+     *
+     * @returns {Promise<Object>}
+     */
     fetchOembedData(_url, cardType) {
         // parse the url then validate the protocol and host to make sure it's
         // http(s) and not an IP address or localhost to avoid potential access to
@@ -252,6 +262,36 @@ class OEmbed {
                 }).catch(() => {});
             }
         });
+    }
+
+    /**
+     * @param {string} url - oembed URL
+     * @param {string} type - card type
+     *
+     * @returns {Promise<Object>}
+     */
+    async fetchOembedDataFromUrl(url, type) {
+        let data;
+
+        try {
+            if (type === 'bookmark') {
+                return this.fetchBookmarkData(url);
+            }
+
+            data = await this.fetchOembedData(url);
+
+            if (!data && !type) {
+                data = await this.fetchBookmarkData(url);
+            }
+
+            if (!data) {
+                data = await this.unknownProvider(url);
+            }
+
+            return data;
+        } catch (e) {
+            return this.errorHandler(url);
+        }
     }
 }
 

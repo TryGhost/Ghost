@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:preview');
 const config = require('../../../../shared/config');
-const urlService = require('../../url');
+const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
 const helpers = require('../helpers');
 
@@ -50,7 +50,7 @@ module.exports = function previewController(req, res, next) {
             }
 
             if (post.status === 'published') {
-                return urlUtils.redirect301(res, urlService.getUrlByResourceId(post.id, {withSubdirectory: true}));
+                return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
             if (res.locals.apiVersion !== 'v0.1' && res.locals.apiVersion !== 'v2') {

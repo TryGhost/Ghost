@@ -6,24 +6,30 @@
 //
 // Returns the URL for the current object scope i.e. If inside a post scope will return image permalink
 // `absolute` flag outputs absolute URL, else URL is relative.
+const {urlUtils} = require('../services/proxy');
 
 const url = require('url');
 const _ = require('lodash');
-const {urlUtils, logging, i18n} = require('../services/proxy');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    attrIsRequired: 'Attribute is required e.g. {{img_url feature_image}}'
+};
 
 const STATIC_IMAGE_URL_PREFIX = `${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 
 module.exports = function imgUrl(requestedImageUrl, options) {
     // CASE: if no url is passed, e.g. `{{img_url}}` we show a warning
     if (arguments.length < 2) {
-        logging.warn(i18n.t('warnings.helpers.img_url.attrIsRequired'));
+        logging.warn(tpl(messages.attrIsRequired));
         return;
     }
 
     // CASE: if url is passed, but it is undefined, then the attribute was
     // an unknown value, e.g. {{img_url feature_img}} and we also show a warning
     if (requestedImageUrl === undefined) {
-        logging.warn(i18n.t('warnings.helpers.img_url.attrIsRequired'));
+        logging.warn(tpl(messages.attrIsRequired));
         return;
     }
 

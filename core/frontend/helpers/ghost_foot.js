@@ -2,7 +2,8 @@
 // Usage: `{{ghost_foot}}`
 //
 // Outputs scripts and other assets at the bottom of a Ghost theme
-const {SafeString, settingsCache} = require('../services/proxy');
+const {settingsCache} = require('../services/proxy');
+const {SafeString} = require('../services/rendering');
 const _ = require('lodash');
 
 // We use the name ghost_foot to match the helper for consistency:

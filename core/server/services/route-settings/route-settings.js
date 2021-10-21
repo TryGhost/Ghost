@@ -2,13 +2,18 @@ const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const fs = require('fs-extra');
 const path = require('path');
-const urlService = require('../../../frontend/services/url');
+const crypto = require('crypto');
+const urlService = require('../url');
 
 const debug = require('@tryghost/debug')('services:route-settings');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
+const SettingsLoader = require('./settings-loader');
+const parseYaml = require('./yaml-parser');
+
+const settingsLoader = new SettingsLoader({parseYaml});
 
 const messages = {
     loadError: 'Could not load {filename} file.'
@@ -29,17 +34,13 @@ const messages = {
 const filename = 'routes';
 const ext = 'yaml';
 
-const getSettingsFolder = async () => {
-    return config.getContentPath('settings');
-};
-
-const getSettingsFilePath = async () => {
-    const settingsFolder = await getSettingsFolder();
+const getSettingsFilePath = () => {
+    const settingsFolder = config.getContentPath('settings');
     return path.join(settingsFolder, `${filename}.${ext}`);
 };
 
-const getBackupFilePath = async () => {
-    const settingsFolder = await getSettingsFolder();
+const getBackupFilePath = () => {
+    const settingsFolder = config.getContentPath('settings');
     return path.join(settingsFolder, `${filename}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.${ext}`);
 };
 
@@ -73,8 +74,8 @@ const readFile = (settingsFilePath) => {
 };
 
 const setFromFilePath = async (filePath) => {
-    const settingsPath = await getSettingsFilePath();
-    const backupPath = await getBackupFilePath();
+    const settingsPath = getSettingsFilePath();
+    const backupPath = getBackupFilePath();
 
     await createBackupFile(settingsPath, backupPath);
     await saveFile(filePath, settingsPath);
@@ -134,5 +135,30 @@ const get = async () => {
     return readFile(settingsFilePath);
 };
 
-module.exports.setFromFilePath = setFromFilePath;
-module.exports.get = get;
+/**
+ * md5 hashes of default routes settings
+ */
+const defaultRoutesSettingHash = '3d180d52c663d173a6be791ef411ed01';
+
+const calculateHash = (data) => {
+    return crypto.createHash('md5')
+        .update(data, 'binary')
+        .digest('hex');
+};
+
+const getDefaultHash = () => {
+    return defaultRoutesSettingHash;
+};
+
+const getCurrentHash = async () => {
+    const data = await settingsLoader.loadSettings();
+
+    return calculateHash(JSON.stringify(data));
+};
+
+module.exports = {
+    getDefaultHash: getDefaultHash,
+    setFromFilePath: setFromFilePath,
+    get: get,
+    getCurrentHash: getCurrentHash
+};

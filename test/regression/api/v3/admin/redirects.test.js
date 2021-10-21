@@ -383,21 +383,6 @@ describe('Redirects API', function () {
         });
     });
 
-    // https://github.com/TryGhost/Ghost/issues/10898
-    describe('Merge querystring', function () {
-        it('toURL param takes precedence, other params pass through', function () {
-            return startGhost({forceStart: true, redirectsFileExt: '.json'})
-                .then(function () {
-                    return request
-                        .get('/test-params/?q=123&lang=js')
-                        .expect(301)
-                        .then(function (res) {
-                            res.headers.location.should.eql('/result?q=abc&lang=js');
-                        });
-                });
-        });
-    });
-
     // TODO: For backward compatibility, we only check if download, upload endpoints work here.
     // when updating to v4, the old endpoints should be updated to the new ones.
     // And the tests below should be removed.

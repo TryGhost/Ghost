@@ -15,7 +15,7 @@ class SiteMapManager {
         this.posts = options.posts || this.createPostsGenerator(options);
         this.users = this.authors = options.authors || this.createUsersGenerator(options);
         this.tags = options.tags || this.createTagsGenerator(options);
-        this.index = options.index || this.createIndexGenerator(options);
+        this.index = options.index || this.createIndexGenerator();
 
         events.on('router.created', (router) => {
             if (router.name === 'StaticRoutesRouter') {

@@ -42,6 +42,19 @@ module.exports = {
     },
 
     /**
+     * Gets a router by it's internal router name
+     * @param {String} name internal router name
+     * @returns {Express-Router}
+     */
+    getRouterByName(name) {
+        for (let routerKey in routers) {
+            if (routers[routerKey].name === name) {
+                return routers[routerKey];
+            }
+        }
+    },
+
+    /**
      *
      *
      * Hierarchy for primary rss url:

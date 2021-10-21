@@ -1,8 +1,14 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
+
+const messages = {
+    noUserFound: 'No user found',
+    postNotFound: 'Post not found.',
+    notEnoughPermission: 'You do not have permission to perform this action'
+};
 
 /**
  * Why and when do we have to fetch `authors` by default?
@@ -298,7 +304,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
             if (!authorId) {
                 return Promise.reject(new errors.NotFoundError({
-                    message: i18n.t('errors.models.post.noUserFound')
+                    message: tpl(messages.noUserFound)
                 }));
             }
 
@@ -353,7 +359,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     .then(function then(foundPostModel) {
                         if (!foundPostModel) {
                             throw new errors.NotFoundError({
-                                message: i18n.t('errors.models.post.postNotFound')
+                                message: tpl(messages.postNotFound)
                             });
                         }
 
@@ -449,7 +455,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             }
 
             return Promise.reject(new errors.NoPermissionError({
-                message: i18n.t('errors.models.post.notEnoughPermission')
+                message: tpl(messages.notEnoughPermission)
             }));
         }
     });

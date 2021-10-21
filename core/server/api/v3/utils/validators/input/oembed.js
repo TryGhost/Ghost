@@ -1,12 +1,16 @@
 const Promise = require('bluebird');
-const i18n = require('../../../../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+
+const messages = {
+    noUrlProvided: 'No url provided.'
+};
 
 module.exports = {
     read(apiConfig, frame) {
         if (!frame.data.url || !frame.data.url.trim()) {
             return Promise.reject(new errors.BadRequestError({
-                message: i18n.t('errors.api.oembed.noUrlProvided')
+                message: tpl(messages.noUrlProvided)
             }));
         }
     }

@@ -7,6 +7,7 @@ const urlUtils = require('../../../shared/url-utils');
 const membersService = require('../../services/members');
 const middleware = membersService.middleware;
 const shared = require('../shared');
+const labs = require('../../../shared/labs');
 
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
@@ -34,7 +35,9 @@ module.exports = function setupMembersApp() {
     // We don't want to add global bodyParser middleware as that interfers with stripe webhook requests on - `/webhooks`.
     membersApp.get('/api/member', middleware.getMemberData);
     membersApp.put('/api/member', bodyParser.json({limit: '1mb'}), middleware.updateMemberData);
+    membersApp.post('/api/member/email', bodyParser.json({limit: '1mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
     membersApp.get('/api/session', middleware.getIdentityToken);
+    membersApp.get('/api/offers/:id', labs.enabledMiddleware('offers'), middleware.getOfferData);
     membersApp.delete('/api/session', middleware.deleteSession);
     membersApp.get('/api/site', middleware.getMemberSiteData);
 
@@ -43,6 +46,7 @@ module.exports = function setupMembersApp() {
     membersApp.post('/api/create-stripe-checkout-session', (req, res, next) => membersService.api.middleware.createCheckoutSession(req, res, next));
     membersApp.post('/api/create-stripe-update-session', (req, res, next) => membersService.api.middleware.createCheckoutSetupSession(req, res, next));
     membersApp.put('/api/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
+    membersApp.post('/api/events', labs.enabledMiddleware('membersActivity'), middleware.loadMemberSession, (req, res, next) => membersService.api.middleware.createEvents(req, res, next));
 
     // API error handling
     membersApp.use('/api', shared.middlewares.errorHandler.resourceNotFound);

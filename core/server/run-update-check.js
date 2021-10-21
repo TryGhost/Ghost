@@ -52,9 +52,6 @@ if (parentPort) {
 
     const settings = require('./services/settings');
     await settings.init();
-
-    const i18n = require('../shared/i18n');
-    i18n.init();
     // Finished INIT
 
     await updateCheck({logging});

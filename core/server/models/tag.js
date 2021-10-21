@@ -1,7 +1,11 @@
 const ghostBookshelf = require('./base');
-const i18n = require('../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
+
+const messages = {
+    tagNotFound: 'Tag not found.'
+};
 
 let Tag;
 let Tags;
@@ -73,13 +77,13 @@ Tag = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
-    onCreated: function onCreated(model, attrs, options) {
+    onCreated: function onCreated(model, options) {
         ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
         model.emitChange('added', options);
     },
 
-    onUpdated: function onUpdated(model, attrs, options) {
+    onUpdated: function onUpdated(model, options) {
         ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.emitChange('edited', options);
@@ -175,7 +179,7 @@ Tag = ghostBookshelf.Model.extend({
             .then(function destroyTagsAndPost(tag) {
                 if (!tag) {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.tags.tagNotFound')
+                        message: tpl(messages.tagNotFound)
                     }));
                 }
 

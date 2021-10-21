@@ -7,12 +7,18 @@ const path = require('path');
 const Promise = require('bluebird');
 const moment = require('moment');
 const config = require('../../../shared/config');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const StorageBase = require('ghost-storage-base');
+
+const messages = {
+    imageNotFound: 'Image not found',
+    imageNotFoundWithRef: 'Image not found: {img}',
+    cannotReadImage: 'Could not read image: {img}'
+};
 
 class LocalFileStore extends StorageBase {
     constructor() {
@@ -23,27 +29,25 @@ class LocalFileStore extends StorageBase {
 
     /**
      * Saves a buffer in the targetPath
-     * - buffer is an instance of Buffer
-     * - returns a Promise which returns the full URL to retrieve the data
+     * @param {Buffer} buffer is an instance of Buffer
+     * @param {String} targetPath path to which the buffer should be written
+     * @returns {Promise<String>} a URL to retrieve the data
      */
-    saveRaw(buffer, targetPath) {
+    async saveRaw(buffer, targetPath) {
         const storagePath = path.join(this.storagePath, targetPath);
         const targetDir = path.dirname(storagePath);
 
-        return fs.mkdirs(targetDir)
-            .then(() => {
-                return fs.writeFile(storagePath, buffer);
-            })
-            .then(() => {
-                // For local file system storage can use relative path so add a slash
-                const fullUrl = (
-                    urlUtils.urlJoin('/', urlUtils.getSubdir(),
-                        urlUtils.STATIC_IMAGE_URL_PREFIX,
-                        targetPath)
-                ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
+        await fs.mkdirs(targetDir);
+        await fs.writeFile(storagePath, buffer);
 
-                return fullUrl;
-            });
+        // For local file system storage can use relative path so add a slash
+        const fullUrl = (
+            urlUtils.urlJoin('/', urlUtils.getSubdir(),
+                urlUtils.STATIC_IMAGE_URL_PREFIX,
+                targetPath)
+        ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
+
+        return fullUrl;
     }
 
     /**
@@ -51,34 +55,32 @@ class LocalFileStore extends StorageBase {
      * - image is the express image object
      * - returns a promise which ultimately returns the full url to the uploaded image
      *
-     * @param image
-     * @param targetDir
-     * @returns {*}
+     * @param {StorageBase.Image} image
+     * @param {String} targetDir
+     * @returns {Promise<String>}
      */
-    save(image, targetDir) {
+    async save(image, targetDir) {
         let targetFilename;
 
         // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
         targetDir = targetDir || this.getTargetDir(this.storagePath);
 
-        return this.getUniqueFileName(image, targetDir).then((filename) => {
-            targetFilename = filename;
-            return fs.mkdirs(targetDir);
-        }).then(() => {
-            return fs.copy(image.path, targetFilename);
-        }).then(() => {
-            // The src for the image must be in URI format, not a file system path, which in Windows uses \
-            // For local file system storage can use relative path so add a slash
-            const fullUrl = (
-                urlUtils.urlJoin('/', urlUtils.getSubdir(),
-                    urlUtils.STATIC_IMAGE_URL_PREFIX,
-                    path.relative(this.storagePath, targetFilename))
-            ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
+        const filename = await this.getUniqueFileName(image, targetDir);
 
-            return fullUrl;
-        }).catch((e) => {
-            return Promise.reject(e);
-        });
+        targetFilename = filename;
+        await fs.mkdirs(targetDir);
+
+        await fs.copy(image.path, targetFilename);
+
+        // The src for the image must be in URI format, not a file system path, which in Windows uses \
+        // For local file system storage can use relative path so add a slash
+        const fullUrl = (
+            urlUtils.urlJoin('/', urlUtils.getSubdir(),
+                urlUtils.STATIC_IMAGE_URL_PREFIX,
+                path.relative(this.storagePath, targetFilename))
+        ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
+
+        return fullUrl;
     }
 
     exists(fileName, targetDir) {
@@ -119,7 +121,7 @@ class LocalFileStore extends StorageBase {
                 if (err) {
                     if (err.statusCode === 404) {
                         return next(new errors.NotFoundError({
-                            message: i18n.t('errors.errors.imageNotFound'),
+                            message: tpl(messages.imageNotFound),
                             code: 'STATIC_FILE_NOT_FOUND',
                             property: err.path
                         }));
@@ -169,7 +171,7 @@ class LocalFileStore extends StorageBase {
                     if (err.code === 'ENOENT' || err.code === 'ENOTDIR') {
                         return reject(new errors.NotFoundError({
                             err: err,
-                            message: i18n.t('errors.errors.imageNotFoundWithRef', {img: options.path})
+                            message: tpl(messages.imageNotFoundWithRef, {img: options.path})
                         }));
                     }
 
@@ -183,7 +185,7 @@ class LocalFileStore extends StorageBase {
 
                     return reject(new errors.GhostError({
                         err: err,
-                        message: i18n.t('errors.errors.cannotReadImage', {img: options.path})
+                        message: tpl(messages.cannotReadImage, {img: options.path})
                     }));
                 }
 

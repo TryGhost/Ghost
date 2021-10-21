@@ -105,13 +105,20 @@ jobs:
           mysql root password: 'root'
 
       - run: yarn
-      - run: yarn test:acceptance
+      - run: yarn test:e2e
+        env:
+          database__connection__filename: /dev/shm/ghost-test.db
+      - run: yarn test:integration
         env:
           database__connection__filename: /dev/shm/ghost-test.db
       - run: yarn test:unit
       - run: yarn test:regression
         env:
           database__connection__filename: /dev/shm/ghost-test.db
+
+      - name: Unit test coverage
+        run: yarn cov:unit
+      - uses: codecov/codecov-action@v2
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'

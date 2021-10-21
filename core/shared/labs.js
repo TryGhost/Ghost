@@ -18,19 +18,14 @@ const messages = {
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'activitypub',
-    'matchHelper'
+    'multipleProducts'
 ];
 
 const ALPHA_FEATURES = [
-    'emailCardSegments',
-    'multipleProducts',
-    'savedIndicator',
-    'featureImgDragDrop',
-    'checkEmailList',
     'oauthLogin',
-    'membersFiltering',
-    'emailOnlyPosts',
-    'dashboardTwo'
+    'customThemeSettings',
+    'membersActivity',
+    'offers'
 ];
 
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
@@ -62,7 +57,7 @@ module.exports.isSet = function isSet(flag) {
 /**
  *
  * @param {object} options
- * @param {string} options.flagKey the interal lookup key of the flag e.g. labs.isSet(matchHelper)
+ * @param {string} options.flagKey the internal lookup key of the flag e.g. labs.isSet(matchHelper)
  * @param {string} options.flagName the user-facing name of the flag e.g. Match helper
  * @param {string} options.helperName Name of the helper to be enabled/disabled
  * @param {string} [options.errorMessage] Optional replacement error message
@@ -102,7 +97,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
 };
 
 module.exports.enabledMiddleware = flag => (req, res, next) => {
-    if (this.isSet(flag) === true) {
+    if (module.exports.isSet(flag) === true) {
         return next();
     } else {
         return next(new errors.NotFoundError());

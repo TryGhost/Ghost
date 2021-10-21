@@ -1,8 +1,8 @@
 # Content / Adapters
 
 
-An adapter is a way to override a default behaviour in Ghost.
-The default behaviour in Ghost is as following:
+An adapter is a way to override a default behavior in Ghost.
+The default behavior in Ghost is as following:
 
 ### LocalFileStorage
 By default Ghost will upload your images to the `content/images` folder.

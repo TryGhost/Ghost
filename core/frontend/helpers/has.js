@@ -4,9 +4,14 @@
 //
 // Checks if a post has a particular property
 
-const {logging, i18n} = require('../services/proxy');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
-const validAttrs = ['tag', 'author', 'slug','visibility', 'id', 'number', 'index', 'any', 'all'];
+const validAttrs = ['tag', 'author', 'slug', 'visibility', 'id', 'number', 'index', 'any', 'all'];
+
+const messages = {
+    invalidAttribute: 'Invalid or no attribute given to has helper'
+};
 
 function handleCount(ctxAttr, data) {
     if (!data || !_.isFinite(data.length)) {
@@ -155,7 +160,7 @@ module.exports = function has(options) {
     let result;
 
     if (_.isEmpty(attrs)) {
-        logging.warn(i18n.t('warnings.helpers.has.invalidAttribute'));
+        logging.warn(tpl(messages.invalidAttribute));
         return;
     }
 

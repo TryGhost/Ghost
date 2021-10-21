@@ -1,10 +1,19 @@
 // ### Navigation Helper
 // `{{navigation}}`
 // Outputs navigation menu of static urls
+const {SafeString, templates, hbs} = require('../services/rendering');
 
-const {SafeString, i18n, errors, templates, hbs} = require('../services/proxy');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const {slugify} = require('@tryghost/string');
 const _ = require('lodash');
+
+const messages = {
+    invalidData: 'navigation data is not an object or is a function',
+    valuesMustBeDefined: 'All values must be defined for label, url and current',
+    valuesMustBeString: 'Invalid value, Url and Label must be strings'
+};
+
 const createFrame = hbs.handlebars.createFrame;
 
 module.exports = function navigation(options) {
@@ -25,7 +34,7 @@ module.exports = function navigation(options) {
 
     if (!_.isObject(navigationData) || _.isFunction(navigationData)) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.navigation.invalidData')
+            message: tpl(messages.invalidData)
         });
     }
 
@@ -33,7 +42,7 @@ module.exports = function navigation(options) {
         return (_.isUndefined(e.label) || _.isUndefined(e.url));
     }).length > 0) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.navigation.valuesMustBeDefined')
+            message: tpl(messages.valuesMustBeDefined)
         });
     }
 
@@ -43,7 +52,7 @@ module.exports = function navigation(options) {
             (!_.isNull(e.url) && !_.isString(e.url)));
     }).length > 0) {
         throw new errors.IncorrectUsageError({
-            message: i18n.t('warnings.helpers.navigation.valuesMustBeString')
+            message: tpl(messages.valuesMustBeString)
         });
     }
 

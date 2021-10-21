@@ -6,15 +6,12 @@ const urlUtils = require('../../../shared/url-utils');
 const controllers = require('./controllers');
 const middlewares = require('./middlewares');
 
-// This emits its own routing events
-const events = require('../../../server/lib/common/events');
-
 /**
  * @description Taxonomies are groupings of posts based on a common relation.
  * Taxonomies do not change the url of a resource.
  */
 class TaxonomyRouter extends ParentRouter {
-    constructor(key, permalinks, RESOURCE_CONFIG) {
+    constructor(key, permalinks, RESOURCE_CONFIG, routerCreated) {
         super('Taxonomy');
 
         this.taxonomyKey = key;
@@ -27,6 +24,8 @@ class TaxonomyRouter extends ParentRouter {
         this.permalinks.getValue = () => {
             return this.permalinks.value;
         };
+
+        this.routerCreated = routerCreated;
 
         debug(this.permalinks);
 
@@ -60,7 +59,7 @@ class TaxonomyRouter extends ParentRouter {
             this.mountRoute(urlUtils.urlJoin(this.permalinks.value, 'edit'), this._redirectEditOption.bind(this));
         }
 
-        events.emit('router.created', this);
+        this.routerCreated(this);
     }
 
     /**

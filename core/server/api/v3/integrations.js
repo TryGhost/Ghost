@@ -1,6 +1,16 @@
-const i18n = require('../../../shared/i18n');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const tpl = require('@tryghost/tpl');
+const getIntegrationsServiceInstance = require('../../services/integrations/integrations-service');
+
+const integrationsService = getIntegrationsServiceInstance({
+    IntegrationModel: models.Integration,
+    ApiKeyModel: models.ApiKey
+});
+
+const messages = {
+    resourceNotFound: '{resource} not found.'
+};
 
 module.exports = {
     docName: 'integrations',
@@ -45,7 +55,7 @@ module.exports = {
             return models.Integration.findOne(data, Object.assign(options, {require: true}))
                 .catch(models.Integration.NotFoundError, () => {
                     throw new errors.NotFoundError({
-                        message: i18n.t('errors.api.resource.resourceNotFound', {
+                        message: tpl(messages.resourceNotFound, {
                             resource: 'Integration'
                         })
                     });
@@ -76,36 +86,7 @@ module.exports = {
             }
         },
         query({data, options}) {
-            if (options.keyid) {
-                return models.ApiKey.findOne({id: options.keyid})
-                    .then(async (model) => {
-                        if (!model) {
-                            throw new errors.NotFoundError({
-                                message: i18n.t('errors.api.resource.resourceNotFound', {
-                                    resource: 'ApiKey'
-                                })
-                            });
-                        }
-                        try {
-                            await models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, options, {id: options.keyid}));
-                            return models.Integration.findOne({id: options.id}, {
-                                withRelated: ['api_keys', 'webhooks']
-                            });
-                        } catch (err) {
-                            throw new errors.GhostError({
-                                err: err
-                            });
-                        }
-                    });
-            }
-            return models.Integration.edit(data, Object.assign(options, {require: true}))
-                .catch(models.Integration.NotFoundError, () => {
-                    throw new errors.NotFoundError({
-                        message: i18n.t('errors.api.resource.resourceNotFound', {
-                            resource: 'Integration'
-                        })
-                    });
-                });
+            return integrationsService.edit(data, options);
         }
     },
     add: {
@@ -159,7 +140,7 @@ module.exports = {
             return models.Integration.destroy(Object.assign(options, {require: true}))
                 .catch(models.Integration.NotFoundError, () => {
                     return Promise.reject(new errors.NotFoundError({
-                        message: i18n.t('errors.api.resource.resourceNotFound', {
+                        message: tpl(messages.resourceNotFound, {
                             resource: 'Integration'
                         })
                     }));

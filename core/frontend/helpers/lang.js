@@ -12,7 +12,7 @@
 // Language tags in HTML and XML
 // https://www.w3.org/International/articles/language-tags/
 
-const {SafeString} = require('../services/proxy');
+const {SafeString} = require('../services/rendering');
 
 module.exports = function lang(options) {
     const locale = options.data.site.locale;

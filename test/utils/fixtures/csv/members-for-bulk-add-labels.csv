@@ -1,0 +1,9 @@
+email,subscribed,labels
+member+bulk_add_labels_test_1@example.com,true,bulk-add-labels-test
+member+bulk_add_labels_test_2@example.com,true,bulk-add-labels-test
+member+bulk_add_labels_test_3@example.com,true,bulk-add-labels-test
+member+bulk_add_labels_test_4@example.com,true,bulk-add-labels-test
+member+bulk_add_labels_test_5@example.com,true,bulk-add-labels-test
+member+bulk_add_labels_test_6@example.com,true,bulk-add-labels-test
+member+bulk_add_labels_test_7@example.com,true,bulk-add-labels-test
+member+bulk_add_labels_test_8@example.com,true,bulk-add-labels-test

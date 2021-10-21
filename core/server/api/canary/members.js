@@ -8,8 +8,26 @@ const membersService = require('../../services/members');
 const labsService = require('../../../shared/labs');
 
 const settingsCache = require('../../../shared/settings-cache');
-const i18n = require('../../../shared/i18n');
+const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
+
+const messages = {
+    memberNotFound: 'Member not found.',
+    memberAlreadyExists: {
+        message: 'Member already exists',
+        context: 'Attempting to {action} member with existing email address.'
+    },
+    stripeNotConnected: {
+        message: 'Missing Stripe connection.',
+        context: 'Attempting to import members with Stripe data when there is no Stripe account connected.',
+        help: 'help'
+    },
+    stripeCustomerNotFound: {
+        context: 'Missing Stripe customer.',
+        help: 'Make sure you’re connected to the correct Stripe Account.'
+    },
+    resourceNotFound: '{resource} not found.'
+};
 
 const allowedIncludes = ['email_recipients', 'products'];
 
@@ -66,27 +84,15 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            const defaultWithRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct'];
+            let member = await membersService.api.memberBREADService.read(frame.data, frame.options);
 
-            if (!frame.options.withRelated) {
-                frame.options.withRelated = defaultWithRelated;
-            } else {
-                frame.options.withRelated = frame.options.withRelated.concat(defaultWithRelated);
-            }
-
-            if (frame.options.withRelated.includes('email_recipients')) {
-                frame.options.withRelated.push('email_recipients.email');
-            }
-
-            let model = await membersService.api.members.get(frame.data, frame.options);
-
-            if (!model) {
+            if (!member) {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.members.memberNotFound')
+                    message: tpl(messages.memberNotFound)
                 });
             }
 
-            return model;
+            return member;
         }
     },
 
@@ -120,9 +126,9 @@ module.exports = {
                     const property = frame.data.members[0].comped ? 'comped' : 'stripe_customer_id';
 
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.api.members.stripeNotConnected.message'),
-                        context: i18n.t('errors.api.members.stripeNotConnected.context'),
-                        help: i18n.t('errors.api.members.stripeNotConnected.help'),
+                        message: tpl(messages.stripeNotConnected.message),
+                        context: tpl(messages.stripeNotConnected.context),
+                        help: tpl(messages.stripeNotConnected.help),
                         property
                     });
                 }
@@ -136,8 +142,10 @@ module.exports = {
                     }, frame.options);
                 }
 
-                if (frame.data.members[0].comped) {
-                    await membersService.api.members.setComplimentarySubscription(member);
+                if (!labsService.isSet('multipleProducts')) {
+                    if (frame.data.members[0].comped) {
+                        await membersService.api.members.setComplimentarySubscription(member);
+                    }
                 }
 
                 if (frame.options.send_email) {
@@ -148,8 +156,8 @@ module.exports = {
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.models.member.memberAlreadyExists.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExists.context', {
+                        message: tpl(messages.memberAlreadyExists.message),
+                        context: tpl(messages.memberAlreadyExists.context, {
                             action: 'add'
                         })
                     });
@@ -162,8 +170,8 @@ module.exports = {
                 if (member && isStripeLinkingError) {
                     if (error.message.indexOf('customer') && error.code === 'resource_missing') {
                         error.message = `Member not imported. ${error.message}`;
-                        error.context = i18n.t('errors.api.members.stripeCustomerNotFound.context');
-                        error.help = i18n.t('errors.api.members.stripeCustomerNotFound.help');
+                        error.context = tpl(messages.stripeCustomerNotFound.context);
+                        error.help = tpl(messages.stripeCustomerNotFound.help);
                     }
 
                     await membersService.api.members.destroy({
@@ -200,14 +208,16 @@ module.exports = {
 
                 const hasCompedSubscription = !!member.related('stripeSubscriptions').find(sub => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active');
 
-                if (typeof frame.data.members[0].comped === 'boolean') {
-                    if (frame.data.members[0].comped && !hasCompedSubscription) {
-                        await membersService.api.members.setComplimentarySubscription(member);
-                    } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
-                        await membersService.api.members.cancelComplimentarySubscription(member);
-                    }
+                if (!labsService.isSet('multipleProducts')) {
+                    if (typeof frame.data.members[0].comped === 'boolean') {
+                        if (frame.data.members[0].comped && !hasCompedSubscription) {
+                            await membersService.api.members.setComplimentarySubscription(member);
+                        } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
+                            await membersService.api.members.cancelComplimentarySubscription(member);
+                        }
 
-                    await member.load(['stripeSubscriptions', 'products', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
+                        await member.load(['stripeSubscriptions', 'products', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
+                    }
                 }
 
                 await member.load(['stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
@@ -216,8 +226,8 @@ module.exports = {
             } catch (error) {
                 if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                     throw new errors.ValidationError({
-                        message: i18n.t('errors.models.member.memberAlreadyExists.message'),
-                        context: i18n.t('errors.models.member.memberAlreadyExists.context', {
+                        message: tpl(messages.memberAlreadyExists.message),
+                        context: tpl(messages.memberAlreadyExists.context, {
                             action: 'edit'
                         })
                     });
@@ -282,7 +292,7 @@ module.exports = {
             });
             if (!model) {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.members.memberNotFound')
+                    message: tpl(messages.memberNotFound)
                 });
             }
 
@@ -326,7 +336,7 @@ module.exports = {
             });
             if (!model) {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.members.memberNotFound')
+                    message: tpl(messages.memberNotFound)
                 });
             }
 
@@ -357,7 +367,7 @@ module.exports = {
                 id: frame.options.id
             }, frame.options)).catch(models.Member.NotFoundError, () => {
                 throw new errors.NotFoundError({
-                    message: i18n.t('errors.api.resource.resourceNotFound', {
+                    message: tpl(messages.resourceNotFound, {
                         resource: 'Member'
                     })
                 });
@@ -379,36 +389,7 @@ module.exports = {
             method: 'destroy'
         },
         async query(frame) {
-            const {all, filter, search} = frame.options;
-
-            if (!filter && !search && (!all || all !== true)) {
-                throw new errors.IncorrectUsageError({
-                    message: 'DELETE /members/ must be used with a filter or ?all=true'
-                });
-            }
-
-            const knexOptions = _.pick(frame.options, ['transacting']);
-            const filterOptions = Object.assign({}, knexOptions);
-
-            if (all !== true) {
-                if (filter) {
-                    filterOptions.filter = filter;
-                }
-
-                if (search) {
-                    filterOptions.search = search;
-                }
-            }
-
-            // fetch ids of all matching members
-            const memberRows = await models.Member
-                .getFilteredCollectionQuery(filterOptions)
-                .select('members.id')
-                .distinct();
-
-            const memberIds = memberRows.map(row => row.id);
-
-            const bulkDestroyResult = await models.Member.bulkDestroy(memberIds);
+            const bulkDestroyResult = await membersService.api.members.bulkDestroy(frame.options);
 
             // shaped to match the importer response
             return {
@@ -421,6 +402,34 @@ module.exports = {
                     errors: bulkDestroyResult.errors
                 }
             };
+        }
+    },
+
+    bulkEdit: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'all',
+            'filter',
+            'search'
+        ],
+        data: [
+            'action',
+            'meta'
+        ],
+        validation: {
+            data: {
+                action: {
+                    required: true,
+                    values: ['unsubscribe', 'addLabel', 'removeLabel']
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            return membersService.api.members.bulkEdit(frame.data.bulk, frame.options);
         }
     },
 
