@@ -1,23 +1,27 @@
 const common = require('../../lib/common');
 const _ = require('lodash');
 
-/**
- * RouterController
- *
- * @param {object} deps
- * @param {any} deps.memberRepository
- * @param {any} deps.StripePrice
- * @param {boolean} deps.allowSelfSignup
- * @param {any} deps.magicLinkService
- * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
- * @param {any} deps.tokenService
- * @param {{isSet(name: string): boolean}} deps.labsService
- * @param {any} deps.config
- * @param {any} deps.logging
- */
 module.exports = class RouterController {
+    /**
+     * RouterController
+     *
+     * @param {object} deps
+     * @param {any} deps.offersAPI
+     * @param {any} deps.paymentsService
+     * @param {any} deps.productRepository
+     * @param {any} deps.memberRepository
+     * @param {any} deps.StripePrice
+     * @param {boolean} deps.allowSelfSignup
+     * @param {any} deps.magicLinkService
+     * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
+     * @param {any} deps.tokenService
+     * @param {{isSet(name: string): boolean}} deps.labsService
+     * @param {any} deps.config
+     * @param {any} deps.logging
+     */
     constructor({
         offersAPI,
+        paymentsService,
         productRepository,
         memberRepository,
         StripePrice,
@@ -31,6 +35,7 @@ module.exports = class RouterController {
         logging
     }) {
         this._offersAPI = offersAPI;
+        this._paymentsService = paymentsService;
         this._productRepository = productRepository;
         this._memberRepository = memberRepository;
         this._StripePrice = StripePrice;
@@ -135,7 +140,7 @@ module.exports = class RouterController {
             return res.end('Bad Request.');
         }
 
-        let coupon = null;
+        let couponId = null;
         if (offerId && this.labsService.isSet('offers')) {
             try {
                 const offer = await this._offersAPI.getOffer({id: offerId});
@@ -152,9 +157,8 @@ module.exports = class RouterController {
                     ghostPriceId = tier.yearly_price_id;
                 }
 
-                coupon = {
-                    id: offer.stripe_coupon_id
-                };
+                const coupon = await this._paymentsService.getCouponForOffer(offerId);
+                couponId = coupon.id;
 
                 metadata.offer = offer.id;
             } catch (err) {
@@ -192,7 +196,7 @@ module.exports = class RouterController {
         if (!member) {
             const customer = null;
             const session = await this._stripeAPIService.createCheckoutSession(priceId, customer, {
-                coupon,
+                coupon: {id: couponId},
                 successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
                 cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 customerEmail: req.body.customerEmail,
@@ -237,7 +241,7 @@ module.exports = class RouterController {
 
         try {
             const session = await this._stripeAPIService.createCheckoutSession(priceId, stripeCustomer, {
-                coupon,
+                coupon: {id: couponId},
                 successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
                 cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 metadata: metadata
