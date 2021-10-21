@@ -351,6 +351,7 @@ module.exports = class StripeService {
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
      * @param {string} options.customerEmail
+     * @param {string} [options.coupon]
      *
      * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
      */
@@ -360,7 +361,7 @@ module.exports = class StripeService {
         await this._rateLimitBucket.throttle();
         let discounts;
         if (options.coupon) {
-            discounts = [{coupon: options.coupon.id}];
+            discounts = [{coupon: options.coupon}];
         }
         const session = await this._stripe.checkout.sessions.create({
             payment_method_types: ['card'],
