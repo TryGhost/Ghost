@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const juice = require('juice');
 const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
@@ -20,6 +19,7 @@ const ALLOWED_REPLACEMENTS = ['first_name'];
 const formatHtmlForEmail = function formatHtmlForEmail(html) {
     const juiceOptions = {inlinePseudoElements: true};
 
+    const juice = require('juice');
     let juicedHtml = juice(html, juiceOptions);
 
     // convert juiced HTML to a DOM-like interface for further manipulation

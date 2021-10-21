@@ -1,7 +1,5 @@
 const debug = require('@tryghost/debug')('web:oauth:app');
 const {URL} = require('url');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
@@ -36,6 +34,10 @@ module.exports = function setupOAuthApp() {
      */
     function googleOAuthMiddleware(clientId, secret) {
         return (req, res, next) => {
+            // Lazy-required to save boot time
+            const passport = require('passport');
+            const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
             const adminURL = urlUtils.urlFor('admin', true);
 
             //Create the callback url to be sent to Google
