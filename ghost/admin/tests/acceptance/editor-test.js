@@ -206,7 +206,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'draft post publish button text'
-            ).to.equal('Publish & send');
+            ).to.equal('Publish');
 
             // Publish the post
             await click('[data-test-publishmenu-save]');
@@ -315,7 +315,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after published post is unpublished'
-            ).to.equal('Publish & send');
+            ).to.equal('Publish');
 
             expect(
                 find('[data-test-publishmenu-draft]'),
@@ -409,7 +409,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
                 'publish menu save button updated after scheduled post is unscheduled'
-            ).to.equal('Publish & send');
+            ).to.equal('Publish');
 
             await click('[data-test-publishmenu-cancel]');
 
