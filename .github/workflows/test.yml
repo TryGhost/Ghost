@@ -131,7 +131,7 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       # Report time taken to metrics service
-      - uses: sam-lord/action-trigger-metric
+      - uses: sam-lord/action-trigger-metric@main
         with:
           metricName: 'test-time'
           metricValue: ${{ env.test_time }}
