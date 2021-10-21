@@ -196,7 +196,7 @@ module.exports = class RouterController {
         if (!member) {
             const customer = null;
             const session = await this._stripeAPIService.createCheckoutSession(priceId, customer, {
-                coupon: {id: couponId},
+                coupon: couponId,
                 successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
                 cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 customerEmail: req.body.customerEmail,
@@ -241,7 +241,7 @@ module.exports = class RouterController {
 
         try {
             const session = await this._stripeAPIService.createCheckoutSession(priceId, stripeCustomer, {
-                coupon: {id: couponId},
+                coupon: couponId,
                 successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
                 cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
                 metadata: metadata
