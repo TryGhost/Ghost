@@ -92,11 +92,13 @@
                     <li>
                         <LinkTo @route="offers" @alt="Offers">{{svg-jar "percentage"}}Offers</LinkTo>
                     </li>
-                    {{else}}
+                    {{/if}}
+
+                    {{#unless (feature "offers")}}
                     <li>
                         <LinkTo @route="integrations" @alt="Integrations" @title="Integrations" data-test-nav="dashboard">{{svg-jar "module"}}Integrations</LinkTo>
                     </li>
-                    {{/if}}
+                    {{/unless}}
                 {{/if}}
                 {{#unless (feature "offers")}}
                 <li><LinkTo @route="staff" data-test-nav="staff">{{svg-jar "staff"}}Staff</LinkTo></li>
