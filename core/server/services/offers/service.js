@@ -47,7 +47,7 @@ module.exports = {
                 offersEnabled = labs.isSet('offers');
 
                 if (offersEnabled) {
-                    const offers = await this.api.listOffers();
+                    const offers = await this.api.listOffers({});
                     for (const offer of offers) {
                         redirectManager.addRedirect(`/${offer.code}`, `/#/portal/offers/${offer.id}`, {permanent: false});
                     }
