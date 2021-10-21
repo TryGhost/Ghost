@@ -41,9 +41,12 @@
         </div>
 
         <div class="gh-nav-bottom">
-            <LinkTo class="gh-nav-design-tab" style="align-items: self-start" @route="settings.design.change-theme" {{on "click" (fn this.toggleSection null)}}>
-                <span>Themes</span>
-                <span class="active-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}</span>
+            <LinkTo class="gh-nav-design-tab" @route="settings.design.change-theme" {{on "click" (fn this.toggleSection null)}}>
+                <div>
+                    <span>Change theme</span>
+                    <span class="active-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}</span>
+                </div>
+                <div class="gh-nav-design-tabicon">{{svg-jar "sync"}}</div>
             </LinkTo>
         </div>
     </section>
