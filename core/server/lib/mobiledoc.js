@@ -3,7 +3,6 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
-const imageTransform = require('@tryghost/image-transform');
 
 let cardFactory;
 let cards;
@@ -34,6 +33,7 @@ module.exports = {
                 siteUrl: config.get('url'),
                 imageOptimization: config.get('imageOptimization'),
                 canTransformImage(storagePath) {
+                    const imageTransform = require('@tryghost/image-transform');
                     const {ext} = path.parse(storagePath);
 
                     // NOTE: the "saveRaw" check is smelly

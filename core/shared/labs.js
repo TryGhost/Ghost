@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
-const SafeString = require('express-hbs').SafeString;
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -87,6 +86,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
 
     logging.error(new errors.DisabledFeatureError(errDetails));
 
+    const {SafeString} = require('express-hbs');
     errString = new SafeString(`<script>console.error("${_.values(errDetails).join(' ')}");</script>`);
 
     if (options.async) {
