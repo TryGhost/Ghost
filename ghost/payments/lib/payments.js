@@ -1,3 +1,6 @@
+const DomainEvents = require('@tryghost/domain-events');
+const OfferCreatedEvent = require('@tryghost/members-offers').events.OfferCreatedEvent;
+
 class PaymentsService {
     /**
      * @param {object} deps
@@ -12,6 +15,10 @@ class PaymentsService {
         this.offersAPI = deps.offersAPI;
         /** @private */
         this.stripeAPIService = deps.stripeAPIService;
+
+        DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
+            await this.getCouponForOffer(event.data.offer.id);
+        });
     }
 
     /**
