@@ -3,12 +3,15 @@ const ghostBookshelf = require('./base');
 
 const candidates = [];
 
-_.each(ghostBookshelf.registry.models, (model) => {
-    candidates.push([model, model.prototype.tableName.replace(/s$/, '')]);
-});
-
 const Action = ghostBookshelf.Model.extend({
     tableName: 'actions',
+
+    initialize: function initialize() {
+        _.each(ghostBookshelf.registry.models, (model) => {
+            candidates.push([model, model.prototype.tableName.replace(/s$/, '')]);
+        });
+        this.constructor.__super__.initialize.apply(this, arguments);
+    },
 
     actor() {
         return this.morphTo('actor', ['actor_type', 'actor_id'], ...candidates);
