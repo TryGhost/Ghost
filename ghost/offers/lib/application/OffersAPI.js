@@ -27,6 +27,10 @@ class OffersAPI {
 
             const offer = await this.repository.getById(data.id, options);
 
+            if (!offer) {
+                return null;
+            }
+
             return OfferMapper.toDTO(offer);
         });
     }
