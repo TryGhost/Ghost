@@ -2,7 +2,7 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class SettingsDesignRoute extends AuthenticatedRoute {
+export default class SettingsDesignIndexRoute extends AuthenticatedRoute {
     @service customThemeSettings;
     @service modals;
     @service settings;

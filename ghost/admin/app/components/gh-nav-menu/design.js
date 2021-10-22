@@ -1,7 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class DesignMenuComponent extends Component {
@@ -18,8 +17,6 @@ export default class DesignMenuComponent extends Component {
 
     constructor() {
         super(...arguments);
-        this.fetchThemeSettingsTask.perform();
-        this.themeManagement.updatePreviewHtmlTask.perform();
 
         // fetch all themes in the background so we can show the active theme
         this.store.findAll('theme');
@@ -43,11 +40,6 @@ export default class DesignMenuComponent extends Component {
                 this.themeManagement.setPreviewType('homepage');
             }
         }
-    }
-
-    @task
-    *fetchThemeSettingsTask() {
-        yield this.customThemeSettings.load();
     }
 
     @action
