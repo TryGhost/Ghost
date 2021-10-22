@@ -164,6 +164,12 @@
     font-size: 1.5rem;
 }
 
+.gh-offer-url .gh-input {
+    background: var(--main-color-content-greybg);
+    border-color: var(--lightgrey-l1);
+    color: var(--midgrey);
+}
+
 /* Offers – Portal preview */
 .gh-offer-portal-preview {
     display: flex;
