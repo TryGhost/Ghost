@@ -397,7 +397,7 @@ module.exports = {
         discount_amount: {type: 'integer', nullable: false},
         duration: {type: 'string', maxlength: 50, nullable: false},
         duration_in_months: {type: 'integer', nullable: true},
-        portal_title: {type: 'string', maxlength: 191, nullable: false},
+        portal_title: {type: 'string', maxlength: 191, nullable: true},
         portal_description: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
