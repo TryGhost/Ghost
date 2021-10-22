@@ -1745,7 +1745,6 @@ p.theme-validation-details {
     grid-template-columns: 1fr 1fr 1fr;
     grid-column-gap: 40px;
     grid-row-gap: 64px;
-    max-width: 1320px;
     margin: 0 0 24px;
 }
 
