@@ -132,12 +132,12 @@ jobs:
           tar -C ${{ runner.temp }} -xzf "${{ runner.temp }}/tailscale.tgz"
           rm ${{ runner.temp }}/tailscale.tgz
           TSPATH=${{ runner.temp }}/tailscale_${VERSION}_amd64
-          mv "${TSPATH}/tailscale" "${TSPATH}/tailscaled" /usr/bin
+          sudo mv "${TSPATH}/tailscale" "${TSPATH}/tailscaled" /usr/bin
 
       - run: |
           HOSTNAME="github-$(cat /etc/hostname)"
-          tailscaled --tun=userspace-networking --outbound-http-proxy-listen=localhost:1055
-          tailscale up --authkey ${{ secrets.TAILSCALE_AUTHKEY }} --hostname=${HOSTNAME}
+          sudo tailscaled --tun=userspace-networking --outbound-http-proxy-listen=localhost:1055
+          sudo tailscale up --authkey ${{ secrets.TAILSCALE_AUTHKEY }} --hostname=${HOSTNAME}
 
       # Report time taken to metrics service
       - uses: sam-lord/action-trigger-metric@main
