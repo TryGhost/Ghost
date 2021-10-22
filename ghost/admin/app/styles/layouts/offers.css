@@ -158,7 +158,7 @@
 .gh-offer-duration .duration-months::before {
     position: absolute;
     content: "months";
-    bottom: 7px;
+    top: 31px;
     right: 12px;
     color: var(--midgrey);
     font-size: 1.5rem;

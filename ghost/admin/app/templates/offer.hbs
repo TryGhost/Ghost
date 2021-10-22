@@ -137,15 +137,17 @@
                                     </span>
                                 </GhFormGroup>
                                 {{#if (eq this.offer.duration "repeating")}}
-                                <GhFormGroup @errors={{this.offer.errors}} @property="durationInMonths" @class="duration-months">
+                                <GhFormGroup @errors={{this.offer.errors}} @property="durationInMonths">
                                     <label for="duration-months" class="fw6">Number of months</label>
-                                    <GhTextInput
-                                        @name="duration-months"
-                                        @value={{readonly this.offer.durationInMonths}}
-                                        @input={{this.setDurationInMonths}}
-                                        @disabled={{this.isDiscountSectionDisabled}}
-                                        @id="duration-months"
-                                        @class="gh-input" />
+                                    <div class="duration-months">
+                                        <GhTextInput
+                                            @name="duration-months"
+                                            @value={{readonly this.offer.durationInMonths}}
+                                            @input={{this.setDurationInMonths}}
+                                            @disabled={{this.isDiscountSectionDisabled}}
+                                            @id="duration-months"
+                                            @class="gh-input" />
+                                    </div>
                                     <span class="error">
                                         <GhErrorMessage @errors={{this.offer.errors}} @property="durationInMonths" />
                                     </span>
