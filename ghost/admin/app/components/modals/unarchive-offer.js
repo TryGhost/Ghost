@@ -18,7 +18,9 @@ export default class ArchiveOfferModalComponent extends Component {
 
         try {
             yield offer.save();
-            this.router.transitionTo('offers');
+            this.router.transitionTo('offers', {queryParams: {
+                type: 'active'
+            }});
 
             return offer;
         } catch (error) {
