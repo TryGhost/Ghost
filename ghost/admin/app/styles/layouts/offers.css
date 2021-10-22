@@ -236,6 +236,36 @@
     margin-right: 6px;
 }
 
+.gh-offer-archive-container {
+    display: flex;
+    align-items: center;
+    max-width: 680px;
+}
+
+.gh-offer-archive-container p {
+    display: flex;
+    color: var(--middarkgrey);
+    font-size: 1.3rem;
+    margin: 0;
+    border-left: 1px solid var(--whitegrey);
+    padding-left: 16px;
+    margin-left: 16px;
+    line-height: 1.5em;
+}
+
+.gh-offer-archive-container p svg {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin-right: 4px;
+    margin-top: 2px;
+}
+
+.gh-offer-archive-container p svg path,
+.gh-offer-archive-container p svg circle {
+    fill: var(--midgrey);
+}
+
 @media (max-width: 1280px) {
     .gh-offer-portal-preview {
         display: none;
