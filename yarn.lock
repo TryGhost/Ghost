@@ -1624,14 +1624,15 @@
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 
-"@tryghost/metrics@0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-0.2.5.tgz#64916a967344449a5ca78ef0d8d6afa91d88671b"
-  integrity sha512-fkCgFnuXg5sKCv+nqtuEcKjZZzunHxKL7vU+DDJrX5kLoM/NvvObkBgBI5ui8vsPutj4bepiRLEx5TR8sJWjFQ==
+"@tryghost/metrics@0.2.6":
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-0.2.6.tgz#a1049153fb55cea74851f51730192e86ea66a5bd"
+  integrity sha512-OnZ8I/RFb79iA6Gou4CE5W1YZBSNOocZvApLIzfYR0Y1Hc3/0sBgrjmEnLGUGCWTk5S7vOQ0Q9W8ZbKaMSOO5w==
   dependencies:
     "@tryghost/elasticsearch" "^0.1.3"
     "@tryghost/pretty-stream" "^0.1.2"
     "@tryghost/root-utils" "^0.3.7"
+    json-stringify-safe "^5.0.1"
   optionalDependencies:
     promise.allsettled "^1.0.5"
 
