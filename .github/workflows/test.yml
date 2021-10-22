@@ -152,7 +152,7 @@ jobs:
               "elasticsearch": {
                 "host": "${{ secrets.ELASTICSEARCH_HOST }}",
                 "username": "${{ secrets.ELASTICSEARCH_USERNAME }}",
-                "password": "${{ secrets.ELSATICSEARCH_PASSWORD }}",
+                "password": "${{ secrets.ELASTICSEARCH_PASSWORD }}",
                 "proxy": "http://localhost:1055"
               }
             }
