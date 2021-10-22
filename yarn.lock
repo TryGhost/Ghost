@@ -1614,10 +1614,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.25.tgz#0504de56550e243dbf2657981a749c242e726fe7"
   integrity sha512-TWJCQ0g66uIHZfD0MPj+UsHhop53Ly6TMQpcqce6rUNNGqp31E85cnI9E91IVxBBS+SqVgbxYACaLso5k9nZYQ==
 
-"@tryghost/nodemailer@0.3.5":
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.5.tgz#bfdf9ef40a493548ecbfeb9f434d14e0a64678fd"
-  integrity sha512-5jFUNmTLDUYDvAioSkManxybK3NScrTyNSoR6RE7Z/kBFp2meYXwHBV30Z4Hzrw51mnVe+6UgcySwB+WY55c8g==
+"@tryghost/nodemailer@0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.6.tgz#e882f3a103bb30c0357e79d455bca3a402999bea"
+  integrity sha512-Q8a8voskwk94eq9Ow14Y9tsVseKmX+1OXtJvIwpbZ77t/e/kAF2dLq/uDCIn6goiDKIK8zX4A8JDFeO5zwjruw==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
     "@tryghost/errors" "^0.2.13"
