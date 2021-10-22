@@ -129,7 +129,7 @@ jobs:
       - run: |
           VERSION=1.16.1
           curl "https://pkgs.tailscale.com/stable/tailscale_${VERSION}_amd64.tgz" -o "${{ runner.temp }}/tailscale.tgz"
-          tar -C ${{ runner.temp }} -xzf tailscale.tgz
+          tar -C ${{ runner.temp }} -xzf "${{ runner.temp }}/tailscale.tgz"
           rm ${{ runner.temp }}/tailscale.tgz
           TSPATH=${{ runner.temp }}/tailscale_${VERSION}_amd64
           mv "${TSPATH}/tailscale" "${TSPATH}/tailscaled" /usr/bin
