@@ -9,6 +9,8 @@ export default Component.extend({
     ajax: service(),
     notifications: service(),
 
+    isOwner: null,
+
     didInsertElement() {
         this._super(...arguments);
 
@@ -27,13 +29,21 @@ export default Component.extend({
                         request: 'token',
                         response: token
                     }, '*');
+
+                    this.set('isOwner', true);
                 }).catch((error) => {
                     if (error.payload?.errors && error.payload.errors[0]?.type === 'NoPermissionError') {
-                        // noop - user doesn't have permission to access billing
-                        return;
-                    }
+                        // no permission means the current user requesting the token is not the owner of the site.
+                        this.set('isOwner', false);
 
-                    throw error;
+                        // Avoid letting the BMA waiting for a message and send an empty token response instead
+                        this.billing.getBillingIframe().contentWindow.postMessage({
+                            request: 'token',
+                            response: null
+                        }, '*');
+                    } else {
+                        throw error;
+                    }
                 });
 
                 // NOTE: the handler is placed here to avoid additional logic to check if iframe has loaded
@@ -45,6 +55,27 @@ export default Component.extend({
                         response: 'subscription'
                     }, '*');
                 }
+            }
+
+            if (event && event.data && event.data.request === 'forceUpgradeInfo') {
+                // Send BMA requested information about forceUpgrade and owner name/email
+                let ownerUser = null;
+                const owner = this.billing.ownerUser;
+
+                if (owner) {
+                    ownerUser = {
+                        name: owner?.name,
+                        email: owner?.email
+                    };
+                }
+                this.billing.getBillingIframe().contentWindow.postMessage({
+                    request: 'forceUpgradeInfo',
+                    response: {
+                        forceUpgrade: this.config.get('hostSettings.forceUpgrade'),
+                        isOwner: this.isOwner,
+                        ownerUser
+                    }
+                }, '*');
             }
 
             if (event && event.data && event.data.subscription) {
