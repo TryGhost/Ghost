@@ -33,11 +33,11 @@ export default class OffersController extends Controller {
             duration: 'forever'
         },
         {
-            label: 'Once',
+            label: 'First-payment',
             duration: 'once'
         },
         {
-            label: 'Multiple months',
+            label: 'Multiple-months',
             duration: 'repeating'
         }
     ];
@@ -387,27 +387,27 @@ export default class OffersController extends Controller {
             if (cadence === 'month') {
                 this.durations = [
                     {
-                        label: 'Once',
+                        label: 'First-payment',
                         duration: 'once'
+                    },
+                    {
+                        label: 'Multiple-months',
+                        duration: 'repeating'
                     },
                     {
                         label: 'Forever',
                         duration: 'forever'
-                    },
-                    {
-                        label: 'Multiple months',
-                        duration: 'repeating'
                     }
                 ];
             } else {
                 this.durations = [
                     {
-                        label: 'Forever',
-                        duration: 'forever'
+                        label: 'First-payment',
+                        duration: 'once'
                     },
                     {
-                        label: 'Once',
-                        duration: 'once'
+                        label: 'Forever',
+                        duration: 'forever'
                     }
                 ];
                 if (this.offer.duration === 'repeating') {
