@@ -6,7 +6,7 @@ export default BaseValidator.create({
 
     name(model) {
         if (!model.name) {
-            model.errors.add('name', 'Please enter Name.');
+            model.errors.add('name', 'Please enter a name.');
             this.invalidate();
         }
         if (!validator.isLength(model.name || '', 0, 191)) {
@@ -17,7 +17,7 @@ export default BaseValidator.create({
 
     amount(model) {
         if (!model.amount) {
-            model.errors.add('amount', 'Please enter Amount.');
+            model.errors.add('amount', 'Please enter the amount.');
             this.invalidate();
         }
     },
@@ -38,14 +38,14 @@ export default BaseValidator.create({
 
     durationInMonths(model) {
         if (model.duration === 'repeating' && !model.durationInMonths) {
-            model.errors.add('durationInMonths', 'Please enter duration in months.');
+            model.errors.add('durationInMonths', 'Please enter the duration in months.');
             this.invalidate();
         }
     },
 
     code(model) {
         if (!model.code) {
-            model.errors.add('code', 'Please enter code.');
+            model.errors.add('code', 'Please enter an offer code.');
             this.invalidate();
         }
     }
