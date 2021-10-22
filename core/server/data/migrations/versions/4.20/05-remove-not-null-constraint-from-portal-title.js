@@ -14,8 +14,10 @@ module.exports = createNonTransactionalMigration(
             table.string('portal_title', 191).nullable();
         });
 
-        for (const column of ['name', 'code', 'stripe_coupon_id']) {
-            await addUnique('offers', column, knex);
+        if (knex.client.config.client === 'sqlite3') {
+            for (const column of ['name', 'code', 'stripe_coupon_id']) {
+                await addUnique('offers', column, knex);
+            }
         }
     },
     async function down(knex) {
@@ -29,8 +31,10 @@ module.exports = createNonTransactionalMigration(
             table.string('portal_title', 191).notNullable();
         });
 
-        for (const column of ['name', 'code', 'stripe_coupon_id']) {
-            await addUnique('offers', column, knex);
+        if (knex.client.config.client === 'sqlite3') {
+            for (const column of ['name', 'code', 'stripe_coupon_id']) {
+                await addUnique('offers', column, knex);
+            }
         }
     }
 );
