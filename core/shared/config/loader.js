@@ -41,8 +41,8 @@ function loadNconf(options) {
     // ## Config Methods
 
     // Expose dynamic utility methods
-    helpers.bindAll(nconf);
     urlHelpers.bindAll(nconf);
+    helpers.bindAll(nconf);
 
     // ## Sanitization
 

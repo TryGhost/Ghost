@@ -1,4 +1,42 @@
 const path = require('path');
+const escapeRegExp = require('lodash/escapeRegExp');
+const {URL} = require('url');
+
+const DEFAULT_HOST_ARG = /.*/;
+
+const getHostInfo = (config) => {
+    const frontendHost = new URL(config.getSiteUrl()).hostname;
+
+    const backendHost = config.getAdminUrl() ? (new URL(config.getAdminUrl()).hostname) : '';
+    const hasSeparateBackendHost = backendHost && backendHost !== frontendHost;
+
+    return {
+        backendHost,
+        hasSeparateBackendHost
+    };
+};
+
+/**
+ *
+ * @returns {string|RegExp}
+ */
+const getBackendMountPath = function getFrontendMountPath() {
+    const {backendHost, hasSeparateBackendHost} = getHostInfo(this);
+
+    // with a separate admin url only serve on that host, otherwise serve on all hosts
+    return (hasSeparateBackendHost) && backendHost ? backendHost : DEFAULT_HOST_ARG;
+};
+
+/**
+ *
+ * @returns {string|RegExp}
+ */
+const getFrontendMountPath = function getFrontendMountPath() {
+    const {backendHost, hasSeparateBackendHost} = getHostInfo(this);
+
+    // with a separate admin url we adjust the frontend vhost to exclude requests to that host, otherwise serve on all hosts
+    return (hasSeparateBackendHost && backendHost) ? new RegExp(`^(?!${escapeRegExp(backendHost)}).*`) : DEFAULT_HOST_ARG;
+};
 
 /**
  * @callback isPrivacyDisabledFn
@@ -62,4 +100,6 @@ const getContentPath = function getContentPath(type) {
 module.exports.bindAll = (nconf) => {
     nconf.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = getContentPath.bind(nconf);
+    nconf.getBackendMountPath = getBackendMountPath.bind(nconf);
+    nconf.getFrontendMountPath = getFrontendMountPath.bind(nconf);
 };
