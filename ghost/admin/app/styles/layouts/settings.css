@@ -1524,7 +1524,7 @@ p.theme-validation-details {
     border-radius: 50%;
 }
 
-.gh-nav-design-tab:focus .gh-nav-design-tabicon {
+.gh-nav-design-tab.active .gh-nav-design-tabicon {
     background: var(--mainmenu-color-hover-bg);
 }
 
@@ -1822,15 +1822,19 @@ p.theme-validation-details {
 }
 
 .gh-theme-directory-footer {
-    display: block;
+    position: relative;
     padding: 58px var(--main-layout-content-sidepadding);
-    color: var(--darkgrey-l1);
-    font-size: 1.6rem;
-    background: var(--main-color-content-greybg);
+    color: var(--whitegrey-l2);
+    font-size: 1.75rem;
+    text-align: center;
+    background: #15171A;
+    background-repeat: no-repeat;
+    background-position: 100% 50%;
+    background-size: 35vw;
 }
 
 .gh-theme-directory-footer .link {
-    color: var(--green-d1);
+    color: var(--lime);
     font-weight: 500;
 }
 
