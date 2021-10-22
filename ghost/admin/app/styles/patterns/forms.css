@@ -254,6 +254,10 @@ textarea {
     opacity: 1.0;
 }
 
+.gh-select select[disabled] {
+    cursor: auto;
+}
+
 .gh-input-percentage-label {
     display: block;
     content: "hello";
