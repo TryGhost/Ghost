@@ -192,7 +192,7 @@ class Offer {
         }
         if (!await uniqueChecker.isUniqueCode(code)) {
             throw new errors.InvalidOfferCode({
-                message: 'Offer `code` must be unique.'
+                message: `Offer 'code' must be unique. Please change and try again.`
             });
         }
         this.changed.code = this.props.code;
@@ -210,7 +210,7 @@ class Offer {
         }
         if (!await uniqueChecker.isUniqueName(name)) {
             throw new errors.InvalidOfferName({
-                message: 'Offer `name` must be unique.'
+                message: `Offer 'name' must be unique. Please change and try again.`
             });
         }
         this.props.name = name;
@@ -288,7 +288,7 @@ class Offer {
         if (isNew) {
             if (!await uniqueChecker.isUniqueName(name)) {
                 throw new errors.InvalidOfferName({
-                    message: 'Offer `name` must be unique.'
+                    message: `Offer 'name' must be unique. Please change and try again.`
                 });
             }
         }
@@ -296,7 +296,7 @@ class Offer {
         if (isNew) {
             if (!await uniqueChecker.isUniqueCode(code)) {
                 throw new errors.InvalidOfferCode({
-                    message: 'Offer `code` must be unique.'
+                    message: `Offer 'code' must be unique. Please change and try again.`
                 });
             }
         }

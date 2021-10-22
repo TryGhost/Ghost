@@ -1,6 +1,6 @@
-const {GhostError} = require('@tryghost/errors');
+const {ValidationError} = require('@tryghost/errors');
 
-class InvalidPropError extends GhostError {
+class InvalidPropError extends ValidationError {
     /** @param {any} options */
     constructor(options) {
         super({
