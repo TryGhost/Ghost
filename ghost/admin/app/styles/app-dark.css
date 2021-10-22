@@ -552,6 +552,11 @@ input:focus,
     background: none;
 }
 
+.gh-theme-directory-footer {
+    color: var(--darkgrey);
+    background-color: var(--whitegrey);
+}
+
 .settings-code-editor .CodeMirror-gutters,
 .settings-code code,
 .form-group code {
