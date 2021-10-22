@@ -63,7 +63,9 @@
                                     <span class="blue">{{svg-jar "offer"}}</span>
                                     <span class="blue fw6">{{gh-price-amount offer.amount}} <span class="ttu">{{offer.currency}}</span> OFF</span>
                                 {{/if}}
-                                <span class="dib ml1 midgrey ttc"> – {{offer.duration}} </span>
+                                <span class="dib ml1 midgrey ttc"> – 
+                                    {{if (eq offer.duration 'once') "First-payment" "Repeating"}}
+                                </span>
                             </span>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
