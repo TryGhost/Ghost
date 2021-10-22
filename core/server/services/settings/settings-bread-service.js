@@ -14,10 +14,12 @@ class SettingsBREADService {
      * @param {Object} options
      * @param {Object} options.SettingsModel
      * @param {Object} options.settingsCache - SettingsCache instance
+     * @param {Object} options.labsService - labs service instance
      */
-    constructor({SettingsModel, settingsCache}) {
+    constructor({SettingsModel, settingsCache, labsService}) {
         this.SettingsModel = SettingsModel;
         this.settingsCache = settingsCache;
+        this.labs = labsService;
     }
 
     /**
@@ -28,24 +30,7 @@ class SettingsBREADService {
     browse(context) {
         let settings = this.settingsCache.getAll();
 
-        // CASE: no context passed (functional call)
-        if (!context) {
-            return Promise.resolve(settings.filter((setting) => {
-                return setting.group === 'site';
-            }));
-        }
-
-        if (!context.internal) {
-            // CASE: omit core settings unless internal request
-            settings = _.filter(settings, (setting) => {
-                const isCore = setting.group === 'core';
-                return !isCore;
-            });
-            // CASE: omit secret settings unless internal request
-            settings = settings.map(hideValueIfSecret);
-        }
-
-        return settings;
+        return this._formatBrowse(settings, context);
     }
 
     /**
@@ -84,6 +69,12 @@ class SettingsBREADService {
             return Promise.reject(new NoPermissionError({
                 message: tpl(messages.accessCoreSettingFromExtReq)
             }));
+        }
+
+        // NOTE: Labs flags can exist outside of the DB when they are forced on/off
+        //       so we grab them from the labs service instead as that's source-of-truth
+        if (setting.key === 'labs') {
+            setting.value = JSON.stringify(this.labs.getAll());
         }
 
         setting = hideValueIfSecret(setting);
@@ -161,7 +152,9 @@ class SettingsBREADService {
             });
         }
 
-        return this.SettingsModel.edit(filteredSettings, options);
+        return this.SettingsModel.edit(filteredSettings, options).then((result) => {
+            return this._formatBrowse(_.keyBy(_.invokeMap(result, 'toJSON'), 'key'), options.context);
+        });
     }
 
     /**
@@ -182,6 +175,35 @@ class SettingsBREADService {
                 });
             }
         }
+    }
+
+    _formatBrowse(inputSettings, context) {
+        let settings = _.values(inputSettings);
+        // CASE: no context passed (functional call)
+        if (!context) {
+            return Promise.resolve(settings.filter((setting) => {
+                return setting.group === 'site';
+            }));
+        }
+
+        if (!context.internal) {
+            // CASE: omit core settings unless internal request
+            settings = _.filter(settings, (setting) => {
+                const isCore = setting.group === 'core';
+                return !isCore;
+            });
+            // CASE: omit secret settings unless internal request
+            settings = settings.map(hideValueIfSecret);
+        }
+
+        // NOTE: Labs flags can exist outside of the DB when they are forced on/off
+        //       so we grab them from the labs service instead as that's source-of-truth
+        const labsSetting = settings.find(setting => setting.key === 'labs');
+        if (labsSetting) {
+            labsSetting.value = JSON.stringify(this.labs.getAll());
+        }
+
+        return settings;
     }
 }
 

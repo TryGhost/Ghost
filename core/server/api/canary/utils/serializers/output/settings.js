@@ -55,9 +55,8 @@ module.exports = {
         this.browse(...arguments);
     },
 
-    edit(models, apiConfig, frame) {
-        const settingsKeyedJSON = _.keyBy(_.invokeMap(models, 'toJSON'), 'key');
-        this.browse(settingsKeyedJSON, apiConfig, frame);
+    edit() {
+        this.browse(...arguments);
     },
 
     download(bytes, apiConfig, frame) {
