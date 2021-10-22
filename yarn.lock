@@ -1809,15 +1809,7 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/version@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.6.tgz#c6ccce6a3ae5c7d24c41ef5b7e1f3e46673d6cc7"
-  integrity sha512-HHU5KOM0VZTaqzmTEhRMO+wJAO3gllym4PxktoUFkIiLJZHHpBczUDbuNFSaZkOX4fJIMcU2gM7ict9b4UbmIQ==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.6"
-    semver "^7.3.5"
-
-"@tryghost/version@^0.1.7":
+"@tryghost/version@0.1.7", "@tryghost/version@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.7.tgz#0bd37246b0931fdce7e86307e441fb19e8c95811"
   integrity sha512-SAQsocesa//ZOKeXJecRzidgNNjxa5eJYgA2J8ML/oqyI9OyNEQX1G3hiuqchaIJNMBVVN1/by+i+J8mN7A9bA==
