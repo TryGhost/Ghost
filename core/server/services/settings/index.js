@@ -4,6 +4,7 @@
  */
 const events = require('../../lib/common/events');
 const models = require('../../models');
+const labs = require('../../../shared/labs');
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
@@ -14,7 +15,8 @@ const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./setti
 const getSettingsBREADServiceInstance = () => {
     return new SettingsBREADService({
         SettingsModel: models.Settings,
-        settingsCache: SettingsCache
+        settingsCache: SettingsCache,
+        labsService: labs
     });
 };
 
