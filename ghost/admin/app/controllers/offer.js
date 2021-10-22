@@ -291,11 +291,12 @@ export default class OffersController extends Controller {
     @action
     setDiscountType(discountType) {
         if (!this.isDiscountSectionDisabled) {
+            const amount = this.offer.amount || 0;
             this._saveOfferProperty('type', discountType);
             if (this.offer.type === 'fixed' && this.offer.amount !== '') {
-                this.offer.amount = this.offer.amount * 100;
+                this.offer.amount = amount * 100;
             } else if (this.offer.amount !== '') {
-                this.offer.amount = this.offer.amount / 100;
+                this.offer.amount = amount / 100;
             }
             this.updatePortalPreview({forceRefresh: false});
         }
