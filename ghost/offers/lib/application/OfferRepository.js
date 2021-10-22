@@ -134,6 +134,10 @@ class OfferRepository {
             withRelated: ['product']
         });
 
+        if (!model) {
+            return null;
+        }
+
         return this.mapToOffer(model, options);
     }
 
