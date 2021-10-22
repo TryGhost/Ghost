@@ -5,12 +5,14 @@ export default Service.extend({
     router: service(),
     config: service(),
     ghostPaths: service(),
+    store: service(),
 
     billingRouteRoot: '#/pro',
     billingWindowOpen: false,
     subscription: null,
     previousRoute: null,
     action: null,
+    ownerUser: null,
 
     init() {
         this._super(...arguments);
@@ -52,6 +54,21 @@ export default Service.extend({
         return url;
     },
 
+    async getOwnerUser() {
+        if (!this.get('ownerUser')) {
+            // Try to receive the owner user from the store
+            let user = this.store.peekAll('user').findBy('isOwnerOnly', true);
+
+            if (!user) {
+                // load it when it's not there yet
+                await this.store.findAll('user');
+                user = this.store.peekAll('user').findBy('isOwnerOnly', true);
+            }
+            this.set('ownerUser', user);
+        }
+        return this.get('ownerUser');
+    },
+
     // Sends a route update to a child route in the BMA, because we can't control
     // navigating to it otherwise
     sendRouteUpdate() {
@@ -88,6 +105,9 @@ export default Service.extend({
     // remembering the route from which the action has been triggered - "previousRoute" so it
     // could be reused when closing billing window
     openBillingWindow(currentRoute, childRoute) {
+        // initiate getting owner user in the background
+        this.getOwnerUser();
+
         if (this.get('billingWindowOpen')) {
             // don't attempt to open again
             return;

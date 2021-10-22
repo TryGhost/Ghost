@@ -36,6 +36,7 @@ export default Route.extend(ShortcutsRoute, {
     settings: service(),
     ui: service(),
     whatsNew: service(),
+    billing: service(),
 
     shortcuts,
 
@@ -176,6 +177,11 @@ export default Route.extend(ShortcutsRoute, {
             }
 
             await this.session.postAuthPreparation();
+        }
+
+        if (this.config.get('hostSettings.forceUpgrade')) {
+            // enforce opening the BMA in a force upgrade state
+            this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }
     }
 

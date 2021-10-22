@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 export default AuthenticatedRoute.extend({
     billing: service(),
     session: service(),
+    config: service(),
 
     queryParams: {
         action: {refreshModel: true}
@@ -13,7 +14,8 @@ export default AuthenticatedRoute.extend({
     beforeModel(transition) {
         this._super(...arguments);
 
-        if (!this.session.user.isOwnerOnly) {
+        // allow non-owner users to access the BMA when we're in a force upgrade state
+        if (!this.session.user.isOwnerOnly && !this.config.get('hostSettings.forceUpgrade')) {
             return this.transitionTo('home');
         }
 
