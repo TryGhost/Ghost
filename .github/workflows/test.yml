@@ -147,7 +147,11 @@ jobs:
           configuration: |
             {
               "metrics": {
-                "transports": ["elasticsearch"]
+                "transports": ["elasticsearch"],
+                "metadata": {
+                  "database": "${{ matrix.env.DB }}",
+                  "node": "${{ matric.node }}"
+                }
               },
               "elasticsearch": {
                 "host": "${{ secrets.ELASTICSEARCH_HOST }}",
