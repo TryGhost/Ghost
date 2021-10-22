@@ -126,9 +126,18 @@ jobs:
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
       # Connect to Tailscale to access ElasticSearch
-      - uses: tailscale/github-action@v1
-        with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+      - run: |
+          VERSION=1.16.1
+          curl "https://pkgs.tailscale.com/stable/tailscale_${VERSION}_amd64.tgz" -o "${{ runner.temp }}/tailscale.tgz"
+          tar -C ${{ runner.temp }} -xzf tailscale.tgz
+          rm ${{ runner.temp }}/tailscale.tgz
+          TSPATH=${{ runner.temp }}/tailscale_${VERSION}_amd64
+          mv "${TSPATH}/tailscale" "${TSPATH}/tailscaled" /usr/bin
+
+      - run: |
+          HOSTNAME="github-$(cat /etc/hostname)"
+          tailscaled --tun=userspace-networking --outbound-http-proxy-listen=localhost:1055
+          tailscale up --authkey ${{ secrets.TAILSCALE_AUTHKEY }} --hostname=${HOSTNAME}
 
       # Report time taken to metrics service
       - uses: sam-lord/action-trigger-metric@main
@@ -143,7 +152,8 @@ jobs:
               "elasticsearch": {
                 "host": "${{ secrets.ELASTICSEARCH_HOST }}",
                 "username": "${{ secrets.ELASTICSEARCH_USERNAME }}",
-                "password": "${{ secrets.ELSATICSEARCH_PASSWORD }}"
+                "password": "${{ secrets.ELSATICSEARCH_PASSWORD }}",
+                "proxy": "http://localhost:1055"
               }
             }
 
