@@ -5,7 +5,10 @@ const InvalidOfferTitle = require('../errors').InvalidOfferTitle;
 class OfferTitle extends ValueObject {
     /** @param {unknown} title */
     static create(title) {
-        if (!title || typeof title !== 'string') {
+        if (title === null || title === undefined) {
+            return new OfferTitle('');
+        }
+        if (typeof title !== 'string') {
             throw new InvalidOfferTitle({
                 message: 'Offer `display_title` must be a string.'
             });
@@ -17,7 +20,7 @@ class OfferTitle extends ValueObject {
             });
         }
 
-        return new OfferTitle(title);
+        return new OfferTitle(title.trim());
     }
 }
 
