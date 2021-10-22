@@ -6,6 +6,7 @@
         <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
             <div class="gh-nav-list gh-nav-main">
                 <LinkTo @route="settings.design" class="gh-nav-menu-title" @current-when="settings.design.index" {{on "click" this.closeAllSections}}>Site design</LinkTo>
+
                 {{#let (eq this.openSection "brand") as |isOpen|}}
                     <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection "brand")}}>
                         {{svg-jar "paintbrush"}}Brand
@@ -41,7 +42,7 @@
         </div>
 
         <div class="gh-nav-bottom">
-            <LinkTo class="gh-nav-design-tab" @route="settings.design.change-theme" {{on "click" (fn this.toggleSection null)}}>
+            <LinkTo class="gh-nav-design-tab" @route="settings.design.change-theme" {{on "click" this.closeAllSections}}>
                 <div>
                     <span>Change theme</span>
                     <span class="active-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}</span>
