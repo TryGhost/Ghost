@@ -13,6 +13,11 @@ const messages = {
     errorHelp: 'See {url}'
 };
 
+// flags in this list always return `true`, allows quick global enable prior to full flag removal
+const GA_FEATURES = [
+    'customThemeSettings'
+];
+
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
@@ -22,11 +27,11 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'oauthLogin',
-    'customThemeSettings',
     'membersActivity',
     'offers'
 ];
 
+module.exports.GA_KEYS = [...GA_FEATURES];
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
 
 module.exports.getAll = () => {
@@ -36,6 +41,10 @@ module.exports.getAll = () => {
         if (labs[alphaKey] && !(config.get('enableDeveloperExperiments') || process.env.NODE_ENV.match(/^testing/))) {
             delete labs[alphaKey];
         }
+    });
+
+    GA_FEATURES.forEach((gaKey) => {
+        labs[gaKey] = true;
     });
 
     labs.members = settingsCache.get('members_signup_access') !== 'none';
