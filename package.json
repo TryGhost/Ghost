@@ -78,7 +78,7 @@
     "@tryghost/kg-mobiledoc-html-renderer": "5.1.1",
     "@tryghost/limit-service": "0.6.4",
     "@tryghost/logging": "0.2.2",
-    "@tryghost/magic-link": "1.0.13",
+    "@tryghost/magic-link": "1.0.14",
     "@tryghost/members-api": "2.4.1",
     "@tryghost/members-csv": "1.1.7",
     "@tryghost/members-importer": "0.3.3",
