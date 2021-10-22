@@ -5,6 +5,16 @@ const configUtils = require('../../../utils/configUtils');
 const labs = require('../../../../core/shared/labs');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
+function expectedLabsObject(obj) {
+    const withGA = Object.assign({}, obj);
+
+    labs.GA_KEYS.forEach((key) => {
+        withGA[key] = true;
+    });
+
+    return withGA;
+}
+
 describe('Labs Service', function () {
     afterEach(function () {
         sinon.restore();
@@ -12,9 +22,9 @@ describe('Labs Service', function () {
     });
 
     it('can getAll, even if empty with enabled members', function () {
-        labs.getAll().should.eql({
+        labs.getAll().should.eql(expectedLabsObject({
             members: true
-        });
+        }));
     });
 
     it('returns an alpha flag when dev experiments in toggled', function () {
@@ -27,10 +37,10 @@ describe('Labs Service', function () {
 
         // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
         //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
-        labs.getAll().should.eql({
+        labs.getAll().should.eql(expectedLabsObject({
             oauthLogin: true,
             members: true
-        });
+        }));
 
         labs.isSet('members').should.be.true;
         labs.isSet('oauthLogin').should.be.true;
@@ -46,9 +56,9 @@ describe('Labs Service', function () {
 
         // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
         //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
-        labs.getAll().should.eql({
+        labs.getAll().should.eql(expectedLabsObject({
             members: true
-        });
+        }));
 
         labs.isSet('members').should.be.true;
         labs.isSet('oauthLogin').should.be.false;
@@ -58,9 +68,9 @@ describe('Labs Service', function () {
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('members_signup_access').returns('all');
 
-        labs.getAll().should.eql({
+        labs.getAll().should.eql(expectedLabsObject({
             members: true
-        });
+        }));
 
         labs.isSet('members').should.be.true;
     });
@@ -72,10 +82,10 @@ describe('Labs Service', function () {
             activitypub: false
         });
 
-        labs.getAll().should.eql({
+        labs.getAll().should.eql(expectedLabsObject({
             members: true,
             activitypub: false
-        });
+        }));
 
         labs.isSet('members').should.be.true;
         labs.isSet('activitypub').should.be.false;
@@ -85,9 +95,9 @@ describe('Labs Service', function () {
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('members_signup_access').returns('none');
 
-        labs.getAll().should.eql({
+        labs.getAll().should.eql(expectedLabsObject({
             members: false
-        });
+        }));
 
         labs.isSet('members').should.be.false;
     });
