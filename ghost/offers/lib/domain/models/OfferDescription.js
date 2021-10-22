@@ -21,7 +21,7 @@ class OfferDescription extends ValueObject {
             });
         }
 
-        return new OfferDescription(description);
+        return new OfferDescription(description.trim());
     }
 }
 
