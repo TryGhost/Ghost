@@ -90,7 +90,7 @@ export default class ThemeManagementService extends Service {
                 const activatedTheme = yield theme.activate();
 
                 this.updatePreviewHtmlTask.perform();
-                this.customThemeSettings.load();
+                this.customThemeSettings.reload();
 
                 if (!options.skipErrors) {
                     const {warnings, errors} = activatedTheme;
