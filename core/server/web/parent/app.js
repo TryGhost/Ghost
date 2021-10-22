@@ -4,7 +4,6 @@ const express = require('../../../shared/express');
 const compress = require('compression');
 const mw = require('./middleware');
 const vhost = require('@tryghost/vhost-middleware');
-const vhostUtils = require('./vhost-utils');
 
 module.exports = function setupParentApp(options = {}) {
     debug('ParentApp setup start');
@@ -29,11 +28,11 @@ module.exports = function setupParentApp(options = {}) {
 
     // ADMIN + API
     const backendApp = require('./backend')();
-    parentApp.use(vhost(vhostUtils.getBackendHostArg(), backendApp));
+    parentApp.use(vhost(config.getBackendMountPath(), backendApp));
 
     // SITE + MEMBERS
     const frontendApp = require('./frontend')(options);
-    parentApp.use(vhost(vhostUtils.getFrontendHostArg(), frontendApp));
+    parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
 
     debug('ParentApp setup end');
 
