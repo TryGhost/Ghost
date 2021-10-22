@@ -50,6 +50,13 @@ module.exports = {
                 ...frame.data.offers[0],
                 id: frame.options.id
             });
+
+            if (!offer) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.offerNotFound)
+                });
+            }
+
             frame.response = {
                 offers: [offer]
             };
