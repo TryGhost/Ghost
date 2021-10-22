@@ -150,7 +150,7 @@ jobs:
                 "transports": ["elasticsearch"],
                 "metadata": {
                   "database": "${{ matrix.env.DB }}",
-                  "node": "${{ matric.node }}"
+                  "node": "${{ matrix.node }}"
                 }
               },
               "elasticsearch": {
