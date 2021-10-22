@@ -108,16 +108,16 @@ jobs:
 
       - run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
 
-      - run: yarn test:e2e
-        env:
-          database__connection__filename: /dev/shm/ghost-test.db
-      - run: yarn test:integration
-        env:
-          database__connection__filename: /dev/shm/ghost-test.db
-      - run: yarn test:unit
-      - run: yarn test:regression
-        env:
-          database__connection__filename: /dev/shm/ghost-test.db
+      # - run: yarn test:e2e
+      #   env:
+      #     database__connection__filename: /dev/shm/ghost-test.db
+      # - run: yarn test:integration
+      #   env:
+      #     database__connection__filename: /dev/shm/ghost-test.db
+      # - run: yarn test:unit
+      # - run: yarn test:regression
+      #   env:
+      #     database__connection__filename: /dev/shm/ghost-test.db
 
       # Get runtime in seconds for test suite
       - run: |
@@ -136,7 +136,7 @@ jobs:
 
       - run: |
           HOSTNAME="github-$(cat /etc/hostname)"
-          sudo tailscaled --tun=userspace-networking --outbound-http-proxy-listen=localhost:1055
+          sudo tailscaled --tun=userspace-networking --outbound-http-proxy-listen=localhost:1055 &
           sudo tailscale up --authkey ${{ secrets.TAILSCALE_AUTHKEY }} --hostname=${HOSTNAME}
 
       # Report time taken to metrics service
