@@ -177,7 +177,8 @@ class SettingsBREADService {
         }
     }
 
-    _formatBrowse(settings, context) {
+    _formatBrowse(inputSettings, context) {
+        let settings = _.values(inputSettings);
         // CASE: no context passed (functional call)
         if (!context) {
             return Promise.resolve(settings.filter((setting) => {
