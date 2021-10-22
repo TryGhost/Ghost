@@ -9,7 +9,7 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const get = require('lodash/get');
 const Promise = require('bluebird');
-const moment = require('moment');
+const {DateTime} = require('luxon');
 
 const messages = {
     mustBeCalledAsBlock: 'The {\\{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}'
@@ -18,7 +18,7 @@ const messages = {
 const createFrame = hbs.handlebars.createFrame;
 
 const buildApiOptions = function buildApiOptions(options, post) {
-    const publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
+    const publishedAt = DateTime.fromJSDate(post.published_at).toFormat('YYYY-MM-DD HH:mm:ss');
     const slug = post.slug;
     const op = options.name === 'prev_post' ? '<=' : '>';
     const order = options.name === 'prev_post' ? 'desc' : 'asc';
