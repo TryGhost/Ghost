@@ -1241,10 +1241,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-transaction-events/-/bookshelf-transaction-events-0.1.7.tgz#3833a01df655efb11894f228ddbc66b788fb6be6"
   integrity sha512-j1hbi+NPaUFhHYAVCWJoUmmIrnD5iSR3UP4nvYnYwCAHQ0Xu4Rc3+kIpdcrnSvwIEJNtVxNCaSarJTK/D/a0JQ==
 
-"@tryghost/bootstrap-socket@0.2.12":
-  version "0.2.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.12.tgz#417f7205538e9667de9da22ac6c96f7fd6152b85"
-  integrity sha512-ysYOcNf1dmSG7D+mbR4ZfWSuXxqWy4dZYyNy1dOHyALQb8eTZ3LP1xap7Ww/Z0m7gCPBfwsO0DQ3lCOn2GXcdQ==
+"@tryghost/bootstrap-socket@0.2.13":
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.13.tgz#70272e5b233caa794bee6cbd1e883adaeb4ae39b"
+  integrity sha512-xNE/SGu/4PCrj077J01dKJHkGfZWKCpi5IN9nkCu7nmVhyWNDVPKNztHocL4rAouLroBrr1zn1k3zYgFXgqFyA==
 
 "@tryghost/bunyan-rotating-filestream@0.0.7", "@tryghost/bunyan-rotating-filestream@^0.0.7":
   version "0.0.7"
@@ -1349,7 +1349,7 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@0.2.17":
+"@tryghost/errors@0.2.17", "@tryghost/errors@^0.2.17":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
   integrity sha512-Mj+bedWOwfooNA8fQdp6gIcRvWcKhJ/hOyGzu6OLFDLgEosFEeuFgXE6SsAWkf9+9NTYX30w88qGIWZqOhEAmQ==
@@ -1361,14 +1361,6 @@
   version "0.2.16"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.16.tgz#5000255aff99b3e07aa343c7f625f1475e55c5cf"
   integrity sha512-iTUv25q/SqQMCsxEX3dlf6pT3QWIkAVeQ7OIf9lY9fBGLZpvriplTV361u7fQYuUvUcCDYqb30s5j/cYHWuJWg==
-  dependencies:
-    "@tryghost/ignition-errors" "^0.1.0"
-    lodash "^4.17.21"
-
-"@tryghost/errors@^0.2.17":
-  version "0.2.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
-  integrity sha512-Mj+bedWOwfooNA8fQdp6gIcRvWcKhJ/hOyGzu6OLFDLgEosFEeuFgXE6SsAWkf9+9NTYX30w88qGIWZqOhEAmQ==
   dependencies:
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
