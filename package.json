@@ -61,7 +61,7 @@
     "@tryghost/bootstrap-socket": "0.2.12",
     "@tryghost/color-utils": "0.1.2",
     "@tryghost/config-url-helpers": "0.1.2",
-    "@tryghost/constants": "0.1.11",
+    "@tryghost/constants": "0.1.12",
     "@tryghost/custom-theme-settings-service": "0.3.0",
     "@tryghost/debug": "0.1.9",
     "@tryghost/email-analytics-provider-mailgun": "1.0.4",
