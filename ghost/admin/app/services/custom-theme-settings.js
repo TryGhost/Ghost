@@ -11,6 +11,8 @@ export default class CustomThemeSettingsServices extends Service {
     @tracked settings = [];
     @tracked settingGroups = [];
 
+    _hasLoaded = false;
+
     KNOWN_GROUPS = [{
         key: 'homepage',
         name: 'Homepage',
@@ -42,8 +44,18 @@ export default class CustomThemeSettingsServices extends Service {
         return this.loadTask.perform();
     }
 
+    reload() {
+        this._hasLoaded = false;
+
+        return this.loadTask.perform();
+    }
+
     @task
     *loadTask() {
+        if (this.hasLoaded) {
+            return this.settings;
+        }
+
         // unload stored settings and re-load from API so they always match active theme
         // run is required here, see https://github.com/emberjs/data/issues/5447#issuecomment-845672812
         run(() => this.store.unloadAll('custom-theme-setting'));
@@ -51,6 +63,8 @@ export default class CustomThemeSettingsServices extends Service {
         const settings = yield this.store.findAll('custom-theme-setting');
         this.settings = settings;
         this.settingGroups = this._buildSettingGroups(settings);
+
+        this._hasLoaded = true;
 
         return this.settings;
     }
