@@ -22,13 +22,6 @@ export default BaseValidator.create({
         }
     },
 
-    displayTitle(model) {
-        if (!model.displayTitle) {
-            model.errors.add('displayTitle', 'Please enter Display title.');
-            this.invalidate();
-        }
-    },
-
     displayDescription(model) {
         if (!validator.isLength(model.displayDescription || '', 0, 191)) {
             model.errors.add('displayDescription', 'Display description cannot be longer than 191 characters.');
