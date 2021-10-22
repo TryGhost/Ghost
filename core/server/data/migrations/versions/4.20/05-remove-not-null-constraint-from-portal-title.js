@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const {createNonTransactionalMigration} = require('../../utils');
+const {addUnique} = require('../../../schema/commands');
 
 module.exports = createNonTransactionalMigration(
     async function up(knex) {
@@ -12,6 +13,10 @@ module.exports = createNonTransactionalMigration(
         await knex.schema.table('offers', function (table) {
             table.string('portal_title', 191).nullable();
         });
+
+        for (const column of ['name', 'code', 'stripe_coupon_id']) {
+            await addUnique('offers', column, knex);
+        }
     },
     async function down(knex) {
         logging.info('Adding NOT NULL constraint for: portal_title in table: offers');
@@ -23,6 +28,10 @@ module.exports = createNonTransactionalMigration(
         await knex.schema.table('offers', function (table) {
             table.string('portal_title', 191).notNullable();
         });
+
+        for (const column of ['name', 'code', 'stripe_coupon_id']) {
+            await addUnique('offers', column, knex);
+        }
     }
 );
 
