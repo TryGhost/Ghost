@@ -1,5 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {bind} from '@ember/runloop';
+import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -20,6 +22,18 @@ export default class DesignMenuComponent extends Component {
 
         // fetch all themes in the background so we can show the active theme
         this.store.findAll('theme');
+
+        if (this.router.currentRouteName === 'settings.design.index') {
+            this.openDefaultSection();
+        }
+
+        this.routeDidChangeHandler = bind(this, this.handleRouteDidChange);
+        this.router.on('routeDidChange', this.routeDidChangeHandler);
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.router.off('routeDidChange', this.routeDidChangeHandler);
     }
 
     get activeTheme() {
@@ -52,5 +66,19 @@ export default class DesignMenuComponent extends Component {
     @action
     closeAllSections() {
         this.openSection = null;
+    }
+
+    openDefaultSection() {
+        const noCustomSettings = isEmpty(this.customThemeSettings.settings);
+
+        if (noCustomSettings) {
+            this.openSection = 'brand';
+        }
+    }
+
+    handleRouteDidChange(transition) {
+        if (!transition.isAborted && transition.to?.name === 'settings.design.index') {
+            this.openDefaultSection();
+        }
     }
 }
