@@ -61,7 +61,8 @@ function reconfigureMembersAPI() {
  */
 const fetchImportThreshold = async () => {
     const membersTotal = await membersService.stats.getTotalMembers();
-    const volumeThreshold = _.get(config.get('hostSettings'), 'emailVerification.importThreshold') || Infinity;
+    const configThreshold = _.get(config.get('hostSettings'), 'emailVerification.importThreshold');
+    const volumeThreshold = (configThreshold === undefined) ? Infinity : configThreshold;
     const threshold = Math.max(membersTotal, volumeThreshold);
 
     return threshold;
