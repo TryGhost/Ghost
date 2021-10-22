@@ -71,6 +71,10 @@ class OffersAPI {
 
             const offer = await this.repository.getById(data.id, options);
 
+            if (!offer) {
+                return null;
+            }
+
             if (Reflect.has(data, 'name')) {
                 const name = OfferName.create(data.name);
                 await offer.updateName(name, uniqueChecker);
