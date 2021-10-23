@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const fs = require('fs-extra');
-const moment = require('moment');
+const {DateTime} = require('luxon');
 const featuredImageRegex = /^(!\[]\(([^)]*?)\)\s+)(?=#)/;
 const titleRegex = /^#\s?([\w\W]*?)(?=\n)/;
 const statusRegex = /(published||draft)-/;
@@ -13,8 +13,10 @@ let MarkdownHandler;
 
 // Takes a date from the filename in y-m-d-h-m form, and converts it into a Date ready to import
 processDateTime = function (post, datetime) {
-    const format = 'YYYY-MM-DD-HH-mm';
-    datetime = moment.utc(datetime, format).valueOf();
+    // Assign the date to variables as numbers
+    const [year, month, day, hour, minute] = datetime.split('-').map(value => +value);
+
+    datetime = DateTime.utc(year, month, day, hour, minute).valueOf();
 
     if (post.status && post.status === 'published') {
         post.published_at = datetime;
