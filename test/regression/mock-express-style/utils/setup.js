@@ -7,8 +7,6 @@ const routingService = require('../../../../core/frontend/services/routing');
 const settingsService = require('../../../../core/server/services/settings');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const imageLib = require('../../../../core/server/lib/image');
-const themeService = require('../../../../core/server/services/themes');
-const helperService = require('../../../../core/frontend/services/helpers');
 const appService = require('../../../../core/frontend/services/apps');
 
 const siteApp = require('../../../../core/server/web/parent/app');
@@ -53,7 +51,12 @@ module.exports = {
         models.init();
         await settingsService.init();
         urlServiceUtils.init();
+
+        const customThemeSettingsService = require('../../../../core/server/services/custom-theme-settings');
+        customThemeSettingsService.init();
+        const themeService = require('../../../../core/server/services/themes');
         await themeService.init();
+        const helperService = require('../../../../core/frontend/services/helpers');
         await helperService.init();
 
         const app = siteApp({start: true});
