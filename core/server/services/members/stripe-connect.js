@@ -4,6 +4,9 @@ const {Buffer} = require('buffer');
 const {randomBytes} = require('crypto');
 const {URL} = require('url');
 
+const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils');
+
 const messages = {
     incorrectState: 'State did not match.'
 };
@@ -24,6 +27,7 @@ const redirectURI = 'https://stripe.ghost.org';
  * @returns {Promise<URL>}
  */
 async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
+    checkCanConnect();
     const randomState = randomBytes(16).toString('hex');
     const state = Buffer.from(JSON.stringify({
         mode,
@@ -69,6 +73,16 @@ async function getStripeConnectTokenData(encodedData, getSessionProp) {
         display_name: data.n,
         account_id: data.i
     };
+}
+
+function checkCanConnect() {
+    const siteUrl = urlUtils.getSiteUrl();
+    const productionMode = config.get('env') === 'production';
+    const siteUrlUsingSSL = /^https/.test(siteUrl);
+    const cannotConnectToStripe = productionMode && !siteUrlUsingSSL;
+    if (cannotConnectToStripe) {
+        throw new errors.BadRequestError('Cannot connect to stripe unless site is using https://');
+    }
 }
 
 module.exports = {
