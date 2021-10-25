@@ -37,7 +37,7 @@
     "@tryghost/kg-clean-basic-html": "2.0.5",
     "@tryghost/kg-parser-plugins": "2.0.5",
     "@tryghost/limit-service": "0.6.4",
-    "@tryghost/members-csv": "1.1.7",
+    "@tryghost/members-csv": "1.1.8",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
     "@tryghost/string": "0.1.20",
     "@tryghost/timezone-data": "0.2.50",
