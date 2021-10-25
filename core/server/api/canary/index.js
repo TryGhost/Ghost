@@ -105,6 +105,10 @@ module.exports = {
         return shared.pipeline(require('./images'), localUtils);
     },
 
+    get media() {
+        return shared.pipeline(require('./media'), localUtils);
+    },
+
     get tags() {
         return shared.pipeline(require('./tags'), localUtils);
     },
