@@ -19,7 +19,7 @@ module.exports = {
         {
             files: 'core/server/api/canary/*',
             rules: {
-                'ghost/ghost-custom/max-api-complexity': 'warn'
+                'ghost/ghost-custom/max-api-complexity': 'error'
             }
         },
         {
