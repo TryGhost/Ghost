@@ -191,14 +191,8 @@ function addPermissionToRole(config) {
             }).first();
 
             if (!permission) {
-                throw new errors.GhostError({
-                    message: tpl(messages.permissionRoleActionError, {
-                        action: 'remove',
-                        permission: config.permission,
-                        role: config.role,
-                        resource: 'permission'
-                    })
-                });
+                logging.warn(`Removing permission(${config.permission}) from role(${config.role}) - Permission not found.`);
+                return;
             }
 
             const role = await connection('roles').where({
@@ -206,14 +200,8 @@ function addPermissionToRole(config) {
             }).first();
 
             if (!role) {
-                throw new errors.GhostError({
-                    message: tpl(messages.permissionRoleActionError, {
-                        action: 'remove',
-                        permission: config.permission,
-                        role: config.role,
-                        resource: 'role'
-                    })
-                });
+                logging.warn(`Removing permission(${config.permission}) from role(${config.role}) - Role not found.`);
+                return;
             }
 
             const existingRelation = await connection('permissions_roles').where({
