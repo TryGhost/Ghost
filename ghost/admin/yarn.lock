@@ -1998,10 +1998,10 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/members-csv@1.1.7":
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.7.tgz#c62d08681816330058ff123761bbaa38f6765504"
-  integrity sha512-wUgQ1ShWOoW+HUrDAroYYSsYI1zWBACD7AveDB3PFamNdbkGg4WhW8Glc5ZBj6X7vsGWz0HjbH3Bob8mS8zEcA==
+"@tryghost/members-csv@1.1.8":
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.1.8.tgz#7baae9e9804df6def7410b5534f1e8f7089039fc"
+  integrity sha512-R3FUDRJjN2iNsW+txpPDWkYZvMyILEsJYb6S7Rvr7GIe8EByTLOTEzHXnf7/VYzVgd1ciTzCQf0x979+j64JGw==
   dependencies:
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
