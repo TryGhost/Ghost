@@ -115,9 +115,9 @@ jobs:
         env:
           database__connection__filename: /dev/shm/ghost-test.db
       - run: yarn test:unit
-      - run: yarn test:regression
-        env:
-          database__connection__filename: /dev/shm/ghost-test.db
+      # - run: yarn test:regression
+      #   env:
+      #     database__connection__filename: /dev/shm/ghost-test.db
 
       # Get runtime in seconds for test suite
       - run: |
