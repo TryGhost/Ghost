@@ -293,7 +293,9 @@ module.exports = class MemberBREADService {
             'products'
         ];
 
-        const withRelated = new Set((options.withRelated || []).concat(defaultWithRelated));
+        const originalWithRelated = options.withRelated || [];
+
+        const withRelated = new Set((originalWithRelated).concat(defaultWithRelated));
 
         if (!withRelated.has('productEvents')) {
             withRelated.add('productEvents');
@@ -316,6 +318,9 @@ module.exports = class MemberBREADService {
 
         const data = members.map((member) => {
             this.attachSubscriptionsToMember(member);
+            if (!originalWithRelated.includes('products')) {
+                delete member.products;
+            }
             return member;
         });
 
