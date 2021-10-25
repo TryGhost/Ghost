@@ -32,7 +32,6 @@ module.exports = class StripeWebhookService {
         this.registerHandler('customer.subscription.updated', this.subscriptionEvent);
         this.registerHandler('customer.subscription.created', this.subscriptionEvent);
         this.registerHandler('invoice.payment_succeeded', this.invoiceEvent);
-        this.registerHandler('invoice.payment_failed', this.invoiceEvent);
         this.registerHandler('checkout.session.completed', this.checkoutSessionEvent);
     }
 
@@ -52,8 +51,7 @@ module.exports = class StripeWebhookService {
             'customer.subscription.deleted',
             'customer.subscription.updated',
             'customer.subscription.created',
-            'invoice.payment_succeeded',
-            'invoice.payment_failed'
+            'invoice.payment_succeeded'
         ];
 
         const setupWebhook = async (id, secret, opts = {}) => {
