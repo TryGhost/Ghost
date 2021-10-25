@@ -304,6 +304,22 @@ describe('Limit Service', function () {
             (await limitService.checkIfAnyOverLimit()).should.be.false();
         });
 
+        it('Returns nothing if limit is not configured', async function () {
+            const limitService = new LimitService();
+
+            const isOverLimitResult = await limitService.checkIsOverLimit('unlimited');
+            should.equal(isOverLimitResult, undefined);
+
+            const wouldGoOverLimitResult = await limitService.checkWouldGoOverLimit('unlimited');
+            should.equal(wouldGoOverLimitResult, undefined);
+
+            const errorIfIsOverLimitResult = await limitService.errorIfIsOverLimit('unlimited');
+            should.equal(errorIfIsOverLimitResult, undefined);
+
+            const errorIfWouldGoOverLimitResult = await limitService.errorIfWouldGoOverLimit('unlimited');
+            should.equal(errorIfWouldGoOverLimitResult, undefined);
+        });
+
         it('Throws an error when an allowlist limit is checked', async function () {
             const limitService = new LimitService();
 
