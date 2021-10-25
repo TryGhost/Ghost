@@ -1,7 +1,7 @@
 const adapterManager = require('../../services/adapter-manager');
 
 /**
- * @param {'images'|'videos'|'audios'} [feature] - name for the "feature" to enable through adapter, e.g.: images or videos storage
+ * @param {'images'|'media'|'files'} [feature] - name for the "feature" to enable through adapter, e.g.: images or media storage
  * @returns {Object} adapter instance
  */
 function getStorage(feature) {
