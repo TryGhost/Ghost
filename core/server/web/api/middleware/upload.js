@@ -34,20 +34,19 @@ const messages = {
     }
 };
 
-const upload = {
-    enabledClear: config.get('uploadClear') || true,
-    multer: multer({dest: os.tmpdir()})
-};
+const enabledClear = config.get('uploadClear') || true;
+const upload = multer({dest: os.tmpdir()});
 
 const deleteSingleFile = file => fs.unlink(file.path).catch(err => logging.error(err));
 
 const single = name => (req, res, next) => {
-    const singleUpload = upload.multer.single(name);
+    const singleUpload = upload.single(name);
+
     singleUpload(req, res, (err) => {
         if (err) {
             return next(err);
         }
-        if (upload.enabledClear) {
+        if (enabledClear) {
             const deleteFiles = () => {
                 res.removeListener('finish', deleteFiles);
                 res.removeListener('close', deleteFiles);
