@@ -85,6 +85,10 @@ module.exports = {
         return require('./images');
     },
 
+    get media() {
+        return require('./media');
+    },
+
     get tags() {
         return require('./tags');
     },
