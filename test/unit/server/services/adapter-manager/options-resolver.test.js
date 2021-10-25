@@ -24,11 +24,11 @@ describe('Adapter Manager: options resolver', function () {
     });
 
     it('returns adapter configuration based on specified feature', function () {
-        const name = 'storage:videos';
+        const name = 'storage:media';
         const adapterServiceConfig = {
             storage: {
                 active: 'cloud-storage',
-                videos: 'local-storage',
+                media: 'local-storage',
                 'cloud-storage': {
                     custom: 'configValue'
                 },
@@ -48,11 +48,11 @@ describe('Adapter Manager: options resolver', function () {
     });
 
     it('returns active configuration if piece of feature adapter is missing', function () {
-        const name = 'storage:videos';
+        const name = 'storage:media';
         const adapterServiceConfig = {
             storage: {
                 active: 'cloud-storage',
-                videos: 'local-storage',
+                media: 'local-storage',
                 'cloud-storage': {
                     custom: 'configValue'
                 }

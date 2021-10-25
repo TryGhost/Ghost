@@ -32,6 +32,8 @@ const getContentPath = function getContentPath(type) {
     switch (type) {
     case 'images':
         return path.join(this.get('paths:contentPath'), 'images/');
+    case 'media':
+        return path.join(this.get('paths:contentPath'), 'media/');
     case 'themes':
         return path.join(this.get('paths:contentPath'), 'themes/');
     case 'adapters':
