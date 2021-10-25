@@ -59,8 +59,7 @@ module.exports = {
         permissions: true,
         validation: {},
         async query(frame) {
-            frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct'];
-            const page = await membersService.api.members.list(frame.options);
+            const page = await membersService.api.memberBREADService.browse(frame.options);
 
             return page;
         }
@@ -84,7 +83,7 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            let member = await membersService.api.memberBREADService.read(frame.data, frame.options);
+            const member = await membersService.api.memberBREADService.read(frame.data, frame.options);
 
             if (!member) {
                 throw new errors.NotFoundError({
@@ -115,72 +114,9 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            let member;
-            frame.options.withRelated = ['stripeSubscriptions', 'products', 'labels', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct'];
-            if (!labsService.isSet('multipleProducts')) {
-                delete frame.data.products;
-            }
-            try {
-                if (!membersService.config.isStripeConnected()
-                    && (frame.data.members[0].stripe_customer_id || frame.data.members[0].comped)) {
-                    const property = frame.data.members[0].comped ? 'comped' : 'stripe_customer_id';
+            const member = await membersService.api.memberBREADService.add(frame.data.members[0], frame.options);
 
-                    throw new errors.ValidationError({
-                        message: tpl(messages.stripeNotConnected.message),
-                        context: tpl(messages.stripeNotConnected.context),
-                        help: tpl(messages.stripeNotConnected.help),
-                        property
-                    });
-                }
-
-                member = await membersService.api.members.create(frame.data.members[0], frame.options);
-
-                if (frame.data.members[0].stripe_customer_id) {
-                    await membersService.api.members.linkStripeCustomer({
-                        customer_id: frame.data.members[0].stripe_customer_id,
-                        member_id: member.id
-                    }, frame.options);
-                }
-
-                if (!labsService.isSet('multipleProducts')) {
-                    if (frame.data.members[0].comped) {
-                        await membersService.api.members.setComplimentarySubscription(member);
-                    }
-                }
-
-                if (frame.options.send_email) {
-                    await membersService.api.sendEmailWithMagicLink({email: member.get('email'), requestedType: frame.options.email_type});
-                }
-
-                return member;
-            } catch (error) {
-                if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                    throw new errors.ValidationError({
-                        message: tpl(messages.memberAlreadyExists.message),
-                        context: tpl(messages.memberAlreadyExists.context, {
-                            action: 'add'
-                        })
-                    });
-                }
-
-                // NOTE: failed to link Stripe customer/plan/subscription or have thrown custom Stripe connection error.
-                //       It's a bit ugly doing regex matching to detect errors, but it's the easiest way that works without
-                //       introducing additional logic/data format into current error handling
-                const isStripeLinkingError = error.message && (error.message.match(/customer|plan|subscription/g));
-                if (member && isStripeLinkingError) {
-                    if (error.message.indexOf('customer') && error.code === 'resource_missing') {
-                        error.message = `Member not imported. ${error.message}`;
-                        error.context = tpl(messages.stripeCustomerNotFound.context);
-                        error.help = tpl(messages.stripeCustomerNotFound.help);
-                    }
-
-                    await membersService.api.members.destroy({
-                        id: member.get('id')
-                    }, frame.options);
-                }
-
-                throw error;
-            }
+            return member;
         }
     },
 
@@ -199,42 +135,9 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            if (!labsService.isSet('multipleProducts')) {
-                delete frame.data.products;
-            }
-            try {
-                frame.options.withRelated = ['stripeSubscriptions', 'products', 'labels', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct'];
-                const member = await membersService.api.members.update(frame.data.members[0], frame.options);
+            const member = await membersService.api.memberBREADService.edit(frame.data.members[0], frame.options);
 
-                const hasCompedSubscription = !!member.related('stripeSubscriptions').find(sub => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active');
-
-                if (!labsService.isSet('multipleProducts')) {
-                    if (typeof frame.data.members[0].comped === 'boolean') {
-                        if (frame.data.members[0].comped && !hasCompedSubscription) {
-                            await membersService.api.members.setComplimentarySubscription(member);
-                        } else if (!(frame.data.members[0].comped) && hasCompedSubscription) {
-                            await membersService.api.members.cancelComplimentarySubscription(member);
-                        }
-
-                        await member.load(['stripeSubscriptions', 'products', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
-                    }
-                }
-
-                await member.load(['stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']);
-
-                return member;
-            } catch (error) {
-                if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                    throw new errors.ValidationError({
-                        message: tpl(messages.memberAlreadyExists.message),
-                        context: tpl(messages.memberAlreadyExists.context, {
-                            action: 'edit'
-                        })
-                    });
-                }
-
-                throw error;
-            }
+            return member;
         }
     },
 
