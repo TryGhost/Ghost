@@ -30,6 +30,10 @@
             "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico", ".webp"],
             "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
         },
+        "media": {
+            "extensions": [".mp4",".webm", ".ogv"],
+            "contentTypes": ["video/mp4", "video/webm", "video/ogg"]
+        },
         "icons": {
             "extensions": [".png", ".ico"],
             "contentTypes": ["image/png", "image/x-icon", "image/vnd.microsoft.icon"]

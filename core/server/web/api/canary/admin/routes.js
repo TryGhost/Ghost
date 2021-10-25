@@ -236,6 +236,14 @@ module.exports = function apiRoutes() {
         http(api.images.upload)
     );
 
+    // ## media
+    router.post('/media/upload',
+        mw.authAdminApi,
+        apiMw.upload.single('file'),
+        apiMw.upload.validation({type: 'media'}),
+        http(api.media.upload)
+    );
+
     // ## Invites
     router.get('/invites', mw.authAdminApi, http(api.invites.browse));
     router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
