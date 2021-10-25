@@ -1,6 +1,8 @@
 <div data-test-editor-post-status ...attributes>
     {{#if this.isSaving}}
         Saving...
+    {{else if @post.isSent}}
+        Sent to {{gh-pluralize @post.email.emailCount "member"}}
     {{else if (or @post.isPublished @post.pastScheduledTime)}}
         Published
         {{#if (or (eq @post.email.status "submitting") (eq @post.email.status "submitting"))}}
