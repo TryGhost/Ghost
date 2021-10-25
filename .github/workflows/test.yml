@@ -130,7 +130,7 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
-      - run: cat ~/tailscale.log
+      - run: cat ~/tailscaled.log
 
       # Report time taken to metrics service
       - uses: sam-lord/action-trigger-metric@main
