@@ -131,7 +131,7 @@ module.exports = class CustomThemeSettingsService {
     async _syncRepositoryWithTheme(name, theme) {
         const themeSettings = theme.customSettings || {};
 
-        const settingsCollection = await this._repository.browse({filter: `theme:${name}`});
+        const settingsCollection = await this._repository.browse({filter: `theme:'${name}'`});
         let knownSettings = settingsCollection.toJSON();
 
         // exit early if there's nothing to sync for this theme
@@ -182,7 +182,7 @@ module.exports = class CustomThemeSettingsService {
             }
         }
 
-        const updatedSettingsCollection = await this._repository.browse({filter: `theme:${name}`});
+        const updatedSettingsCollection = await this._repository.browse({filter: `theme:'${name}'`});
         return updatedSettingsCollection.toJSON();
     }
 
