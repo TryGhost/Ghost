@@ -96,6 +96,7 @@ describe('Limit Service', function () {
                 const _5MB = 5000000;
                 const config = {
                     max: _5MB,
+                    formatter: count => `${count / 1000000}MB`,
                     error: 'You have exceeded the maximum file size {{ max }}',
                     currentCountQuery: function () {
                         throw new Error('Should not be called');
@@ -116,7 +117,7 @@ describe('Limit Service', function () {
                     error.errorDetails.name.should.equal('fileSize');
                     error.errorDetails.limit.should.equal(5000000);
                     error.errorDetails.total.should.equal(10000000);
-                    error.message.should.equal('You have exceeded the maximum file size 5,000,000');
+                    error.message.should.equal('You have exceeded the maximum file size 5MB');
                 }
             });
         });
