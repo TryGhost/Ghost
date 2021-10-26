@@ -80,7 +80,7 @@ function createApiInstance(config) {
                     return `
                         Hey there!
 
-                        Thanks for signing up for ${siteTitle} — use this link to complete the sign up process and be automatically signed in:
+                        Tap the link below to complete the signup process for ${siteTitle}, and be automatically signed in:
 
                         ${url}
 
