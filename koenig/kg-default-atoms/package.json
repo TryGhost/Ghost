@@ -12,7 +12,7 @@
     "posttest": "yarn lint"
   },
   "engines": {
-    "node": "^12.22.1 || ^14.16.1"
+    "node": "^12.22.1 || ^14.17.0 || ^16.13.0"
   },
   "files": [
     "index.js",
