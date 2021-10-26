@@ -102,7 +102,7 @@ class MaxLimit extends Limit {
      * @param {Number} [options.addedCount] - number of items to add to the currentCount during the check
      */
     async errorIfWouldGoOverLimit({max, addedCount = 1} = {}) {
-        let currentCount = await this.currentCountQuery(this.db);
+        let currentCount = await this.currentCountQuery();
 
         if ((currentCount + addedCount) > (max || this.max)) {
             throw this.generateError(currentCount);
@@ -116,7 +116,7 @@ class MaxLimit extends Limit {
      * @param {Number} [options.max] - overrides configured default max value to perform checks against
      */
     async errorIfIsOverLimit({max} = {}) {
-        let currentCount = await this.currentCountQuery(this.db);
+        let currentCount = await this.currentCountQuery();
 
         if (currentCount > (max || this.max)) {
             throw this.generateError(currentCount);
@@ -207,7 +207,7 @@ class MaxPeriodicLimit extends Limit {
      * @param {Number} [options.addedCount] - number of items to add to the currentCount during the check
      */
     async errorIfWouldGoOverLimit({max, addedCount = 1} = {}) {
-        let currentCount = await this.currentCountQuery(this.db);
+        let currentCount = await this.currentCountQuery();
 
         if ((currentCount + addedCount) > (max || this.maxPeriodic)) {
             throw this.generateError(currentCount);
@@ -221,7 +221,7 @@ class MaxPeriodicLimit extends Limit {
      * @param {Number} [options.max] - overrides configured default maxPeriodic value to perform checks against
      */
     async errorIfIsOverLimit({max} = {}) {
-        let currentCount = await this.currentCountQuery(this.db);
+        let currentCount = await this.currentCountQuery();
 
         if (currentCount > (max || this.maxPeriodic)) {
             throw this.generateError(currentCount);
