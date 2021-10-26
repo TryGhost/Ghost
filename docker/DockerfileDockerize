@@ -17,6 +17,7 @@ ENV NODE_ENV development
 
 COPY ./package.json /srv/ghost/package.json
 COPY ./yarn.lock /srv/ghost/yarn.lock
+COPY ./patches /srv/ghost/patches
 
 WORKDIR /srv/ghost
 RUN yarn install --silent && yarn cache clean

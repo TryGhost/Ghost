@@ -20,6 +20,7 @@
     "**/node_modules/**"
   ],
   "scripts": {
+    "postinstall": "patch-package",
     "archive": "yarn workspace ghost run archive",
     "build": "lerna run build",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
@@ -135,5 +136,9 @@
     "lerna": "6.6.2",
     "lint-staged": "13.1.2",
     "ts-node": "10.9.1"
+  },
+  "dependencies": {
+    "patch-package": "^7.0.0",
+    "postinstall-postinstall": "^2.1.0"
   }
 }

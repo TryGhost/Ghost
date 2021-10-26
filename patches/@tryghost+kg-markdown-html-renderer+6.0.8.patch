@@ -1,0 +1,52 @@
+diff --git a/node_modules/@tryghost/kg-markdown-html-renderer/lib/markdown-html-renderer.js b/node_modules/@tryghost/kg-markdown-html-renderer/lib/markdown-html-renderer.js
+index ff5470f..bd33c27 100644
+--- a/node_modules/@tryghost/kg-markdown-html-renderer/lib/markdown-html-renderer.js
++++ b/node_modules/@tryghost/kg-markdown-html-renderer/lib/markdown-html-renderer.js
+@@ -1,5 +1,6 @@
+ const MarkdownIt = require('markdown-it');
+ const semver = require('semver');
++const { createHighlightFunc, katexPlugin, useContainer } = require("@traptitech/traq-markdown-it");
+ const {slugify: kgSlugify} = require('@tryghost/kg-utils');
+ 
+ const renderers = {};
+@@ -50,7 +51,7 @@ const selectRenderer = function (options) {
+             return renderers['<4.x'];
+         }
+ 
+-        const markdownIt = new MarkdownIt({html: true, breaks: true, linkify: true})
++        const markdownIt = new MarkdownIt({highlight: createHighlightFunc('blog-code'), html: true, breaks: true, linkify: true})
+             .use(require('markdown-it-footnote'))
+             .use(require('markdown-it-lazy-headers'))
+             .use(require('markdown-it-mark'))
+@@ -62,6 +63,11 @@ const selectRenderer = function (options) {
+         markdownIt.linkify.set({
+             fuzzyLink: false
+         });
++        markdownIt.use(katexPlugin, {
++            output: 'html'
++        });
++        useContainer(markdownIt);
++
+ 
+         renderers['<4.x'] = markdownIt;
+         return markdownIt;
+@@ -70,7 +76,7 @@ const selectRenderer = function (options) {
+             return renderers.latest;
+         }
+ 
+-        const markdownIt = new MarkdownIt({html: true, breaks: true, linkify: true})
++        const markdownIt = new MarkdownIt({highlight: createHighlightFunc('blog-code'), html: true, breaks: true, linkify: true})
+             .use(require('markdown-it-footnote'))
+             .use(require('markdown-it-lazy-headers'))
+             .use(require('markdown-it-mark'))
+@@ -82,6 +88,10 @@ const selectRenderer = function (options) {
+         markdownIt.linkify.set({
+             fuzzyLink: false
+         });
++        markdownIt.use(katexPlugin, {
++            output: 'html'
++        });
++        useContainer(markdownIt);
+ 
+         renderers.latest = markdownIt;
+         return markdownIt;
