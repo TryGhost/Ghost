@@ -31,6 +31,10 @@ const messages = {
     icons: {
         missingFile: 'Please select an icon.',
         invalidFile: 'Icon must be a square .ico or .png file between 60px – 1,000px, under 100kb.'
+    },
+    media: {
+        missingFile: 'Please select a media file.',
+        invalidFile: 'Please select a valid media file.'
     }
 };
 
@@ -83,9 +87,13 @@ const checkFileIsValid = (fileData, types, extensions) => {
     return false;
 };
 
-const validation = function (options) {
-    const type = options.type;
-
+/**
+ *
+ * @param {Object} options
+ * @param {String} options.type - type of the file
+ * @returns {Function}
+ */
+const validation = function ({type}) {
     // if we finish the data/importer logic, we forward the request to the specified importer
     return function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
