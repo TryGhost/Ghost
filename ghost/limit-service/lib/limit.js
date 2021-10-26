@@ -5,6 +5,15 @@ const {lastPeriodStart, SUPPORTED_INTERVALS} = require('./date-utils');
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
 class Limit {
+    /**
+     *
+     * @param {Object} options
+     * @param {String} options.name - name of the limit
+     * @param {String} options.error - error message to use when limit is reached
+     * @param {String} options.helpLink - URL to the resource explaining how the limit works
+     * @param {Object} options.db - instance of knex db connection that currentCountQuery can use to run state check through
+     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
+     */
     constructor({name, error, helpLink, db, errors}) {
         this.name = name;
         this.error = error;
@@ -36,6 +45,7 @@ class MaxLimit extends Limit {
      * @param {Object} options.config - limit configuration
      * @param {Number} options.config.max - maximum limit the limit would check against
      * @param {Function} options.config.currentCountQuery - query checking the state that would be compared against the limit
+     * @param {String} [options.config.error] - error message to use when limit is reached
      * @param {String} options.helpLink - URL to the resource explaining how the limit works
      * @param {Object} options.db - instance of knex db connection that currentCountQuery can use to run state check through
      * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
