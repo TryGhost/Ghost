@@ -45,5 +45,11 @@ module.exports = {
             return result.count;
         }
     },
-    customThemes: {}
+    customThemes: {},
+    uploads: {
+        // NOTE: this function should not ever be used as for uploads we compare the size
+        //       of the uploaded file with the configured limit. Noop is here to keep the
+        //       MaxLimit constructor happy
+        currentCountQuery: () => {}
+    }
 };
