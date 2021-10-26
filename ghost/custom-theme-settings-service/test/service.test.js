@@ -5,6 +5,7 @@ require('./utils');
 const _ = require('lodash');
 const sinon = require('sinon');
 const {ValidationError} = require('@tryghost/errors');
+const nql = require('@nexes/nql-lang');
 
 const Service = require('../lib/service');
 const Cache = require('../lib/cache');
@@ -34,7 +35,7 @@ class ModelStub {
             // we only use 'theme:{themeName}' in filters
             const [key, value] = options.filter.split(':');
             const matcher = {};
-            matcher[key] = value;
+            matcher[key] = value.replace(/^'|'$/g, '');
 
             foundSettings = this.knownSettings.filter(_.matches(matcher));
         }
@@ -116,8 +117,8 @@ describe('Service', function () {
             });
 
             model.findAll.callCount.should.equal(2);
-            model.findAll.getCall(0).firstArg.should.deepEqual({filter: 'theme:test'});
-            model.findAll.getCall(1).firstArg.should.deepEqual({filter: 'theme:test'});
+            model.findAll.getCall(0).firstArg.should.deepEqual({filter: `theme:'test'`});
+            model.findAll.getCall(1).firstArg.should.deepEqual({filter: `theme:'test'`});
 
             // destroys records that no longer exist in theme
             model.destroy.callCount.should.equal(1);
@@ -320,10 +321,10 @@ describe('Service', function () {
 
             // looks for existing settings, then re-fetches after sync. Twice for each activation
             model.findAll.callCount.should.equal(4);
-            model.findAll.getCall(0).firstArg.should.deepEqual({filter: 'theme:test'});
-            model.findAll.getCall(1).firstArg.should.deepEqual({filter: 'theme:test'});
-            model.findAll.getCall(2).firstArg.should.deepEqual({filter: 'theme:new'});
-            model.findAll.getCall(3).firstArg.should.deepEqual({filter: 'theme:new'});
+            model.findAll.getCall(0).firstArg.should.deepEqual({filter: `theme:'test'`});
+            model.findAll.getCall(1).firstArg.should.deepEqual({filter: `theme:'test'`});
+            model.findAll.getCall(2).firstArg.should.deepEqual({filter: `theme:'new'`});
+            model.findAll.getCall(3).firstArg.should.deepEqual({filter: `theme:'new'`});
 
             // adds new settings
             model.add.callCount.should.equal(2);
@@ -370,6 +371,29 @@ describe('Service', function () {
             await service.activateTheme('no-custom', {name: 'no-custom'});
 
             model.findAll.callCount.should.equal(1);
+        });
+
+        it('generates a valid filter string for theme names with dots', async function () {
+            await service.activateTheme('4.1.1-test', {
+                name: 'casper',
+                customSettings: {
+                    // 'one' custom setting no longer exists
+                    // 'two' - no change
+                    two: {
+                        type: 'select',
+                        options: ['2', '3'],
+                        default: '2'
+                    }
+                }
+            });
+
+            model.findAll.callCount.should.equal(2);
+
+            should.exist(model.findAll.getCall(0).firstArg.filter);
+            should.doesNotThrow(() => nql.parse(model.findAll.getCall(0).firstArg.filter));
+
+            should.exist(model.findAll.getCall(1).firstArg.filter);
+            should.doesNotThrow(() => nql.parse(model.findAll.getCall(1).firstArg.filter));
         });
     });
 
