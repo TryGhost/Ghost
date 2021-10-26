@@ -45,6 +45,23 @@ describe('Limit Service', function () {
 
     describe('Max Limit', function () {
         describe('Constructor', function () {
+            it('passes if within the limit and custom currentCount overriding currentCountQuery', async function () {
+                const config = {
+                    max: 5,
+                    error: 'You have gone over the limit',
+                    currentCountQuery: function () {
+                        throw new Error('Should not be called');
+                    }
+                };
+
+                try {
+                    const limit = new MaxLimit({name: '', config, errors});
+                    await limit.errorIfIsOverLimit({currentCount: 4});
+                } catch (error) {
+                    should.fail('Should have not errored', error);
+                }
+            });
+
             it('throws if initialized without a max limit', function () {
                 const config = {};
 
@@ -72,6 +89,34 @@ describe('Limit Service', function () {
                     should.exist(err.errorType);
                     should.equal(err.errorType, 'IncorrectUsageError');
                     err.message.should.match(/max limit without a current count query/);
+                }
+            });
+
+            it('throws when would go over the limit and custom currentCount overriding currentCountQuery', async function () {
+                const _5MB = 5000000;
+                const config = {
+                    max: _5MB,
+                    error: 'You have exceeded the maximum file size {{ max }}',
+                    currentCountQuery: function () {
+                        throw new Error('Should not be called');
+                    }
+                };
+
+                try {
+                    const limit = new MaxLimit({
+                        name: 'fileSize',
+                        config,
+                        errors
+                    });
+                    const _10MB = 10000000;
+
+                    await limit.errorIfIsOverLimit({currentCount: _10MB});
+                } catch (error) {
+                    error.errorType.should.equal('HostLimitError');
+                    error.errorDetails.name.should.equal('fileSize');
+                    error.errorDetails.limit.should.equal(5000000);
+                    error.errorDetails.total.should.equal(10000000);
+                    error.message.should.equal('You have exceeded the maximum file size 5,000,000');
                 }
             });
         });

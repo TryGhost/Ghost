@@ -114,9 +114,10 @@ class MaxLimit extends Limit {
      *
      * @param {Object} options
      * @param {Number} [options.max] - overrides configured default max value to perform checks against
+     * @param {Number} [options.currentCount] - overrides currentCountQuery to perform checks against
      */
-    async errorIfIsOverLimit({max} = {}) {
-        let currentCount = await this.currentCountQuery();
+    async errorIfIsOverLimit({max, currentCount} = {}) {
+        currentCount = currentCount || await this.currentCountQuery();
 
         if (currentCount > (max || this.max)) {
             throw this.generateError(currentCount);
