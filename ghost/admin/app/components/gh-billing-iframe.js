@@ -98,6 +98,13 @@ export default Component.extend({
         this.billing.set('subscription', data.subscription);
         this.billing.set('checkoutRoute', data?.checkoutRoute || '/plans');
 
+        if (data.subscription.status === 'active' && this.config.get('hostSettings.forceUpgrade')) {
+            // config might not be updated after a subscription has been set to active.
+            // Until then assume the forceUpgrade is over and the subscription
+            // was activated successfully.
+            this.config.set('hostSettings.forceUpgrade', false);
+        }
+
         // Detect if the current subscription is in a grace state and render a notification
         if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
             // This notification needs to be shown to every user regardless their permissions to see billing
