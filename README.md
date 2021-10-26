@@ -24,7 +24,7 @@ const LimitService = require('@tryghost/limit-service');
 const limitService = new LimitService();
 
 // setup limit configuration
-// currently supported limit keys are: staff, members, customThemes, customIntegrations
+// currently supported limit keys are: staff, members, customThemes, customIntegrations, uploads
 // all limit configs support custom "error" configuration that is a template string
 const limits = {
     // staff and member are "max" type of limits accepting "max" configuration
@@ -59,6 +59,12 @@ const limits = {
     //     maxPeriodic: 42,
     //     error: 'Your plan supports up to {{max}} emails. Please upgrade to reenable sending emails.'
     // }
+    uploads: {
+        // max key is in bytes
+        max: 5000000,
+        // formatting of the {{ max }} vairable is in MB, e.g: 5MB
+        error: 'Your plan supports uploads of max size up to {{max}}. Please upgrade to reenable uploading.'
+    }
 };
 
 // This information is needed for the limit service to work with "max periodic" limits
@@ -116,6 +122,11 @@ if (limitService.isLimited('members')) {
     await limitService.errorIfIsOverLimit('members', {max: 10000});
 }
 
+if (limitService.isLimited('uploads')) {
+    // for the uploads limit we HAVE TO pass in the "currentCount" parameter and use bytes as a base unit
+    await limitService.errorIfIsOverLimit('uploads', {currentCount: frame.file.size});
+}
+
 // check if any of the limits are acceding
 if (limitService.checkIfAnyOverLimit()) {
     console.log('One of the limits has acceded!');
@@ -130,7 +141,7 @@ At the moment there are four different types of limits that limit service allows
 4. `allowList` - checks if provided value is defined in configured "allowlist". Example usecase: "disable theme activation if it is not an official theme". To configure this limit define ` allowlist: ['VALUE_1', 'VALUE_2', 'VALUE_N']` property in the "limits" parameter. 
 
 ### Supported limits
-There's a limited amount of limits that are supported by limit service. The are defined by "key" property name in the "config" module. List of currently supported limit names: `members`, `staff`, `customIntegrations`, `emails`, `customThemes`. 
+There's a limited amount of limits that are supported by limit service. The are defined by "key" property name in the "config" module. List of currently supported limit names: `members`, `staff`, `customIntegrations`, `emails`, `customThemes`, `uploads`. 
 
 All limits can act as `flag` or `allowList` types. Only certain (`members`, `staff`, and`customIntegrations`) can have a `max` limit. Only `emails` currently supports the `maxPeriodic` type of limit.
 
