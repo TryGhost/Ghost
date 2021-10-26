@@ -108,9 +108,11 @@ class RouterManager {
         this.siteRouter.mountRouter(unsubscribeRouter.router());
         this.registry.setRouter('unsubscribeRouter', unsubscribeRouter);
 
-        const emailRouter = new EmailRouter(RESOURCE_CONFIG);
-        this.siteRouter.mountRouter(emailRouter.router());
-        this.registry.setRouter('emailRouter', emailRouter);
+        if (RESOURCE_CONFIG.QUERY.email) {
+            const emailRouter = new EmailRouter(RESOURCE_CONFIG);
+            this.siteRouter.mountRouter(emailRouter.router());
+            this.registry.setRouter('emailRouter', emailRouter);
+        }
 
         const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
         this.siteRouter.mountRouter(previewRouter.router());
