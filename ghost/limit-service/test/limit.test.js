@@ -1,6 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
+const should = require('should');
 
 const errors = require('./fixtures/errors');
 const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../lib/limit');
