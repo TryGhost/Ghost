@@ -27,6 +27,10 @@ module.exports = {
         return require('./members');
     },
 
+    get media() {
+        return require('./media');
+    },
+
     get settings() {
         return require('./settings');
     },
