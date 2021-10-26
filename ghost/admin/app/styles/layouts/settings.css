@@ -1373,7 +1373,7 @@ p.theme-validation-details {
 /* ---------------------------------------------------- */
 
 .gh-nav-contextual {
-    flex: 0 0 420px;
+    flex: 0 0 360px;
 }
 
 .gh-nav-header {
@@ -1746,6 +1746,31 @@ p.theme-validation-details {
     grid-column-gap: 40px;
     grid-row-gap: 64px;
     margin: 0 0 24px;
+}
+
+@media (max-width: 1120px) {
+    .theme-directory-labs {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 800px) and (max-width: 890px) {
+    .theme-directory-labs {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 800px) {
+    .theme-directory-labs {
+        grid-column-gap: 32px;
+        grid-row-gap: 48px;
+    }
+}
+
+@media (max-width: 430px) {
+    .theme-directory-labs {
+        grid-template-columns: 1fr;
+    }
 }
 
 .gh-theme-browser {
