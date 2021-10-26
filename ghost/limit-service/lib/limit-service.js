@@ -101,6 +101,12 @@ class LimitService {
         }
     }
 
+    /**
+     *
+     * @param {String} limitName - name of the configured limit
+     * @param {Object} metadata - limit parameters
+     * @returns
+     */
     async errorIfIsOverLimit(limitName, metadata = {}) {
         if (!this.isLimited(limitName)) {
             return;
@@ -109,6 +115,12 @@ class LimitService {
         await this.limits[limitName].errorIfIsOverLimit(metadata);
     }
 
+    /**
+     *
+     * @param {String} limitName - name of the configured limit
+     * @param {Object} metadata - limit parameters
+     * @returns
+     */
     async errorIfWouldGoOverLimit(limitName, metadata = {}) {
         if (!this.isLimited(limitName)) {
             return;
