@@ -1,9 +1,16 @@
 const _ = require('lodash');
 const settingsCache = require('../../shared/settings-cache');
 
+function optionalString(test, string) {
+    if (test) {
+        return string;
+    }
+    return '';
+}
+
 function getTitle(data, root, options = {}) {
     const context = root ? root.context : null;
-    const siteTitle = settingsCache.get('title');
+    const siteTitle = settingsCache.get('title') || '';
     const pagination = root ? root.pagination : null;
 
     // options.property = null/'og'/'twitter'
@@ -15,6 +22,9 @@ function getTitle(data, root, options = {}) {
     if (pagination && pagination.total > 1) {
         pageString = _.has(options.hash, 'page') ? options.hash.page.replace('%', pagination.page) : ' (Page ' + pagination.page + ')';
     }
+
+    const dashSiteTitle = optionalString(siteTitle, ' - ' + siteTitle);
+    const dashSiteTitlePage = optionalString(siteTitle || pageString, ' -' + optionalString(siteTitle, ' ' + siteTitle) + pageString);
 
     // If there's a specific meta title
     if (data.meta_title) {
@@ -28,16 +38,16 @@ function getTitle(data, root, options = {}) {
         }
     // Author title, paged
     } else if (_.includes(context, 'author') && data.author && _.includes(context, 'paged')) {
-        title = data.author.name + ' - ' + siteTitle + pageString;
+        title = data.author.name + dashSiteTitlePage;
     // Author title, index
     } else if (_.includes(context, 'author') && data.author) {
-        title = data.author.name + ' - ' + siteTitle;
+        title = data.author.name + dashSiteTitle;
     // Tag title, paged
     } else if (_.includes(context, 'tag') && data.tag && _.includes(context, 'paged')) {
-        title = data.tag.meta_title || data.tag.name + ' - ' + siteTitle + pageString;
+        title = data.tag.meta_title || data.tag.name + dashSiteTitlePage;
     // Tag title, index
     } else if (_.includes(context, 'tag') && data.tag) {
-        title = data.tag[optionsPropertyName] || data.tag.meta_title || data.tag.name + ' - ' + siteTitle;
+        title = data.tag[optionsPropertyName] || data.tag.meta_title || data.tag.name + dashSiteTitle;
     // Post title
     } else if (_.includes(context, 'post') && data.post) {
         title = data.post[optionsPropertyName] || data.post.meta_title || data.post.title;
