@@ -1429,18 +1429,13 @@ p.theme-validation-details {
     padding: 8px 16px;
     color: var(--black);
     font-size: 1.5rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.3em;
     border-radius: var(--border-radius);
 }
 
 .gh-nav-design .gh-nav-menu-title:hover {
     background: none !important;
-}
-
-.gh-nav-design .gh-nav-menu-title:focus,
-.gh-nav-design .gh-nav-menu-title.active {
-    font-weight: 700;
 }
 
 .gh-nav-design-tab {
@@ -1463,7 +1458,7 @@ p.theme-validation-details {
 
 .gh-nav-design-tab.active {
     color: var(--black);
-    font-weight: 600;
+    font-weight: 400;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
@@ -1476,22 +1471,17 @@ p.theme-validation-details {
     align-items: center;
     color: var(--black);
     font-size: 1.5rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .gh-nav-design-tab:not(.active):hover {
     background: var(--mainmenu-color-hover-bg);
 }
 
-.gh-nav-bottom .gh-nav-design-tab:focus span,
-.gh-nav-bottom .gh-nav-design-tab.active span {
-    font-weight: 700;
-}
-
 .gh-nav-bottom .gh-nav-design-tab .active-theme {
     color: var(--midgrey);
     font-size: 1.3rem;
-    font-weight: 400 !important;
+    font-weight: 400;
 }
 
 .gh-nav-design .gh-nav-list {
