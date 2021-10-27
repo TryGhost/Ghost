@@ -1512,7 +1512,45 @@ p.theme-validation-details {
 }
 
 .gh-nav-design .gh-nav-bottom {
-    padding: 40px 0;
+    position: sticky;
+    -webkit-position: sticky;
+    bottom: -24px;
+    z-index: 997;
+    height: 120px;
+    padding: 0;
+    -webkit-backface-visibility: hidden;
+}
+
+.gh-nav-design .gh-nav-bottom::before,
+.gh-nav-design .gh-nav-bottom::after {
+  content: "";
+  position: sticky;
+  -webkit-position: sticky;
+  display: block;
+  height: 24px;
+}
+
+.gh-nav-design .gh-nav-bottom::before {
+    z-index: 998;
+    bottom: 0;
+    background: var(--white);
+}
+
+.gh-nav-design .gh-nav-bottom::after {
+    bottom: 72px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 -8px 16px -3px rgba(0,0,0,.15);
+  }
+
+.gh-change-theme {
+    position: sticky;
+    -webkit-position: sticky;
+    bottom: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    height: 96px;
+    margin-bottom: -24px;
+    background: var(--white);
 }
 
 .gh-nav-design-tabicon {
