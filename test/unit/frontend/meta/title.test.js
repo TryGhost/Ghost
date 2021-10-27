@@ -449,4 +449,56 @@ describe('getTitle', function () {
 
         title.should.equal('My site title 4 (Page 35)');
     });
+
+    it('should not display "null" for an undefined site title', function () {
+        localSettingsCache.title = null;
+
+        var title = getTitle({
+            tag: {
+                name: 'My tag'
+            }
+        }, {
+            context: ['tag']
+        });
+
+        title.should.equal('My tag');
+
+        title = getTitle({
+            tag: {
+                name: 'My tag'
+            }
+        }, {
+            context: ['tag', 'paged'],
+            pagination: {
+                total: 40,
+                page: 35
+            }
+        });
+
+        title.should.equal('My tag - (Page 35)');
+
+        title = getTitle({
+            author: {
+                name: 'My name'
+            }
+        }, {
+            context: ['author']
+        });
+
+        title.should.equal('My name');
+
+        title = getTitle({
+            author: {
+                name: 'My name'
+            }
+        }, {
+            context: ['author', 'paged'],
+            pagination: {
+                total: 40,
+                page: 35
+            }
+        });
+
+        title.should.equal('My name - (Page 35)');
+    });
 });
