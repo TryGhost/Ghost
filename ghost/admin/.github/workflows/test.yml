@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '14.16.1'
+          node-version: '14.17.0'
 
       - run: yarn
       - run: grunt shell:ember:prod
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '14.16.1'
+          node-version: '14.17.0'
 
       - run: yarn
       - run: yarn lint:js
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '14.16.1'
+          node-version: '14.17.0'
 
       - run: yarn
       - run: yarn test
