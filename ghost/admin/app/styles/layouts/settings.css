@@ -1417,6 +1417,10 @@ p.theme-validation-details {
     color: var(--black);
 }
 
+.gh-nav-design {
+    overflow-x: hidden;
+}
+
 .gh-nav-design .gh-nav-menu-title {
     display: flex;
     align-items: center;
