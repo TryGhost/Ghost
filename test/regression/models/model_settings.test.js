@@ -17,7 +17,7 @@ describe('Settings Model', function () {
             await models.Settings.populateDefaults();
 
             const settingsPopulated = await models.Settings.findAll();
-            settingsPopulated.length.should.equal(93);
+            settingsPopulated.length.should.equal(94);
         });
 
         it('doesn\'t overwrite any existing settings', async function () {
@@ -42,7 +42,7 @@ describe('Settings Model', function () {
             await models.Settings.populateDefaults();
 
             const settingsPopulated = await models.Settings.findAll();
-            settingsPopulated.length.should.equal(93);
+            settingsPopulated.length.should.equal(94);
 
             const titleSetting = settingsPopulated.models.find(s => s.get('key') === 'title');
             titleSetting.get('value').should.equal('Testing Defaults');
