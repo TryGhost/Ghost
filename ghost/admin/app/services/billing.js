@@ -41,6 +41,9 @@ export default Service.extend({
     },
 
     getIframeURL() {
+        // initiate getting owner user in the background
+        this.getOwnerUser();
+
         let url = this.config.get('hostSettings.billing.url');
 
         if (window.location.hash && window.location.hash.includes(this.get('billingRouteRoot'))) {
@@ -61,7 +64,7 @@ export default Service.extend({
 
             if (!user) {
                 // load it when it's not there yet
-                await this.store.findAll('user');
+                await this.store.findAll('user', {reload: true});
                 user = this.store.peekAll('user').findBy('isOwnerOnly', true);
             }
             this.set('ownerUser', user);
