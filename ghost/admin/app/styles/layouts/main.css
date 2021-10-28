@@ -492,7 +492,7 @@
     position: absolute;
     left: 8px;
     top: 9px;
-    z-index: 99999;
+    z-index: 999;
     opacity: 1;
 }
 
