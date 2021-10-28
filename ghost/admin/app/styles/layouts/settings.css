@@ -1509,7 +1509,7 @@ p.theme-validation-details {
     position: sticky;
     -webkit-position: sticky;
     bottom: -24px;
-    z-index: 997;
+    z-index: 9997;
     height: 120px;
     padding: 0;
     -webkit-backface-visibility: hidden;
@@ -1525,7 +1525,7 @@ p.theme-validation-details {
 }
 
 .gh-nav-design .gh-nav-bottom::before {
-    z-index: 998;
+    z-index: 9998;
     bottom: 0;
     background: var(--white);
 }
@@ -1539,7 +1539,7 @@ p.theme-validation-details {
     position: sticky;
     -webkit-position: sticky;
     bottom: 0;
-    z-index: 999;
+    z-index: 9999;
     display: flex;
     align-items: center;
     height: 96px;
