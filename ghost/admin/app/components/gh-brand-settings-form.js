@@ -17,6 +17,7 @@ export default class GhBrandSettingsFormComponent extends Component {
     @service config;
     @service ghostPaths;
     @service settings;
+    @service frontend;
 
     iconExtensions = ICON_EXTENSIONS;
     iconMimeTypes = ICON_MIME_TYPES;
@@ -141,18 +142,16 @@ export default class GhBrandSettingsFormComponent extends Component {
             return;
         }
 
-        // grab the preview html
-        const ajaxOptions = {
-            contentType: 'text/html;charset=utf-8',
-            dataType: 'text',
+        const frontendUrl = '/';
+        const previewResponse = yield this.frontend.fetch(frontendUrl, {
+            method: 'POST',
             headers: {
-                'x-ghost-preview': this.previewData
+                'Content-Type': 'text/html;charset=utf-8',
+                'x-ghost-preview': this.previewData,
+                Accept: 'text/plain'
             }
-        };
-
-        // TODO: config.blogUrl always removes trailing slash - switch to always have trailing slash
-        const frontendUrl = `${this.config.get('blogUrl')}/`;
-        const previewContents = yield this.ajax.post(frontendUrl, ajaxOptions);
+        });
+        const previewContents = yield previewResponse.text();
 
         // inject extra CSS to disable navigation and prevent clicks
         const injectedCss = `html { pointer-events: none; }`;
