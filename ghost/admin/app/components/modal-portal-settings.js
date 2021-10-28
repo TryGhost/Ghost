@@ -272,7 +272,6 @@ export default ModalComponent.extend({
         }
 
         this.siteUrl = this.config.get('blogUrl');
-
         this.set('isPreloading', false);
     }),
 

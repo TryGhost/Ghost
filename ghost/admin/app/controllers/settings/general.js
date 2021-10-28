@@ -24,6 +24,7 @@ export default Controller.extend({
     notifications: service(),
     session: service(),
     settings: service(),
+    frontend: service(),
     ui: service(),
 
     availableTimezones: null,
@@ -269,9 +270,12 @@ export default Controller.extend({
         }
 
         try {
+            let changedAttrs = this.settings.changedAttributes();
             let settings = yield this.settings.save();
             config.set('blogTitle', settings.get('title'));
-
+            if (changedAttrs.password) {
+                this.frontend.loginIfNeeded();
+            }
             // this forces the document title to recompute after a blog title change
             this.ui.updateDocumentTitle();
 
