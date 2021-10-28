@@ -397,7 +397,7 @@
     },
     "amp": {
         "amp": {
-            "defaultValue": "true",
+            "defaultValue": "false",
             "validations": {
                 "isIn": [["true", "false"]]
             },
