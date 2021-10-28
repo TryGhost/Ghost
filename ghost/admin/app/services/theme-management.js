@@ -15,6 +15,7 @@ export default class ThemeManagementService extends Service {
     @service modals;
     @service settings;
     @service store;
+    @service frontend;
 
     @tracked isUploading;
     @tracked previewType = 'homepage';
@@ -152,17 +153,7 @@ export default class ThemeManagementService extends Service {
             return;
         }
 
-        // grab the preview html
-        const ajaxOptions = {
-            contentType: 'text/html;charset=utf-8',
-            dataType: 'text',
-            headers: {
-                'x-ghost-preview': this.previewData
-            }
-        };
-
-        // TODO: config.blogUrl always removes trailing slash - switch to always have trailing slash
-        let frontendUrl = `${this.config.get('blogUrl')}/`;
+        let frontendUrl = '/';
 
         if (this.previewType === 'post') {
             // in case we haven't loaded any posts so far
@@ -173,7 +164,15 @@ export default class ThemeManagementService extends Service {
             frontendUrl = this.latestPublishedPost.url;
         }
 
-        const previewContents = yield this.ajax.post(frontendUrl, ajaxOptions);
+        const previewResponse = yield this.frontend.fetch(frontendUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/html;charset=utf-8',
+                'x-ghost-preview': this.previewData,
+                Accept: 'text/plain'
+            }
+        });
+        const previewContents = yield previewResponse.text();
 
         // inject extra CSS to disable navigation and prevent clicks
         const injectedCss = `html { pointer-events: none; }`;
