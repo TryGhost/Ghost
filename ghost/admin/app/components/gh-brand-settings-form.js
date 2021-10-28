@@ -142,8 +142,7 @@ export default class GhBrandSettingsFormComponent extends Component {
             return;
         }
 
-        const frontendUrl = '/';
-        const previewResponse = yield this.frontend.fetch(frontendUrl, {
+        const previewResponse = yield this.frontend.fetch('/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
@@ -163,7 +162,10 @@ export default class GhBrandSettingsFormComponent extends Component {
         const originalCSS = stylesheet.innerHTML;
         stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
 
+        const doctype = new XMLSerializer().serializeToString(htmlDoc.doctype);
+        const html = doctype + htmlDoc.documentElement.outerHTML;
+
         // replace the iframe contents with the doctored preview html
-        this.args.replacePreviewContents(htmlDoc.documentElement.innerHTML);
+        this.args.replacePreviewContents(html);
     }
 }

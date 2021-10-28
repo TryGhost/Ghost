@@ -138,7 +138,9 @@ export default class ModalPostPreviewEmailComponent extends Component {
         let stylesheet = htmlDoc.querySelector('style');
         let originalCss = stylesheet.innerHTML;
         stylesheet.innerHTML = `${originalCss}\n\n${INJECTED_CSS}`;
-        html = htmlDoc.documentElement.innerHTML;
+
+        const doctype = new XMLSerializer().serializeToString(htmlDoc.doctype);
+        html = doctype + htmlDoc.documentElement.outerHTML;
 
         this.html = html;
         this.subject = subject;
