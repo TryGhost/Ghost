@@ -12,7 +12,12 @@ Route.reopen({
                 transition.abort();
                 this.upgradeStatus.requireUpgrade();
                 return false;
-            } else if (this.config.get('hostSettings.forceUpgrade') && transition.to?.name !== 'signout') {
+            } else if (this.config.get('hostSettings.forceUpgrade')) {
+                // Do not prevent transitions to the BMA or to signout
+                if (transition.to?.name === 'pro.index' || transition.to?.name === 'signout') {
+                    return true;
+                }
+
                 transition.abort();
                 // Catch and redirect every route in a force upgrade state
                 this.billing.openBillingWindow(this.router.currentURL, '/pro');
