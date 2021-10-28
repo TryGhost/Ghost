@@ -115,9 +115,9 @@ jobs:
         env:
           database__connection__filename: /dev/shm/ghost-test.db
       - run: yarn test:unit
-      # - run: yarn test:regression
-      #   env:
-      #     database__connection__filename: /dev/shm/ghost-test.db
+      - run: yarn test:regression
+        env:
+          database__connection__filename: /dev/shm/ghost-test.db
 
       # Get runtime in seconds for test suite
       - run: |
@@ -129,8 +129,6 @@ jobs:
         uses: tailscale/github-action@v1
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
-      - run: cat ~/tailscaled.log
 
       # Report time taken to metrics service
       - uses: sam-lord/action-trigger-metric@main
