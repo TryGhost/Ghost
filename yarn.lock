@@ -1332,6 +1332,14 @@
     "@elastic/elasticsearch" "^7.15.0"
     "@tryghost/debug" "^0.1.9"
 
+"@tryghost/elasticsearch@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.0.tgz#287167c7dd130fa36eb25347a6e1297d12c2de05"
+  integrity sha512-iVPQoNzkHUGCc8opEGmqRewwBOtf4c3XqxFyf6Bdpr3RLIwdKoa35HMKbtz5GJUAQ14Q++zJcWCxiKSHUexW+w==
+  dependencies:
+    "@elastic/elasticsearch" "^7.15.0"
+    "@tryghost/debug" "^0.1.9"
+
 "@tryghost/email-analytics-provider-mailgun@1.0.5":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.5.tgz#158b3c77500b4c9f88a3fedeadb0f5643f648845"
@@ -1478,7 +1486,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@0.2.2", "@tryghost/logging@^0.2.0":
+"@tryghost/logging@0.2.2":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-0.2.2.tgz#b77ff4a203073d5172520379754da7c098bc266d"
   integrity sha512-phZxz9dWQicLeOnMRxx0yXkhXO2rqey2o+BdIPerS06bnRQBrwHXUKyG1M/aRTojCx5ptbTKT3DmhY0ZPtDRCA==
@@ -1490,6 +1498,24 @@
     bunyan "^1.8.15"
     bunyan-loggly "^1.4.2"
     fs-extra "^9.1.0"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.21"
+    moment "^2.29.1"
+    prettyjson "^1.2.1"
+
+"@tryghost/logging@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.0.tgz#c68b06929a3ad84a903fc4f368c2000026ae4f68"
+  integrity sha512-0xoVtyf2FMo+ZzQjjVsKjav9d81iNG6zHpHOtHQBu4SDtEbBUPJ3T6xe3+kz3JRM/xZS3jzUZT71Pps1RM3UVg==
+  dependencies:
+    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
+    "@tryghost/elasticsearch" "^1.0.0"
+    "@tryghost/pretty-stream" "^0.1.2"
+    "@tryghost/root-utils" "^0.3.7"
+    bunyan "^1.8.15"
+    bunyan-loggly "^1.4.2"
+    fs-extra "^10.0.0"
     gelf-stream "^1.1.1"
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
@@ -1782,14 +1808,14 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/update-check-service@0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.2.4.tgz#d335cf6ef073df015c74dfca5a3fb39e1742b364"
-  integrity sha512-Gpr5Ah8vfn2cZBz25jBhNYD7VdsB/4WGff0SWPTgiCvw2kJigjbJyru2FrPavNb6iFYh3bwr0PpI/SjAzX/+GQ==
+"@tryghost/update-check-service@0.2.5":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.2.5.tgz#cde8b28ed54cece4024cdcad91ceaffdc2d4693a"
+  integrity sha512-LdvSpwtnsOX/il5v5VAoFFQc8V1mUsVqKptW/mvsvfMAEVnVtNHXAL0hZry/TDeq+4IU0h2UX+/Ziul8Wf4amA==
   dependencies:
     "@tryghost/debug" "^0.1.5"
     "@tryghost/errors" "^0.2.11"
-    "@tryghost/logging" "^0.2.0"
+    "@tryghost/logging" "^1.0.0"
     "@tryghost/tpl" "^0.1.3"
     bluebird "^3.7.2"
     lodash "^4.17.21"
