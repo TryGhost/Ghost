@@ -4,6 +4,8 @@
 // But then again testing real code, rather than mock code, might be more useful...
 
 const should = require('should');
+const path = require('path');
+const fs = require('fs');
 
 const supertest = require('supertest');
 const testUtils = require('../../utils');
@@ -107,6 +109,49 @@ describe('Admin Routing', function () {
                 .set('X-Forwarded-Proto', 'https')
                 .expect(200)
                 .end(doEnd(done));
+        });
+    });
+
+    describe('built template', function () {
+        beforeEach(function () {
+            const configPaths = configUtils.config.get('paths');
+            configPaths.adminViews = path.resolve('test/utils/fixtures/admin-views');
+            configUtils.set('paths', configPaths);
+        });
+
+        afterEach(function () {
+            configUtils.restore();
+        });
+
+        it('serves prod file in production', async function () {
+            configUtils.set('env', 'production');
+
+            const prodTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-views/default-prod.html')).toString();
+
+            const res = await request.get('/ghost/')
+                .set('X-Forwarded-Proto', 'https')
+                .expect(200);
+
+            res.text.should.equal(prodTemplate);
+        });
+
+        it('serves dev file when not in production', async function () {
+            const devTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-views/default.html')).toString();
+
+            const res = await request.get('/ghost/')
+                .set('X-Forwarded-Proto', 'https')
+                .expect(200);
+
+            res.text.should.equal(devTemplate);
+        });
+
+        it('generates it\'s own ETag header from file contents', async function () {
+            const res = await request.get('/ghost/')
+                .set('X-Forwarded-Proto', 'https')
+                .expect(200);
+
+            should.exist(res.headers.etag);
+            res.headers.etag.should.equal('b448e5380dbfc46bc7c6da6045bf3043');
         });
     });
 });
