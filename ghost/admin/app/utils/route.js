@@ -12,7 +12,7 @@ Route.reopen({
                 transition.abort();
                 this.upgradeStatus.requireUpgrade();
                 return false;
-            } else if (this.config.get('hostSettings.forceUpgrade')) {
+            } else if (this.config.get('hostSettings.forceUpgrade') && transition.to?.name !== 'signout') {
                 transition.abort();
                 // Catch and redirect every route in a force upgrade state
                 this.billing.openBillingWindow(this.router.currentURL, '/pro');
