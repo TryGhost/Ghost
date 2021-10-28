@@ -1,9 +1,9 @@
 const config = require('../../../../../../shared/config');
+const STATIC_VIDEO_URL_PREFIX = require('@tryghost/constants');
 
 function getURL(urlPath) {
-    const STATIC_VIDEO_URL_PREFIX = 'content/media';
-    const imagePathRe = new RegExp('^' + config.getSubdir() + '/' + STATIC_VIDEO_URL_PREFIX);
-    const absolute = imagePathRe.test(urlPath) ? true : false;
+    const media = new RegExp('^' + config.getSubdir() + '/' + STATIC_VIDEO_URL_PREFIX);
+    const absolute = media.test(urlPath) ? true : false;
 
     if (absolute) {
         // Remove the sub-directory from the URL because ghostConfig will add it back.
