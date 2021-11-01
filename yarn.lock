@@ -1308,14 +1308,6 @@
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
 
-"@tryghost/elasticsearch@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-0.1.3.tgz#fa3a37a5f9966393dc036c2d2bbe72429af59c72"
-  integrity sha512-c/hcjo5xaJKkVCWHBcAnstYxRL4xERnjr2731eA7AAMQZq/OLfss9On3LX6XZ837ru9YBad5OImT9ihvawrvZg==
-  dependencies:
-    "@elastic/elasticsearch" "^7.15.0"
-    "@tryghost/debug" "^0.1.9"
-
 "@tryghost/elasticsearch@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.0.tgz#287167c7dd130fa36eb25347a6e1297d12c2de05"
@@ -1608,12 +1600,12 @@
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 
-"@tryghost/metrics@0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-0.2.6.tgz#a1049153fb55cea74851f51730192e86ea66a5bd"
-  integrity sha512-OnZ8I/RFb79iA6Gou4CE5W1YZBSNOocZvApLIzfYR0Y1Hc3/0sBgrjmEnLGUGCWTk5S7vOQ0Q9W8ZbKaMSOO5w==
+"@tryghost/metrics@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.0.tgz#073cffb54274a9f7212d903b594af2f36fe95819"
+  integrity sha512-hMobhdiW2th+7qz/lFDCI0twvFlcdwNleGnmj1FJAxqtE/AiBr6DON9AwPfd7uEd+HsQd1Zb4pADcFibZvzmmg==
   dependencies:
-    "@tryghost/elasticsearch" "^0.1.3"
+    "@tryghost/elasticsearch" "^1.0.0"
     "@tryghost/pretty-stream" "^0.1.2"
     "@tryghost/root-utils" "^0.3.7"
     json-stringify-safe "^5.0.1"
