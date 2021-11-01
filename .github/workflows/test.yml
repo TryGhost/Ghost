@@ -105,9 +105,6 @@ jobs:
           mysql root password: 'root'
 
       - run: yarn
-
-      - run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
-
       - run: yarn test:e2e
         env:
           database__connection__filename: /dev/shm/ghost-test.db
@@ -118,38 +115,6 @@ jobs:
       - run: yarn test:regression
         env:
           database__connection__filename: /dev/shm/ghost-test.db
-
-      # Get runtime in seconds for test suite
-      - run: |
-          startTime="$(cat ${{ runner.temp }}/startTime)"
-          endTime="$(date +%s)"
-          echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
-
-      - name: Tailscale Action
-        uses: tailscale/github-action@v1
-        with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
-      # Report time taken to metrics service
-      - uses: sam-lord/action-trigger-metric@main
-        with:
-          metricName: 'test-time'
-          metricValue: ${{ env.test_time }}
-          configuration: |
-            {
-              "metrics": {
-                "transports": ["elasticsearch"],
-                "metadata": {
-                  "database": "${{ matrix.env.DB }}",
-                  "node": "${{ matrix.node }}"
-                }
-              },
-              "elasticsearch": {
-                "host": "${{ secrets.ELASTICSEARCH_HOST }}",
-                "username": "${{ secrets.ELASTICSEARCH_USERNAME }}",
-                "password": "${{ secrets.ELASTICSEARCH_PASSWORD }}"
-              }
-            }
 
       - name: Unit test coverage
         run: yarn cov:unit
