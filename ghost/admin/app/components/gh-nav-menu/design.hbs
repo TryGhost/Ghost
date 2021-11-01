@@ -1,4 +1,4 @@
-<div class="flex flex-column h-100" {{css-transition "gh-nav-contextual"}} ...attributes>
+<div class="flex flex-column h-100" {{css-transition "gh-nav-contextual"}} data-test-nav-menu="design" ...attributes>
     <header class="gh-nav-header">
         <LinkTo @route="settings" class="gh-nav-menu-back-button">{{svg-jar "arrow-left-small"}} Settings</LinkTo>
     </header>
@@ -8,12 +8,12 @@
                 <LinkTo @route="settings.design" class="gh-nav-menu-title" @current-when="settings.design.index" {{on "click" this.closeAllSections}}>Site design</LinkTo>
 
                 {{#let (eq this.openSection "brand") as |isOpen|}}
-                    <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection "brand")}}>
-                        {{svg-jar "paintbrush"}}Brand
+                    <button class="gh-nav-design-tab {{if isOpen "active"}}" type="button" {{on "click" (fn this.toggleSection "brand")}} data-test-nav-toggle="general">
+                        {{svg-jar "paintbrush"}} Brand
                         <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
                     </button>
                     {{#liquid-if isOpen}}
-                        <div class="gh-nav-design-settings">
+                        <div class="gh-nav-design-settings" data-test-nav-group="general">
                             <Settings::Design::GeneralSettingsForm
                                 @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
                             />
@@ -29,7 +29,7 @@
                         </button>
 
                         {{#liquid-if isOpen}}
-                            <div class="gh-nav-design-settings">
+                            <div class="gh-nav-design-settings" data-test-nav-group={{group.key}}>
                                 <Settings::Design::ThemeSettingsForm
                                     @themeSettings={{group.settings}}
                                     @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
@@ -43,10 +43,10 @@
 
         <div class="gh-nav-bottom">
             <div class="gh-change-theme">
-                <LinkTo class="gh-nav-design-tab" @route="settings.design.change-theme" {{on "click" this.closeAllSections}}>
+                <LinkTo class="gh-nav-design-tab" @route="settings.design.change-theme" {{on "click" this.closeAllSections}} data-test-nav="change-theme">
                     <div>
                         <span>Change theme</span>
-                        <span class="active-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}</span>
+                        <span class="active-theme" data-test-text="current-theme">Current: {{this.activeTheme.name}}{{#if this.activeTheme.package.version}} - v{{this.activeTheme.package.version}}{{/if}}</span>
                     </div>
                     <div class="gh-nav-design-tabicon">{{svg-jar "sync"}}</div>
                 </LinkTo>
