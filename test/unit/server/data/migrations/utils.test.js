@@ -380,7 +380,7 @@ describe('migrations/utils/permissions', function () {
                 }
             });
 
-            it('Throws when permission cannot be found in down migration', async function () {
+            it('Does not throw when permission cannot be found in down migration', async function () {
                 const knex = await setupDb();
 
                 const migration = utils.addPermissionToRole({
@@ -393,13 +393,7 @@ describe('migrations/utils/permissions', function () {
                     .where('name', '=', 'Permission Name')
                     .del();
 
-                try {
-                    await runDownMigration(knex, migration);
-                    should.fail('addPermissionToRole down migration did not throw');
-                } catch (err) {
-                    should.equal(err instanceof errors.GhostError, true);
-                    err.message.should.equal('Cannot remove permission(Permission Name) with role(Role Name) - permission does not exist');
-                }
+                await runDownMigration(knex, migration);
             });
 
             it('Throws when role cannot be found', async function () {
@@ -419,7 +413,7 @@ describe('migrations/utils/permissions', function () {
                 }
             });
 
-            it('Throws when role cannot be found in down migration', async function () {
+            it('Does not throw when role cannot be found in down migration', async function () {
                 const knex = await setupDb();
 
                 const migration = utils.addPermissionToRole({
@@ -432,13 +426,7 @@ describe('migrations/utils/permissions', function () {
                     .where('name', '=', 'Role Name')
                     .del();
 
-                try {
-                    await runDownMigration(knex, migration);
-                    should.fail('addPermissionToRole down migration did not throw');
-                } catch (err) {
-                    should.equal(err instanceof errors.GhostError, true);
-                    err.message.should.equal('Cannot remove permission(Permission Name) with role(Role Name) - role does not exist');
-                }
+                await runDownMigration(knex, migration);
             });
         });
     });
