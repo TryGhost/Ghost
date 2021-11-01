@@ -36,7 +36,7 @@ export default function mockThemes(server) {
         return {themes: [theme]};
     });
 
-    server.post('/themes/install/', function ({themes, db}, {queryParams}) {
+    server.post('/themes/install/', function ({themes}, {queryParams}) {
         themes.all().update('active', false);
 
         const themeName = queryParams.ref.replace('TryGhost/', '');
