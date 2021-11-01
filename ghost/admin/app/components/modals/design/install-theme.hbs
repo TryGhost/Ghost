@@ -1,18 +1,18 @@
-<div class="modal-content">
+<div class="modal-content" data-test-modal="install-theme">
     <div class="theme-validation-container">
-        <header class="modal-header" data-test-modal="upload-theme">
+        <header class="modal-header">
             <h1>{{if this.installSuccess "Success" "Install theme"}}</h1>
         </header>
         <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
         <div class="modal-body">
             {{#if this.isConfirming}}
-                <p>
+                <p data-test-state="confirm">
                     By clicking below, <strong>{{this.themeName}}</strong> will automatically be activated as the theme for your site.
                 </p>
 
                 {{#if this.willOverwriteExisting}}
-                    <p>
+                    <p data-test-state="confirm-overwrite">
                         This will overwrite your existing version of {{this.themeName}}{{if this.willOverwriteExisting.active ", which is your active theme"}}. All custom changes will be lost.
                     </p>
                 {{/if}}
@@ -20,24 +20,24 @@
 
             {{#if this.installSuccess}}
                 {{#if this.hasWarningsOrErrors}}
-                    <p>
+                    <p data-test-state="installed-with-notes">
                         The theme <strong>"{{this.themeName}}"</strong> was installed successfully but we detected some {{if this.validationErrors "errors" "warnings"}}.
                     </p>
                 {{else}}
                     {{!-- Installed with no errors --}}
-                    <p><strong>{{this.themeName}}</strong> has been successfully installed and activated as your theme.</p>
+                    <p data-test-state="installed-no-notes"><strong>{{this.themeName}}</strong> has been successfully installed and activated as your theme.</p>
                 {{/if}}
             {{/if}}
 
             {{#if this.installError}}
                 {{!-- Outright failure - not found, not a theme, server error, etc --}}
-                <p>{{this.themeName}} failed to install.</p>
-                <p class="error"><strong class="response">{{this.installError}}</strong></p>
+                <p data-test-state="failed-error">{{this.themeName}} failed to install.</p>
+                <p class="error" data-test-text="install-error"><strong class="response">{{this.installError}}</strong></p>
             {{/if}}
 
             {{#if this.installFailure}}
                 {{!-- Invalid theme --}}
-                <p>This theme is invalid and cannot be installed. Contact the theme developer.</p>
+                <p data-test-state="failed-invalid">This theme is invalid and cannot be installed. Contact the theme developer.</p>
             {{/if}}
 
             {{#if this.fatalValidationErrors}}
@@ -98,6 +98,7 @@
                         @task={{this.installThemeTask}}
                         @unlinkedTask={{true}} {{!-- button will be removed on success so avoid self-cancel warning --}}
                         @class="gh-btn gh-btn-primary gh-btn-icon"
+                        data-test-button="confirm-install"
                     />
                 {{/if}}
             </div>

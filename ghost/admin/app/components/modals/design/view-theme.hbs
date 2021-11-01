@@ -12,7 +12,7 @@
                 <button type="button" class="gh-btn gh-design-preview-mode {{if this.isMobilePreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
             </div>
 
-            <button type="button" class="gh-btn gh-btn-primary" {{on "click" this.installTheme}}><span>Use {{@data.theme.name}}</span></button>
+            <button type="button" class="gh-btn gh-btn-primary" {{on "click" this.installTheme}} data-test-button="install-theme"><span>Use {{@data.theme.name}}</span></button>
         </section>
     </GhCanvasHeader>
 

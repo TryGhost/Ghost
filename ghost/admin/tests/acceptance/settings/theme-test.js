@@ -9,7 +9,8 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Theme', function () {
+// TODO: remove along with customThemeSettings feature flag removal
+describe.skip('Acceptance: Settings - Theme', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 

@@ -2,6 +2,7 @@ import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import mockApiKeys from './config/api-keys';
 import mockAuthentication from './config/authentication';
 import mockConfig from './config/config';
+import mockCustomThemeSettings from './config/custom-theme-settings';
 import mockEmails from './config/emails';
 import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
@@ -58,6 +59,7 @@ export function testConfig() {
     mockApiKeys(this);
     mockAuthentication(this);
     mockConfig(this);
+    mockCustomThemeSettings(this);
     mockEmails(this);
     mockIntegrations(this);
     mockInvites(this);

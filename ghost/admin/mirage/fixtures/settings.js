@@ -212,5 +212,15 @@ export default [
         updated_at: '2020-01-09T08:49:42.991Z',
         updated_by: 1,
         value: 'true'
+    },
+    {
+        id: 27,
+        created_at: '2021-11-01T15:44:43.494Z',
+        created_by: 1,
+        key: 'active_theme',
+        group: 'theme',
+        updated_at: '2021-11-01T15:44:43.494Z',
+        updated_by: 1,
+        value: 'casper'
     }
 ];

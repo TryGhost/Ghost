@@ -35,4 +35,25 @@ export default function mockThemes(server) {
 
         return {themes: [theme]};
     });
+
+    server.post('/themes/install/', function ({themes, db}, {queryParams}) {
+        themes.all().update('active', false);
+
+        const themeName = queryParams.ref.replace('TryGhost/', '');
+
+        let theme = themes.findBy({name: themeName});
+        if (theme) {
+            theme.update({active: true});
+        } else {
+            theme = themes.create({
+                name: themeName,
+                package: {
+                    name: themeName,
+                    version: '0.1'
+                }
+            });
+        }
+
+        return {themes: [theme]};
+    });
 }
