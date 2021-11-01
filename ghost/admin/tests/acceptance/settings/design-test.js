@@ -119,6 +119,23 @@ describe('Acceptance: Settings - Design', function () {
     it('can delete installed theme');
 
     describe('limits', function () {
-        it('displays upgrade notice when custom themes are not allowed');
+        it('displays upgrade notice when custom themes are not allowed', async function () {
+            this.server.loadFixtures('configs');
+            const config = this.server.db.configs.find(1);
+            config.hostSettings = {
+                limits: {
+                    customThemes: {
+                        allowlist: ['casper', 'dawn', 'lyra'],
+                        error: 'All our official built-in themes are available the Starter plan, if you upgrade to one of our higher tiers you will also be able to edit and upload custom themes for your site.'
+                    }
+                }
+            };
+            this.server.db.configs.update(1, config);
+
+            await visit('/settings/design/change-theme');
+            await click('[data-test-button="upload-theme"]');
+
+            expect(find('[data-test-modal="limits/custom-theme"]'), 'limits/custom-theme modal').to.exist;
+        });
     });
 });
