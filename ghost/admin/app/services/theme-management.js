@@ -52,7 +52,7 @@ export default class ThemeManagementService extends Service {
             await this.limit.limiter.errorIfWouldGoOverLimit('customThemes', {value: '.'});
         } catch (error) {
             if (error.errorType === 'HostLimitError') {
-                return this.modals.open('modals/limit/custom-theme', {
+                return this.modals.open('modals/limits/custom-theme', {
                     message: error.message
                 });
             }
