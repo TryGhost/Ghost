@@ -15,8 +15,8 @@
             </div>
 
             <div class="gh-contentfilter gh-btn-group">
-                <button type="button" class="gh-btn gh-design-preview-mode {{if this.isDesktopPreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "desktop")}}><span>{{svg-jar "desktop"}}</span></button>
-                <button type="button" class="gh-btn gh-design-preview-mode {{if this.isMobilePreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
+                <button type="button" class="gh-btn gh-design-preview-mode {{if this.isDesktopPreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "desktop")}} data-test-button="desktop-preview"><span>{{svg-jar "desktop"}}</span></button>
+                <button type="button" class="gh-btn gh-design-preview-mode {{if this.isMobilePreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "mobile")}} data-test-button="mobile-preview"><span>{{svg-jar "mobile-phone"}}</span></button>
             </div>
 
             <GhTaskButton

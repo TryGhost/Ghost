@@ -44,6 +44,7 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
 
     buildRouteInfoMetadata() {
         return {
+            titleToken: 'Settings - Design',
             mainClasses: ['gh-main-fullwidth']
         };
     }

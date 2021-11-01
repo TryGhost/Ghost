@@ -1,6 +1,6 @@
-<div class="modal-content">
+<div class="modal-content" data-test-modal="upload-theme">
     <div class="theme-validation-container">
-        <header class="modal-header" data-test-modal="upload-theme">
+        <header class="modal-header">
             <h1>
                 {{#if this.theme}}
                     {{#if this.hasWarningsOrErrors}}
@@ -20,7 +20,7 @@
         <div class="modal-body">
             {{#if this.theme}}
                 {{#if this.hasWarningsOrErrors}}
-                    <p>
+                    <p data-test-state="installed-with-notes">
                         The theme <strong>"{{this.themeName}}"</strong> was installed successfully but we detected some {{if this.validationErrors "errors" "warnings"}}.
                         {{#if this.canActivateTheme}}
                             You are still able to activate and use the theme but it is recommended to fix these {{if this.validationErrors "errors" "warnings"}} before you do so.
@@ -54,18 +54,18 @@
                         </ul>
                     {{/if}}
                 {{else}}
-                    <p>
+                    <p data-test-state="installed-no-notes">
                         <strong>{{this.themeName}}</strong> uploaded successfully.
                         {{#if this.canActivateTheme}}Do you want to activate it now?{{/if}}
                     </p>
                 {{/if}}
             {{else if this.displayOverwriteWarning}}
-                <p>
-                    The theme folder <strong>"{{this.fileThemeName}}"</strong> already exists. Do you want to overwrite it?
+                <p data-test-state="overwrite">
+                    The theme <strong>"{{this.fileThemeName}}"</strong> already exists. Do you want to overwrite it?
                 </p>
             {{else if (or this.validationErrors this.fatalValidationErrors)}}
 
-                <p>
+                <p data-test-state="invalid">
                     This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme.
                 </p>
 
@@ -115,22 +115,22 @@
 
     <div class="modal-footer {{if (and this.theme this.hasWarningsOrErrors) "top-shadow"}}">
         <div class="flex items-center justify-between {{if (or this.displayOverwriteWarning this.canActivateTheme this.validationErrors this.fatalValidationErrors) "flex-auto"}}">
-            <button type="button" {{on "click" @close}} disabled={{this.closeDisabled}} class="gh-btn" data-test-close-button>
+            <button type="button" {{on "click" @close}} disabled={{this.closeDisabled}} class="gh-btn" data-test-button="cancel">
                 <span>{{#if this.theme}}Close{{else}}Cancel{{/if}}</span>
             </button>
             <div class="flex items-center">
                 {{#if this.displayOverwriteWarning}}
-                    <button type="button" {{on "click" this.confirmOverwrite}} class="gh-btn gh-btn-red" data-test-overwrite-button>
+                    <button type="button" {{on "click" this.confirmOverwrite}} class="gh-btn gh-btn-red" data-test-button="overwrite">
                         <span>Overwrite</span>
                     </button>
                 {{/if}}
                 {{#if this.canActivateTheme}}
-                    <button type="button" {{on "click" this.activate}} class="gh-btn gh-btn-primary" data-test-activate-now-button>
+                    <button type="button" {{on "click" this.activate}} class="gh-btn gh-btn-primary" data-test-button="activate">
                         <span>Activate{{#if this.validationErrors}} with errors{{/if}}</span>
                     </button>
                 {{/if}}
                 {{#if (or this.validationErrors this.fatalValidationErrors)}}
-                    <button type="button" {{on "click" this.reset}} class="gh-btn gh-btn-black ml2" data-test-try-again-button>
+                    <button type="button" {{on "click" this.reset}} class="gh-btn gh-btn-black ml2" data-test-button="retry">
                         <span>Retry</span>
                     </button>
                 {{/if}}

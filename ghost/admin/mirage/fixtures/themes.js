@@ -2,7 +2,7 @@ export default [
     {
         name: 'casper',
         package: {
-            name: 'Blog',
+            name: 'casper',
             version: '1.0'
         },
         active: true

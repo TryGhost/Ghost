@@ -2,8 +2,8 @@
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Themes</h2>
         <section class="view-actions">
-            <button type="button" class="mr4 gh-btn gh-advanced " {{on "click" this.toggleAdvanced}}><span>{{svg-jar (if this.showAdvanced "arrow-up-small" "arrow-down-small")}}Advanced</span></button>
-            <button type="button" class="gh-btn gh-btn-primary" {{on "click" this.startThemeUpload}}><span>Upload theme</span></button>
+            <button type="button" class="mr4 gh-btn gh-advanced " {{on "click" this.toggleAdvanced}} data-test-button="toggle-advanced"><span>{{svg-jar (if this.showAdvanced "arrow-up-small" "arrow-down-small")}}Advanced</span></button>
+            <button type="button" class="gh-btn gh-btn-primary" {{on "click" this.startThemeUpload}} data-test-button="upload-theme"><span>Upload theme</span></button>
         </section>
     </GhCanvasHeader>
 
@@ -17,7 +17,7 @@
         <div class="gh-theme-directory-container-labs">
             <div class="theme-directory-labs">
                 {{#each this.themesList as |theme|}}
-                    <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item td-item-labs">
+                    <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item td-item-labs" data-test-theme-link={{theme.name}}>
                         <div class="gh-theme-browser">
                             <span class="gh-theme-browser-button"></span>
                         </div>
