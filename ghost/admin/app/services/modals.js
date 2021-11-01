@@ -6,21 +6,12 @@ export default class ModalsService extends EPMModalsService {
     @service dropdown;
     @service themeManagement;
 
-    DEFAULT_MODAL_OPTIONS = {
-        'modals/confirm-unsaved-changes': {
-            className: 'fullscreen-modal-action fullscreen-modal-wide'
-        },
-        'modals/design/confirm-delete-theme': {
-            className: 'fullscreen-modal-action fullscreen-modal-wide'
-        },
-        'modals/design/install-theme': {
-            className: 'fullscreen-modal-action fullscreen-modal-wide'
-        },
-        'modals/design/theme-errors': {
-            className: 'fullscreen-modal-action fullscreen-modal-wide'
-        },
+    DEFAULT_OPTIONS = {
+        className: 'fullscreen-modal-action fullscreen-modal-wide'
+    }
+
+    MODAL_OPTIONS = {
         'modals/design/upload-theme': {
-            className: 'fullscreen-modal-action fullscreen-modal-wide',
             beforeClose: () => {
                 if (this.themeManagement.isUploading) {
                     return false;
@@ -30,9 +21,6 @@ export default class ModalsService extends EPMModalsService {
         'modals/design/view-theme': {
             className: 'fullscreen-modal-total-overlay',
             omitBackdrop: true
-        },
-        'modals/limits/custom-theme': {
-            className: 'fullscreen-modal-action fullscreen-modal-wide'
         }
     }
 
@@ -43,7 +31,7 @@ export default class ModalsService extends EPMModalsService {
     escapeDeactivates = false;
 
     open(modal, data, options) {
-        const mergedOptions = Object.assign({}, this.DEFAULT_MODAL_OPTIONS[modal], options);
+        const mergedOptions = Object.assign({}, this.DEFAULT_OPTIONS, this.MODAL_OPTIONS[modal], options);
         return super.open(modal, data, mergedOptions);
     }
 
