@@ -28,7 +28,8 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'oauthLogin',
-    'membersActivity'
+    'membersActivity',
+    'cardSettingsPanel'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
