@@ -154,7 +154,11 @@ module.exports = {
                 }
 
                 if (frame.options.send_email) {
-                    await membersService.api.sendEmailWithMagicLink({email: member.get('email'), requestedType: frame.options.email_type});
+                    await membersService.api.sendEmailWithMagicLink({
+                        email: member.get('email'), requestedType: frame.options.email_type, options: {
+                            forceEmailType: true
+                        }
+                    });
                 }
 
                 return member;
