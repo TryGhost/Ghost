@@ -313,7 +313,7 @@ const AccountWelcome = () => {
     const {member, site} = useContext(AppContext);
     const {is_stripe_configured: isStripeConfigured} = site;
 
-    if (!isStripeConfigured) {
+    if (!isStripeConfigured || hasOnlyFreePlan({site})) {
         return null;
     }
     const subscription = getMemberSubscription({member});
