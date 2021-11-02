@@ -13,6 +13,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class KoenigCardEmailCtaComponent extends Component {
     @service config;
+    @service feature;
     @service store;
     @service membersUtils;
     @service ui;
@@ -47,16 +48,20 @@ export default class KoenigCardEmailCtaComponent extends Component {
             return false;
         }
 
-        return {
-            items: [{
+        const items = [];
+
+        if (!this.feature.cardSettingsPanel) {
+            items.push({
                 buttonClass: 'fw4 flex items-center white',
                 icon: 'koenig/kg-edit',
                 iconClass: 'fill-white',
                 title: 'Edit',
                 text: '',
                 action: run.bind(this, this.args.editCard)
-            }]
-        };
+            });
+        }
+
+        return {items};
     }
 
     get suggestedUrls() {
@@ -178,7 +183,10 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
         this._textReplacementEditor = textReplacementEditor;
 
-        run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
+        if (!this.feature.cardSettingsPanel) {
+            console.log('_placeCursorAtEnd');
+            run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
+        }
     }
 
     @action
