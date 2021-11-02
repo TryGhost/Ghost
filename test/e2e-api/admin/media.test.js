@@ -67,4 +67,14 @@ describe('Media API', function () {
 
         media.push(res.body.media[0].url.replace(config.get('url'), ''));
     });
+
+    it('Rejects non-media file type', async function () {
+        const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .attach('file', path.join(__dirname, '/../../utils/fixtures/images/favicon_16x_single.ico'))
+            .expect(415);
+
+        res.body.errors[0].message.should.match(/select a valid media file/gi);
+    });
 });
