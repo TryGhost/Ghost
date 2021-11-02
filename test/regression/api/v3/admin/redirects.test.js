@@ -50,20 +50,6 @@ describe('Redirects API', function () {
                     .expect(400);
             });
 
-            it('wrong format: no array', function () {
-                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify({
-                    from: 'c',
-                    to: 'd'
-                }));
-
-                return request
-                    .post(localUtils.API.getApiQuery('redirects/json/'))
-                    .set('Origin', config.get('url'))
-                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
-                    .expect('Content-Type', /application\/json/)
-                    .expect(422);
-            });
-
             it('wrong format: no from/to', function () {
                 fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify([{to: 'd'}]));
 
