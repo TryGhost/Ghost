@@ -75,7 +75,7 @@
     ]
   },
   "devDependencies": {
-    "chalk": "4.1.1",
+    "chalk": "4.1.2",
     "chokidar": "3.5.2",
     "copy-webpack-plugin": "6.4.1",
     "eslint-plugin-ghost": "2.7.0",
