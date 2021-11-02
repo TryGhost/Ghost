@@ -923,6 +923,66 @@
     display: block;
 }
 
+/* Card settings panel
+/* --------------------------------------------------------------- */
+
+.kg-settings-panel {
+    position: fixed;
+    width: 300px;
+    max-height: 60vh;
+    overflow: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid green;
+    background-color: var(--white);
+    line-height: 1em;
+    z-index: 9999999999;
+
+}
+
+.kg-settings-panel-enter-active,
+.kg-settings-panel-leave-active {
+    transition: opacity .2s;
+}
+.kg-settings-panel-enter,
+.kg-settings-panel-leave-to {
+    opacity: 0;
+}
+
+.kg-settings-panel-control {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 10px;
+
+}
+.kg-settings-panel-control-horizontal {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.kg-settings-panel-control-label {
+    font-weight: 700;
+}
+
+.kg-settings-panel-control-info {
+    font-size: 12px !important;
+    font-family: var(--font-family) !important;
+    color: var(--middarkgrey);
+}
+
+.kg-settings-panel-divider {
+    margin: 10px 0 !important;
+}
+
+/* TODO: needed to fix right margin - should be somewhere more generic? */
+.kg-settings-panel-control .for-switch.x-small .switch {
+    width: 34px !important;
+}
+
 /* Cards
 /* --------------------------------------------------------------- */
 
