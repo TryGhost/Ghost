@@ -3,11 +3,11 @@
 [![CI Status](https://github.com/TryGhost/portal/workflows/Test/badge.svg?branch=main)](https://github.com/TryGhost/portal/actions)
 [![npm version](https://badge.fury.io/js/%40tryghost%2Fportal.svg)](https://badge.fury.io/js/%40tryghost%2Fportal)
 
-Drop-in script to make the bulk of Ghost membership features work on any theme.
+[Drop-in script](https://ghost.org/help/setting-up-portal/) to make the bulk of Ghost membership features work on any theme.
 
 ## Usage
 
-Ghost automatically injects this Portal script on all sites running Ghost 4 or higher.
+Ghost automatically injects Portal script on all sites running Ghost 4 or higher.
 
 Alternatively, Portal can be enabled on non-ghost pages directly by inserting the below script on the page.
 
@@ -15,7 +15,7 @@ Alternatively, Portal can be enabled on non-ghost pages directly by inserting th
 <script defer src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js" data-ghost="https://mymemberssite.com"></script>
 ```
 
-The `data-ghost` attribute expects the URL for your site, which is the only input Portal needs to work with your site's membership data via Ghost APIs.
+The `data-ghost` attribute expects the URL for your Ghost site, which is the only input Portal needs to work with your site's membership data via Ghost APIs.
 
 ### Custom trigger button
 
@@ -24,6 +24,8 @@ By default, the script adds a default floating trigger button on the bottom righ
 Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specfic [page](https://github.com/TryGhost/Portal/blob/main/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
+
+Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings) to read about ways in which Portal can be customized for your site.
 
 ## Basic Setup
 
@@ -40,29 +42,15 @@ cd portal
 yarn
 ```
 
-## Configure for local development
+## For local development
 
-Only useful for active UI development without publishing a version on unpkg. Always use the unpkg link for testing latest released portal script.
+This section is mostly relevant for core team only for active Portal development. Always use the unpkg link for testing/using latest released portal script.
 
-#### In this repo(Portal):
-
-- Run `yarn build` to create the minified bundle with your changes at `umd/portal.min.js`
-
-#### In your theme(Ex. Lyra):
-
-- Copy `portal.min.js` from above and paste it in your theme at `assets/built/portal.min.js`
-
-#### In Ghost repo
-
-- Update your `config.local.json` to add "portal" config which points url to the locally built copy.
-
-```json
-    ...,
-    "portal": {
-        "url": "SITE_URL/assets/built/portal.min.js"
-    },
-    ...
-```
+- Run `yarn start:dev` to start Portal in development mode
+- Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- To use the local Portal script in a local Ghost site
+  - Update `config.local.json` in Ghost repo to add "portal" config pointing to local dev server url as instructed on terminal.
+  - By default, this uses port `5368` for loading local Portal script on Ghost site. It's also possible to specify a custom port when running the script using - `--port=xxxx`.
 
 ## Available Scripts
 
