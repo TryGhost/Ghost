@@ -258,11 +258,23 @@ function getSubscriptionData({
     };
 }
 
-export const testSite = getSiteData({
-    products: getProductsData({numOfProducts: 1})
+function getTestSite() {
+    const products = getProductsData({numOfProducts: 1});
+    const portalProducts = products.map(p => p.id);
+    const portalPlans = ['free', 'monthly', 'yearly'];
+    return getSiteData({
+        products,
+        portalPlans,
+        portalProducts
+    });
+}
+
+export const testSite = getTestSite();
+
+export const site = getSiteData({
+    products: getProductsData({numOfProducts: 3})
 });
 
-export const site = getSiteData({});
 export const offer = getOfferData({
     tierId: site.products[0].id
 });
