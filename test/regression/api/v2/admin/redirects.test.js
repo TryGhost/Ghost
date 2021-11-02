@@ -5,15 +5,12 @@ const Promise = require('bluebird');
 const path = require('path');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../../../utils/configUtils');
 const config = require('../../../../../core/shared/config');
 
 const ghost = testUtils.startGhost;
 let request;
 
 describe('Redirects API', function () {
-    let originalContentPath;
-
     before(function () {
         return ghost({redirectsFile: true})
             .then(() => {
@@ -21,37 +18,10 @@ describe('Redirects API', function () {
             })
             .then(() => {
                 return localUtils.doAuth(request);
-            })
-            .then(() => {
-                originalContentPath = configUtils.config.get('paths:contentPath');
             });
     });
 
     describe('Upload', function () {
-        describe('Error cases', function () {
-            it('syntax error', function () {
-                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), 'something');
-
-                return request
-                    .post(localUtils.API.getApiQuery('redirects/json/'))
-                    .set('Origin', config.get('url'))
-                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
-                    .expect('Content-Type', /application\/json/)
-                    .expect(400);
-            });
-
-            it('wrong format: no from/to', function () {
-                fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects.json'), JSON.stringify([{to: 'd'}]));
-
-                return request
-                    .post(localUtils.API.getApiQuery('redirects/json/'))
-                    .set('Origin', config.get('url'))
-                    .attach('redirects', path.join(config.get('paths:contentPath'), 'redirects.json'))
-                    .expect('Content-Type', /application\/json/)
-                    .expect(422);
-            });
-        });
-
         describe('Ensure re-registering redirects works', function () {
             const startGhost = (options) => {
                 return ghost(options)
