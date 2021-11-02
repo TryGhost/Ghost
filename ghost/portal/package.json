@@ -20,7 +20,7 @@
   "dependencies": {
     "@sentry/react": "6.13.3",
     "@sentry/tracing": "6.13.3",
-    "@testing-library/jest-dom": "5.14.1",
+    "@testing-library/jest-dom": "5.15.0",
     "@testing-library/react": "12.1.2",
     "@testing-library/user-event": "13.5.0",
     "react": "17.0.2",
