@@ -41,4 +41,18 @@ describe('UNIT: custom redirects validation', function () {
             err.message.should.equal('Incorrect RegEx in redirects file.');
         }
     });
+
+    it('throws when setting a file with wrong format: no array', function () {
+        const config = {
+            from: 'c',
+            to: 'd'
+        };
+
+        try {
+            validate(config);
+            should.fail('should have thrown');
+        } catch (err) {
+            err.message.should.equal('Incorrect redirects file format.');
+        }
+    });
 });
