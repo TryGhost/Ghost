@@ -594,6 +594,7 @@
         "editor_is_launch_complete": {
             "defaultValue": "false",
             "validations": {
+                "isEmpty": false,
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
