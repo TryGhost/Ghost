@@ -123,7 +123,15 @@ module.exports = function MembersAPI({
         offersAPI,
         memberRepository,
         emailService: {
-            sendEmailWithMagicLink
+            async sendEmailWithMagicLink({email, requestedType}) {
+                return sendEmailWithMagicLink({
+                    email,
+                    requestedType,
+                    options: {
+                        forceEmailType: true
+                    }
+                });
+            }
         },
         labsService,
         stripeService: stripeAPIService
