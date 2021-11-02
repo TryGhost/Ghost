@@ -416,7 +416,7 @@ function createDropColumnMigration(table, column, columnDefinition) {
  * @returns {Object} migration object returning config/up/down properties
  */
 function addSetting({key, value, type, group}) {
-    return createNonTransactionalMigration(
+    return createTransactionalMigration(
         async function up(connection) {
             const settingExists = await connection('settings')
                 .where('key', '=', key)
