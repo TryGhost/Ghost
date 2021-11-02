@@ -57,6 +57,7 @@ export default Service.extend({
     oauthLogin: feature('oauthLogin', {developer: true}),
     customThemeSettings: feature('customThemeSettings'),
     membersActivity: feature('membersActivity', {developer: true}),
+    cardSettingsPanel: feature('cardSettingsPanel', {developer: true}),
 
     _user: null,
 
