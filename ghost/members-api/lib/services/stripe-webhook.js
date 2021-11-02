@@ -155,6 +155,9 @@ module.exports = class StripeWebhookService {
      * @returns {Promise<void>}
      */
     async invoiceEvent(invoice) {
+        if (!invoice.subscription) {
+            return;
+        }
         const subscription = await this._stripeAPIService.getSubscription(invoice.subscription, {
             expand: ['default_payment_method']
         });
