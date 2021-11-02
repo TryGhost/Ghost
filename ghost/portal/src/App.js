@@ -580,6 +580,9 @@ export default class App extends React.Component {
                     if (!portalButton) {
                         const product = getProductFromId({site, productId: offer.tier.id});
                         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
+                        this.dispatchAction('openPopup', {
+                            page: 'loading'
+                        });
                         this.dispatchAction('checkoutPlan', {plan: price.id, offerId});
                     } else {
                         this.dispatchAction('openPopup', {
@@ -611,7 +614,13 @@ export default class App extends React.Component {
             && pageQuery !== 'free'
         ) {
             removePortalLinkFromUrl();
-            this.dispatchAction('signup', {plan: queryPrice?.id || priceId});
+            const plan = queryPrice?.id || priceId;
+            if (plan !== 'free') {
+                this.dispatchAction('openPopup', {
+                    page: 'loading'
+                });
+            }
+            this.dispatchAction('signup', {plan});
         }
     }
 
