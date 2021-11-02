@@ -184,7 +184,6 @@ export default class KoenigCardEmailCtaComponent extends Component {
         this._textReplacementEditor = textReplacementEditor;
 
         if (!this.feature.cardSettingsPanel) {
-            console.log('_placeCursorAtEnd');
             run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
         }
     }
