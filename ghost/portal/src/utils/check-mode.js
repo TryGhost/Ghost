@@ -1,6 +1,10 @@
 export const isPreviewMode = function () {
-    const [path, qs] = window.location.hash.substr(1).split('?');
-    return (path === '/portal/preview') || (path === '/portal/preview/offer') || (path === '/portal' && qs);
+    return isNormalPreviewMode() || isOfferPreviewMode();
+};
+
+export const isNormalPreviewMode = function () {
+    const [path] = window.location.hash.substr(1).split('?');
+    return (path === '/portal/preview');
 };
 
 export const isOfferPreviewMode = function () {
