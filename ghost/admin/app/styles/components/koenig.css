@@ -1171,6 +1171,10 @@
     margin-left: .5em;
 }
 
+.kg-email-cta-card {
+    padding-bottom: 24px;
+}
+
 
 /* Codemirror overrides
 /* --------------------------------------------------------------- */
