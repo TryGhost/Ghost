@@ -193,12 +193,29 @@ module.exports = class RouterController {
 
         const member = email ? await this._memberRepository.get({email}, {withRelated: ['stripeCustomers', 'products']}) : null;
 
+        let successUrl = req.body.successUrl || this._config.checkoutSuccessUrl;
+        let cancelUrl = req.body.cancelUrl || this._config.checkoutCancelUrl;
+
+        if (this.labsService.isSet('membersAutoLogin')) {
+            if (!member && req.body.customerEmail) {
+                const memberExistsForCustomer = await this._memberRepository.get({email: req.body.customerEmail});
+                if (!memberExistsForCustomer) {
+                    successUrl = await this._magicLinkService.getMagicLink({
+                        tokenData: {
+                            email: req.body.customerEmail
+                        },
+                        type: 'signup'
+                    });
+                }
+            }
+        }
+
         if (!member) {
             const customer = null;
             const session = await this._stripeAPIService.createCheckoutSession(priceId, customer, {
                 coupon: couponId,
-                successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
-                cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
+                successUrl,
+                cancelUrl,
                 customerEmail: req.body.customerEmail,
                 metadata: metadata
             });
@@ -242,8 +259,8 @@ module.exports = class RouterController {
         try {
             const session = await this._stripeAPIService.createCheckoutSession(priceId, stripeCustomer, {
                 coupon: couponId,
-                successUrl: req.body.successUrl || this._config.checkoutSuccessUrl,
-                cancelUrl: req.body.cancelUrl || this._config.checkoutCancelUrl,
+                successUrl,
+                cancelUrl,
                 metadata: metadata
             });
             const publicKey = this._stripeAPIService.getPublicKey();
