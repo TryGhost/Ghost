@@ -20,28 +20,31 @@ describe('Minifier', function () {
     });
 
     after(async function () {
-        await fs.rmdir(testDir, {recursive: true, force: true});
+        await fs.rmdir(testDir, {recursive: true});
     });
 
     describe('getMatchingFiles expands globs correctly', function () {
         it('star glob e.g. css/*.css', async function () {
             let result = await minifier.getMatchingFiles('css/*.css');
 
-            result.should.be.an.Array().with.lengthOf(2);
+            result.should.be.an.Array().with.lengthOf(3);
             result[0].should.eql('test/fixtures/basic-cards/css/bookmark.css');
-            result[1].should.eql('test/fixtures/basic-cards/css/gallery.css');
+            result[1].should.eql('test/fixtures/basic-cards/css/empty.css');
+            result[2].should.eql('test/fixtures/basic-cards/css/gallery.css');
         });
 
         it('reverse match glob e.g. css/!(bookmark).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark).css');
 
-            result.should.be.an.Array().with.lengthOf(1);
-            result[0].should.eql('test/fixtures/basic-cards/css/gallery.css');
+            result.should.be.an.Array().with.lengthOf(2);
+            result[0].should.eql('test/fixtures/basic-cards/css/empty.css');
+            result[1].should.eql('test/fixtures/basic-cards/css/gallery.css');
         });
         it('reverse match glob e.g. css/!(bookmark|gallery).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark|gallery).css');
 
-            result.should.be.an.Array().with.lengthOf(0);
+            result.should.be.an.Array().with.lengthOf(1);
+            result[0].should.eql('test/fixtures/basic-cards/css/empty.css');
         });
     });
 
@@ -67,6 +70,69 @@ describe('Minifier', function () {
             });
 
             result.should.be.an.Array().with.lengthOf(2);
+        });
+    });
+
+    describe('Bad inputs', function () {
+        it('cannot create a minifier without src and dest', function () {
+            (function noObject(){
+                new Minifier();
+            }).should.throw();
+
+            (function emptyObject() {
+                new Minifier({});
+            }).should.throw();
+
+            (function missingSrc() {
+                new Minifier({dest: 'a'});
+            }).should.throw();
+
+            (function missingDest() {
+                new Minifier({src: 'a'});
+            }).should.throw();
+        });
+
+        it('can only handle css and js files', async function () {
+            try {
+                await minifier.minify({
+                    'card.min.ts': 'js/*.ts'
+                });
+                should.fail(minifier, 'Should have errored');
+            } catch (err) {
+                should.exist(err);
+                err.errorType.should.eql('IncorrectUsageError');
+                err.message.should.match(/Unexpected destination/);
+            }
+        });
+
+        it('can handle missing files and folders gracefully', async function () {
+            try {
+                await minifier.minify({
+                    'card.min.ts': 'ts/*.ts',
+                    'card.min.js': 'js/fake.js'
+                });
+                should.fail(minifier, 'Should have errored');
+            } catch (err) {
+                should.exist(err);
+                err.errorType.should.eql('IncorrectUsageError');
+                err.message.should.match(/Unable to read/);
+            }
+        });
+
+        it('can minify empty js correctly to no result', async function () {
+            let result = await minifier.minify({
+                'card.min.js': 'js/empty.js'
+            });
+
+            result.should.be.an.Array().with.lengthOf(0);
+        });
+
+        it('can minify empty css correctly to no result', async function () {
+            let result = await minifier.minify({
+                'card.min.css': 'css/empty.css'
+            });
+
+            result.should.be.an.Array().with.lengthOf(0);
         });
     });
 });
