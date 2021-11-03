@@ -75,4 +75,27 @@ describe('{{asset}} helper', function () {
             String(rendered).should.equal('/assets/js/asset.min.js?v=abc');
         });
     });
+
+    describe('different admin and site urls', function () {
+        before(function () {
+            configUtils.set({url: 'http://127.0.0.1'});
+            configUtils.set({'admin:url': 'http://localhost'});
+        });
+
+        after(function () {
+            configUtils.restore();
+        });
+
+        it('handles favicon correctly', function () {
+            rendered = asset('favicon.ico');
+            should.exist(rendered);
+            String(rendered).should.equal('http://127.0.0.1/favicon.ico');
+        });
+
+        it('handles ghost.css for default templates correctly', function () {
+            rendered = asset('public/ghost.css');
+            should.exist(rendered);
+            String(rendered).should.equal('http://127.0.0.1/public/ghost.css?v=abc');
+        });
+    });
 });
