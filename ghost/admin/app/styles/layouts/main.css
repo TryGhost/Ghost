@@ -5,6 +5,7 @@
     --mainmenu-color-active-bg: var(--whitegrey);
     --mainmenu-width: 320px;
     --mainmenu-padding: var(--main-layout-area-padding);
+    --contextualmenu-width: 360px;
 }
 
 /* Utils */
@@ -222,13 +223,13 @@
 
 .gh-nav-contextual-enter-active,
 .gh-nav-contextual-leave-active {
-    width: calc(420px - 1px);
+    width: calc(var(--contextualmenu-width) - 1px);
 }
 
 /* For some reason the animate-in transition wasn't working with pure transforms */
 /* Using `left` correctly positioned the starting state so we could then use opposite transforms */
 .gh-nav-contextual-enter-active {
-    left: calc(420px - 1px);
+    left: calc(var(--contextualmenu-width) - 1px);
 }
 
 .gh-nav-contextual-enter-to {
