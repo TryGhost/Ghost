@@ -1106,9 +1106,6 @@ figure {
 }
 
 .gh-member-segment-select-dropdown {
-    width: unset !important;
-    min-width: min-content !important;
-    margin-top: 4px;
     border-top: 1px solid var(--input-border-color) !important;
     border-radius: 3px !important;
 }
