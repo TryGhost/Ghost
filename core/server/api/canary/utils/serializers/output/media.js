@@ -1,8 +1,8 @@
 const config = require('../../../../../../shared/config');
-const STATIC_VIDEO_URL_PREFIX = require('@tryghost/constants');
+const {STATIC_MEDIA_URL_PREFIX} = require('@tryghost/constants');
 
 function getURL(urlPath) {
-    const media = new RegExp('^' + config.getSubdir() + '/' + STATIC_VIDEO_URL_PREFIX);
+    const media = new RegExp('^' + config.getSubdir() + '/' + STATIC_MEDIA_URL_PREFIX);
     const absolute = media.test(urlPath) ? true : false;
 
     if (absolute) {
@@ -16,10 +16,11 @@ function getURL(urlPath) {
 }
 
 module.exports = {
-    upload(path, apiConfig, frame) {
+    upload({filePath, thumbnailPath}, apiConfig, frame) {
         return frame.response = {
             media: [{
-                url: getURL(path),
+                url: getURL(filePath),
+                thumbnail_url: getURL(thumbnailPath),
                 ref: frame.data.ref || null
             }]
         };
