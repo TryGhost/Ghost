@@ -994,7 +994,6 @@
     border-top: 1px solid var(--whitegrey);
 }
 
-/* TODO: needed to fix right margin - should be somewhere more generic? */
 .kg-settings-panel-control-input .gh-input,
 .kg-settings-panel-control-input .gh-select,
 .kg-settings-panel-control-input .ember-power-select-trigger {
@@ -1009,6 +1008,7 @@
     right: 12px;
 }
 
+/* TODO: needed to fix right margin - should be somewhere more generic? */
 .kg-settings-panel-control .for-switch.x-small .switch {
     width: 34px !important;
 }
