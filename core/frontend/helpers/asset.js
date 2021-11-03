@@ -2,7 +2,7 @@
 // Usage: `{{asset "css/screen.css"}}`
 //
 // Returns the path to the specified asset.
-const {metaData} = require('../services/proxy');
+const {metaData, urlUtils} = require('../services/proxy');
 const {SafeString} = require('../services/rendering');
 
 const errors = require('@tryghost/errors');
@@ -21,6 +21,14 @@ module.exports = function asset(path, options) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.pathIsRequired)
         });
+    }
+    if (typeof urlUtils.getSiteUrl() !== 'undefined'
+            && typeof urlUtils.getAdminUrl() !== 'undefined'
+            && urlUtils.getSiteUrl() !== urlUtils.getAdminUrl()) {
+        const target = new URL(getAssetUrl(path, hasMinFile), urlUtils.getSiteUrl());
+        return new SafeString(
+            target.href
+        );
     }
 
     return new SafeString(
