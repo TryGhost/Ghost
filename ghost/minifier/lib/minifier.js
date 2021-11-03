@@ -12,6 +12,10 @@ const messages = {
         message: 'Unexpected destination {dest}',
         context: 'Minifier expected a destination that ended in .css or .js'
     },
+    badSource: {
+        message: 'Unable to read source files {src}',
+        context: 'Minifier was unable to locate or read the source files'
+    },
     missingConstructorOption: {
         message: 'Minifier missing {opt} option',
         context: 'new Minifier({}) requires a {opt} option'
@@ -78,6 +82,22 @@ class Minifier {
         return mergedFiles;
     }
 
+    async getSrcFileContents(src) {
+        try {
+            const files = await this.getMatchingFiles(src);
+
+            if (files) {
+                return await this.readFiles(files);
+            }
+        } catch (error) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.badSource.message, {src}),
+                context: tpl(messages.badSource.context),
+                help: tpl(messages.globalHelp)
+            });
+        }
+    }
+
     async writeFile(contents, dest) {
         if (contents) {
             let writePath = this.getFullDest(dest);
@@ -93,8 +113,7 @@ class Minifier {
 
         for (const dest of destinations) {
             const src = options[dest];
-            const files = await this.getMatchingFiles(src);
-            const contents = await this.readFiles(files);
+            const contents = await this.getSrcFileContents(src);
             let minifiedContents;
 
             if (dest.endsWith('.css')) {
