@@ -30,12 +30,15 @@ describe('Media API', function () {
             .field('purpose', 'video')
             .field('ref', 'https://ghost.org/sample_640x360.mp4')
             .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+            .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
             .expect(201);
 
         res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.mp4`));
+        res.body.media[0].thumbnail_url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.png`));
         res.body.media[0].ref.should.equal('https://ghost.org/sample_640x360.mp4');
 
         media.push(res.body.media[0].url.replace(config.get('url'), ''));
+        media.push(res.body.media[0].thumbnail_url.replace(config.get('url'), ''));
     });
 
     it('Can upload a WebM', async function () {
@@ -45,6 +48,7 @@ describe('Media API', function () {
             .field('purpose', 'video')
             .field('ref', 'https://ghost.org/sample_640x360.webm')
             .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.webm'))
+            .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
             .expect(201);
 
         res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.webm`));
@@ -60,6 +64,7 @@ describe('Media API', function () {
             .field('purpose', 'video')
             .field('ref', 'https://ghost.org/sample_640x360.ogv')
             .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.ogv'))
+            .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
             .expect(201);
 
         res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.ogv`));
@@ -73,8 +78,19 @@ describe('Media API', function () {
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .attach('file', path.join(__dirname, '/../../utils/fixtures/images/favicon_16x_single.ico'))
+            .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
             .expect(415);
 
         res.body.errors[0].message.should.match(/select a valid media file/gi);
+    });
+
+    it('Rejects when thumbnail is not present', async function () {
+        const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.ogv'))
+            .expect(422);
+
+        res.body.errors[0].message.should.match(/Please select a thumbnail./gi);
     });
 });
