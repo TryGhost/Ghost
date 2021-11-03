@@ -1,4 +1,3 @@
-import enableLabsFlag from '../helpers/enable-labs-flag';
 import moment from 'moment';
 import wait from 'ember-test-helpers/wait';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
@@ -36,7 +35,6 @@ describe('Acceptance: Offers', function () {
     describe('as owner', function () {
         beforeEach(async function () {
             this.server.loadFixtures('products');
-            enableLabsFlag(this.server, 'offers');
 
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
