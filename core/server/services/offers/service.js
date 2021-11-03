@@ -24,6 +24,8 @@ module.exports = {
         });
 
         this.api = offersModule.api;
+
+        await offersModule.init();
     },
 
     api: null,
