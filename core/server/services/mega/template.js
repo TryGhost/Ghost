@@ -74,6 +74,10 @@ table td {
     max-width: 600px;
 }
 
+.content a { 
+    overflow-wrap: anywhere; 
+}
+
 /* -------------------------------------
     POST CONTENT
 ------------------------------------- */
