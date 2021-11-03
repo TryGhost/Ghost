@@ -176,7 +176,7 @@
     "sqlite3": "5.0.2"
   },
   "devDependencies": {
-    "@lodder/grunt-postcss": "3.1.0",
+    "@lodder/grunt-postcss": "3.1.1",
     "c8": "7.10.0",
     "coffeescript": "2.6.1",
     "cssnano": "5.0.9",
