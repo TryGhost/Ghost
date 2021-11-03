@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs-extra');
 
+const logging = require('@tryghost/logging');
 const DynamicRedirectManager = require('@tryghost/express-dynamic-redirects');
 const CustomRedirectsAPI = require('../../../../../core/server/services/redirects/api');
 
@@ -26,10 +27,29 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
     beforeEach(function () {
         sinon.stub(fs, 'pathExists');
         sinon.stub(fs, 'readFile');
+        sinon.spy(logging, 'error');
     });
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('init', function () {
+        it('initializes without errors when redirects file is not present', async function () {
+            const redirectManager = new DynamicRedirectManager({
+                permanentMaxAge: 100,
+                getSubdirectoryURL: (pathname) => {
+                    return `/ghost/${pathname}`;
+                }
+            });
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath
+            }, redirectManager);
+
+            await customRedirectsAPI.init();
+            logging.error.called.should.be.false();
+        });
     });
 
     describe('get', function () {

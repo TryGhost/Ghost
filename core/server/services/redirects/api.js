@@ -140,16 +140,22 @@ class CustomRedirectsAPI {
     }
 
     async init() {
+        // NOTE: the try/catch block here is due to possible breaking change for existing misconfigured
+        //       instances in the wild. Would be a good idea to remove it during v5 migration to enforce
+        //       fail-fast initialization.
         try {
             const filePath = await this.getRedirectsFilePath();
-            const content = await readRedirectsFile(filePath);
-            const ext = path.extname(filePath);
-            const redirects = parseRedirectsFile(content, ext);
-            validation.validate(redirects);
-            this.redirectManager.removeAllRedirects();
 
-            for (const redirect of redirects) {
-                this.redirectManager.addRedirect(redirect.from, redirect.to, {permanent: redirect.permanent});
+            if (filePath !== null) {
+                const content = await readRedirectsFile(filePath);
+                const ext = path.extname(filePath);
+                const redirects = parseRedirectsFile(content, ext);
+                validation.validate(redirects);
+
+                this.redirectManager.removeAllRedirects();
+                for (const redirect of redirects) {
+                    this.redirectManager.addRedirect(redirect.from, redirect.to, {permanent: redirect.permanent});
+                }
             }
         } catch (err) {
             if (errors.utils.isIgnitionError(err)) {
