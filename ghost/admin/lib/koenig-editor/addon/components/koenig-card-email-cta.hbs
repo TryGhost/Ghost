@@ -10,7 +10,7 @@
     @selectCard={{@selectCard}}
     @deselectCard={{@deselectCard}}
     @editCard={{@editCard}}
-    @hasEditMode={{not this.feature.cardSettingsPanel}}
+    @hasEditMode={{true}}
     @saveCard={{@saveCard}}
     @saveAsSnippet={{@saveAsSnippet}}
     @onLeaveEdit={{this.leaveEditMode}}
@@ -21,7 +21,7 @@
     {{did-insert this.registerElement}}
     as |card|
 >
-    {{#if (or @isEditing this.feature.cardSettingsPanel)}}
+    {{#if @isEditing}}
         {{#if this.feature.cardSettingsPanel}}
         <div class="gh-email-cta-segment-indicator">
             <p>{{capitalize this.selectedSegment.name}}</p>
@@ -56,7 +56,7 @@
             <KoenigTextReplacementHtmlInput
                 @html={{@payload.html}}
                 @placeholder="Email only text... (optional)"
-                @autofocus={{not this.feature.cardSettingsPanel}}
+                @autofocus={{true}}
                 @class="miw-100 bn bg-transparent"
                 @onChange={{this.updateHtml}}
                 @onFocus={{fn (mut this.contentFocused) true}}
@@ -77,7 +77,109 @@
 
         {{#if @payload.showDividers}}<hr class="border-bottom">{{/if}}
 
-        {{#unless this.feature.cardSettingsPanel}}
+        {{#if this.feature.cardSettingsPanel}}
+            <KoenigSettingsPanel>
+                <div class="kg-settings-panel-control">
+                    <div class="kg-settings-panel-control-label">Visibility</div>
+                    <div class="kg-settings-panel-control-input">
+                        <PowerSelect
+                            @options={{this.segments}}
+                            @selected={{this.selectedSegment}}
+                            @onChange={{this.setSegment}}
+                            @searchEnabled={{false}}
+                            @triggerComponent="gh-power-select/trigger"
+                            @dropdownClass="gh-member-segment-select-dropdown"
+                            as |segment|
+                        >
+                            {{segment.name}}
+                        </PowerSelect>
+                    </div>
+                    <p class="kg-settings-panel-control-info">
+                        Visible for this audience when delivered by email. This card is not published on your site.
+                    </p>
+                </div>
+
+                <hr class="kg-settings-panel-divider">
+
+                <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                    <div class="kg-settings-panel-control-label">Content alignment</div>
+                    <div class="kg-settings-panel-control-input">
+                        <div class="gh-btn-group icons">
+                            <button type="button" title="Left-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                            <button type="button" title="Center-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                    <label class="kg-settings-panel-control-label" for="divider-toggle">Separators</label>
+                    <div class="kg-settings-panel-control-input">
+                        <div class="for-switch x-small">
+                            <label class="switch">
+                                <input type="checkbox" class="gh-input" id="divider-toggle" checked={{@payload.showDividers}} {{on "input" this.toggleDividers}}>
+                                <span class="input-toggle-component mt1"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="kg-settings-panel-divider">
+
+                <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                    <label class="kg-settings-panel-control-label" for="button-toggle">Button</label>
+                    <div class="kg-settings-panel-control-input">
+                        <div class="for-switch x-small">
+                            <label class="switch">
+                                <input type="checkbox" class="gh-input" id="button-toggle" checked={{@payload.showButton}} {{on "input" this.toggleButton}}>
+                                <span class="input-toggle-component mt1"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {{#if @payload.showButton}}
+                    <div class="kg-settings-panel-control">
+                        <label class="kg-settings-panel-control-label" for="button-text-input">Button title</label>
+                        <div class="kg-settings-panel-control-input">
+                            <input
+                                type="text"
+                                class="gh-input"
+                                id="button-text-input"
+                                name="button-text"
+                                value={{@payload.buttonText}}
+                                placeholder="Add button text"
+                                {{on "input" this.setButtonText}}
+                                {{on-key "Enter" (fn this.focusElement "#button-url-input")}}
+                            >
+                        </div>
+                    </div>
+
+                    <div class="kg-settings-panel-control">
+                        <label class="kg-settings-panel-control-label" for="button-url-input">Button URL</label>
+                        <div class="kg-settings-panel-control-input">
+                            <GhInputWithSelect
+                                @value={{@payload.buttonUrl}}
+                                @options={{this.suggestedUrls}}
+                                @valueField="url"
+                                @searchField="url"
+                                @placeholder="https://yoursite.com/#/portal/signup/"
+                                @searchMessage={{null}}
+                                @onInput={{this.setButtonUrl}}
+                                @openOnFocus={{true}}
+                                @closeWhenEmpty={{true}}
+                                @triggerClass="email-cta-button-url-input"
+                                @triggerId="button-url-input"
+                                @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
+                                as |suggestion|
+                            >
+                                <span class="db b">{{suggestion.name}}</span>
+                                {{suggestion.url}}
+                            </GhInputWithSelect>
+                        </div>
+                    </div>
+                {{/if}}
+            </KoenigSettingsPanel>
+        {{else}}
         <form class="email-cta-toolbar">
             <div class="borders">
                 <button type="button" title="Add dividers" class="gh-btn gh-btn-white gh-btn-icon email-cta-toolbar-item {{if @payload.showDividers "fill-green-d1"}}" {{on "click" this.toggleDividers}}><span>{{svg-jar "dividers"}}</span></button>
@@ -124,7 +226,7 @@
                 </GhInputWithSelect>
             {{/if}}
         </form>
-        {{/unless}}
+        {{/if}}
     {{else}}
         <div class="gh-email-cta-segment-indicator">
             <p>{{capitalize this.selectedSegment.name}}</p>
@@ -147,109 +249,5 @@
 
         {{#if @payload.showDividers}}<hr class="border-bottom">{{/if}}
 
-    {{/if}}
-
-    {{#if this.feature.cardSettingsPanel}}
-        <KoenigSettingsPanel @visible={{card.showSettingsPanel}}>
-            <div class="kg-settings-panel-control">
-                <div class="kg-settings-panel-control-label">Visibility</div>
-                <div class="kg-settings-panel-control-input">
-                    <PowerSelect
-                        @options={{this.segments}}
-                        @selected={{this.selectedSegment}}
-                        @onChange={{this.setSegment}}
-                        @searchEnabled={{false}}
-                        @triggerComponent="gh-power-select/trigger"
-                        @dropdownClass="gh-member-segment-select-dropdown"
-                        as |segment|
-                    >
-                        {{segment.name}}
-                    </PowerSelect>
-                </div>
-                <p class="kg-settings-panel-control-info">
-                    Visible for this audience when delivered by email. This card is not published on your site.
-                </p>
-            </div>
-
-            <hr class="kg-settings-panel-divider">
-
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <div class="kg-settings-panel-control-label">Content alignment</div>
-                <div class="kg-settings-panel-control-input">
-                    <div class="gh-btn-group icons">
-                        <button type="button" title="Left-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
-                        <button type="button" title="Center-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <label class="kg-settings-panel-control-label" for="divider-toggle">Separators</label>
-                <div class="kg-settings-panel-control-input">
-                    <div class="for-switch x-small">
-                        <label class="switch">
-                            <input type="checkbox" class="gh-input" id="divider-toggle" checked={{@payload.showDividers}} {{on "input" this.toggleDividers}}>
-                            <span class="input-toggle-component mt1"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <hr class="kg-settings-panel-divider">
-
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <label class="kg-settings-panel-control-label" for="button-toggle">Button</label>
-                <div class="kg-settings-panel-control-input">
-                    <div class="for-switch x-small">
-                        <label class="switch">
-                            <input type="checkbox" class="gh-input" id="button-toggle" checked={{@payload.showButton}} {{on "input" this.toggleButton}}>
-                            <span class="input-toggle-component mt1"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            {{#if @payload.showButton}}
-                <div class="kg-settings-panel-control">
-                    <label class="kg-settings-panel-control-label" for="button-text-input">Button title</label>
-                    <div class="kg-settings-panel-control-input">
-                        <input
-                            type="text"
-                            class="gh-input"
-                            id="button-text-input"
-                            name="button-text"
-                            value={{@payload.buttonText}}
-                            placeholder="Add button text"
-                            {{on "input" this.setButtonText}}
-                            {{on-key "Enter" (fn this.focusElement "#button-url-input")}}
-                        >
-                    </div>
-                </div>
-
-                <div class="kg-settings-panel-control">
-                    <label class="kg-settings-panel-control-label" for="button-url-input">Button URL</label>
-                    <div class="kg-settings-panel-control-input">
-                        <GhInputWithSelect
-                            @value={{@payload.buttonUrl}}
-                            @options={{this.suggestedUrls}}
-                            @valueField="url"
-                            @searchField="url"
-                            @placeholder="https://yoursite.com/#/portal/signup/"
-                            @searchMessage={{null}}
-                            @onInput={{this.setButtonUrl}}
-                            @openOnFocus={{true}}
-                            @closeWhenEmpty={{true}}
-                            @triggerClass="email-cta-button-url-input"
-                            @triggerId="button-url-input"
-                            @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
-                            as |suggestion|
-                        >
-                            <span class="db b">{{suggestion.name}}</span>
-                            {{suggestion.url}}
-                        </GhInputWithSelect>
-                    </div>
-                </div>
-            {{/if}}
-        </KoenigSettingsPanel>
     {{/if}}
 </KoenigCard>

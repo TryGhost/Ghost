@@ -49,10 +49,6 @@ export default Component.extend({
             && !this.koenigUi.isDragging;
     }),
 
-    shouldShowSettingsPanel: computed('showToolbar', 'koenigUi.isDragging', function () {
-        return this.showToolbar && !this.koenigUi.isDragging;
-    }),
-
     toolbarStyle: computed('shouldShowToolbar', 'toolbarWidth', 'toolbarHeight', function () {
         let showToolbar = this.shouldShowToolbar;
         let width = this.toolbarWidth;

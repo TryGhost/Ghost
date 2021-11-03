@@ -50,16 +50,14 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
         const items = [];
 
-        if (!this.feature.cardSettingsPanel) {
-            items.push({
-                buttonClass: 'fw4 flex items-center white',
-                icon: 'koenig/kg-edit',
-                iconClass: 'fill-white',
-                title: 'Edit',
-                text: '',
-                action: run.bind(this, this.args.editCard)
-            });
-        }
+        items.push({
+            buttonClass: 'fw4 flex items-center white',
+            icon: 'koenig/kg-edit',
+            iconClass: 'fill-white',
+            title: 'Edit',
+            text: '',
+            action: run.bind(this, this.args.editCard)
+        });
 
         return {items};
     }
@@ -183,9 +181,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
         this._textReplacementEditor = textReplacementEditor;
 
-        if (!this.feature.cardSettingsPanel) {
-            run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
-        }
+        run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
     }
 
     @action
