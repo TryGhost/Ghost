@@ -964,9 +964,13 @@
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    gap: 10px;
-
+    gap: 8px;
 }
+
+.kg-settings-panel-control:not(:first-of-type):not(hr + .kg-settings-panel-control) {
+    margin-top: 8px;
+}
+
 .kg-settings-panel-control-horizontal {
     flex-direction: row;
     align-items: center;
@@ -985,7 +989,7 @@
 }
 
 .kg-settings-panel-divider {
-    margin: 10px -24px !important;
+    margin: 8px -24px !important;
     border: none;
     border-top: 1px solid var(--whitegrey);
 }
