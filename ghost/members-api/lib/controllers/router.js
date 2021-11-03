@@ -141,7 +141,7 @@ module.exports = class RouterController {
         }
 
         let couponId = null;
-        if (offerId && this.labsService.isSet('offers')) {
+        if (offerId) {
             try {
                 const offer = await this._offersAPI.getOffer({id: offerId});
                 const tier = (await this._productRepository.get(offer.tier)).toJSON();
