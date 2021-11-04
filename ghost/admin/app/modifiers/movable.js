@@ -2,6 +2,8 @@ import Modifier from 'ember-modifier';
 import {action} from '@ember/object';
 
 export default class MovableModifier extends Modifier {
+    moveThreshold = 3;
+
     active = false;
     currentX = undefined;
     currentY = undefined;
@@ -81,7 +83,7 @@ export default class MovableModifier extends Modifier {
         this.removeActiveEventListeners();
         this.enableScroll();
 
-        // timeout required so immediate events are still blocked
+        // timeout required so immediate events blocked until the dragEnd has fully realised
         setTimeout(() => {
             this.enablePointerEvents();
         }, 5);
@@ -91,24 +93,35 @@ export default class MovableModifier extends Modifier {
     drag(e) {
         e.preventDefault();
 
-        if (!this.active) {
-            this.disableScroll();
-            this.disablePointerEvents();
-            this.active = true;
-        }
+        let eventX, eventY;
 
         if (e.type === 'touchmove') {
-            this.currentX = e.touches[0].clientX - this.initialX;
-            this.currentY = e.touches[0].clientY - this.initialY;
+            eventX = e.touches[0].clientX;
+            eventY = e.touches[0].clientY;
         } else {
-            this.currentX = e.clientX - this.initialX;
-            this.currentY = e.clientY - this.initialY;
+            eventX = e.clientX;
+            eventY = e.clientY;
         }
 
-        this.xOffset = this.currentX;
-        this.yOffset = this.currentY;
+        if (!this.active) {
+            if (
+                Math.abs(Math.abs(this.initialX - eventX) - Math.abs(this.xOffset)) > this.moveThreshold ||
+                Math.abs(Math.abs(this.initialY - eventY) - Math.abs(this.yOffset)) > this.moveThreshold
+            ) {
+                this.disableScroll();
+                this.disablePointerEvents();
+                this.active = true;
+            }
+        }
 
-        this.setTranslate(this.currentX, this.currentY);
+        if (this.active) {
+            this.currentX = eventX - this.initialX;
+            this.currentY = eventY - this.initialY;
+            this.xOffset = this.currentX;
+            this.yOffset = this.currentY;
+
+            this.setTranslate(this.currentX, this.currentY);
+        }
     }
 
     @action
