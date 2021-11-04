@@ -7,7 +7,7 @@
 
     <div class="view-container gh-dashboard">
 
-        {{#if (and this.session.user.isOwnerOnly (not this.feature.launchComplete))}}
+        {{#if (and this.session.user.isOwnerOnly (not this.settings.editorIsLaunchComplete))}}
             <section class="gh-dashboard-area lw-banner">
                 <div class="gh-lw-banner" style="background-image:url(assets/img/launch-wizard-bg.png);">
                     <h1>Select your publication style</h1>
@@ -287,7 +287,7 @@
                     </div>
                 {{/if}}
 
-                {{#unless (and this.session.user.isOwnerOnly (not this.feature.launchComplete))}}
+                {{#unless (and this.session.user.isOwnerOnly (not this.feature.editorIsLaunchComplete))}}
                     <div class="gh-dashboard-box grey activity-feed">
                         <h4 class="gh-dashboard-header">Activity feed</h4>
                         <div class="content">

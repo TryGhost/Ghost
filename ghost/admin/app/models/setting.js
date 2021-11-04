@@ -94,6 +94,7 @@ export default Model.extend(ValidationEngine, {
     /**
      * Editor settings
      */
+    editorIsLaunchComplete: attr('boolean'),
     editorDefaultEmailRecipients: attr('string'),
     editorDefaultEmailRecipientsFilter: attr('members-segment-string'),
     emailVerificationRequired: attr('boolean'),

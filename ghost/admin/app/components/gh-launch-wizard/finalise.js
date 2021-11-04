@@ -50,9 +50,9 @@ export default class GhLaunchWizardFinaliseComponent extends Component {
         const data = this.args.getData();
         if (data?.product) {
             yield this.saveProduct();
+            this.settings.set('editorIsLaunchComplete', true);
             yield this.settings.save();
         }
-        yield this.feature.set('launchComplete', true);
         this.router.transitionTo('dashboard');
         this.notifications.showNotification(
             'Launch complete!',

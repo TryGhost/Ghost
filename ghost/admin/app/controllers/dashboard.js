@@ -235,6 +235,7 @@ export default class DashboardController extends Controller {
 
     @action
     dismissLaunchBanner() {
-        this.feature.set('launchComplete', true);
+        this.settings.set('editorIsLaunchComplete', true);
+        this.settings.save();
     }
 }
