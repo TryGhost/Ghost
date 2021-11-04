@@ -109,6 +109,10 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(mw.servePublicFile('public/ghost.css', 'text/css', constants.ONE_HOUR_S));
     siteApp.use(mw.servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
 
+    // Card assets
+    siteApp.use(mw.servePublicFile('public/cards.min.css', 'text/css', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('public/cards.min.js', 'text/js', constants.ONE_YEAR_S));
+
     // Serve blog images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
     // Serve blog media using the storage adapter

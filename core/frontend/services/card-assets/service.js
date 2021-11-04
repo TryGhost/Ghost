@@ -74,6 +74,10 @@ class CardAssetService {
         }
     }
 
+    hasFile(type) {
+        return this.files.indexOf(`cards.min.${type}`) > -1;
+    }
+
     /**
      * A theme can declare which cards it supports, and we'll do the rest
      *
