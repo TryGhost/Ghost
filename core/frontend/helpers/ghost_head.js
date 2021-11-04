@@ -5,12 +5,16 @@
 const {metaData, settingsCache, config, blogIcon, urlUtils, labs} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/rendering');
 
+// BAD REQUIRE
+// @TODO fix this require
+const cardAssetService = require('../services/card-assets');
+
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 
-const getMetaData = metaData.get;
+const {get: getMetaData, getAssetUrl} = metaData;
 
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
@@ -192,6 +196,14 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
             // no code injection for amp context!!!
             if (!_.includes(context, 'amp')) {
                 head.push(getMembersHelper(options.data));
+
+                // @TODO do this in a more "frameworky" way
+                if (cardAssetService.hasFile('js')) {
+                    head.push(`<script async src="${getAssetUrl('public/cards.min.js')}"></script>`);
+                }
+                if (cardAssetService.hasFile('css')) {
+                    head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
+                }
 
                 if (!_.isEmpty(globalCodeinjection)) {
                     head.push(globalCodeinjection);
