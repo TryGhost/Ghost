@@ -23,6 +23,8 @@ class OfferCode extends ValueObject {
 
         return new OfferCode(slugged);
     }
+
+    static InvalidOfferCode = InvalidOfferCode;
 }
 
 module.exports = OfferCode;

@@ -22,6 +22,8 @@ class OfferTitle extends ValueObject {
 
         return new OfferTitle(title.trim());
     }
+
+    static InvalidOfferTitle = InvalidOfferTitle;
 }
 
 module.exports = OfferTitle;
