@@ -238,6 +238,7 @@ module.exports = function apiRoutes() {
 
     // ## media
     router.post('/media/upload',
+        labs.enabledMiddleware('mediaAPI'),
         mw.authAdminApi,
         apiMw.upload.media('file', 'thumbnail'),
         apiMw.upload.mediaValidation({type: 'media'}),
