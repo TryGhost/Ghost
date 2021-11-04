@@ -49,21 +49,22 @@ export default class MovableModifier extends Modifier {
 
     @action
     dragStart(e) {
-        if (e.type === 'touchstart') {
-            this.initialX = e.touches[0].clientX - this.xOffset;
-            this.initialY = e.touches[0].clientY - this.yOffset;
-        } else {
-            this.initialX = e.clientX - this.xOffset;
-            this.initialY = e.clientY - this.yOffset;
-        }
+        if (e.type === 'touchstart' || e.button === 0) {
+            if (e.type === 'touchstart') {
+                this.initialX = e.touches[0].clientX - this.xOffset;
+                this.initialY = e.touches[0].clientY - this.yOffset;
+            } else {
+                this.initialX = e.clientX - this.xOffset;
+                this.initialY = e.clientY - this.yOffset;
+            }
 
-        for (const elem of (e.path || e.composedPath())) {
-            if (elem === this.element) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.disablePointerEvents();
-                this.addActiveEventListeners();
-                break;
+            for (const elem of (e.path || e.composedPath())) {
+                if (elem === this.element) {
+                    this.disableScroll();
+                    this.disablePointerEvents();
+                    this.addActiveEventListeners();
+                    break;
+                }
             }
         }
     }
@@ -71,7 +72,7 @@ export default class MovableModifier extends Modifier {
     @action
     dragEnd(e) {
         e.preventDefault();
-
+        this.enableScroll();
         this.enablePointerEvents();
         this.initialX = this.currentX;
         this.initialY = this.currentY;
@@ -100,16 +101,22 @@ export default class MovableModifier extends Modifier {
         this.element.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
     }
 
-    // TODO: pointer events are not disabled because dragging to an area off
-    // central editor canvas exits edit mode - investigate further
-    disablePointerEvents() {
-        // this.element.style.pointerEvents = 'none';
+    disableScroll() {
         this.originalOverflow = this.element.style.overflow;
         this.element.style.overflow = 'hidden';
     }
 
+    enableScroll() {
+        this.element.style.overflow = this.originalOverflow;
+    }
+
+    // TODO: pointer events are not disabled because dragging to an area off
+    // central editor canvas exits edit mode - investigate further
+    disablePointerEvents() {
+        // this.element.style.pointerEvents = 'none';
+    }
+
     enablePointerEvents() {
         // this.element.style.pointerEvents = '';
-        this.element.style.overflow = this.originalOverflow;
     }
 }
