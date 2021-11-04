@@ -86,6 +86,7 @@ const defaultSettingsKeyTypes = [
     {key: 'oauth_client_secret', type: 'oauth'},
     {key: 'editor_default_email_recipients', type: 'editor'},
     {key: 'editor_default_email_recipients_filter', type: 'editor'},
+    {key: 'editor_is_launch_complete', type: 'editor'},
     {key: 'labs', type: 'blog'},
     {key: 'email_verification_required', type: 'bulk_email'}
 ];
