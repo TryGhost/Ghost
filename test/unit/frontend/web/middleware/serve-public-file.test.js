@@ -101,4 +101,25 @@ describe('servePublicFile', function () {
 
         res.end.calledWith('User-agent: http://127.0.0.1:2369').should.be.true();
     });
+
+    it('should 404 for ENOENT on general files', function () {
+        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        req.path = '/robots.txt';
+
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            const err = new Error();
+            err.code = 'ENOENT';
+            cb(err, null);
+        });
+
+        res = {
+            writeHead: sinon.spy(),
+            end: sinon.spy()
+        };
+
+        middleware(req, res, next);
+
+        next.called.should.be.true();
+        next.calledWith(sinon.match({errorType: 'NotFoundError', code: 'PUBLIC_FILE_NOT_FOUND'})).should.be.true();
+    });
 });
