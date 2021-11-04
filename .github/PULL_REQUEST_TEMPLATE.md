@@ -4,6 +4,6 @@ Please include a description of your change & check your PR against this list, t
 
 - [ ] There's a clear use-case for this code change
 - [ ] Commit message has a short title & references relevant issues
-- [ ] The build will pass (run `yarn test` and `yarn lint`)
+- [ ] The build will pass (run `yarn test:all` and `yarn lint`)
 
 More info can be found by clicking the "guidelines for contributing" link above.
