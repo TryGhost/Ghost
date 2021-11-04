@@ -41,11 +41,18 @@ class OfferDuration extends ValueObject {
         }
         if (!Number.isInteger(months)) {
             throw new InvalidOfferDuration({
-                message: 'Offer `duration_in_months` must be an integer.'
+                message: 'Offer `duration_in_months` must be an integer greater than 0.'
+            });
+        }
+        if (months < 1) {
+            throw new InvalidOfferDuration({
+                message: 'Offer `duration_in_months` must be an integer greater than 0.'
             });
         }
         return new OfferDuration({type, months});
     }
+
+    static InvalidOfferDuration = InvalidOfferDuration;
 }
 
 module.exports = OfferDuration;
