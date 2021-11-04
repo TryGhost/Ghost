@@ -34,7 +34,7 @@ describe('Media API', function () {
             .expect(201);
 
         res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.mp4`));
-        res.body.media[0].thumbnail_url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.png`));
+        res.body.media[0].thumbnail_url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360_thumb.png`));
         res.body.media[0].ref.should.equal('https://ghost.org/sample_640x360.mp4');
 
         media.push(res.body.media[0].url.replace(config.get('url'), ''));

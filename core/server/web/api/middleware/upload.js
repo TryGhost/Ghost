@@ -199,7 +199,7 @@ const mediaValidation = function ({type}) {
 
         req.thumbnail = thumbnailFile;
         req.thumbnail.ext = path.extname(thumbnailFile.originalname).toLowerCase();
-        req.thumbnail.name = path.basename(req.file.name, path.extname(req.file.name)) + req.thumbnail.ext;
+        req.thumbnail.name = `${path.basename(req.file.name, path.extname(req.file.name))}_thumb${req.thumbnail.ext}`;
         req.thumbnail.type = req.thumbnail.mimetype;
 
         if (!checkFileIsValid(req.file, contentTypes, extensions)) {
