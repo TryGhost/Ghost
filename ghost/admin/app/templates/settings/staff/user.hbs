@@ -287,8 +287,8 @@
                             />
                             <GhErrorMessage @errors={{this.user.errors}} @property="bio" data-test-error="user-bio" />
                             <p>
-                                Write about you, in 200 characters or less.
-                                {{gh-count-characters this.user.bio}}
+                                Recommended: <strong>200</strong> characters. 
+                                You've used {{gh-count-down-characters this.user.bio 200}}
                             </p>
                         </GhFormGroup>
 
