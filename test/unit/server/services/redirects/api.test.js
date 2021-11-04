@@ -106,7 +106,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             }
         });
 
-        it('throws a syntax error when setting invalid YAML redirects file', async function () {
+        it('throws a syntax error when setting invalid (plain string) YAML redirects file', async function () {
             const invalidFilePath = path.join(__dirname, '/invalid/redirects/yaml.json');
             fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves('x');
 
@@ -116,6 +116,25 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             } catch (err) {
                 should.exist(err);
                 err.message.should.eql('YAML input cannot be a plain string. Check the format of your YAML file.');
+            }
+        });
+
+        it('throws bad request error when the YAML file is invalid', async function () {
+            const invalidFilePath = path.join(__dirname, '/invalid/redirects/yaml.json');
+            fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves(`
+                routes:
+                \
+                invalid yaml:
+                /
+            `);
+
+            try {
+                await customRedirectsAPI.setFromFilePath(invalidFilePath, '.yaml');
+                should.fail('setFromFilePath did not throw');
+            } catch (err) {
+                should.exist(err);
+                err.errorType.should.eql('BadRequestError');
+                err.message.should.match(/Could not parse YAML: can not read an implicit mapping pair/);
             }
         });
     });
