@@ -97,7 +97,7 @@ export default Component.extend({
 
             if (selected.category === 'Users') {
                 let id = selected.id.replace('user.', '');
-                this.router.transitionTo('staff.user', id);
+                this.router.transitionTo('settings.staff.user', id);
             }
 
             if (selected.category === 'Tags') {

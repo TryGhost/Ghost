@@ -27,7 +27,7 @@ describe('Acceptance: Staff', function () {
 
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
-        await visit('/staff');
+        await visit('/settings/staff');
 
         expect(currentURL()).to.equal('/signin');
     });
@@ -39,9 +39,9 @@ describe('Acceptance: Staff', function () {
         this.server.create('user', {slug: 'no-access'});
 
         await authenticateSession();
-        await visit('/staff/no-access');
+        await visit('/settings/staff/no-access');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects correctly when authenticated as author', async function () {
@@ -51,9 +51,9 @@ describe('Acceptance: Staff', function () {
         this.server.create('user', {slug: 'no-access'});
 
         await authenticateSession();
-        await visit('/staff/no-access');
+        await visit('/settings/staff/no-access');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects correctly when authenticated as editor', async function () {
@@ -63,9 +63,9 @@ describe('Acceptance: Staff', function () {
         this.server.create('user', {slug: 'no-access'});
 
         await authenticateSession();
-        await visit('/staff/no-access');
+        await visit('/settings/staff/no-access');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff');
     });
 
     describe('when logged in as admin', function () {
@@ -90,10 +90,10 @@ describe('Acceptance: Staff', function () {
             let user1 = this.server.create('user');
             let user2 = this.server.create('user');
 
-            await visit('/staff');
+            await visit('/settings/staff');
 
             // doesn't do any redirecting
-            expect(currentURL(), 'currentURL').to.equal('/staff');
+            expect(currentURL(), 'currentURL').to.equal('/settings/staff');
 
             // it has correct page title
             expect(document.title, 'page title').to.equal('Staff - Test Blog');
@@ -125,25 +125,25 @@ describe('Acceptance: Staff', function () {
             await click(`[data-test-user-id="${user2.id}"]`);
 
             // url is correct
-            expect(currentURL(), 'url after clicking user').to.equal(`/staff/${user2.slug}`);
+            expect(currentURL(), 'url after clicking user').to.equal(`/settings/staff/${user2.slug}`);
 
             // title is correct
             expect(document.title, 'title after clicking user').to.equal('Staff - User - Test Blog');
 
             // view title should exist and be linkable and active
             expect(
-                find('[data-test-screen-title] a[href="/ghost/staff"]').classList.contains('active'),
+                find('[data-test-screen-title] a[href="/ghost/settings/staff"]').classList.contains('active'),
                 'has linkable url back to staff main page'
             ).to.be.true;
 
             await click('[data-test-screen-title] a');
 
             // url should be /staff again
-            expect(currentURL(), 'url after clicking back').to.equal('/staff');
+            expect(currentURL(), 'url after clicking back').to.equal('/settings');
         });
 
         it('can manage invites', async function () {
-            await visit('/staff');
+            await visit('/settings/staff');
 
             // invite user button exists
             expect(
@@ -358,7 +358,7 @@ describe('Acceptance: Staff', function () {
         });
 
         it('can manage suspended users', async function () {
-            await visit('/staff');
+            await visit('/settings/staff');
             await click(`[data-test-user-id="${suspendedUser.id}"]`);
 
             expect(find('[data-test-suspended-badge]')).to.exist;
@@ -403,7 +403,7 @@ describe('Acceptance: Staff', function () {
             user2.posts = [post];
             user2.save();
 
-            await visit('/staff');
+            await visit('/settings/staff');
             await click(`[data-test-user-id="${user1.id}"]`);
 
             // user deletion displays modal
@@ -427,7 +427,7 @@ describe('Acceptance: Staff', function () {
             ).to.be.true;
 
             // deleting a user with posts
-            await visit('/staff');
+            await visit('/settings/staff');
             await click(`[data-test-user-id="${user2.id}"]`);
 
             await click('button.delete');
@@ -439,7 +439,7 @@ describe('Acceptance: Staff', function () {
 
             await click('[data-test-button="confirm-delete-user"]');
             // redirected to staff page
-            expect(currentURL()).to.equal('/staff');
+            expect(currentURL()).to.equal('/settings/staff');
 
             // deleted user is not in list
             expect(
@@ -472,9 +472,9 @@ describe('Acceptance: Staff', function () {
 
             it('input fields reset and validate correctly', async function () {
                 // test user name
-                await visit('/staff/test-1');
+                await visit('/settings/staff/test-1');
 
-                expect(currentURL(), 'currentURL').to.equal('/staff/test-1');
+                expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-1');
                 expect(find('[data-test-name-input]').value, 'current user name').to.equal('Test User');
 
                 expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
@@ -785,9 +785,9 @@ describe('Acceptance: Staff', function () {
             });
 
             it('warns when leaving without saving', async function () {
-                await visit('/staff/test-1');
+                await visit('/settings/staff/test-1');
 
-                expect(currentURL(), 'currentURL').to.equal('/staff/test-1');
+                expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-1');
 
                 await fillIn('[data-test-slug-input]', 'another slug');
                 await blur('[data-test-slug-input]');
@@ -808,9 +808,9 @@ describe('Acceptance: Staff', function () {
 
                 expect(currentURL(), 'currentURL').to.equal('/settings/staff');
 
-                await visit('/staff/test-1');
+                await visit('/settings/staff/test-1');
 
-                expect(currentURL(), 'currentURL').to.equal('/staff/test-1');
+                expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-1');
 
                 // settings were not saved
                 expect(find('[data-test-slug-input]').value).to.be.equal('test-1');
@@ -820,7 +820,7 @@ describe('Acceptance: Staff', function () {
 
         describe('own user', function () {
             it('requires current password when changing password', async function () {
-                await visit(`/staff/${admin.slug}`);
+                await visit(`/settings/staff/${admin.slug}`);
 
                 // test the "old password" field is validated
                 await click('[data-test-save-pw-button]');
@@ -863,10 +863,10 @@ describe('Acceptance: Staff', function () {
                 return new Response(404, {'Content-Type': 'application/json'}, {errors: [{message: 'User not found.', type: 'NotFoundError'}]});
             });
 
-            await visit('/staff/unknown');
+            await visit('/settings/staff/unknown');
 
             expect(currentRouteName()).to.equal('error404');
-            expect(currentURL()).to.equal('/staff/unknown');
+            expect(currentURL()).to.equal('/settings/staff/unknown');
         });
     });
 
@@ -894,9 +894,9 @@ describe('Acceptance: Staff', function () {
             this.server.create('user', {roles: [adminRole]});
             this.server.create('invite', {role: authorRole});
 
-            await visit('/staff');
+            await visit('/settings/staff');
 
-            expect(currentRouteName()).to.equal('staff.index');
+            expect(currentRouteName()).to.equal('settings.staff.index');
             expect(findAll('.gh-alert').length).to.equal(0);
         });
     });

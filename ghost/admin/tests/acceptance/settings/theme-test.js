@@ -28,7 +28,7 @@ describe.skip('Acceptance: Settings - Theme', function () {
         await authenticateSession();
         await visit('/settings/theme');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects to staff page when authenticated as author', async function () {
@@ -38,7 +38,7 @@ describe.skip('Acceptance: Settings - Theme', function () {
         await authenticateSession();
         await visit('/settings/theme');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     describe('when logged in', function () {

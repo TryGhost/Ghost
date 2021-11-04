@@ -398,7 +398,7 @@ export default Controller.extend({
 
             this.notifications.closeAlerts('user.delete');
             this.store.unloadAll('post');
-            this.transitionToRoute('staff');
+            this.transitionToRoute('settings.staff');
         } catch (error) {
             this.notifications.showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
             throw error;

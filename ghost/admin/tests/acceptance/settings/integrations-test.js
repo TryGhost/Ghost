@@ -29,7 +29,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             await authenticateSession();
             await visit('/integrations');
 
-            expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+            expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
         });
 
         it('redirects /integrations/ to staff page when authenticated as author', async function () {
@@ -39,7 +39,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             await authenticateSession();
             await visit('/integrations');
 
-            expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+            expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
         });
 
         it('redirects /integrations/ to staff page when authenticated as editor', async function () {
@@ -49,7 +49,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             await authenticateSession();
             await visit('/integrations/1');
 
-            expect(currentURL(), 'currentURL').to.equal('/staff');
+            expect(currentURL(), 'currentURL').to.equal('/settings/staff');
         });
 
         it('redirects /integrations/:id/ to signin when not authenticated', async function () {
@@ -66,7 +66,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             await authenticateSession();
             await visit('/integrations/1');
 
-            expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+            expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
         });
 
         it('redirects /integrations/:id/ to staff page when authenticated as author', async function () {
@@ -76,7 +76,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             await authenticateSession();
             await visit('/integrations/1');
 
-            expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+            expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
         });
 
         it('redirects /integrations/:id/ to staff page when authenticated as editor', async function () {
@@ -86,7 +86,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             await authenticateSession();
             await visit('/integrations/1');
 
-            expect(currentURL(), 'currentURL').to.equal('/staff');
+            expect(currentURL(), 'currentURL').to.equal('/settings/staff');
         });
     });
 
