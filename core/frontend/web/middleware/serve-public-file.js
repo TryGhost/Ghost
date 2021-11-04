@@ -7,7 +7,8 @@ const urlUtils = require('../../../shared/url-utils');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    imageNotFound: 'Image not found'
+    imageNotFound: 'Image not found',
+    fileNotFound: 'File not found'
 };
 
 function createPublicFileMiddleware(file, type, maxAge) {
@@ -43,6 +44,14 @@ function createPublicFileMiddleware(file, type, maxAge) {
         // modify text files before caching+serving to ensure URL placeholders are transformed
         fs.readFile(filePath, (err, buf) => {
             if (err) {
+                // Downgrade to a simple 404 if the file didn't exist
+                if (err.code === 'ENOENT') {
+                    err = new errors.NotFoundError({
+                        message: tpl(messages.fileNotFound),
+                        code: 'PUBLIC_FILE_NOT_FOUND',
+                        property: err.path
+                    });
+                }
                 return next(err);
             }
 
