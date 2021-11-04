@@ -2,6 +2,7 @@ import Modifier from 'ember-modifier';
 import {action} from '@ember/object';
 
 export default class MovableModifier extends Modifier {
+    active = false;
     currentX = undefined;
     currentY = undefined;
     initialX = undefined;
@@ -60,8 +61,6 @@ export default class MovableModifier extends Modifier {
 
             for (const elem of (e.path || e.composedPath())) {
                 if (elem === this.element) {
-                    this.disableScroll();
-                    this.disablePointerEvents();
                     this.addActiveEventListeners();
                     break;
                 }
@@ -72,16 +71,31 @@ export default class MovableModifier extends Modifier {
     @action
     dragEnd(e) {
         e.preventDefault();
-        this.enableScroll();
-        this.enablePointerEvents();
+        e.stopPropagation();
+
+        this.active = false;
+
         this.initialX = this.currentX;
         this.initialY = this.currentY;
+
         this.removeActiveEventListeners();
+        this.enableScroll();
+
+        // timeout required so immediate events are still blocked
+        setTimeout(() => {
+            this.enablePointerEvents();
+        }, 5);
     }
 
     @action
     drag(e) {
         e.preventDefault();
+
+        if (!this.active) {
+            this.disableScroll();
+            this.disablePointerEvents();
+            this.active = true;
+        }
 
         if (e.type === 'touchmove') {
             this.currentX = e.touches[0].clientX - this.initialX;
@@ -97,6 +111,12 @@ export default class MovableModifier extends Modifier {
         this.setTranslate(this.currentX, this.currentY);
     }
 
+    @action
+    cancelClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
     setTranslate(xPos, yPos) {
         this.element.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
     }
@@ -110,13 +130,16 @@ export default class MovableModifier extends Modifier {
         this.element.style.overflow = this.originalOverflow;
     }
 
-    // TODO: pointer events are not disabled because dragging to an area off
-    // central editor canvas exits edit mode - investigate further
+    // disabling pointer events prevents inputs being activated when drag finishes,
+    // preventing clicks stops any event handlers that may otherwise result in the
+    // movable element being closed when the drag finishes
     disablePointerEvents() {
-        // this.element.style.pointerEvents = 'none';
+        this.element.style.pointerEvents = 'none';
+        window.addEventListener('click', this.cancelClick, {capture: true, passive: false});
     }
 
     enablePointerEvents() {
-        // this.element.style.pointerEvents = '';
+        this.element.style.pointerEvents = '';
+        window.removeEventListener('click', this.cancelClick, {capture: true, passive: false});
     }
 }
