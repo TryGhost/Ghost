@@ -26,7 +26,7 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
         await authenticateSession();
         await visit('/integrations/slack');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects to staff page when authenticated as author', async function () {
@@ -36,7 +36,7 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
         await authenticateSession();
         await visit('/integrations/slack');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects to staff page when authenticated as editor', async function () {
@@ -46,7 +46,7 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
         await authenticateSession();
         await visit('/integrations/slack');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff');
     });
 
     describe('when logged in', function () {

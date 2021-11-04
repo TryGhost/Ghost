@@ -25,7 +25,7 @@ describe('Acceptance: Settings - General', function () {
         await authenticateSession();
         await visit('/settings/general');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects to staff page when authenticated as author', async function () {
@@ -35,7 +35,7 @@ describe('Acceptance: Settings - General', function () {
         await authenticateSession();
         await visit('/settings/general');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects to staff page when authenticated as editor', async function () {
@@ -45,7 +45,7 @@ describe('Acceptance: Settings - General', function () {
         await authenticateSession();
         await visit('/settings/general');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff');
     });
 
     describe('when logged in', function () {

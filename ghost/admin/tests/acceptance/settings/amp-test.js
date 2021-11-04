@@ -29,7 +29,7 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         await authenticateSession();
         await visit('/integrations/amp');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects to staff page when authenticated as author', async function () {
@@ -39,7 +39,7 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         await authenticateSession();
         await visit('/integrations/amp');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
 
     it('redirects to staff page when authenticated as editor', async function () {
@@ -49,7 +49,7 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
         await authenticateSession();
         await visit('/integrations/amp');
 
-        expect(currentURL(), 'currentURL').to.equal('/staff');
+        expect(currentURL(), 'currentURL').to.equal('/settings/staff');
     });
 
     describe('when logged in', function () {
@@ -110,14 +110,14 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
 
             expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox after click').to.be.false;
 
-            await visit('/staff');
+            await visit('/settings/staff');
 
             expect(findAll('.fullscreen-modal').length, 'unsaved changes modal exists').to.equal(1);
 
             // Leave without saving
             await click('.fullscreen-modal [data-test-leave-button]');
 
-            expect(currentURL(), 'currentURL after leave without saving').to.equal('/staff');
+            expect(currentURL(), 'currentURL after leave without saving').to.equal('/settings/staff');
 
             await visit('/integrations/amp');
 
