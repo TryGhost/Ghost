@@ -202,5 +202,24 @@ describe('Importer', function () {
 
             fsWriteSpy.calledOnce.should.be.true();
         });
+
+        it('Does not include columns not in the original CSV or mapped', async function () {
+            const membersImporter = new MembersCSVImporter({
+                storagePath: csvPath,
+                getTimezone: sinon.stub().returns('UTC'),
+                getMembersApi: sinon.stub(),
+                sendEmail: sinon.stub(),
+                isSet: sinon.stub(),
+                addJob: sinon.stub(),
+                knex: sinon.stub(),
+                urlFor: sinon.stub()
+            });
+
+            await membersImporter.prepare(`${csvPath}/single-column-with-header.csv`);
+
+            const fileContents = fsWriteSpy.firstCall.args[1];
+
+            fileContents.should.match(/^email,labels\r\n/);
+        });
     });
 });
