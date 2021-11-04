@@ -17,8 +17,10 @@ class OfferName extends ValueObject {
             });
         }
 
-        return new OfferName(name);
+        return new OfferName(name.trim());
     }
+
+    static InvalidOfferName = InvalidOfferName
 }
 
 module.exports = OfferName;

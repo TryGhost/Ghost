@@ -19,6 +19,8 @@ class OfferType extends ValueObject {
         return new OfferType(type);
     }
 
+    static InvalidOfferType = InvalidOfferType
+
     static Percentage = new OfferType('percent')
 
     static Fixed = new OfferType('fixed')

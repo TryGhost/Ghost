@@ -24,6 +24,8 @@ class OfferPercentageAmount extends OfferAmount {
         }
         return new OfferPercentageAmount(amount);
     }
+
+    static InvalidOfferAmount = InvalidOfferAmount;
 }
 
 class OfferFixedAmount extends OfferAmount {
@@ -31,17 +33,23 @@ class OfferFixedAmount extends OfferAmount {
     static create(amount) {
         if (typeof amount !== 'number') {
             throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be a number greater than 0.'
+                message: 'Offer `amount` must be an integer greater than 0.'
+            });
+        }
+        if (!Number.isInteger(amount)) {
+            throw new InvalidOfferAmount({
+                message: 'Offer `amount` must be a integer greater than 0.'
             });
         }
         if (amount < 0) {
             throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be a number greater than 0.'
+                message: 'Offer `amount` must be a integer greater than 0.'
             });
         }
-        const withTwoDecimalPlaces = +amount.toFixed(2);
-        return new OfferPercentageAmount(withTwoDecimalPlaces);
+        return new OfferPercentageAmount(amount);
     }
+
+    static InvalidOfferAmount = InvalidOfferAmount;
 }
 
 module.exports = OfferAmount;

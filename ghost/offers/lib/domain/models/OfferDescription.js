@@ -23,6 +23,8 @@ class OfferDescription extends ValueObject {
 
         return new OfferDescription(description.trim());
     }
+
+    static InvalidOfferDescription = InvalidOfferDescription;
 }
 
 module.exports = OfferDescription;

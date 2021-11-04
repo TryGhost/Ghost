@@ -19,6 +19,8 @@ class OfferCadence extends ValueObject {
         }
         return new OfferCadence(cadence);
     }
+
+    static InvalidOfferCadence = InvalidOfferCadence;
 }
 
 module.exports = OfferCadence;
