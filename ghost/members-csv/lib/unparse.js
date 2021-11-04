@@ -1,23 +1,23 @@
 const _ = require('lodash');
 const papaparse = require('papaparse');
+const DEFAULT_COLUMNS = [
+    'id',
+    'email',
+    'name',
+    'note',
+    'subscribed_to_emails',
+    'complimentary_plan',
+    'stripe_customer_id',
+    'created_at',
+    'deleted_at',
+    'labels',
+    'products'
+];
 
-const unparse = (members) => {
-    const columns = new Set([
-        'id',
-        'email',
-        'name',
-        'note',
-        'subscribed_to_emails',
-        'complimentary_plan',
-        'stripe_customer_id',
-        'created_at',
-        'deleted_at',
-        'labels',
-        'products'
-    ]);
+const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
     const mappedMembers = members.map((member) => {
         if (member.error) {
-            columns.add('error');
+            columns.push('error');
         }
 
         let labels = '';
@@ -54,7 +54,7 @@ const unparse = (members) => {
     });
 
     return papaparse.unparse(mappedMembers, {
-        columns: Array.from(columns.values())
+        columns
     });
 };
 

@@ -89,8 +89,9 @@ module.exports = class MembersCSVImporter {
         }
 
         const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
+        const columns = Object.keys(rows[0]);
         const numberOfBatches = Math.ceil(rows.length / batchSize);
-        const mappedCSV = membersCSV.unparse(rows);
+        const mappedCSV = membersCSV.unparse(rows, columns);
 
         const hasStripeData = rows.find(function rowHasStripeData(row) {
             return !!row.stripe_customer_id || !!row.complimentary_plan;
