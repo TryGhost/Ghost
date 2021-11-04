@@ -590,6 +590,14 @@
         "editor_default_email_recipients_filter": {
             "defaultValue": "all",
             "type": "string"
+        },
+        "editor_is_launch_complete": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     }
 }
