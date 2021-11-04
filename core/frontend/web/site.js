@@ -21,8 +21,10 @@ const customRedirects = require('../../server/services/redirects');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const mw = require('./middleware');
+const labs = require('../../shared/labs');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
+const STATIC_MEDIA_URL_PREFIX = `/${constants.STATIC_MEDIA_URL_PREFIX}`;
 
 let router;
 
@@ -109,6 +111,8 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Serve blog images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
+    // Serve blog media using the storage adapter
+    siteApp.use(STATIC_MEDIA_URL_PREFIX, labs.enabledMiddleware('mediaAPI'), storage.getStorage('media').serve());
 
     // @TODO find this a better home
     // We do this here, at the top level, because helpers require so much stuff.
