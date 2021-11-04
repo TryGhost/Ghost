@@ -29,6 +29,7 @@ const ALPHA_FEATURES = [
     'oauthLogin',
     'membersActivity',
     'cardSettingsPanel',
+    'mediaAPI',
     'membersAutoLogin'
 ];
 
