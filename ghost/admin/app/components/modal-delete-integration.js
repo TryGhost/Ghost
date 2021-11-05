@@ -16,11 +16,7 @@ export default ModalComponent.extend({
     deleteIntegration: task(function* () {
         try {
             yield this.confirm();
-            if (this.feature.get('offers')) {
-                this.router.transitionTo('settings.integrations');
-            } else {
-                this.router.transitionTo('integrations');
-            }
+            this.router.transitionTo('settings.integrations');
         } catch (error) {
             this.notifications.showAPIError(error, {key: 'integration.delete.failed'});
         } finally {
