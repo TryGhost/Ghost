@@ -1432,10 +1432,10 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/image-transform@1.0.17":
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.17.tgz#67814e3101694897effdb2a00b84c08e5cedc6b8"
-  integrity sha512-mPNBHOdxV0O0Y+SPDWoDZkF34NyVfQBXF5Bi1l9vGgBACl1qwoz6Acj+p4XcLoOcZoCAVx12c80bhNWE4SDsMQ==
+"@tryghost/image-transform@1.0.18":
+  version "1.0.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.18.tgz#bb8d63a0c683c4f04b20f662e187660d0bfcb168"
+  integrity sha512-+ZVdixV3Apw1AMiAr9e3aSYKc2tR9OTVUs61M96BTVZbVHWT3YMd53mvGZDvk4WRWOOMjBBmcml0ijuhI1taPw==
   dependencies:
     "@tryghost/errors" "^0.2.17"
     bluebird "^3.7.2"
