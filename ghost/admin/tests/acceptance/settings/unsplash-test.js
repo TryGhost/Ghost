@@ -17,7 +17,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
 
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
-        await visit('/integrations/unsplash');
+        await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -27,7 +27,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/integrations/unsplash');
+        await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
@@ -37,7 +37,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/integrations/unsplash');
+        await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
     });
@@ -47,7 +47,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
-        await visit('/integrations/unsplash');
+        await visit('/settings/integrations/unsplash');
 
         expect(currentURL(), 'currentURL').to.equal('/settings/staff');
     });
@@ -61,10 +61,10 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
         });
 
         it('it can activate/deactivate', async function () {
-            await visit('/integrations/unsplash');
+            await visit('/settings/integrations/unsplash');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/integrations/unsplash');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
 
             // it's enabled by default when settings is empty
             expect(find('[data-test-unsplash-checkbox]').checked, 'checked by default').to.be.true;
@@ -100,10 +100,10 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
         });
 
         it('warns when leaving without saving', async function () {
-            await visit('/integrations/unsplash');
+            await visit('/settings/integrations/unsplash');
 
             // has correct url
-            expect(currentURL(), 'currentURL').to.equal('/integrations/unsplash');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
 
             // AMP is enabled by default
             expect(find('[data-test-unsplash-checkbox]').checked, 'AMP checkbox default').to.be.true;
@@ -121,9 +121,9 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
 
             expect(currentURL(), 'currentURL after leave without saving').to.equal('/settings/labs');
 
-            await visit('/integrations/unsplash');
+            await visit('/settings/integrations/unsplash');
 
-            expect(currentURL(), 'currentURL').to.equal('/integrations/unsplash');
+            expect(currentURL(), 'currentURL').to.equal('/settings/integrations/unsplash');
 
             // settings were not saved
             expect(find('[data-test-unsplash-checkbox]').checked, 'Unsplash checkbox').to.be.true;

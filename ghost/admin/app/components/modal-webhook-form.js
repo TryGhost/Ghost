@@ -49,11 +49,7 @@ export default ModalComponent.extend({
         try {
             let webhook = yield this.confirm();
             let integration = yield webhook.get('integration');
-            if (this.feature.get('offers')) {
-                this.router.transitionTo('settings.integration', integration);
-            } else {
-                this.router.transitionTo('integration', integration);
-            }
+            this.router.transitionTo('settings.integration', integration);
         } catch (e) {
             // TODO: server-side validation errors should be serialized
             // properly so that errors are added to model.errors automatically
