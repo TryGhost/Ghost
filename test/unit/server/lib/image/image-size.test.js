@@ -299,7 +299,7 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: {
                 isLocalImage: () => true,
-                getLocalFileStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
+                getLocalImagesStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
             }, validator: {}, urlUtils: {
                 urlFor: urlForStub,
                 getSubdir: urlGetSubdirStub
@@ -539,7 +539,7 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: {
                 isLocalImage: () => true,
-                getLocalFileStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
+                getLocalImagesStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
             }, validator: {}, urlUtils: {
                 urlFor: urlForStub,
                 getSubdir: urlGetSubdirStub
@@ -582,7 +582,7 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: {
                 isLocalImage: () => true,
-                getLocalFileStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
+                getLocalImagesStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
             }, validator: {}, urlUtils: {
                 urlFor: urlForStub,
                 getSubdir: urlGetSubdirStub
@@ -625,7 +625,7 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: {
                 isLocalImage: () => true,
-                getLocalFileStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
+                getLocalImagesStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
             }, validator: {}, urlUtils: {
                 urlFor: urlForStub,
                 getSubdir: urlGetSubdirStub
@@ -668,7 +668,7 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: {
                 isLocalImage: () => true,
-                getLocalFileStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
+                getLocalImagesStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
             }, validator: {}, urlUtils: {
                 urlFor: urlForStub,
                 getSubdir: urlGetSubdirStub
@@ -708,7 +708,7 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: {
                 isLocalImage: () => true,
-                getLocalFileStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
+                getLocalImagesStoragePath: imageUrl => path.join(storagePath, imageUrl.replace(/.*\//, ''))
             }, validator: {}, urlUtils: {
                 urlFor: urlForStub,
                 getSubdir: urlGetSubdirStub
@@ -743,7 +743,7 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: {
                 isLocalImage: () => true,
-                getLocalFileStoragePath: () => ''
+                getLocalImagesStoragePath: () => ''
             }, validator: {}, urlUtils: {
                 urlFor: urlForStub,
                 getSubdir: urlGetSubdirStub
