@@ -83,7 +83,7 @@ describe('lib/image: blog icon', function () {
         it('custom uploaded ico blog icon', function () {
             const stub = sinon.stub();
             const blogIcon = new BlogIcon({config: {}, storageUtils: {
-                getLocalFileStoragePath: stub
+                getLocalImagesStoragePath: stub
             }, urlUtils: {}, settingsCache: {
                 get: (key) => {
                     if (key === 'icon') {
@@ -99,7 +99,7 @@ describe('lib/image: blog icon', function () {
         it('custom uploaded png blog icon', function () {
             const stub = sinon.stub();
             const blogIcon = new BlogIcon({config: {}, storageUtils: {
-                getLocalFileStoragePath: stub
+                getLocalImagesStoragePath: stub
             }, urlUtils: {}, settingsCache: {
                 get: (key) => {
                     if (key === 'icon') {

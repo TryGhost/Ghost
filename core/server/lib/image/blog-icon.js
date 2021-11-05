@@ -115,7 +115,7 @@ class BlogIcon {
         const blogIcon = this.settingsCache.get('icon');
 
         if (blogIcon) {
-            return this.storageUtils.getLocalFileStoragePath(blogIcon);
+            return this.storageUtils.getLocalImagesStoragePath(blogIcon);
         } else {
             return path.join(this.config.get('paths:publicFilePath'), 'favicon.ico');
         }

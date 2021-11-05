@@ -17,7 +17,7 @@ describe('storage utils', function () {
         sinon.restore();
     });
 
-    describe('fn: getLocalFileStoragePath', function () {
+    describe('fn: getLocalImagesStoragePath', function () {
         it('should return local file storage path for absolute URL', function () {
             const url = 'http://myblog.com/content/images/2017/07/ghost-logo.png';
             let result;
@@ -27,7 +27,7 @@ describe('storage utils', function () {
             urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
-            result = storageUtils.getLocalFileStoragePath(url);
+            result = storageUtils.getLocalImagesStoragePath(url);
             should.exist(result);
             result.should.be.equal('/2017/07/ghost-logo.png');
         });
@@ -41,7 +41,7 @@ describe('storage utils', function () {
             urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
-            result = storageUtils.getLocalFileStoragePath(url);
+            result = storageUtils.getLocalImagesStoragePath(url);
             should.exist(result);
             result.should.be.equal('/2017/07/ghost-logo.png');
         });
@@ -55,7 +55,7 @@ describe('storage utils', function () {
             urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
-            result = storageUtils.getLocalFileStoragePath(filePath);
+            result = storageUtils.getLocalImagesStoragePath(filePath);
             should.exist(result);
             result.should.be.equal('/2017/07/ghost-logo.png');
         });
@@ -69,7 +69,7 @@ describe('storage utils', function () {
             urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('/blog');
 
-            result = storageUtils.getLocalFileStoragePath(filePath);
+            result = storageUtils.getLocalImagesStoragePath(filePath);
             should.exist(result);
             result.should.be.equal('/2017/07/ghost-logo.png');
         });
@@ -83,7 +83,7 @@ describe('storage utils', function () {
             urlGetSubdirStub = sinon.stub(urlUtils, 'getSubdir');
             urlGetSubdirStub.returns('');
 
-            result = storageUtils.getLocalFileStoragePath(url);
+            result = storageUtils.getLocalImagesStoragePath(url);
             should.exist(result);
             result.should.be.equal('http://example-blog.com/ghost-logo.png');
         });
