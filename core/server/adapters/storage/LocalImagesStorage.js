@@ -14,7 +14,7 @@ let messages = {
     cannotRead: 'Could not read image: {file}'
 };
 
-class LocalImagesStore extends LocalStorageBase {
+class LocalImagesStorage extends LocalStorageBase {
     constructor() {
         super({
             storagePath: config.getContentPath('images'),
@@ -47,4 +47,4 @@ class LocalImagesStore extends LocalStorageBase {
     }
 }
 
-module.exports = LocalImagesStore;
+module.exports = LocalImagesStorage;
