@@ -20,7 +20,7 @@ describe('Adapter Config', function () {
         it('should default to local-file-store', function () {
             configUtils.config.get('paths').should.have.property('internalAdaptersPath', path.join(configUtils.config.get('paths').corePath, '/server/adapters/'));
 
-            configUtils.config.get('storage').should.have.property('active', 'LocalFileStorage');
+            configUtils.config.get('storage').should.have.property('active', 'LocalImagesStorage');
         });
 
         it('no effect: setting a custom active storage as string', function () {
