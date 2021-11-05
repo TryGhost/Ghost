@@ -12,6 +12,19 @@ export default class MovableModifier extends Modifier {
     xOffset = 0;
     yOffset = 0;
 
+    // Lifecycle hooks ---------------------------------------------------------
+
+    didReceiveArguments() {
+        this.removeEventListeners();
+        this.addStartEventListeners();
+    }
+
+    willDestroy() {
+        this.removeEventListeners();
+    }
+
+    // Custom methods -----------------------------------------------------------
+
     addStartEventListeners() {
         this.element.addEventListener('touchstart', this.dragStart, false);
         this.element.addEventListener('mousedown', this.dragStart, false);
@@ -41,15 +54,6 @@ export default class MovableModifier extends Modifier {
         this.removeActiveEventListeners();
     }
 
-    didReceiveArguments() {
-        this.removeEventListeners();
-        this.addStartEventListeners();
-    }
-
-    willDestroy() {
-        this.removeEventListeners();
-    }
-
     @action
     dragStart(e) {
         if (e.type === 'touchstart' || e.button === 0) {
@@ -72,25 +76,6 @@ export default class MovableModifier extends Modifier {
                 }
             }
         }
-    }
-
-    @action
-    dragEnd(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        this.active = false;
-
-        this.initialX = this.currentX;
-        this.initialY = this.currentY;
-
-        this.removeActiveEventListeners();
-        this.enableScroll();
-
-        // timeout required so immediate events blocked until the dragEnd has fully realised
-        setTimeout(() => {
-            this.enablePointerEvents();
-        }, 5);
     }
 
     @action
@@ -126,6 +111,25 @@ export default class MovableModifier extends Modifier {
 
             this.setTranslate(this.currentX, this.currentY);
         }
+    }
+
+    @action
+    dragEnd(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.active = false;
+
+        this.initialX = this.currentX;
+        this.initialY = this.currentY;
+
+        this.removeActiveEventListeners();
+        this.enableScroll();
+
+        // timeout required so immediate events blocked until the dragEnd has fully realised
+        setTimeout(() => {
+            this.enablePointerEvents();
+        }, 5);
     }
 
     @action
