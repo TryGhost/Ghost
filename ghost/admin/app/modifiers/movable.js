@@ -62,6 +62,10 @@ export default class MovableModifier extends Modifier {
             }
 
             for (const elem of (e.path || e.composedPath())) {
+                if (elem.matches('input, .ember-basic-dropdown-trigger')) {
+                    break;
+                }
+
                 if (elem === this.element) {
                     this.addActiveEventListeners();
                     break;
