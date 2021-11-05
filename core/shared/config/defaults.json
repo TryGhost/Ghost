@@ -23,7 +23,7 @@
         }
     },
     "storage": {
-        "active": "LocalFileStorage",
+        "active": "LocalImagesStorage",
         "media": "LocalMediaStorage",
         "LocalMediaStorage": {}
     },

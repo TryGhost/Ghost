@@ -4,16 +4,16 @@ const path = require('path');
 const config = require('../../../shared/config');
 const security = require('@tryghost/security');
 const {compress} = require('@tryghost/zip');
-const LocalFileStorage = require('../../adapters/storage/LocalFileStorage');
+const LocalStorageBase = require('../../adapters/storage/LocalStorageBase');
 
 /**
  * @TODO: combine with loader.js?
  */
-class ThemeStorage extends LocalFileStorage {
+class ThemeStorage extends LocalStorageBase {
     constructor() {
-        super();
-
-        this.storagePath = config.getContentPath('themes');
+        super({
+            storagePath: config.getContentPath('themes')
+        });
     }
 
     getTargetDir() {
