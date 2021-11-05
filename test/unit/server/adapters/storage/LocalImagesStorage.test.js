@@ -3,12 +3,11 @@ const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
 const moment = require('moment');
-const Promise = require('bluebird');
 const path = require('path');
-const LocalFileStore = require('../../../../../core/server/adapters/storage/LocalFileStorage');
+const LocalImagesStorage = require('../../../../../core/server/adapters/storage/LocalImagesStorage');
 const configUtils = require('../../../../utils/configUtils');
 
-describe('Local File System Storage', function () {
+describe('Local Images Storage', function () {
     let image;
     let momentStub;
     let localFileStore;
@@ -43,7 +42,7 @@ describe('Local File System Storage', function () {
             type: 'image/jpeg'
         };
 
-        localFileStore = new LocalFileStore();
+        localFileStore = new LocalImagesStorage();
 
         fakeDate(9, 2013);
     });

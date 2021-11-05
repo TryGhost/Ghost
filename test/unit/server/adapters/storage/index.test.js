@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const StorageBase = require('ghost-storage-base');
 const configUtils = require('../../../../utils/configUtils');
 const storage = require('../../../../../core/server/adapters/storage');
-const LocalFileStorage = require('../../../../../core/server/adapters/storage/LocalFileStorage');
+const LocalStorageBase = require('../../../../../core/server/adapters/storage/LocalStorageBase');
 
 const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
 describe('storage: index_spec', function () {
@@ -27,7 +27,7 @@ describe('storage: index_spec', function () {
     it('default image storage is local file storage', function () {
         const chosenStorage = storage.getStorage();
         (chosenStorage instanceof StorageBase).should.eql(true);
-        (chosenStorage instanceof LocalFileStorage).should.eql(true);
+        (chosenStorage instanceof LocalStorageBase).should.eql(true);
     });
 
     it('custom adapter', function () {
@@ -57,7 +57,7 @@ describe('storage: index_spec', function () {
 
         configUtils.config.get('storage:active').should.eql('custom-adapter');
         chosenStorage = storage.getStorage();
-        (chosenStorage instanceof LocalFileStorage).should.eql(false);
+        (chosenStorage instanceof LocalStorageBase).should.eql(false);
         (chosenStorage instanceof StorageBase).should.eql(true);
     });
 
