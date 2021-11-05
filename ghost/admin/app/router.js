@@ -91,10 +91,6 @@ Router.map(function () {
     this.route('integrations.unsplash', {path: '/integrations/unsplash'});
     this.route('integrations.zapier', {path: '/integrations/zapier'});
 
-    this.route('staff', function () {
-        this.route('user', {path: ':user_slug'});
-    });
-
     this.route('members', function () {
         this.route('import');
     });
