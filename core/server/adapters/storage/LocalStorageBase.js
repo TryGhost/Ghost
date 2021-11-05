@@ -24,7 +24,7 @@ class LocalStorageBase extends StorageBase {
      *
      * @param {Object} options
      * @param {String} options.storagePath
-     * @param {String} options.staticFileURLPrefix
+     * @param {String} [options.staticFileURLPrefix]
      * @param {Object} [options.errorMessages]
      * @param {String} [options.errorMessages.notFound]
      * @param {String} [options.errorMessages.notFoundWithRef]
@@ -102,7 +102,7 @@ class LocalStorageBase extends StorageBase {
                     maxAge: constants.ONE_YEAR_MS,
                     fallthrough: false,
                     onEnd: () => {
-                        logging.info('LocalFileStorage.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
+                        logging.info('LocalStorageBase.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
                     }
                 }
             )(req, res, (err) => {
