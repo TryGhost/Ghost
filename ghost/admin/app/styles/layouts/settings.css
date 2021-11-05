@@ -1497,7 +1497,7 @@ p.theme-validation-details {
     position: relative;
     top: inherit;
     left: inherit;
-    margin-left: auto;
+    margin: 0 8px 0 auto;
     padding-top: 3px;
 }
 
@@ -1553,6 +1553,7 @@ p.theme-validation-details {
     justify-content: center;
     width: 40px;
     height: 40px;
+    margin-right: -8px;
     border-radius: 50%;
 }
 
@@ -1778,6 +1779,12 @@ p.theme-validation-details {
     grid-column-gap: 40px;
     grid-row-gap: 64px;
     margin: 0 0 24px;
+}
+
+@media (min-width: 1800px) {
+    .theme-directory-labs {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
 }
 
 @media (max-width: 1120px) {

@@ -102,20 +102,6 @@ export default class ChangeThemeController extends Controller {
         previewUrl: 'https://london.ghost.io',
         ref: 'TryGhost/London',
         image: 'assets/img/themes/London.jpg'
-    }, {
-        name: 'Editorial',
-        category: 'Magazine',
-        url: 'https://github.com/TryGhost/Editorial',
-        previewUrl: 'https://editorial.ghost.io',
-        ref: 'TryGhost/Editorial',
-        image: 'assets/img/themes/Editorial.jpg'
-    }, {
-        name: 'Massively',
-        category: 'Magazine',
-        url: 'https://github.com/TryGhost/Massively',
-        previewUrl: 'https://massively.ghost.io',
-        ref: 'TryGhost/Massively',
-        image: 'assets/img/themes/Massively.jpg'
     }]
 
     get themesList() {
