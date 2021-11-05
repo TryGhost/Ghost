@@ -12,5 +12,6 @@ module.exports = {
     SIX_MONTH_MS: 15768000000,
     ONE_YEAR_MS: 31536000000,
     STATIC_IMAGES_URL_PREFIX: 'content/images',
-    STATIC_MEDIA_URL_PREFIX: 'content/media'
+    STATIC_MEDIA_URL_PREFIX: 'content/media',
+    STATIC_FILES_URL_PREFIX: 'content/files'
 };
