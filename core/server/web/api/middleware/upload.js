@@ -190,28 +190,31 @@ const mediaValidation = function ({type}) {
         req.file.type = req.file.mimetype;
         req.file.ext = path.extname(req.file.name).toLowerCase();
 
-        const {thumbnail: [thumbnailFile] = []} = req.files;
-        if (!thumbnailFile || !checkFileExists(thumbnailFile)) {
-            return next(new errors.ValidationError({
-                message: tpl(messages.thumbnail.missingFile)
-            }));
-        }
-
-        req.thumbnail = thumbnailFile;
-        req.thumbnail.ext = path.extname(thumbnailFile.originalname).toLowerCase();
-        req.thumbnail.name = `${path.basename(req.file.name, path.extname(req.file.name))}_thumb${req.thumbnail.ext}`;
-        req.thumbnail.type = req.thumbnail.mimetype;
-
         if (!checkFileIsValid(req.file, contentTypes, extensions)) {
             return next(new errors.UnsupportedMediaTypeError({
                 message: tpl(messages[type].invalidFile, {extensions: extensions})
             }));
         }
 
-        if (!checkFileIsValid(req.thumbnail, thumbnailContentTypes, thumbnailExtensions)) {
-            return next(new errors.UnsupportedMediaTypeError({
-                message: tpl(messages.thumbnail.invalidFile, {extensions: thumbnailExtensions})
-            }));
+        const {thumbnail: [thumbnailFile] = []} = req.files;
+
+        if (thumbnailFile) {
+            if (!checkFileExists(thumbnailFile)) {
+                return next(new errors.ValidationError({
+                    message: tpl(messages.thumbnail.missingFile)
+                }));
+            }
+
+            req.thumbnail = thumbnailFile;
+            req.thumbnail.ext = path.extname(thumbnailFile.originalname).toLowerCase();
+            req.thumbnail.name = `${path.basename(req.file.name, path.extname(req.file.name))}_thumb${req.thumbnail.ext}`;
+            req.thumbnail.type = req.thumbnail.mimetype;
+
+            if (!checkFileIsValid(req.thumbnail, thumbnailContentTypes, thumbnailExtensions)) {
+                return next(new errors.UnsupportedMediaTypeError({
+                    message: tpl(messages.thumbnail.invalidFile, {extensions: thumbnailExtensions})
+                }));
+            }
         }
 
         next();
