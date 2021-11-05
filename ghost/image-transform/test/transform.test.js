@@ -66,6 +66,8 @@ describe('Transform', function () {
                 return sharpInstance;
             });
 
+            sharp.cache = sinon.stub().returns({});
+
             testUtils.modules.mockNonExistentModule('sharp', sharp);
         });
 
