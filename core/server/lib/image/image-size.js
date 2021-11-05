@@ -214,7 +214,7 @@ class ImageSize {
         imagePath = this.urlUtils.urlFor('image', {image: imagePath}, true);
 
         // get the storage readable filePath
-        filePath = this.storageUtils.getLocalFileStoragePath(imagePath);
+        filePath = this.storageUtils.getLocalImagesStoragePath(imagePath);
 
         return this.storage.getStorage('images')
             .read({path: filePath})
