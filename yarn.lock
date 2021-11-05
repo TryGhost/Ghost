@@ -1443,10 +1443,10 @@
   optionalDependencies:
     sharp "^0.29.0"
 
-"@tryghost/job-manager@0.8.11":
-  version "0.8.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.11.tgz#6e8e73f06ac12e5986f66451a7840f1ef01959e8"
-  integrity sha512-trEex562rAgLHJXizv1dJBXYWVXNWEWpHa2bPk5BcGK3WYC/LiO0/yp9ONkoLDCNxx/EVOt6/8kQwdDk2phpAA==
+"@tryghost/job-manager@0.8.12":
+  version "0.8.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.12.tgz#4fe36464be4f2ccee5a1762000a5d0785b33d0ea"
+  integrity sha512-Lvw7D6Hgg5+14eKm+CNQ7dx3FDpoFV3OWRbHsPMswjWRfHPSSeeW5wZjaT+Z4miOFkJjEl8xPyYRxTv1+0HmUg==
   dependencies:
     "@breejs/later" "^4.0.2"
     bree "^6.2.0"
