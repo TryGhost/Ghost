@@ -41,17 +41,17 @@ describe('Media API', function () {
         media.push(res.body.media[0].thumbnail_url.replace(config.get('url'), ''));
     });
 
-    it('Can upload a WebM', async function () {
+    it('Can upload a WebM without a thumbnail', async function () {
         const res = await request.post(localUtils.API.getApiQuery('media/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .field('purpose', 'video')
             .field('ref', 'https://ghost.org/sample_640x360.webm')
             .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.webm'))
-            .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
             .expect(201);
 
         res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.webm`));
+        should(res.body.media[0].thumbnail_url).eql(null);
         res.body.media[0].ref.should.equal('https://ghost.org/sample_640x360.webm');
 
         media.push(res.body.media[0].url.replace(config.get('url'), ''));
@@ -82,15 +82,5 @@ describe('Media API', function () {
             .expect(415);
 
         res.body.errors[0].message.should.match(/select a valid media file/gi);
-    });
-
-    it('Rejects when thumbnail is not present', async function () {
-        const res = await request.post(localUtils.API.getApiQuery('media/upload'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.ogv'))
-            .expect(422);
-
-        res.body.errors[0].message.should.match(/Please select a thumbnail./gi);
     });
 });
