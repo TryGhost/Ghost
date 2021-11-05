@@ -12,7 +12,7 @@ export default Controller.extend({
         cancel() {
             // 'new' route's dectivate hook takes care of rollback
             return this.webhook.get('integration').then((integration) => {
-                this.transitionToRoute('integration', integration);
+                this.transitionToRoute('settings.integration', integration);
             });
         }
     },
