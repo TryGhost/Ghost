@@ -23,7 +23,8 @@ const ICON_MAPPING = {
 
 const Styles = ({brandColor, hasText}) => {
     const frame = {
-        ...(!hasText ? {width: '105px'} : {})
+        ...(!hasText ? {width: '105px'} : {}),
+        ...(hasMode(['preview']) ? {opacity: 1} : {})
     };
     return {
         frame: {
@@ -37,7 +38,6 @@ const Styles = ({brandColor, hasText}) => {
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
             overflow: 'hidden',
-            opacity: 1,
             ...frame
         },
         userIcon: {
