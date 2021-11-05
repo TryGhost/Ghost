@@ -118,14 +118,6 @@ module.exports = function setupSiteApp(options = {}) {
     // Serve blog media using the storage adapter
     siteApp.use(STATIC_MEDIA_URL_PREFIX, labs.enabledMiddleware('mediaAPI'), storage.getStorage('media').serve());
 
-    // @TODO find this a better home
-    // We do this here, at the top level, because helpers require so much stuff.
-    // Moving this to being inside themes, where it probably should be requires the proxy to be refactored
-    // Else we end up with circular dependencies
-    // themeEngine.loadCoreHelpers();
-    // themeEngine.registerHandlebarsHelpers();
-    // debug('Helpers done');
-
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);
 
