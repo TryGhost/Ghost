@@ -60,6 +60,7 @@ export default Service.extend({
     membersAutoLogin: feature('membersAutoLogin', {developer: true}),
     mediaAPI: feature('mediaAPI', {developer: true}),
     filesAPI: feature('filesAPI', {developer: true}),
+    buttonCard: feature('buttonCard', {developer: true}),
 
     _user: null,
 
