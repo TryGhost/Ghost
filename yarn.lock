@@ -1415,12 +1415,12 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@0.7.17":
-  version "0.7.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-0.7.17.tgz#52b1bbe85f425c149f18cbd5a2db54cb57b44c15"
-  integrity sha512-IYDmNK+23ThmCG/u5tlA4E7VvBYVKw9RZOA+EtpgJu9c/zCUid5RoE3PpPKcZbA0qFoxyXMRw6oCzuY0GSRsow==
+"@tryghost/html-to-mobiledoc@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-1.0.0.tgz#3a66cd11f90fb607beb6458c753de9e1a5a0a461"
+  integrity sha512-DxpCMJaXmfMmsuZ/+5y8/OS2TxxIEE/dhTC1TX0RtdIn7KUDCmJswACYH1NuzLcUKCjOCOY/oObiRIbqnA2jjg==
   dependencies:
-    "@tryghost/kg-parser-plugins" "^1.1.7"
+    "@tryghost/kg-parser-plugins" "^2.2.0"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^16.5.3"
 
@@ -1459,20 +1459,20 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.1.0.tgz#2a135754fabafa32074e6cddb28de0cc3a8d7e7d"
   integrity sha512-Y52DqAM/BahMumbX39mBwaSHJTyx/mwIsFVDNCNg0XBoM2ZqHjHLefNBEsUTdocP8LPpK4HYSOxKVugQOBAACA==
 
-"@tryghost/kg-clean-basic-html@^1.0.18":
-  version "1.0.18"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-1.0.18.tgz#2d626c5da951551cf09c28a55ac23df801d2e880"
-  integrity sha512-5jUY/McF01hDi6BsdKOsBhtdhmuCv1djYYj7eVOFGFcdmLkxRHOJWqmRfJTCVdfeU5hnOu+D6XcNsDxmTJXLKQ==
+"@tryghost/kg-clean-basic-html@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.1.1.tgz#1d58dec9682f3e462b4d180a7c7f63b3c737263c"
+  integrity sha512-KKGvn2S3AVfs/BdWDcAeD24ApkFTrV5fi3PuLqf0Je/uOHgaxkJDEXbvSCCRDkBQiCOfbOC2gXheZafMAXuFkw==
 
 "@tryghost/kg-default-atoms@3.1.0":
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-3.1.0.tgz#4daff7104c1f261b1b816dd75ae4104009f9c1e6"
   integrity sha512-FfROzVgqJWqJ7cVdS9dcALz7rnzNfV8zcrymAJrDTHDsqzAdMfSLe1tNQRm8zas9pyZLsD8zBGmLxG9dr4WFSA==
 
-"@tryghost/kg-default-cards@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.1.0.tgz#a895ced69f904851528e2169c1df45a80fdfd266"
-  integrity sha512-VgiKLQFwDRyHkk/UkPrb0Uky3z81Mln8LT3moIQSc6fZo9k5aUMZjDcNa8XForXSvXVs6PpRdjnj1OUcXUJfKg==
+"@tryghost/kg-default-cards@5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.2.0.tgz#fa610f1093000ebd9c6840bfbbc6d94b42f450f3"
+  integrity sha512-ISE2DfcR4KZeg5UcL10Fj488oRqIudRrXwnzE58GIc/66tkZip0FA5WZMXrou9Ps9yzlL3D28/kECaE8TsFh1A==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "^5.1.0"
     "@tryghost/url-utils" "^2.0.0"
@@ -1500,12 +1500,12 @@
     semver "^7.3.4"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@^1.1.7":
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-1.1.8.tgz#ce722ed3f8376c8f38d88f0c40ed5d9c04203f7b"
-  integrity sha512-VCIahwP0F0U3l/9lVHcW86PPWLuGW7g3TuxAN9NV8crkJZVxVwNEfYTn7bDiRIELYgQIG7jrH6jMlbm6q6ZueA==
+"@tryghost/kg-parser-plugins@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.2.0.tgz#ebaa80c700ddd08e457bc164214579cd61bdda75"
+  integrity sha512-U2v3Iwh76zLbK/4GqgAO7s/XCIAVe8DZPW2tK16xOm23RmrI226TaEPMgmOkpEfrL2lc5mbP4DMRifflfaijQw==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^1.0.18"
+    "@tryghost/kg-clean-basic-html" "^2.1.1"
 
 "@tryghost/limit-service@1.0.0":
   version "1.0.0"
