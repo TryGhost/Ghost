@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/html-to-mobiledoc",
-  "version": "0.7.17",
+  "version": "1.0.0",
   "repository": "https://github.com/TryGhost/SDK/tree/master/packages/html-to-mobiledoc",
   "author": "Ghost Foundation",
   "license": "MIT",
