@@ -30,6 +30,7 @@ const ALPHA_FEATURES = [
     'membersActivity',
     'cardSettingsPanel',
     'mediaAPI',
+    'filesAPI',
     'membersAutoLogin'
 ];
 
