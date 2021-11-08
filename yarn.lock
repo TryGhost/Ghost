@@ -1335,10 +1335,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.3.tgz#42c88bbfe343d55595aa27b25665b87cb9cbaa23"
   integrity sha512-+Ob3QTLxxpV4VBNEG/6Veop5MLxKlpPkGtnuRO/0PNaxm77Xo6TdLYAqUL+SnHSYRySr3lkLZCZUa9e6HhECbg==
 
-"@tryghost/constants@0.1.12":
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-0.1.12.tgz#17efd5dbb5d0bfbf11de1ceaaed347d165e63b1f"
-  integrity sha512-nQPov2XnfnWxMf330JVLRGUJUqupgvBGWrUU31GJYQRTheKS0N6DSBCKJaO0euGEsWfvJ+BsWVbAJp0vxsUDzg==
+"@tryghost/constants@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-1.0.0.tgz#63ceeb4614e4e79bf208b79664c5898334b00a5f"
+  integrity sha512-vbJFj/jhPockvcjf3prBTj9YD9aeIWu2rK9Y0rXNQDA2RslTh9m8Y7NO2JzQ+kG2n1yOJRqdcgNJCXwwS/CjoA==
 
 "@tryghost/custom-theme-settings-service@0.3.1":
   version "0.3.1"
