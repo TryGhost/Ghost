@@ -245,6 +245,14 @@ module.exports = function apiRoutes() {
         http(api.media.upload)
     );
 
+    // ## files
+    router.post('/files/upload',
+        labs.enabledMiddleware('filesAPI'),
+        mw.authAdminApi,
+        apiMw.upload.single('file'),
+        http(api.files.upload)
+    );
+
     // ## Invites
     router.get('/invites', mw.authAdminApi, http(api.invites.browse));
     router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
