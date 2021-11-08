@@ -1,10 +1,8 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 
-export default Component.extend({
-    tagName: '',
-
-    init() {
-        this._super(...arguments);
-        this.registerComponent(this);
+export default class KoenigCardPaywallComponent extends Component {
+    constructor() {
+        super(...arguments);
+        this.args.registerComponent(this);
     }
-});
+}

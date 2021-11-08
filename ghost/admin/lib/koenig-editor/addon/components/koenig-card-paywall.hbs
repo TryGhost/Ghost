@@ -1,12 +1,12 @@
 <KoenigCard
     @class="kg-card-hover"
-    @isSelected={{this.isSelected}}
-    @isEditing={{this.isEditing}}
-    @selectCard={{action this.selectCard}}
-    @deselectCard={{action this.deselectCard}}
-    @editCard={{action this.editCard}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
     @hasEditMode={{false}}
-    @editor={{this.editor}}
+    @editor={{@editor}}
 >
     <div class="kg-paywall-separator">Free public preview  <span class="green">↑</span>  /  <span class="green">↓</span>  Only visible to members</div>
 </KoenigCard>
