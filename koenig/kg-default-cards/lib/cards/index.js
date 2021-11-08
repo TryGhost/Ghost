@@ -9,5 +9,6 @@ module.exports = [
     require('./html'),
     require('./image'),
     require('./markdown'),
-    require('./paywall')
+    require('./paywall'),
+    require('./button')
 ];

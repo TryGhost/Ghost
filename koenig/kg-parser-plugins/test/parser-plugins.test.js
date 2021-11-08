@@ -82,6 +82,61 @@ describe('parser-plugins', function () {
         });
     });
 
+    describe('kgButtonCardToCard', function () {
+        it('parses button card divs into cards', function () {
+            const dom = buildDOM('<div class="btn btn-accent" data-kg-card="button"><a href="https://example.com">Testing button</a>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('button');
+            section.payload.should.deepEqual({
+                // HTMLAnchorElement.href is a stringifier returing a full url
+                // which is why the trailing slash has been appended
+                buttonUrl: 'https://example.com/',
+                buttonText: 'Testing button',
+                alignment: 'left'
+            });
+        });
+
+        it('parses center alignment class into payload', function () {
+            const dom = buildDOM(`
+                <div class="btn btn-accent align-center" data-kg-card="button">
+                    <a href="https://example.com">
+                        Testing  button
+                    </a>
+                </div>
+            `);
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('button');
+            section.payload.should.deepEqual({
+                buttonUrl: 'https://example.com/',
+                buttonText: 'Testing button',
+                alignment: 'center'
+            });
+        });
+
+        it('handles arbitrary whitespace in button content', function () {
+            const dom = buildDOM(`
+                <div class="btn btn-accent" data-kg-card="button">
+                    <a href="https://example.com">
+                        Testing  button
+                    </a>
+                </div>
+            `);
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('button');
+            section.payload.should.deepEqual({
+                buttonUrl: 'https://example.com/',
+                buttonText: 'Testing button',
+                alignment: 'left'
+            });
+        });
+    });
+
     describe('brToSoftBreakAtom', function () {
         it('parses BR tags to soft-return atoms', function () {
             const dom = buildDOM('Testing<br>Soft-return');

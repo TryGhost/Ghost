@@ -185,6 +185,32 @@ export function createParserPlugins(_options = {}) {
         nodeFinished();
     }
 
+    function kgButtonCardToCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.dataset.kgCard !== 'button') {
+            return;
+        }
+
+        const alignment = node.classList.contains('align-center') ? 'center' : 'left';
+
+        const anchor = node.querySelector('a');
+        const buttonUrl = anchor.href;
+
+        let buttonText = node.textContent;
+        if (buttonText) {
+            buttonText = buttonText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        const payload = {
+            alignment,
+            buttonUrl,
+            buttonText
+        };
+
+        const cardSection = builder.createCardSection('button', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     // mobiledoc by default ignores <BR> tags but we have a custom SoftReturn atom
     function brToSoftBreakAtom(node, builder, {addMarkerable, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'BR') {
@@ -560,6 +586,7 @@ export function createParserPlugins(_options = {}) {
     return [
         mixtapeEmbed,
         kgHtmlCardToCard,
+        kgButtonCardToCard,
         blockquoteWithChildren,
         brToSoftBreakAtom,
         removeLeadingNewline,
