@@ -32,7 +32,8 @@ const ALPHA_FEATURES = [
     'mediaAPI',
     'filesAPI',
     'membersAutoLogin',
-    'buttonCard'
+    'buttonCard',
+    'calloutCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
