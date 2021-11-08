@@ -12,6 +12,7 @@ export const CARD_COMPONENT_MAP = {
     bookmark: 'koenig-card-bookmark',
     gallery: 'koenig-card-gallery',
     email: 'koenig-card-email',
+    button: 'koenig-card-button',
     'email-cta': 'koenig-card-email-cta',
     paywall: 'koenig-card-paywall'
 };
@@ -28,6 +29,7 @@ export const CARD_ICON_MAP = {
     bookmark: 'koenig/kg-card-type-bookmark',
     gallery: 'koenig/kg-card-type-gallery',
     email: 'koenig/kg-card-type-gen-embed',
+    button: 'koenig/kg-card-type-gen-embed',
     'email-cta': 'koenig/kg-card-type-gen-embed',
     paywall: 'koenig/kg-card-type-divider'
 };
@@ -49,6 +51,9 @@ export default [
     createComponentCard('email', {deleteIfEmpty: 'payload.html'}),
     createComponentCard('email-cta', {deleteIfEmpty(card) {
         return !card.payload.html && !card.payload.buttonText && !card.payload.buttonUrl;
+    }}),
+    createComponentCard('button', {deleteIfEmpty(card) {
+        return !card.payload.buttonText && !card.payload.buttonUrl;
     }}),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
@@ -140,6 +145,15 @@ export const CARD_MENU = [
             matches: ['public preview', 'preview', 'paywall'],
             type: 'card',
             replaceArg: 'paywall'
+        },
+        {
+            label: 'Button',
+            icon: 'koenig/kg-card-type-paywall',
+            desc: 'Clicky thing',
+            matches: ['button'],
+            type: 'card',
+            replaceArg: 'button',
+            feature: 'buttonCard'
         }]
     },
     {
