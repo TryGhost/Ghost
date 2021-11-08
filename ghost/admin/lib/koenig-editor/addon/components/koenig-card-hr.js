@@ -1,15 +1,8 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 
-export default Component.extend({
-    tagName: '',
-
-    // closure actions
-    selectCard() {},
-    deselectCard() {},
-    registerComponent() {},
-
-    init() {
-        this._super(...arguments);
-        this.registerComponent(this);
+export default class KoenigCardHrComponent extends Component {
+    constructor() {
+        super(...arguments);
+        this.args.registerComponent(this);
     }
-});
+}
