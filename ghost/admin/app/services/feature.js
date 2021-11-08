@@ -59,6 +59,7 @@ export default Service.extend({
     cardSettingsPanel: feature('cardSettingsPanel', {developer: true}),
     membersAutoLogin: feature('membersAutoLogin', {developer: true}),
     mediaAPI: feature('mediaAPI', {developer: true}),
+    filesAPI: feature('filesAPI', {developer: true}),
 
     _user: null,
 
