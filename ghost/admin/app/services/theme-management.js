@@ -90,9 +90,10 @@ export default class ThemeManagementService extends Service {
             try {
                 const activatedTheme = yield theme.activate();
 
-                this.updatePreviewHtmlTask.perform();
-
                 yield this.customThemeSettings.reload();
+
+                // must come after settings reload has finished otherwise we'll preview previous theme settings
+                this.updatePreviewHtmlTask.perform();
 
                 if (!options.skipErrors) {
                     const {warnings, errors} = activatedTheme;
