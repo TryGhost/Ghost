@@ -61,6 +61,7 @@ export default Service.extend({
     mediaAPI: feature('mediaAPI', {developer: true}),
     filesAPI: feature('filesAPI', {developer: true}),
     buttonCard: feature('buttonCard', {developer: true}),
+    calloutCard: feature('calloutCard', {developer: true}),
 
     _user: null,
 
