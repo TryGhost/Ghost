@@ -163,6 +163,7 @@ export default Route.extend(ShortcutsRoute, {
                 release: `ghost@${this.config.get('version')}`,
                 beforeSend(event) {
                     event.tags = event.tags || {};
+                    event.tags.shown_to_user = event.tags.shown_to_user || false;
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
                     return event;
                 }

@@ -1,5 +1,5 @@
+import * as Sentry from '@sentry/browser';
 import Service, {inject as service} from '@ember/service';
-import {captureException} from '@sentry/browser';
 import {dasherize} from '@ember/string';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 import {filter} from '@ember/object/computed';
@@ -75,6 +75,29 @@ export default Service.extend({
     showAlert(message, options) {
         options = options || {};
 
+        if (!options.isApiError) {
+            if (this.config.get('sentry_dsn')) {
+                // message could be a htmlSafe object rather than a string
+                const displayedMessage = get(message, 'string') || message;
+
+                const contexts = {
+                    ghost: {
+                        displayed_message: displayedMessage,
+                        ghost_error_code: get(options, 'ghostErrorCode'),
+                        full_error: message,
+                        source: 'showAlert'
+                    }
+                };
+
+                Sentry.captureException(displayedMessage, {
+                    contexts,
+                    tags: {
+                        shown_to_user: true
+                    }
+                });
+            }
+        }
+
         this.handleNotification({
             message,
             status: 'alert',
@@ -101,10 +124,6 @@ export default Service.extend({
     },
 
     showAPIError(resp, options) {
-        if (this.config.get('sentry_dsn')) {
-            captureException(resp);
-        }
-
         // handle "global" errors
         if (isVersionMismatchError(resp)) {
             return this.upgradeStatus.requireUpgrade();
@@ -147,6 +166,26 @@ export default Service.extend({
         if (!isBlank(get(resp, 'context'))) {
             msg = `${msg} ${get(resp, 'context')}`;
         }
+
+        if (this.config.get('sentry_dsn')) {
+            const reportedError = resp instanceof Error ? resp : msg;
+
+            Sentry.captureException(reportedError, {
+                contexts: {
+                    ghost: {
+                        ghost_error_code: get(resp, 'ghostErrorCode'),
+                        displayed_message: msg,
+                        full_error: resp,
+                        source: 'showAPIError'
+                    }
+                },
+                tags: {
+                    shown_to_user: true
+                }
+            });
+        }
+
+        options.isApiError = true;
 
         this.showAlert(msg, options);
     },
