@@ -1469,10 +1469,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-3.1.0.tgz#4daff7104c1f261b1b816dd75ae4104009f9c1e6"
   integrity sha512-FfROzVgqJWqJ7cVdS9dcALz7rnzNfV8zcrymAJrDTHDsqzAdMfSLe1tNQRm8zas9pyZLsD8zBGmLxG9dr4WFSA==
 
-"@tryghost/kg-default-cards@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.1.0.tgz#a895ced69f904851528e2169c1df45a80fdfd266"
-  integrity sha512-VgiKLQFwDRyHkk/UkPrb0Uky3z81Mln8LT3moIQSc6fZo9k5aUMZjDcNa8XForXSvXVs6PpRdjnj1OUcXUJfKg==
+"@tryghost/kg-default-cards@5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.2.0.tgz#fa610f1093000ebd9c6840bfbbc6d94b42f450f3"
+  integrity sha512-ISE2DfcR4KZeg5UcL10Fj488oRqIudRrXwnzE58GIc/66tkZip0FA5WZMXrou9Ps9yzlL3D28/kECaE8TsFh1A==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "^5.1.0"
     "@tryghost/url-utils" "^2.0.0"
