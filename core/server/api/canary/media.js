@@ -6,16 +6,16 @@ module.exports = {
         statusCode: 201,
         permissions: false,
         async query(frame) {
-            let thumbnail = null;
+            let thumbnailPath = null;
             if (frame.files.thumbnail && frame.files.thumbnail[0]) {
-                thumbnail = await storage.getStorage('media').save(frame.files.thumbnail[0]);
+                thumbnailPath = await storage.getStorage('media').save(frame.files.thumbnail[0]);
             }
 
-            const file = await storage.getStorage('media').save(frame.files.file[0]);
+            const filePath = await storage.getStorage('media').save(frame.files.file[0]);
 
             return {
-                filePath: file,
-                thumbnailPath: thumbnail
+                filePath,
+                thumbnailPath
             };
         }
     }
