@@ -86,7 +86,7 @@ describe('Media API', function () {
         });
     });
 
-    describe('media/thumbnail/:url', function () {
+    describe('media/thumbnail/upload', function () {
         it('Can update existing thumbnail', async function () {
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
                 .set('Origin', config.get('url'))
@@ -102,7 +102,7 @@ describe('Media API', function () {
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
             media.push(res.body.media[0].thumbnail_url.replace(config.get('url'), ''));
 
-            const thumbnailRes = await request.put(localUtils.API.getApiQuery(`media/thumbnail/`))
+            const thumbnailRes = await request.put(localUtils.API.getApiQuery(`media/thumbnail/upload`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .field('url', res.body.media[0].url)
@@ -127,7 +127,7 @@ describe('Media API', function () {
 
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
 
-            const thumbnailRes = await request.put(localUtils.API.getApiQuery(`media/thumbnail/`))
+            const thumbnailRes = await request.put(localUtils.API.getApiQuery(`media/thumbnail/upload`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .field('url', res.body.media[0].url)
