@@ -9,17 +9,17 @@
     justify-content: center;
 }
 
-.kg-btn {
+a.kg-btn {
     display: inline-flex;
     align-items: center;
     justify-content: space-between;
     padding: 5px 10px;
     font-size: 1.8rem;
     border-radius: 5px;
-    text-decoration: none !important;
+    text-decoration: none;
 }
 
-.kg-btn-accent {
+a.kg-btn-accent {
     background-color: var(--ghost-accent-color);
-    color: #fff !important;
+    color: #fff;
 }
