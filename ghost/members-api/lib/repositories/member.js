@@ -674,7 +674,7 @@ module.exports = class MemberRepository {
                     for (const subscription of subscriptions.models) {
                         if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
                             try {
-                                const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')});
+                                const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')}, options);
                                 if (subscriptionProduct && changedProduct && subscriptionProduct.id === changedProduct.id) {
                                     activeSubscriptionForChangedProduct = true;
                                 }
