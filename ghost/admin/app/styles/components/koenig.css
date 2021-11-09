@@ -1175,6 +1175,18 @@
     padding-bottom: 24px;
 }
 
+.kg-callout-card {
+    display: flex;
+    padding: 16px 24px;
+    background: var(--whitegrey-l1);
+    border-radius: var(--border-radius);
+}
+
+.kg-callout-emoji {
+    padding-right: 12px;
+    line-height: 1.6; 
+    font-size: 2rem;
+}
 
 /* Codemirror overrides
 /* --------------------------------------------------------------- */
