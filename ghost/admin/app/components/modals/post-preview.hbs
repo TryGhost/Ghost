@@ -26,20 +26,24 @@
                 @uiContext="preview" />
         </header>
 
-        {{#if (eq this.tab "browser")}}
-            <Modals::PostPreview::Browser @post={{@data.post}} />
-        {{/if}}
+        {{#if this.saveFirstTask.isRunning}}
+            <GhLoadingSpinner />
+        {{else}}
+            {{#if (eq this.tab "browser")}}
+                <Modals::PostPreview::Browser @post={{@data.post}} />
+            {{/if}}
 
-        {{#if (and (eq this.tab "mobile"))}}
-            <Modals::PostPreview::Mobile @post={{@data.post}} />
-        {{/if}}
+            {{#if (and (eq this.tab "mobile"))}}
+                <Modals::PostPreview::Mobile @post={{@data.post}} />
+            {{/if}}
 
-        {{#if (and (eq this.tab "email") @data.post.isPost)}}
-            <Modals::PostPreview::Email @post={{@data.post}} />
-        {{/if}}
+            {{#if (and (eq this.tab "email") @data.post.isPost)}}
+                <Modals::PostPreview::Email @post={{@data.post}} />
+            {{/if}}
 
-        {{#if (eq this.tab "social")}}
-            <Modals::PostPreview::Social @post={{@data.post}} />
+            {{#if (eq this.tab "social")}}
+                <Modals::PostPreview::Social @post={{@data.post}} />
+            {{/if}}
         {{/if}}
     </div>
 </div>
