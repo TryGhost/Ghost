@@ -48,7 +48,13 @@ export default class MovableModifier extends Modifier {
         window.removeEventListener('touchmove', this.drag, {capture: true, passive: false});
         window.removeEventListener('mouseup', this.dragEnd, {capture: true, passive: false});
         window.removeEventListener('mousemove', this.drag, {capture: true, passive: false});
-        window.removeEventListener('click', this.cancelClick, {capture: true, passive: false});
+
+        // Removing this immediately results in the click event behind re-enabled in the same
+        // event loop meaning that it doesn't have the desired effect when dragging out of the canvas.
+        // Putting in the next tick stops the immediate click event firing when finishing drag
+        setTimeout(() => {
+            window.removeEventListener('click', this.cancelClick, {capture: true, passive: false});
+        }, 1);
     }
 
     removeEventListeners() {
