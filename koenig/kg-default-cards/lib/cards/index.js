@@ -10,5 +10,6 @@ module.exports = [
     require('./image'),
     require('./markdown'),
     require('./paywall'),
-    require('./button')
+    require('./button'),
+    require('./callout')
 ];
