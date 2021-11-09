@@ -1,0 +1,47 @@
+<KoenigCard
+    @class={{concat (kg-style "container-card") " mih10 miw-100 relative"}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{true}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @onLeaveEdit={{this.leaveEditMode}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.registerElement}}
+    as |card|
+>
+    {{#if @isEditing}}
+
+        <div style="display: flex;">
+            <div style="padding-right: 10px; line-height: 1.6; font-size: 2rem;">{{@payload.calloutEmoji}}</div>
+            <KoenigTextReplacementHtmlInput
+                @html={{@payload.calloutText}}
+                @placeholder="Callout text..."
+                @autofocus={{true}}
+                @class="miw-100 bn bg-transparent"
+                @onChange={{action "setCalloutText"}}
+                @onFocus={{action (mut this.isFocused) true}}
+                @onBlur={{action (mut this.isFocused) false}}
+                @didCreateEditor={{action "registerEditor"}}
+            />
+        </div>
+
+    {{else}}
+
+        <div style="display: flex;">
+            <div style="padding-right: 10px; line-height: 1.6; font-size: 2rem;">{{@payload.calloutEmoji}}</div>
+            <div>{{{@payload.calloutText}}}</div>
+        </div>
+        <div class="koenig-card-click-overlay"></div>
+
+    {{/if}}
+</KoenigCard>
