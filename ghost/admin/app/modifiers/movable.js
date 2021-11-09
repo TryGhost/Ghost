@@ -1,5 +1,6 @@
 import Modifier from 'ember-modifier';
 import {action} from '@ember/object';
+import {guidFor} from '@ember/object/internals';
 
 export default class MovableModifier extends Modifier {
     moveThreshold = 3;
@@ -14,13 +15,13 @@ export default class MovableModifier extends Modifier {
 
     // Lifecycle hooks ---------------------------------------------------------
 
-    didReceiveArguments() {
-        this.removeEventListeners();
+    didInstall() {
         this.addStartEventListeners();
     }
 
     willDestroy() {
         this.removeEventListeners();
+        this.enableSelection();
     }
 
     // Custom methods -----------------------------------------------------------
@@ -47,6 +48,7 @@ export default class MovableModifier extends Modifier {
         window.removeEventListener('touchmove', this.drag, {capture: true, passive: false});
         window.removeEventListener('mouseup', this.dragEnd, {capture: true, passive: false});
         window.removeEventListener('mousemove', this.drag, {capture: true, passive: false});
+        window.removeEventListener('click', this.cancelClick, {capture: true, passive: false});
     }
 
     removeEventListeners() {
@@ -98,6 +100,7 @@ export default class MovableModifier extends Modifier {
                 Math.abs(Math.abs(this.initialY - eventY) - Math.abs(this.yOffset)) > this.moveThreshold
             ) {
                 this.disableScroll();
+                this.disableSelection();
                 this.disablePointerEvents();
                 this.active = true;
             }
@@ -125,6 +128,7 @@ export default class MovableModifier extends Modifier {
 
         this.removeActiveEventListeners();
         this.enableScroll();
+        this.enableSelection();
 
         // timeout required so immediate events blocked until the dragEnd has fully realised
         setTimeout(() => {
@@ -149,6 +153,22 @@ export default class MovableModifier extends Modifier {
 
     enableScroll() {
         this.element.style.overflow = this.originalOverflow;
+    }
+
+    disableSelection() {
+        window.getSelection().removeAllRanges();
+
+        const stylesheet = document.createElement('style');
+        stylesheet.id = `stylesheet-${guidFor(this)}`;
+
+        document.head.appendChild(stylesheet);
+
+        stylesheet.sheet.insertRule('* { user-select: none !important; }', 0);
+    }
+
+    enableSelection() {
+        const stylesheet = document.getElementById(`stylesheet-${guidFor(this)}`);
+        stylesheet?.remove();
     }
 
     // disabling pointer events prevents inputs being activated when drag finishes,
