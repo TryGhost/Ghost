@@ -1415,12 +1415,12 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-1.0.0.tgz#3a66cd11f90fb607beb6458c753de9e1a5a0a461"
-  integrity sha512-DxpCMJaXmfMmsuZ/+5y8/OS2TxxIEE/dhTC1TX0RtdIn7KUDCmJswACYH1NuzLcUKCjOCOY/oObiRIbqnA2jjg==
+"@tryghost/html-to-mobiledoc@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-1.0.1.tgz#7e4caae4458d30ed1b7b2cb9e7049a6900ab3b69"
+  integrity sha512-NIjV/ujLWtb7LJwt15afQEWrVcFC21FJEJjubIrVY0CwKz2OeecYQhoTCHi4wJ3+k2BpTePu/XOYdk3pAc8cwQ==
   dependencies:
-    "@tryghost/kg-parser-plugins" "^2.2.0"
+    "@tryghost/kg-parser-plugins" "^2.2.1"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^16.5.3"
 
@@ -1469,10 +1469,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-3.1.0.tgz#4daff7104c1f261b1b816dd75ae4104009f9c1e6"
   integrity sha512-FfROzVgqJWqJ7cVdS9dcALz7rnzNfV8zcrymAJrDTHDsqzAdMfSLe1tNQRm8zas9pyZLsD8zBGmLxG9dr4WFSA==
 
-"@tryghost/kg-default-cards@5.3.0":
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.3.0.tgz#077c7347ae695717f6e622f107ebe9b42df2e005"
-  integrity sha512-GpSpnkiFsuw3f33Cdyl4GJIKvx7Sdsz8HbkQx9slh2YkXFKUqwTcA5BOgzJdNsArVmCmnMyqibrWOf/0et6srw==
+"@tryghost/kg-default-cards@5.3.1":
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.3.1.tgz#f926f2fd570d41fc9f4c81f2f87c73e26748adb0"
+  integrity sha512-xk/XDW0SiWDfyq7dbZXeO+au/JmSp2uGDPAWx3/G0/lKF0oL14MxeXMuk+BOcn2177qVjzCXOAH8zOIML3zr2A==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "^5.1.0"
     "@tryghost/url-utils" "^2.0.0"
@@ -1500,10 +1500,10 @@
     semver "^7.3.4"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.2.0.tgz#ebaa80c700ddd08e457bc164214579cd61bdda75"
-  integrity sha512-U2v3Iwh76zLbK/4GqgAO7s/XCIAVe8DZPW2tK16xOm23RmrI226TaEPMgmOkpEfrL2lc5mbP4DMRifflfaijQw==
+"@tryghost/kg-parser-plugins@^2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.2.1.tgz#94863db76eb5b9dc4829862e33e57b4d7f51f5bd"
+  integrity sha512-V3mwPPyigS4ap+/K1s523bZQ7HSvu4iZgM91VpRUfkIZu3i8aeAKBiPQOMOKiEHQfRvTwxTPxbIYjHuC912B4g==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^2.1.1"
 
