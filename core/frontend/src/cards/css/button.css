@@ -1,0 +1,25 @@
+.kg-button-card {
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.kg-align-center {
+    justify-content: center;
+}
+
+.kg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+    font-size: 1.8rem;
+    border-radius: 5px;
+    text-decoration: none !important;
+}
+
+.kg-btn-accent {
+    background-color: var(--ghost-accent-color);
+    color: #fff !important;
+}
