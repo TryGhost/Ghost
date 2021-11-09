@@ -126,7 +126,7 @@
     "express-query-boolean": "2.0.0",
     "express-session": "1.17.2",
     "fs-extra": "10.0.0",
-    "ghost-storage-base": "0.0.6",
+    "ghost-storage-base": "1.0.0",
     "glob": "7.2.0",
     "got": "9.6.0",
     "gscan": "4.10.1",
