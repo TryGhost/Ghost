@@ -509,6 +509,19 @@ module.exports = class StripeService {
     }
 
     /**
+     * @param {string} id - The ID of the subscription to remove coupon from
+     *
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     */
+    async removeCouponFromSubscription(id) {
+        await this._rateLimitBucket.throttle();
+        const subscription = await this._stripe.subscriptions.update(id, {
+            coupon: ''
+        });
+        return subscription;
+    }
+
+    /**
      * @param {string} subscriptionId - The ID of the Subscription to modify
      * @param {string} id - The ID of the SubscriptionItem
      * @param {string} price - The ID of the new Price
