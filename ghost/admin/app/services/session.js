@@ -38,7 +38,9 @@ export default class SessionService extends ESASessionService {
             this.feature.fetch(),
             this.settings.fetch()
         ]);
+
         await this.frontend.loginIfNeeded();
+
         // update Sentry with the full Ghost version which we only get after authentication
         if (this.config.get('sentry_dsn')) {
             configureScope((scope) => {
