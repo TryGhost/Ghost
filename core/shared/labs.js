@@ -33,7 +33,8 @@ const ALPHA_FEATURES = [
     'filesAPI',
     'membersAutoLogin',
     'buttonCard',
-    'calloutCard'
+    'calloutCard',
+    'nftCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
