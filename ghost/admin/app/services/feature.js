@@ -61,6 +61,7 @@ export default Service.extend({
     filesAPI: feature('filesAPI', {developer: true}),
     buttonCard: feature('buttonCard', {developer: true}),
     calloutCard: feature('calloutCard', {developer: true}),
+    nftCard: feature('nftCard', {developer: true}),
 
     _user: null,
 
