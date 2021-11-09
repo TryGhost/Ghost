@@ -13,6 +13,7 @@ export const CARD_COMPONENT_MAP = {
     gallery: 'koenig-card-gallery',
     email: 'koenig-card-email',
     button: 'koenig-card-button',
+    callout: 'koenig-card-callout',
     'email-cta': 'koenig-card-email-cta',
     paywall: 'koenig-card-paywall'
 };
@@ -30,6 +31,7 @@ export const CARD_ICON_MAP = {
     gallery: 'koenig/kg-card-type-gallery',
     email: 'koenig/kg-card-type-gen-embed',
     button: 'koenig/kg-card-type-gen-embed',
+    callout: 'koenig/kg-card-type-gen-embed',
     'email-cta': 'koenig/kg-card-type-gen-embed',
     paywall: 'koenig/kg-card-type-divider'
 };
@@ -54,6 +56,9 @@ export default [
     }}),
     createComponentCard('button', {deleteIfEmpty(card) {
         return !card.payload.buttonText && !card.payload.buttonUrl;
+    }}),
+    createComponentCard('callout', {deleteIfEmpty(card) {
+        return !card.payload.calloutText;
     }}),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
@@ -154,6 +159,15 @@ export const CARD_MENU = [
             type: 'card',
             replaceArg: 'button',
             feature: 'buttonCard'
+        },
+        {
+            label: 'Callout',
+            icon: 'koenig/kg-card-type-paywall',
+            desc: 'Info boxes that stand out',
+            matches: ['callout'],
+            type: 'card',
+            replaceArg: 'callout',
+            feature: 'calloutCard'
         }]
     },
     {
