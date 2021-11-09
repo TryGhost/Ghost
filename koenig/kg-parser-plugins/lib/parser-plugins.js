@@ -186,16 +186,16 @@ export function createParserPlugins(_options = {}) {
     }
 
     function kgButtonCardToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.dataset.kgCard !== 'button') {
+        if (node.nodeType !== 1 || !node.classList.contains('kg-button-card')) {
             return;
         }
 
-        const alignment = node.classList.contains('align-center') ? 'center' : 'left';
+        const alignment = node.classList.contains('kg-align-center') ? 'center' : 'left';
 
         const anchor = node.querySelector('a');
         const buttonUrl = anchor.href;
 
-        let buttonText = node.textContent;
+        let buttonText = anchor.textContent;
         if (buttonText) {
             buttonText = buttonText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
         }

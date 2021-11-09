@@ -7,29 +7,64 @@ const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
 describe('Button card', function () {
-    it('generates an anchor tag with kg-data-card="button" attribute', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
-            payload: {
-                buttonUrl: 'https://ghost.org/',
-                buttonText: 'Click me!'
-            }
-        };
+    describe('front-end render', function () {
+        it('generates an anchor element with card wrapper element', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    buttonUrl: 'https://ghost.org/',
+                    buttonText: 'Click me!'
+                }
+            };
 
-        serializer.serialize(card.render(opts)).should.equal('<div class="btn btn-accent " data-kg-card="button"><a href="https://ghost.org/">Click me!</a></div>');
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-button-card kg-align-left"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
+        });
+
+        it('adds center classes when center aligned', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    buttonUrl: 'https://ghost.org/',
+                    buttonText: 'Click me!',
+                    alignment: 'center'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-button-card kg-align-center"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
+        });
     });
 
-    it('adds center classes when center aligned', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
-            payload: {
-                buttonUrl: 'https://ghost.org/',
-                buttonText: 'Click me!',
-                alignment: 'center'
-            }
-        };
+    describe('email render', function () {
+        it('generates an email-friendly button in a paragraph', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    buttonUrl: 'https://ghost.org/',
+                    buttonText: 'Click me!'
+                },
+                options: {
+                    target: 'email'
+                }
+            };
 
-        serializer.serialize(card.render(opts)).should.equal('<div class="btn btn-accent align-center" data-kg-card="button"><a href="https://ghost.org/">Click me!</a></div>');
+            serializer.serialize(card.render(opts)).should.equal('<p><div class="btn btn-accent"><table border="0" cellspacing="0" cellpadding="0" align="left"><tr><td align="center"><a href="https://ghost.org/">Click me!</a></td></tr></table></div></p>');
+        });
+
+        it('handles center alignment', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    buttonUrl: 'https://ghost.org/',
+                    buttonText: 'Click me!',
+                    alignment: 'center'
+                },
+                options: {
+                    target: 'email'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.equal('<p><div class="btn btn-accent"><table border="0" cellspacing="0" cellpadding="0" align="center"><tr><td align="center"><a href="https://ghost.org/">Click me!</a></td></tr></table></div></p>');
+        });
     });
 
     it('renders nothing if buttonUrl is missing', function () {

@@ -84,7 +84,7 @@ describe('parser-plugins', function () {
 
     describe('kgButtonCardToCard', function () {
         it('parses button card divs into cards', function () {
-            const dom = buildDOM('<div class="btn btn-accent" data-kg-card="button"><a href="https://example.com">Testing button</a>');
+            const dom = buildDOM('<div class="kg-button-card"><a href="https://example.com" class="kg-btn kg-btn-accent">Testing button</a></div>');
             const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
@@ -100,8 +100,8 @@ describe('parser-plugins', function () {
 
         it('parses center alignment class into payload', function () {
             const dom = buildDOM(`
-                <div class="btn btn-accent align-center" data-kg-card="button">
-                    <a href="https://example.com">
+                <div class="kg-button-card kg-align-center">
+                    <a href="https://example.com" class="kg-btn kg-btn-accent">
                         Testing  button
                     </a>
                 </div>
@@ -119,8 +119,8 @@ describe('parser-plugins', function () {
 
         it('handles arbitrary whitespace in button content', function () {
             const dom = buildDOM(`
-                <div class="btn btn-accent" data-kg-card="button">
-                    <a href="https://example.com">
+                <div class="kg-button-card">
+                    <a href="https://example.com" class="kg-btn kg-btn-accent">
                         Testing  button
                     </a>
                 </div>

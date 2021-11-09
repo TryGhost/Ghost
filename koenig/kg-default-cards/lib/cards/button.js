@@ -12,22 +12,35 @@ module.exports = {
     name: 'button',
     type: 'dom',
 
-    render({payload, env: {dom}}) {
+    render({payload, env: {dom}, options = {}}) {
         if (!payload.buttonUrl || !payload.buttonText) {
             return dom.createTextNode('');
         }
 
-        const template = hbs`
-            <div class="btn btn-accent {{#if centered}}align-center{{/if}}" data-kg-card="button">
-                <a href="{{buttonUrl}}">{{buttonText}}</a>
+        const frontendTemplate = hbs`
+            <div class="kg-button-card kg-align-{{alignment}}">
+                <a href="{{buttonUrl}}" class="kg-btn kg-btn-accent">{{buttonText}}</a>
             </div>
         `;
 
-        const html = dedent(template({
-            buttonUrl: payload.buttonUrl,
-            buttonText: payload.buttonText,
-            centered: payload.alignment === 'center'
-        }));
+        const emailTemplate = hbs`
+            <p>
+                <div class="btn btn-accent">
+                    <table border="0" cellspacing="0" cellpadding="0" align="{{alignment}}">
+                        <tr>
+                            <td align="center">
+                                <a href="{{buttonUrl}}">{{buttonText}}</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </p>
+        `;
+
+        const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
+        const templateData = Object.assign({alignment: 'left'}, payload);
+
+        const html = dedent(renderTemplate(templateData));
 
         return dom.createRawHTMLSection(html);
     },
