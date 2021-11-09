@@ -74,6 +74,20 @@ describe('Media API', function () {
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
         });
 
+        it('Can upload an mp3', async function () {
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('ref', 'audio_file_123')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.mp3'))
+                .expect(201);
+
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample.mp3`));
+            res.body.media[0].ref.should.equal('audio_file_123');
+
+            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+        });
+
         it('Rejects non-media file type', async function () {
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
                 .set('Origin', config.get('url'))

@@ -31,8 +31,8 @@
             "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
         },
         "media": {
-            "extensions": [".mp4",".webm", ".ogv"],
-            "contentTypes": ["video/mp4", "video/webm", "video/ogg"]
+            "extensions": [".mp4",".webm", ".ogv", ".mp3", ".wav"],
+            "contentTypes": ["video/mp4", "video/webm", "video/ogg", "audio/mpeg", "audio/vnd.wav"]
         },
         "thumbnails": {
             "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico", ".webp"],
