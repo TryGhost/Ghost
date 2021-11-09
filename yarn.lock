@@ -1213,10 +1213,10 @@
   dependencies:
     "@tryghost/errors" "^0.2.17"
 
-"@tryghost/admin-api-schema@2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.6.0.tgz#608337f600728529a4c4627850da86664a7e7cbb"
-  integrity sha512-HKLlnYokpDziEouh63mreTagLMjPlXl16Eux2xxsWauiYo7Vuikjw6DnQ4XjsZP/jb2Uz46wJwjLRBpkJxegTA==
+"@tryghost/admin-api-schema@2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.6.1.tgz#797c92fe95419c43ce954e146dcaab22964df1a3"
+  integrity sha512-Vz8Ju5nlyjru5IvpoKXSH3YuHqB9FDFKsNiZzC9CHatGRSw4yJDUYhmG2TH4BjnstngttPYquZgGk+LlFIE/6Q==
   dependencies:
     "@tryghost/errors" "^0.2.10"
     lodash "^4.17.11"
