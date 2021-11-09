@@ -15,6 +15,7 @@ export const CARD_COMPONENT_MAP = {
     button: 'koenig-card-button',
     callout: 'koenig-card-callout',
     nft: 'koenig-card-nft',
+    toggle: 'koenig-card-accordion',
     'email-cta': 'koenig-card-email-cta',
     paywall: 'koenig-card-paywall'
 };
@@ -34,6 +35,7 @@ export const CARD_ICON_MAP = {
     button: 'koenig/kg-card-type-gen-embed',
     callout: 'koenig/kg-card-type-gen-embed',
     nft: 'koenig/kg-card-type-gen-embed',
+    toggle: 'koenig/kg-card-type-gen-embed',
     'email-cta': 'koenig/kg-card-type-gen-embed',
     paywall: 'koenig/kg-card-type-divider'
 };
@@ -63,6 +65,9 @@ export default [
         return !card.payload.calloutText;
     }}),
     createComponentCard('nft', {hasEditMode: false}),
+    createComponentCard('toggle', {deleteIfEmpty(card) {
+        return !card.payload.header && !card.payload.content;
+    }}),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
 
@@ -171,6 +176,15 @@ export const CARD_MENU = [
             type: 'card',
             replaceArg: 'callout',
             feature: 'calloutCard'
+        },
+        {
+            label: 'Toggle',
+            icon: 'koenig/kg-card-type-paywall',
+            desc: 'Add collapsible content',
+            matches: ['toggle'],
+            type: 'card',
+            replaceArg: 'toggle',
+            feature: 'accordionCard'
         }]
     },
     {
