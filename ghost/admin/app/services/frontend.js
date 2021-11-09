@@ -27,6 +27,7 @@ export default class FrontendService extends Service {
         if (this.settings.get('isPrivate') && (this.hasPasswordChanged || !this._hasLoggedIn)) {
             const privateLoginUrl = this.getUrl('/private/?r=%2F');
             this._lastPassword = this.settings.get('password');
+
             return fetch(privateLoginUrl, {
                 method: 'POST',
                 mode: 'cors',
@@ -38,6 +39,11 @@ export default class FrontendService extends Service {
                 body: `password=${this._lastPassword}`
             }).then(() => {
                 this._hasLoggedIn = true;
+            }).catch((e) => {
+                // Safari will error when x-site tracking is prevented and frontend/admin are separate
+                // we don't want to break anything else in that case so make it look like it succeeded
+                console.error(e); // eslint-disable-line
+                return true;
             });
         }
     }
