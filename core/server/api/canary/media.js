@@ -1,3 +1,4 @@
+const path = require('path');
 const storage = require('../../adapters/storage');
 
 module.exports = {
@@ -17,6 +18,25 @@ module.exports = {
                 filePath,
                 thumbnailPath
             };
+        }
+    },
+
+    uploadThumbnail: {
+        permissions: false,
+        options: [
+            'url'
+        ],
+        async query(frame) {
+            const mediaStorage = storage.getStorage('media');
+            const targetDir = path.dirname(mediaStorage.urlToPath(frame.data.url));
+
+            // NOTE: need to cleanup otherwise the parent media name won't match thumb name
+            //       due to "unique name" generation during save
+            if (mediaStorage.exists(frame.file.name, targetDir)) {
+                await mediaStorage.delete(frame.file.name, targetDir);
+            }
+
+            return await mediaStorage.save(frame.file, targetDir);
         }
     }
 };
