@@ -137,6 +137,20 @@ describe('parser-plugins', function () {
         });
     });
 
+    describe('kgCalloutCardToCard', function () {
+        it('parses button card divs into cards', function () {
+            const dom = buildDOM('<div class="kg-callout-card"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text">This is a callout</div></div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('callout');
+            section.payload.should.deepEqual({
+                calloutEmoji: '⚠️',
+                calloutText: 'This is a callout'
+            });
+        });
+    });
+
     describe('brToSoftBreakAtom', function () {
         it('parses BR tags to soft-return atoms', function () {
             const dom = buildDOM('Testing<br>Soft-return');

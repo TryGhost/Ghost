@@ -18,9 +18,9 @@ module.exports = {
         }
 
         const template = hbs`
-            <div style="display: flex;" data-kg-card="callout">
-                <div style="padding-right: 10px;">{{calloutEmoji}}</div>
-                <div>{{{calloutText}}}</div>
+            <div class="kg-callout-card">
+                <div class="kg-callout-emoji">{{calloutEmoji}}</div>
+                <div class="kg-callout-text">{{{calloutText}}}</div>
             </div>
         `;
 
