@@ -293,6 +293,7 @@ export default Controller.extend({
             this.modals.open('modals/post-preview', {
                 post: this.post,
                 saveTask: this.saveTask,
+                hasDirtyAttributes: this.hasDirtyAttributes,
                 // TODO: update to call action method directly when switching to class syntax
                 setEditorSaveType: this.actions.setSaveType.bind(this),
                 memberCount: this.memberCount
