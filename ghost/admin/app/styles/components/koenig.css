@@ -1175,6 +1175,14 @@
     padding-bottom: 24px;
 }
 
+.kg-callout-card-container {
+    position: relative;
+    min-height: 4rem;
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 .kg-callout-card {
     display: flex;
     padding: 16px 24px;
