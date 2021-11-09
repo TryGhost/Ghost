@@ -861,11 +861,14 @@ module.exports = class MemberRepository {
 
             const subscriptionItem = subscription.items.data[0];
 
-            updatedSubscription = await this._stripeAPIService.updateSubscriptionItemPrice(
-                subscription.id,
-                subscriptionItem.id,
-                data.subscription.price
-            );
+            if (data.subscription.price !== subscription.price) {
+                updatedSubscription = await this._stripeAPIService.updateSubscriptionItemPrice(
+                    subscription.id,
+                    subscriptionItem.id,
+                    data.subscription.price
+                );
+                updatedSubscription = await this._stripeAPIService.removeCouponFromSubscription(subscription.id);
+            }
         }
 
         if (data.subscription.cancel_at_period_end !== undefined) {
