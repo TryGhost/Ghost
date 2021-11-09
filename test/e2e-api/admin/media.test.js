@@ -87,5 +87,59 @@ describe('Media API', function () {
     });
 
     describe('media/thumbnail/:url', function () {
+        it('Can update existing thumbnail', async function () {
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('purpose', 'video')
+                .field('ref', 'https://ghost.org/sample_640x360.mp4')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+                .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
+                .expect(201);
+
+            res.body.media[0].ref.should.equal('https://ghost.org/sample_640x360.mp4');
+
+            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+            media.push(res.body.media[0].thumbnail_url.replace(config.get('url'), ''));
+
+            const thumbnailRes = await request.put(localUtils.API.getApiQuery(`media/thumbnail/`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('url', res.body.media[0].url)
+                .field('ref', 'updated_thumbnail')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg'))
+                .expect(200);
+
+            const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
+            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
+            thumbnailRes.body.media[0].ref.should.equal('updated_thumbnail');
+            media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));
+        });
+
+        it('Can create new thumbnail based on parent media URL without existing thumbnail', async function () {
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('purpose', 'video')
+                .field('ref', 'https://ghost.org/sample_640x360.mp4')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+                .expect(201);
+
+            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+
+            const thumbnailRes = await request.put(localUtils.API.getApiQuery(`media/thumbnail/`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('url', res.body.media[0].url)
+                .field('ref', 'updated_thumbnail_2')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg'))
+                .expect(200);
+
+            const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
+            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
+            thumbnailRes.body.media[0].ref.should.equal('updated_thumbnail_2');
+
+            media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));
+        });
     });
 });

@@ -244,6 +244,13 @@ module.exports = function apiRoutes() {
         apiMw.upload.mediaValidation({type: 'media'}),
         http(api.media.upload)
     );
+    router.put('/media/thumbnail/',
+        labs.enabledMiddleware('mediaAPI'),
+        mw.authAdminApi,
+        apiMw.upload.single('file'),
+        apiMw.upload.validation({type: 'images'}),
+        http(api.media.uploadThumbnail)
+    );
 
     // ## files
     router.post('/files/upload',

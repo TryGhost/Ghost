@@ -24,5 +24,14 @@ module.exports = {
                 ref: frame.data.ref || null
             }]
         };
+    },
+
+    uploadThumbnail(path, apiConfig, frame) {
+        return frame.response = {
+            media: [{
+                url: getURL(path),
+                ref: frame.data.ref || null
+            }]
+        };
     }
 };
