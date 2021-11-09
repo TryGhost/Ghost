@@ -1,0 +1,12 @@
+.kg-callout-card {
+    display: flex;
+    padding: 16px 24px;
+    background: #f1f3f4;
+    border-radius: 3px;
+}
+
+.kg-callout-emoji {
+    padding-right: 12px;
+    line-height: 1.6;
+    font-size: 2rem;
+}
