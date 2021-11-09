@@ -5229,10 +5229,10 @@ ghost-ignition@4.6.3, ghost-ignition@^4.2.4, ghost-ignition@^4.6.2:
     prettyjson "1.2.1"
     uuid "8.3.2"
 
-ghost-storage-base@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-0.0.6.tgz#b390e6a501af31ec8463aafa3286a25de6da08c8"
-  integrity sha512-7t77iWWZA1Pk7X5O9cemMRb+DDisljUN2NEd06GNZ+Q43DtCkfLuTkoj0KRkT8bJf2yapsaVtXu5sIRYql4g0Q==
+ghost-storage-base@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-1.0.0.tgz#931289d310ad59fc80e2be01a81235cc3a76e75a"
+  integrity sha512-qIW6pny/wWKjrbRmXVNis9i7856AMR5/NZmnLTrKbA0KIEnA9K/fhkj7ISnSyTYfBv17sFsC23eJfvj6dDgZrQ==
   dependencies:
     moment "2.27.0"
 
