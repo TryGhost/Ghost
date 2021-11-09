@@ -27,7 +27,7 @@
                 @html={{@payload.calloutText}}
                 @placeholder="Callout text..."
                 @autofocus={{true}}
-                @class="bn bg-transparent"
+                @class="w-100 bn bg-transparent"
                 @onChange={{action "setCalloutText"}}
                 @onFocus={{action (mut this.isFocused) true}}
                 @onBlur={{action (mut this.isFocused) false}}
