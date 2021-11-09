@@ -19,6 +19,7 @@ class LocalImagesStorage extends LocalStorageBase {
         super({
             storagePath: config.getContentPath('images'),
             staticFileURLPrefix: urlUtils.STATIC_IMAGE_URL_PREFIX,
+            siteUrl: config.getSiteUrl(),
             errorMessages: messages
         });
     }
