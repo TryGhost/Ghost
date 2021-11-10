@@ -73,7 +73,7 @@
     "@tryghost/job-manager": "0.8.12",
     "@tryghost/kg-card-factory": "3.1.0",
     "@tryghost/kg-default-atoms": "3.1.0",
-    "@tryghost/kg-default-cards": "5.4.0",
+    "@tryghost/kg-default-cards": "5.5.0",
     "@tryghost/kg-markdown-html-renderer": "5.1.0",
     "@tryghost/kg-mobiledoc-html-renderer": "5.2.0",
     "@tryghost/limit-service": "1.0.0",
@@ -173,7 +173,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "1.1.0",
+    "@tryghost/html-to-mobiledoc": "1.2.0",
     "sqlite3": "5.0.2"
   },
   "devDependencies": {
