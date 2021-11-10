@@ -1,3 +1,4 @@
+const fs = require('fs-extra');
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:services:url:service');
 const _ = require('lodash');
@@ -23,6 +24,7 @@ class UrlService {
         this.finished = false;
         this.urlGenerators = [];
 
+        // Get urls
         this.urls = new Urls();
         this.queue = new Queue();
         this.resources = new Resources(this.queue);
@@ -286,7 +288,16 @@ class UrlService {
     async init() {
         this.resources.initResourceConfig();
         this.resources.initEvenListeners();
-        await this.resources.fetchResources();
+
+        const persistedUrls = await this.fetchUrls();
+        if (persistedUrls) {
+            this.urls = new Urls({
+                urls: persistedUrls
+            });
+            this.finished = true;
+        } else {
+            await this.resources.fetchResources();
+        }
 
         // CASE: all resources are fetched, start the queue
         this.queue.start({
@@ -294,6 +305,33 @@ class UrlService {
             tolerance: 100,
             requiredSubscriberCount: 1
         });
+    }
+
+    async persistUrls() {
+        return fs.writeFileSync('./urls.json', JSON.stringify(this.urls.urls, null, 4));
+    }
+
+    async fetchUrls() {
+        let urlsCacheExists = false;
+        let urls;
+
+        try {
+            await fs.stat('./urls.json');
+            urlsCacheExists = true;
+        } catch (e) {
+            urlsCacheExists = false;
+        }
+
+        if (urlsCacheExists) {
+            try {
+                const urlsFile = await fs.readFile('./urls.json', 'utf8');
+                urls = JSON.parse(urlsFile);
+            } catch (e) {
+                //noop as we'd start a long boot process if there are any errors in the file
+            }
+        }
+
+        return urls;
     }
 
     /**
