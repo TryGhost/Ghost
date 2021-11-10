@@ -125,14 +125,15 @@ jobs:
           endTime="$(date +%s)"
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
-      # Test change for PR
       - name: Tailscale Action
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'tryghost/'))
         uses: tailscale/github-action@v1
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       # Report time taken to metrics service
       - uses: sam-lord/action-trigger-metric@main
+        if: github.event_name == 'push' || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'tryghost/'))
         with:
           metricName: 'test-time'
           metricValue: ${{ env.test_time }}
