@@ -977,3 +977,17 @@ figure {
     bottom: 0;
     z-index: 400;
 }
+
+.kg-settings-link-title {
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1em;
+}
+
+.kg-settings-link-url {
+    font-weight: 400;
+    font-size: 1.2rem;
+    color: var(--midgrey);
+    letter-spacing: 0;
+    line-height: 1em;
+}
