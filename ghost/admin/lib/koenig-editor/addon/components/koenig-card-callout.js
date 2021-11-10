@@ -107,6 +107,11 @@ export default class KoenigCardCalloutComponent extends Component {
         run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
     }
 
+    @action
+    toggleEmoji() {
+        this._updatePayloadAttr('calloutEmoji', this.args.payload.calloutEmoji ? '' : '💡');
+    }
+
     _enter(modifier) {
         if (this.args.isEditing && (modifier === 'meta' || (modifier === 'crtl' && Browser.isWin()))) {
             this.args.editCard();
