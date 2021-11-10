@@ -1171,9 +1171,168 @@
     margin-left: .5em;
 }
 
+/* Email CTA card
+/* --------------------------------------------------------------- */
+
 .kg-email-cta-card {
     padding-bottom: 24px;
 }
+
+/* Email-CTA card
+/* -------------------------------------------------------------------------- */
+
+.kg-email-cta-card .border-top {
+    margin: -1.6rem 0 5rem;
+}
+
+.kg-email-cta-card .border-top.edit-mode {
+    margin: 2.4rem 0 5rem;
+}
+
+.kg-email-cta-card .border-bottom {
+    margin: 5rem 0 0;
+}
+
+.kg-email-cta-card .kg-card-help {
+    margin: 0 -13px 16px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--whitegrey);
+    background: var(--whitegrey-l2);
+}
+
+.kg-email-cta-card .kg-card-help p {
+    color: var(--midgrey);
+    text-align: left;
+}
+
+.kg-email-cta-card .kg-card-help .ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg {
+    width: 8px;
+    height: 6px;
+    margin-top: 0;
+}
+
+.kg-email-cta-card .kg-card-help .ember-basic-dropdown-content {
+    width: 200px !important;
+}
+
+.kg-email-cta-card .kg-card-help .ember-power-select-inline {
+    padding: 0 2px;
+    color: var(--darkgrey);
+}
+
+.email-cta-toolbar {
+    display: flex;
+    margin: 24px -13px 0;
+    padding: .8rem 1rem;
+    border-top: 1px solid var(--whitegrey);
+}
+
+.email-cta-toolbar .borders {
+    margin-right: 1rem;
+    border-right: 1px solid var(--whitegrey-d2);
+    border-radius: 0;
+}
+
+.gh-btn-group.email-cta-align {
+    background: none;
+    margin-right: 1rem;
+    padding-right: 1rem;
+    border-right: 1px solid var(--whitegrey-d2);
+}
+
+.gh-btn-group.email-cta-align .gh-btn span {
+    padding: 0 4px;
+}
+
+.gh-btn-group.email-cta-align .gh-btn-group-selected span {
+    box-shadow: none;
+}
+
+.gh-btn-group.email-cta-align .gh-btn-group-selected svg {
+    fill: var(--green-d1);
+}
+
+.gh-btn-group.email-cta-align .gh-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-btn.email-cta-toolbar-item {
+    margin-right: 1rem;
+    box-shadow: none;
+}
+
+.gh-btn.email-cta-toolbar-item svg {
+    width: 18px;
+    height: 18px;
+    margin-right: 0;
+}
+
+.gh-btn.email-cta-toolbar-item span {
+    margin-top: 2px;
+    padding: 0 8px;
+}
+
+.gh-btn.email-cta-toolbar-item svg path {
+    stroke: none;
+}
+
+.email-cta-button {
+    margin-top: 2rem;
+    padding: 4px;
+    border: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    text-align: center;
+    user-select: auto;
+}
+
+.email-cta-button-text-input {
+    width: auto;
+    max-width: 200px;
+    margin-right: .8rem;
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 400;
+    user-select: auto;
+}
+
+.email-cta-button-url-input {
+    width: 100%;
+    padding: 4px 12px;
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 400;
+}
+
+.gh-member-segment-select-dropdown {
+    border-top: 1px solid var(--input-border-color) !important;
+    border-radius: 3px !important;
+}
+
+.kg-email-cta-card .gh-btn-accent {
+    margin-top: 2.4rem;
+}
+
+.kg-email-cta-card .gh-btn-accent span {
+    font-size: 1.5rem;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 20px;
+}
+
+.gh-email-cta-segment-indicator p {
+    padding: 6px 0 29px !important;
+    color: var(--midlightgrey-d1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+
+/* Callout card
+/* --------------------------------------------------------------- */
 
 .kg-callout-card-container {
     position: relative;
@@ -1195,6 +1354,9 @@
     line-height: 1.6;
     font-size: 2rem;
 }
+
+/* Accordion card
+/* --------------------------------------------------------------- */
 
 .kg-accordion-card-container {
     position: relative;
@@ -1229,6 +1391,20 @@
 .kg-accordion-card-content ::after {
     font-size: 1.6rem !important;
 }
+
+/* Button card
+/* --------------------------------------------------------------- */
+.kg-button-card {
+    padding: 12px;
+}
+
+.kg-button-card .gh-btn span {
+    font-size: 1.5rem;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 20px;
+}
+
 
 /* Codemirror overrides
 /* --------------------------------------------------------------- */
