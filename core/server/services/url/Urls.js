@@ -20,8 +20,8 @@ const events = require('../../lib/common/events');
  * You can easily ask `this.urls[resourceId]`.
  */
 class Urls {
-    constructor() {
-        this.urls = {};
+    constructor(urls = {}) {
+        this.urls = urls;
     }
 
     /**

@@ -1,3 +1,4 @@
+const fs = require('fs-extra');
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:services:url:service');
 const _ = require('lodash');
@@ -23,6 +24,7 @@ class UrlService {
         this.finished = false;
         this.urlGenerators = [];
 
+        // Get urls
         this.urls = new Urls();
         this.queue = new Queue();
         this.resources = new Resources(this.queue);
@@ -68,6 +70,7 @@ class UrlService {
     _onQueueEnded(event) {
         if (event === 'init') {
             this.finished = true;
+            // this.persistUrls();
         }
     }
 
@@ -281,13 +284,46 @@ class UrlService {
     }
 
     /**
-     * @description Internal helper to re-trigger fetching resources on theme change.
-     *
-     * @TODO: Either remove this helper or rename to `_init`, because it's a little confusing,
-     *        because this service get's initalised via events.
+     * @description Internal helper to re-trigger fetching resources
      */
-    init() {
-        this.resources.fetchResources();
+    async init() {
+        const persistedUrls = await this.fetchUrls();
+
+        if (persistedUrls) {
+            this.urls = new Urls({
+                urls: persistedUrls
+            });
+            this.finished = true;
+        } else {
+            this.resources.fetchResources();
+        }
+    }
+
+    async persistUrls() {
+        return fs.writeFileSync('./urls.json', JSON.stringify(this.urls.urls, null, 4));
+    }
+
+    async fetchUrls() {
+        let urlsCacheExists = false;
+        let urls;
+
+        try {
+            await fs.stat('./urls.json');
+            urlsCacheExists = true;
+        } catch (e) {
+            urlsCacheExists = false;
+        }
+
+        if (urlsCacheExists) {
+            try {
+                const urlsFile = await fs.readFile('./urls.json', 'utf8');
+                urls = JSON.parse(urlsFile);
+            } catch (e) {
+                //noop as we'd start a long boot process if there are any errors in the file
+            }
+        }
+
+        return urls;
     }
 
     /**
