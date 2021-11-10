@@ -27,7 +27,10 @@ function configureApi() {
     }
 }
 
-const debouncedConfigureApi = _.debounce(configureApi, 600);
+const debouncedConfigureApi = _.debounce(() => {
+    configureApi();
+    events.emit('services.stripe.reconfigured');
+}, 600);
 
 module.exports = {
     async init() {
@@ -37,7 +40,6 @@ module.exports = {
                 return;
             }
             debouncedConfigureApi();
-            events.emit('services.stripe.reconfigured');
         });
     },
 
