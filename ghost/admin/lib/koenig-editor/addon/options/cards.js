@@ -266,7 +266,8 @@ export const CARD_MENU = [
             matches: ['nft', 'opensea'],
             type: 'card',
             replaceArg: 'embed',
-            params: ['url']
+            params: ['url'],
+            feature: 'nftCard'
         },
         {
             label: 'Other...',
