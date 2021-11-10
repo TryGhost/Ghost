@@ -11,5 +11,6 @@ module.exports = [
     require('./markdown'),
     require('./paywall'),
     require('./button'),
-    require('./callout')
+    require('./callout'),
+    require('./toggle')
 ];
