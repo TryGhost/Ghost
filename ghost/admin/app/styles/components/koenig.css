@@ -1375,20 +1375,22 @@
 }
 
 .kg-accordion-card-heading {
-    margin-bottom: 12px;
     font-weight: bold !important;
-}
-
-.kg-accordion-card-content {
-    margin-bottom: 12px;
-    font-size: 1.6rem !important;
 }
 
 .kg-accordion-card-heading ::after {
     font-weight: bold !important;
+    font-size: 2rem !important;
+    letter-spacing: .02rem;
+    line-height: 1.6em;
 }
 
 .kg-accordion-card-content ::after {
+    line-height: 1.6em;
+}
+
+.kg-accordion-card-content ::after,
+.kg-accordion-card-content .koenig-basic-html-input__editor p {
     font-size: 1.6rem !important;
 }
 
