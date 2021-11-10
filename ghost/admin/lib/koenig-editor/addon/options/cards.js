@@ -44,30 +44,20 @@ export const CARD_ICON_MAP = {
 // themselves so that they are available on card.component
 export default [
     createComponentCard('card-markdown'), // backwards-compat with markdown editor
-    createComponentCard('code', {deleteIfEmpty: 'payload.code'}),
-    createComponentCard('embed', {hasEditMode: false, deleteIfEmpty: 'payload.html'}),
-    createComponentCard('bookmark', {hasEditMode: false, deleteIfEmpty: 'payload.metadata'}),
+    createComponentCard('code'),
+    createComponentCard('embed', {hasEditMode: false}),
+    createComponentCard('bookmark', {hasEditMode: false}),
     createComponentCard('hr', {hasEditMode: false, selectAfterInsert: false}),
-    createComponentCard('html', {deleteIfEmpty: 'payload.html'}),
-    createComponentCard('image', {hasEditMode: false, deleteIfEmpty(card) {
-        return card.payload.imageSelector && !card.payload.src;
-    }}),
-    createComponentCard('markdown', {deleteIfEmpty: 'payload.markdown'}),
+    createComponentCard('html'),
+    createComponentCard('image', {hasEditMode: false}),
+    createComponentCard('markdown'),
     createComponentCard('gallery', {hasEditMode: false}),
-    createComponentCard('email', {deleteIfEmpty: 'payload.html'}),
-    createComponentCard('email-cta', {deleteIfEmpty(card) {
-        return !card.payload.html && !card.payload.buttonText && !card.payload.buttonUrl;
-    }}),
-    createComponentCard('button', {deleteIfEmpty(card) {
-        return !card.payload.buttonText && !card.payload.buttonUrl;
-    }}),
-    createComponentCard('callout', {deleteIfEmpty(card) {
-        return !card.payload.calloutText;
-    }}),
+    createComponentCard('email'),
+    createComponentCard('email-cta'),
+    createComponentCard('button'),
+    createComponentCard('callout'),
     createComponentCard('nft', {hasEditMode: false}),
-    createComponentCard('toggle', {deleteIfEmpty(card) {
-        return !card.payload.header && !card.payload.content;
-    }}),
+    createComponentCard('toggle'),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
 

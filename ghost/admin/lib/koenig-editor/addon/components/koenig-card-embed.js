@@ -34,6 +34,10 @@ export default Component.extend({
     addParagraphAfterCard() {},
     registerComponent() {},
 
+    isEmpty: computed('payload.html', function () {
+        return isBlank(this.payload.html);
+    }),
+
     counts: computed('payload.{html,caption}', function () {
         return {
             imageCount: this.payload.html ? 1 : 0,
@@ -73,7 +77,9 @@ export default Component.extend({
             if (this.payload.url && !this.payload.html && !this.hasError) {
                 this.convertUrl.perform(this.payload.url);
             } else {
-                this._deleteIfEmpty();
+                if (this.isEmpty && !this.convertUrl.isRunning && !this.hasError) {
+                    this.deleteCard(NO_CURSOR_MOVEMENT);
+                }
             }
         },
 
@@ -332,11 +338,5 @@ export default Component.extend({
         window.removeEventListener('resize', this._windowResizeHandler);
         this._windowResizeHandler = run.bind(this, this._resizeIframe, iframe);
         window.addEventListener('resize', this._windowResizeHandler, {passive: true});
-    },
-
-    _deleteIfEmpty() {
-        if (isBlank(this.payload.html) && !this.convertUrl.isRunning && !this.hasError) {
-            this.deleteCard(NO_CURSOR_MOVEMENT);
-        }
     }
 });

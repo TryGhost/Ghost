@@ -36,6 +36,10 @@ export default Component.extend({
     moveCursorToPrevSection() {},
     addParagraphAfterCard() {},
 
+    isEmpty: computed('payload.code', function () {
+        return isBlank(this.payload.code);
+    }),
+
     counts: computed('payload.code', function () {
         return {wordCount: countWords(this.payload.code)};
     }),
@@ -111,7 +115,7 @@ export default Component.extend({
         leaveEditMode() {
             this._removeMousemoveHandler();
 
-            if (isBlank(this.payload.code)) {
+            if (this.isEmpty) {
                 // afterRender is required to avoid double modification of `isSelected`
                 // TODO: see if there's a way to avoid afterRender
                 run.scheduleOnce('afterRender', this, this.deleteCard);

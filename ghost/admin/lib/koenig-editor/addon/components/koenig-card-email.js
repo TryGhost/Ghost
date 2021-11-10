@@ -23,6 +23,10 @@ export default Component.extend({
     addParagraphAfterCard() {},
     registerComponent() {},
 
+    isEmpty: computed('payload.html', function () {
+        return isBlank(this.payload.html);
+    }),
+
     formattedHtml: computed('payload.html', function () {
         return formatTextReplacementHtml(this.payload.html);
     }),
@@ -79,7 +83,7 @@ export default Component.extend({
         },
 
         leaveEditMode() {
-            if (isBlank(this.payload.html)) {
+            if (this.isEmpty) {
                 // afterRender is required to avoid double modification of `isSelected`
                 // TODO: see if there's a way to avoid afterRender
                 run.scheduleOnce('afterRender', this, this.deleteCard);

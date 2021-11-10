@@ -18,6 +18,12 @@ export default class KoenigCardButtonComponent extends Component {
     @tracked contentFocused = false;
     @tracked offers = null;
 
+    get isEmpty() {
+        const {buttonText, buttonUrl} = this.args.payload;
+
+        return isBlank(buttonText) && isBlank(buttonUrl);
+    }
+
     get toolbar() {
         if (this.args.isEditing) {
             return false;
@@ -110,9 +116,7 @@ export default class KoenigCardButtonComponent extends Component {
 
     @action
     leaveEditMode() {
-        const {html, buttonText, buttonUrl} = this.args.payload;
-
-        if (isBlank(html) && isBlank(buttonText) && isBlank(buttonUrl)) {
+        if (this.isEmpty) {
             // afterRender is required to avoid double modification of `isSelected`
             // TODO: see if there's a way to avoid afterRender
             run.scheduleOnce('afterRender', this, this.args.deleteCard);
