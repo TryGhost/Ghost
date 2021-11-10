@@ -4,6 +4,13 @@ import {inject as service} from '@ember/service';
 export default class MembershipSettingsRoute extends AuthenticatedRoute {
     @service settings;
 
+    beforeModel() {
+        super.beforeModel(...arguments);
+        if (!this.session.user.isAdmin) {
+            return this.transitionTo('home');
+        }
+    }
+
     model() {
         this.settings.reload();
     }
