@@ -1,7 +1,6 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -18,8 +17,21 @@ export default class KoenigCardCalloutComponent extends Component {
         return isBlank(this.args.payload.calloutText);
     }
 
-    get formattedHtml() {
-        return formatTextReplacementHtml(this.payload.calloutText);
+    get backgroundColors() {
+        return [
+            {name: 'Light grey', color: '#F1F3F4'},
+            {name: 'Light blue', color: '#E9F6FB'},
+            {name: 'Light green', color: '#E8F8EA'},
+            {name: 'Light purple', color: '#F2EDFC'},
+            {name: 'Light yellow', color: '#FCF4E3'},
+            {name: 'Light red', color: '#FBE9E9'},
+            {name: 'Light pink', color: '#FCEEF8'},
+            {name: 'Accent color', color: 'var(--ghost-accent-color)'}
+        ];
+    }
+
+    get selectedBackgroundColor() {
+        return this.backgroundColors.find(option => option.color === this.args.payload.backgroundColor);
     }
 
     get toolbar() {
@@ -44,7 +56,9 @@ export default class KoenigCardCalloutComponent extends Component {
         this.args.registerComponent(this);
 
         const payloadDefaults = {
-            calloutEmoji: '⚠️'
+            calloutEmoji: '💡',
+            calloutText: '',
+            backgroundColor: '#F1F3F4'
         };
 
         Object.entries(payloadDefaults).forEach(([key, value]) => {
@@ -69,6 +83,11 @@ export default class KoenigCardCalloutComponent extends Component {
     @action
     setCalloutEmoji(emoji) {
         this._updatePayloadAttr('calloutEmoji', emoji);
+    }
+
+    @action
+    setBackgroundColor(option) {
+        this._updatePayloadAttr('backgroundColor', option.color);
     }
 
     @action
