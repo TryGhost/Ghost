@@ -1,6 +1,6 @@
 <KoenigCard
     @icon={{"koenig/card-indicator-email"}}
-    @class={{concat (kg-style "container-card") " kg-email-card kg-email-cta-card mih10 miw-100 relative"}}
+    @class={{concat (kg-style "container-card") " kg-accordion-card-container"}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -24,51 +24,34 @@
 
         {{!-- edit mode view --}}
 
-        <div style="height: 50px;padding: 12px 0">
-            <div style="font-weight: bold;min-height: 24px">{{@payload.heading}}</div>
-            <div style="padding-left: 12px;min-height: 24px">{{@payload.content}}</div>
+        <div class="kg-accordion-card">
+            <KoenigTextReplacementHtmlInput
+                @html={{@payload.heading}}
+                @placeholder="Add your heading here..."
+                @autofocus={{true}}
+                @class="w-100 fw4 bn bg-transparent kg-accordion-card-heading"
+                @onChange={{action "setHeadingText"}}
+                @onFocus={{action (mut this.isFocused) true}}
+                @onBlur={{action (mut this.isFocused) false}}
+                @didCreateEditor={{action "registerEditor"}}
+            />
+            <KoenigTextReplacementHtmlInput
+                @html={{@payload.content}}
+                @placeholder="Add your content here..."
+                @class="w-100 bn bg-transparent kg-accordion-card-content"
+                @onChange={{action "setContentText"}}
+                @onFocus={{action (mut this.isFocused) true}}
+                @onBlur={{action (mut this.isFocused) false}}
+                @didCreateEditor={{action "registerEditor"}}
+            />
         </div>
-
-        <KoenigSettingsPanel>
-            <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="heading-text-input">Heading</label>
-                <div class="kg-settings-panel-control-input">
-                    <input
-                        type="text"
-                        class="gh-input"
-                        id="heading-text-input"
-                        name="heading-text"
-                        value={{@payload.heading}}
-                        placeholder="Add button text"
-                        {{on "input" this.setHeading}}
-                        {{on-key "Enter" (fn this.focusElement "#content-text-input")}}
-                    >
-                </div>
-            </div>
-
-            <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="content-text-input">Content</label>
-                <div class="kg-settings-panel-control-input">
-                    <input
-                        type="text"
-                        class="gh-input"
-                        id="content-text-input"
-                        name="content-text"
-                        value={{@payload.content}}
-                        placeholder="Add content"
-                        {{on "input" this.setContent}}
-                    >
-                </div>
-            </div>
-        </KoenigSettingsPanel>
-
     {{else}}
 
         {{!-- rendered (non-edit) mode view --}}
 
-        <div style="height: 50px;padding: 12px 0">
-            <div style="font-weight: bold;min-height: 24px">{{@payload.heading}}</div>
-            <div style="padding-left: 2px;min-height: 24px">{{@payload.content}}</div>
+        <div class="kg-accordion-card">
+            <div style="font-weight: bold;min-height: 24px">{{{this.formattedHeading}}}</div>
+            <div style="padding-left: 2px;min-height: 24px">{{{this.formattedContent}}}</div>
         </div>
 
     {{/if}}

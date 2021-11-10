@@ -1192,8 +1192,42 @@
 
 .kg-callout-emoji {
     padding-right: 12px;
-    line-height: 1.6; 
+    line-height: 1.6;
     font-size: 2rem;
+}
+
+.kg-accordion-card-container {
+    position: relative;
+    min-height: 4rem;
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.kg-accordion-card {
+    display: flex;
+    padding: 16px 24px;
+    background: var(--whitegrey-l1);
+    border-radius: var(--border-radius);
+    flex-direction: column;
+}
+
+.kg-accordion-card-heading {
+    margin-bottom: 12px;
+    font-weight: bold !important;
+}
+
+.kg-accordion-card-content {
+    margin-bottom: 12px;
+    font-size: 1.6rem !important;
+}
+
+.kg-accordion-card-heading ::after {
+    font-weight: bold !important;
+}
+
+.kg-accordion-card-content ::after {
+    font-size: 1.6rem !important;
 }
 
 /* Codemirror overrides
