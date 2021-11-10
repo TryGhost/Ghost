@@ -1,4 +1,5 @@
 import Mirage from 'ember-cli-mirage';
+import enableLabsFlag from '../helpers/enable-labs-flag';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {click, currentRouteName, fillIn, find, findAll, visit} from '@ember/test-helpers';
@@ -106,11 +107,16 @@ describe('Acceptance: Error Handling', function () {
         });
 
         it('handles ember-ajax HTML response', async function () {
+            enableLabsFlag(this.server, 'customThemeSettings');
+
             this.server.del('/themes/foo/', htmlErrorResponse);
 
-            await visit('/settings/theme');
-            await click('[data-test-theme-id="foo"] [data-test-theme-delete-button]');
-            await click('.fullscreen-modal [data-test-delete-button]');
+            await visit('/settings/design/change-theme');
+
+            await click('[data-test-button="toggle-advanced"]');
+            await click('[data-test-theme-id="foo"] [data-test-button="actions"]');
+            await click('[data-test-actions-for="foo"] [data-test-button="delete"]');
+            await click('[data-test-modal="delete-theme"] [data-test-button="confirm"]');
 
             expect(findAll('.gh-alert').length).to.equal(1);
             expect(find('.gh-alert').textContent).to.not.match(/html>/);
