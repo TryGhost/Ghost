@@ -1781,10 +1781,10 @@
   dependencies:
     "@tryghost/errors" "^0.2.17"
 
-"@tryghost/social-urls@0.1.26":
-  version "0.1.26"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.26.tgz#dfacc38cf187d9f6733155e6408329ef54210c72"
-  integrity sha512-gwh8W2tlaaKwxrQSNvvnJTUUOVyDQQ4DR+ukEgVBwKbU5m7BePACf/0iuLY3PZ3mvZyzaQ3Jc3IWQHd/FDglPA==
+"@tryghost/social-urls@0.1.27":
+  version "0.1.27"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.27.tgz#17a53d23a984d817064f5e2a1988589f7662cbba"
+  integrity sha512-HWNuOw0AjPl1urF1vsjCKdcuBGFMp1S1aSQEj7t2l8CFs7VduMjcgVfONvGy6JJB3VOUfw5MtLkaAIfnoFgKnA==
 
 "@tryghost/string@0.1.21":
   version "0.1.21"
