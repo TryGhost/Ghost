@@ -51,8 +51,11 @@ Router.map(function () {
     this.route('settings.design', {path: '/settings/design'}, function () {
         this.route('change-theme', function () {
             this.route('view', {path: ':theme_name'});
+            this.route('install');
         });
     });
+    // redirect for old install route used by ghost.org/marketplace
+    this.route('settings.theme-install', {path: '/settings/theme/install'});
 
     this.route('settings.staff', {path: '/settings/staff'}, function () {
         this.route('user', {path: ':user_slug'});
@@ -71,10 +74,12 @@ Router.map(function () {
     this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
     this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 
-    this.route('settings.theme', {path: '/settings/theme'}, function () {
-        this.route('uploadtheme');
-        this.route('install');
-    });
+    // TODO: remove in customThemeSettings cleanup
+    // this.route('settings.theme', {path: '/settings/theme'}, function () {
+    //     this.route('uploadtheme');
+    //     this.route('install');
+    // });
+
     this.route('settings.navigation', {path: '/settings/navigation'});
     this.route('settings.labs', {path: '/settings/labs'});
 
