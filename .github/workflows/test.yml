@@ -13,7 +13,7 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-18.04
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    if: github.event.pull_request.head.repo.full_name == github.repository
     name: Lint
     steps:
       - uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
 
   migrations:
     runs-on: ubuntu-18.04
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    if: github.event.pull_request.head.repo.full_name == github.repository
     strategy:
       matrix:
         DB: ['sqlite3', 'mysql']
