@@ -26,7 +26,11 @@ export default class KoenigCardEmailCtaComponent extends Component {
     urlInputId = 'url-input-' + guidFor(this);
 
     get isEmpty() {
-        const {html, buttonText, buttonUrl} = this.args.payload;
+        const {html, showButton, buttonText, buttonUrl} = this.args.payload;
+
+        if (!showButton) {
+            return isBlank(html);
+        }
 
         return isBlank(html) && isBlank(buttonText) && isBlank(buttonUrl);
     }
