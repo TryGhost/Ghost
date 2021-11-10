@@ -94,7 +94,7 @@
     "@tryghost/root-utils": "0.3.7",
     "@tryghost/security": "0.2.13",
     "@tryghost/session-service": "0.1.28",
-    "@tryghost/social-urls": "0.1.26",
+    "@tryghost/social-urls": "0.1.27",
     "@tryghost/string": "0.1.21",
     "@tryghost/tpl": "0.1.8",
     "@tryghost/update-check-service": "0.2.5",
