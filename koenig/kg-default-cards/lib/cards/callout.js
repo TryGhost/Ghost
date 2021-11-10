@@ -18,15 +18,22 @@ module.exports = {
         }
 
         const template = hbs`
+            {{#if backgroundColor}}
+            <div class="kg-callout-card" style="background-color: {{backgroundColor}}">
+            {{else}}
             <div class="kg-callout-card">
+            {{/if}}
+                {{#if calloutEmoji}}
                 <div class="kg-callout-emoji">{{calloutEmoji}}</div>
+                {{/if}}
                 <div class="kg-callout-text gh-content">{{{calloutText}}}</div>
             </div>
         `;
 
         const html = dedent(template({
             calloutEmoji: payload.calloutEmoji,
-            calloutText: payload.calloutText
+            calloutText: payload.calloutText,
+            backgroundColor: payload.backgroundColor
         }));
 
         return dom.createRawHTMLSection(html);

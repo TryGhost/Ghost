@@ -19,6 +19,31 @@ describe('Callout card', function () {
 
             serializer.serialize(card.render(opts)).should.equal('<div class="kg-callout-card"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text gh-content">This is a callout</div></div>');
         });
+
+        it('renders the callout nodes without the emoji element', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    calloutEmoji: '',
+                    calloutText: 'This is a callout'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-callout-card"><div class="kg-callout-text gh-content">This is a callout</div></div>');
+        });
+
+        it('renders the callout nodes without the background color defined', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    calloutEmoji: '',
+                    calloutText: 'This is a callout',
+                    backgroundColor: 'red'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-callout-card" style="background-color: red"><div class="kg-callout-text gh-content">This is a callout</div></div>');
+        });
     });
 
     // TODO: proper email rendering

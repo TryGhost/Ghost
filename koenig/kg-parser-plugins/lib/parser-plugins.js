@@ -219,16 +219,22 @@ export function createParserPlugins(_options = {}) {
         const emojiNode = node.querySelector('.kg-callout-emoji');
         const htmlNode = node.querySelector('.kg-callout-text');
 
-        let calloutEmoji = emojiNode.textContent;
-        if (calloutEmoji) {
-            calloutEmoji = calloutEmoji.trim();
+        const backgroundColor = node.style.backgroundColor || '#F1F3F4';
+
+        let calloutEmoji = '';
+        if (emojiNode) {
+            calloutEmoji = emojiNode.textContent;
+            if (calloutEmoji) {
+                calloutEmoji = calloutEmoji.trim();
+            }
         }
 
         let calloutText = htmlNode.innerHTML;
 
         const payload = {
             calloutEmoji,
-            calloutText
+            calloutText,
+            backgroundColor
         };
 
         const cardSection = builder.createCardSection('callout', payload);

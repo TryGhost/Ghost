@@ -146,7 +146,34 @@ describe('parser-plugins', function () {
             section.name.should.equal('callout');
             section.payload.should.deepEqual({
                 calloutEmoji: '⚠️',
-                calloutText: 'This is a callout'
+                calloutText: 'This is a callout',
+                backgroundColor: '#F1F3F4'
+            });
+        });
+
+        it('parses the background-color correctly', function () {
+            const dom = buildDOM('<div class="kg-callout-card" style="background-color: red;"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text gh-content">This is a callout</div></div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('callout');
+            section.payload.should.deepEqual({
+                calloutEmoji: '⚠️',
+                calloutText: 'This is a callout',
+                backgroundColor: 'red'
+            });
+        });
+
+        it('parses a card without emoji', function () {
+            const dom = buildDOM('<div class="kg-callout-card" style="background-color: red;"><div class="kg-callout-text gh-content">This is a callout</div></div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('callout');
+            section.payload.should.deepEqual({
+                calloutEmoji: '',
+                calloutText: 'This is a callout',
+                backgroundColor: 'red'
             });
         });
     });
