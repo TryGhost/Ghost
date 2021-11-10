@@ -139,7 +139,7 @@ describe('parser-plugins', function () {
 
     describe('kgCalloutCardToCard', function () {
         it('parses button card divs into cards', function () {
-            const dom = buildDOM('<div class="kg-callout-card"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text">This is a callout</div></div>');
+            const dom = buildDOM('<div class="kg-callout-card"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text gh-content">This is a callout</div></div>');
             const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');

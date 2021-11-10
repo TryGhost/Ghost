@@ -17,7 +17,7 @@ describe('Callout card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-callout-card"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text">This is a callout</div></div>');
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-callout-card"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text gh-content">This is a callout</div></div>');
         });
     });
 

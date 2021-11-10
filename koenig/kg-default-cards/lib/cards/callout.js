@@ -20,7 +20,7 @@ module.exports = {
         const template = hbs`
             <div class="kg-callout-card">
                 <div class="kg-callout-emoji">{{calloutEmoji}}</div>
-                <div class="kg-callout-text">{{{calloutText}}}</div>
+                <div class="kg-callout-text gh-content">{{{calloutText}}}</div>
             </div>
         `;
 
