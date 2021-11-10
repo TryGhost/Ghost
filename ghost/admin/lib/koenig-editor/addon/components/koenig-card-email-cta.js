@@ -25,6 +25,12 @@ export default class KoenigCardEmailCtaComponent extends Component {
     buttonTextInputId = 'button-text-input-' + guidFor(this);
     urlInputId = 'url-input-' + guidFor(this);
 
+    get isEmpty() {
+        const {html, buttonText, buttonUrl} = this.args.payload;
+
+        return isBlank(html) && isBlank(buttonText) && isBlank(buttonUrl);
+    }
+
     get formattedHtml() {
         return formatTextReplacementHtml(this.args.payload.html);
     }
@@ -186,9 +192,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
 
     @action
     leaveEditMode() {
-        const {html, buttonText, buttonUrl} = this.args.payload;
-
-        if (isBlank(html) && isBlank(buttonText) && isBlank(buttonUrl)) {
+        if (this.isEmpty) {
             // afterRender is required to avoid double modification of `isSelected`
             // TODO: see if there's a way to avoid afterRender
             run.scheduleOnce('afterRender', this, this.args.deleteCard);
