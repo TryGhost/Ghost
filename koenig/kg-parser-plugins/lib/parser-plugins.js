@@ -236,6 +236,27 @@ export function createParserPlugins(_options = {}) {
         nodeFinished();
     }
 
+    function kgToggleCardToCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || !node.classList.contains('kg-toggle-card')) {
+            return;
+        }
+
+        const headingNode = node.querySelector('.kg-toggle-heading');
+        const contentNode = node.querySelector('.kg-toggle-content');
+
+        let toggleHeading = headingNode.innerHTML;
+        let toggleContent = contentNode.innerHTML;
+
+        const payload = {
+            heading: toggleHeading,
+            content: toggleContent
+        };
+
+        const cardSection = builder.createCardSection('toggle', payload);
+        addSection(cardSection);
+        nodeFinished();
+    }
+
     // mobiledoc by default ignores <BR> tags but we have a custom SoftReturn atom
     function brToSoftBreakAtom(node, builder, {addMarkerable, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'BR') {
@@ -613,6 +634,7 @@ export function createParserPlugins(_options = {}) {
         kgHtmlCardToCard,
         kgButtonCardToCard,
         kgCalloutCardToCard,
+        kgToggleCardToCard,
         blockquoteWithChildren,
         brToSoftBreakAtom,
         removeLeadingNewline,
