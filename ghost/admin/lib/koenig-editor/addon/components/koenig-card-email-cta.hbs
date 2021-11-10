@@ -171,8 +171,8 @@
                                 @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
                                 as |suggestion|
                             >
-                                <span class="db b">{{suggestion.name}}</span>
-                                {{suggestion.url}}
+                                <span class="kg-settings-link-title" title="{{suggestion.name}}">{{suggestion.name}}</span>
+                                <span class="kg-settings-link-url" title="{{suggestion.url}}">{{suggestion.url}}</span>
                             </GhInputWithSelect>
                         </div>
                     </div>
@@ -220,8 +220,8 @@
                     @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
                     as |suggestion|
                 >
-                    <span class="db b">{{suggestion.name}}</span>
-                    {{suggestion.url}}
+                    <span class="kg-settings-link-title" title="{{suggestion.name}}">{{suggestion.name}}</span>
+                    <span class="kg-settings-link-url" title="{{suggestion.url}}">{{suggestion.url}}</span>
                 </GhInputWithSelect>
             {{/if}}
         </form>
