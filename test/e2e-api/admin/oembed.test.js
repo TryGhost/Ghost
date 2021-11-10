@@ -149,7 +149,6 @@ describe('Oembed API', function () {
 
             pageMock.isDone().should.be.true();
             should.exist(res.body.errors);
-            res.body.errors[0].context.should.match(/insufficient metadata/i);
         });
     });
 
