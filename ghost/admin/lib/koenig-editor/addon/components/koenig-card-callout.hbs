@@ -33,6 +33,25 @@
                 @onBlur={{action (mut this.isFocused) false}}
                 @didCreateEditor={{action "registerEditor"}}
             />
+            <KoenigSettingsPanel>
+                <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                    <div class="kg-settings-panel-control-label">Emoji</div>
+                    <div class="kg-settings-panel-control-input">
+                        <div class="for-switch">
+                            <label class="switch" for="has-emoji">
+                                <input
+                                    type="checkbox"
+                                    checked={{@payload.calloutEmoji}}
+                                    id="has-emoji"
+                                    onclick={{action "toggleEmoji"}}
+                                    data-test-has-emoji
+                                >
+                                <span class="input-toggle-component"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </KoenigSettingsPanel>
         </div>
 
     {{else}}
