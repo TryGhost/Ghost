@@ -1,5 +1,5 @@
-<div class="modal-content" {{on-key "Enter" (perform this.deleteThemeTask)}}>
-    <header class="modal-header" data-test-modal="delete-theme">
+<div class="modal-content" {{on-key "Enter" (perform this.deleteThemeTask)}} data-test-modal="delete-theme">
+    <header class="modal-header">
         <h1>Are you sure you want to delete this?</h1>
     </header>
     <button type="button" class="close" role="button" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
@@ -15,6 +15,6 @@
             @successText="Deleted"
             @task={{this.deleteThemeTask}}
             @class="gh-btn gh-btn-red gh-btn-icon"
-            data-test-button="delete" />
+            data-test-button="confirm" />
     </div>
 </div>

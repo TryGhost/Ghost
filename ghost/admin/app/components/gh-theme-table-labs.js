@@ -14,7 +14,7 @@ export default class GhThemeTableComponent extends Component {
 
     willDestroy() {
         super.willDestroy(...arguments);
-        this.confirmDeleteModal?.close();
+        this.confirmDeleteModal?.close?.();
         this.activateTaskInstance?.cancel();
     }
 
