@@ -29,10 +29,10 @@ import {getOwner} from '@ember/application';
 import {getParent} from '../lib/dnd/utils';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {guidFor} from '@ember/object/internals';
-import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {svgJar} from 'ghost-admin/helpers/svg-jar';
+import {task, waitForProperty} from 'ember-concurrency';
 
 const {countWords} = ghostHelperUtils;
 const UNDO_DEPTH = 100;
@@ -249,6 +249,10 @@ export default Component.extend({
         return this.saveSnippet ? this.saveCardAsSnippet : undefined;
     }),
 
+    allComponentCardsRegistered: computed('componentCards.@each.component', function () {
+        return this.componentCards.every(card => typeof card.component === 'object');
+    }),
+
     /* lifecycle hooks ------------------------------------------------------ */
 
     init() {
@@ -449,7 +453,7 @@ export default Component.extend({
             }
 
             if (this._cleanupScheduled) {
-                run.schedule('afterRender', this, this._cleanup);
+                run.schedule('afterRender', this, this._cleanupTask.perform);
             }
         });
 
@@ -777,36 +781,8 @@ export default Component.extend({
         this._skipNextNewline = true;
     },
 
-    // HACK: this scheduled cleanup is a bit hacky. We call .cleanup when
-    // initializing Koenig in our editor controller but we have to wait for
-    // rendering to finish so that componentCards is populated, even then
-    // it's unlikely the card.component registration has finished.
-    //
-    // TODO: see if there's a way we can perform cleanup directly on the
-    // mobiledoc, maybe with a "cleanupOnInit" option so that we modify the
-    // mobiledoc before we start rendering
     cleanup() {
         this._cleanupScheduled = true;
-    },
-
-    _cleanup() {
-        this.componentCards.forEach((card) => {
-            let shouldDelete = card.koenigOptions.deleteIfEmpty;
-
-            if (!shouldDelete) {
-                return;
-            }
-
-            if (typeof shouldDelete === 'string') {
-                let payloadKey = shouldDelete;
-                shouldDelete = cardToDelete => isBlank(get(cardToDelete, payloadKey));
-            }
-
-            if (shouldDelete(card)) {
-                this.deleteCard(card, NO_CURSOR_MOVEMENT);
-            }
-        });
-        this._cleanupScheduled = false;
     },
 
     /* mobiledoc event handlers --------------------------------------------- */
@@ -1261,8 +1237,14 @@ export default Component.extend({
     },
 
     deleteCard(card, cursorDirection) {
+        let section = card.env.postModel;
+
+        if (!section.parent) {
+            // card has already been deleted, skip
+            return;
+        }
+
         this.editor.run((postEditor) => {
-            let section = card.env.postModel;
             let nextPosition;
 
             if (cursorDirection === CURSOR_BEFORE) {
@@ -1341,6 +1323,18 @@ export default Component.extend({
     },
 
     /* internal methods ----------------------------------------------------- */
+
+    _cleanupTask: task(function* () {
+        yield waitForProperty(this, 'allComponentCardsRegistered');
+
+        this.componentCards.forEach((card) => {
+            if (typeof card.component.isEmpty === 'boolean' && card.component.isEmpty) {
+                this.deleteCard(card, NO_CURSOR_MOVEMENT);
+            }
+        });
+
+        this._cleanupScheduled = false;
+    }),
 
     // nested editor.run loops will create additional undo steps so this is a
     // shortcut for when we already have a postEditor

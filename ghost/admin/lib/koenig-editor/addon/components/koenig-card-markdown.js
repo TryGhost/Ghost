@@ -30,6 +30,10 @@ export default Component.extend({
     deleteCard() {},
     registerComponent() {},
 
+    isEmpty: computed('payload.markdown', function () {
+        return isBlank(this.payload.markdown);
+    }),
+
     counts: computed('renderedMarkdown', function () {
         return {
             wordCount: countWords(this.renderedMarkdown),
@@ -83,7 +87,7 @@ export default Component.extend({
         },
 
         leaveEditMode() {
-            if (isBlank(this.payload.markdown)) {
+            if (this.isEmpty) {
                 // afterRender is required to avoid double modification of `isSelected`
                 // TODO: see if there's a way to avoid afterRender
                 run.scheduleOnce('afterRender', this, this.deleteCard);

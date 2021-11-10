@@ -14,6 +14,10 @@ export default class KoenigCardCalloutComponent extends Component {
     @service membersUtils;
     @service ui;
 
+    get isEmpty() {
+        return isBlank(this.args.payload.calloutText);
+    }
+
     get formattedHtml() {
         return formatTextReplacementHtml(this.payload.calloutText);
     }
@@ -69,9 +73,7 @@ export default class KoenigCardCalloutComponent extends Component {
 
     @action
     leaveEditMode() {
-        const {calloutText} = this.args.payload;
-
-        if (isBlank(calloutText)) {
+        if (this.isEmpty) {
             // afterRender is required to avoid double modification of `isSelected`
             // TODO: see if there's a way to avoid afterRender
             run.scheduleOnce('afterRender', this, this.args.deleteCard);

@@ -39,6 +39,10 @@ export default Component.extend({
     addParagraphAfterCard() {},
     registerComponent() {},
 
+    isEmpty: computed('payload.{imageSelector,src}', function () {
+        return !this.payload.imageSelector && !this.payload.src;
+    }),
+
     imageSelector: computed('payload.imageSelector', function () {
         let selector = this.payload.imageSelector;
         let imageSelectors = {

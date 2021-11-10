@@ -32,6 +32,10 @@ export default Component.extend({
     addParagraphAfterCard() {},
     registerComponent() {},
 
+    isEmpty: computed('payload.metadata', function () {
+        return isBlank(this.payload.metadata);
+    }),
+
     counts: computed('payload.{metadata,caption}', function () {
         let imgCount = 0;
         let wordCount = 0;
@@ -66,7 +70,9 @@ export default Component.extend({
             if (this.payload.url && !this.payload.metadata && !this.hasError) {
                 this.convertUrl.perform(this.payload.url);
             } else {
-                this._deleteIfEmpty();
+                if (this.isEmpty && !this.convertUrl.isRunning && !this.hasError) {
+                    this.deleteCard(NO_CURSOR_MOVEMENT);
+                }
             }
         },
 
@@ -170,12 +176,6 @@ export default Component.extend({
 
         if (urlInput) {
             urlInput.focus();
-        }
-    },
-
-    _deleteIfEmpty() {
-        if (isBlank(this.payload.metadata) && !this.convertUrl.isRunning && !this.hasError) {
-            this.deleteCard(NO_CURSOR_MOVEMENT);
         }
     }
 });
