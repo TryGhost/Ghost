@@ -1987,10 +1987,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.1.1.tgz#1d58dec9682f3e462b4d180a7c7f63b3c737263c"
   integrity sha512-KKGvn2S3AVfs/BdWDcAeD24ApkFTrV5fi3PuLqf0Je/uOHgaxkJDEXbvSCCRDkBQiCOfbOC2gXheZafMAXuFkw==
 
-"@tryghost/kg-parser-plugins@2.4.1":
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.4.1.tgz#dbf0ff97e545c5d8bbccf99ceb1fabe0a8ac3a86"
-  integrity sha512-WY9pYFJA1AvXxZaF016HkZgLETiN+T63vMZ8Ubc1f0gF1ZhplAT2y0wt94oOlYafiSHDTJvtCbU30+sntejS8w==
+"@tryghost/kg-parser-plugins@2.4.2":
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.4.2.tgz#6590fe43e1d0d0715e56753c52dd6d69134b9326"
+  integrity sha512-V8PGdeX5lXrLnwEod+ih7k7dAKKAfvnuyaIavxgcmDLegjm0auHNDZogl9VljlSKQj7LaYRDO7I2bp4+Gv7Giw==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^2.1.1"
 
