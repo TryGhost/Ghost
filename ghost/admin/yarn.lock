@@ -2029,10 +2029,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.50":
-  version "0.2.50"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.50.tgz#c3788efae2c8b6956a5cb291b4568b5dbcbf1d46"
-  integrity sha512-a3ljedAmV+2kWc2WEhioHcNHljIry8K7Os2la7evqWVkTLytIjZ5hRzpH1emtYTS9VeNP+Fjn+CSm0jNfDBn+w==
+"@tryghost/timezone-data@0.2.51":
+  version "0.2.51"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.51.tgz#2c6e679604acf8754fed17c37ca5a24abb43b1e7"
+  integrity sha512-1MiWKAVEgV0Kn6cRbtB2/H9VvAoaB9emmX/NnZ9qzJhWTWZTuYF5VnMN6+07s6/B0E6VssgUMThG9ZwVDinStg==
 
 "@types/acorn@^4.0.3":
   version "4.0.6"
