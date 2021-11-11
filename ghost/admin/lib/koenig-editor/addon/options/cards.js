@@ -151,7 +151,7 @@ export const CARD_MENU = [
         },
         {
             label: 'Button',
-            icon: 'koenig/kg-card-type-paywall',
+            icon: 'koenig/kg-card-type-button',
             desc: 'Clicky thing',
             matches: ['button'],
             type: 'card',
