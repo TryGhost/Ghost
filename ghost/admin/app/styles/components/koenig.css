@@ -19,7 +19,8 @@
 }
 
 .koenig-editor__editor.__has-no-content:after,
-.koenig-text-replacement-html-input__editor.__has-no-content:after{
+.koenig-text-replacement-html-input__editor.__has-no-content:after,
+.koenig-basic-html-textarea__editor.__has-no-content:after {
     font-family: georgia,serif;
     font-weight: 300;
     letter-spacing: .02rem;
@@ -1498,7 +1499,7 @@
 }
 
 .kg-accordion-card-content ::after,
-.kg-accordion-card-content .koenig-basic-html-input__editor p {
+.kg-accordion-card-content .koenig-basic-html-textarea__editor p {
     font-size: 1.6rem !important;
 }
 
