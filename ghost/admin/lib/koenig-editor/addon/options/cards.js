@@ -212,6 +212,20 @@ export const CARD_MENU = [
             }
         },
         {
+            label: 'GIF',
+            icon: 'koenig/kg-card-type-unsplash',
+            desc: '/gif [search-term or url]',
+            iconClass: 'kg-card-type-unsplash',
+            matches: ['gif', 'giphy', 'tenor'],
+            type: 'card',
+            replaceArg: 'image',
+            params: ['searchTerm'],
+            payload: {
+                imageSelector: 'unsplash'
+            },
+            feature: 'gifsCard'
+        },
+        {
             label: 'Vimeo',
             icon: 'koenig/kg-card-type-vimeo',
             desc: '/vimeo [video url]',
