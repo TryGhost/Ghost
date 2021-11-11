@@ -248,4 +248,73 @@ describe('parser-plugins: button card', function () {
             sections[0].markers.head.next.markups[0].attributes.href.should.equal('');
         });
     });
+
+    describe('substackButtonToCard', function () {
+        it('parses button into card', function () {
+            const dom = buildDOM(`
+                <p class="button-wrapper" data-attrs="{&quot;url&quot;:&quot;https://ghost.org&quot;,&quot;text&quot;:&quot;Custom Button&quot;,&quot;class&quot;:null}">
+                    <a class="button primary" href="https://ghost.org" rel="nofollow ugc noopener">
+                        <span>Custom Button</span>
+                    </a>
+                </p>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+            sections.length.should.equal(1);
+
+            const [section] = sections;
+            section.type.should.equal('card-section');
+            section.name.should.equal('button');
+            section.payload.should.deepEqual({
+                buttonUrl: 'https://ghost.org/',
+                buttonText: 'Custom Button',
+                alignment: 'center'
+            });
+        });
+
+        it('falls through if text is missing', function () {
+            const dom = buildDOM(`
+                <p class="button-wrapper" data-attrs="{&quot;url&quot;:&quot;https://ghost.org&quot;,&quot;text&quot;:&quot;Custom Button&quot;,&quot;class&quot;:null}">
+                    <a class="button primary" href="https://ghost.org" rel="nofollow ugc noopener">
+                        <span></span>
+                    </a>
+                </p>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(0);
+        });
+
+        it('falls through if URL is missing', function () {
+            const dom = buildDOM(`
+                <p class="button-wrapper" data-attrs="{&quot;url&quot;:&quot;https://ghost.org&quot;,&quot;text&quot;:&quot;Custom Button&quot;,&quot;class&quot;:null}">
+                    <a class="button primary" href="" rel="nofollow ugc noopener">
+                        <span>Testing</span>
+                    </a>
+                </p>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(1);
+            sections[0].type.should.equal('markup-section');
+            sections[0].markers.head.value.should.equal('');
+            sections[0].markers.head.next.value.should.match(/\s+Testing\s+/);
+            sections[0].markers.head.next.markups[0].tagName.should.equal('a');
+            sections[0].markers.head.next.markups[0].attributes.href.should.equal('');
+        });
+
+        it('strips subscribe form buttons', function () {
+            const dom = buildDOM(`
+                <div class="sideBySideWrap">
+                    <input type="email" name="email" placeholder="Type your email…">
+                    <button class="button rightButton primary subscribe-btn " type="submit" tabindex="0">
+                        <b class="button-text">Subscribe</b>
+                    </button>
+                </div>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(1);
+            sections[0].type.should.not.equal('card-section');
+        });
+    });
 });

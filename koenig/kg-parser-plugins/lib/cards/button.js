@@ -15,9 +15,9 @@ export function fromKoenigCard() {
         const alignment = node.classList.contains('kg-align-center') ? 'center' : 'left';
 
         const anchor = node.querySelector('a');
-        const buttonUrl = anchor.href;
 
-        let buttonText = getButtonText(anchor);
+        const buttonUrl = anchor.href;
+        const buttonText = getButtonText(anchor);
 
         if (!buttonUrl || !buttonText) {
             return;
@@ -56,6 +56,40 @@ export function fromWordpressButton() {
 
         const payload = {
             alignment,
+            buttonUrl,
+            buttonText
+        };
+
+        const cardSection = builder.createCardSection('button', payload);
+        addSection(cardSection);
+        nodeFinished();
+    };
+}
+
+export function fromSubstackButton() {
+    return function substackButtonToCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || !node.classList.contains('button')) {
+            return;
+        }
+
+        // substack has .button-wrapper elems with a data-attrs JSON object with `url` and `text`
+        // we're not using that in favour of grabbing the anchor element directly for simplicity
+
+        const anchor = node.tagName === 'A' ? node : node.querySelector('a');
+
+        if (!anchor) {
+            return;
+        }
+
+        const buttonUrl = anchor.href;
+        const buttonText = getButtonText(anchor);
+
+        if (!buttonUrl || !buttonText) {
+            return;
+        }
+
+        const payload = {
+            alignment: 'center', // all Substack buttons are centered
             buttonUrl,
             buttonText
         };

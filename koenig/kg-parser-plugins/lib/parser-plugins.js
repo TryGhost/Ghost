@@ -474,6 +474,7 @@ export function createParserPlugins(_options = {}) {
         kgHtmlCardToCard,
         buttonCard.fromKoenigCard(options),
         buttonCard.fromWordpressButton(options),
+        buttonCard.fromSubstackButton(options),
         kgCalloutCardToCard,
         kgToggleCardToCard,
         blockquoteWithChildren,
