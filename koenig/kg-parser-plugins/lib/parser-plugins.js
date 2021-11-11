@@ -473,6 +473,7 @@ export function createParserPlugins(_options = {}) {
         embedCard.fromMixtape(options),
         kgHtmlCardToCard,
         buttonCard.fromKoenigCard(options),
+        buttonCard.fromWordpressButton(options),
         kgCalloutCardToCard,
         kgToggleCardToCard,
         blockquoteWithChildren,

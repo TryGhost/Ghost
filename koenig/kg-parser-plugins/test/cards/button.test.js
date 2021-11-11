@@ -89,4 +89,105 @@ describe('parser-plugins: button card', function () {
             });
         });
     });
+
+    describe('wordpressButtonToCard', function () {
+        it('parses button into card', function () {
+            const dom = buildDOM(`
+                <div class="wp-block-buttons">
+                    <div class="wp-block-button">
+                        <a href="https://example.com" class="wp-block-button__link">
+                            Testing  button
+                        </a>
+                    </div>
+                </div>
+            `);
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('button');
+            section.payload.should.deepEqual({
+                buttonUrl: 'https://example.com/',
+                buttonText: 'Testing button',
+                alignment: 'left'
+            });
+        });
+
+        it('handles center alignment', function () {
+            const dom = buildDOM(`
+                <div class="wp-block-buttons is-content-justification-center">
+                    <div class="wp-block-button">
+                        <a href="https://example.com" class="wp-block-button__link">
+                            Testing  button
+                        </a>
+                    </div>
+                </div>
+            `);
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('button');
+            section.payload.should.deepEqual({
+                buttonUrl: 'https://example.com/',
+                buttonText: 'Testing button',
+                alignment: 'center'
+            });
+        });
+
+        it('handles right alignment', function () {
+            const dom = buildDOM(`
+                <div class="wp-block-buttons is-content-justification-right">
+                    <div class="wp-block-button">
+                        <a href="https://example.com" class="wp-block-button__link">
+                            Testing  button
+                        </a>
+                    </div>
+                </div>
+            `);
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('button');
+            section.payload.should.deepEqual({
+                buttonUrl: 'https://example.com/',
+                buttonText: 'Testing button',
+                alignment: 'center'
+            });
+        });
+
+        it('handles multiple buttons in a block', function () {
+            const dom = buildDOM(`
+                <div class="wp-block-buttons">
+                    <div class="wp-block-button">
+                        <a href="https://example.com/1" class="wp-block-button__link">
+                            Button 1
+                        </a>
+                    </div>
+                    <div class="wp-block-button">
+                        <a href="https://example.com/2" class="wp-block-button__link">
+                            Button 2
+                        </a>
+                    </div>
+                </div>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(2);
+
+            sections[0].type.should.equal('card-section');
+            sections[0].name.should.equal('button');
+            sections[0].payload.should.deepEqual({
+                buttonUrl: 'https://example.com/1',
+                buttonText: 'Button 1',
+                alignment: 'left'
+            });
+
+            sections[1].type.should.equal('card-section');
+            sections[1].name.should.equal('button');
+            sections[1].payload.should.deepEqual({
+                buttonUrl: 'https://example.com/2',
+                buttonText: 'Button 2',
+                alignment: 'left'
+            });
+        });
+    });
 });
