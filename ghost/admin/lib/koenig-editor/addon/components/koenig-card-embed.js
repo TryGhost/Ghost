@@ -188,6 +188,8 @@ export default Component.extend({
             delete response.html;
             set(this.payload, 'type', response.type);
             delete response.type;
+            set(this.payload, 'noIframe', !!response.noIframe);
+            delete response.noIframe;
             // store all other data returned from oembed such as thumbnails, sizing, etc
             set(this.payload, 'metadata', response);
 
