@@ -97,15 +97,7 @@ class Resources {
             });
         });
 
-        Promise.all(ops)
-            .then(() => {
-                // CASE: all resources are fetched, start the queue
-                this.queue.start({
-                    event: 'init',
-                    tolerance: 100,
-                    requiredSubscriberCount: 1
-                });
-            });
+        return Promise.all(ops);
     }
 
     /**
