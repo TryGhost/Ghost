@@ -19,6 +19,10 @@ export function fromKoenigCard() {
 
         let buttonText = getButtonText(anchor);
 
+        if (!buttonUrl || !buttonText) {
+            return;
+        }
+
         const payload = {
             alignment,
             buttonUrl,
@@ -39,6 +43,10 @@ export function fromWordpressButton() {
 
         const buttonUrl = node.href;
         const buttonText = getButtonText(node);
+
+        if (!buttonUrl || !buttonText) {
+            return;
+        }
 
         let alignment = 'left';
 

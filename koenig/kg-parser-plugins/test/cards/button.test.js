@@ -88,6 +88,33 @@ describe('parser-plugins: button card', function () {
                 alignment: 'left'
             });
         });
+
+        it('falls through if text is missing', function () {
+            const dom = buildDOM(`
+                <div class="kg-button-card">
+                    <a href="https://example.com" class="kg-btn kg-btn-accent"></a>
+                </div>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(0);
+        });
+
+        it('falls through if URL is missing', function () {
+            const dom = buildDOM(`
+                <div class="kg-button-card">
+                    <a href="" class="kg-btn kg-btn-accent">Test</a>
+                </div>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(1);
+            sections[0].type.should.equal('markup-section');
+            sections[0].markers.head.value.should.equal('');
+            sections[0].markers.head.next.value.should.equal('Test');
+            sections[0].markers.head.next.markups[0].tagName.should.equal('a');
+            sections[0].markers.head.next.markups[0].attributes.href.should.equal('');
+        });
     });
 
     describe('wordpressButtonToCard', function () {
@@ -188,6 +215,37 @@ describe('parser-plugins: button card', function () {
                 buttonText: 'Button 2',
                 alignment: 'left'
             });
+        });
+
+        it('falls through if text is missing', function () {
+            const dom = buildDOM(`
+                <div class="wp-block-buttons is-content-justification-right">
+                    <div class="wp-block-button">
+                        <a href="https://example.com" class="wp-block-button__link"></a>
+                    </div>
+                </div>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(0);
+        });
+
+        it('falls through if URL is missing', function () {
+            const dom = buildDOM(`
+                <div class="wp-block-buttons is-content-justification-right">
+                    <div class="wp-block-button">
+                        <a href="" class="wp-block-button__link">Test</a>
+                    </div>
+                </div>
+            `);
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(1);
+            sections[0].type.should.equal('markup-section');
+            sections[0].markers.head.value.should.equal('');
+            sections[0].markers.head.next.value.should.equal('Test');
+            sections[0].markers.head.next.markups[0].tagName.should.equal('a');
+            sections[0].markers.head.next.markups[0].attributes.href.should.equal('');
         });
     });
 });
