@@ -1,5 +1,5 @@
 <KoenigCard
-    @class={{concat (kg-style "container-card") " kg-callout-card-container"}}
+    @class={{concat (kg-style "container-card") " kg-card-callout-container"}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -21,7 +21,7 @@
 >
     {{#if @isEditing}}
 
-        <div class="kg-callout-card" style="{{if @payload.backgroundColor (concat "background-color: " @payload.backgroundColor) ""}}">
+        <div class="kg-card-callout kg-card-callout-{{@payload.backgroundColor}}">
             {{#if @payload.calloutEmoji}}
             <div class="kg-callout-emoji">{{@payload.calloutEmoji}}</div>
             {{/if}}
@@ -39,7 +39,7 @@
                 <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                     <div class="kg-settings-panel-control-label">Emoji</div>
                     <div class="kg-settings-panel-control-input">
-                        <div class="for-switch">
+                        <div class="for-switch x-small">
                             <label class="switch" for="has-emoji">
                                 <input
                                     type="checkbox"
@@ -48,7 +48,7 @@
                                     onclick={{action "toggleEmoji"}}
                                     data-test-has-emoji
                                 >
-                                <span class="input-toggle-component"></span>
+                                <span class="input-toggle-component mt1"></span>
                             </label>
                         </div>
                     </div>
@@ -57,25 +57,22 @@
                 <div class="kg-settings-panel-control">
                     <div class="kg-settings-panel-control-label">Background color</div>
                     <div class="kg-settings-panel-control-input">
-                        <PowerSelect
-                            @options={{this.backgroundColors}}
-                            @selected={{this.selectedBackgroundColor}}
-                            @onChange={{this.setBackgroundColor}}
-                            @searchEnabled={{false}}
-                            @triggerComponent="gh-power-select/trigger"
-                            @dropdownClass="gh-member-segment-select-dropdown"
-                            as |segment|
-                        >
-                            <span class="ttc"><div style="display: inline-block; background-color: {{segment.color}};width: 1.2em; height: 1.2em; margin-bottom: -0.2em; margin-right: 0.6em;border-radius: 3px;"></div> {{segment.name}}</span>
-                        </PowerSelect>
+                        <div class="kg-callout-palette">
+                            {{#each this.backgroundColors as |option| }}
+                                <span class="kg-callout-palette-swatch {{if (eq this.selectedBackgroundColor option) "selected-swatch"}}" title={{option.name}} {{on "click" (fn this.setBackgroundColor option)}}>
+                                    <div class="kg-callout-palette-swatch-{{option.color}} w-100 h-100 br2"></div>
+                                </span>
+                            {{/each}}
+                        </div>
                     </div>
+
                 </div>
             </KoenigSettingsPanel>
         </div>
 
     {{else}}
 
-        <div class="kg-callout-card" style="{{if @payload.backgroundColor (concat "background-color: " @payload.backgroundColor) ""}}">
+        <div class="kg-card-callout kg-card-callout-{{@payload.backgroundColor}}">
             {{#if @payload.calloutEmoji}}
             <div class="kg-callout-emoji">{{@payload.calloutEmoji}}</div>
             {{/if}}
