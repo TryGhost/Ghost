@@ -470,6 +470,7 @@ export function createParserPlugins(_options = {}) {
     }
 
     return [
+        embedCard.fromNFTEmbed(),
         embedCard.fromMixtape(options),
         kgHtmlCardToCard,
         buttonCard.fromKoenigCard(options),

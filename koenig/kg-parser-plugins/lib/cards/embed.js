@@ -158,3 +158,25 @@ export function fromFigureBlockquote(options) {
         nodeFinished();
     };
 }
+
+export function fromNFTEmbed() {
+    return function fromNFTEmbedToEmbedCard(node, builder, {addSection, nodeFinished}) {
+        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+            return;
+        }
+
+        let nftCard = node.querySelector('a.kg-nft-card');
+
+        if (!nftCard) {
+            return;
+        }
+
+        let payload = {
+            html: nftCard.outerHTML
+        };
+
+        let cardSection = builder.createCardSection('embed', payload);
+        addSection(cardSection);
+        nodeFinished();
+    };
+}
