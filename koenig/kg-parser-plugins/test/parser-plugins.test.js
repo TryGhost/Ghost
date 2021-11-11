@@ -82,61 +82,6 @@ describe('parser-plugins', function () {
         });
     });
 
-    describe('kgButtonCardToCard', function () {
-        it('parses button card divs into cards', function () {
-            const dom = buildDOM('<div class="kg-button-card"><a href="https://example.com" class="kg-btn kg-btn-accent">Testing button</a></div>');
-            const [section] = parser.parse(dom).sections.toArray();
-
-            section.type.should.equal('card-section');
-            section.name.should.equal('button');
-            section.payload.should.deepEqual({
-                // HTMLAnchorElement.href is a stringifier returing a full url
-                // which is why the trailing slash has been appended
-                buttonUrl: 'https://example.com/',
-                buttonText: 'Testing button',
-                alignment: 'left'
-            });
-        });
-
-        it('parses center alignment class into payload', function () {
-            const dom = buildDOM(`
-                <div class="kg-button-card kg-align-center">
-                    <a href="https://example.com" class="kg-btn kg-btn-accent">
-                        Testing  button
-                    </a>
-                </div>
-            `);
-            const [section] = parser.parse(dom).sections.toArray();
-
-            section.type.should.equal('card-section');
-            section.name.should.equal('button');
-            section.payload.should.deepEqual({
-                buttonUrl: 'https://example.com/',
-                buttonText: 'Testing button',
-                alignment: 'center'
-            });
-        });
-
-        it('handles arbitrary whitespace in button content', function () {
-            const dom = buildDOM(`
-                <div class="kg-button-card">
-                    <a href="https://example.com" class="kg-btn kg-btn-accent">
-                        Testing  button
-                    </a>
-                </div>
-            `);
-            const [section] = parser.parse(dom).sections.toArray();
-
-            section.type.should.equal('card-section');
-            section.name.should.equal('button');
-            section.payload.should.deepEqual({
-                buttonUrl: 'https://example.com/',
-                buttonText: 'Testing button',
-                alignment: 'left'
-            });
-        });
-    });
-
     describe('kgCalloutCardToCard', function () {
         it('parses button card divs into cards', function () {
             const dom = buildDOM('<div class="kg-callout-card"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text gh-content">This is a callout</div></div>');

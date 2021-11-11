@@ -12,6 +12,7 @@
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 
 import * as embedCard from './cards/embed';
+import * as buttonCard from './cards/button';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -112,32 +113,6 @@ export function createParserPlugins(_options = {}) {
 
         let payload = {html: html.join('\n').trim()};
         let cardSection = builder.createCardSection('html', payload);
-        addSection(cardSection);
-        nodeFinished();
-    }
-
-    function kgButtonCardToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || !node.classList.contains('kg-button-card')) {
-            return;
-        }
-
-        const alignment = node.classList.contains('kg-align-center') ? 'center' : 'left';
-
-        const anchor = node.querySelector('a');
-        const buttonUrl = anchor.href;
-
-        let buttonText = anchor.textContent;
-        if (buttonText) {
-            buttonText = buttonText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-        }
-
-        const payload = {
-            alignment,
-            buttonUrl,
-            buttonText
-        };
-
-        const cardSection = builder.createCardSection('button', payload);
         addSection(cardSection);
         nodeFinished();
     }
@@ -497,7 +472,7 @@ export function createParserPlugins(_options = {}) {
     return [
         embedCard.fromMixtape(options),
         kgHtmlCardToCard,
-        kgButtonCardToCard,
+        buttonCard.fromKoenigCard(options),
         kgCalloutCardToCard,
         kgToggleCardToCard,
         blockquoteWithChildren,
