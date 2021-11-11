@@ -18,9 +18,14 @@ const events = require('../../lib/common/events');
  * It will tell you if the url generation is in progress or not.
  */
 class UrlService {
-    constructor() {
+    /**
+     *
+     * @param {Object} options
+     * @param {String} [options.urlCachePath] - path to store cached URLs at
+     */
+    constructor({urlCachePath} = {}) {
         this.utils = urlUtils;
-
+        this.urlCachePath = urlCachePath;
         this.finished = false;
         this.urlGenerators = [];
 
@@ -308,15 +313,23 @@ class UrlService {
     }
 
     async persistUrls() {
-        return fs.writeFileSync('./urls.json', JSON.stringify(this.urls.urls, null, 4));
+        if (!this.urlCachePath) {
+            return null;
+        }
+
+        return fs.writeFileSync(this.urlCachePath, JSON.stringify(this.urls.urls, null, 4));
     }
 
     async fetchUrls() {
+        if (!this.urlCachePath) {
+            return null;
+        }
+
         let urlsCacheExists = false;
         let urls;
 
         try {
-            await fs.stat('./urls.json');
+            await fs.stat(this.urlCachePath);
             urlsCacheExists = true;
         } catch (e) {
             urlsCacheExists = false;
@@ -324,7 +337,7 @@ class UrlService {
 
         if (urlsCacheExists) {
             try {
-                const urlsFile = await fs.readFile('./urls.json', 'utf8');
+                const urlsFile = await fs.readFile(this.urlCachePath, 'utf8');
                 urls = JSON.parse(urlsFile);
             } catch (e) {
                 //noop as we'd start a long boot process if there are any errors in the file
