@@ -3,6 +3,7 @@ const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
+const configUtils = require('../../utils/configUtils');
 
 describe('Config API', function () {
     let request;
@@ -13,7 +14,14 @@ describe('Config API', function () {
         await localUtils.doAuth(request);
     });
 
+    afterEach(function () {
+        configUtils.set('tenorApiKey', undefined);
+    });
+
     it('can retrieve config and all expected properties', async function () {
+        // set any non-default keys so we can be sure they're exposed
+        configUtils.set('tenorApiKey', 'TENOR_KEY');
+
         const res = await request
             .get(localUtils.API.getApiQuery('config/'))
             .set('Origin', config.get('url'))
