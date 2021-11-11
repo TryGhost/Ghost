@@ -30,6 +30,7 @@
                 @placeholder="Add your heading here..."
                 @class="w-100 fw4 bn bg-transparent kg-accordion-card-heading"
                 @name="toggle-heading"
+                @defaultTag="h4"
                 @onChange={{action "setHeadingText"}}
                 @onFocus={{action (mut this.isFocused) true}}
                 @onBlur={{action (mut this.isFocused) false}}
