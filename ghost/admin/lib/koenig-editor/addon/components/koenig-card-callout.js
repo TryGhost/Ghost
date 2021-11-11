@@ -17,18 +17,17 @@ export default class KoenigCardCalloutComponent extends Component {
         return isBlank(this.args.payload.calloutText);
     }
 
-    get backgroundColors() {
-        return [
-            {name: 'Light grey', color: '#F1F3F4'},
-            {name: 'Light blue', color: '#E9F6FB'},
-            {name: 'Light green', color: '#E8F8EA'},
-            {name: 'Light purple', color: '#F2EDFC'},
-            {name: 'Light yellow', color: '#FCF4E3'},
-            {name: 'Light red', color: '#FBE9E9'},
-            {name: 'Light pink', color: '#FCEEF8'},
-            {name: 'Accent color', color: 'var(--ghost-accent-color)'}
-        ];
-    }
+    backgroundColors = [
+        {name: 'Grey', color: 'grey'},
+        {name: 'White', color: 'white'},
+        {name: 'Blue', color: 'blue'},
+        {name: 'Green', color: 'green'},
+        {name: 'Yellow', color: 'yellow'},
+        {name: 'Red', color: 'red'},
+        {name: 'Pink', color: 'pink'},
+        {name: 'Purple', color: 'purple'},
+        {name: 'Brand color', color: 'accent'}
+    ];
 
     get selectedBackgroundColor() {
         return this.backgroundColors.find(option => option.color === this.args.payload.backgroundColor);
@@ -58,7 +57,7 @@ export default class KoenigCardCalloutComponent extends Component {
         const payloadDefaults = {
             calloutEmoji: '💡',
             calloutText: '',
-            backgroundColor: '#F1F3F4'
+            backgroundColor: 'grey'
         };
 
         Object.entries(payloadDefaults).forEach(([key, value]) => {
