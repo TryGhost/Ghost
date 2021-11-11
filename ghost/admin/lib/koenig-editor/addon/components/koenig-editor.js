@@ -74,6 +74,17 @@ export const SPECIAL_MARKUPS = {
     SUB: '~'
 };
 
+export function getBlankMobileDoc(defaultTag = 'p') {
+    return {
+        ...BLANK_DOC,
+        sections: [
+            [1, defaultTag, [
+                [0, [], 0, '']
+            ]]
+        ]
+    };
+}
+
 export function arrayToMap(array) {
     let map = Object.create(null);
     array.forEach((key) => {

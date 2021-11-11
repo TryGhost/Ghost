@@ -4,8 +4,8 @@ import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import parserPlugins from '../options/basic-html-parser-plugins';
 import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
 import validator from 'validator';
-import {BLANK_DOC, MOBILEDOC_VERSION} from './koenig-editor';
 import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
+import {MOBILEDOC_VERSION, getBlankMobileDoc} from './koenig-editor';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
@@ -24,6 +24,7 @@ export default Component.extend({
     html: null,
     placeholder: '',
     spellcheck: true,
+    defaultTag: 'p',
 
     // internal properties
     activeMarkupTagNames: null,
@@ -94,7 +95,7 @@ export default Component.extend({
         let mobiledoc = this.mobiledoc;
 
         if (!mobiledoc && !this.cleanHTML) {
-            mobiledoc = BLANK_DOC;
+            mobiledoc = getBlankMobileDoc(this.defaultTag);
         }
 
         let mobiledocIsSame =
@@ -441,7 +442,7 @@ export default Component.extend({
     // inline markup that directly maps to HTML elements
     _getHTML() {
         if (this.editor && this.editor.element) {
-            let firstParagraph = this.editor.element.querySelector('p');
+            let firstParagraph = this.editor.element.querySelector(this.defaultTag);
 
             if (!firstParagraph) {
                 return '';
