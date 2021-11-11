@@ -24,6 +24,12 @@ export default class KoenigCardButtonComponent extends Component {
         return isBlank(buttonText) && isBlank(buttonUrl);
     }
 
+    get isIncomplete() {
+        const {buttonText, buttonUrl} = this.args.payload;
+
+        return isBlank(buttonText) || isBlank(buttonUrl);
+    }
+
     get toolbar() {
         if (this.args.isEditing) {
             return false;
