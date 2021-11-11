@@ -1369,8 +1369,8 @@
 .kg-accordion-card {
     display: flex;
     padding: 16px 24px;
-    background: var(--whitegrey-l1);
-    border-radius: var(--border-radius);
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
     flex-direction: column;
 }
 
