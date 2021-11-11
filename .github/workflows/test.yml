@@ -13,7 +13,7 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-18.04
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     name: Lint
     steps:
       - uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
 
   migrations:
     runs-on: ubuntu-18.04
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
         DB: ['sqlite3', 'mysql']
@@ -126,14 +126,14 @@ jobs:
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
       - name: Tailscale Action
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'tryghost/'))
+        if: github.repository_owner == 'TryGhost'
         uses: tailscale/github-action@v1
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       # Report time taken to metrics service
       - uses: sam-lord/action-trigger-metric@main
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'tryghost/'))
+        if: github.repository_owner == 'TryGhost'
         with:
           metricName: 'test-time'
           metricValue: ${{ env.test_time }}
