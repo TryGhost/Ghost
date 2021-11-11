@@ -95,7 +95,7 @@
         {{!-- rendered (non-edit) mode view --}}
 
         <div class="{{if (eq @payload.alignment "center") "tc"}}">
-            <div class="dib" data-tooltip={{or @payload.buttonUrl "Add button URL"}}>
+            <div class="dib" data-tooltip={{or @payload.buttonUrl "Double click to add button URL"}}>
                 <a class="gh-btn gh-btn-accent {{if this.isIncomplete "o-50"}}" href="javascript:void(0)"><span>{{or @payload.buttonText "Add button text"}}</span></a>
             </div>
         </div>
