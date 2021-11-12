@@ -2,9 +2,26 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
+import {inject as service} from '@ember/service';
 
 export default class GhSearchInputTrigger extends Component {
+    @service dropdown;
+
     inputElem = null;
+
+    constructor() {
+        super(...arguments);
+        this.dropdown.on('close', this, this.closeFromDropdown);
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.dropdown.off('close', this, this.closeFromDropdown);
+    }
+
+    closeFromDropdown() {
+        this.args.select.actions.close();
+    }
 
     @action
     registerInput(elem) {
