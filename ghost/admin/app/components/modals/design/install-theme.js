@@ -24,11 +24,15 @@ export default class InstallThemeModalComponent extends Component {
     }
 
     get themeName() {
-        return this.args.data.theme.name;
+        return this.args.data.theme?.name || this.args.data.ref.split('/')[1];
+    }
+
+    get themeRef() {
+        return this.args.data.theme?.ref || this.args.data.ref;
     }
 
     get isDefaultTheme() {
-        return this.args.data.theme.ref === 'default';
+        return this.themeName.toLowerCase() === 'capser';
     }
 
     get isConfirming() {
@@ -65,7 +69,7 @@ export default class InstallThemeModalComponent extends Component {
         try {
             if (this.isDefaultTheme) {
                 // default theme can't be installed, only activated
-                const defaultTheme = this.store.peekRecord('theme', this.args.data.theme.name.toLowerCase());
+                const defaultTheme = this.store.peekRecord('theme', 'casper');
                 yield this.themeManagement.activateTask.perform(defaultTheme, {skipErrors: true});
                 this.installedTheme = defaultTheme;
 
@@ -75,7 +79,7 @@ export default class InstallThemeModalComponent extends Component {
                 return true;
             }
 
-            const url = this.ghostPaths.url.api('themes/install') + `?source=github&ref=${this.args.data.theme.ref}`;
+            const url = this.ghostPaths.url.api('themes/install') + `?source=github&ref=${this.themeRef}`;
             const result = yield this.ajax.post(url);
 
             this.installError = '';
