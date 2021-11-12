@@ -3,6 +3,7 @@ const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:services:url:service');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
+const labs = require('../../../shared/labs');
 const UrlGenerator = require('./UrlGenerator');
 const Queue = require('./Queue');
 const Urls = require('./Urls');
@@ -313,15 +314,15 @@ class UrlService {
     }
 
     async persistUrls() {
-        if (!this.urlCachePath) {
+        if (!labs.isSet('urlCache') || !this.urlCachePath) {
             return null;
         }
 
-        return fs.writeFileSync(this.urlCachePath, JSON.stringify(this.urls.urls, null, 4));
+        return fs.writeFile(this.urlCachePath, JSON.stringify(this.urls.urls, null, 4));
     }
 
     async fetchUrls() {
-        if (!this.urlCachePath) {
+        if (!labs.isSet('urlCache') || !this.urlCachePath) {
             return null;
         }
 
