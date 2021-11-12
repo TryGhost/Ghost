@@ -23,12 +23,9 @@ export default class InstallThemeRoute extends Route {
 
         const theme = themesController.officialThemes.findBy('ref', installController.ref);
 
-        if (!theme) {
-            return this.transitionTo('settings.design.change-theme');
-        }
-
         this.installModal = this.modals.open('modals/design/install-theme', {
             theme,
+            ref: installController.ref,
             onSuccess: () => {
                 this.showingSuccessModal = true;
                 this.router.transitionTo('settings.design');
