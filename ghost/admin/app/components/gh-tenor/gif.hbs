@@ -1,0 +1,23 @@
+<a class="gh-unsplash-photo" href="#" {{on "click" @zoom}} data-tenor-zoomed-gif={{if @zoomed @gif.id}} data-test-tenor-gif={{@gif.id}} style={{this.style}} {{did-insert this.didInsert}}>
+    <div class="gh-unsplash-photo-container" style={{this.containerStyle}} data-test-tenor-gif-container>
+        <img src={{this.imageUrl}} alt={{@gif.description}} width={{this.width}} height={{this.height}} data-test-tenor-gif-image />
+
+        <div class="gh-unsplash-photo-overlay">
+            <div class="gh-unsplash-photo-header">
+                {{!-- <a class="gh-unsplash-button-likes gh-unsplash-button" href="{{@gif.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">{{svg-jar "unsplash-heart"}}{{@gif.likes}}</a>
+                <a class="gh-unsplash-button-download gh-unsplash-button" href="{{@gif.links.download}}/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit&force=true">{{svg-jar "download"}}</a> --}}
+            </div>
+            <div class="gh-unsplash-photo-footer">
+                <div class="gh-unsplash-photo-author">
+                    {{!-- <a class="gh-unsplash-photo-author-img" href="{{@gif.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
+                        <img src="{{@gif.user.profile_image.medium}}" />
+                    </a>
+                    <a class="gh-unsplash-photo-author-name" href="{{@gif.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
+                        {{@gif.user.name}}
+                    </a> --}}
+                </div>
+                <button class="gh-unsplash-button" {{on "click" @select}}>Insert gif</button>
+            </div>
+        </div>
+    </div>
+</a>
