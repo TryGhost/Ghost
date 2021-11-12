@@ -46,7 +46,8 @@ export default Component.extend({
     imageSelector: computed('payload.imageSelector', function () {
         let selector = this.payload.imageSelector;
         let imageSelectors = {
-            unsplash: 'gh-unsplash'
+            unsplash: 'gh-unsplash',
+            tenor: 'gh-tenor'
         };
 
         return imageSelectors[selector];
