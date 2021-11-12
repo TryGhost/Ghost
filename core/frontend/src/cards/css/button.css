@@ -1,22 +1,27 @@
 .kg-button-card {
-    width: 100%;
-    position: relative;
     display: flex;
+    position: static;
     align-items: center;
-}
-
-.kg-align-center {
+    width: 100%;
     justify-content: center;
 }
 
 a.kg-btn {
-    display: inline-flex;
+    display: flex;
+    position: static;
     align-items: center;
-    justify-content: space-between;
-    padding: 5px 10px;
-    font-size: 1.8rem;
-    border-radius: 5px;
+    padding: 0 2.0rem;
+    height: 4.0rem;
+    line-height: 4.0rem;
+    font-size: 1.65rem;
+    font-weight: 600;
     text-decoration: none;
+    border-radius: 5px;
+    transition: opacity 0.2s ease-in-out;
+}
+
+a.kg-btn:hover {
+    opacity: 0.85;
 }
 
 a.kg-btn-accent {
