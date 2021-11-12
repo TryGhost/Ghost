@@ -69,7 +69,7 @@ async function initDatabase({config, logging}) {
  * @param {object} options.ghostServer
  * @param {object} options.config
  */
-async function initCore({ghostServer, config}) {
+async function initCore({ghostServer, config, bootLogger}) {
     debug('Begin: initCore');
 
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
@@ -96,7 +96,11 @@ async function initCore({ghostServer, config}) {
     // Note: there is no await here, we do not wait for the url service to finish
     // We can return, but the site will remain in (the shared, not global) maintenance mode until this finishes
     // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/server/web/shared/middlewares/maintenance.js#L13
-    urlService.init();
+    urlService.init({
+        onFinished: () => {
+            bootLogger.log('URL Service Ready');
+        }
+    });
     debug('End: Url Service');
 
     // Job Service allows parts of Ghost to run in the background
@@ -355,7 +359,7 @@ async function bootGhost() {
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer, config});
+        await initCore({ghostServer, config, bootLogger});
         await initServicesForFrontend();
         await initFrontend();
         const ghostApp = await initExpressApps();
