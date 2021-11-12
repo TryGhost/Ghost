@@ -20,10 +20,36 @@ export default class MovableModifier extends Modifier {
 
     didInstall() {
         this.addStartEventListeners();
+
+        if (this.args.named.adjustOnResize) {
+            this._resizeObserver = new ResizeObserver(() => {
+                if (this.currentX === undefined || this.currentY === undefined) {
+                    return;
+                }
+
+                const {x, y} = this.args.named.adjustOnResize(this.element, {x: this.currentX, y: this.currentY});
+
+                if (x === this.currentX && y === this.currentY) {
+                    return;
+                }
+
+                this.currentX = x;
+                this.initialX = x;
+                this.xOffset = x;
+
+                this.currentY = y;
+                this.initialY = y;
+                this.yOffset = y;
+
+                this.setTranslate(x, y);
+            });
+            this._resizeObserver.observe(this.element);
+        }
     }
 
     willDestroy() {
         this.removeEventListeners();
+        this.removeResizeObserver();
         this.enableSelection();
     }
 
@@ -63,6 +89,10 @@ export default class MovableModifier extends Modifier {
     removeEventListeners() {
         this.removeStartEventListeners();
         this.removeActiveEventListeners();
+    }
+
+    removeResizeObserver() {
+        this._resizeObserver?.disconnect();
     }
 
     @action
