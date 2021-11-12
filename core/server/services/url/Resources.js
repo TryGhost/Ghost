@@ -43,13 +43,12 @@ class Resources {
     }
 
     /**
-     * @description Initialise the resource config. We currently fetch the data straight via the the model layer,
+     * @description Initialize the resource config. We currently fetch the data straight via the the model layer,
      *              but because Ghost supports multiple API versions, we have to ensure we load the correct data.
      *
      * @TODO: https://github.com/TryGhost/Ghost/issues/10360
-     * @private
      */
-    _initResourceConfig() {
+    initResourceConfig() {
         if (!_.isEmpty(this.resourcesConfig)) {
             return;
         }
@@ -65,8 +64,6 @@ class Resources {
     fetchResources() {
         const ops = [];
         debug('fetchResources');
-
-        this._initResourceConfig();
 
         // NOTE: Iterate over all resource types (posts, users etc..) and call `_fetch`.
         _.each(this.resourcesConfig, (resourceConfig) => {
@@ -442,8 +439,6 @@ class Resources {
      * @description Reset this class instance.
      *
      * Is triggered if you switch API versions.
-     *
-     * @param {Object} options
      */
     reset() {
         _.each(this.listeners, (obj) => {
