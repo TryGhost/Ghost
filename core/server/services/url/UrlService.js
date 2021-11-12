@@ -288,6 +288,7 @@ class UrlService {
      */
     init() {
         this.resources.fetchResources();
+        this.resources.initEvenListeners();
         // CASE: all resources are fetched, start the queue
         this.queue.start({
             event: 'init',
