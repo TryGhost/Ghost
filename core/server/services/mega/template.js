@@ -517,10 +517,12 @@ figure blockquote p {
     display: block;
     text-decoration: none !important;
 }
+
 .kg-video-preview table {
     background-size: cover;
     min-height: 200px; /* for when images aren't loaded */
 }
+
 .kg-video-play-button {
     height: 2em;
     width: 3em;
@@ -530,6 +532,7 @@ figure blockquote p {
     font-size: 1em; /* change this to resize */
     background-color: rgba(0,0,0,0.85);
 }
+
 .kg-video-play-button div {
     display: block;
     width: 0;
@@ -541,6 +544,61 @@ figure blockquote p {
     border-width: 0.8em 0 0.8em 1.5em;
 }
 
+a.kg-nft-card {
+    display: flex;
+    flex-direction: column;
+    color: #15212A;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-size: 15px;
+    text-decoration: none;
+    border-radius: 3px;
+    border: 1px solid #e5eff5;
+    width: 100%;
+    max-width: 512px;
+    color: #222;
+    background: #fff;
+    margin: 0 auto;
+}
+
+.kg-nft-metadata {
+    padding: 20px;
+}
+
+.kg-nft-image {
+    border-radius: 2px 2px 0 0;
+}
+
+.kg-nft-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.kg-nft-title {
+    font-family: inherit;
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0;
+    color: #222;
+}
+
+.kg-nft-creator {
+    font-family: inherit;
+    margin: 4px 0 0;
+    color: #ababab;
+}
+
+.kg-nft-creator-name {
+    font-weight: 500;
+    color: #222;
+}
+
+.kg-nft-description {
+    font-family: inherit;
+    line-height: 1.4em;
+    margin: 12px 0 0;
+    color: #222;
+}
 
 /* -------------------------------------
     HEADER, FOOTER, MAIN
@@ -614,7 +672,6 @@ figure blockquote p {
     margin: 0;
     padding: 12px 25px;
     text-decoration: none;
-    text-transform: capitalize;
 }
 
 .btn-primary table td {
