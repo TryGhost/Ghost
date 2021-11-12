@@ -48,13 +48,13 @@ class NFTOEmbedProvider {
             provider_url: 'https://opensea.io',
             html: `
             <a href="${result.body.permalink}" class="kg-nft-card">
-                <img src="${result.body.image_url}">
+                <img class="kg-nft-image" src="${result.body.image_url}">
                 <div class="kg-nft-metadata">
                     <div class="kg-nft-header">
                         <h4 class="kg-nft-title"> ${result.body.name} </h4>
                     </div>
                     <div class="kg-nft-creator">
-                        Created by <span>${result.body.creator.user.username}</span>
+                        Created by <span class="kg-nft-creator-name">${result.body.creator.user.username}</span>
                         ${(result.body.collection.name ? `&bull; ${result.body.collection.name}` : ``)}
                     </div>
                     ${(result.body.description ? `<p class="kg-nft-description">${result.body.description}</p>` : ``)}
