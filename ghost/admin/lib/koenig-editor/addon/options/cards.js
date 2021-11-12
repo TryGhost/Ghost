@@ -221,7 +221,7 @@ export const CARD_MENU = [
             replaceArg: 'image',
             params: ['searchTerm'],
             payload: {
-                imageSelector: 'unsplash'
+                imageSelector: 'tenor'
             },
             feature: 'gifsCard'
         },

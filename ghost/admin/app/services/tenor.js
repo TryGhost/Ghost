@@ -1,0 +1,224 @@
+import Service from '@ember/service';
+import fetch from 'fetch';
+import {TrackedArray} from 'tracked-built-ins';
+import {action} from '@ember/object';
+import {isEmpty} from '@ember/utils';
+import {inject as service} from '@ember/service';
+import {task, taskGroup} from 'ember-concurrency-decorators';
+import {timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
+
+const API_URL = 'https://g1.tenor.com';
+const API_VERSION = 'v1';
+const DEBOUNCE_MS = 600;
+
+export default class TenorService extends Service {
+    @service config;
+
+    @tracked columnCount = 4;
+    @tracked columns = null;
+    @tracked error = null;
+    @tracked gifs = new TrackedArray([]);
+    @tracked searchTerm = '';
+    @tracked loadedType = 'trending';
+
+    _columnHeights = [];
+    _nextPos = null;
+
+    get apiKey() {
+        return this.config.get('tenorApiKey');
+    }
+
+    get isLoading() {
+        return this.searchTask.isRunning || this.loadingTasks.isRunning;
+    }
+
+    constructor() {
+        super(...arguments);
+        this._resetColumns();
+    }
+
+    @action
+    updateSearch(term) {
+        if (term === this.searchTerm) {
+            return;
+        }
+
+        this.searchTerm = term;
+        this.reset();
+
+        if (term) {
+            return this.searchTask.perform(term);
+        } else {
+            return this.loadTrendingTask.perform();
+        }
+    }
+
+    @action
+    loadNextPage() {
+        // protect against scroll trigger firing when the gifs are reset
+        if (this.searchTask.isRunning) {
+            return;
+        }
+
+        if (isEmpty(this.gifs)) {
+            return this.loadTrendingTask.perform();
+        }
+
+        if (this._nextPos !== null) {
+            this.loadNextPageTask.perform();
+        }
+    }
+
+    @task({restartable: true})
+    *searchTask(term) {
+        yield timeout(DEBOUNCE_MS);
+
+        this.loadedType = 'search';
+
+        yield this._makeRequest(this.loadedType, {params: {
+            q: term,
+            media_filter: 'minimal'
+        }});
+    }
+
+    @taskGroup loadingTasks;
+
+    @task({group: 'loadingTasks'})
+    *loadTrendingTask() {
+        this.loadedType = 'trending';
+
+        yield this._makeRequest(this.loadedType, {params: {
+            media_filter: 'minimal'
+        }});
+    }
+
+    @task({group: 'loadingTasks'})
+    *loadNextPageTask() {
+        const params = {
+            pos: this._nextPos,
+            media_filter: 'minimal'
+        };
+
+        if (this.loadedType === 'search') {
+            params.q = this.searchTerm;
+        }
+
+        yield this._makeRequest(this.loadedType, {params});
+    }
+
+    @task({group: 'loadingTasks'})
+    *retryLastRequestTask() {
+        if (this._lastRequestArgs) {
+            yield this._makeRequest(...this._lastRequestArgs);
+        }
+    }
+
+    reset() {
+        this.gifs = new TrackedArray([]);
+        this._nextPos = null;
+        this._resetColumns();
+    }
+
+    async _makeRequest(path, options) {
+        const versionedPath = `${API_VERSION}/${path}`.replace(/\/+/, '/');
+        const url = new URL(versionedPath, API_URL);
+
+        const params = new URLSearchParams(options.params);
+        params.append('key', this.apiKey);
+
+        url.search = params.toString();
+
+        // store the url so it can be retried if needed
+        this._lastRequestArgs = arguments;
+
+        this.error = '';
+
+        return fetch(url)
+            .then(response => this._checkStatus(response))
+            .then(response => response.json())
+            .then(response => this._extractPagination(response))
+            .then(response => this._addGifsFromResponse(response))
+            .catch((e) => {
+                // if the error text isn't already set then we've get a connection error from `fetch`
+                if (!options.ignoreErrors && !this.error) {
+                    this.error = 'Uh-oh! Trouble reaching the Tenor API, please check your connection';
+                }
+                console.error(e); // eslint-disable-line
+            });
+    }
+
+    async _checkStatus(response) {
+        // successful request
+        if (response.status >= 200 && response.status < 300) {
+            return response;
+        }
+
+        let responseText;
+
+        if (response.headers.map['content-type'] === 'application/json') {
+            responseText = await response.json().then(json => json.errors[0]);
+        } else if (response.headers.map['content-type'] === 'text/xml') {
+            responseText = await response.text();
+        }
+
+        this.error = responseText;
+
+        const error = new Error(responseText);
+        error.response = response;
+        throw error;
+    }
+
+    async _extractPagination(response) {
+        this._nextPos = response.next;
+        return response;
+    }
+
+    async _addGifsFromResponse(response) {
+        const gifs = response.results;
+        gifs.forEach(gif => this._addGif(gif));
+
+        return response;
+    }
+
+    _addGif(gif) {
+        // re-calculate ratio for later use
+        const [width, height] = gif.media[0].tinygif.dims;
+        gif.ratio = height / width;
+
+        // add to general gifs list
+        this.gifs.push(gif);
+
+        // add to least populated column
+        this._addGifToColumns(gif);
+    }
+
+    _addGifToColumns(gif) {
+        const min = Math.min(...this._columnHeights);
+        const columnIndex = this._columnHeights.indexOf(min);
+
+        // use a fixed width when calculating height to compensate for different overall sizes
+        this._columnHeights[columnIndex] += 300 * gif.ratio;
+        this.columns[columnIndex].push(gif);
+    }
+
+    _resetColumns() {
+        let columns = new TrackedArray([]);
+        let _columnHeights = [];
+
+        // pre-fill column arrays based on columnCount
+        for (let i = 0; i < this.columnCount; i += 1) {
+            columns[i] = new TrackedArray([]);
+            _columnHeights[i] = 0;
+        }
+
+        this.columns = columns;
+        this._columnHeights = _columnHeights;
+
+        if (!isEmpty(this.gifs)) {
+            this.gifs.forEach((gif) => {
+                this._addGifToColumns(gif);
+            });
+        }
+    }
+}
