@@ -281,10 +281,7 @@ class UrlService {
     }
 
     /**
-     * @description Internal helper to re-trigger fetching resources on theme change.
-     *
-     * @TODO: Either remove this helper or rename to `_init`, because it's a little confusing,
-     *        because this service get's initalised via events.
+     * @description Initializes components needed for the URL Service to function
      */
     async init() {
         this.resources.initResourceConfig();
