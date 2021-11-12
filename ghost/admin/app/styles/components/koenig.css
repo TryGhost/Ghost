@@ -1527,7 +1527,7 @@
     font-size: 1.4rem;
     font-weight: 400;
     width: 100%;
-    max-width: 740px;
+    max-width: 512px;
     border: 1px solid var(--whitegrey);
     border-radius: 5px;
     color: #222;
