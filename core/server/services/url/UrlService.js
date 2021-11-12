@@ -27,6 +27,7 @@ class UrlService {
     constructor({urlCachePath} = {}) {
         this.utils = urlUtils;
         this.urlCachePath = urlCachePath;
+        this.onFinished = null;
         this.finished = false;
         this.urlGenerators = [];
 
@@ -76,6 +77,9 @@ class UrlService {
     _onQueueEnded(event) {
         if (event === 'init') {
             this.finished = true;
+            if (this.onFinished) {
+                this.onFinished();
+            }
         }
     }
 
@@ -307,8 +311,12 @@ class UrlService {
 
     /**
      * @description Initializes components needed for the URL Service to function
+     * @param {Object} options
+     * @param {Function} [options.onFinished] - callback when url generation is finished
      */
-    async init() {
+    async init(options = {}) {
+        this.onFinished = options.onFinished;
+
         this.resources.initResourceConfig();
         this.resources.initEvenListeners();
 
@@ -317,7 +325,7 @@ class UrlService {
             this.urls = new Urls({
                 urls: persistedUrls
             });
-            this.finished = true;
+            this._onQueueEnded('init');
         } else {
             await this.resources.fetchResources();
         }
