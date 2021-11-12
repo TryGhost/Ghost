@@ -286,9 +286,11 @@ class UrlService {
      * @TODO: Either remove this helper or rename to `_init`, because it's a little confusing,
      *        because this service get's initalised via events.
      */
-    init() {
-        this.resources.fetchResources();
+    async init() {
+        this.resources.initResourceConfig();
         this.resources.initEvenListeners();
+        await this.resources.fetchResources();
+
         // CASE: all resources are fetched, start the queue
         this.queue.start({
             event: 'init',
