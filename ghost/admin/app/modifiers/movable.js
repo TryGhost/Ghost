@@ -1,8 +1,11 @@
 import Modifier from 'ember-modifier';
 import {action} from '@ember/object';
 import {guidFor} from '@ember/object/internals';
+import {inject as service} from '@ember/service';
 
 export default class MovableModifier extends Modifier {
+    @service dropdown;
+
     moveThreshold = 3;
 
     active = false;
@@ -105,6 +108,7 @@ export default class MovableModifier extends Modifier {
                 Math.abs(Math.abs(this.initialX - eventX) - Math.abs(this.xOffset)) > this.moveThreshold ||
                 Math.abs(Math.abs(this.initialY - eventY) - Math.abs(this.yOffset)) > this.moveThreshold
             ) {
+                this.dropdown.closeDropdowns();
                 this.disableScroll();
                 this.disableSelection();
                 this.disablePointerEvents();
