@@ -57,6 +57,7 @@ export default Service.extend({
     membersActivity: feature('membersActivity', {developer: true}),
     cardSettingsPanel: feature('cardSettingsPanel', {developer: true}),
     membersAutoLogin: feature('membersAutoLogin', {developer: true}),
+    urlCache: feature('urlCache', {developer: true}),
     mediaAPI: feature('mediaAPI', {developer: true}),
     filesAPI: feature('filesAPI', {developer: true}),
     buttonCard: feature('buttonCard', {developer: true}),
