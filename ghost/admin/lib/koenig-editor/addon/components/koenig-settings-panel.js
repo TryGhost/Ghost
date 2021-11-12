@@ -60,4 +60,34 @@ export default class KoenigSettingsPanelComponent extends Component {
         yield timeout(250);
         this.positionPanel(this.panelElem);
     }
+
+    // called when panel is expanded/collapsed by changing settings
+    @action
+    calculateResizeAdjustment(panelElem, {x, y}) {
+        const panelRect = panelElem.getBoundingClientRect();
+
+        const topIsOffscreen = panelRect.top < 0;
+        const bottomIsOffscreen = panelRect.bottom > window.innerHeight;
+
+        if (topIsOffscreen && bottomIsOffscreen) {
+            // there's not much we can do here, the screen is too small.
+            // leave as-is to avoid any weird jumping
+            return {x, y};
+        }
+
+        if (topIsOffscreen) {
+            const yAdjustment = Math.abs(panelRect.top) + 10;
+
+            return {x, y: y + yAdjustment};
+        }
+
+        if (bottomIsOffscreen) {
+            const yAdjustment = -Math.abs(panelRect.bottom - window.innerHeight) - 10;
+
+            return {x, y: y + yAdjustment};
+        }
+
+        // no adjustment needed
+        return {x, y};
+    }
 }
