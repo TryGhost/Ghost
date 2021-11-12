@@ -59,7 +59,7 @@ export default Component.extend({
         let cards = this.cards || [];
 
         return assign({
-            html: `<p>${this.cleanHTML || ''}</p>`,
+            html: `<${this.defaultTag}>${this.cleanHTML || ''}</${this.defaultTag}>`,
             placeholder: this.placeholder,
             spellcheck: this.spellcheck,
             autofocus: this.autofocus,
