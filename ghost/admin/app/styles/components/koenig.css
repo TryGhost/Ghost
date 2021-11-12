@@ -1516,6 +1516,80 @@
     padding: 0 20px;
 }
 
+/* NFT card
+/* --------------------------------------------------------------- */
+.kg-nft-card {
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    font-size: 1.4rem;
+    font-weight: 400;
+    width: 100%;
+    max-width: 740px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 5px;
+    color: #222;
+    background: #fff;
+    border-radius: 5px;
+}
+
+.kg-nft-card:hover {
+    color: inherit;
+}
+
+.kg-nft-card * {
+    position: static;
+    line-height: 1;
+}
+
+.kg-nft-metadata {
+    padding: 20px;
+}
+
+.kg-nft-card img {
+    min-width: unset;
+    max-width: unset;
+    margin: -1px;
+    border-radius: 5px 5px 0 0;
+}
+
+.kg-nft-title {
+    display: flex;
+    justify-content: space-between;
+}
+
+.kg-nft-title h4 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    min-width: unset;
+    max-width: unset;
+    color: #222;
+}
+
+.kg-nft-title svg {
+    width: 100px;
+    height: auto;
+}
+
+.kg-nft-creator {
+    margin-top: 6px;
+    color: #ababab;
+}
+
+.kg-nft-creator span {
+    font-weight: 500;
+    color: #222;
+}
+
+.kg-nft-card div + p {
+    font-family: var(--font-family);
+    font-size: 1.4rem;
+    margin-top: 20px;
+}
+
+/* .kg-nft-card  */
 
 /* Codemirror overrides
 /* --------------------------------------------------------------- */
