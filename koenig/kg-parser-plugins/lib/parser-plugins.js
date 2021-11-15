@@ -153,11 +153,11 @@ export function createParserPlugins(_options = {}) {
             return;
         }
 
-        const headingNode = node.querySelector('.kg-toggle-heading');
+        const headingNode = node.querySelector('.kg-toggle-heading-text');
         const contentNode = node.querySelector('.kg-toggle-content');
 
         let toggleHeading = headingNode.innerHTML;
-        let toggleContent = contentNode.innerHTML;
+        let toggleContent = contentNode.innerText;
 
         const payload = {
             heading: toggleHeading,
