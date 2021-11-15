@@ -3,10 +3,18 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
+const TWO_COLUMN_WIDTH = 540;
+const THREE_COLUMN_WIDTH = 940;
+
 export default class GhTenorComponent extends Component {
     @service tenor;
 
     @tracked zoomedGif;
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this._resizeObserver?.disconnect();
+    }
 
     @action
     search(event) {
@@ -16,10 +24,28 @@ export default class GhTenorComponent extends Component {
     }
 
     @action
-    setInitialSearch() {
+    postInsertSetup(containerElem) {
         if (this.args.searchTerm !== this.tenor.searchTerm) {
             this.tenor.updateSearch(this.args.searchTerm);
         }
+
+        this._resizeObserver = new ResizeObserver((entries) => {
+            const [containerEntry] = entries;
+            const contentBoxSize = Array.isArray(containerEntry.contentBoxSize) ? containerEntry.contentBoxSize[0] : containerEntry.contentBoxSize;
+
+            const width = contentBoxSize.inlineSize;
+
+            let columns = 4;
+
+            if (width <= TWO_COLUMN_WIDTH) {
+                columns = 2;
+            } else if (width <= THREE_COLUMN_WIDTH) {
+                columns = 3;
+            }
+
+            this.tenor.changeColumnCount(columns);
+        });
+        this._resizeObserver.observe(containerElem);
     }
 
     @action

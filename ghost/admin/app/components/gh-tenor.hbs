@@ -2,7 +2,7 @@
 <LiquidWormhole @class="unsplash">
     {{!-- TODO: why does this modal background not cover the PSM without style override? --}}
     <div class="fullscreen-modal-background" style="z-index: 999" {{on "click" @close}}></div>
-    <div class="absolute top-8 right-8 bottom-8 left-8 br4 overflow-hidden bg-white z-9999" {{on-key "Escape" this.handleEscape}} {{did-insert this.setInitialSearch}} data-tenor>
+    <div class="absolute top-8 right-8 bottom-8 left-8 br4 overflow-hidden bg-white z-9999" {{on-key "Escape" this.handleEscape}} {{did-insert this.postInsertSetup}} data-tenor>
         {{!-- close button --}}
         <button type="button" class="absolute top-6 right-6" {{on "click" @close}}>
             {{svg-jar "close" class="w4 stroke-midlightgrey-l2"}}
@@ -61,7 +61,7 @@
                         <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
                             <div>
                                 <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="Network error" />
-                                <h4>{{this.tenor.error}} (<a href="#" {{on "click" this.retry}}>retry</a>)</h4>
+                                <h4>{{this.tenor.error}} (<a href="#" {{on "click" this.tenor.retry}}>retry</a>)</h4>
                             </div>
                         </section>
                     {{/if}}
@@ -81,7 +81,7 @@
 
                 {{!-- zoomed image overlay --}}
                 {{#if this.zoomedGif}}
-                    <div class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{action "closeZoom"}}>
+                    <div class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{on "click" this.closeZoom}}>
                         <GhTenor::Gif
                             @gif={{this.zoomedGif}}
                             @zoomed={{true}}
