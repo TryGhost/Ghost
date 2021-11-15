@@ -105,10 +105,15 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _onInit', function () {
         it('1 resource', function () {
-            router.getResourceType.returns('posts');
             resources.getAllByType.withArgs('posts').returns([resource]);
 
-            const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+            const urlGenerator = new UrlGenerator({
+                router,
+                resourceType: 'posts',
+                queue,
+                resources,
+                urls
+            });
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
@@ -116,10 +121,15 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('no resource', function () {
-            router.getResourceType.returns('posts');
             resources.getAllByType.withArgs('posts').returns([]);
 
-            const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+            const urlGenerator = new UrlGenerator({
+                router,
+                resourceType: 'posts',
+                queue,
+                resources,
+                urls
+            });
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onInit();
@@ -129,10 +139,15 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _onAdded', function () {
         it('type is equal', function () {
-            router.getResourceType.returns('posts');
             resources.getByIdAndType.withArgs('posts', 1).returns(resource);
 
-            const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+            const urlGenerator = new UrlGenerator({
+                router,
+                resourceType: 'posts',
+                queue,
+                resources,
+                urls
+            });
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
@@ -140,9 +155,13 @@ describe('Unit: services/url/UrlGenerator', function () {
         });
 
         it('type is not equal', function () {
-            router.getResourceType.returns('pages');
-
-            const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+            const urlGenerator = new UrlGenerator({
+                router,
+                resourceType: 'pages',
+                queue,
+                resources,
+                urls
+            });
             sinon.stub(urlGenerator, '_try');
 
             urlGenerator._onAdded({id: 1, type: 'posts'});
@@ -153,10 +172,15 @@ describe('Unit: services/url/UrlGenerator', function () {
     describe('fn: _try', function () {
         describe('no filter', function () {
             it('resource is not taken', function () {
-                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
 
-                const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+                const urlGenerator = new UrlGenerator({
+                    router,
+                    resourceType: 'posts',
+                    queue,
+                    resources,
+                    urls
+                });
                 should.not.exist(urlGenerator.nql);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');
@@ -174,7 +198,13 @@ describe('Unit: services/url/UrlGenerator', function () {
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
 
-                const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+                const urlGenerator = new UrlGenerator({
+                    router,
+                    resourceType: 'posts',
+                    queue,
+                    resources,
+                    urls
+                });
                 should.not.exist(urlGenerator.nql);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');
@@ -191,12 +221,12 @@ describe('Unit: services/url/UrlGenerator', function () {
 
         describe('custom filter', function () {
             it('matches', function () {
-                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
 
                 const urlGenerator = new UrlGenerator({
                     router,
                     filter: 'featured:true',
+                    resourceType: 'posts',
                     queue,
                     resources,
                     urls
@@ -216,12 +246,12 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             it('no match', function () {
-                router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
 
                 const urlGenerator = new UrlGenerator({
                     router,
                     filter: 'featured:true',
+                    resourceType: 'posts',
                     queue,
                     resources,
                     urls
@@ -241,12 +271,12 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             it('resource is taken', function () {
-                router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
 
                 const urlGenerator = new UrlGenerator({
                     router,
                     filter: 'featured:true',
+                    resourceType: 'posts',
                     queue,
                     resources,
                     urls

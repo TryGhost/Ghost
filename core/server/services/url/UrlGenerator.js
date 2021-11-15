@@ -37,13 +37,15 @@ class UrlGenerator {
      * @param {Object} options
      * @param {Object} options.router instance of a frontend Routes (e.g. CollectionRouter, PreviewRouter)
      * @param {String} options.filter NQL filter string
+     * @param {String} options.resourceType resource type (e.g. 'posts', 'tags')
      * @param {Object} options.queue instance of the backend Queue
      * @param {Object} options.resources instance of the backend Resources
      * @param {Object} options.urls instance of the backend URLs (used to store the urls)
      * @param {Number} options.position an ID of the generator
      */
-    constructor({router, filter, queue, resources, urls, position}) {
+    constructor({router, filter, resourceType, queue, resources, urls, position}) {
         this.router = router;
+        this.resourceType = resourceType;
         this.queue = queue;
         this.urls = urls;
         this.resources = resources;
@@ -119,10 +121,10 @@ class UrlGenerator {
      * @private
      */
     _onInit() {
-        debug('_onInit', this.router.getResourceType());
+        debug('_onInit', this.resourceType);
 
         // @NOTE: get the resources of my type e.g. posts.
-        const resources = this.resources.getAllByType(this.router.getResourceType());
+        const resources = this.resources.getAllByType(this.resourceType);
 
         debug(resources.length);
 
@@ -140,7 +142,7 @@ class UrlGenerator {
         debug('onAdded', this.toString());
 
         // CASE: you are type "pages", but the incoming type is "users"
-        if (event.type !== this.router.getResourceType()) {
+        if (event.type !== this.resourceType) {
             return;
         }
 
@@ -223,7 +225,7 @@ class UrlGenerator {
                 action: 'added:' + resource.data.id,
                 eventData: {
                     id: resource.data.id,
-                    type: this.router.getResourceType()
+                    type: this.resourceType
                 }
             });
         };
