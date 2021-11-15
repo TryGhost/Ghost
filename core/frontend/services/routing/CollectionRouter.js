@@ -27,7 +27,6 @@ class CollectionRouter extends ParentRouter {
         this.rss = object.rss !== false;
 
         this.permalinks = {
-            originalValue: object.permalink,
             value: object.permalink
         };
 
