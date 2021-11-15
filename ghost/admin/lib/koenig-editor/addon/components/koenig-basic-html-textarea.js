@@ -23,7 +23,7 @@ const UNDO_DEPTH = 50;
 const SPECIAL_MARKUPS = {
     S: '~~',
     CODE: {
-        char: '{', // this is different because we use <code> to represent {} replacements
+        char: '`',
         replace: false
     },
     SUP: '^',
