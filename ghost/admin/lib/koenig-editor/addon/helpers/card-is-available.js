@@ -18,10 +18,6 @@ export default class CardIsAvailableHelper extends Helper {
             cardIsAvailable = cardIsAvailable && this.config.get('enableDeveloperExperiments');
         }
 
-        if (card.feature) {
-            cardIsAvailable = cardIsAvailable && get(this.feature, card.feature);
-        }
-
         if (postType && card.postType) {
             cardIsAvailable = cardIsAvailable && card.postType === postType;
         }
