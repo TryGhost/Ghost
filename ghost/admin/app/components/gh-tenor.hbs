@@ -42,7 +42,6 @@
                                     {{#each gifs as |gif|}}
                                         <GhTenor::Gif
                                             @gif={{gif}}
-                                            @zoom={{fn this.zoom gif}}
                                             @select={{fn this.select gif}} />
                                     {{/each}}
                                 </div>
@@ -78,17 +77,6 @@
                             @triggerOffset={{1000}} />
                     {{/unless}}
                 </div>
-
-                {{!-- zoomed image overlay --}}
-                {{#if this.zoomedGif}}
-                    <div class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{on "click" this.closeZoom}}>
-                        <GhTenor::Gif
-                            @gif={{this.zoomedGif}}
-                            @zoomed={{true}}
-                            @zoom={{this.closeZoom}}
-                            @select={{fn this.select this.zoomedGif}} />
-                    </div>
-                {{/if}}
             </div>
         </div>
     </div>
