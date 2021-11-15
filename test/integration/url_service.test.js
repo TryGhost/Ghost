@@ -33,10 +33,10 @@ describe('Integration: services/url/UrlService', function () {
         before(function (done) {
             urlService = new UrlService();
 
-            urlService.onRouterAddedType('featured:false', 'posts', '/:slug/');
-            urlService.onRouterAddedType(null, 'authors', '/author/:slug/');
-            urlService.onRouterAddedType(null, 'tags', '/tag/:slug/');
-            urlService.onRouterAddedType(null, 'pages', '/:slug/');
+            urlService.onRouterAddedType('unique-id-1', 'featured:false', 'posts', '/:slug/');
+            urlService.onRouterAddedType('unique-id-2', null, 'authors', '/author/:slug/');
+            urlService.onRouterAddedType('unique-id-3', null, 'tags', '/tag/:slug/');
+            urlService.onRouterAddedType('unique-id-4', null, 'pages', '/:slug/');
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -133,11 +133,11 @@ describe('Integration: services/url/UrlService', function () {
         before(function (done) {
             urlService = new UrlService();
 
-            urlService.onRouterAddedType('featured:true', 'posts', '/podcast/:slug/');
-            urlService.onRouterAddedType('page:false', 'posts', '/collection/:year/:slug/');
-            urlService.onRouterAddedType(null, 'authors', '/persons/:slug/');
-            urlService.onRouterAddedType(null, 'tags', '/category/:slug/');
-            urlService.onRouterAddedType(null, 'pages', '/:slug/');
+            urlService.onRouterAddedType('unique-id-1', 'featured:true', 'posts', '/podcast/:slug/');
+            urlService.onRouterAddedType('unique-id-2', 'page:false', 'posts', '/collection/:year/:slug/');
+            urlService.onRouterAddedType('unique-id-3', null, 'authors', '/persons/:slug/');
+            urlService.onRouterAddedType('unique-id-4', null, 'tags', '/category/:slug/');
+            urlService.onRouterAddedType('unique-id-5', null, 'pages', '/:slug/');
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -226,11 +226,11 @@ describe('Integration: services/url/UrlService', function () {
 
             urlService = new UrlService();
 
-            urlService.onRouterAddedType('featured:false', 'posts', '/collection/:year/:slug/');
-            urlService.onRouterAddedType('featured:true', 'posts', '/podcast/:slug/');
-            urlService.onRouterAddedType(null, 'authors', '/persons/:slug/');
-            urlService.onRouterAddedType(null, 'tags', '/category/:slug/');
-            urlService.onRouterAddedType(null, 'pages', '/:slug/');
+            urlService.onRouterAddedType('unique-id-1', 'featured:false', 'posts', '/collection/:year/:slug/');
+            urlService.onRouterAddedType('unique-id-2', 'featured:true', 'posts', '/podcast/:slug/');
+            urlService.onRouterAddedType('unique-id-3', null, 'authors', '/persons/:slug/');
+            urlService.onRouterAddedType('unique-id-4', null, 'tags', '/category/:slug/');
+            urlService.onRouterAddedType('unique-id-5', null, 'pages', '/:slug/');
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
