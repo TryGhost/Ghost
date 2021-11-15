@@ -15,7 +15,7 @@ module.exports = {
             return dom.createTextNode('');
         }
 
-        if (payload.metadata.card_type === 'nft') {
+        if (payload.metadata && payload.metadata.card_type === 'nft') {
             return nftCard.render({payload, env: {dom}, options});
         }
 
