@@ -75,38 +75,34 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router1.filter = 'featured:false';
-            router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
                 }
             });
 
-            router2.getResourceType.returns('authors');
             router2.getPermalinks.returns({
                 getValue: function () {
                     return '/author/:slug/';
                 }
             });
 
-            router3.getResourceType.returns('tags');
             router3.getPermalinks.returns({
                 getValue: function () {
                     return '/tag/:slug/';
                 }
             });
 
-            router4.getResourceType.returns('pages');
             router4.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
                 }
             });
 
-            urlService.onRouterAddedType(router1, router1.filter);
-            urlService.onRouterAddedType(router2, router2.filter);
-            urlService.onRouterAddedType(router3, router3.filter);
-            urlService.onRouterAddedType(router4, router4.filter);
+            urlService.onRouterAddedType(router1, router1.filter, 'posts');
+            urlService.onRouterAddedType(router2, router2.filter, 'authors');
+            urlService.onRouterAddedType(router3, router3.filter, 'tags');
+            urlService.onRouterAddedType(router4, router4.filter, 'pages');
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -263,7 +259,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router1.filter = 'featured:true';
-            router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
                     return '/podcast/:slug/';
@@ -271,38 +266,34 @@ describe('Integration: services/url/UrlService', function () {
             });
 
             router2.filter = 'page:false';
-            router2.getResourceType.returns('posts');
             router2.getPermalinks.returns({
                 getValue: function () {
                     return '/collection/:year/:slug/';
                 }
             });
 
-            router3.getResourceType.returns('authors');
             router3.getPermalinks.returns({
                 getValue: function () {
                     return '/persons/:slug/';
                 }
             });
 
-            router4.getResourceType.returns('tags');
             router4.getPermalinks.returns({
                 getValue: function () {
                     return '/category/:slug/';
                 }
             });
 
-            router5.getResourceType.returns('pages');
             router5.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
                 }
             });
-            urlService.onRouterAddedType(router1, router1.filter);
-            urlService.onRouterAddedType(router2, router2.filter);
-            urlService.onRouterAddedType(router3, router3.filter);
-            urlService.onRouterAddedType(router4, router4.filter);
-            urlService.onRouterAddedType(router5, router5.filter);
+            urlService.onRouterAddedType(router1, router1.filter, 'posts');
+            urlService.onRouterAddedType(router2, router2.filter, 'posts');
+            urlService.onRouterAddedType(router3, router3.filter, 'authors');
+            urlService.onRouterAddedType(router4, router4.filter, 'tags');
+            urlService.onRouterAddedType(router5, router5.filter, 'pages');
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -452,7 +443,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router1.filter = 'featured:false';
-            router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
                     return '/collection/:year/:slug/';
@@ -460,39 +450,35 @@ describe('Integration: services/url/UrlService', function () {
             });
 
             router2.filter = 'featured:true';
-            router2.getResourceType.returns('posts');
             router2.getPermalinks.returns({
                 getValue: function () {
                     return '/podcast/:slug/';
                 }
             });
 
-            router3.getResourceType.returns('authors');
             router3.getPermalinks.returns({
                 getValue: function () {
                     return '/persons/:slug/';
                 }
             });
 
-            router4.getResourceType.returns('tags');
             router4.getPermalinks.returns({
                 getValue: function () {
                     return '/category/:slug/';
                 }
             });
 
-            router5.getResourceType.returns('pages');
             router5.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
                 }
             });
 
-            urlService.onRouterAddedType(router1, router1.filter);
-            urlService.onRouterAddedType(router2, router2.filter);
-            urlService.onRouterAddedType(router3, router3.filter);
-            urlService.onRouterAddedType(router4, router4.filter);
-            urlService.onRouterAddedType(router5, router5.filter);
+            urlService.onRouterAddedType(router1, router1.filter, 'posts');
+            urlService.onRouterAddedType(router2, router2.filter, 'posts');
+            urlService.onRouterAddedType(router3, router3.filter, 'authors');
+            urlService.onRouterAddedType(router4, router4.filter, 'tags');
+            urlService.onRouterAddedType(router5, router5.filter, 'pages');
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();

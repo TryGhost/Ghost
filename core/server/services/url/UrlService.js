@@ -84,12 +84,13 @@ class UrlService {
      * @param {ExpressRouter} router
      * @param {String} filter NQL filter
      */
-    onRouterAddedType(router, filter) {
+    onRouterAddedType(router, filter, resourceType) {
         debug('Registering route: ', router.name);
 
         let urlGenerator = new UrlGenerator({
             router,
             filter,
+            resourceType,
             queue: this.queue,
             resources: this.resources,
             urls: this.urls,
