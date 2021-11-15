@@ -315,6 +315,9 @@ export default Component.extend({
     },
 
     __debouncedResizeIframe(iframe) {
+        if (!iframe) {
+            return;
+        }
         iframe.style.height = null;
 
         // get ratio from nested iframe if present (eg, Vimeo)
