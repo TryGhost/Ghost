@@ -36,12 +36,13 @@ class UrlGenerator {
     /**
      * @param {Object} options
      * @param {Object} options.router instance of a frontend Routes (e.g. CollectionRouter, PreviewRouter)
+     * @param {String} options.filter NQL filter string
      * @param {Object} options.queue instance of the backend Queue
      * @param {Object} options.resources instance of the backend Resources
      * @param {Object} options.urls instance of the backend URLs (used to store the urls)
      * @param {Number} options.position an ID of the generator
      */
-    constructor({router, queue, resources, urls, position}) {
+    constructor({router, filter, queue, resources, urls, position}) {
         this.router = router;
         this.queue = queue;
         this.urls = urls;
@@ -51,8 +52,8 @@ class UrlGenerator {
         debug('constructor', this.toString());
 
         // CASE: routers can define custom filters, but not required.
-        if (this.router.getFilter()) {
-            this.filter = this.router.getFilter();
+        if (filter) {
+            this.filter = filter;
             this.nql = nql(this.filter, {
                 expansions: EXPANSIONS,
                 transformer: nql.utils.mapKeyValues({
