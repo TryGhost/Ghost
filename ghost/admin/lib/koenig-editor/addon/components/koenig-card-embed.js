@@ -177,7 +177,7 @@ export default Component.extend({
                 this.send('insertAsBookmark', response);
                 return;
             }
-            if (!response.html) {
+            if (!response.html && response.card_type !== 'nft') {
                 throw 'No HTML returned';
             }
 
