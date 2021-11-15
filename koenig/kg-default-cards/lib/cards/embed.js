@@ -4,6 +4,8 @@ const {
     htmlToTransformReady
 } = require('@tryghost/url-utils/lib/utils');
 
+const nftCard = require('./embed/nft');
+
 module.exports = {
     name: 'embed',
     type: 'dom',
@@ -11,6 +13,10 @@ module.exports = {
     render({payload, env: {dom}, options = {}}) {
         if (!payload.html) {
             return dom.createTextNode('');
+        }
+
+        if (payload.metadata.card_type === 'nft') {
+            return nftCard.render({payload, env: {dom}, options});
         }
 
         const figure = dom.createElement('figure');
