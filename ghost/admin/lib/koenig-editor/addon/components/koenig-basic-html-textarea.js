@@ -18,6 +18,42 @@ import {run} from '@ember/runloop';
 
 const UNDO_DEPTH = 50;
 
+// markups that should not be continued when typing and reverted to their
+// text expansion style when backspacing over final char of markup
+const SPECIAL_MARKUPS = {
+    S: '~~',
+    CODE: {
+        char: '{', // this is different because we use <code> to represent {} replacements
+        replace: false
+    },
+    SUP: '^',
+    SUB: '~'
+};
+
+// if the cursor is at the end of one of our "special" markups that can only be
+// toggled via markdown expansions then we want to ensure that the markup is
+// removed from the edit state so that you can type without being stuck with
+// the special formatting
+function toggleSpecialFormatEditState(editor) {
+    let {head, isCollapsed} = editor.range;
+    if (isCollapsed) {
+        Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
+            tagName = tagName.toLowerCase();
+            if (head.marker && head.marker.hasMarkup(tagName) && editor._editState.activeMarkups.findBy('tagName', tagName)) {
+                let nextMarker = head.markerIn(1);
+                if (!nextMarker || !nextMarker.hasMarkup(tagName)) {
+                    // there is a bug somehwhere that means after pasting
+                    // content the _editState can end up with multiple
+                    // instances of the markup so we need to toggle all of them
+                    editor._editState.activeMarkups.filterBy('tagName', tagName).forEach((markup) => {
+                        editor._editState.toggleMarkupState(markup);
+                    });
+                }
+            }
+        });
+    }
+}
+
 export default Component.extend({
     // public attrs
     autofocus: false,
@@ -335,6 +371,11 @@ export default Component.extend({
     },
 
     cursorDidChange(editor) {
+        // if we have `code` or ~strike~ formatting to the left but not the right
+        // then toggle the formatting - these formats should only be creatable
+        // through the text expansions
+        toggleSpecialFormatEditState(editor);
+
         // pass the selected range through to the toolbar + menu components
         this.set('selectedRange', editor.range);
     },
@@ -345,6 +386,12 @@ export default Component.extend({
     // toolbar
     inputModeDidChange(editor) {
         let markupTags = arrayToMap(editor.activeMarkups.map(m => m.tagName));
+
+        // On keyboard cursor movement our `cursorDidChange` toggle for special
+        // formats happens before mobiledoc's readstate updates the edit states
+        // so we have to re-do it here
+        // TODO: can we make the event order consistent in mobiledoc-kit?
+        toggleSpecialFormatEditState(editor);
 
         // Avoid updating this component's properties synchronously while
         // rendering the editor (after rendering the component) because it
