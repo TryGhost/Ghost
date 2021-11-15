@@ -33,6 +33,14 @@ const EXPANSIONS = [{
  * Each router is represented by a url generator.
  */
 class UrlGenerator {
+    /**
+     *
+     * @param {Object} router instance of a frontend Routes (e.g. CollectionRouter, PreviewRouter)
+     * @param {Object} queue instance of the backend Queue
+     * @param {Object} resources instance of the backend Resources
+     * @param {Object} urls instance of the backend URLs (used to store the urls)
+     * @param {Number} position an ID of the generator
+     */
     constructor(router, queue, resources, urls, position) {
         this.router = router;
         this.queue = queue;
@@ -246,6 +254,7 @@ class UrlGenerator {
 
     /**
      * @description Get all urls of this url generator.
+     * NOTE: the method is only used for testing purposes at the moment.
      * @returns {Array}
      */
     getUrls() {
