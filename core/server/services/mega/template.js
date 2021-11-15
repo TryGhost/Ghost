@@ -600,6 +600,59 @@ a.kg-nft-card {
     color: #222;
 }
 
+.kg-card-callout {
+    display: flex;
+    padding: 20px 28px;
+    border-radius: 3px;
+}
+
+.kg-card-callout p {
+    margin: 0
+}
+
+.kg-card-callout-grey {
+    background: #eef0f2;
+}
+
+.kg-card-callout-white {
+    background: #fff;
+    box-shadow: inset 0 0 0 1px #dddedf;
+}
+
+.kg-card-callout-blue {
+    background: #E9F6FB;
+}
+
+.kg-card-callout-green {
+    background: #E8F8EA;
+}
+
+.kg-card-callout-yellow {
+    background: #FCF4E3;
+}
+
+.kg-card-callout-red {
+    background: #FBE9E9;
+}
+
+.kg-card-callout-pink {
+    background: #FCEEF8;
+}
+
+.kg-card-callout-purple {
+    background: #F2EDFC;
+}
+
+.kg-card-callout-accent {
+    background: var(--ghost-accent-color);
+    color: #fff;
+}
+
+.kg-callout-emoji {
+    padding-right: 12px;
+    font-size: 20px;
+}
+
 /* -------------------------------------
     HEADER, FOOTER, MAIN
 ------------------------------------- */
