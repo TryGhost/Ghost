@@ -33,7 +33,7 @@ export const CARD_ICON_MAP = {
     gallery: 'koenig/kg-card-type-gallery',
     email: 'koenig/kg-card-type-gen-embed',
     button: 'koenig/kg-card-type-gen-embed',
-    callout: 'koenig/kg-card-type-gen-embed',
+    callout: 'koenig/kg-card-type-callout',
     nft: 'koenig/kg-card-type-gen-embed',
     toggle: 'koenig/kg-card-type-gen-embed',
     'email-cta': 'koenig/kg-card-type-gen-embed',
@@ -160,7 +160,7 @@ export const CARD_MENU = [
         },
         {
             label: 'Callout',
-            icon: 'koenig/kg-card-type-paywall',
+            icon: 'koenig/kg-card-type-callout',
             desc: 'Info boxes that stand out',
             matches: ['callout'],
             type: 'card',
