@@ -1,0 +1,34 @@
+.kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+}
+
+.kg-toggle-card[data-kg-toggle-state="close"] svg {
+    transform: rotate(-90deg);
+}
+
+.kg-toggle-card {
+    background: #f1f3f4;
+    border-radius: 3px;
+}
+
+.kg-toggle-heading {
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    padding: 16px 24px 12px 24px;
+}
+
+.kg-toggle-heading svg {
+    width: 12px;
+}
+
+.kg-toggle-heading .kg-toggle-heading-text {
+    margin-left: 12px;
+}
+
+.kg-toggle-content {
+    display: flex;
+    padding: 0 24px 16px 24px;
+}
