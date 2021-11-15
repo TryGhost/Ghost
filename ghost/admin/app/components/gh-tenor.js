@@ -9,8 +9,6 @@ const THREE_COLUMN_WIDTH = 940;
 export default class GhTenorComponent extends Component {
     @service tenor;
 
-    @tracked zoomedGif;
-
     willDestroy() {
         super.willDestroy(...arguments);
         this._resizeObserver?.disconnect();
@@ -49,18 +47,6 @@ export default class GhTenorComponent extends Component {
     }
 
     @action
-    zoom(gif, event) {
-        event?.preventDefault();
-        this.zoomedGif = gif;
-    }
-
-    @action
-    closeZoom(event) {
-        event?.preventDefault();
-        this.zoomedGif = null;
-    }
-
-    @action
     select(gif, event) {
         event?.preventDefault();
         event?.stopPropagation();
@@ -80,10 +66,6 @@ export default class GhTenorComponent extends Component {
 
     @action
     handleEscape() {
-        if (this.zoomedGif) {
-            this.zoomedGif = null;
-        } else {
-            this.args.close();
-        }
+        this.args.close();
     }
 }
