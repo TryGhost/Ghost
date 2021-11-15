@@ -70,6 +70,12 @@ export default class TenorService extends Service {
         }
     }
 
+    @action
+    changeColumnCount(columnCount) {
+        this.columnCount = columnCount;
+        this._resetColumns();
+    }
+
     @task({restartable: true})
     *searchTask(term) {
         yield timeout(DEBOUNCE_MS);
