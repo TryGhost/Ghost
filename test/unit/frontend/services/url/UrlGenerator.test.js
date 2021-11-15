@@ -18,7 +18,6 @@ describe('Unit: services/url/UrlGenerator', function () {
         };
 
         router = {
-            getFilter: sinon.stub(),
             addListener: sinon.stub(),
             getResourceType: sinon.stub(),
             getPermalinks: sinon.stub()
@@ -65,8 +64,11 @@ describe('Unit: services/url/UrlGenerator', function () {
     });
 
     it('routing type has filter', function () {
-        router.getFilter.returns('featured:true');
-        const urlGenerator = new UrlGenerator({router, queue});
+        const urlGenerator = new UrlGenerator({
+            router,
+            filter: 'featured:true',
+            queue
+        });
         urlGenerator.filter.should.eql('featured:true');
     });
 
@@ -151,7 +153,6 @@ describe('Unit: services/url/UrlGenerator', function () {
     describe('fn: _try', function () {
         describe('no filter', function () {
             it('resource is not taken', function () {
-                router.getFilter.returns(false);
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
 
@@ -170,7 +171,6 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             it('resource is taken', function () {
-                router.getFilter.returns(false);
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
 
@@ -191,11 +191,16 @@ describe('Unit: services/url/UrlGenerator', function () {
 
         describe('custom filter', function () {
             it('matches', function () {
-                router.getFilter.returns('featured:true');
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
 
-                const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+                const urlGenerator = new UrlGenerator({
+                    router,
+                    filter: 'featured:true',
+                    queue,
+                    resources,
+                    urls
+                });
                 sinon.stub(urlGenerator.nql, 'queryJSON').returns(true);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');
@@ -211,11 +216,16 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             it('no match', function () {
-                router.getFilter.returns('featured:true');
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(false);
 
-                const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+                const urlGenerator = new UrlGenerator({
+                    router,
+                    filter: 'featured:true',
+                    queue,
+                    resources,
+                    urls
+                });
                 sinon.stub(urlGenerator.nql, 'queryJSON').returns(false);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');
@@ -231,11 +241,16 @@ describe('Unit: services/url/UrlGenerator', function () {
             });
 
             it('resource is taken', function () {
-                router.getFilter.returns('featured:true');
                 router.getResourceType.returns('posts');
                 resource.isReserved.returns(true);
 
-                const urlGenerator = new UrlGenerator({router, queue, resources, urls});
+                const urlGenerator = new UrlGenerator({
+                    router,
+                    filter: 'featured:true',
+                    queue,
+                    resources,
+                    urls
+                });
                 sinon.stub(urlGenerator.nql, 'queryJSON').returns(true);
 
                 sinon.stub(urlGenerator, '_generateUrl').returns('something');

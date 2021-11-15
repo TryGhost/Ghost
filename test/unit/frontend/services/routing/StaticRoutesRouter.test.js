@@ -36,7 +36,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             const staticRoutesRouter = new StaticRoutesRouter('/about/', {templates: ['test']}, routerCreatedSpy);
             should.exist(staticRoutesRouter.router);
 
-            should.not.exist(staticRoutesRouter.getFilter());
+            should.not.exist(staticRoutesRouter.filter);
             should.not.exist(staticRoutesRouter.getPermalinks());
 
             staticRoutesRouter.templates.should.eql(['test']);
@@ -60,7 +60,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
             should.exist(staticRoutesRouter.router);
 
             should.not.exist(staticRoutesRouter.getPermalinks());
-            should.not.exist(staticRoutesRouter.getFilter());
+            should.not.exist(staticRoutesRouter.filter);
             staticRoutesRouter.templates.should.eql([]);
 
             routerCreatedSpy.calledOnce.should.be.true();
@@ -119,7 +119,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 should.exist(staticRoutesRouter.router);
 
                 should.not.exist(staticRoutesRouter.getPermalinks());
-                staticRoutesRouter.getFilter().should.eql('tag:test');
+                staticRoutesRouter.filter.should.eql('tag:test');
                 staticRoutesRouter.templates.should.eql([]);
                 should.exist(staticRoutesRouter.data);
 
@@ -146,7 +146,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                 should.exist(staticRoutesRouter.router);
 
                 should.not.exist(staticRoutesRouter.getPermalinks());
-                staticRoutesRouter.getFilter().should.eql('tag:test');
+                staticRoutesRouter.filter.should.eql('tag:test');
 
                 staticRoutesRouter.templates.should.eql([]);
 
@@ -170,7 +170,7 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
                     data: {query: {}, router: {}}
                 }, routerCreatedSpy);
 
-                should.not.exist(staticRoutesRouter.getFilter());
+                should.not.exist(staticRoutesRouter.filter);
             });
 
             it('initialize on subdirectory with controller+data+filter', function () {

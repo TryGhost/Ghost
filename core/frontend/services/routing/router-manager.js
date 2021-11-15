@@ -43,7 +43,7 @@ class RouterManager {
             return;
         }
 
-        this.urlService.onRouterAddedType(router);
+        this.urlService.onRouterAddedType(router, router.filter);
     }
 
     /**
