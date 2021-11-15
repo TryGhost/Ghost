@@ -1483,8 +1483,9 @@
     flex-direction: column;
 }
 
-.kg-accordion-card-heading {
+.kg-accordion-card-heading h4 {
     font-weight: bold !important;
+    font-size: 1.8rem !important;
 }
 
 .kg-accordion-card-heading ::after {
@@ -1496,6 +1497,10 @@
 
 .kg-accordion-card-content ::after {
     line-height: 1.6em;
+}
+
+.kg-accordion-card-content p {
+    font-size: 1.6rem !important;
 }
 
 .kg-accordion-card-content ::after,
