@@ -86,7 +86,13 @@ class UrlService {
     onRouterAddedType(router) {
         debug('Registering route: ', router.name);
 
-        let urlGenerator = new UrlGenerator(router, this.queue, this.resources, this.urls, this.urlGenerators.length);
+        let urlGenerator = new UrlGenerator({
+            router,
+            queue: this.queue,
+            resources: this.resources,
+            urls: this.urls,
+            position: this.urlGenerators.length
+        });
         this.urlGenerators.push(urlGenerator);
     }
 
