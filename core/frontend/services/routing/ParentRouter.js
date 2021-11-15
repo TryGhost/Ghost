@@ -181,14 +181,6 @@ class ParentRouter {
     }
 
     /**
-     * @description Get configured filter of this router.
-     * @returns {String}
-     */
-    getFilter() {
-        return this.filter;
-    }
-
-    /**
      * @description Get main route of this router.
      *
      * Will return the full route including subdirectory. Do not use this function to mount routes for now,

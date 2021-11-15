@@ -39,7 +39,6 @@ describe('Integration: services/url/UrlService', function () {
             urlService = new UrlService();
 
             router1 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -49,7 +48,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router2 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -59,7 +57,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router3 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -69,7 +66,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router4 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -78,7 +74,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
             };
 
-            router1.getFilter.returns('featured:false');
+            router1.filter = 'featured:false';
             router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
@@ -86,7 +82,6 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router2.getFilter.returns(false);
             router2.getResourceType.returns('authors');
             router2.getPermalinks.returns({
                 getValue: function () {
@@ -94,7 +89,6 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router3.getFilter.returns(false);
             router3.getResourceType.returns('tags');
             router3.getPermalinks.returns({
                 getValue: function () {
@@ -102,7 +96,6 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router4.getFilter.returns(false);
             router4.getResourceType.returns('pages');
             router4.getPermalinks.returns({
                 getValue: function () {
@@ -110,10 +103,10 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            urlService.onRouterAddedType(router1);
-            urlService.onRouterAddedType(router2);
-            urlService.onRouterAddedType(router3);
-            urlService.onRouterAddedType(router4);
+            urlService.onRouterAddedType(router1, router1.filter);
+            urlService.onRouterAddedType(router2, router2.filter);
+            urlService.onRouterAddedType(router3, router3.filter);
+            urlService.onRouterAddedType(router4, router4.filter);
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -225,7 +218,6 @@ describe('Integration: services/url/UrlService', function () {
             urlService = new UrlService();
 
             router1 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -235,7 +227,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router2 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -245,7 +236,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router3 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -255,7 +245,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router4 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -265,7 +254,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router5 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -274,7 +262,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
             };
 
-            router1.getFilter.returns('featured:true');
+            router1.filter = 'featured:true';
             router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
@@ -282,7 +270,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router2.getFilter.returns('page:false');
+            router2.filter = 'page:false';
             router2.getResourceType.returns('posts');
             router2.getPermalinks.returns({
                 getValue: function () {
@@ -290,7 +278,6 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router3.getFilter.returns(false);
             router3.getResourceType.returns('authors');
             router3.getPermalinks.returns({
                 getValue: function () {
@@ -298,7 +285,6 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router4.getFilter.returns(false);
             router4.getResourceType.returns('tags');
             router4.getPermalinks.returns({
                 getValue: function () {
@@ -306,19 +292,17 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router5.getFilter.returns(false);
             router5.getResourceType.returns('pages');
             router5.getPermalinks.returns({
                 getValue: function () {
                     return '/:slug/';
                 }
             });
-
-            urlService.onRouterAddedType(router1);
-            urlService.onRouterAddedType(router2);
-            urlService.onRouterAddedType(router3);
-            urlService.onRouterAddedType(router4);
-            urlService.onRouterAddedType(router5);
+            urlService.onRouterAddedType(router1, router1.filter);
+            urlService.onRouterAddedType(router2, router2.filter);
+            urlService.onRouterAddedType(router3, router3.filter);
+            urlService.onRouterAddedType(router4, router4.filter);
+            urlService.onRouterAddedType(router5, router5.filter);
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -350,11 +334,11 @@ describe('Integration: services/url/UrlService', function () {
 
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
-                if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'page:false') {
+                if (generator.router.getResourceType() === 'posts' && generator.filter === 'page:false') {
                     generator.getUrls().length.should.eql(2);
                 }
 
-                if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:true') {
+                if (generator.router.getResourceType() === 'posts' && generator.filter === 'featured:true') {
                     generator.getUrls().length.should.eql(2);
                 }
 
@@ -423,7 +407,6 @@ describe('Integration: services/url/UrlService', function () {
             urlService = new UrlService();
 
             router1 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -433,7 +416,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router2 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -443,7 +425,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router3 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -453,7 +434,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router4 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -463,7 +443,6 @@ describe('Integration: services/url/UrlService', function () {
             };
 
             router5 = {
-                getFilter: sinon.stub(),
                 addListener: sinon.stub(),
                 getResourceType: sinon.stub(),
                 getPermalinks: sinon.stub(),
@@ -472,7 +451,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
             };
 
-            router1.getFilter.returns('featured:false');
+            router1.filter = 'featured:false';
             router1.getResourceType.returns('posts');
             router1.getPermalinks.returns({
                 getValue: function () {
@@ -480,7 +459,7 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router2.getFilter.returns('featured:true');
+            router2.filter = 'featured:true';
             router2.getResourceType.returns('posts');
             router2.getPermalinks.returns({
                 getValue: function () {
@@ -488,7 +467,6 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router3.getFilter.returns(false);
             router3.getResourceType.returns('authors');
             router3.getPermalinks.returns({
                 getValue: function () {
@@ -496,7 +474,6 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router4.getFilter.returns(false);
             router4.getResourceType.returns('tags');
             router4.getPermalinks.returns({
                 getValue: function () {
@@ -504,7 +481,6 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            router5.getFilter.returns(false);
             router5.getResourceType.returns('pages');
             router5.getPermalinks.returns({
                 getValue: function () {
@@ -512,11 +488,11 @@ describe('Integration: services/url/UrlService', function () {
                 }
             });
 
-            urlService.onRouterAddedType(router1);
-            urlService.onRouterAddedType(router2);
-            urlService.onRouterAddedType(router3);
-            urlService.onRouterAddedType(router4);
-            urlService.onRouterAddedType(router5);
+            urlService.onRouterAddedType(router1, router1.filter);
+            urlService.onRouterAddedType(router2, router2.filter);
+            urlService.onRouterAddedType(router3, router3.filter);
+            urlService.onRouterAddedType(router4, router4.filter);
+            urlService.onRouterAddedType(router5, router5.filter);
 
             // We can't use our url service utils here, because this is a local copy of the urlService, not the singletone
             urlService.init();
@@ -549,11 +525,11 @@ describe('Integration: services/url/UrlService', function () {
 
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
-                if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:false') {
+                if (generator.router.getResourceType() === 'posts' && generator.filter === 'featured:false') {
                     generator.getUrls().length.should.eql(2);
                 }
 
-                if (generator.router.getResourceType() === 'posts' && generator.router.getFilter() === 'featured:true') {
+                if (generator.router.getResourceType() === 'posts' && generator.filter === 'featured:true') {
                     generator.getUrls().length.should.eql(2);
                 }
 
