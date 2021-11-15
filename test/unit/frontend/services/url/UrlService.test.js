@@ -159,26 +159,14 @@ describe('Unit: services/url/UrlService', function () {
 
     describe('fn: getPermalinkByUrl', function () {
         it('found', function () {
-            const permalinkStub1 = sinon.stub().returns({
-                getValue: sinon.stub().returns('/:slug/')
-            });
-
-            const permalinkStub2 = sinon.stub().returns({
-                getValue: sinon.stub().returns('/:primary_tag/')
-            });
-
             urlService.urlGenerators = [
                 {
                     uid: 0,
-                    router: {
-                        getPermalinks: permalinkStub1
-                    }
+                    permalink: '/:slug/'
                 },
                 {
                     uid: 1,
-                    router: {
-                        getPermalinks: permalinkStub2
-                    }
+                    permalink: '/:primary_tag/'
                 }
             ];
 
@@ -189,26 +177,14 @@ describe('Unit: services/url/UrlService', function () {
         });
 
         it('found', function () {
-            const permalinkStub1 = sinon.stub().returns({
-                getValue: sinon.stub().returns('/:slug/')
-            });
-
-            const permalinkStub2 = sinon.stub().returns({
-                getValue: sinon.stub().returns('/:primary_tag/')
-            });
-
             urlService.urlGenerators = [
                 {
                     uid: 0,
-                    router: {
-                        getPermalinks: permalinkStub1
-                    }
+                    permalink: '/:slug/'
                 },
                 {
                     uid: 1,
-                    router: {
-                        getPermalinks: permalinkStub2
-                    }
+                    permalink: '/:primary_tag/'
                 }
             ];
 
