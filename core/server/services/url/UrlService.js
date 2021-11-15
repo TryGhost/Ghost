@@ -296,8 +296,13 @@ class UrlService {
             return null;
         }
 
-        return _.find(this.urlGenerators, {uid: object.generatorId}).router.getPermalinks()
-            .getValue(options);
+        const permalink = _.find(this.urlGenerators, {uid: object.generatorId}).permalink;
+
+        if (options.withUrlOptions) {
+            return urlUtils.urlJoin(permalink, '/:options(edit)?/');
+        }
+
+        return permalink;
     }
 
     /**
