@@ -2,6 +2,7 @@ const Minifier = require('@tryghost/minifier');
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs').promises;
+const logging = require('@tryghost/logging');
 
 class CardAssetService {
     constructor(options = {}) {
@@ -49,7 +50,14 @@ class CardAssetService {
     }
 
     async minify(globs) {
-        return await this.minifier.minify(globs);
+        try {
+            return await this.minifier.minify(globs);
+        } catch (err) {
+            // @TODO: Convert this back to a proper error once the underlying bug is fixed
+            if (err.code === 'EACCES') {
+                logging.warn('Ghost was not able to write card asset files due to permissions.');
+            }
+        }
     }
 
     async clearFiles() {
@@ -59,8 +67,8 @@ class CardAssetService {
         try {
             await fs.unlink(path.join(this.dest, 'cards.min.css'));
         } catch (error) {
-            // Don't worry if the file didn't exist
-            if (error.code !== 'ENOENT') {
+            // Don't worry if the file didn't exist or we don't have perms here
+            if (error.code !== 'ENOENT' && error.code !== 'EACCES') {
                 throw error;
             }
         }
@@ -68,8 +76,8 @@ class CardAssetService {
         try {
             await fs.unlink(path.join(this.dest, 'cards.min.js'));
         } catch (error) {
-            // Don't worry if the file didn't exist
-            if (error.code !== 'ENOENT') {
+            // Don't worry if the file didn't exist or we don't have perms here
+            if (error.code !== 'ENOENT' && error.code !== 'EACCES') {
                 throw error;
             }
         }
@@ -94,7 +102,7 @@ class CardAssetService {
 
         const globs = this.generateGlobs();
 
-        this.files = await this.minify(globs);
+        this.files = await this.minify(globs) || [];
     }
 }
 
