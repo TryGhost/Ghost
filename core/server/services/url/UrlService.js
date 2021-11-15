@@ -81,14 +81,16 @@ class UrlService {
 
     /**
      * @description Router was created, connect it with a url generator.
+     * @param {String} identifier frontend router ID reference
      * @param {String} filter NQL filter
      * @param {String} resourceType
      * @param {String} permalink
      */
-    onRouterAddedType(filter, resourceType, permalink) {
+    onRouterAddedType(identifier, filter, resourceType, permalink) {
         debug('Registering route: ', filter, resourceType, permalink);
 
         let urlGenerator = new UrlGenerator({
+            identifier,
             filter,
             resourceType,
             permalink,
@@ -102,10 +104,10 @@ class UrlService {
 
     /**
      * @description Router update handler - regenerates it's resources
-     * @param {ExpressRouter} router
+     * @param {String} identifier router ID linked to the UrlGenerator
      */
-    onRouterUpdated(router) {
-        const generator = this.urlGenerators.find(g => g.router.id === router.id);
+    onRouterUpdated(identifier) {
+        const generator = this.urlGenerators.find(g => g.identifier === identifier);
         generator.regenerateResources();
     }
 
@@ -264,7 +266,7 @@ class UrlService {
         let urlGenerator;
 
         this.urlGenerators.every((_urlGenerator) => {
-            if (_urlGenerator.router.identifier === routerId) {
+            if (_urlGenerator.identifier === routerId) {
                 urlGenerator = _urlGenerator;
                 return false;
             }

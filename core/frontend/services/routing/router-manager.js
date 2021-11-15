@@ -43,7 +43,12 @@ class RouterManager {
             return;
         }
 
-        this.urlService.onRouterAddedType(router.filter, router.getResourceType(), router.getPermalinks().getValue());
+        this.urlService.onRouterAddedType(
+            router.identifier,
+            router.filter,
+            router.getResourceType(),
+            router.getPermalinks().getValue()
+        );
     }
 
     /**
@@ -179,7 +184,7 @@ class RouterManager {
         if (collectionRouter.getPermalinks().getValue().match(/:year|:month|:day/)) {
             debug('handleTimezoneEdit: trigger regeneration');
 
-            this.urlService.onRouterUpdated(collectionRouter);
+            this.urlService.onRouterUpdated(collectionRouter.identifier);
         }
     }
 }
