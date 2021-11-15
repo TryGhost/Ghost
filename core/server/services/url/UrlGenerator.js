@@ -35,7 +35,6 @@ const EXPANSIONS = [{
 class UrlGenerator {
     /**
      * @param {Object} options
-     * @param {Object} options.router instance of a frontend Routes (e.g. CollectionRouter, PreviewRouter)
      * @param {String} options.filter NQL filter string
      * @param {String} options.resourceType resource type (e.g. 'posts', 'tags')
      * @param {String} options.permalink permalink string
@@ -44,16 +43,13 @@ class UrlGenerator {
      * @param {Object} options.urls instance of the backend URLs (used to store the urls)
      * @param {Number} options.position an ID of the generator
      */
-    constructor({router, filter, resourceType, permalink, queue, resources, urls, position}) {
-        this.router = router;
+    constructor({filter, resourceType, permalink, queue, resources, urls, position}) {
         this.resourceType = resourceType;
         this.permalink = permalink;
         this.queue = queue;
         this.urls = urls;
         this.resources = resources;
         this.uid = position;
-
-        debug('constructor', this.toString());
 
         // CASE: routers can define custom filters, but not required.
         if (filter) {
@@ -263,14 +259,6 @@ class UrlGenerator {
      */
     getUrls() {
         return this.urls.getByGeneratorId(this.uid);
-    }
-
-    /**
-     * @description Override of `toString`
-     * @returns {string}
-     */
-    toString() {
-        return this.router.toString();
     }
 }
 
