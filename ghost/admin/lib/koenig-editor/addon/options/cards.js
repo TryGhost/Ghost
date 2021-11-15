@@ -156,7 +156,7 @@ export const CARD_MENU = [
             matches: ['button'],
             type: 'card',
             replaceArg: 'button',
-            feature: 'buttonCard'
+            isAvailable: 'feature.buttonCard'
         },
         {
             label: 'Callout',
@@ -165,7 +165,7 @@ export const CARD_MENU = [
             matches: ['callout'],
             type: 'card',
             replaceArg: 'callout',
-            feature: 'calloutCard'
+            isAvailable: 'feature.calloutCard'
         },
         {
             label: 'Toggle',
@@ -174,7 +174,7 @@ export const CARD_MENU = [
             matches: ['toggle'],
             type: 'card',
             replaceArg: 'toggle',
-            feature: 'accordionCard'
+            isAvailable: 'feature.accordionCard'
         }]
     },
     {
@@ -224,7 +224,7 @@ export const CARD_MENU = [
             payload: {
                 imageSelector: 'tenor'
             },
-            feature: 'gifsCard'
+            isAvailable: 'feature.gifsCard'
         },
         {
             label: 'Vimeo',
@@ -272,7 +272,7 @@ export const CARD_MENU = [
             type: 'card',
             replaceArg: 'embed',
             params: ['url'],
-            feature: 'nftCard'
+            isAvailable: 'feature.nftCard'
         },
         {
             label: 'Other...',
