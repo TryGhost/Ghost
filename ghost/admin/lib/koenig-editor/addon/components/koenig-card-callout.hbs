@@ -23,17 +23,17 @@
 
         <div class="kg-card-callout kg-card-callout-{{@payload.backgroundColor}}">
             {{#if @payload.calloutEmoji}}
-            <div class="kg-callout-emoji" onclick={{action "changeEmoji"}}>{{@payload.calloutEmoji}}</div>
+            <div class="kg-callout-emoji" {{on "click" this.changeEmoji}}>{{@payload.calloutEmoji}}</div>
             {{/if}}
             <KoenigBasicHtmlTextarea
                 @html={{@payload.calloutText}}
                 @placeholder="Callout text..."
                 @autofocus={{true}}
                 @class="w-100 bn bg-transparent"
-                @onChange={{action "setCalloutText"}}
-                @onFocus={{action (mut this.isFocused) true}}
-                @onBlur={{action (mut this.isFocused) false}}
-                @didCreateEditor={{action "registerEditor"}}
+                @onChange={{this.setCalloutText}}
+                @onFocus={{fn (mut this.isFocused) true}}
+                @onBlur={{fn (mut this.isFocused) false}}
+                @didCreateEditor={{this.registerEditor}}
             />
             <KoenigSettingsPanel>
                 <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
@@ -45,7 +45,7 @@
                                     type="checkbox"
                                     checked={{@payload.calloutEmoji}}
                                     id="has-emoji"
-                                    onclick={{action "toggleEmoji"}}
+                                    {{on "click" this.toggleEmoji}}
                                     data-test-has-emoji
                                 >
                                 <span class="input-toggle-component mt1"></span>
