@@ -1,5 +1,6 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
+import {EmojiButton} from '@joeattardi/emoji-button';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
@@ -65,6 +66,11 @@ export default class KoenigCardCalloutComponent extends Component {
                 this._updatePayloadAttr(key, value);
             }
         });
+
+        this.picker = new EmojiButton();
+        this.picker.on('emoji', (selection) => {
+            this.setCalloutEmoji(selection.emoji);
+        });
     }
 
     // required for snippet rects to be calculated - editor reaches in to component,
@@ -123,6 +129,11 @@ export default class KoenigCardCalloutComponent extends Component {
         this._textReplacementEditor = textReplacementEditor;
 
         run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
+    }
+
+    @action
+    changeEmoji(event) {
+        this.picker.togglePicker(event.target);
     }
 
     @action
