@@ -83,14 +83,17 @@ class UrlService {
      * @description Router was created, connect it with a url generator.
      * @param {ExpressRouter} router
      * @param {String} filter NQL filter
+     * @param {String} resourceType
+     * @param {String} permalink
      */
-    onRouterAddedType(router, filter, resourceType) {
+    onRouterAddedType(router, filter, resourceType, permalink) {
         debug('Registering route: ', router.name);
 
         let urlGenerator = new UrlGenerator({
             router,
             filter,
             resourceType,
+            permalink,
             queue: this.queue,
             resources: this.resources,
             urls: this.urls,
