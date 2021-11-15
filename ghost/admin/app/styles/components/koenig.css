@@ -1345,7 +1345,7 @@
 
 .kg-card-callout {
     display: flex;
-    padding: 16px 24px;
+    padding: 20px 28px;
     background: var(--whitegrey-l1);
     border-radius: var(--border-radius);
 }
