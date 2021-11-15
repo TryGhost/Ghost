@@ -1,4 +1,4 @@
-/* Unsplash Integration
+/* Unsplash+Tenor Integration
 /* ---------------------------------------------------------- */
 
 
@@ -280,4 +280,16 @@
 
 .gh-unsplash-zoom .gh-unsplash-photo-overlay {
     opacity: 1;
+}
+
+/* Tenor Integration
+/* ---------------------------------------------------------- */
+
+.gh-tenor-gif {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0 0 24px;
+    color: #fff;
+    cursor: pointer;
 }
