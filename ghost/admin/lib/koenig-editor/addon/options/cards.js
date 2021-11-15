@@ -209,7 +209,8 @@ export const CARD_MENU = [
             params: ['searchTerm'],
             payload: {
                 imageSelector: 'unsplash'
-            }
+            },
+            isAvailable: 'settings.unsplash'
         },
         {
             label: 'GIF',

@@ -1,8 +1,11 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhEditorFeatureImageComponent extends Component {
+    @service settings;
+
     @tracked isEditingAlt = false;
     @tracked isHovered = false;
     @tracked captionInputFocused = false;
