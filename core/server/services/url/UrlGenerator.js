@@ -38,14 +38,16 @@ class UrlGenerator {
      * @param {Object} options.router instance of a frontend Routes (e.g. CollectionRouter, PreviewRouter)
      * @param {String} options.filter NQL filter string
      * @param {String} options.resourceType resource type (e.g. 'posts', 'tags')
+     * @param {String} options.permalink permalink string
      * @param {Object} options.queue instance of the backend Queue
      * @param {Object} options.resources instance of the backend Resources
      * @param {Object} options.urls instance of the backend URLs (used to store the urls)
      * @param {Number} options.position an ID of the generator
      */
-    constructor({router, filter, resourceType, queue, resources, urls, position}) {
+    constructor({router, filter, resourceType, permalink, queue, resources, urls, position}) {
         this.router = router;
         this.resourceType = resourceType;
+        this.permalink = permalink;
         this.queue = queue;
         this.urls = urls;
         this.resources = resources;
@@ -193,8 +195,7 @@ class UrlGenerator {
      * @NOTE We currently generate relative urls (https://github.com/TryGhost/Ghost/commit/7b0d5d465ba41073db0c3c72006da625fa11df32).
      */
     _generateUrl(resource) {
-        const permalink = this.router.getPermalinks().getValue();
-        return localUtils.replacePermalink(permalink, resource.data);
+        return localUtils.replacePermalink(this.permalink, resource.data);
     }
 
     /**

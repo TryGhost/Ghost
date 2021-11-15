@@ -43,7 +43,7 @@ class RouterManager {
             return;
         }
 
-        this.urlService.onRouterAddedType(router, router.filter, router.getResourceType());
+        this.urlService.onRouterAddedType(router, router.filter, router.getResourceType(), router.getPermalinks().getValue());
     }
 
     /**

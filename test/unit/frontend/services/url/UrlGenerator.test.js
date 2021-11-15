@@ -299,13 +299,13 @@ describe('Unit: services/url/UrlGenerator', function () {
 
     describe('fn: _generateUrl', function () {
         it('returns url', function () {
-            router.getPermalinks.returns({
-                getValue: function () {
-                    return '/:slug/';
-                }
+            const urlGenerator = new UrlGenerator({
+                router,
+                permalink: '/:slug/',
+                queue,
+                resources,
+                urls
             });
-
-            const urlGenerator = new UrlGenerator({router, queue, resources, urls});
             const replacePermalink = sinon.stub().returns('/url/');
             sinon.stub(urlUtils, 'replacePermalink').get(() => replacePermalink);
 
