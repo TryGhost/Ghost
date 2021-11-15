@@ -1,7 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {tracked} from '@glimmer/tracking';
 
 const TWO_COLUMN_WIDTH = 540;
 const THREE_COLUMN_WIDTH = 940;
