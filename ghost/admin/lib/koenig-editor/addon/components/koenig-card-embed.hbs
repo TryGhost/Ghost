@@ -16,6 +16,9 @@
     @editor={{this.editor}}
     as |card|
 >
+{{#if (eq this.payload.metadata.card_type "nft")}}
+    <KoenigCardEmbed::Nft @payload={{this.payload}} />
+{{else}}
     {{#if this.payload.html}}
         <div class="kg-card-hover">
             <div class="koenig-embed-{{this.payload.type}} flex justify-center relative" data-kg-embed>
@@ -60,4 +63,5 @@
                 onkeydown={{action "urlKeydown"}}>
         {{/if}}
     {{/if}}
+{{/if}}
 </KoenigCard>
