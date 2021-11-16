@@ -152,7 +152,7 @@ export const CARD_MENU = [
         {
             label: 'Button',
             icon: 'koenig/kg-card-type-button',
-            desc: 'Clicky thing',
+            desc: 'Add a button to your post',
             matches: ['button'],
             type: 'card',
             replaceArg: 'button',
