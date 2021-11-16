@@ -979,12 +979,14 @@ figure {
 }
 
 .kg-settings-link-title {
+    display: block;
     font-weight: 600;
     letter-spacing: 0;
     line-height: 1em;
 }
 
 .kg-settings-link-url {
+    display: block;
     font-weight: 400;
     font-size: 1.2rem;
     color: var(--midgrey);
