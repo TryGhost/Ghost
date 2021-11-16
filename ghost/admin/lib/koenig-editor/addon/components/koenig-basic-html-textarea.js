@@ -412,7 +412,7 @@ export default Component.extend({
     // inline markup that directly maps to HTML elements
     getCleanHTML() {
         if (this.editor && this.editor.element) {
-            return cleanBasicHtml(this.editor.element.innerHTML);
+            return cleanBasicHtml(this.editor.element.innerHTML, {allowBr: true});
         }
     }
 });
