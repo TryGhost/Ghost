@@ -17,7 +17,7 @@ module.exports = function getConfigProperties() {
         mailgunIsConfigured: config.get('bulkEmail') && config.get('bulkEmail').mailgun,
         emailAnalytics: config.get('emailAnalytics'),
         hostSettings: config.get('hostSettings'),
-        tenorApiKey: config.get('tenorApiKey')
+        tenor: config.get('tenor')
     };
 
     const billingUrl = config.get('hostSettings:billing:enabled') ? config.get('hostSettings:billing:url') : '';

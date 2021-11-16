@@ -22,7 +22,7 @@ module.exports = {
         ];
 
         if (labs.isSet('gifsCard')) {
-            keys.push('tenorApiKey');
+            keys.push('tenor');
         }
 
         frame.response = {
