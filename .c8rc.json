@@ -1,0 +1,8 @@
+{
+  "exclude": [
+    "core/frontend/src/**",
+    "core/frontend/public/**",
+    "core/server/data/migrations/**",
+    "!core/server/data/migrations/utils.js"
+  ]
+}
