@@ -1,3 +1,4 @@
+import * as storage from '../../../../app/utils/localstorage';
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
 import {EmojiButton} from '@joeattardi/emoji-button';
@@ -6,6 +7,8 @@ import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
+
+const storageKey = 'gh-kg-callout-emoji';
 
 export default class KoenigCardCalloutComponent extends Component {
     @service config;
@@ -56,7 +59,7 @@ export default class KoenigCardCalloutComponent extends Component {
         this.args.registerComponent(this);
 
         const payloadDefaults = {
-            calloutEmoji: '💡',
+            calloutEmoji: storage.get(storageKey) || '💡',
             calloutText: '',
             backgroundColor: 'grey'
         };
@@ -94,6 +97,7 @@ export default class KoenigCardCalloutComponent extends Component {
     @action
     setCalloutEmoji(emoji) {
         this._updatePayloadAttr('calloutEmoji', emoji);
+        storage.set(storageKey, emoji);
     }
 
     @action
