@@ -1,5 +1,5 @@
 module.exports = {
-    get middlewares() {
-        return require('./middlewares');
+    get middleware() {
+        return require('./middleware');
     }
 };

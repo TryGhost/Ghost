@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const brute = require('../../../../../../core/server/web/shared/middlewares/brute');
+const brute = require('../../../../../../core/server/web/shared/middleware/brute');
 
 describe('brute middleware', function () {
     after(function () {
@@ -13,7 +13,7 @@ describe('brute middleware', function () {
 
     describe('contentApiKey', function () {
         it('calls the contentApiKey method of spam prevention', function () {
-            const spamPrevention = require('../../../../../../core/server/web/shared/middlewares/api/spam-prevention');
+            const spamPrevention = require('../../../../../../core/server/web/shared/middleware/api/spam-prevention');
             const contentApiKeyStub = sinon.stub(spamPrevention, 'contentApiKey');
 
             // CASE: we don't care about what params it takes

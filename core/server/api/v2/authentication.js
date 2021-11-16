@@ -145,7 +145,7 @@ module.exports = {
                     options = Object.assign(options, {context: {internal: true}});
                     return auth.passwordreset.doReset(options, tokenParts, api.settings)
                         .then((params) => {
-                            web.shared.middlewares.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
+                            web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
                             return params;
                         });
                 });

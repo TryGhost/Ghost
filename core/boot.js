@@ -96,7 +96,7 @@ async function initCore({ghostServer, config, bootLogger}) {
     const urlService = require('./server/services/url');
     // Note: there is no await here, we do not wait for the url service to finish
     // We can return, but the site will remain in (the shared, not global) maintenance mode until this finishes
-    // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/server/web/shared/middlewares/maintenance.js#L13
+    // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/server/web/shared/middleware/maintenance.js#L13
     urlService.init({
         onFinished: () => {
             bootLogger.log('URL Service Ready');

@@ -154,19 +154,19 @@ module.exports = function setupSiteApp(options = {}) {
     debug('Internal apps done');
 
     // send 503 error page in case of maintenance
-    siteApp.use(shared.middlewares.maintenance);
+    siteApp.use(shared.middleware.maintenance);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
-    siteApp.use(shared.middlewares.prettyUrls);
+    siteApp.use(shared.middleware.prettyUrls);
 
     // ### Caching
     siteApp.use(function (req, res, next) {
         // Site frontend is cacheable UNLESS request made by a member or blog is in private mode
         if (req.member || res.isPrivateBlog) {
-            return shared.middlewares.cacheControl('private')(req, res, next);
+            return shared.middleware.cacheControl('private')(req, res, next);
         } else {
-            return shared.middlewares.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
+            return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
         }
     });
 
@@ -179,7 +179,7 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(SiteRouter);
 
     // ### Error handlers
-    siteApp.use(shared.middlewares.errorHandler.pageNotFound);
+    siteApp.use(shared.middleware.errorHandler.pageNotFound);
     config.get('apps:internal').forEach((appName) => {
         const app = require(path.join(config.get('paths').internalAppPath, appName));
 
@@ -187,7 +187,7 @@ module.exports = function setupSiteApp(options = {}) {
             app.setupErrorHandling(siteApp);
         }
     });
-    siteApp.use(shared.middlewares.errorHandler.handleThemeResponse);
+    siteApp.use(shared.middleware.errorHandler.handleThemeResponse);
 
     debug('Site setup end');
 
