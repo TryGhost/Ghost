@@ -1,4 +1,8 @@
 {
+  "all": true,
+  "include": [
+    "core/{*.js,frontend,server,shared}"
+  ],
   "exclude": [
     "core/frontend/src/**",
     "core/frontend/public/**",
