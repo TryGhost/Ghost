@@ -112,7 +112,7 @@ DataImporter = {
                 });
             });
 
-            sequence(ops)
+            return sequence(ops)
                 .then(function () {
                     results.forEach(function (promise) {
                         if (!promise.isFulfilled()) {
@@ -121,9 +121,9 @@ DataImporter = {
                     });
 
                     if (errors.length === 0) {
-                        transacting.commit();
+                        return;
                     } else {
-                        transacting.rollback(errors);
+                        throw errors;
                     }
                 });
         }).then(function () {
