@@ -15,12 +15,12 @@ describe('Config API', function () {
     });
 
     afterEach(function () {
-        configUtils.set('tenorApiKey', undefined);
+        configUtils.set('tenor:apiKey', undefined);
     });
 
     it('can retrieve config and all expected properties', async function () {
         // set any non-default keys so we can be sure they're exposed
-        configUtils.set('tenorApiKey', 'TENOR_KEY');
+        configUtils.set('tenor:apiKey', 'TENOR_KEY');
 
         const res = await request
             .get(localUtils.API.getApiQuery('config/'))

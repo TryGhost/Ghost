@@ -128,5 +128,9 @@
     "portal": {
         "url": "https://unpkg.com/@tryghost/portal@~1.12.0/umd/portal.min.js",
         "version": "1.12"
+    },
+    "tenor": {
+        "apiKey": null,
+        "contentFilter": "off"
     }
 }
