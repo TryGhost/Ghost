@@ -24,7 +24,7 @@ const knex = db.knex;
 const {exportedBodyV2} = require('../../utils/fixtures/export/body-generator');
 
 // Tests in here do an import for each test
-describe('Integration: Importer', function () {
+describe('Importer', function () {
     before(testUtils.teardownDb);
 
     beforeEach(function () {
@@ -898,6 +898,11 @@ describe('Integration: Importer', function () {
         });
 
         it('imports settings fields deprecated in v2 and removed in v3: slack hook, permalinks', function () {
+            const EventRegistry = require('../../../core/server/lib/common/events');
+            sinon.stub(EventRegistry, 'emit').callsFake((event) => {
+                console.log('emitted event' + event);
+            });
+
             const exportData = exportedBodyV2().db[0];
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({

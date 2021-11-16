@@ -9,7 +9,7 @@ const importOptions = {
     returnImportedData: true
 };
 
-describe('Integration: Importer 1.0', function () {
+describe('Importer 1.0', function () {
     beforeEach(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 

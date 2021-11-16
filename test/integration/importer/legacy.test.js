@@ -8,7 +8,7 @@ const importOptions = {
     returnImportedData: true
 };
 
-describe('Integration: Importer Legacy', function () {
+describe('Importer Legacy', function () {
     beforeEach(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles', 'owner', 'settings'));
 
