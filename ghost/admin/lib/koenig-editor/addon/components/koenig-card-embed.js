@@ -35,7 +35,7 @@ export default Component.extend({
     registerComponent() {},
 
     isEmpty: computed('payload.html', function () {
-        return isBlank(this.payload.html);
+        return isBlank(this.payload.html) && this.payload.type !== 'nft';
     }),
 
     counts: computed('payload.{html,caption}', function () {
@@ -177,7 +177,7 @@ export default Component.extend({
                 this.send('insertAsBookmark', response);
                 return;
             }
-            if (!response.html && response.card_type !== 'nft') {
+            if (!response.html && response.type !== 'nft') {
                 throw 'No HTML returned';
             }
 
