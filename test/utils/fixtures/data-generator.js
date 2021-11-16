@@ -24,7 +24,7 @@ DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
 DataGenerator.Content = {
     posts: [
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1ffbe2896088840a6df',
             title: 'HTML Ipsum',
             slug: 'html-ipsum',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\"#\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
@@ -33,7 +33,7 @@ DataGenerator.Content = {
             feature_image: 'https://example.com/super_photo.jpg'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1ffbe2896088840a6e1',
             title: 'Ghostly Kitchen Sink',
             slug: 'ghostly-kitchen-sink',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><img src="__GHOST_URL__/content/images/lol.jpg"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\"#\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
@@ -41,7 +41,7 @@ DataGenerator.Content = {
             feature_image: '__GHOST_URL__/content/images/2018/hey.jpg'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1ffbe2896088840a6e3',
             title: 'Short and Sweet',
             slug: 'short-and-sweet',
             mobiledoc: DataGenerator.markdownToMobiledoc('## testing\n\nmctesters\n\n- test\n- line\n- items'),
@@ -53,7 +53,7 @@ DataGenerator.Content = {
             uuid: '2ac6b4f6-e1f3-406c-9247-c94a0496d39d'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1ffbe2896088840a6e5',
             title: 'Not finished yet',
             slug: 'unfinished',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>HTML Ipsum Presents</h1><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\"#\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>'),
@@ -61,21 +61,21 @@ DataGenerator.Content = {
             uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c903'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1ffbe2896088840a6e7',
             title: 'Not so short, bit complex',
             slug: 'not-so-short-bit-complex',
             mobiledoc: DataGenerator.markdownToMobiledoc('<p><nav><ul><li><a href=\"#nowhere\" title=\"Anchor URL\">Lorem</a></li><li><a href=\"__GHOST_URL__/about#nowhere\" title=\"Relative URL\">Aliquam</a></li><li><a href=\"//somewhere.com/link#nowhere\" title=\"Protocol Relative URL\">Tortor</a></li><li><a href=\"http://somewhere.com/link#nowhere\" title=\"Absolute URL\">Morbi</a></li><li><a href=\"#nowhere\" title=\"Praesent dapibus, neque id cursus faucibus\">Praesent</a></li><li><a href=\"#nowhere\" title=\"Pellentesque fermentum dolor\">Pellentesque</a></li></ul></nav><p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p><table><thead><tr><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><td>a</td><td>b</td><td>c</td><td>d</td></tr><tr><td>e</td><td>f</td><td>g</td><td>h</td></tr><tr><td>i</td><td>j</td><td>k</td><td>l</td></tr></tbody></table><dl><dt>Definition list</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd><dt>Lorem ipsum dolor sit amet</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd></dl><ul><li>Morbi in sem quis dui placerat ornare. Pellentesque odio nisi, euismod in, pharetra a, ultricies in, diam. Sed arcu. Cras consequat.</li><li>Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus.</li><li>Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi.</li><li>Pellentesque fermentum dolor. Aliquam quam lectus, facilisis auctor, ultrices ut, elementum vulputate, nunc.</li></ul></p>'),
             featured: true
         },
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1ffbe2896088840a6e9',
             title: 'This is a static page',
             slug: 'static-page-test',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
             type: 'page'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1ffbe2896088840a6eb',
             title: 'This is a draft static page',
             slug: 'static-page-draft',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
@@ -83,7 +83,7 @@ DataGenerator.Content = {
             status: 'draft'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1ffbe2896088840a6ed',
             title: 'This is a scheduled post!!',
             slug: 'scheduled-post',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Welcome to my invisible post!</h1>'),
@@ -94,28 +94,28 @@ DataGenerator.Content = {
 
     tags: [
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1febe2896088840a6db',
             name: 'kitchen sink',
             slug: 'kitchen-sink',
             feature_image: 'https://example.com/super_photo.jpg'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '9451f5fca366002ebd5dbea6',
             name: 'bacon',
             slug: 'bacon'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '618ba1fdbe2896088840a675',
             name: 'chorizo',
             slug: 'chorizo'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '6193c6d5e792de832cd08148',
             name: 'pollo',
             slug: 'pollo'
         },
         {
-            id: ObjectId().toHexString(),
+            id: '6193c6dfe792de832cd08149',
             name: 'injection',
             slug: 'injection'
         }
@@ -134,7 +134,7 @@ DataGenerator.Content = {
         },
         {
             // admin
-            id: ObjectId().toHexString(),
+            id: '6193c65ee792de832cd08130',
             name: 'Smith Wellingsworth',
             slug: 'smith-wellingsworth',
             email: 'swellingsworth@example.com',
@@ -142,7 +142,7 @@ DataGenerator.Content = {
         },
         {
             // editor
-            id: ObjectId().toHexString(),
+            id: '6193c672e792de832cd0813c',
             name: 'Jimothy Bogendath',
             slug: 'jimothy-bogendath',
             email: 'jbOgendAth@example.com',
@@ -150,7 +150,7 @@ DataGenerator.Content = {
         },
         {
             // author
-            id: ObjectId().toHexString(),
+            id: '6193c685e792de832cd08141',
             name: 'Slimer McEctoplasm',
             slug: 'slimer-mcectoplasm',
             email: 'smcectoplasm@example.com',
@@ -158,7 +158,7 @@ DataGenerator.Content = {
         },
         {
             // editor 2
-            id: ObjectId().toHexString(),
+            id: '6193c693e792de832cd08142',
             name: 'Ivan Email',
             slug: 'ivan-email',
             email: 'info1@ghost.org',
@@ -166,7 +166,7 @@ DataGenerator.Content = {
         },
         {
             // author 2
-            id: ObjectId().toHexString(),
+            id: '6193c6a1e792de832cd08143',
             name: 'Author2',
             slug: 'a-2',
             email: 'info2@ghost.org',
@@ -174,7 +174,7 @@ DataGenerator.Content = {
         },
         {
             // admin 2
-            id: ObjectId().toHexString(),
+            id: '6193c6abe792de832cd08144',
             name: 'admin2',
             slug: 'ad-2',
             email: 'info3@ghost.org',
@@ -182,7 +182,7 @@ DataGenerator.Content = {
         },
         {
             // contributor
-            id: ObjectId().toHexString(),
+            id: '6193c6bae792de832cd08146',
             name: 'Contributor',
             slug: 'contributor',
             email: 'contributor@ghost.org',
@@ -190,7 +190,7 @@ DataGenerator.Content = {
         },
         {
             // contributor
-            id: ObjectId().toHexString(),
+            id: '6193c6c5e792de832cd08147',
             name: 'contributor2',
             slug: 'contrib-2',
             email: 'contributor2@ghost.org',
