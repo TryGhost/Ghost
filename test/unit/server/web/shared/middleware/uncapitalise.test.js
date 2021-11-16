@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const uncapitalise = require('../../../../../../core/server/web/shared/middlewares/uncapitalise');
+const uncapitalise = require('../../../../../../core/server/web/shared/middleware/uncapitalise');
 
 // NOTE: all urls will have had trailing slashes added before uncapitalise is called
 

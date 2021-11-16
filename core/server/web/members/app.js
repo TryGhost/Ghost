@@ -14,10 +14,10 @@ module.exports = function setupMembersApp() {
     const membersApp = express('members');
 
     // send 503 json response in case of maintenance
-    membersApp.use(shared.middlewares.maintenance);
+    membersApp.use(shared.middleware.maintenance);
 
     // Members API shouldn't be cached
-    membersApp.use(shared.middlewares.cacheControl('private'));
+    membersApp.use(shared.middleware.cacheControl('private'));
 
     // Support CORS for requests from the frontend
     const siteUrl = new URL(urlUtils.getSiteUrl());
@@ -42,19 +42,19 @@ module.exports = function setupMembersApp() {
     membersApp.get('/api/site', middleware.getMemberSiteData);
 
     // NOTE: this is wrapped in a function to ensure we always go via the getter
-    membersApp.post('/api/send-magic-link', bodyParser.json(), shared.middlewares.brute.membersAuth, (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next));
+    membersApp.post('/api/send-magic-link', bodyParser.json(), shared.middleware.brute.membersAuth, (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next));
     membersApp.post('/api/create-stripe-checkout-session', (req, res, next) => membersService.api.middleware.createCheckoutSession(req, res, next));
     membersApp.post('/api/create-stripe-update-session', (req, res, next) => membersService.api.middleware.createCheckoutSetupSession(req, res, next));
     membersApp.put('/api/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
     membersApp.post('/api/events', labs.enabledMiddleware('membersActivity'), middleware.loadMemberSession, (req, res, next) => membersService.api.middleware.createEvents(req, res, next));
 
     // API error handling
-    membersApp.use('/api', shared.middlewares.errorHandler.resourceNotFound);
-    membersApp.use('/api', shared.middlewares.errorHandler.handleJSONResponseV2);
+    membersApp.use('/api', shared.middleware.errorHandler.resourceNotFound);
+    membersApp.use('/api', shared.middleware.errorHandler.handleJSONResponseV2);
 
     // Webhook error handling
-    membersApp.use('/webhooks', shared.middlewares.errorHandler.resourceNotFound);
-    membersApp.use('/webhooks', shared.middlewares.errorHandler.handleJSONResponseV2);
+    membersApp.use('/webhooks', shared.middleware.errorHandler.resourceNotFound);
+    membersApp.use('/webhooks', shared.middleware.errorHandler.handleJSONResponseV2);
 
     debug('Members App setup end');
 

@@ -4,7 +4,7 @@ const ParentRouter = require('./ParentRouter');
 const RSSRouter = require('./RSSRouter');
 const urlUtils = require('../../../shared/url-utils');
 const controllers = require('./controllers');
-const middlewares = require('./middlewares');
+const middleware = require('./middleware');
 
 /**
  * @description Taxonomies are groupings of posts based on a common relation.
@@ -51,7 +51,7 @@ class TaxonomyRouter extends ParentRouter {
         this.mountRoute(this.permalinks.getValue(), controllers.channel);
 
         // REGISTER: enable pagination for each taxonomy by default
-        this.router().param('page', middlewares.pageParam);
+        this.router().param('page', middleware.pageParam);
         this.mountRoute(urlUtils.urlJoin(this.permalinks.value, 'page', ':page(\\d+)'), controllers.channel);
 
         // REGISTER: edit redirect to admin client e.g. /tag/:slug/edit
@@ -63,7 +63,7 @@ class TaxonomyRouter extends ParentRouter {
     }
 
     /**
-     * @description Prepare context for routing middlewares/controllers.
+     * @description Prepare context for routing middleware/controllers.
      * @param {Object} req
      * @param {Object} res
      * @param {Function} next

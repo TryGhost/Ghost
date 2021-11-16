@@ -142,19 +142,19 @@ module.exports = function apiRoutes() {
     router.get('/session', mw.authAdminApi, http(api.session.read));
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
-        shared.middlewares.brute.globalBlock,
-        shared.middlewares.brute.userLogin,
+        shared.middleware.brute.globalBlock,
+        shared.middleware.brute.userLogin,
         http(api.session.add)
     );
     router.del('/session', mw.authAdminApi, http(api.session.delete));
 
     // ## Authentication
     router.post('/authentication/passwordreset',
-        shared.middlewares.brute.globalReset,
-        shared.middlewares.brute.userReset,
+        shared.middleware.brute.globalReset,
+        shared.middleware.brute.userReset,
         http(api.authentication.generateResetToken)
     );
-    router.put('/authentication/passwordreset', shared.middlewares.brute.globalBlock, http(api.authentication.resetPassword));
+    router.put('/authentication/passwordreset', shared.middleware.brute.globalBlock, http(api.authentication.resetPassword));
     router.post('/authentication/invitation', http(api.authentication.acceptInvitation));
     router.get('/authentication/invitation', http(api.authentication.isInvitation));
     router.post('/authentication/setup', http(api.authentication.setup));

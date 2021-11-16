@@ -9,7 +9,7 @@ describe('Content Api canary middleware', function () {
     describe('authenticatePublic', function () {
         it('uses brute content api middleware as the first middleware in the chain', function () {
             const firstMiddleware = middleware.authenticatePublic[0];
-            const brute = require('../../../../../../../core/server/web/shared/middlewares/brute');
+            const brute = require('../../../../../../../core/server/web/shared/middleware/brute');
 
             should.equal(firstMiddleware, brute.contentApiKey);
         });

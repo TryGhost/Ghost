@@ -27,19 +27,19 @@ module.exports = function setupAdminApp() {
     }
 
     // Render error page in case of maintenance
-    adminApp.use(shared.middlewares.maintenance);
+    adminApp.use(shared.middleware.maintenance);
 
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
-    adminApp.use(shared.middlewares.urlRedirects.adminSSLAndHostRedirect);
+    adminApp.use(shared.middleware.urlRedirects.adminSSLAndHostRedirect);
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
-    adminApp.use(shared.middlewares.prettyUrls);
+    adminApp.use(shared.middleware.prettyUrls);
 
     // Cache headers go last before serving the request
     // Admin is currently set to not be cached at all
-    adminApp.use(shared.middlewares.cacheControl('private'));
+    adminApp.use(shared.middleware.cacheControl('private'));
 
     // Special redirects for the admin (these should have their own cache-control headers)
     adminApp.use(adminMiddleware);
@@ -47,8 +47,8 @@ module.exports = function setupAdminApp() {
     // Finally, routing
     adminApp.get('*', require('./controller'));
 
-    adminApp.use(shared.middlewares.errorHandler.pageNotFound);
-    adminApp.use(shared.middlewares.errorHandler.handleHTMLResponse);
+    adminApp.use(shared.middleware.errorHandler.pageNotFound);
+    adminApp.use(shared.middleware.errorHandler.handleHTMLResponse);
 
     debug('Admin setup end');
 

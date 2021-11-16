@@ -18,17 +18,17 @@ module.exports = function setupApiApp() {
     apiApp.use(boolParser());
 
     // send 503 json response in case of maintenance
-    apiApp.use(shared.middlewares.maintenance);
+    apiApp.use(shared.middleware.maintenance);
 
     // API shouldn't be cached
-    apiApp.use(shared.middlewares.cacheControl('private'));
+    apiApp.use(shared.middleware.cacheControl('private'));
 
     // Routing
     apiApp.use(routes());
 
     // API error handling
-    apiApp.use(shared.middlewares.errorHandler.resourceNotFound);
-    apiApp.use(shared.middlewares.errorHandler.handleJSONResponse);
+    apiApp.use(shared.middleware.errorHandler.resourceNotFound);
+    apiApp.use(shared.middleware.errorHandler.handleJSONResponse);
 
     debug('Content API v2 setup end');
 

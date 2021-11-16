@@ -2,9 +2,9 @@ const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../../../../core/shared/url-utils');
-const middlewares = require('../../../../../../core/frontend/services/routing/middlewares');
+const middleware = require('../../../../../../core/frontend/services/routing/middleware');
 
-describe('UNIT: services/routing/middlewares/page-param', function () {
+describe('UNIT: services/routing/middleware/page-param', function () {
     let req;
     let res;
     let next;
@@ -27,7 +27,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
         req.originalUrl = 'http://localhost:2368/blog/page/2/';
         req.url = '/blog/page/2/';
 
-        middlewares.pageParam(req, res, next, 2);
+        middleware.pageParam(req, res, next, 2);
 
         urlUtils.redirect301.called.should.be.false();
         next.calledOnce.should.be.true();
@@ -38,7 +38,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
         req.originalUrl = 'http://localhost:2368/blog/page/1/';
         req.url = '/blog/page/1/';
 
-        middlewares.pageParam(req, res, next, 1);
+        middleware.pageParam(req, res, next, 1);
 
         urlUtils.redirect301.calledOnce.should.be.true();
         next.called.should.be.false();
@@ -48,7 +48,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
         req.originalUrl = 'http://localhost:2368/blog/page/0/';
         req.url = '/blog/page/0/';
 
-        middlewares.pageParam(req, res, next, 0);
+        middleware.pageParam(req, res, next, 0);
 
         urlUtils.redirect301.called.should.be.false();
         next.calledOnce.should.be.true();
@@ -59,7 +59,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
         req.originalUrl = 'http://localhost:2368/blog/page/something/';
         req.url = '/blog/page/something/';
 
-        middlewares.pageParam(req, res, next, 'something');
+        middleware.pageParam(req, res, next, 'something');
 
         urlUtils.redirect301.called.should.be.false();
         next.calledOnce.should.be.true();
@@ -70,7 +70,7 @@ describe('UNIT: services/routing/middlewares/page-param', function () {
         req.originalUrl = 'http://localhost:2368/blog/rss/page/1/';
         req.url = '/blog/rss/page/1/';
 
-        middlewares.pageParam(req, res, next, 1);
+        middleware.pageParam(req, res, next, 1);
 
         urlUtils.redirect301.calledOnce.should.be.true();
         next.called.should.be.false();

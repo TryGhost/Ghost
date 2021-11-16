@@ -16,7 +16,7 @@ module.exports = (options) => {
 
     // Force SSL if blog url is set to https. The redirects handling must happen before asset and page routing,
     // otherwise we serve assets/pages with http. This can cause mixed content warnings in the admin client.
-    frontendApp.use(shared.middlewares.urlRedirects.frontendSSLRedirect);
+    frontendApp.use(shared.middleware.urlRedirects.frontendSSLRedirect);
 
     frontendApp.lazyUse('/members', require('../members'));
     frontendApp.use('/', require('../../../frontend/web')(options));

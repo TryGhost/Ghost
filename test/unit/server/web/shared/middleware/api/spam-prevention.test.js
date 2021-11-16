@@ -1,5 +1,5 @@
 const should = require('should');
-const spamPrevention = require('../../../../../../../core/server/web/shared/middlewares/api/spam-prevention');
+const spamPrevention = require('../../../../../../../core/server/web/shared/middleware/api/spam-prevention');
 
 describe('Spam Prevention', function () {
     it('exports a contentApiKey method', function () {

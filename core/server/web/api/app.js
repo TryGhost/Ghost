@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('web:api:default:app');
 const config = require('../../../shared/config');
 const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');
-const errorHandler = require('../shared/middlewares/error-handler');
+const errorHandler = require('../shared/middleware/error-handler');
 
 module.exports = function setupApiApp() {
     debug('Parent API setup start');
