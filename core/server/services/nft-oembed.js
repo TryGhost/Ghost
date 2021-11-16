@@ -28,28 +28,24 @@ class NFTOEmbedProvider {
      * @param {URL} url
      * @param {IExternalRequest} externalRequest
      *
-     * @returns {Promise<import('oembed-parser').RichTypeData & Object<string, any>>}
+     * @returns {Promise<object>}
      */
     async getOEmbedData(url, externalRequest) {
         const [match, transaction, asset] = url.pathname.match(OPENSEA_PATH_REGEX);
         if (!match) {
             return null;
         }
-        const result = await externalRequest(`https://api.opensea.io/api/v1/asset/${transaction}/${asset}/`, {
+        const result = await externalRequest(`https://api.opensea.io/api/v1/asset/${transaction}/${asset}/?format=json`, {
             json: true
         });
         return {
             version: '1.0',
-            type: 'rich',
+            type: 'nft',
             title: result.body.name,
             author_name: result.body.creator.user.username,
             author_url: `https://opensea.io/${result.body.creator.user.username}`,
             provider_name: 'OpenSea',
             provider_url: 'https://opensea.io',
-            html: '',
-            width: 1000,
-            height: 1000,
-            card_type: 'nft',
             image_url: result.body.image_url,
             creator_name: result.body.creator.user.username,
             description: result.body.description
