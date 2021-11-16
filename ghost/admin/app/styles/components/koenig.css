@@ -1392,6 +1392,7 @@
 }
 
 .kg-callout-emoji {
+    height: 32px;
     margin-right: 8px;
     margin-left: -8px;
     padding: 0 8px;
