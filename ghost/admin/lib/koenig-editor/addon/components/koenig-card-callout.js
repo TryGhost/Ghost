@@ -18,7 +18,7 @@ export default class KoenigCardCalloutComponent extends Component {
     @service ui;
 
     get isEmpty() {
-        return isBlank(this.args.payload.calloutText);
+        return isBlank(this.args.payload.calloutText) && isBlank(this.args.payload.calloutEmoji);
     }
 
     backgroundColors = [
