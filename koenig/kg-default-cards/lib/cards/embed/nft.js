@@ -1,9 +1,9 @@
 module.exports = {
-    render({payload, env: {dom}}) {
+    render({payload, env: {dom}, options = {}}) {
         const figure = dom.createElement('figure');
         figure.setAttribute('class', 'kg-card kg-embed-card kg-nft-card');
 
-        const html = `
+        let html = `
             <a href="${payload.url}" class="kg-nft-card">
                 <img class="kg-nft-image" src="${payload.metadata.image_url}">
                 <div class="kg-nft-metadata">
@@ -18,6 +18,19 @@ module.exports = {
                 </div>
             </a>
         `;
+
+        if (options.target === 'email') {
+            html = `
+                ${html}
+            `;
+        }
+
+        if (payload.caption) {
+            let figcaption = dom.createElement('figcaption');
+            figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
+            figure.appendChild(figcaption);
+            figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
+        }
 
         figure.appendChild(dom.createRawHTMLSection(html));
 

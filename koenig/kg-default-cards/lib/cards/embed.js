@@ -11,11 +11,11 @@ module.exports = {
     type: 'dom',
 
     render({payload, env: {dom}, options = {}}) {
-        if (!payload.html) {
+        if (!payload.html && payload.type !== 'nft') {
             return dom.createTextNode('');
         }
 
-        if (payload.metadata && payload.metadata.card_type === 'nft') {
+        if (payload.metadata && payload.type === 'nft') {
             return nftCard.render({payload, env: {dom}, options});
         }
 
