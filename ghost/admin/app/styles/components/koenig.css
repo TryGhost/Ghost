@@ -1571,9 +1571,13 @@ button.emoji-picker__category-button.active {
     flex-direction: column;
 }
 
+.kg-accordion-card-heading {
+    margin-right: 16px;
+}
+
 .kg-accordion-card-heading h4 {
     font-weight: bold !important;
-    font-size: 1.8rem !important;
+    font-size: 2rem !important;
 }
 
 .kg-accordion-card-heading ::after {
@@ -1587,8 +1591,13 @@ button.emoji-picker__category-button.active {
     line-height: 1.6em;
 }
 
+.kg-accordion-card-content {
+    margin-top: 8px;
+}
+
 .kg-accordion-card-content p {
     font-size: 1.6rem !important;
+    font-family: var(--font-family);
 }
 
 .kg-accordion-card-content ::after,

@@ -52,15 +52,17 @@
         {{!-- rendered (non-edit) mode view --}}
 
         <div class="kg-accordion-card">
-            <div class="flex items-center">
-                <div style="width:12px;margin-right: 9px">
-                    {{svg-jar "koenig/kg-toggle-card-open-arrow"}}
-                </div>
+            <div class="flex items-start justify-between">
                 <div class="kg-accordion-card-heading">
                     <h4>{{{this.formattedHeading}}}</h4>
                 </div>
+                <div style="width:24px; height:24px;" class="flex items-center justify-center">
+                    <div style="width:14px;">
+                        {{svg-jar "koenig/kg-toggle-card-open-arrow"}}
+                    </div>
+                </div>
             </div>
-            <div style="padding-left: 2px" class="kg-accordion-card-content">
+            <div class="kg-accordion-card-content">
                 {{{this.formattedContent}}}
             </div>
 
