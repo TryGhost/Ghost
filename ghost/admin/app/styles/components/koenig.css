@@ -1351,36 +1351,36 @@
 }
 
 .kg-card-callout-grey {
-    background: #eef0f2;
+    background: rgba(124, 139, 154, 0.13);
 }
 
 .kg-card-callout-white {
-    background: #fff;
-    box-shadow: inset 0 0 0 1px #dddedf;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
 }
 
 .kg-card-callout-blue {
-    background: #E9F6FB;
+    background: rgba(33, 172, 232, 0.12);
 }
 
 .kg-card-callout-green {
-    background: #E8F8EA;
+    background: rgba(52, 183, 67, 0.12);
 }
 
 .kg-card-callout-yellow {
-    background: #FCF4E3;
+    background: rgba(240, 165, 15, 0.13);
 }
 
 .kg-card-callout-red {
-    background: #FBE9E9;
+    background: rgba(209, 46, 46, 0.11);
 }
 
 .kg-card-callout-pink {
-    background: #FCEEF8;
+    background: rgba(225, 71, 174, 0.11);
 }
 
 .kg-card-callout-purple {
-    background: #F2EDFC;
+    background: rgba(135, 85, 236, 0.12);
 }
 
 .kg-card-callout-accent {
@@ -1388,7 +1388,7 @@
 }
 
 .kg-card-callout-accent p {
-    color: var(--text-color-for-adjusted-accent-background);
+    color: var(--white);
 }
 
 .kg-callout-emoji {
@@ -1437,43 +1437,43 @@
 }
 
 .kg-callout-palette-swatch-grey {
-    background: color-mod(#eef0f2 l(-7%));
-    box-shadow: inset 0 0 0 1px color-mod(#eef0f2 l(-16%));
+    background: rgba(124, 139, 154, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.3);
 }
 
 .kg-callout-palette-swatch-white {
-    background: #fff;
-    border: 1px solid #CED4D9;
+    background: transparent;
+    border: 1px solid rgba(124, 139, 154, 0.45);
 }
 
 .kg-callout-palette-swatch-blue {
-    background: color-mod(#E9F6FB l(-7%));
-    box-shadow: inset 0 0 0 1px color-mod(#E9F6FB l(-16%));
+    background: rgba(33, 172, 232, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(33, 172, 232, 0.3);
 }
 
 .kg-callout-palette-swatch-green {
-    background: color-mod(#E8F8EA l(-7%));
-    box-shadow: inset 0 0 0 1px color-mod(#E8F8EA l(-16%));
+    background: rgba(52, 183, 67, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(52, 183, 67, 0.3);
 }
 
 .kg-callout-palette-swatch-yellow {
-    background: color-mod(#FCF4E3 l(-7%));
-    box-shadow: inset 0 0 0 1px color-mod(#FCF4E3 l(-16%));
+    background: rgba(240, 165, 15, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(240, 165, 15, 0.3);
 }
 
 .kg-callout-palette-swatch-red {
-    background: color-mod(#FBE9E9 l(-7%));
-    box-shadow: inset 0 0 0 1px color-mod(#FBE9E9 l(-16%));
+    background: rgba(209, 46, 46, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(209, 46, 46, 0.3);
 }
 
 .kg-callout-palette-swatch-pink {
-    background: color-mod(#FCEEF8 l(-7%));
-    box-shadow: inset 0 0 0 1px color-mod(#FCEEF8 l(-16%));
+    background: rgba(225, 71, 174, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(225, 71, 174, 0.3);
 }
 
 .kg-callout-palette-swatch-purple {
-    background: color-mod(#F2EDFC l(-7%));
-    box-shadow: inset 0 0 0 1px color-mod(#F2EDFC l(-16%));
+    background: rgba(135, 85, 236, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(135, 85, 236, 0.3);
 }
 
 .kg-callout-palette-swatch-accent {
@@ -1485,6 +1485,7 @@
 }
 
 .emoji-picker {
+    background: var(--white) !important;
     border: 0 !important;
     font-family: var(--font-family) !important;
     box-shadow:
@@ -1533,6 +1534,12 @@ button.emoji-picker__category-button.active {
 
 .emoji-picker__emojis {
     padding: 0 8px !important;
+}
+
+.emoji-picker__emoji:hover,
+.emoji-picker__emoji:focus {
+    background: var(--whitegrey) !important;
+    border-radius: var(--border-radius) !important;
 }
 
 .emoji-picker__category-name {
