@@ -17,10 +17,16 @@ const events = require('../../lib/common/events');
  * Each entry in the database will be represented by a "Resource" (see /Resource.js).
  */
 class Resources {
-    constructor(queue) {
+    /**
+     *
+     * @param {Object} options
+     * @param {Object} [options.resources] - resources to initialize with instead of fetching them from the database
+     * @param {Object} [options.queue] - instance of the Queue class
+     */
+    constructor({resources = {}, queue} = {}) {
         this.queue = queue;
         this.resourcesConfig = [];
-        this.data = {};
+        this.data = resources;
 
         this.listeners = [];
     }
