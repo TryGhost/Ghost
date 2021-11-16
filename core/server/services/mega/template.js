@@ -602,6 +602,7 @@ a.kg-nft-card {
 
 .kg-card-callout {
     display: flex;
+    margin: 0 0 1.5em 0;
     padding: 20px 28px;
     border-radius: 3px;
 }
