@@ -1392,10 +1392,25 @@
 }
 
 .kg-callout-emoji {
-    padding-right: 12px;
-    line-height: 1.6;
+    margin-right: 8px;
+    margin-left: -8px;
+    padding: 0 8px;
     font-size: 2rem;
+    line-height: 1.6;
     cursor: pointer;
+    border-radius: var(--border-radius);
+}
+
+.kg-callout-emoji:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.kg-card-callout-white .kg-callout-emoji:hover {
+    background: var(--whitegrey);
+}
+
+.kg-callout-emoji.active {
+    background: rgba(0, 0, 0, 0.06);
 }
 
 .kg-callout-palette {
@@ -1463,6 +1478,70 @@
 
 .kg-callout-palette-swatch-accent {
     background: var(--adjusted-accent-color);
+}
+
+.emoji-picker__wrapper {
+    margin-top: 1rem !important;
+}
+
+.emoji-picker {
+    border: 0 !important;
+    font-family: var(--font-family) !important;
+    box-shadow:
+        0px -1px 10px rgba(0, 0, 0, 0.08),
+        0px 2.8px 2.2px rgba(0, 0, 0, 0.014),
+        0px 6.7px 5.3px rgba(0, 0, 0, 0.02),
+        0px 12.5px 10px rgba(0, 0, 0, 0.025),
+        0px 22.3px 17.9px rgba(0, 0, 0, 0.03),
+        0px 41.8px 33.4px rgba(0, 0, 0, 0.036),
+        0px 100px 80px rgba(0, 0, 0, 0.05)
+    ;
+}
+
+.emoji-picker__search-container {
+    margin: 0 !important;
+}
+
+.emoji-picker__search {
+    padding: 24px 16px !important;
+    color: var(--middarkgrey) !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--whitegrey-d1) !important;
+    font-family: var(--font-family) !important;
+    font-size: 1.45rem !important;
+    border-radius: 0 !important;
+}
+
+.emoji-picker__search-icon {
+    top: calc(50% - .4rem) !important;
+    right: 1.8rem !important;
+    color: var(--lightgrey) !important;
+}
+
+button.emoji-picker__category-button {
+    color: var(--midlightgrey) !important;
+}
+
+button.emoji-picker__category-button.active {
+    color: var(--darkgrey) !important;
+    border-bottom: var(--category-border-bottom-size) solid transparent !important;
+}
+
+.emoji-picker__content {
+    margin-top: 2rem !important;
+}
+
+.emoji-picker__emojis {
+    padding: 0 8px !important;
+}
+
+.emoji-picker__category-name {
+    margin: .8rem 0 1rem !important;
+    color: var(--darkgrey) !important;
+    font-family: var(--font-family) !important;
+    font-size: 1.3rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
 }
 
 /* Accordion card
