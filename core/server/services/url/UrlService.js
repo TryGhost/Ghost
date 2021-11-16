@@ -23,17 +23,21 @@ class UrlService {
      *
      * @param {Object} options
      * @param {String} [options.urlsCachePath] - cached URLs storage path
+     * @param {String} [options.resourcesCachePath] - cached resources storage path
      */
-    constructor({urlsCachePath} = {}) {
+    constructor({urlsCachePath, resourcesCachePath} = {}) {
         this.utils = urlUtils;
         this.urlsCachePath = urlsCachePath;
+        this.resourcesCachePath = resourcesCachePath;
         this.onFinished = null;
         this.finished = false;
         this.urlGenerators = [];
 
         // Get urls
-        this.urls = new Urls();
         this.queue = new Queue();
+        // NOTE: Urls and Resources should not be initialized here but only in the init method.
+        //      Way too many tests fail if the initialization is removed so leaving it as is for time being
+        this.urls = new Urls();
         this.resources = new Resources(this.queue);
 
         this._listeners();
@@ -317,30 +321,35 @@ class UrlService {
     async init(options = {}) {
         this.onFinished = options.onFinished;
 
-        this.resources.initResourceConfig();
-        this.resources.initEvenListeners();
-
         let persistedUrls;
+        let persistedResources;
 
         if (labs.isSet('urlCache')) {
             persistedUrls = await this.readCacheFile(this.urlsCachePath);
+            persistedResources = await this.readCacheFile(this.resourcesCachePath);
         }
 
-        if (persistedUrls) {
-            this.urls = new Urls({
-                urls: persistedUrls
-            });
+        this.urls = new Urls({
+            urls: persistedUrls
+        });
+        this.resources = new Resources({
+            queue: this.queue,
+            resources: persistedResources
+        });
+        this.resources.initResourceConfig();
+        this.resources.initEvenListeners();
+
+        if (persistedUrls && persistedResources) {
             this._onQueueEnded('init');
         } else {
             await this.resources.fetchResources();
+            // CASE: all resources are fetched, start the queue
+            this.queue.start({
+                event: 'init',
+                tolerance: 100,
+                requiredSubscriberCount: 1
+            });
         }
-
-        // CASE: all resources are fetched, start the queue
-        this.queue.start({
-            event: 'init',
-            tolerance: 100,
-            requiredSubscriberCount: 1
-        });
     }
 
     async shutdown() {
@@ -349,6 +358,7 @@ class UrlService {
         }
 
         await this.persistToCacheFile(this.urlsCachePath, this.urls.urls);
+        await this.persistToCacheFile(this.resourcesCachePath, this.resources.getAll());
     }
 
     async persistToCacheFile(filePath, data) {
