@@ -1,4 +1,4 @@
-import * as storage from '../../../../app/utils/localstorage';
+import * as storage from '../utils/localstorage';
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
 import {EmojiButton} from '@joeattardi/emoji-button';
