@@ -434,6 +434,21 @@ const defaultSettingsKeyTypes = [
         key: 'labs',
         type: 'object',
         group: 'labs'
+    },
+    {
+        key: 'tenor_api_key',
+        type: 'string',
+        group: 'tenor'
+    },
+    {
+        key: 'tenor_enabled',
+        type: 'boolean',
+        group: 'tenor'
+    },
+    {
+        key: 'tenor_contentfilter',
+        type: 'string',
+        group: 'tenor'
     }
 ];
 

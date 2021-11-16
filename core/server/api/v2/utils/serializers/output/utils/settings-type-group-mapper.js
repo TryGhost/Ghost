@@ -14,7 +14,8 @@ const groupTypeMapping = {
     newsletter: 'newsletter',
     firstpromoter: 'firstpromoter',
     oauth: 'oauth',
-    editor: 'editor'
+    editor: 'editor',
+    tenor: 'tenor'
 };
 
 const mapGroupToType = (group) => {

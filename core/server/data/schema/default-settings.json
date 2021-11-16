@@ -452,6 +452,28 @@
             "type": "boolean"
         }
     },
+    "tenor": {
+        "tenor_api_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "tenor_enabled": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "tenor_contentfilter": {
+            "defaultValue": "off",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["off", "low", "medium", "high"]]
+            },
+            "type": "string"
+        }
+    },
     "views": {
         "shared_views": {
             "defaultValue": "[]",
