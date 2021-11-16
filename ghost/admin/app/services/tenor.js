@@ -26,7 +26,11 @@ export default class TenorService extends Service {
     _nextPos = null;
 
     get apiKey() {
-        return this.config.get('tenorApiKey');
+        return this.config.get('tenor.apiKey');
+    }
+
+    get contentfilter() {
+        return this.config.get('tenor.contentFilter') || 'off';
     }
 
     get isLoading() {
@@ -131,7 +135,8 @@ export default class TenorService extends Service {
         const url = new URL(versionedPath, API_URL);
 
         const params = new URLSearchParams(options.params);
-        params.append('key', this.apiKey);
+        params.set('key', this.apiKey);
+        params.set('contentfilter', this.contentfilter);
 
         url.search = params.toString();
 
