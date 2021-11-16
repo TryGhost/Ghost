@@ -982,7 +982,7 @@ figure {
     display: block;
     font-weight: 600;
     letter-spacing: 0;
-    line-height: 1em;
+    line-height: 1.3em;
 }
 
 .kg-settings-link-url {
@@ -991,5 +991,5 @@ figure {
     font-size: 1.2rem;
     color: var(--midgrey);
     letter-spacing: 0;
-    line-height: 1em;
+    line-height: 1.3em;
 }
