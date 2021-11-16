@@ -16,8 +16,14 @@ export default function cleanBasicHtml(html = '', _options = {}) {
         };
     }
 
-    let cleanHtml = html
-        .replace(/<br\s?\/?>/g, ' ')
+    let cleanHtml = html;
+
+    if (!options.allowBr) {
+        cleanHtml = cleanHtml
+            .replace(/<br\s?\/?>/g, ' ');
+    }
+
+    cleanHtml = cleanHtml
         .replace(/(\s|&nbsp;){2,}/g, ' ')
         .trim()
         .replace(/^&nbsp;|&nbsp$/g, '')
@@ -28,14 +34,21 @@ export default function cleanBasicHtml(html = '', _options = {}) {
         let doc = options.createDocument(cleanHtml);
 
         doc.body.querySelectorAll('*').forEach((element) => {
-            if (!element.textContent.trim()) {
+            // Treat Zero Width Non-Joiner characters as spaces
+            if (!element.textContent.trim().replace(/\u200c+/g, '')) {
+                if (options.allowBr && element.tagName === 'BR') {
+                    // keep it
+                    return;
+                }
+                if (options.allowBr && element.querySelector('br')) {
+                    return element.replaceWith(doc.createElement('br'));
+                }
                 if (element.textContent.length > 0) {
                     // keep a single space to avoid collapsing spaces
                     let space = doc.createTextNode(' ');
-                    element.replaceWith(space);
-                } else {
-                    element.remove();
+                    return element.replaceWith(space);
                 }
+                return element.remove();
             }
         });
 
