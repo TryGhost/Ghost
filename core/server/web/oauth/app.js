@@ -25,7 +25,7 @@ module.exports = function setupOAuthApp() {
     oauthApp.use(labsMiddleware);
 
     // send 503 json response in case of maintenance
-    oauthApp.use(shared.middlewares.maintenance);
+    oauthApp.use(shared.middleware.maintenance);
 
     /**
      * Configure the passport.authenticate middleware

@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const RSSRouter = require('./RSSRouter');
 const controllers = require('./controllers');
-const middlewares = require('./middlewares');
+const middleware = require('./middleware');
 const ParentRouter = require('./ParentRouter');
 
 /**
@@ -59,14 +59,14 @@ class StaticRoutesRouter extends ParentRouter {
         this.mountRoute(this.route.value, controllers[this.controller]);
 
         // REGISTER: pagination
-        this.router().param('page', middlewares.pageParam);
+        this.router().param('page', middleware.pageParam);
         this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers[this.controller]);
 
         this.routerCreated(this);
     }
 
     /**
-     * @description Prepare channel context for further middlewares/controllers.
+     * @description Prepare channel context for further middleware/controllers.
      * @param {Object} req
      * @param {Object} res
      * @param {Function} next
@@ -102,7 +102,7 @@ class StaticRoutesRouter extends ParentRouter {
     }
 
     /**
-     * @description Prepare static route context for further middlewares/controllers.
+     * @description Prepare static route context for further middleware/controllers.
      * @param {Object} req
      * @param {Object} res
      * @param {Function} next
