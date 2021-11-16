@@ -2,8 +2,7 @@ import Service, {inject as service} from '@ember/service';
 import {
     Color,
     darkenToContrastThreshold,
-    lightenToContrastThreshold,
-    textColorForBackgroundColor
+    lightenToContrastThreshold
 } from '@tryghost/color-utils';
 import {action} from '@ember/object';
 import {get} from '@ember/object';
@@ -91,10 +90,6 @@ export default class UiService extends Service {
         }
 
         return adjustedAccentColor.hex();
-    }
-
-    get textColorForAdjustedAccentBackground() {
-        return textColorForBackgroundColor(this.adjustedAccentColor).hex();
     }
 
     constructor() {

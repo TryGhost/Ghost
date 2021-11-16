@@ -37,7 +37,6 @@
             :root {
                 --accent-color: {{this.settings.accentColor}};
                 --adjusted-accent-color: {{this.ui.adjustedAccentColor}};
-                --text-color-for-adjusted-accent-background: {{this.ui.textColorForAdjustedAccentBackground}};
             }
             .koenig-editor__editor a:not([class]) {
                 color: var(--adjusted-accent-color);
@@ -47,12 +46,11 @@
             }
 
             .gh-btn-accent {
-                color: var(--text-color-for-adjusted-accent-background);
-                background-color: var(--adjusted-accent-color)
+                background-color: var(--adjusted-accent-color);
+                color: #fff;
             }
 
             .gh-btn-accent:hover {
-                color: {{hex-contrast this.ui.adjustedAccentColor}};
                 background-color: {{hex-adjust this.ui.adjustedAccentColor l=-15}}
             }
 
