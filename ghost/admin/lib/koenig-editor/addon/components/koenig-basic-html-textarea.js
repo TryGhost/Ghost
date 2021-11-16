@@ -1,3 +1,4 @@
+import * as softReturn from '@tryghost/kg-parser-plugins/lib/cards/softReturn';
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
@@ -158,7 +159,7 @@ export default Component.extend({
         editorOptions.mobiledoc = mobiledoc;
         editorOptions.showLinkTooltips = false;
         editorOptions.undoDepth = UNDO_DEPTH;
-        editorOptions.parserPlugins = [];
+        editorOptions.parserPlugins = [softReturn.fromBr()];
 
         editor = new Editor(editorOptions);
 
