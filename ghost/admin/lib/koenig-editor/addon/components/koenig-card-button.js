@@ -85,7 +85,7 @@ export default class KoenigCardButtonComponent extends Component {
         this.args.registerComponent(this);
 
         const payloadDefaults = {
-            alignment: 'left'
+            alignment: 'center'
         };
 
         Object.entries(payloadDefaults).forEach(([key, value]) => {
