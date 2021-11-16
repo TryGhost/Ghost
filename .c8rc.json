@@ -7,6 +7,18 @@
     "core/frontend/src/**",
     "core/frontend/public/**",
     "core/server/data/migrations/**",
-    "!core/server/data/migrations/utils.js"
+    "!core/server/data/migrations/utils.js",
+    "core/frontend/web/**",
+    "!core/frontend/web/middleware/**",
+    "core/server/web/api/**",
+    "!core/server/web/api/middleware/**",
+    "core/server/web/parent/**",
+    "!core/server/web/parent/middleware/**",
+    "core/server/web/shared/**",
+    "!core/server/web/shared/middleware/**",
+    "core/server/api/v2/**",
+    "core/server/api/v3/**",
+    "core/server/api/canary/**",
+    "!core/server/api/canary/utils"
   ]
 }
