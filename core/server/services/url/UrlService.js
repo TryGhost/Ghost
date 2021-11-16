@@ -38,7 +38,9 @@ class UrlService {
         // NOTE: Urls and Resources should not be initialized here but only in the init method.
         //      Way too many tests fail if the initialization is removed so leaving it as is for time being
         this.urls = new Urls();
-        this.resources = new Resources(this.queue);
+        this.resources = new Resources({
+            queue: this.queue
+        });
 
         this._listeners();
     }
@@ -329,19 +331,21 @@ class UrlService {
             persistedResources = await this.readCacheFile(this.resourcesCachePath);
         }
 
-        this.urls = new Urls({
-            urls: persistedUrls
-        });
-        this.resources = new Resources({
-            queue: this.queue,
-            resources: persistedResources
-        });
-        this.resources.initResourceConfig();
-        this.resources.initEvenListeners();
-
         if (persistedUrls && persistedResources) {
+            this.urls = new Urls({
+                urls: persistedUrls
+            });
+            this.resources = new Resources({
+                queue: this.queue,
+                resources: persistedResources
+            });
+            this.resources.initResourceConfig();
+            this.resources.initEvenListeners();
+
             this._onQueueEnded('init');
         } else {
+            this.resources.initResourceConfig();
+            this.resources.initEvenListeners();
             await this.resources.fetchResources();
             // CASE: all resources are fetched, start the queue
             this.queue.start({
