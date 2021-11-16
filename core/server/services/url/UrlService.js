@@ -22,11 +22,11 @@ class UrlService {
     /**
      *
      * @param {Object} options
-     * @param {String} [options.urlCachePath] - path to store cached URLs at
+     * @param {String} [options.urlsCachePath] - cached URLs storage path
      */
-    constructor({urlCachePath} = {}) {
+    constructor({urlsCachePath} = {}) {
         this.utils = urlUtils;
-        this.urlCachePath = urlCachePath;
+        this.urlsCachePath = urlsCachePath;
         this.onFinished = null;
         this.finished = false;
         this.urlGenerators = [];
@@ -320,7 +320,12 @@ class UrlService {
         this.resources.initResourceConfig();
         this.resources.initEvenListeners();
 
-        const persistedUrls = await this.fetchUrls();
+        let persistedUrls;
+
+        if (labs.isSet('urlCache')) {
+            persistedUrls = await this.readCacheFile(this.urlsCachePath);
+        }
+
         if (persistedUrls) {
             this.urls = new Urls({
                 urls: persistedUrls
@@ -338,39 +343,39 @@ class UrlService {
         });
     }
 
-    async persistUrls() {
-        if (!labs.isSet('urlCache') || !this.urlCachePath) {
+    async shutdown() {
+        if (!labs.isSet('urlCache')) {
             return null;
         }
 
-        return fs.writeFile(this.urlCachePath, JSON.stringify(this.urls.urls, null, 4));
+        await this.persistToCacheFile(this.urlsCachePath, this.urls.urls);
     }
 
-    async fetchUrls() {
-        if (!labs.isSet('urlCache') || !this.urlCachePath) {
-            return null;
-        }
+    async persistToCacheFile(filePath, data) {
+        return fs.writeFile(filePath, JSON.stringify(data, null, 4));
+    }
 
-        let urlsCacheExists = false;
-        let urls;
+    async readCacheFile(filePath) {
+        let cacheExists = false;
+        let cacheData;
 
         try {
-            await fs.stat(this.urlCachePath);
-            urlsCacheExists = true;
+            await fs.stat(filePath);
+            cacheExists = true;
         } catch (e) {
-            urlsCacheExists = false;
+            cacheExists = false;
         }
 
-        if (urlsCacheExists) {
+        if (cacheExists) {
             try {
-                const urlsFile = await fs.readFile(this.urlCachePath, 'utf8');
-                urls = JSON.parse(urlsFile);
+                const cacheFile = await fs.readFile(filePath, 'utf8');
+                cacheData = JSON.parse(cacheFile);
             } catch (e) {
                 //noop as we'd start a long boot process if there are any errors in the file
             }
         }
 
-        return urls;
+        return cacheData;
     }
 
     /**

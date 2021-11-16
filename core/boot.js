@@ -110,7 +110,7 @@ async function initCore({ghostServer, config, bootLogger}) {
         await jobService.shutdown();
     });
     ghostServer.registerCleanupTask(async () => {
-        await urlService.persistUrls();
+        await urlService.shutdown();
     });
     debug('End: Job Service');
 
