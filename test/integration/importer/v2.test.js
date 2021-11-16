@@ -898,10 +898,9 @@ describe('Importer', function () {
         });
 
         it('imports settings fields deprecated in v2 and removed in v3: slack hook, permalinks', function () {
+            // Prevent events from being fired to avoid side-effects
             const EventRegistry = require('../../../core/server/lib/common/events');
-            sinon.stub(EventRegistry, 'emit').callsFake((event) => {
-                console.log('emitted event' + event);
-            });
+            sinon.stub(EventRegistry, 'emit').callsFake(() => {});
 
             const exportData = exportedBodyV2().db[0];
 
