@@ -13,6 +13,7 @@ import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 
 import * as embedCard from './cards/embed';
 import * as buttonCard from './cards/button';
+import * as softReturn from './cards/softReturn';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -166,18 +167,6 @@ export function createParserPlugins(_options = {}) {
 
         const cardSection = builder.createCardSection('toggle', payload);
         addSection(cardSection);
-        nodeFinished();
-    }
-
-    // mobiledoc by default ignores <BR> tags but we have a custom SoftReturn atom
-    function brToSoftBreakAtom(node, builder, {addMarkerable, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'BR') {
-            return;
-        }
-
-        let softReturn = builder.createAtom('soft-return');
-        addMarkerable(softReturn);
-
         nodeFinished();
     }
 
@@ -479,7 +468,7 @@ export function createParserPlugins(_options = {}) {
         kgCalloutCardToCard,
         kgToggleCardToCard,
         blockquoteWithChildren,
-        brToSoftBreakAtom,
+        softReturn.fromBr(options),
         removeLeadingNewline,
         kgGalleryCardToCard,
         embedCard.fromFigureBlockquote(options), // I think these can contain images
