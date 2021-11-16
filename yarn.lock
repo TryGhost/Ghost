@@ -1691,6 +1691,13 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.26.tgz#41c6acca153cf43e1b4826c75232c56d51d0f1f0"
   integrity sha512-VEcOSKK3FWKXKZVY6kASX+O7Gv3W2dTPskgcbp0BTILhCjg+hTFsYBe23v6ukroaEjJ7WxWVrTZyjkkipiw3QA==
 
+"@tryghost/mw-update-user-last-seen@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-update-user-last-seen/-/mw-update-user-last-seen-0.1.0.tgz#21d3b90ac6d63e0f82a4a2bcb7c3ceec684dbe79"
+  integrity sha512-oCLHg23634bS9pQaatarHOIZr5rm8/v9RwyIa4J/JU3dNdlaWzhm3l0wz1Lh0HUxiC21Hu7QVLa5FFpfbdTvEg==
+  dependencies:
+    "@tryghost/constants" "1.0.0"
+
 "@tryghost/nodemailer@0.3.6":
   version "0.3.6"
   resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.6.tgz#e882f3a103bb30c0357e79d455bca3a402999bea"
