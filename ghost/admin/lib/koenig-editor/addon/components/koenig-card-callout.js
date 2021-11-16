@@ -67,7 +67,13 @@ export default class KoenigCardCalloutComponent extends Component {
             }
         });
 
-        this.picker = new EmojiButton();
+        this.picker = new EmojiButton({
+            position: 'bottom',
+            recentsCount: 24,
+            showPreview: false,
+            initialCategory: 'recents'
+        });
+
         this.picker.on('emoji', (selection) => {
             this.setCalloutEmoji(selection.emoji);
         });
