@@ -224,7 +224,7 @@ export const CARD_MENU = [
             payload: {
                 imageSelector: 'tenor'
             },
-            isAvailable: ['feature.gifsCard', 'config.tenorApiKey']
+            isAvailable: ['feature.gifsCard', 'config.tenor.apiKey']
         },
         {
             label: 'Vimeo',
