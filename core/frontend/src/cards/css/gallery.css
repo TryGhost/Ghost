@@ -1,17 +1,12 @@
-.kg-gallery-card {
-    margin: 0 0 1.5em;
-}
-
-.kg-gallery-card figcaption {
-    margin: -1.0em 0 1.5em;
+.kg-image-card:not(.kg-card-hascaption) + .kg-image-card,
+.kg-image-card:not(.kg-card-hascaption) + .kg-gallery-card,
+.kg-gallery-card:not(.kg-card-hascaption) + .kg-image-card,
+.kg-gallery-card:not(.kg-card-hascaption) + .kg-gallery-card {
+    margin-top: 1.2rem;
 }
 
 .kg-gallery-container {
-    display: flex;
-    flex-direction: column;
-    margin: 1.5em auto;
-    max-width: 1040px;
-    width: 100vw;
+    position: relative;
 }
 
 .kg-gallery-row {
@@ -28,9 +23,9 @@
 }
 
 .kg-gallery-row:not(:first-of-type) {
-    margin: 0.75em 0 0 0;
+    margin: 1.2rem 0 0;
 }
 
 .kg-gallery-image:not(:first-of-type) {
-    margin: 0 0 0 0.75em;
+    margin: 0 0 0 1.2rem;
 }
