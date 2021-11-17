@@ -319,14 +319,15 @@ class UrlService {
      * @description Initializes components needed for the URL Service to function
      * @param {Object} options
      * @param {Function} [options.onFinished] - callback when url generation is finished
+     * @param {Boolean} [options.urlCache] - whether to init using url cache or not
      */
-    async init(options = {}) {
-        this.onFinished = options.onFinished;
+    async init({onFinished, urlCache} = {}) {
+        this.onFinished = onFinished;
 
         let persistedUrls;
         let persistedResources;
 
-        if (labs.isSet('urlCache')) {
+        if (labs.isSet('urlCache') || urlCache) {
             persistedUrls = await this.readCacheFile(this.urlsCachePath);
             persistedResources = await this.readCacheFile(this.resourcesCachePath);
         }
