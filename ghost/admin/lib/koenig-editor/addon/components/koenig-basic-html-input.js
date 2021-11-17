@@ -442,7 +442,7 @@ export default Component.extend({
     // inline markup that directly maps to HTML elements
     _getHTML() {
         if (this.editor && this.editor.element) {
-            let firstParagraph = this.editor.element.querySelector(this.defaultTag);
+            let firstParagraph = this.editor.element.querySelector(this.defaultTag) || this.editor.element.querySelector('p');
 
             if (!firstParagraph) {
                 return '';
