@@ -18,7 +18,7 @@ module.exports = {
         }
 
         const frontendTemplate = hbs`
-            <div class="kg-button-card kg-align-{{alignment}}">
+            <div class="kg-card kg-button-card kg-align-{{alignment}}">
                 <a href="{{buttonUrl}}" class="kg-btn kg-btn-accent">{{buttonText}}</a>
             </div>
         `;
