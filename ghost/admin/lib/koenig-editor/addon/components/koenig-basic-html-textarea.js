@@ -110,6 +110,8 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
+
+        this.SPECIAL_MARKUPS = SPECIAL_MARKUPS;
     },
 
     didReceiveAttrs() {
