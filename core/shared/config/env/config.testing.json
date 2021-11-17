@@ -51,6 +51,7 @@
     },
     "useMinFiles": false,
     "paths": {
-        "fixtures": "test/utils/fixtures/fixtures"
+        "fixtures": "test/utils/fixtures/fixtures",
+        "urlCache": "test/utils/fixtures/urls"
     }
 }
