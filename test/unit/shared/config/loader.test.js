@@ -97,6 +97,7 @@ describe('Config Loader', function () {
                 'contentPath',
                 'fixtures',
                 'assetSrc',
+                'urlCache',
                 'appRoot',
                 'corePath',
                 'clientAssets',
