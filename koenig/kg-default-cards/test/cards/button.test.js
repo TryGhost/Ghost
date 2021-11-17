@@ -17,7 +17,7 @@ describe('Button card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-button-card kg-align-left"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-button-card kg-align-left"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
         });
 
         it('adds center classes when center aligned', function () {
@@ -30,7 +30,7 @@ describe('Button card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-button-card kg-align-center"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-button-card kg-align-center"><a href="https://ghost.org/" class="kg-btn kg-btn-accent">Click me!</a></div>');
         });
     });
 
