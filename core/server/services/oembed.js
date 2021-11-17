@@ -1,5 +1,6 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const logging = require('@tryghost/logging');
 const {extract, hasProvider} = require('oembed-parser');
 const cheerio = require('cheerio');
 const _ = require('lodash');
@@ -119,6 +120,9 @@ class OEmbed {
             if (errors.utils.isIgnitionError(err) && err.errorType === 'ValidationError') {
                 throw err;
             }
+
+            // log the real error because we're going to throw a generic "Unknown provider" error
+            logging.error(new errors.GhostError({err}));
 
             // default to unknown provider to avoid leaking any app specifics
             return this.unknownProvider(url);
