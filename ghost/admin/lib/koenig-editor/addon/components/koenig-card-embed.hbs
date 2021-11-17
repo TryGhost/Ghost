@@ -6,10 +6,10 @@
     @deselectCard={{action this.deselectCard}}
     @onDeselect={{action "onDeselect"}}
     @editCard={{action this.editCard}}
-    @saveAsSnippet={{if this.payload.html this.saveAsSnippet}}
+    @saveAsSnippet={{if this.payload.type this.saveAsSnippet}}
     @toolbar={{this.toolbar}}
     @hasEditMode={{false}}
-    @showSelectedOutline={{this.payload.html}}
+    @showSelectedOutline={{this.payload.type}}
     @addParagraphAfterCard={{this.addParagraphAfterCard}}
     @moveCursorToPrevSection={{this.moveCursorToPrevSection}}
     @moveCursorToNextSection={{this.moveCursorToNextSection}}
