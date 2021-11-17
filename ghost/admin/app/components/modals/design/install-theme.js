@@ -32,7 +32,7 @@ export default class InstallThemeModalComponent extends Component {
     }
 
     get isDefaultTheme() {
-        return this.themeName.toLowerCase() === 'capser';
+        return this.themeName.toLowerCase() === 'casper';
     }
 
     get isConfirming() {
