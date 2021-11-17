@@ -11,8 +11,9 @@
 
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 
-import * as embedCard from './cards/embed';
 import * as buttonCard from './cards/button';
+import * as embedCard from './cards/embed';
+import * as htmlCard from './cards/html';
 import * as softReturn from './cards/softReturn';
 
 export function createParserPlugins(_options = {}) {
@@ -88,35 +89,6 @@ export function createParserPlugins(_options = {}) {
     }
 
     // PLUGINS -----------------------------------------------------------------
-
-    // https://github.com/TryGhost/Koenig/issues/1
-    // allows arbitrary HTML blocks wrapped in our card comments to be extracted
-    // into a HTML card rather than being put through the normal parse+plugins
-    function kgHtmlCardToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 8 || node.nodeValue !== 'kg-card-begin: html') {
-            return;
-        }
-
-        let html = [];
-
-        function isHtmlEndComment(n) {
-            return n && n.nodeType === 8 && n.nodeValue === 'kg-card-end: html';
-        }
-
-        let nextNode = node.nextSibling;
-        while (nextNode && !isHtmlEndComment(nextNode)) {
-            let currentNode = nextNode;
-            html.push(currentNode.outerHTML);
-            nextNode = currentNode.nextSibling;
-            // remove nodes as we go so that they don't go through the parser
-            currentNode.remove();
-        }
-
-        let payload = {html: html.join('\n').trim()};
-        let cardSection = builder.createCardSection('html', payload);
-        addSection(cardSection);
-        nodeFinished();
-    }
 
     function kgCalloutCardToCard(node, builder, {addSection, nodeFinished}) {
         if (node.nodeType !== 1 || !node.classList.contains('kg-callout-card')) {
@@ -461,7 +433,7 @@ export function createParserPlugins(_options = {}) {
     return [
         embedCard.fromNFTEmbed(),
         embedCard.fromMixtape(options),
-        kgHtmlCardToCard,
+        htmlCard.fromKoenigCard(options),
         buttonCard.fromKoenigCard(options),
         buttonCard.fromWordpressButton(options),
         buttonCard.fromSubstackButton(options),
