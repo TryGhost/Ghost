@@ -1,83 +1,101 @@
-/* style.css */
-
-.kg-bookmark-card {
-    width: 100%;
+.kg-bookmark-card,
+.kg-bookmark-publisher {
     position: relative;
+    width: 100%;
 }
 
-.kg-bookmark-container {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row-reverse;
-    color: currentColor;
-    font-family: inherit;
-    text-decoration: none;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
+.kg-bookmark-container,
 .kg-bookmark-container:hover {
+    display: flex;
     text-decoration: none;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgb(124 139 154 / 25%);
+    overflow: hidden;
 }
 
 .kg-bookmark-content {
-    flex-basis: 0;
-    flex-grow: 999;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-basis: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
     padding: 20px;
-    order: 1;
 }
 
 .kg-bookmark-title {
+    font-size: 1.5rem;
+    line-height: 1.4em;
     font-weight: 600;
-}
-
-.kg-bookmark-metadata,
-.kg-bookmark-description {
-    margin-top: .5em;
-}
-
-.kg-bookmark-metadata {
-    align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .kg-bookmark-description {
     display: -webkit-box;
-    -webkit-box-orient: vertical;
+    font-size: 1.4rem;
+    line-height: 1.5em;
+    margin-top: 3px;
+    font-weight: 400;
+    max-height: 44px;
+    overflow-y: hidden;
+    opacity: 0.7;
     -webkit-line-clamp: 2;
-    overflow: hidden;
+    -webkit-box-orient: vertical;
+}
+
+.kg-bookmark-metadata {
+    display: flex;
+    align-items: center;
+    margin-top: 22px;
+    width: 100%;
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.kg-bookmark-metadata > *:not(img) {
+    opacity: 0.7;
 }
 
 .kg-bookmark-icon {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    vertical-align: text-bottom;
-    margin-right: .5em;
-    margin-bottom: .05em;
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+}
+
+.kg-bookmark-author,
+.kg-bookmark-publisher {
+    display: inline;
+}
+
+.kg-bookmark-publisher {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 240px;
+    white-space: nowrap;
+    display: block;
+    line-height: 1.65em;
+}
+
+.kg-bookmark-metadata > span:nth-of-type(2) {
+    font-weight: 400;
+}
+
+.kg-bookmark-metadata > span:nth-of-type(2):before {
+    content: "•";
+    margin: 0 6px;
 }
 
 .kg-bookmark-thumbnail {
-    display: flex;
-    flex-basis: 24rem;
+    position: relative;
     flex-grow: 1;
+    min-width: 33%;
 }
 
 .kg-bookmark-thumbnail img {
-    max-width: 100%;
-    height: auto;
-    vertical-align: bottom;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-}
-
-.kg-bookmark-author {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.kg-bookmark-publisher::before {
-    content: "•";
-    margin: 0 .5em;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 0 4px 4px 0;
 }
