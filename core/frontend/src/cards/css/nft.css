@@ -37,7 +37,7 @@ a.kg-nft-card * {
     padding: 2.0rem;
 }
 
-.kg-nft-card img {
+.kg-nft-image {
     min-width: unset;
     max-width: unset;
     margin: -1px;
@@ -47,6 +47,7 @@ a.kg-nft-card * {
 .kg-nft-header {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     gap: 20px;
 }
 
@@ -60,9 +61,10 @@ a.kg-nft-card * {
     color: #222;
 }
 
-.kg-nft-header svg {
+.kg-nft-opensea-logo {
+    margin-top: 2px;
     width: 100px;
-    height: auto;
+    object-fit: scale-down;
 }
 
 .kg-nft-creator {
