@@ -1,4 +1,4 @@
-# Mw Update User Last Seen
+# mw-update-user-last-seen
 
 ## Install
 
