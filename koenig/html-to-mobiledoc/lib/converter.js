@@ -19,8 +19,8 @@ module.exports.toMobiledoc = (html, options = {}) => {
     // We use our parser plugins by default, but this is extensible
     if (!options.plugins) {
         options.plugins = createParserPlugins({
-            createDocument(html) {
-                return (new JSDOM(html)).window.document;
+            createDocument(htmlToParse) {
+                return (new JSDOM(htmlToParse)).window.document;
             }
         });
     }
