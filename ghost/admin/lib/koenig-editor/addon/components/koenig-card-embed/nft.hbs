@@ -2,7 +2,10 @@
     <img class="kg-nft-image" src="{{this.payload.metadata.image_url}}">
     <div class="kg-nft-metadata">
         <div class="kg-nft-header">
-            <h4 class="kg-nft-title"> {{this.payload.metadata.title}} </h4>
+            <h4 class="kg-nft-title"> 
+                {{this.payload.metadata.title}} 
+                <img src="https://static.ghost.org/v4.0.0/images/opensea-logo.png" class="kg-nft-opensea-logo">
+            </h4>
         </div>
         <div class="kg-nft-creator">
             Created by <span class="kg-nft-creator-name">{{this.payload.metadata.author_name}}</span>
