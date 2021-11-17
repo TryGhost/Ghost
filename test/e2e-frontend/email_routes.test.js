@@ -7,9 +7,9 @@ const sinon = require('sinon');
 const supertest = require('supertest');
 const cheerio = require('cheerio');
 
-const testUtils = require('../../utils');
-const config = require('../../../core/shared/config');
-const bridge = require('../../../core/bridge');
+const testUtils = require('../utils');
+const config = require('../../core/shared/config');
+const bridge = require('../../core/bridge');
 
 describe('Frontend Routing: Email Routes', function () {
     let request;
@@ -19,7 +19,7 @@ describe('Frontend Routing: Email Routes', function () {
         sinon.stub(bridge, 'getFrontendApiVersion')
             .returns('v4');
 
-        await testUtils.startGhost();
+        await testUtils.startGhost({forceStart: true});
 
         request = supertest.agent(config.get('url'));
 
