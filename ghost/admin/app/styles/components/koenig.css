@@ -1629,6 +1629,7 @@ button.emoji-picker__category-button.active {
     font-size: 1.4rem;
     font-weight: 400;
     width: 100%;
+    min-width: 440px;
     max-width: 512px;
     border: 1px solid var(--whitegrey);
     border-radius: 5px;
