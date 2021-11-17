@@ -171,9 +171,12 @@ export function fromNFTEmbed() {
             return;
         }
 
-        let payload = {
-            html: nftCard.outerHTML
-        };
+        let payload;
+        try {
+            payload = JSON.parse(nftCard.dataset.payload);
+        } catch (err) {
+            return nodeFinished();
+        }
 
         let cardSection = builder.createCardSection('embed', payload);
         addSection(cardSection);
