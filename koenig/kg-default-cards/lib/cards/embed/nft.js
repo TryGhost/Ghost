@@ -9,6 +9,7 @@ module.exports = {
                 <div class="kg-nft-metadata">
                     <div class="kg-nft-header">
                         <h4 class="kg-nft-title"> ${payload.metadata.title} </h4>
+                        <img src="https://static.ghost.org/v4.0.0/images/opensea-logo.png" class="kg-nft-opensea-logo">
                     </div>
                     <div class="kg-nft-creator">
                         Created by <span class="kg-nft-creator-name">${payload.metadata.author_name}</span>
@@ -23,7 +24,7 @@ module.exports = {
             html = `
             <table cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;">
                 <tr>
-                    <td>
+                    <td align="center">
                         <a href="${payload.url}"><img src="${payload.metadata.image_url}" style="max-width: 512px; border: none; width: 100%;" border="0"></a>
                     </td>
                 </tr>
@@ -31,9 +32,9 @@ module.exports = {
                     <td>
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
-                                <td><a href="${payload.url}" class="kg-nft-link" style="font-size: 17px !important; font-weight: 600; padding-top: 8px; padding-bottom: 4px;">${payload.metadata.title}</a></td>
-                                <td align="right">
-                                <a href="${payload.url}" class="kg-nft-link"></a>
+                                <td valign="top"><a href="${payload.url}" class="kg-nft-link" style="font-size: 17px !important; font-weight: 600; padding-top: 8px; max-width: 300px;">${payload.metadata.title}</a></td>
+                                <td align="right" valign="top">
+                                <a href="${payload.url}" class="kg-nft-link" style="padding-top: 6px; padding-bottom: 0px;"><img src="https://static.ghost.org/v4.0.0/images/opensea-logo.png" width="100" border="0"></a>
                                 </td>
                             </tr>
                             <tr>
@@ -55,14 +56,14 @@ module.exports = {
             `;
         }
 
+        figure.appendChild(dom.createRawHTMLSection(html));
+
         if (payload.caption) {
             let figcaption = dom.createElement('figcaption');
             figcaption.appendChild(dom.createRawHTMLSection(payload.caption));
             figure.appendChild(figcaption);
             figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
         }
-
-        figure.appendChild(dom.createRawHTMLSection(html));
 
         return figure;
     }
