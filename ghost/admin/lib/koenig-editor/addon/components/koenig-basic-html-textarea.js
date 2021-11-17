@@ -415,6 +415,10 @@ export default Component.extend({
     // inline markup that directly maps to HTML elements
     getCleanHTML() {
         if (this.editor && this.editor.element) {
+            if (this.editor.element.classList.contains('__has-no-content')) {
+                // Removes the default editor placeholder
+                return '';
+            }
             return cleanBasicHtml(this.editor.element.innerHTML, {allowBr: true});
         }
     }
