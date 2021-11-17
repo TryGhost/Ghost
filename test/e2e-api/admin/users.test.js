@@ -29,7 +29,7 @@ describe('User API', function () {
         });
 
         // by default we login with the owner
-        await localUtils.doAuth(request);
+        await localUtils.doAuth(request, 'posts');
     });
 
     it('Can request all users ordered by id', async function () {
@@ -65,11 +65,11 @@ describe('User API', function () {
         testUtils.API.isISO8601(jsonResponse.users[3].created_at).should.be.true();
         testUtils.API.isISO8601(jsonResponse.users[3].updated_at).should.be.true();
 
-        // only "ghost" author has a published post
+        // only "ghost" and joe-bloggs author has a published post
         jsonResponse.users[0].url.should.eql(`${config.get('url')}/404/`);
         jsonResponse.users[1].url.should.eql(`${config.get('url')}/404/`);
         jsonResponse.users[2].url.should.eql(`${config.get('url')}/author/ghost/`);
-        jsonResponse.users[3].url.should.eql(`${config.get('url')}/404/`);
+        jsonResponse.users[3].url.should.eql(`${config.get('url')}/author/joe-bloggs/`);
     });
 
     it('Can include user roles', async function () {
@@ -116,7 +116,7 @@ describe('User API', function () {
         localUtils.API.checkResponse(jsonResponse.users[0].roles[0], 'role', ['permissions']);
 
         should.exist(jsonResponse.users[0].count.posts);
-        jsonResponse.users[0].count.posts.should.equal(0);
+        jsonResponse.users[0].count.posts.should.equal(8);
     });
 
     it('Can retrieve a user by slug', async function () {
