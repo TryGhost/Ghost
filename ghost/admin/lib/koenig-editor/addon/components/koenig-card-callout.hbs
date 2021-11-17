@@ -23,7 +23,7 @@
 
         <div class="kg-card kg-card-callout kg-card-callout-{{@payload.backgroundColor}}">
             {{#if @payload.calloutEmoji}}
-            <div class="kg-callout-emoji" {{on "click" this.changeEmoji}}>{{@payload.calloutEmoji}}</div>
+            <div class="kg-callout-emoji {{if this.isPickerVisible "kg-emoji-picker-active"}}" {{on "click" this.changeEmoji}}>{{@payload.calloutEmoji}}</div>
             {{/if}}
             <KoenigBasicHtmlTextarea
                 @html={{@payload.calloutText}}
@@ -74,7 +74,7 @@
 
         <div class="kg-card kg-card-callout kg-card-callout-{{@payload.backgroundColor}}">
             {{#if @payload.calloutEmoji}}
-            <div class="kg-callout-emoji">{{@payload.calloutEmoji}}</div>
+            <div class="kg-callout-emoji {{if this.isPickerVisible "kg-emoji-picker-active"}}">{{@payload.calloutEmoji}}</div>
             {{/if}}
             <div>{{{@payload.calloutText}}}</div>
         </div>

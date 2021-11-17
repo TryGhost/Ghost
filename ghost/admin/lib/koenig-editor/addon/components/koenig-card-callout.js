@@ -7,6 +7,7 @@ import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
+import {tracked} from '@glimmer/tracking';
 
 const storageKey = 'gh-kg-callout-emoji';
 
@@ -32,6 +33,9 @@ export default class KoenigCardCalloutComponent extends Component {
         {name: 'Purple', color: 'purple'},
         {name: 'Brand color', color: 'accent'}
     ];
+
+    @tracked
+    isPickerVisible = false;
 
     get selectedBackgroundColor() {
         return this.backgroundColors.find(option => option.color === this.args.payload.backgroundColor);
@@ -79,6 +83,10 @@ export default class KoenigCardCalloutComponent extends Component {
 
         this.picker.on('emoji', (selection) => {
             this.setCalloutEmoji(selection.emoji);
+        });
+
+        this.picker.on('hidden', () => {
+            this.isPickerVisible = false;
         });
     }
 
@@ -143,7 +151,8 @@ export default class KoenigCardCalloutComponent extends Component {
 
     @action
     changeEmoji(event) {
-        this.picker.togglePicker(event.target);
+        this.picker.showPicker(event.target);
+        this.isPickerVisible = true;
     }
 
     @action
