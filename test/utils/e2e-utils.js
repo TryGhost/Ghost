@@ -96,7 +96,7 @@ const prepareContentFolder = (options) => {
 // - truncate database
 // - re-run default fixtures
 // - reload affected services
-const restartModeGhostStart = async () => {
+const restartModeGhostStart = async ({withFrontend}) => {
     debug('Reload Mode');
     // Teardown truncates all tables and also calls urlServiceUtils.reset();
     await dbUtils.teardown();
@@ -117,8 +117,12 @@ const restartModeGhostStart = async () => {
     // Reload the URL service & wait for it to be ready again
     // @TODO: why/how is this different to urlService.resetGenerators?
     urlServiceUtils.reset();
-    urlServiceUtils.init();
-    await urlServiceUtils.isFinished();
+    urlServiceUtils.init({urlCache: !withFrontend});
+
+    if (withFrontend) {
+        await urlServiceUtils.isFinished();
+    }
+
     debug('routes done');
 
     await customRedirectsService.init();
@@ -127,8 +131,8 @@ const restartModeGhostStart = async () => {
     limits.init();
 };
 
-const bootGhost = async () => {
-    ghostServer = await boot();
+const bootGhost = async ({withBackend, withFrontend}) => {
+    ghostServer = await boot({withBackend, withFrontend});
 };
 
 // CASE: Ghost Server needs Starting
@@ -168,13 +172,17 @@ const freshModeGhostStart = async (options) => {
     await bootGhost(options);
 
     // Wait for the URL service to be ready, which happens after bootYou
-    await urlServiceUtils.isFinished();
+    if (options.withFrontend) {
+        await urlServiceUtils.isFinished();
+    }
 };
 
 const startGhost = async (options) => {
     const startTime = Date.now();
     debug('Start Ghost');
     options = _.merge({
+        withBackend: true,
+        withFrontend: false,
         redirectsFile: true,
         redirectsFileExt: '.json',
         forceStart: false,
