@@ -1663,7 +1663,7 @@ button.emoji-picker__category-button.active {
     padding: 20px;
 }
 
-.kg-nft-card img {
+.kg-nft-card .kg-nft-image {
     min-width: unset;
     max-width: unset;
     margin: -1px;
@@ -1673,6 +1673,7 @@ button.emoji-picker__category-button.active {
 .kg-nft-title {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
 }
 
 .kg-nft-title h4 {
@@ -1683,9 +1684,10 @@ button.emoji-picker__category-button.active {
     color: #222;
 }
 
-.kg-nft-title svg {
+.kg-nft-opensea-logo {
+    margin-top: 4px;
     width: 100px;
-    height: auto;
+    object-fit: scale-down;
 }
 
 .kg-nft-creator {
