@@ -6,8 +6,8 @@
         </div>
         <div class="kg-nft-creator">
             Created by <span class="kg-nft-creator-name">{{this.payload.metadata.author_name}}</span>
-            {{#if this.payload.metadata.author_name}}
-                &bull; {{this.payload.metadata.author_name}}
+            {{#if this.payload.metadata.collection_name}}
+                &bull; {{this.payload.metadata.collection_name}}
             {{/if}}
         </div>
         {{#if this.payload.metadata.description}}
