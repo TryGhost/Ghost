@@ -48,7 +48,8 @@ class NFTOEmbedProvider {
             provider_url: 'https://opensea.io',
             image_url: result.body.image_url,
             creator_name: result.body.creator.user.username,
-            description: result.body.description
+            description: result.body.description,
+            collection_name: result.body.collection.name
         };
     }
 }
