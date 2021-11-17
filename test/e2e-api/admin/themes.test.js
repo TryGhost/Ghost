@@ -26,7 +26,10 @@ describe('Themes API', function () {
     };
 
     before(async function () {
-        await testUtils.startGhost();
+        await testUtils.startGhost({
+            forceStart: true, // NOTE: this flag should not be here! the URL service re-initialization should be fixe instead
+            withFrontend: true
+        });
         ownerRequest = supertest.agent(config.get('url'));
         await localUtils.doAuth(ownerRequest);
     });
