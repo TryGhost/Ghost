@@ -1937,10 +1937,10 @@
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 
-"@tryghost/metrics@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.0.tgz#073cffb54274a9f7212d903b594af2f36fe95819"
-  integrity sha512-hMobhdiW2th+7qz/lFDCI0twvFlcdwNleGnmj1FJAxqtE/AiBr6DON9AwPfd7uEd+HsQd1Zb4pADcFibZvzmmg==
+"@tryghost/metrics@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.1.tgz#0d06848021f661409fbc557c41bb8c36122889f9"
+  integrity sha512-zXbo2kZxTfEBrU3n2xsPFwSPExDKnSmyCaIjwr07dK4BfI/A4yW4unzT791HN/y+j1+xa4XdZPdCAgIkTYPygw==
   dependencies:
     "@tryghost/elasticsearch" "^1.0.0"
     "@tryghost/pretty-stream" "^0.1.2"
