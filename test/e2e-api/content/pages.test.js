@@ -10,7 +10,7 @@ describe('Pages Content API', function () {
     let request;
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });

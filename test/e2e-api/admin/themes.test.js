@@ -26,7 +26,7 @@ describe('Themes API', function () {
     };
 
     before(async function () {
-        await testUtils.startGhost({
+        await localUtils.startGhost({
             forceStart: true, // NOTE: this flag should not be here! the URL service re-initialization should be fixe instead
             withFrontend: true
         });
