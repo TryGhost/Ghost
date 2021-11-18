@@ -56,7 +56,8 @@ export default class GhTenorComponent extends Component {
             src: media.url,
             width: media.dims[0],
             height: media.dims[1],
-            caption: '(Via <a href="https://tenor.com">Tenor</a>)'
+            caption: '(Via <a href="https://tenor.com">Tenor</a>)',
+            type: 'gif'
         };
 
         this.args.select(selectParams);
