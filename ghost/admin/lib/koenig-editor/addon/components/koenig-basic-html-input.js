@@ -14,9 +14,21 @@ import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {registerBasicInputTextExpansions} from '../options/text-expansions';
 import {run} from '@ember/runloop';
 
+// TODO: extract core to share functionality between this and `{{koenig-editor}}`
+
 const UNDO_DEPTH = 50;
 
-// TODO: extract core to share functionality between this and `{{koenig-editor}}`
+// markups that should not be continued when typing and reverted to their
+// text expansion style when backspacing over final char of markup
+const SPECIAL_MARKUPS = {
+    S: '~~',
+    CODE: {
+        char: '`',
+        replace: false
+    },
+    SUP: '^',
+    SUB: '~'
+};
 
 export default Component.extend({
     // public attrs
@@ -74,7 +86,7 @@ export default Component.extend({
 
     init() {
         this._super(...arguments);
-        this.SPECIAL_MARKUPS = [];
+        this.SPECIAL_MARKUPS = SPECIAL_MARKUPS;
         this._lastSetHtml = this.html;
     },
 
