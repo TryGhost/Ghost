@@ -98,7 +98,7 @@
     "@tryghost/string": "0.1.21",
     "@tryghost/tpl": "0.1.8",
     "@tryghost/update-check-service": "0.2.5",
-    "@tryghost/url-utils": "2.0.3",
+    "@tryghost/url-utils": "2.0.4",
     "@tryghost/validator": "0.1.8",
     "@tryghost/version": "0.1.7",
     "@tryghost/vhost-middleware": "1.0.19",
