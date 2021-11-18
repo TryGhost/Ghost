@@ -56,7 +56,7 @@
     "csscomb": "4.3.0",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.3",
-    "ember-ajax": "5.0.0",
+    "ember-ajax": "5.1.1",
     "ember-assign-helper": "0.3.0",
     "ember-auto-import": "1.12.0",
     "ember-classic-decorator": "2.0.0",
