@@ -2,7 +2,7 @@ name: 'Label Issues'
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, closed, labeled]
   schedule:
     - cron:  '0 * * * *'
 
