@@ -13,7 +13,7 @@ describe('User API', function () {
     let admin;
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
 
         // create inactive user

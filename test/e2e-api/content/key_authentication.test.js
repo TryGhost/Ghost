@@ -9,7 +9,7 @@ describe('Content API key authentication', function () {
     let request;
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('api_keys');
     });
@@ -44,7 +44,7 @@ describe('Content API key authentication', function () {
             });
 
             // NOTE: need to do a full reboot to reinitialize hostSettings
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             await testUtils.initFixtures('api_keys');
 
             const key = localUtils.getValidKey();

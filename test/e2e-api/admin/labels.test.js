@@ -3,7 +3,7 @@ const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
-const localUtils = require('../../regression/api/canary/admin/utils');
+const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 
 describe('Labels API', function () {
@@ -14,7 +14,7 @@ describe('Labels API', function () {
     });
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
     });

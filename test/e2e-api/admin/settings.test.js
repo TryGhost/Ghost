@@ -13,7 +13,7 @@ describe('Settings API', function () {
     let ghostServer;
 
     before(async function () {
-        ghostServer = await testUtils.startGhost();
+        ghostServer = await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
     });

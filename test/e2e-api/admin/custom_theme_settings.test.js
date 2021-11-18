@@ -10,7 +10,7 @@ describe('Custom Theme Settings API', function () {
 
     before(async function () {
         // NOTE: needs force start to be able to reinitialize Ghost process with frontend services - custom-theme-settings, to be specific
-        await testUtils.startGhost({
+        await localUtils.startGhost({
             forceStart: true,
             withFrontend: true
         });
