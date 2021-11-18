@@ -77,6 +77,9 @@ module.exports.teardown = () => {
                 }
 
                 throw err;
+            })
+            .finally(() => {
+                debug('Database teardown end');
             });
     }
 
