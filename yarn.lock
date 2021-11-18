@@ -1817,22 +1817,6 @@
     moment "^2.29.1"
     prettyjson "^1.2.1"
 
-"@tryghost/logging@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.1.tgz#26f8dc45f70550efed583244ee79ff7721e4dc58"
-  integrity sha512-e01V4kYlsqKuJsSw3VPWSrGBF2PaZ4NMXhh9jokVksB9EXOgX1DUElHM0nu1vKcewYvQJnMxkPoOSi3SvxeA7w==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch" "^1.0.0"
-    "@tryghost/pretty-stream" "^0.1.2"
-    "@tryghost/root-utils" "^0.3.7"
-    bunyan "^1.8.15"
-    bunyan-loggly "^1.4.2"
-    fs-extra "^10.0.0"
-    gelf-stream "^1.1.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.17.21"
-
 "@tryghost/magic-link@1.0.14", "@tryghost/magic-link@^1.0.14":
   version "1.0.14"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.14.tgz#3636a023de4f2ecbd59dff1b56cde029106590f0"
@@ -3522,10 +3506,10 @@ commander@^7.2.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-7.2.0.tgz#a36cb57d0b501ce108e4d20559a150a391d97ab7"
   integrity sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==
 
-common-tags@1.8.2:
-  version "1.8.2"
-  resolved "https://registry.yarnpkg.com/common-tags/-/common-tags-1.8.2.tgz#94ebb3c076d26032745fd54face7f688ef5ac9c6"
-  integrity sha512-gk/Z852D2Wtb//0I+kRFNKKE9dIIVirjoqPoA1wJU+XePVXZfGeBpk45+A1rKO4Q43prqWBNY/MiIeRLbPWUaA==
+common-tags@1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/common-tags/-/common-tags-1.8.1.tgz#ebf4973edf7d476a9c19646f5f04a45f95796029"
+  integrity sha512-uOZd85rJqrdEIE/JjhW5YAeatX8iqjjvVzIyfx7JL7G5r9Tep6YpYT9gEJWhWpVyDQEyzukWd6p2qULpJ8tmBw==
 
 compare-ver@2.0.2:
   version "2.0.2"
@@ -5853,22 +5837,22 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.11.0:
-  version "4.11.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.11.0.tgz#f6fbbd22c39ad7533449b766c86fa94eb4ce3109"
-  integrity sha512-rPjagpeqbqtTJ+KMmj2mK/MxlZaC6NzXabC+dvHD44h8W3HPf3izm2DjeStoGJbH9p1IEEm6psOaZEU8DL1zIg==
+gscan@4.10.2:
+  version "4.10.2"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.10.2.tgz#398f2e241da02d3e2c346ade5c8e8dff0d63f3a3"
+  integrity sha512-Mk7QpvY5WI90RdVxPIOR4yP7VXnhXsbbD8UzB5KkgIX/msQ1r/g770chf/MoES7eBn/b4necXN/vwgaGTnbzdQ==
   dependencies:
     "@sentry/node" "6.15.0"
     "@tryghost/config" "0.2.0"
     "@tryghost/debug" "0.1.9"
     "@tryghost/ignition-errors" "0.1.8"
-    "@tryghost/logging" "1.0.1"
+    "@tryghost/logging" "1.0.0"
     "@tryghost/pretty-cli" "1.2.22"
     "@tryghost/server" "0.1.0"
     "@tryghost/zip" "1.1.18"
     bluebird "3.7.2"
     chalk "4.1.2"
-    common-tags "1.8.2"
+    common-tags "1.8.1"
     express "4.17.1"
     express-hbs "2.4.0"
     fs-extra "9.1.0"
