@@ -87,7 +87,7 @@
     "@tryghost/metrics": "1.0.0",
     "@tryghost/minifier": "0.1.0",
     "@tryghost/mw-session-from-token": "0.1.26",
-    "@tryghost/nodemailer": "0.3.6",
+    "@tryghost/nodemailer": "0.3.7",
     "@tryghost/package-json": "1.0.6",
     "@tryghost/promise": "0.1.13",
     "@tryghost/request": "0.1.8",
