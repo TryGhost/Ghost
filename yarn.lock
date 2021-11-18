@@ -2021,10 +2021,10 @@
   dependencies:
     bluebird "^3.7.2"
 
-"@tryghost/request@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.8.tgz#185b66bdb192aa931ec37d6c05cc80bb6aa6494f"
-  integrity sha512-eJ+ND74EtX+yYZoQR9i9fKRiNxfr6mSxpmEQV8bKed7PtYX0LKhtKZv58zsOpc8nKzJ4PnIZw+r24xmEyQVJBg==
+"@tryghost/request@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.9.tgz#105d09922fb3e722859b6f483b84a2098674444a"
+  integrity sha512-TWITKVZrJ1FbQIDxsOey/KpK5nubW0QD3H+Z3O0rtRTmN4al+sdz30z7+PbbTxm9+LyjjUZJidC1cQXFR59yOA==
   dependencies:
     "@tryghost/errors" "^0.2.12"
     "@tryghost/validator" "^0.1.8"
