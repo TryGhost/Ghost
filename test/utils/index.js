@@ -2,6 +2,8 @@ require('../../core/server/overrides');
 
 // Utility Packages
 const {sequence} = require('@tryghost/promise');
+const debug = require('@tryghost/debug')('test:utils');
+
 const _ = require('lodash');
 
 // Ghost Internals
@@ -47,8 +49,13 @@ const setup = function setup() {
     const args = arguments;
 
     return function innerSetup() {
+        debug('setup start');
         models.init();
-        return initFixtures.apply(self, args);
+        return initFixtures
+            .apply(self, args)
+            .finally(() => {
+                debug('setup end');
+            });
     };
 };
 
