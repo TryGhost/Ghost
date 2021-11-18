@@ -10,7 +10,7 @@ const importOptions = {
 
 describe('Importer Legacy', function () {
     beforeEach(testUtils.teardownDb);
-    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+    beforeEach(testUtils.setup('roles', 'owner'));
 
     it('disallows importing Legacy imports', function () {
         const exportData = exportedBodyLegacy().db[0];
