@@ -12,7 +12,7 @@ import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
-import {registerTextReplacementTextExpansions} from '../options/text-expansions';
+import {registerBasicTextareaExpansions} from '../options/text-expansions';
 import {run} from '@ember/runloop';
 
 // TODO: extract core to share functionality between this and `{{koenig-editor}}`
@@ -166,7 +166,7 @@ export default Component.extend({
         editor = new Editor(editorOptions);
 
         registerKeyCommands(editor, this, BASIC_TEXTAREA_KEY_COMMANDS);
-        registerTextReplacementTextExpansions(editor, this);
+        registerBasicTextareaExpansions(editor, this);
 
         // set up editor hooks
         editor.willRender(() => {
