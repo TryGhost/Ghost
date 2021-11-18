@@ -1564,17 +1564,23 @@ button.emoji-picker__category-button.active {
     flex-direction: column;
 }
 
+.kg-accordion-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
 .kg-accordion-card-heading {
     margin-right: 16px;
 }
 
 .kg-accordion-card-heading h4 {
-    font-weight: bold !important;
+    font-weight: 600 !important;
     font-size: 2rem !important;
 }
 
 .kg-accordion-card-heading ::after {
-    font-weight: bold !important;
+    font-weight: 600 !important;
     font-size: 2rem !important;
     letter-spacing: .02rem;
     line-height: 1.6em;
@@ -1591,6 +1597,19 @@ button.emoji-picker__category-button.active {
 .kg-accordion-card-content p {
     font-size: 1.6rem !important;
     font-family: var(--font-family);
+}
+
+.kg-accordion-card-arrow-container {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.kg-accordion-card-arrow {
+    width: 14px;
+    color: var(--lightgrey);
 }
 
 .kg-accordion-card-content ::after,
