@@ -40,7 +40,7 @@
     "@tryghost/limit-service": "0.6.5",
     "@tryghost/members-csv": "1.1.8",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
-    "@tryghost/string": "0.1.20",
+    "@tryghost/string": "0.1.21",
     "@tryghost/timezone-data": "0.2.51",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",
