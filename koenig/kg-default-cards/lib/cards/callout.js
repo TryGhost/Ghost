@@ -22,7 +22,7 @@ module.exports = {
                 {{#if calloutEmoji}}
                     <div class="kg-callout-emoji">{{calloutEmoji}}</div>
                 {{/if}}
-                    <div class="kg-callout-text gh-content">{{{calloutText}}}</div>
+                    <div class="kg-callout-text">{{{calloutText}}}</div>
             </div>
         `;
 
