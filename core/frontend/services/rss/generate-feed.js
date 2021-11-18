@@ -1,6 +1,5 @@
 const downsize = require('downsize');
 const Promise = require('bluebird');
-const cheerio = require('cheerio');
 const RSS = require('rss');
 const urlUtils = require('../../../shared/url-utils');
 const {routerManager} = require('../routing');
@@ -19,6 +18,8 @@ const generateTags = function generateTags(data) {
 };
 
 const generateItem = function generateItem(post, secure) {
+    const cheerio = require('cheerio');
+
     const itemUrl = routerManager.getUrlByResourceId(post.id, {secure, absolute: true});
     const htmlContent = cheerio.load(post.html || '');
     const item = {
