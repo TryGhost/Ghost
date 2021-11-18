@@ -1402,16 +1402,9 @@
     border-radius: var(--border-radius);
 }
 
-.kg-callout-emoji:hover {
-    background: rgba(0, 0, 0, 0.06);
-}
-
-.kg-card-callout-white .kg-callout-emoji:hover {
-    background: var(--whitegrey);
-}
-
-.kg-callout-emoji.active {
-    background: rgba(0, 0, 0, 0.06);
+.kg-callout-emoji:hover,
+.kg-emoji-picker-active {
+    background: rgba(124, 139, 154, 0.13);
 }
 
 .kg-callout-palette {
