@@ -1560,7 +1560,7 @@ button.emoji-picker__category-button.active {
 .kg-accordion-card {
     display: flex;
     padding: 16px 24px;
-    border: 1px solid var(--whitegrey);
+    border: 1px solid rgba(127, 127, 127, 0.15);
     border-radius: 4px;
     flex-direction: column;
 }
