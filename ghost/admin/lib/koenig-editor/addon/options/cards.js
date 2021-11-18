@@ -214,7 +214,7 @@ export const CARD_MENU = [
         },
         {
             label: 'GIF',
-            icon: 'koenig/kg-card-type-unsplash',
+            icon: 'koenig/kg-card-type-tenor',
             desc: '/gif [search-term or url]',
             iconClass: 'kg-card-type-unsplash',
             matches: ['gif', 'giphy', 'tenor'],
