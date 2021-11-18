@@ -104,13 +104,18 @@ export default class KoenigCardAccordionComponent extends Component {
 
         this._textReplacementEditor = textReplacementEditor;
 
-        run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
+        run.scheduleOnce('afterRender', this, this._afterRender);
     }
 
     _enter(modifier) {
         if (this.args.isEditing && (modifier === 'meta' || (modifier === 'crtl' && Browser.isWin()))) {
             this.args.editCard();
         }
+    }
+
+    _afterRender() {
+        this._placeCursorAtEnd();
+        this._focusInput();
     }
 
     _placeCursorAtEnd() {
@@ -130,5 +135,13 @@ export default class KoenigCardAccordionComponent extends Component {
 
         // update the mobiledoc and stay in edit mode
         this.args.saveCard?.(payload, false);
+    }
+
+    _focusInput() {
+        let headingInput = this.element.querySelector('.kg-accordion-card-heading .koenig-basic-html-input__editor');
+
+        if (headingInput) {
+            headingInput.focus();
+        }
     }
 }
