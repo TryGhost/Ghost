@@ -175,7 +175,7 @@ export function fromNFTEmbed() {
 
             let payload;
             try {
-                payload = JSON.parse(nftCard.dataset.payload);
+                payload = JSON.parse(decodeURIComponent(nftCard.dataset.payload));
             } catch (err) {
                 return nodeFinished();
             }

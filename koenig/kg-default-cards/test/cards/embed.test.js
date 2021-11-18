@@ -3,6 +3,7 @@
 require('../utils');
 
 const card = require('../../lib/cards/embed');
+const {JSDOM} = require('jsdom');
 const SimpleDom = require('simple-dom');
 const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
 
@@ -120,5 +121,34 @@ describe('Embed card', function () {
 
         transformed.caption
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
+    });
+
+    it('renders nfts and escapes the JSON', function () {
+        let payload = {
+            type: 'nft',
+            url: 'https://opensea.io/0x90bae7c0d86b2583d02c072d45bd64ace0b8db86/417',
+            title: 'This has double "quotes" & \'single\'.',
+            metadata: {
+                nested: 'prop with "quotes"'
+            }
+        };
+
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload
+        };
+
+        let output = serializer.serialize(card.render(opts));
+
+        let dom = new JSDOM(output);
+
+        let parsedPayload = JSON.parse(decodeURIComponent(dom.window.document.body.querySelector('a.kg-nft-card').dataset.payload));
+
+        parsedPayload.type.should.equal(payload.type);
+        parsedPayload.url.should.equal(payload.url);
+        parsedPayload.title.should.equal(payload.title);
+        parsedPayload.metadata.nested.should.equal(payload.metadata.nested);
     });
 });
