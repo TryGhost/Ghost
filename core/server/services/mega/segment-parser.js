@@ -1,6 +1,5 @@
-const cheerio = require('cheerio');
-
 const getSegmentsFromHtml = (html) => {
+    const cheerio = require('cheerio');
     const $ = cheerio.load(html);
 
     const allSegments = $('[data-gh-segment]')

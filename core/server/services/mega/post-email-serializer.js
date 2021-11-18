@@ -3,7 +3,6 @@ const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
-const cheerio = require('cheerio');
 const api = require('../../api');
 const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
@@ -24,6 +23,8 @@ const formatHtmlForEmail = function formatHtmlForEmail(html) {
 
     // convert juiced HTML to a DOM-like interface for further manipulation
     // happens after inlining of CSS so we can change element types without worrying about styling
+
+    const cheerio = require('cheerio');
     const _cheerio = cheerio.load(juicedHtml);
 
     // force all links to open in new tab
@@ -243,6 +244,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
 
     // perform any email specific adjustments to the mobiledoc->HTML render output
     // body wrapper is required so we can get proper top-level selections
+    const cheerio = require('cheerio');
     let _cheerio = cheerio.load(`<body>${post.html}</body>`);
     // remove leading/trailing HRs
     _cheerio(`
@@ -311,6 +313,8 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
 };
 
 function renderEmailForSegment(email, memberSegment) {
+    const cheerio = require('cheerio');
+
     const result = {...email};
     const $ = cheerio.load(result.html);
 
