@@ -1,4 +1,3 @@
-const fs = require('fs-extra');
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:services:url:service');
 const _ = require('lodash');
@@ -22,13 +21,13 @@ class UrlService {
     /**
      *
      * @param {Object} options
-     * @param {String} [options.urlsCachePath] - cached URLs storage path
-     * @param {String} [options.resourcesCachePath] - cached resources storage path
+     * @param {Object} [options.cache] - cache handler instance
+     * @param {Function} [options.cache.read] - read cache by type
+     * @param {Function} [options.cache.write] - write into cache by type
      */
-    constructor({urlsCachePath, resourcesCachePath} = {}) {
+    constructor({cache} = {}) {
         this.utils = urlUtils;
-        this.urlsCachePath = urlsCachePath;
-        this.resourcesCachePath = resourcesCachePath;
+        this.cache = cache;
         this.onFinished = null;
         this.finished = false;
         this.urlGenerators = [];
@@ -328,8 +327,8 @@ class UrlService {
         let persistedResources;
 
         if (labs.isSet('urlCache') || urlCache) {
-            persistedUrls = await this.readCacheFile(this.urlsCachePath);
-            persistedResources = await this.readCacheFile(this.resourcesCachePath);
+            persistedUrls = await this.cache.read('urls');
+            persistedResources = await this.cache.read('resources');
         }
 
         if (persistedUrls && persistedResources) {
@@ -362,35 +361,8 @@ class UrlService {
             return null;
         }
 
-        await this.persistToCacheFile(this.urlsCachePath, this.urls.urls);
-        await this.persistToCacheFile(this.resourcesCachePath, this.resources.getAll());
-    }
-
-    async persistToCacheFile(filePath, data) {
-        return fs.writeFile(filePath, JSON.stringify(data, null, 4));
-    }
-
-    async readCacheFile(filePath) {
-        let cacheExists = false;
-        let cacheData;
-
-        try {
-            await fs.stat(filePath);
-            cacheExists = true;
-        } catch (e) {
-            cacheExists = false;
-        }
-
-        if (cacheExists) {
-            try {
-                const cacheFile = await fs.readFile(filePath, 'utf8');
-                cacheData = JSON.parse(cacheFile);
-            } catch (e) {
-                //noop as we'd start a long boot process if there are any errors in the file
-            }
-        }
-
-        return cacheData;
+        await this.cache.write('urls', this.urls.urls);
+        await this.cache.write('resources', this.resources.getAll());
     }
 
     /**
