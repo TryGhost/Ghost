@@ -434,7 +434,23 @@ export const BASIC_KEY_COMMANDS = DEFAULT_KEY_COMMANDS.filter((command) => {
     return basicCommands.includes(command.str);
 });
 
+// key commands that are used in koenig-basic-html-textarea
+export const BASIC_TEXTAREA_KEY_COMMANDS = DEFAULT_KEY_COMMANDS.filter((command) => {
+    let basicCommands = [
+        'BACKSPACE',
+        'CTRL+K',
+        'META+K',
+        'CTRL+ALT+U',
+        'CTRL+SHIFT+K',
+        'META+SHIFT+K',
+        'ENTER',
+        'SHIFT+ENTER'
+    ];
+    return basicCommands.includes(command.str);
+});
+
 // key commands that are used in koenig-text-replacement-html-input
+// (code formatting is not allowed here because it's used to highlight replacement strings)
 export const TEXT_REPLACEMENT_KEY_COMMANDS = DEFAULT_KEY_COMMANDS.filter((command) => {
     let commands = [
         'BACKSPACE',
