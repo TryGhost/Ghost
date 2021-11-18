@@ -232,24 +232,18 @@ export default Component.extend({
             }
         }, 20);
 
-        // store a copy of the payload for later comparison
-        this._snapshotPayload = JSON.stringify(this.payload);
-
         this.onEnterEdit();
     },
 
     _onLeaveEdit() {
         window.removeEventListener('keydown', this._onKeydownHandler);
 
-        // if the payload has changed since entering edit mode then store a snapshot
-        let newPayload = JSON.stringify(this.payload);
-        if (newPayload !== this._snapshotPayload) {
+        // if the payload has changed but not been saved, save it now
+        if (this.env && JSON.stringify(this.payload) !== JSON.stringify(this.env.postModel.payload)) {
             this.editor.run(() => {
                 this.saveCard(this.payload);
             });
         }
-
-        delete this._snapshotPayload;
 
         this.onLeaveEdit();
     },
