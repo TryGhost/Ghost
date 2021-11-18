@@ -207,5 +207,14 @@ module.exports = {
             Buffer.from(testUtils.DataGenerator.Content.api_keys[0].secret, 'hex'),
             JWT_OPTIONS
         );
+    },
+
+    async startGhost(overrides = {}) {
+        const defaults = {
+            withBackend: true,
+            withFrontend: false
+        };
+
+        return await testUtils.startGhost(Object.assign(defaults, overrides));
     }
 };
