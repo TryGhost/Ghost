@@ -332,13 +332,8 @@ class UrlService {
         }
 
         if (persistedUrls && persistedResources) {
-            this.urls = new Urls({
-                urls: persistedUrls
-            });
-            this.resources = new Resources({
-                queue: this.queue,
-                resources: persistedResources
-            });
+            this.urls.urls = persistedUrls;
+            this.resources.data = persistedResources;
             this.resources.initResourceConfig();
             this.resources.initEvenListeners();
 
