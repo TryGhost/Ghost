@@ -265,7 +265,7 @@ export const CARD_MENU = [
         },
         {
             label: 'NFT',
-            icon: 'koenig/kg-card-type-other',
+            icon: 'koenig/kg-card-type-nft',
             desc: '/nft [opensea url]',
             iconClass: 'kg-card-type-native',
             matches: ['nft', 'opensea'],
