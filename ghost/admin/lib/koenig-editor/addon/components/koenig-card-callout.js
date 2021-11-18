@@ -132,7 +132,8 @@ export default class KoenigCardCalloutComponent extends Component {
     registerEditor(textReplacementEditor) {
         let commands = {
             'META+ENTER': run.bind(this, this._enter, 'meta'),
-            'CTRL+ENTER': run.bind(this, this._enter, 'ctrl')
+            'CTRL+ENTER': run.bind(this, this._enter, 'ctrl'),
+            ENTER: run.bind(this, this._addParagraphAfterCard)
         };
 
         Object.keys(commands).forEach((str) => {
@@ -163,6 +164,12 @@ export default class KoenigCardCalloutComponent extends Component {
     _enter(modifier) {
         if (this.args.isEditing && (modifier === 'meta' || (modifier === 'crtl' && Browser.isWin()))) {
             this.args.editCard();
+        }
+    }
+
+    _addParagraphAfterCard() {
+        if (this.args.isEditing) {
+            this.args.addParagraphAfterCard();
         }
     }
 
