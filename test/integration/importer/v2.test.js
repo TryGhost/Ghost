@@ -37,7 +37,7 @@ describe('Importer', function () {
     });
 
     describe('Empty database (except of owner user), general tests', function () {
-        beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+        beforeEach(testUtils.setup('roles', 'owner'));
 
         it('ensure return structure', function () {
             let exportData;
@@ -1226,7 +1226,7 @@ describe('Importer', function () {
 
     describe('Existing database', function () {
         beforeEach(testUtils.teardownDb);
-        beforeEach(testUtils.setup('users:roles', 'posts', 'settings'));
+        beforeEach(testUtils.setup('users:roles', 'posts'));
 
         it('import multiple users, tags, posts', function () {
             const exportData = exportedBodyV2().db[0];

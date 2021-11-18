@@ -11,7 +11,7 @@ const importOptions = {
 
 describe('Importer 1.0', function () {
     beforeEach(testUtils.teardownDb);
-    beforeEach(testUtils.setup('roles', 'owner', 'settings'));
+    beforeEach(testUtils.setup('roles', 'owner'));
 
     it('ensure amp field get\'s respected', function () {
         const exportData = exportedBodyV1().db[0];
