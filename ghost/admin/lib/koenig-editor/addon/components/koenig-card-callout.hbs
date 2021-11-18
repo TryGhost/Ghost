@@ -1,4 +1,5 @@
 <KoenigCard
+    @env={{@env}}
     @class={{concat (kg-style "container-card") " kg-card-callout-container"}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
@@ -34,7 +35,6 @@
                 @onFocus={{fn (mut this.isFocused) true}}
                 @onBlur={{fn (mut this.isFocused) false}}
                 @didCreateEditor={{this.registerEditor}}
-                @onNewline={{this.args.addParagraphAfterCard}}
             />
             <KoenigSettingsPanel>
                 <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
