@@ -5,8 +5,9 @@ class LocalFileCache {
     /**
      * @param {Object} options
      * @param {String} options.storagePath - cached storage path
+     * @param {Boolean} options.writeDisabled - controls if cache can write
      */
-    constructor({storagePath}) {
+    constructor({storagePath, writeDisabled}) {
         const urlsStoragePath = path.join(storagePath, 'urls.json');
         const resourcesCachePath = path.join(storagePath, 'resources.json');
 
@@ -14,6 +15,7 @@ class LocalFileCache {
             urls: urlsStoragePath,
             resources: resourcesCachePath
         };
+        this.writeDisabled = writeDisabled;
     }
 
     /**
@@ -62,6 +64,10 @@ class LocalFileCache {
      * @returns {Promise<Object>}
      */
     async write(type, data) {
+        if (this.writeDisabled) {
+            return null;
+        }
+
         return fs.writeFile(this.storagePaths[type], JSON.stringify(data, null, 4));
     }
 }
