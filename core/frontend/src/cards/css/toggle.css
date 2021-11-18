@@ -1,5 +1,6 @@
 .kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
     visibility: hidden;
+    opacity: 0;
     height: 0;
     padding: 0;
 }
@@ -9,26 +10,32 @@
 }
 
 .kg-toggle-card {
-    background: #f1f3f4;
-    border-radius: 3px;
+    border: 1px solid #EBEEF0;
+    border-radius: 4px;
+    padding: 20px;
 }
 
 .kg-toggle-heading {
-    font-weight: bold;
+    font-size: 2rem;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
-    padding: 16px 24px 12px 24px;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .kg-toggle-heading svg {
-    width: 12px;
+    width: 14px;
+    color: #CED4D9;
+    transition: transform 0.3s;
 }
 
 .kg-toggle-heading .kg-toggle-heading-text {
-    margin-left: 12px;
+    
 }
 
 .kg-toggle-content {
     display: flex;
-    padding: 0 24px 16px 24px;
+    transition: opacity 0.3s;
+    margin-top: 8px;
 }
