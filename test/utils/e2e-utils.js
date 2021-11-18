@@ -182,7 +182,7 @@ const startGhost = async (options) => {
     debug('Start Ghost');
     options = _.merge({
         withBackend: true,
-        withFrontend: false,
+        withFrontend: true,
         redirectsFile: true,
         redirectsFileExt: '.json',
         forceStart: false,
