@@ -5,7 +5,7 @@ module.exports = {
 
         let html = `
             <a href="${payload.url}" class="kg-nft-card" data-payload="${encodeURIComponent(JSON.stringify(payload))}">
-                <img class="kg-nft-image" src="${payload.metadata.image_url}">
+                <div class="kg-ntf-image-container"><img class="kg-nft-image" src="${payload.metadata.image_url}"></div>
                 <div class="kg-nft-metadata">
                     <div class="kg-nft-header">
                         <h4 class="kg-nft-title"> ${payload.metadata.title} </h4>
