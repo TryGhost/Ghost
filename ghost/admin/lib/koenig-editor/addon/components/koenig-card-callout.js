@@ -138,23 +138,23 @@ export default class KoenigCardCalloutComponent extends Component {
     }
 
     @action
-    registerEditor(textReplacementEditor) {
+    registerEditor(calloutTextEditor) {
         let commands = {
-            'META+ENTER': run.bind(this, this._enter, 'meta'),
-            'CTRL+ENTER': run.bind(this, this._enter, 'ctrl'),
-            ENTER: run.bind(this, this._addParagraphAfterCard)
+            'META+ENTER': run.bind(this, this._metaEnter, 'meta'),
+            'CTRL+ENTER': run.bind(this, this._metaEnter, 'ctrl'),
+            ENTER: run.bind(this, this.args.addParagraphAfterCard)
         };
 
         Object.keys(commands).forEach((str) => {
-            textReplacementEditor.registerKeyCommand({
+            calloutTextEditor.registerKeyCommand({
                 str,
                 run() {
-                    return commands[str](textReplacementEditor, str);
+                    return commands[str](calloutTextEditor, str);
                 }
             });
         });
 
-        this._textReplacementEditor = textReplacementEditor;
+        this._calloutTextEditor = calloutTextEditor;
 
         run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
     }
@@ -170,26 +170,20 @@ export default class KoenigCardCalloutComponent extends Component {
         this._updatePayloadAttr('calloutEmoji', this.args.payload.calloutEmoji ? '' : this.defaultEmoji);
     }
 
-    _enter(modifier) {
+    _metaEnter(modifier) {
         if (this.args.isEditing && (modifier === 'meta' || (modifier === 'crtl' && Browser.isWin()))) {
             this.args.editCard();
         }
     }
 
-    _addParagraphAfterCard() {
-        if (this.args.isEditing) {
-            this.args.addParagraphAfterCard();
-        }
-    }
-
     _placeCursorAtEnd() {
-        if (!this._textReplacementEditor) {
+        if (!this._calloutTextEditor) {
             return;
         }
 
-        let tailPosition = this._textReplacementEditor.post.tailPosition();
+        let tailPosition = this._calloutTextEditor.post.tailPosition();
         let rangeToSelect = tailPosition.toRange();
-        this._textReplacementEditor.selectRange(rangeToSelect);
+        this._calloutTextEditor.selectRange(rangeToSelect);
     }
 
     _updatePayloadAttr(attr, value) {
