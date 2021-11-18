@@ -480,12 +480,64 @@ export default function (mobiledocEditor, koenig) {
 }
 
 // TODO: reduce duplication
-export function registerBasicTextExpansions(mobiledocEditor) {
+export function registerBasicInputTextExpansions(mobiledocEditor) {
     // unregister mobiledoc-kit's block-level text handlers
     mobiledocEditor.unregisterTextInputHandler('heading');
     mobiledocEditor.unregisterTextInputHandler('ul');
     mobiledocEditor.unregisterTextInputHandler('ol');
 
+    registerDashTextExpansions(mobiledocEditor);
+    registerInlineMarkdownTextExpansions(mobiledocEditor);
+}
+
+// TODO: reduce duplication
+export function registerBasicTextareaTextExpansions(mobiledocEditor, koenig) {
+    // unregister mobiledoc-kit's block-level text handlers
+    mobiledocEditor.unregisterTextInputHandler('heading');
+
+    mobiledocEditor.unregisterTextInputHandler('ul');
+    mobiledocEditor.onTextInput({
+        name: 'md_ul',
+        match: /^\* |^- /,
+        run(editor, matches) {
+            replaceWithListSection(editor, matches, 'ul');
+        }
+    });
+
+    mobiledocEditor.unregisterTextInputHandler('ol');
+    mobiledocEditor.onTextInput({
+        name: 'md_ol',
+        match: /^1\.? /,
+        run(editor, matches) {
+            replaceWithListSection(editor, matches, 'ol');
+        }
+    });
+
+    mobiledocEditor.onTextInput({
+        name: 'md_blockquote',
+        match: /^> /,
+        run(editor, matches) {
+            let {range} = editor;
+            let {head, head: {section}} = range;
+            let text = section.textUntil(head);
+
+            // ensure cursor is at the end of the matched text so we don't
+            // convert text the users wants to start with `> ` and that we're
+            // not already on a blockquote section
+            if (text === matches[0] && section.tagName !== 'blockquote') {
+                editor.run((postEditor) => {
+                    range = range.extend(-(matches[0].length));
+                    let position = postEditor.deleteRange(range);
+                    postEditor.setRange(position);
+
+                    koenig.send('toggleSection', 'blockquote', postEditor);
+                });
+            }
+        }
+    });
+
+    // must come after block expansions so that the smart hyphens expansion
+    // doesn't break the divider card expansion
     registerDashTextExpansions(mobiledocEditor);
     registerInlineMarkdownTextExpansions(mobiledocEditor);
 }

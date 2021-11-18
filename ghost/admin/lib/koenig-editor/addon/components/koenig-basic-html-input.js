@@ -11,7 +11,7 @@ import {assign} from '@ember/polyfills';
 import {computed} from '@ember/object';
 import {getContentFromPasteEvent, parsePostFromPaste} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
-import {registerBasicTextExpansions} from '../options/text-expansions';
+import {registerBasicInputTextExpansions} from '../options/text-expansions';
 import {run} from '@ember/runloop';
 
 const UNDO_DEPTH = 50;
@@ -130,7 +130,7 @@ export default Component.extend({
         editor = new Editor(editorOptions);
 
         registerKeyCommands(editor, this, BASIC_KEY_COMMANDS);
-        registerBasicTextExpansions(editor);
+        registerBasicInputTextExpansions(editor);
 
         // set up editor hooks
         editor.willRender(() => {
