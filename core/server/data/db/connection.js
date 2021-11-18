@@ -17,6 +17,13 @@ function configure(dbConfig) {
         dbConfig.pool = {
             afterCreate(conn, cb) {
                 conn.run('PRAGMA foreign_keys = ON', cb);
+
+                // These two are meant to improve performance at the cost of reliability
+                // Should be safe for tests. We add them here and leave them on
+                if (config.get('env').startsWith('testing')) {
+                    conn.run('PRAGMA synchronous = OFF;');
+                    conn.run('PRAGMA journal_mode = TRUNCATE;');
+                }
             }
         };
 
