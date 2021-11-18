@@ -33,6 +33,7 @@ export default class KoenigCardCalloutComponent extends Component {
         {name: 'Purple', color: 'purple'},
         {name: 'Brand color', color: 'accent'}
     ];
+    latestEmojiUsed = null;
 
     @tracked
     isPickerVisible = false;
@@ -58,12 +59,16 @@ export default class KoenigCardCalloutComponent extends Component {
         };
     }
 
+    get defaultEmoji() {
+        return this.latestEmojiUsed || storage.get(storageKey) || '💡';
+    }
+
     constructor() {
         super(...arguments);
         this.args.registerComponent(this);
 
         const payloadDefaults = {
-            calloutEmoji: storage.get(storageKey) || '💡',
+            calloutEmoji: this.defaultEmoji,
             calloutText: '',
             backgroundColor: 'grey'
         };
@@ -104,7 +109,11 @@ export default class KoenigCardCalloutComponent extends Component {
 
     @action
     setCalloutEmoji(emoji) {
+        // Store in payload
         this._updatePayloadAttr('calloutEmoji', emoji);
+        // Store in component in case the emoji is toggled off and then on
+        this.latestEmojiUsed = emoji;
+        // Store in localStorage for the next callout to use the same emoji
         storage.set(storageKey, emoji);
     }
 
@@ -158,7 +167,7 @@ export default class KoenigCardCalloutComponent extends Component {
 
     @action
     toggleEmoji() {
-        this._updatePayloadAttr('calloutEmoji', this.args.payload.calloutEmoji ? '' : '💡');
+        this._updatePayloadAttr('calloutEmoji', this.args.payload.calloutEmoji ? '' : this.defaultEmoji);
     }
 
     _enter(modifier) {
