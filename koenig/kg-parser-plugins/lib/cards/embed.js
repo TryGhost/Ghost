@@ -161,25 +161,66 @@ export function fromFigureBlockquote(options) {
 
 export function fromNFTEmbed() {
     return function fromNFTEmbedToEmbedCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
+        if (node.nodeType !== 1 || (node.tagName !== 'FIGURE' && node.tagName !== 'NFT-CARD' && node.tagName !== 'DIV')) {
             return;
         }
 
-        let nftCard = node.querySelector('a.kg-nft-card');
+        // Attempt to parse Ghost NFT Card
+        if (node.tagName === 'FIGURE') {
+            let nftCard = node.querySelector('a.kg-nft-card');
 
-        if (!nftCard) {
-            return;
-        }
+            if (!nftCard) {
+                return;
+            }
 
-        let payload;
-        try {
-            payload = JSON.parse(nftCard.dataset.payload);
-        } catch (err) {
+            let payload;
+            try {
+                payload = JSON.parse(nftCard.dataset.payload);
+            } catch (err) {
+                return nodeFinished();
+            }
+
+            let cardSection = builder.createCardSection('embed', payload);
+            addSection(cardSection);
             return nodeFinished();
         }
 
-        let cardSection = builder.createCardSection('embed', payload);
-        addSection(cardSection);
-        nodeFinished();
+        // Attempt to parse Substack NFT Card
+        if (node.tagName === 'DIV') {
+            if (!node.classList.contains('opensea')) {
+                return;
+            }
+
+            let url = node.querySelector('a');
+            let [match, contractAddress, tokenId] = url.href.match(/\/assets\/(0x[0-9a-f]+)\/(\d+)/);
+
+            if (!match) {
+                return;
+            }
+
+            let payload = {
+                url: url.href,
+                html: `<nft-card contractAddress="${contractAddress}" tokenId="${tokenId}"></nft-card><script src="https://unpkg.com/embeddable-nfts/dist/nft-card.min.js"></script>`
+            };
+            let cardSection = builder.createCardSection('embed', payload);
+            addSection(cardSection);
+            return nodeFinished();
+        }
+
+        if (node.tagName === 'NFT-CARD') {
+            let attr = node.attributes;
+            let contractAddress = (attr.contractAddress || attr.contractaddress || attr.tokenaddress || attr.contractaddress).value;
+            let tokenId = (attr.tokenId || attr.tokenid).value;
+            if (!contractAddress || !tokenId) {
+                return;
+            }
+            let payload = {
+                url: `https://opensea.io/assets/${contractAddress}/${tokenId}/`,
+                html: `<nft-card contractAddress="${contractAddress}" tokenId="${tokenId}"></nft-card><script src="https://unpkg.com/embeddable-nfts/dist/nft-card.min.js"></script>`
+            };
+            let cardSection = builder.createCardSection('embed', payload);
+            addSection(cardSection);
+            return nodeFinished();
+        }
     };
 }
