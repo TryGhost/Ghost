@@ -3,7 +3,7 @@ import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import defaultAtoms from '../options/atoms';
-import registerKeyCommands, {TEXT_REPLACEMENT_KEY_COMMANDS} from '../options/key-commands';
+import registerKeyCommands, {BASIC_TEXTAREA_KEY_COMMANDS} from '../options/key-commands';
 import validator from 'validator';
 import {BLANK_DOC, MOBILEDOC_VERSION} from './koenig-editor';
 import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
@@ -165,7 +165,7 @@ export default Component.extend({
 
         editor = new Editor(editorOptions);
 
-        registerKeyCommands(editor, this, TEXT_REPLACEMENT_KEY_COMMANDS);
+        registerKeyCommands(editor, this, BASIC_TEXTAREA_KEY_COMMANDS);
         registerTextReplacementTextExpansions(editor, this);
 
         // set up editor hooks
