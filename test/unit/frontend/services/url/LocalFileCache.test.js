@@ -52,4 +52,37 @@ describe('Unit: services/url/LocalFileCache', function () {
             should.equal(cachedUrls, null);
         });
     });
+
+    describe('write', function () {
+        it('writes to the file system by type', async function () {
+            const storagePath = '/tmp/url-cache/';
+            const writeFileStub = sinon.stub(fs, 'writeFile')
+                .withArgs(`${storagePath}urls.json`)
+                .resolves(true);
+
+            const localFileCache = new LocalFileCache({storagePath});
+
+            const result = await localFileCache.write('urls', {data: 'test'});
+
+            result.should.equal(true);
+            writeFileStub.called.should.equal(true);
+        });
+
+        it('does not write to the file system is writes are disabled', async function () {
+            const storagePath = '/tmp/url-cache/';
+            const writeFileStub = sinon.stub(fs, 'writeFile')
+                .withArgs(`${storagePath}urls.json`)
+                .resolves(true);
+
+            const localFileCache = new LocalFileCache({
+                storagePath,
+                writeDisabled: true
+            });
+
+            const result = await localFileCache.write('urls', {data: 'test'});
+
+            should.equal(result, null);
+            writeFileStub.called.should.equal(false);
+        });
+    });
 });
