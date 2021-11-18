@@ -1632,12 +1632,11 @@ button.emoji-picker__category-button.active {
 
 /* NFT card
 /* --------------------------------------------------------------- */
-.kg-nft-card {
+.kg-nft-card a {
     display: flex;
     flex: auto;
     flex-direction: column;
-    text-decoration: none;
-    color: inherit;
+    text-decoration: none !important;
     font-size: 1.4rem;
     font-weight: 400;
     width: 100%;
@@ -1645,9 +1644,14 @@ button.emoji-picker__category-button.active {
     max-width: 512px;
     border: 1px solid var(--whitegrey);
     border-radius: 5px;
-    color: #222;
+    color: #222 !important;
     background: #fff;
     border-radius: 5px;
+}
+
+.kg-nft-image {
+    border-radius: 5px 5px 0 0;
+    width: 100%;
 }
 
 .kg-nft-card:hover {
@@ -1656,7 +1660,6 @@ button.emoji-picker__category-button.active {
 
 .kg-nft-card * {
     position: static;
-    line-height: 1;
 }
 
 .kg-nft-metadata {
@@ -1664,9 +1667,6 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-nft-card .kg-nft-image {
-    min-width: unset;
-    max-width: unset;
-    margin: -1px;
     border-radius: 5px 5px 0 0;
 }
 
@@ -1679,6 +1679,7 @@ button.emoji-picker__category-button.active {
 .kg-nft-title h4 {
     font-size: 1.9rem;
     font-weight: 700;
+    line-height: 1.3em;
     min-width: unset;
     max-width: unset;
     color: #222;
@@ -1691,8 +1692,9 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-nft-creator {
-    margin-top: 6px;
+    margin-top: 2px;
     color: #ababab;
+    line-height: 1.4em;
 }
 
 .kg-nft-creator span {
