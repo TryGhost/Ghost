@@ -157,10 +157,6 @@ const freshModeGhostStart = async (options) => {
     // Do a full database initialisation
     await knexMigrator.init();
 
-    if (config.get('database:client') === 'sqlite3') {
-        await db.knex.raw('PRAGMA journal_mode = TRUNCATE;');
-    }
-
     await settingsService.init();
 
     // Reset the URL service generators
