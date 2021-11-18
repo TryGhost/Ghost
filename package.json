@@ -68,7 +68,7 @@
     "@tryghost/email-analytics-service": "1.0.4",
     "@tryghost/errors": "0.2.17",
     "@tryghost/express-dynamic-redirects": "0.2.1",
-    "@tryghost/helpers": "1.1.53",
+    "@tryghost/helpers": "1.1.54",
     "@tryghost/image-transform": "1.0.18",
     "@tryghost/job-manager": "0.8.12",
     "@tryghost/kg-card-factory": "3.1.0",
