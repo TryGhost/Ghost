@@ -95,6 +95,11 @@ export default class KoenigCardCalloutComponent extends Component {
         });
     }
 
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.picker.destroyPicker();
+    }
+
     // required for snippet rects to be calculated - editor reaches in to component,
     // expecting a non-Glimmer component with a .element property
     @action
