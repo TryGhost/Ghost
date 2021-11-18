@@ -88,9 +88,17 @@ export default Component.extend({
         }
 
         let cardWidth = this.payload.cardWidth;
+        let toolbarItems;
 
-        return {
-            items: [{
+        if (this.payload.type === 'gif') {
+            toolbarItems = [{
+                title: 'Link',
+                icon: 'koenig/kg-link',
+                iconClass: this.payload.href ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this._editLink)
+            }];
+        } else {
+            toolbarItems = [{
                 title: 'Regular',
                 icon: 'koenig/kg-img-regular',
                 iconClass: !cardWidth ? 'fill-green-l2' : 'fill-white',
@@ -117,8 +125,10 @@ export default Component.extend({
                 icon: 'koenig/kg-replace',
                 iconClass: 'fill-white',
                 action: run.bind(this, this._triggerFileDialog)
-            }]
-        };
+            }];
+        }
+
+        return {items: toolbarItems};
     }),
 
     init() {
@@ -223,11 +233,11 @@ export default Component.extend({
             });
         },
 
-        selectFromImageSelector({src, width, height, caption, alt}) {
+        selectFromImageSelector({src, width, height, caption, alt, type}) {
             let {payload, saveCard} = this;
             let searchTerm;
 
-            setProperties(payload, {src, width, height, caption, alt, searchTerm});
+            setProperties(payload, {src, width, height, caption, alt, type, searchTerm});
 
             this.send('closeImageSelector');
 

@@ -293,3 +293,9 @@
     color: #fff;
     cursor: pointer;
 }
+
+.gh-tenor-logo {
+    display: inline-block;
+    width: 100px;
+    margin-right: 20px;
+}
