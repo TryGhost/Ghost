@@ -6,11 +6,11 @@
 }
 
 .kg-toggle-card[data-kg-toggle-state="close"] svg {
-    transform: rotate(-90deg);
+    transform: rotate(180deg);
 }
 
 .kg-toggle-card {
-    border: 1px solid #EBEEF0;
+    border: 1px solid rgba(127, 127, 127, 0.15);
     border-radius: 4px;
     padding: 20px;
 }
@@ -24,18 +24,24 @@
     align-items: flex-start;
 }
 
-.kg-toggle-heading svg {
-    width: 14px;
-    color: #CED4D9;
-    transition: transform 0.3s;
+.kg-toggle-card-icon {
+    height: 24px;
+    width: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 16px;
 }
 
-.kg-toggle-heading .kg-toggle-heading-text {
-    
+.kg-toggle-heading svg {
+    width: 14px;
+    color: rgba(127, 127, 127, 0.4);
+    transition: transform 0.3s;
+    transform: rotate(180deg);
 }
 
 .kg-toggle-content {
     display: flex;
     transition: opacity 0.3s;
-    margin-top: 8px;
+    padding-top: 8px;
 }
