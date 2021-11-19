@@ -10,7 +10,8 @@
 }
 
 .kg-toggle-card {
-    border: 1px solid rgba(127, 127, 127, 0.15);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
     border-radius: 4px;
     padding: 20px;
 }
@@ -35,7 +36,7 @@
 
 .kg-toggle-heading svg {
     width: 14px;
-    color: rgba(127, 127, 127, 0.4);
+    color: rgba(124, 139, 154, 0.5);
     transition: transform 0.3s;
     transform: rotate(-180deg);
 }
