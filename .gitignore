@@ -106,6 +106,7 @@ projectFilesBackup
 /content/images/**/*
 /content/media/**/*
 /content/files/**/*
+/content/public/*
 /content/adapters/storage/**/*
 /content/adapters/scheduling/**/*
 !/content/themes/casper
@@ -125,8 +126,6 @@ test/coverage
 # Built asset files
 /core/built
 /core/server/web/admin/views/*.html
-/core/frontend/public/*.min.css
-/core/frontend/public/*.min.js
 
 # Caddyfile - for local development with ssl + caddy
 Caddyfile

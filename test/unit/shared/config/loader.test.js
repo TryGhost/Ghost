@@ -96,6 +96,7 @@ describe('Config Loader', function () {
             Object.keys(pathConfig).should.eql([
                 'contentPath',
                 'fixtures',
+                'assetSrc',
                 'appRoot',
                 'corePath',
                 'clientAssets',
