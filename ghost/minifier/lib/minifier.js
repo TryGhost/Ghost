@@ -101,6 +101,9 @@ class Minifier {
     async writeFile(contents, dest) {
         if (contents) {
             let writePath = this.getFullDest(dest);
+            // Ensure the output folder exists
+            await fs.mkdir(this.destPath, {recursive: true});
+            // Create the file
             await fs.writeFile(writePath, contents);
             return writePath;
         }
