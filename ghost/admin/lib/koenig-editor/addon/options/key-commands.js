@@ -434,6 +434,19 @@ export const BASIC_KEY_COMMANDS = DEFAULT_KEY_COMMANDS.filter((command) => {
     return basicCommands.includes(command.str);
 });
 
+export const BASIC_KEY_COMMANDS_WITH_BR = DEFAULT_KEY_COMMANDS.filter((command) => {
+    let basicCommands = [
+        'BACKSPACE',
+        'CTRL+K',
+        'META+K',
+        'CTRL+ALT+U',
+        'CTRL+SHIFT+K',
+        'META+SHIFT+K',
+        'SHIFT+ENTER'
+    ];
+    return basicCommands.includes(command.str);
+});
+
 // key commands that are used in koenig-basic-html-textarea
 export const BASIC_TEXTAREA_KEY_COMMANDS = DEFAULT_KEY_COMMANDS.filter((command) => {
     let basicCommands = [
