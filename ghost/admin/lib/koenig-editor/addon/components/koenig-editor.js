@@ -757,6 +757,23 @@ export default Component.extend({
 
                 postEditor.setRange(newPara.tailPosition());
             });
+        },
+
+        openSelectorComponent(componentName, range) {
+            if (range) {
+                this.editor.selectRange(range);
+            }
+
+            // wait 1ms for event loop to finish so mobiledoc-kit doesn't
+            // get hung up processing keyboard events when focus has switched
+            // to selector search input
+            run.later(() => {
+                this.set('activeSelectorComponent', componentName);
+            });
+        },
+
+        closeSelectorComponent() {
+            this.set('activeSelectorComponent', null);
         }
     },
 
