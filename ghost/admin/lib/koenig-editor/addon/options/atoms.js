@@ -5,14 +5,16 @@
 
 export const ATOM_COMPONENT_MAP = {};
 
-export default [
-    // soft-return is triggered by SHIFT+ENTER and allows for line breaks
-    // without creating paragraphs
-    {
-        name: 'soft-return',
-        type: 'dom',
-        render() {
-            return document.createElement('br');
-        }
+// soft-return is triggered by SHIFT+ENTER and allows for line breaks
+// without creating paragraphs
+export const softReturn = {
+    name: 'soft-return',
+    type: 'dom',
+    render() {
+        return document.createElement('br');
     }
+};
+
+export default [
+    softReturn
 ];
