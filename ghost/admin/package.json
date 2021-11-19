@@ -36,7 +36,7 @@
     "@tryghost/color-utils": "0.1.5",
     "@tryghost/helpers": "1.1.53",
     "@tryghost/kg-clean-basic-html": "2.2.1",
-    "@tryghost/kg-parser-plugins": "2.6.0",
+    "@tryghost/kg-parser-plugins": "2.6.2",
     "@tryghost/limit-service": "0.6.5",
     "@tryghost/members-csv": "1.1.8",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
