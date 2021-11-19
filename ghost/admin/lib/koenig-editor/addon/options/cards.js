@@ -35,7 +35,7 @@ export const CARD_ICON_MAP = {
     button: 'koenig/kg-card-type-gen-embed',
     callout: 'koenig/kg-card-type-callout',
     nft: 'koenig/kg-card-type-gen-embed',
-    toggle: 'koenig/kg-card-type-gen-embed',
+    toggle: 'koenig/kg-card-type-accordion',
     'email-cta': 'koenig/kg-card-type-gen-embed',
     paywall: 'koenig/kg-card-type-divider'
 };
@@ -169,7 +169,7 @@ export const CARD_MENU = [
         },
         {
             label: 'Toggle',
-            icon: 'koenig/kg-card-type-paywall',
+            icon: 'koenig/kg-card-type-accordion',
             desc: 'Add collapsible content',
             matches: ['toggle'],
             type: 'card',
