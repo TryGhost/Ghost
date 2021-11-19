@@ -130,7 +130,8 @@ describe('Embed card', function () {
             title: 'This has double "quotes" & \'single\'.',
             metadata: {
                 nested: 'prop with "quotes"'
-            }
+            },
+            caption: 'Hello'
         };
 
         let opts = {
@@ -144,11 +145,39 @@ describe('Embed card', function () {
 
         let dom = new JSDOM(output);
 
-        let parsedPayload = JSON.parse(decodeURIComponent(dom.window.document.body.querySelector('a.kg-nft-card').dataset.payload));
+        let parsedPayload = JSON.parse(decodeURIComponent(dom.window.document.body.querySelector('.kg-nft-card > a').dataset.payload));
 
         parsedPayload.type.should.equal(payload.type);
         parsedPayload.url.should.equal(payload.url);
         parsedPayload.title.should.equal(payload.title);
         parsedPayload.metadata.nested.should.equal(payload.metadata.nested);
+    });
+
+    it('renders nfts in a table for email', function () {
+        let payload = {
+            type: 'nft',
+            url: 'https://opensea.io/0x90bae7c0d86b2583d02c072d45bd64ace0b8db86/417',
+            title: 'This has double "quotes" & \'single\'.',
+            metadata: {
+                nested: 'prop with "quotes"'
+            },
+            caption: 'Hello'
+        };
+
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload,
+            options: {
+                target: 'email'
+            }
+        };
+
+        let output = serializer.serialize(card.render(opts));
+
+        let dom = new JSDOM(output);
+
+        dom.window.document.body.querySelector('table').should.exist;
     });
 });

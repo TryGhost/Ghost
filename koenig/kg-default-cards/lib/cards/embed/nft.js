@@ -4,7 +4,7 @@ module.exports = {
         figure.setAttribute('class', 'kg-card kg-embed-card kg-nft-card');
 
         let html = `
-            <a href="${payload.url}" class="kg-nft-card" data-payload="${encodeURIComponent(JSON.stringify(payload))}">
+            <a href="${payload.url}" data-payload="${encodeURIComponent(JSON.stringify(payload))}">
                 <div class="kg-ntf-image-container"><img class="kg-nft-image" src="${payload.metadata.image_url}"></div>
                 <div class="kg-nft-metadata">
                     <div class="kg-nft-header">

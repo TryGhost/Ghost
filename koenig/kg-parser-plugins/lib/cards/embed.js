@@ -167,7 +167,10 @@ export function fromNFTEmbed() {
 
         // Attempt to parse Ghost NFT Card
         if (node.tagName === 'FIGURE') {
-            let nftCard = node.querySelector('a.kg-nft-card');
+            if (!node.classList.contains('kg-nft-card')) {
+                return;
+            }
+            let nftCard = node.querySelector('a');
 
             if (!nftCard) {
                 return;
