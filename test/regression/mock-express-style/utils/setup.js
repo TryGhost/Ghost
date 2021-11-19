@@ -59,7 +59,9 @@ module.exports = {
         const helperService = require('../../../../core/frontend/services/helpers');
         await helperService.init();
 
-        const app = siteApp({start: true});
+        const app = siteApp({
+            start: true
+        });
         await appService.init();
         await urlServiceUtils.isFinished();
 
