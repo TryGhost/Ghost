@@ -3,12 +3,12 @@ const _ = require('lodash');
 const path = require('path');
 const fs = require('fs').promises;
 const logging = require('@tryghost/logging');
+const config = require('../../../shared/config');
 
 class CardAssetService {
     constructor(options = {}) {
-        // @TODO: use our config paths concept
-        this.src = options.src || path.join(__dirname, '../../src/cards');
-        this.dest = options.dest || path.join(__dirname, '../../public');
+        this.src = options.src || path.join(config.get('paths').assetSrc, 'cards');
+        this.dest = options.dest || config.getContentPath('public');
         this.minifier = new Minifier({src: this.src, dest: this.dest});
 
         if ('config' in options) {
@@ -90,12 +90,12 @@ class CardAssetService {
     /**
      * A theme can declare which cards it supports, and we'll do the rest
      *
-     * @param {Array|boolean} config
+     * @param {Array|boolean} cardAssetConfig
      * @returns
      */
-    async load(config) {
-        if (config) {
-            this.config = config;
+    async load(cardAssetConfig) {
+        if (cardAssetConfig) {
+            this.config = cardAssetConfig;
         }
 
         await this.clearFiles();

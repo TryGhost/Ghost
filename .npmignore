@@ -13,6 +13,8 @@ content/adapters/**
 !content/adapters/README.md
 content/apps/**
 !content/apps/README.md
+content/public/**
+!content/public/README.md
 content/data/**
 !content/data/README.md
 content/images/**
