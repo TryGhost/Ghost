@@ -17,7 +17,6 @@
 }
 
 .kg-toggle-heading {
-    font-size: 2rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -48,8 +47,12 @@
 
 .kg-toggle-content {
     transition: all .3s;
-    padding-top: 8px;
+    padding-top: 1.5rem;
     max-height: 100vh;
     overflow: hidden;
     opacity: 1;
+}
+
+.kg-toggle-content > *+* {
+
 }
