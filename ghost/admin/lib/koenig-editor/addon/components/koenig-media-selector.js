@@ -10,6 +10,10 @@ export default class KoenigMediaSelectorComponent extends Component {
 
         // store editor range for later because it might change if focus is lost
         this._editorRange = this.args.editorRange;
+
+        // store scroll position before anything else renders
+        const scrollContainer = document.querySelector(this.args.scrollContainerSelector);
+        this._scrollTop = scrollContainer.scrollTop;
     }
 
     willDestroy() {
@@ -22,12 +26,19 @@ export default class KoenigMediaSelectorComponent extends Component {
         this._containerElem = containerElem;
 
         this._positionSelector(this._editorRange);
+        this.resetScrollPosition();
 
         // any click outside of the selector should close it and clear any /command
         // add with 1ms delay so current event loop finishes to avoid instaclose
         run.later(() => {
             window.addEventListener('click', this.handleBackgroundClick);
         });
+    }
+
+    @action
+    resetScrollPosition() {
+        const scrollContainer = document.querySelector(this.args.scrollContainerSelector);
+        scrollContainer.scrollTop = this._scrollTop;
     }
 
     @action
