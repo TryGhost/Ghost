@@ -10,7 +10,7 @@ let storagePath = config.getContentPath('data');
 
 // TODO: remove this hack in favor of loading from the content path when it's possible to do so
 //       by mocking content folders in pre-boot phase
-if (process.env.NODE_ENV.match(/^testing/)){
+if (process.env.NODE_ENV.startsWith('test')){
     storagePath = config.get('paths').urlCache;
 
     // NOTE: prevents test suites from overwriting cache fixtures.
