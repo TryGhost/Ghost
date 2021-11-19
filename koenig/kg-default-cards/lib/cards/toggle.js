@@ -28,7 +28,8 @@ module.exports = {
         `;
 
         const emailTemplate = hbs`
-            <div style="border: 1px solid rgba(127, 127, 127, 0.15); border-radius: 4px; padding: 20px;">
+            <div style="background: transparent;
+            box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;">
                 <h4 style="font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top:0px">{{{heading}}}</h4>
                 <div style="font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;">{{{content}}}</div>
             </div>
