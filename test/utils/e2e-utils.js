@@ -109,10 +109,12 @@ const restartModeGhostStart = async ({withFrontend}) => {
     await settingsService.init();
     debug('settings done');
 
-    // Load the frontend-related components
-    await routeSettingsService.init();
-    await themeService.init();
-    debug('frontend done');
+    if (withFrontend) {
+        // Load the frontend-related components
+        await routeSettingsService.init();
+        await themeService.init();
+        debug('frontend done');
+    }
 
     // Reload the URL service & wait for it to be ready again
     // @TODO: why/how is this different to urlService.resetGenerators?
