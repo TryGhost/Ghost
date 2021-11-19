@@ -1,3 +1,10 @@
+.kg-nft-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
 .kg-nft-card a {
     position: static;
     display: flex;
@@ -34,6 +41,7 @@
 
 .kg-nft-metadata {
     padding: 2.0rem;
+    width: 100%;
 }
 
 .kg-nft-image {
