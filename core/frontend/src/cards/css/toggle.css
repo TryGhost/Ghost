@@ -47,7 +47,6 @@
 }
 
 .kg-toggle-content {
-    display: flex;
     transition: all .3s;
     padding-top: 8px;
     max-height: 100vh;
