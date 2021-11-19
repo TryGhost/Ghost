@@ -17,7 +17,6 @@ export default class GhTenorComponent extends Component {
     search(event) {
         const term = event.target.value;
         this.tenor.updateSearch(term);
-        this.closeZoom();
     }
 
     @action
