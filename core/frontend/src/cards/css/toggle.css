@@ -1,8 +1,8 @@
 .kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
     visibility: hidden;
     opacity: 0;
-    height: 0;
-    padding: 0;
+    max-height: 0;
+    padding-top: 0px;
 }
 
 .kg-toggle-card[data-kg-toggle-state="close"] svg {
@@ -37,11 +37,19 @@
     width: 14px;
     color: rgba(127, 127, 127, 0.4);
     transition: transform 0.3s;
-    transform: rotate(180deg);
+    transform: rotate(-180deg);
+}
+
+.kg-toggle-heading-text h4 {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .kg-toggle-content {
     display: flex;
-    transition: opacity 0.3s;
+    transition: all .3s;
     padding-top: 8px;
+    max-height: 100vh;
+    overflow: hidden;
+    opacity: 1;
 }
