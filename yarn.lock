@@ -1965,10 +1965,10 @@
   optionalDependencies:
     promise.allsettled "^1.0.5"
 
-"@tryghost/minifier@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.1.tgz#2e7550f417effcdb7dc445e14b5e000556318d87"
-  integrity sha512-vNRYoUGYVy95PVoL6OTOL4Oekz71VAGyEorP6gvmAv5SHUh8aXkkU4I5Thw9TzAVGkqhLvN7CL3AE4oW9csusg==
+"@tryghost/minifier@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.0.tgz#121f30694c5a0e3755dfe77a1d5df6dd5191e862"
+  integrity sha512-ofP+wuYV/je7IrfzwYQVR7FGtsXNSHrjpTxcqIvP6SuNhJu0npob6k/67T+95sOyy+Qu24HK8su277azmgDxXA==
   dependencies:
     "@tryghost/debug" "^0.1.8"
     "@tryghost/errors" "^0.2.16"
