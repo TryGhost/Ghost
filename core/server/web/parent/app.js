@@ -8,10 +8,10 @@ const vhost = require('@tryghost/vhost-middleware');
 /**
  * @param {Object} options
  * @param {Boolean} [options.start]
- * @param {Boolean} options.withBackend
- * @param {Boolean} options.withFrontend
+ * @param {Boolean} [options.withBackend]
+ * @param {Boolean} [options.withFrontend]
  */
-module.exports = function setupParentApp({start, withFrontend, withBackend}) {
+module.exports = function setupParentApp({start, withFrontend = true, withBackend = true}) {
     debug('ParentApp setup start');
     const parentApp = express('parent');
 
