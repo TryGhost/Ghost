@@ -925,6 +925,18 @@
     display: block;
 }
 
+/* In-line media selector
+/* --------------------------------------------------------------- */
+
+.kg-media-selector {
+    position: absolute;
+    width: 90%;
+    height: 600px;
+    background-color: white;
+    border: 1px solid gray;
+    border-radius: 1em;
+}
+
 /* Card settings panel
 /* --------------------------------------------------------------- */
 
@@ -1014,6 +1026,7 @@
 .kg-settings-panel-control .for-switch.x-small .switch {
     width: 34px !important;
 }
+
 
 /* Cards
 /* --------------------------------------------------------------- */

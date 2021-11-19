@@ -143,6 +143,10 @@ export default Component.extend({
                 }
             }
 
+            if (item.type === 'selector') {
+                this.openSelectorComponent(item.selectorComponent, range);
+            }
+
             this._hideButton();
             this._hideMenu();
         }

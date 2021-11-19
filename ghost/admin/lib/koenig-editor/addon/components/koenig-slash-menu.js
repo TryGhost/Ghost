@@ -128,6 +128,12 @@ export default class KoenigSlashMenuComponent extends Component {
             this.selectedColumnIndex = 0;
         }
 
+        // open a selector item type immediately if it's followed by a space
+        // to allow instant media searching
+        if (matchedItems[0]?.items[0]?.type === 'selector' && this.query.charAt(this.query.length - 1) === ' ') {
+            this.itemClicked(matchedItems[0].items[0]);
+        }
+
         this.itemSections = matchedItems;
     }
 
@@ -182,7 +188,6 @@ export default class KoenigSlashMenuComponent extends Component {
 
         let range = this._openRange.head.section.toRange();
         let [, ...params] = this.query.split(/\s/);
-        let payload = Object.assign({}, item.payload);
 
         // make sure the click doesn't propagate and get picked up by the
         // newly inserted card which can then remove itself because it
@@ -192,14 +197,16 @@ export default class KoenigSlashMenuComponent extends Component {
             event.stopImmediatePropagation();
         }
 
-        // params are order-dependent and listed in CARD_MENU for each card
-        if (!isEmpty(item.params) && !isEmpty(params)) {
-            item.params.forEach((param, i) => {
-                payload[param] = params[i];
-            });
-        }
-
         if (item.type === 'card') {
+            let payload = Object.assign({}, item.payload);
+
+            // params are order-dependent and listed in CARD_MENU for each card
+            if (!isEmpty(item.params) && !isEmpty(params)) {
+                item.params.forEach((param, i) => {
+                    payload[param] = params[i];
+                });
+            }
+
             this.args.replaceWithCardSection(item.replaceArg, range, payload);
         }
 
@@ -209,6 +216,10 @@ export default class KoenigSlashMenuComponent extends Component {
                 let post = mobiledocParsers.parse(this.args.editor.builder, clickedSnippet.mobiledoc);
                 this.args.replaceWithPost(range, post);
             }
+        }
+
+        if (item.type === 'selector') {
+            this.args.openSelectorComponent(item.selectorComponent);
         }
 
         this._hideMenu();

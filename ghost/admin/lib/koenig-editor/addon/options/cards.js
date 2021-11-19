@@ -182,15 +182,11 @@ export const CARD_MENU = [
         {
             label: 'GIF',
             icon: 'koenig/kg-card-type-gif',
-            desc: '/gif [url or search term]',
+            desc: '/gif [search term]',
             iconClass: 'kg-card-type-unsplash',
             matches: ['gif', 'giphy', 'tenor'],
-            type: 'card',
-            replaceArg: 'image',
-            params: ['searchTerm'],
-            payload: {
-                imageSelector: 'tenor'
-            },
+            type: 'selector',
+            selectorComponent: 'koenig-media-selector-tenor',
             isAvailable: ['feature.gifsCard', 'config.tenor.apiKey']
         },
         {
