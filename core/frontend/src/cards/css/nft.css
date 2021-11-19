@@ -5,7 +5,7 @@
     width: 100%;
 }
 
-.kg-nft-card a {
+.kg-nft-card-container {
     position: static;
     display: flex;
     flex: auto;
@@ -29,7 +29,7 @@
     transition: none;
 }
 
-.kg-nft-card a:hover {
+.kg-nft-card:hover {
     color: #333;
     opacity: 1.0;
     transition: none;
