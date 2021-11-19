@@ -276,7 +276,7 @@ async function initBackgroundServices({config}) {
     themeService.loadInactiveThemes();
 
     // we don't want to kick off background services that will interfere with tests
-    if (process.env.NODE_ENV.match(/^testing/)) {
+    if (process.env.NODE_ENV.startsWith('test')) {
         return;
     }
 

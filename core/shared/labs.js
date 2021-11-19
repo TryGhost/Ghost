@@ -50,7 +50,7 @@ module.exports.getAll = () => {
     const labs = _.cloneDeep(settingsCache.get('labs')) || {};
 
     ALPHA_FEATURES.forEach((alphaKey) => {
-        if (labs[alphaKey] && !(config.get('enableDeveloperExperiments') || process.env.NODE_ENV.match(/^testing/))) {
+        if (labs[alphaKey] && !(config.get('enableDeveloperExperiments') || process.env.NODE_ENV.startsWith('test'))) {
             delete labs[alphaKey];
         }
     });
