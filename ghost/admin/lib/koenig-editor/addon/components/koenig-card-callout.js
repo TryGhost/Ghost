@@ -79,11 +79,27 @@ export default class KoenigCardCalloutComponent extends Component {
             }
         });
 
+        // Create a container for the emoji picker that will prevent clicks deselecting the card.
+        // Container element survives beyond this component's lifecycle so it can be re-used
+        // TODO: if emoji button is re-used elsewhere encapsulate behaviour into a modifier/component
+        let emojiButtonContainer = document.getElementById('emoji-button-container');
+        if (!emojiButtonContainer) {
+            emojiButtonContainer = document.createElement('div');
+
+            emojiButtonContainer.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            });
+
+            document.body.appendChild(emojiButtonContainer);
+        }
+
         this.picker = new EmojiButton({
             position: 'bottom',
             recentsCount: 24,
             showPreview: false,
-            initialCategory: 'recents'
+            initialCategory: 'recents',
+            rootElement: emojiButtonContainer
         });
 
         this.picker.on('emoji', (selection) => {
@@ -97,7 +113,7 @@ export default class KoenigCardCalloutComponent extends Component {
 
     willDestroy() {
         super.willDestroy(...arguments);
-        this.picker.destroyPicker();
+        this.picker?.destroyPicker();
     }
 
     // required for snippet rects to be calculated - editor reaches in to component,
@@ -134,6 +150,8 @@ export default class KoenigCardCalloutComponent extends Component {
             // TODO: see if there's a way to avoid afterRender
             run.scheduleOnce('afterRender', this, this.args.deleteCard);
         }
+
+        this.picker?.hidePicker();
     }
 
     @action
