@@ -1,1 +1,1 @@
-export { default } from 'koenig-editor/components/koenig-card-audio';
+export {default} from 'koenig-editor/components/koenig-card-audio';
