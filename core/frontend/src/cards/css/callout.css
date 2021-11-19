@@ -1,5 +1,6 @@
 .kg-card-callout {
     display: flex;
+    align-items: center;
     padding: 20px 28px;
     border-radius: 3px;
 }
@@ -46,17 +47,4 @@
     padding-right: 12px;
     line-height: 1.6;
     font-size: 2rem;
-}
-
-.kg-callout-text {
-    font-family: var(--font-serif);
-    font-weight: 400;
-    font-size: 2.1rem;
-    line-height: 1.6em;
-}
-
-@media (max-width: 650px) {
-    .kg-callout-text {
-        font-size: 1.7rem;
-    }
 }
