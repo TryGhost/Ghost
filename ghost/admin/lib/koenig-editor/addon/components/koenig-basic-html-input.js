@@ -1,8 +1,8 @@
+import * as softReturnParser from '@tryghost/kg-parser-plugins/lib/cards/softReturn';
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import parserPlugins from '../options/basic-html-parser-plugins';
-import registerKeyCommands, {BASIC_KEY_COMMANDS} from '../options/key-commands';
+import registerKeyCommands, {BASIC_KEY_COMMANDS, BASIC_KEY_COMMANDS_WITH_BR} from '../options/key-commands';
 import validator from 'validator';
 import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
 import {MOBILEDOC_VERSION, getBlankMobileDoc} from './koenig-editor';
@@ -12,7 +12,9 @@ import {computed} from '@ember/object';
 import {getContentFromPasteEvent, parsePostFromPaste} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {registerBasicInputTextExpansions} from '../options/text-expansions';
+import {removeBR} from '../options/basic-html-parser-plugins';
 import {run} from '@ember/runloop';
+import {softReturn as softReturnAtom} from '../options/atoms';
 
 // TODO: extract core to share functionality between this and `{{koenig-editor}}`
 
@@ -61,7 +63,7 @@ export default Component.extend({
     /* computed properties -------------------------------------------------- */
 
     cleanHTML: computed('html', function () {
-        return cleanBasicHtml(this.html || '');
+        return cleanBasicHtml(this.html || '', {allowBr: !!this.allowBr});
     }),
 
     // merge in named options with any passed in `options` property data-bag
@@ -69,6 +71,8 @@ export default Component.extend({
         let options = this.options || {};
         let atoms = this.atoms || [];
         let cards = this.cards || [];
+
+        atoms = [softReturnAtom].concat(atoms);
 
         return assign({
             html: `<${this.defaultTag}>${this.cleanHTML || ''}</${this.defaultTag}>`,
@@ -137,11 +141,18 @@ export default Component.extend({
         editorOptions.mobiledoc = mobiledoc;
         editorOptions.showLinkTooltips = false;
         editorOptions.undoDepth = UNDO_DEPTH;
+
+        const parserPlugins = [];
+        if (this.allowBr) {
+            parserPlugins.push(softReturnParser.fromBr());
+        } else {
+            parserPlugins.push(removeBR);
+        }
         editorOptions.parserPlugins = parserPlugins;
 
         editor = new Editor(editorOptions);
 
-        registerKeyCommands(editor, this, BASIC_KEY_COMMANDS);
+        registerKeyCommands(editor, this, this.allowBr ? BASIC_KEY_COMMANDS_WITH_BR : BASIC_KEY_COMMANDS);
         registerBasicInputTextExpansions(editor);
 
         // set up editor hooks
@@ -461,7 +472,7 @@ export default Component.extend({
             }
 
             let html = firstParagraph.innerHTML || '';
-            return cleanBasicHtml(html);
+            return cleanBasicHtml(html, {allowBr: !!this.allowBr});
         }
     }
 });

@@ -35,6 +35,7 @@
                 @onFocus={{fn (mut this.isFocused) true}}
                 @onBlur={{fn (mut this.isFocused) false}}
                 @didCreateEditor={{this.registerEditor}}
+                @allowBr={{true}}
             />
             <KoenigSettingsPanel>
                 <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
