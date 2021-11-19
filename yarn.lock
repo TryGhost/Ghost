@@ -1726,10 +1726,10 @@
   optionalDependencies:
     sharp "^0.29.0"
 
-"@tryghost/job-manager@0.8.12":
-  version "0.8.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.12.tgz#4fe36464be4f2ccee5a1762000a5d0785b33d0ea"
-  integrity sha512-Lvw7D6Hgg5+14eKm+CNQ7dx3FDpoFV3OWRbHsPMswjWRfHPSSeeW5wZjaT+Z4miOFkJjEl8xPyYRxTv1+0HmUg==
+"@tryghost/job-manager@0.8.13":
+  version "0.8.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.13.tgz#e8ac3bfdba0f8b97aa4bd19b5e814e121e36c820"
+  integrity sha512-RuHm5YqZpU5R9RssgXWhqeBLhnFK/XpB4Id9jqYTkNDrVhizCsAnqbAmMvvAk4de2XDQljmfydoDUk70sJx+tA==
   dependencies:
     "@breejs/later" "^4.0.2"
     bree "^6.2.0"
