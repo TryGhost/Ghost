@@ -48,6 +48,19 @@
     />
 {{/if}}
 
+{{!-- pop-up media selector --}}
+{{#if this.activeSelectorComponent}}
+    <KoenigMediaSelector
+        @editor={{this.editor}}
+        @editorRange={{this.selectedRange}}
+        @replaceWithCardSection={{action "replaceWithCardSection"}}
+        @close={{action "closeSelectorComponent"}}
+        as |selector|
+    >
+        {{component this.activeSelectorComponent selector=selector}}
+    </KoenigMediaSelector>
+{{/if}}
+
 {{!-- (+) icon and pop-up menu --}}
 <KoenigPlusMenu
     @editor={{this.editor}}
@@ -56,6 +69,7 @@
     @deleteSnippet={{this.deleteSnippet}}
     @replaceWithCardSection={{action "replaceWithCardSection"}}
     @replaceWithPost={{action "replaceWithPost"}}
+    @openSelectorComponent={{action "openSelectorComponent"}}
     @postType={{@postType}}
 />
 
@@ -67,6 +81,7 @@
     @deleteSnippet={{this.deleteSnippet}}
     @replaceWithCardSection={{action "replaceWithCardSection"}}
     @replaceWithPost={{action "replaceWithPost"}}
+    @openSelectorComponent={{action "openSelectorComponent"}}
     @postType={{@postType}}
 />
 
