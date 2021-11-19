@@ -12,7 +12,7 @@ module.exports = {
             !hasScheduled &&
             config.get('emailAnalytics') &&
             config.get('backgroundJobs:emailAnalytics') &&
-            !process.env.NODE_ENV.match(/^testing/)
+            !process.env.NODE_ENV.startsWith('test')
         ) {
             // Don't register email analytics job if we have no emails,
             // processor usage from many sites spinning up threads can be high.
