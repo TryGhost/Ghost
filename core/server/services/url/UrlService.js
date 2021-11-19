@@ -326,7 +326,7 @@ class UrlService {
         let persistedUrls;
         let persistedResources;
 
-        if (labs.isSet('urlCache') || urlCache) {
+        if (this.cache && (labs.isSet('urlCache') || urlCache)) {
             persistedUrls = await this.cache.read('urls');
             persistedResources = await this.cache.read('resources');
         }
