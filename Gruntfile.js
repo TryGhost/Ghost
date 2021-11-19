@@ -75,7 +75,6 @@ module.exports = function (grunt) {
                     'core/shared/**/*.js',
                     'core/frontend/**/*.js',
                     'core/frontend/src/**/*.css',
-                    '!core/frontend/public/**',
                     'core/*.js',
                     'index.js',
                     'config.*.json',
