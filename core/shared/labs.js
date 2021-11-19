@@ -37,7 +37,10 @@ const ALPHA_FEATURES = [
     'calloutCard',
     'nftCard',
     'accordionCard',
-    'gifsCard'
+    'gifsCard',
+    'fileCard',
+    'audioCard',
+    'videoCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
