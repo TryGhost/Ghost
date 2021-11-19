@@ -179,7 +179,7 @@ export const CARD_MENU = [
         {
             label: 'GIF',
             icon: 'koenig/kg-card-type-gif',
-            desc: 'Add with /gif [url or search term]',
+            desc: '/gif [url or search term]',
             iconClass: 'kg-card-type-unsplash',
             matches: ['gif', 'giphy', 'tenor'],
             type: 'card',
