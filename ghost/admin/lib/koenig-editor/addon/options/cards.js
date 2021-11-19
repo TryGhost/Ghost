@@ -17,7 +17,10 @@ export const CARD_COMPONENT_MAP = {
     nft: 'koenig-card-nft',
     toggle: 'koenig-card-accordion',
     'email-cta': 'koenig-card-email-cta',
-    paywall: 'koenig-card-paywall'
+    paywall: 'koenig-card-paywall',
+    file: 'koenig-card-file',
+    audio: 'koenig-card-audio',
+    video: 'koenig-card-video'
 };
 
 // map card names to generic icons (used for ghost elements when dragging)
@@ -37,7 +40,10 @@ export const CARD_ICON_MAP = {
     nft: 'koenig/kg-card-type-gen-embed',
     toggle: 'koenig/kg-card-type-accordion',
     'email-cta': 'koenig/kg-card-type-gen-embed',
-    paywall: 'koenig/kg-card-type-divider'
+    paywall: 'koenig/kg-card-type-divider',
+    file: 'koenig/kg-card-type-divider',
+    audio: 'koenig/kg-card-type-divider',
+    video: 'koenig/kg-card-type-video'
 };
 
 // TODO: move koenigOptions directly into cards now that card components register
@@ -58,6 +64,9 @@ export default [
     createComponentCard('callout'),
     createComponentCard('nft', {hasEditMode: false}),
     createComponentCard('toggle'),
+    createComponentCard('file'),
+    createComponentCard('audio'),
+    createComponentCard('video'),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
 
@@ -189,6 +198,33 @@ export const CARD_MENU = [
             type: 'card',
             replaceArg: 'toggle',
             isAvailable: 'feature.accordionCard'
+        },
+        {
+            label: 'File',
+            icon: 'koenig/kg-card-type-accordion',
+            desc: 'Add a file',
+            matches: ['file'],
+            type: 'card',
+            replaceArg: 'file',
+            isAvailable: 'feature.fileCard'
+        },
+        {
+            label: 'Audio',
+            icon: 'koenig/kg-card-type-accordion',
+            desc: 'Add an audio file',
+            matches: ['audio'],
+            type: 'card',
+            replaceArg: 'audio',
+            isAvailable: 'feature.audioCard'
+        },
+        {
+            label: 'Video',
+            icon: 'koenig/kg-card-type-accordion',
+            desc: 'Add a video file',
+            matches: ['video'],
+            type: 'card',
+            replaceArg: 'video',
+            isAvailable: 'feature.videoCard'
         }]
     },
     {

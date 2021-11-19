@@ -404,6 +404,45 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Cardmageddon - File</h4>
+                            <p class="gh-expandable-description">
+                                Add a generic file
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="fileCard" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Cardmageddon - Video</h4>
+                            <p class="gh-expandable-description">
+                                Add a video file
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="videoCard" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Cardmageddon - Audio</h4>
+                            <p class="gh-expandable-description">
+                                Add an audio file
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="audioCard" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
