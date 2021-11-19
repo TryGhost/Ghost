@@ -21,7 +21,7 @@
 .koenig-editor__editor.__has-no-content:after,
 .koenig-text-replacement-html-input__editor.__has-no-content:after,
 .koenig-basic-html-textarea__editor.__has-no-content:after,
-.koenig-editor__editor .koenig-basic-html-input__editor.__has-no-content:after {
+.kg-card-callout .koenig-basic-html-input__editor.__has-no-content:after {
     font-family: georgia,serif;
     font-weight: 300;
     letter-spacing: .02rem;
