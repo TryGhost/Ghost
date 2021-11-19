@@ -168,6 +168,20 @@ export const CARD_MENU = [
             isAvailable: 'feature.calloutCard'
         },
         {
+            label: 'GIF',
+            icon: 'koenig/kg-card-type-gif',
+            desc: 'Add with /gif [url or search term]',
+            iconClass: 'kg-card-type-unsplash',
+            matches: ['gif', 'giphy', 'tenor'],
+            type: 'card',
+            replaceArg: 'image',
+            params: ['searchTerm'],
+            payload: {
+                imageSelector: 'tenor'
+            },
+            isAvailable: ['feature.gifsCard', 'config.tenor.apiKey']
+        },
+        {
             label: 'Toggle',
             icon: 'koenig/kg-card-type-accordion',
             desc: 'Add collapsible content',
@@ -211,20 +225,6 @@ export const CARD_MENU = [
                 imageSelector: 'unsplash'
             },
             isAvailable: 'settings.unsplash'
-        },
-        {
-            label: 'GIF',
-            icon: 'koenig/kg-card-type-tenor',
-            desc: '/gif [search-term or url]',
-            iconClass: 'kg-card-type-unsplash',
-            matches: ['gif', 'giphy', 'tenor'],
-            type: 'card',
-            replaceArg: 'image',
-            params: ['searchTerm'],
-            payload: {
-                imageSelector: 'tenor'
-            },
-            isAvailable: ['feature.gifsCard', 'config.tenor.apiKey']
         },
         {
             label: 'Vimeo',
