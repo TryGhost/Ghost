@@ -6,7 +6,7 @@
 }
 
 .kg-toggle-card[data-kg-toggle-state="close"] svg {
-    transform: rotate(180deg);
+    transform: unset;
 }
 
 .kg-toggle-card {
