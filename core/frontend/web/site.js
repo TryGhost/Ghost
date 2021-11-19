@@ -104,15 +104,15 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(mw.serveFavicon());
 
     // Serve sitemap.xsl file
-    siteApp.use(mw.servePublicFile('sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
+    siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
 
     // Serve stylesheets for default templates
-    siteApp.use(mw.servePublicFile('public/ghost.css', 'text/css', constants.ONE_HOUR_S));
-    siteApp.use(mw.servePublicFile('public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', constants.ONE_HOUR_S));
+    siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
 
     // Card assets
-    siteApp.use(mw.servePublicFile('public/cards.min.css', 'text/css', constants.ONE_YEAR_S));
-    siteApp.use(mw.servePublicFile('public/cards.min.js', 'text/js', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'text/js', constants.ONE_YEAR_S));
 
     // Serve blog images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
@@ -147,7 +147,7 @@ module.exports = function setupSiteApp(options = {}) {
     debug('Themes done');
 
     // Serve robots.txt if not found in theme
-    siteApp.use(mw.servePublicFile('robots.txt', 'text/plain', constants.ONE_HOUR_S));
+    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', constants.ONE_HOUR_S));
 
     // site map - this should probably be refactored to be an internal app
     sitemapHandler(siteApp);

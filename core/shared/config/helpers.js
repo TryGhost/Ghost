@@ -84,6 +84,8 @@ const getContentPath = function getContentPath(type) {
         return path.join(this.get('paths:contentPath'), 'data/');
     case 'settings':
         return path.join(this.get('paths:contentPath'), 'settings/');
+    case 'public':
+        return path.join(this.get('paths:contentPath'), 'public/');
     default:
         // new Error is allowed here, as we do not want config to depend on @tryghost/error
         // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition

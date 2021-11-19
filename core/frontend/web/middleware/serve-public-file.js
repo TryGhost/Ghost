@@ -11,10 +11,16 @@ const messages = {
     fileNotFound: 'File not found'
 };
 
-function createPublicFileMiddleware(file, type, maxAge) {
+function createPublicFileMiddleware(location, file, mime, maxAge) {
     let content;
-    const publicFilePath = config.get('paths').publicFilePath;
-    const filePath = file.match(/^public/) ? path.join(publicFilePath, file.replace(/^public/, '')) : path.join(publicFilePath, file);
+    // These files are provided by Ghost, and therefore live inside of the core folder
+    const staticFilePath = config.get('paths').publicFilePath;
+    // These files are built on the fly, and must be saved in the content folder
+    const builtFilePath = config.getContentPath('public');
+
+    let locationPath = location === 'static' ? staticFilePath : builtFilePath;
+
+    const filePath = file.match(/^public/) ? path.join(locationPath, file.replace(/^public/, '')) : path.join(locationPath, file);
     const blogRegex = /(\{\{blog-url\}\})/g;
 
     return function servePublicFileMiddleware(req, res, next) {
@@ -24,7 +30,7 @@ function createPublicFileMiddleware(file, type, maxAge) {
         }
 
         // send image files directly and let express handle content-length, etag, etc
-        if (type.match(/^image/)) {
+        if (mime.match(/^image/)) {
             return res.sendFile(filePath, (err) => {
                 if (err && err.status === 404) {
                     // ensure we're triggering basic asset 404 and not a templated 404
@@ -57,13 +63,13 @@ function createPublicFileMiddleware(file, type, maxAge) {
 
             let str = buf.toString();
 
-            if (type === 'text/xsl' || type === 'text/plain' || type === 'application/javascript') {
+            if (mime === 'text/xsl' || mime === 'text/plain' || mime === 'application/javascript') {
                 str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
             }
 
             content = {
                 headers: {
-                    'Content-Type': type,
+                    'Content-Type': mime,
                     'Content-Length': Buffer.from(str).length,
                     ETag: `"${crypto.createHash('md5').update(str, 'utf8').digest('hex')}"`,
                     'Cache-Control': `public, max-age=${maxAge}`
@@ -78,8 +84,8 @@ function createPublicFileMiddleware(file, type, maxAge) {
 
 // ### servePublicFile Middleware
 // Handles requests to robots.txt and favicon.ico (and caches them)
-function servePublicFile(file, type, maxAge) {
-    const publicFileMiddleware = createPublicFileMiddleware(file, type, maxAge);
+function servePublicFile(location, file, type, maxAge) {
+    const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge);
 
     return function servePublicFileMiddleware(req, res, next) {
         if (req.path === '/' + file) {

@@ -73,6 +73,19 @@ describe('Card Asset Service', function () {
         cardAssets.files.should.eql(['cards.min.css']);
     });
 
+    it('can correctly load nothing when config is false', async function () {
+        const cardAssets = new CardAssetService({
+            src: srcDir,
+            dest: destDir
+        });
+
+        await fs.writeFile(path.join(srcDir, 'css', 'test.css'), '.test { color: #fff }');
+
+        await cardAssets.load(false);
+
+        cardAssets.files.should.eql([]);
+    });
+
     it('can clearFiles', async function () {
         const cardAssets = new CardAssetService({
             src: srcDir,

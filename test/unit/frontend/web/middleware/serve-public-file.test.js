@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const fs = require('fs-extra');
+const path = require('path');
 const servePublicFile = require('../../../../../core/frontend/web/middleware/serve-public-file');
 
 describe('servePublicFile', function () {
@@ -19,20 +20,20 @@ describe('servePublicFile', function () {
     });
 
     it('should return a middleware', function () {
-        const result = servePublicFile('robots.txt', 'text/plain', 3600);
+        const result = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
 
         result.should.be.a.Function();
     });
 
     it('should skip if the request does NOT match the file', function () {
-        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
         req.path = '/favicon.ico';
         middleware(req, res, next);
         next.called.should.be.true();
     });
 
     it('should load the file and send it', function () {
-        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
         const body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
 
@@ -58,11 +59,11 @@ describe('servePublicFile', function () {
     });
 
     it('should send the correct headers', function () {
-        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
         const body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
 
-        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
@@ -72,7 +73,9 @@ describe('servePublicFile', function () {
         };
 
         middleware(req, res, next);
+
         next.called.should.be.false();
+        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
         res.writeHead.called.should.be.true();
         res.writeHead.args[0][0].should.equal(200);
         res.writeHead.calledWith(200, sinon.match.has('Content-Type')).should.be.true();
@@ -82,7 +85,7 @@ describe('servePublicFile', function () {
     });
 
     it('should replace {{blog-url}} in text/plain', function () {
-        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
         const body = 'User-agent: {{blog-url}}';
         req.path = '/robots.txt';
 
@@ -103,7 +106,7 @@ describe('servePublicFile', function () {
     });
 
     it('should 404 for ENOENT on general files', function () {
-        const middleware = servePublicFile('robots.txt', 'text/plain', 3600);
+        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
         req.path = '/robots.txt';
 
         sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
@@ -121,5 +124,28 @@ describe('servePublicFile', function () {
 
         next.called.should.be.true();
         next.calledWith(sinon.match({errorType: 'NotFoundError', code: 'PUBLIC_FILE_NOT_FOUND'})).should.be.true();
+    });
+
+    it('can serve a built asset file as well as public files', function () {
+        const middleware = servePublicFile('built', 'something.css', 'text/css', 3600);
+        const body = '.foo {bar: baz}';
+        req.path = '/something.css';
+
+        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            cb(null, body);
+        });
+
+        res = {
+            writeHead: sinon.spy(),
+            end: sinon.spy()
+        };
+
+        middleware(req, res, next);
+
+        next.called.should.be.false();
+        res.writeHead.called.should.be.true();
+        res.writeHead.args[0][0].should.equal(200);
+
+        fileStub.firstCall.args[0].should.endWith('content/public/something.css');
     });
 });
