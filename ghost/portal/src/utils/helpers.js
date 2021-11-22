@@ -484,6 +484,10 @@ export const createPopupNotification = ({type, status, autoHide, duration, close
     };
 };
 
+export function isSameCurrency(currency1, currency2) {
+    return currency1?.toLowerCase() === currency2?.toLowerCase();
+}
+
 export function getPriceIdFromPageQuery({site, pageQuery}) {
     const productMonthlyPriceQueryRegex = /^(?:(\S+?))?\/monthly$/;
     const productYearlyPriceQueryRegex = /^(?:(\S+?))?\/yearly$/;
