@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const adminUtils = require('../../utils/admin-utils');
@@ -30,9 +29,6 @@ describe('Integration - Web - vhosts', function () {
 
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', null);
-
-            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
-            sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
             app = await localUtils.initGhost();
         });
