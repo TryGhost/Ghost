@@ -352,13 +352,11 @@ async function bootGhost({backend = true, frontend = true} = {}) {
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
 
-        if (backend) {
-            const GhostServer = require('./server/ghost-server');
-            ghostServer = new GhostServer({url: config.getSiteUrl()});
-            await ghostServer.start(rootApp);
-            bootLogger.log('server started');
-            debug('End: load server + minimal app');
-        }
+        const GhostServer = require('./server/ghost-server');
+        ghostServer = new GhostServer({url: config.getSiteUrl()});
+        await ghostServer.start(rootApp);
+        bootLogger.log('server started');
+        debug('End: load server + minimal app');
 
         // Step 3 - Get the DB ready
         debug('Begin: Get DB ready');
