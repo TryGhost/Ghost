@@ -183,6 +183,7 @@ async function initDynamicRouting() {
     const routing = require('./frontend/services/routing');
     const routeSettingsService = require('./server/services/route-settings');
     const bridge = require('./bridge');
+    bridge.init();
 
     // We pass the frontend API version + the dynamic routes here, so that the frontend services are slightly less tightly-coupled
     const apiVersion = bridge.getFrontendApiVersion();
