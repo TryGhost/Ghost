@@ -1,6 +1,5 @@
 .kg-card-callout {
     display: flex;
-    align-items: center;
     padding: 20px 28px;
     border-radius: 3px;
 }
@@ -44,7 +43,7 @@
 }
 
 .kg-callout-emoji {
-    padding-right: 12px;
+    padding-right: 16px;
     line-height: 1.6;
     font-size: 2rem;
 }
