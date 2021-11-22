@@ -6792,7 +6792,7 @@ ember-cli-typescript@^3.1.3, ember-cli-typescript@^3.1.4, ember-cli-typescript@~
     stagehand "^1.0.0"
     walk-sync "^2.0.0"
 
-ember-cli-typescript@^4.1.0:
+ember-cli-typescript@^4.1.0, ember-cli-typescript@^4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/ember-cli-typescript/-/ember-cli-typescript-4.2.1.tgz#54d08fc90318cc986f3ea562f93ce58a6cc4c24d"
   integrity sha512-0iKTZ+/wH6UB/VTWKvGuXlmwiE8HSIGcxHamwNhEC5x1mN3z8RfvsFZdQWYUzIWFN2Tek0gmepGRPTwWdBYl/A==
@@ -7214,15 +7214,16 @@ ember-inflector@^3.0.1:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-keyboard@6.0.3:
-  version "6.0.3"
-  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-6.0.3.tgz#71485e0c1cd7b8a330bde4c173ad1b9767e32777"
-  integrity sha512-1JAoiiuccLOXPttKC8xv2qixGACf1LmGI55k/+YUaP4T/+eIPcBUrtikiS/tzz1qO597BM/7UwOc1szdCB3IXQ==
+ember-keyboard@6.0.4:
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-6.0.4.tgz#396e1be4c815b2972e2a6973dcc45acbc6701e4a"
+  integrity sha512-Mkg5TG6KBTtxjOUBdyLADajyj/mJo3ua2mSHw20UtG2MxKxMyO+Bs4tttMlEmmrR3XMrQ9qVBLkq2dIuuQku3w==
   dependencies:
     ember-cli-babel "^7.26.6"
     ember-cli-htmlbars "^5.7.1"
     ember-compatibility-helpers "^1.2.4"
-    ember-modifier "^2.1.1"
+    ember-modifier "^2.1.2 || ^3.0.0"
+    ember-modifier-manager-polyfill "^1.2.0"
 
 ember-load-initializers@2.1.2:
   version "2.1.2"
@@ -7292,7 +7293,7 @@ ember-modifier-manager-polyfill@^1.1.0, ember-modifier-manager-polyfill@^1.2.0:
     ember-cli-version-checker "^2.1.2"
     ember-compatibility-helpers "^1.2.0"
 
-ember-modifier@2.1.2, ember-modifier@^2.1.0, ember-modifier@^2.1.1:
+ember-modifier@2.1.2, ember-modifier@^2.1.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-2.1.2.tgz#62d18faedf972dcd9d34f90d5321fbc943d139b1"
   integrity sha512-3Lsu1fV1sIGa66HOW07RZc6EHISwKt5VA5AUnFss2HX6OTfpxTJ2qvPctt2Yt0XPQXJ4G6BQasr/F35CX7UGJA==
@@ -7304,6 +7305,17 @@ ember-modifier@2.1.2, ember-modifier@^2.1.0, ember-modifier@^2.1.1:
     ember-compatibility-helpers "^1.2.4"
     ember-destroyable-polyfill "^2.0.2"
     ember-modifier-manager-polyfill "^1.2.0"
+
+"ember-modifier@^2.1.2 || ^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-3.0.0.tgz#74466d32e4ef9b80004915676cc3bfd6e3fd7a3d"
+  integrity sha512-ccXfMnjWhjEUCB5taeIPQmf0h1zPUIMbmsCV7W+JZ2BioPUZTLhE1WuHspmV0iEOiX3Fwx8jMOx6b74sFcKJ0g==
+  dependencies:
+    ember-cli-babel "^7.26.6"
+    ember-cli-normalize-entity-name "^1.0.0"
+    ember-cli-string-utils "^1.1.0"
+    ember-cli-typescript "^4.2.1"
+    ember-compatibility-helpers "^1.2.5"
 
 ember-moment@8.0.2:
   version "8.0.2"
