@@ -5,7 +5,7 @@ const rewire = require('rewire');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const models = require('../../core/server/models');
-const UrlService = rewire('../../core/server/services/url/UrlService');
+const UrlService = require('../../core/server/services/url/UrlService');
 
 /**
  * @NOTE
