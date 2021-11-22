@@ -68,6 +68,7 @@ export default Service.extend({
     fileCard: feature('fileCard', {developer: true}),
     audioCard: feature('audioCard', {developer: true}),
     videoCard: feature('videoCard', {developer: true}),
+    productCard: feature('productCard', {developer: true}),
 
     _user: null,
 
