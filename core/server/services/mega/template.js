@@ -602,7 +602,11 @@ figure blockquote p {
 }
 
 .kg-card-callout-accent {
-    background: var(--ghost-accent-color);
+    background: ${templateSettings.accentColor || '#15212A'};
+    color: #fff;
+}
+
+.kg-card-callout-accent a {
     color: #fff;
 }
 
