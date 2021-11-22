@@ -1388,8 +1388,9 @@
     background: var(--adjusted-accent-color);
 }
 
-.kg-card-callout-accent p {
-    color: var(--white);
+.kg-card-callout-accent p,
+.kg-card-callout-accent a {
+    color: var(--white) !important;
 }
 
 .kg-callout-emoji {
