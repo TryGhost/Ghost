@@ -11,14 +11,14 @@ describe('Custom Theme Settings API', function () {
     before(async function () {
         // NOTE: needs force start to be able to reinitialize Ghost process with frontend services - custom-theme-settings, to be specific
         await localUtils.startGhost({
-            forceStart: true,
-            frontend: true
         });
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'users:extra', 'custom_theme_settings');
 
-        // require here so we know it's already been set up with models
+        // require and init here so we know it's already been set up with models
         const customThemeSettingsService = require('../../../core/server/services/custom-theme-settings');
+        await customThemeSettingsService.init();
+
         // fake a theme activation with custom settings - settings match fixtures
         await customThemeSettingsService.api.activateTheme('casper', {
             name: 'casper',
