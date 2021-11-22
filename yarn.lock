@@ -1610,10 +1610,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.3.tgz#42c88bbfe343d55595aa27b25665b87cb9cbaa23"
   integrity sha512-+Ob3QTLxxpV4VBNEG/6Veop5MLxKlpPkGtnuRO/0PNaxm77Xo6TdLYAqUL+SnHSYRySr3lkLZCZUa9e6HhECbg==
 
-"@tryghost/config@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/config/-/config-0.2.0.tgz#2de5afec7866e9277f8fc044c4009a2167e3490a"
-  integrity sha512-8s2NZOzufDYiAmOGCT0aIXrmdSbHTY1kybNYIcyjPI1/UuF7WMCMhMfRvRgrOl8UROep9fVgdRhDGTn41W+5ZA==
+"@tryghost/config@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/config/-/config-0.2.1.tgz#49cac52281d9cc05fdb22033e5378989ed0923ce"
+  integrity sha512-VQVMjjgqEoDX3jtb1wsr/p8I0+lnt6Xo5WDVcuiHAQePBLIP79fZcnq7UkdexAjiotWW2OwbYwIxfFNxQAsdWA==
   dependencies:
     "@tryghost/root-utils" "^0.3.7"
     nconf "^0.11.3"
@@ -5870,13 +5870,13 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.11.0:
-  version "4.11.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.11.0.tgz#f6fbbd22c39ad7533449b766c86fa94eb4ce3109"
-  integrity sha512-rPjagpeqbqtTJ+KMmj2mK/MxlZaC6NzXabC+dvHD44h8W3HPf3izm2DjeStoGJbH9p1IEEm6psOaZEU8DL1zIg==
+gscan@4.11.1:
+  version "4.11.1"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.11.1.tgz#119450c1aa51ac1a8abb607d8c074f84e36129e7"
+  integrity sha512-anWiynkSEh1FW8SmNIuaWuLrPZ/mVm9ylf3dF60vsnCUQVmtCJFOZhvEbINMAk8j2VEqq2zR8cEfz2VWjN004g==
   dependencies:
     "@sentry/node" "6.15.0"
-    "@tryghost/config" "0.2.0"
+    "@tryghost/config" "0.2.1"
     "@tryghost/debug" "0.1.9"
     "@tryghost/ignition-errors" "0.1.8"
     "@tryghost/logging" "1.0.1"
