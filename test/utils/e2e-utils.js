@@ -96,7 +96,7 @@ const prepareContentFolder = (options) => {
 // - truncate database
 // - re-run default fixtures
 // - reload affected services
-const restartModeGhostStart = async ({withFrontend}) => {
+const restartModeGhostStart = async ({frontend}) => {
     debug('Reload Mode');
     // Teardown truncates all tables and also calls urlServiceUtils.reset();
     await dbUtils.teardown();
@@ -109,7 +109,7 @@ const restartModeGhostStart = async ({withFrontend}) => {
     await settingsService.init();
     debug('settings done');
 
-    if (withFrontend) {
+    if (frontend) {
         // Load the frontend-related components
         await routeSettingsService.init();
         await themeService.init();
@@ -119,9 +119,9 @@ const restartModeGhostStart = async ({withFrontend}) => {
     // Reload the URL service & wait for it to be ready again
     // @TODO: why/how is this different to urlService.resetGenerators?
     urlServiceUtils.reset();
-    urlServiceUtils.init({urlCache: !withFrontend});
+    urlServiceUtils.init({urlCache: !frontend});
 
-    if (withFrontend) {
+    if (frontend) {
         await urlServiceUtils.isFinished();
     }
 
@@ -133,8 +133,8 @@ const restartModeGhostStart = async ({withFrontend}) => {
     limits.init();
 };
 
-const bootGhost = async ({withBackend, withFrontend}) => {
-    ghostServer = await boot({withBackend, withFrontend});
+const bootGhost = async ({backend, frontend}) => {
+    ghostServer = await boot({backend, frontend});
 };
 
 // CASE: Ghost Server needs Starting
@@ -174,7 +174,7 @@ const freshModeGhostStart = async (options) => {
     await bootGhost(options);
 
     // Wait for the URL service to be ready, which happens after bootYou
-    if (options.withFrontend) {
+    if (options.frontend) {
         await urlServiceUtils.isFinished();
     }
 };
@@ -183,8 +183,8 @@ const startGhost = async (options) => {
     const startTime = Date.now();
     debug('Start Ghost');
     options = _.merge({
-        withBackend: true,
-        withFrontend: true,
+        backend: true,
+        frontend: true,
         redirectsFile: true,
         redirectsFileExt: '.json',
         forceStart: false,

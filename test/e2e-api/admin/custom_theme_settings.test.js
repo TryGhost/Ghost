@@ -12,7 +12,7 @@ describe('Custom Theme Settings API', function () {
         // NOTE: needs force start to be able to reinitialize Ghost process with frontend services - custom-theme-settings, to be specific
         await localUtils.startGhost({
             forceStart: true,
-            withFrontend: true
+            frontend: true
         });
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'users:extra', 'custom_theme_settings');

@@ -211,8 +211,8 @@ module.exports = {
 
     async startGhost(overrides = {}) {
         const defaults = {
-            withBackend: true,
-            withFrontend: false
+            backend: true,
+            frontend: false
         };
 
         return await testUtils.startGhost(Object.assign(defaults, overrides));

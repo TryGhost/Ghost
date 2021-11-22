@@ -8,10 +8,10 @@ const vhost = require('@tryghost/vhost-middleware');
 /**
  * @param {Object} options
  * @param {Boolean} [options.start]
- * @param {Boolean} [options.withBackend]
- * @param {Boolean} [options.withFrontend]
+ * @param {Boolean} [options.backend]
+ * @param {Boolean} [options.frontend]
  */
-module.exports = function setupParentApp({start, withFrontend = true, withBackend = true}) {
+module.exports = function setupParentApp({start, frontend = true, backend = true}) {
     debug('ParentApp setup start');
     const parentApp = express('parent');
 
@@ -32,13 +32,13 @@ module.exports = function setupParentApp({start, withFrontend = true, withBacken
 
     // Mount the express apps on the parentApp
 
-    if (withBackend) {
+    if (backend) {
         debug('Mounting bakcend: ADMIN + API');
         const backendApp = require('./backend')();
         parentApp.use(vhost(config.getBackendMountPath(), backendApp));
     }
 
-    if (withFrontend) {
+    if (frontend) {
         debug('Mounting frontend: SITE + MEMBERS');
         const frontendApp = require('./frontend')({start});
         parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
