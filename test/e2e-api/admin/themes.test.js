@@ -26,9 +26,12 @@ describe('Themes API', function () {
     };
 
     before(async function () {
+        // NOTE: this flag should not be here! the URL service re-initialization should be fixed instead
+        //       The reason why this init doesn't work without "forceStart" is because during the "restartModeGhostStart"
+        //       the routing.routerManager is never called with "start". That's why a full boot is needed
         await localUtils.startGhost({
-            forceStart: true, // NOTE: this flag should not be here! the URL service re-initialization should be fixe instead
-            withFrontend: true
+            forceStart: true,
+            frontend: true
         });
         ownerRequest = supertest.agent(config.get('url'));
         await localUtils.doAuth(ownerRequest);
