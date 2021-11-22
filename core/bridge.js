@@ -27,7 +27,7 @@ const messages = {
 };
 
 class Bridge {
-    constructor() {
+    init() {
         /**
          * When locale changes, we reload theme translations
          * @deprecated: the term "lang" was deprecated in favor of "locale" publicly in 4.0
