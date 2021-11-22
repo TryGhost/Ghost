@@ -3,7 +3,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
-import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 const React = require('react');
 
@@ -445,7 +445,7 @@ export default class OfferPage extends React.Component {
         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
         const originalAmount = price.amount;
         let updatedAmount;
-        if (offer.type === 'fixed' && offer.currency === price.currency) {
+        if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
             updatedAmount = ((originalAmount - offer.amount)) / 100;
             return updatedAmount > 0 ? updatedAmount : 0;
         } else if (offer.type === 'percent') {

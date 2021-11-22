@@ -1,4 +1,4 @@
-import {getPriceIdFromPageQuery} from './helpers';
+import {getPriceIdFromPageQuery, isSameCurrency} from './helpers';
 import * as Fixtures from './fixtures';
 
 describe('Helpers - ', () => {
@@ -10,5 +10,22 @@ describe('Helpers - ', () => {
         const expectedPriceId = testProduct.yearlyPrice.id;
         const value = mockPriceIdFn({site: siteData, pageQuery});
         expect(value).toBe(expectedPriceId);
+    });
+    describe('isSameCurrency - ', () => {
+        test('can match two currencies correctly ', () => {
+            let currency1 = 'USD';
+            let currency2 = 'USD';
+            expect(isSameCurrency(currency1, currency2)).toBe(true);
+        });
+        test('can match currencies with case mismatch', () => {
+            let currency1 = 'USD';
+            let currency2 = 'usd';
+            expect(isSameCurrency(currency1, currency2)).toBe(true);
+        });
+        test('can match currencies with case mismatch', () => {
+            let currency1 = 'eur';
+            let currency2 = 'usd';
+            expect(isSameCurrency(currency1, currency2)).toBe(false);
+        });
     });
 });
