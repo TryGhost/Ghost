@@ -69,9 +69,9 @@ async function initDatabase({config, logging}) {
  * @param {object} options.ghostServer
  * @param {object} options.config
  * @param {object} options.bootLogger
- * @param {boolean} options.withFrontend
+ * @param {boolean} options.frontend
  */
-async function initCore({ghostServer, config, bootLogger, withFrontend}) {
+async function initCore({ghostServer, config, bootLogger, frontend}) {
     debug('Begin: initCore');
 
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
@@ -102,7 +102,7 @@ async function initCore({ghostServer, config, bootLogger, withFrontend}) {
         onFinished: () => {
             bootLogger.log('URL Service Ready');
         },
-        urlCache: !withFrontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
+        urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
     });
     debug('End: Url Service');
 
@@ -162,8 +162,8 @@ async function initFrontend() {
  * What we want is to be able to optionally load various components and mount them
  * So eventually this function should go away
  * @param {Object} options
- * @param {Boolean} options.withBackend
- * @param {Boolean} options.withFrontend
+ * @param {Boolean} options.backend
+ * @param {Boolean} options.frontend
  */
 async function initExpressApps(options) {
     debug('Begin: initExpressApps');
@@ -302,7 +302,7 @@ async function initBackgroundServices({config}) {
 
  * @returns {Promise<object>} ghostServer
  */
-async function bootGhost({withBackend = true, withFrontend = true} = {}) {
+async function bootGhost({backend = true, frontend = true} = {}) {
     // Metrics
     const startTime = Date.now();
     debug('Begin Boot');
@@ -352,7 +352,7 @@ async function bootGhost({withBackend = true, withFrontend = true} = {}) {
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
 
-        if (withBackend) {
+        if (backend) {
             const GhostServer = require('./server/ghost-server');
             ghostServer = new GhostServer({url: config.getSiteUrl()});
             await ghostServer.start(rootApp);
@@ -368,15 +368,15 @@ async function bootGhost({withBackend = true, withFrontend = true} = {}) {
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer, config, bootLogger, withFrontend});
+        await initCore({ghostServer, config, bootLogger, frontend});
 
-        if (withFrontend) {
+        if (frontend) {
             await initServicesForFrontend();
             await initFrontend();
         }
-        const ghostApp = await initExpressApps({withFrontend, withBackend});
+        const ghostApp = await initExpressApps({frontend, backend});
 
-        if (withFrontend) {
+        if (frontend) {
             await initDynamicRouting();
         }
 
