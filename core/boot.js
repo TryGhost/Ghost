@@ -368,9 +368,9 @@ async function bootGhost({backend = true, frontend = true} = {}) {
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer, config, bootLogger, frontend});
+        await initServicesForFrontend();
 
         if (frontend) {
-            await initServicesForFrontend();
             await initFrontend();
         }
         const ghostApp = await initExpressApps({frontend, backend});
