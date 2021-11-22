@@ -1,0 +1,85 @@
+<KoenigCard
+    @env={{@env}}
+    @class={{concat (kg-style "container-card") " kg-button-card mih10 miw-100 relative"}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{true}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @onLeaveEdit={{this.leaveEditMode}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.registerElement}}
+    as |card|
+>
+    {{#if @isEditing}}
+        <a href={{@payload.productUrl}} target="_blank" rel="noopener noreferrer">
+            <div><p>{{@payload.productTitle}}</p></div>
+            <div><p>{{@payload.productDescription}}</p></div>
+        </a>
+
+        <KoenigSettingsPanel>
+            <div class="kg-settings-panel-control">
+                <label class="kg-settings-panel-control-label" for="product-title-input">Product title</label>
+                <div class="kg-settings-panel-control-input">
+                    <input
+                        type="text"
+                        class="gh-input"
+                        id="product-title-input"
+                        name="product-title"
+                        value={{@payload.productTitle}}
+                        placeholder="Add product title"
+                        {{on "input" this.setProductTitle}}
+                        {{on-key "Enter" (fn this.focusElement "#product-title-input")}}
+                    >
+                </div>
+            </div>
+            <div class="kg-settings-panel-control">
+                <label class="kg-settings-panel-control-label" for="product-description-input">Product description</label>
+                <div class="kg-settings-panel-control-input">
+                    <input
+                        type="text"
+                        class="gh-input"
+                        id="product-description-input"
+                        name="product-description"
+                        value={{@payload.productDescription}}
+                        placeholder="Add product description"
+                        {{on "input" this.setProductDescription}}
+                        {{on-key "Enter" (fn this.focusElement "#product-description-input")}}
+                    >
+                </div>
+            </div>
+            <div class="kg-settings-panel-control">
+                <label class="kg-settings-panel-control-label" for="product-url-input">Product url</label>
+                <div class="kg-settings-panel-control-input">
+                    <input
+                        type="text"
+                        class="gh-input"
+                        id="product-url-input"
+                        name="product-url"
+                        value={{@payload.productUrl}}
+                        placeholder="Add product url"
+                        {{on "input" this.setProductUrl}}
+                        {{on-key "Enter" (fn this.focusElement "#product-url-input")}}
+                    >
+                </div>
+            </div>
+        </KoenigSettingsPanel>
+
+    {{else}}
+
+        <a href={{@payload.productUrl}} target="_blank" rel="noopener noreferrer">
+            <div><p>{{@payload.productTitle}}</p></div>
+            <div><p>{{@payload.productDescription}}</p></div>
+        </a>
+
+    {{/if}}
+</KoenigCard>

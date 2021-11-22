@@ -20,7 +20,8 @@ export const CARD_COMPONENT_MAP = {
     paywall: 'koenig-card-paywall',
     file: 'koenig-card-file',
     audio: 'koenig-card-audio',
-    video: 'koenig-card-video'
+    video: 'koenig-card-video',
+    product: 'koenig-card-product'
 };
 
 // map card names to generic icons (used for ghost elements when dragging)
@@ -43,7 +44,8 @@ export const CARD_ICON_MAP = {
     paywall: 'koenig/kg-card-type-divider',
     file: 'koenig/kg-card-type-divider',
     audio: 'koenig/kg-card-type-divider',
-    video: 'koenig/kg-card-type-video'
+    video: 'koenig/kg-card-type-video',
+    product: 'koenig/kg-card-type-product'
 };
 
 // TODO: move koenigOptions directly into cards now that card components register
@@ -67,6 +69,7 @@ export default [
     createComponentCard('file'),
     createComponentCard('audio'),
     createComponentCard('video'),
+    createComponentCard('product'),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
 
@@ -225,6 +228,15 @@ export const CARD_MENU = [
             type: 'card',
             replaceArg: 'video',
             isAvailable: 'feature.videoCard'
+        },
+        {
+            label: 'Product',
+            icon: 'koenig/kg-card-type-other',
+            desc: 'Add a product recommendation',
+            matches: ['product'],
+            type: 'card',
+            replaceArg: 'product',
+            isAvailable: 'feature.productCard'
         }]
     },
     {
