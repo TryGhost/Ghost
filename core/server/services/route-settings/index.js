@@ -1,5 +1,6 @@
 const config = require('../../../shared/config');
 const parseYaml = require('./yaml-parser');
+const SettingsPathManager = require('@tryghost/settings-path-manager');
 
 let settingsLoader;
 let routeSettings;
@@ -10,18 +11,18 @@ module.exports = {
         const SettingsLoader = require('./settings-loader');
         const DefaultSettingsManager = require('./default-settings-manager');
 
-        routeSettings = new RouteSettings();
-
+        const settingsPathManager = new SettingsPathManager({type: 'routes', paths: [config.getContentPath('settings')]});
+        settingsLoader = new SettingsLoader({parseYaml, settingFilePath: settingsPathManager.getDefaultFilePath()});
+        routeSettings = new RouteSettings({
+            settingsLoader,
+            settingsPath: settingsPathManager.getDefaultFilePath(),
+            backupPath: settingsPathManager.getBackupFilePath()
+        });
         const defaultSettingsManager = new DefaultSettingsManager({
             type: 'routes',
             extension: '.yaml',
             destinationFolderPath: config.getContentPath('settings'),
             sourceFolderPath: config.get('paths').defaultSettings
-        });
-
-        settingsLoader = new SettingsLoader({
-            parseYaml,
-            storageFolderPath: config.getContentPath('settings')
         });
 
         return await defaultSettingsManager.ensureSettingsFileExists();

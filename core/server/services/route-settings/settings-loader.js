@@ -3,7 +3,6 @@ const debug = require('@tryghost/debug')('frontend:services:settings:settings-lo
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const validate = require('./validate');
-const SettingsPathManager = require('@tryghost/settings-path-manager');
 
 const messages = {
     settingsLoaderError: `Error trying to load YAML setting for {setting} from '{path}'.`
@@ -13,17 +12,12 @@ class SettingsLoader {
     /**
      * @param {Object} options
      * @param {Function} options.parseYaml yaml parser
-     * @param {String} options.storageFolderPath routes settings file path
+     * @param {String} options.settingFilePath routes settings file path
      */
-    constructor({parseYaml, storageFolderPath}) {
+    constructor({parseYaml, settingFilePath}) {
         this.parseYaml = parseYaml;
 
-        const settingsPathManager = new SettingsPathManager({
-            type: 'routes',
-            paths: [storageFolderPath]
-        });
-
-        this.settingFilePath = settingsPathManager.getDefaultFilePath();
+        this.settingFilePath = settingFilePath;
     }
 
     /**

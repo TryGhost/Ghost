@@ -34,7 +34,7 @@ describe('UNIT > SettingsLoader:', function () {
         it('reads a settings object for routes.yaml file', function () {
             const settingsLoader = new SettingsLoader({
                 parseYaml: yamlParserStub,
-                storageFolderPath: '/content/data'
+                settingFilePath: '/content/data/routes.yaml'
             });
             const settingsStubFile = {
                 routes: null,
@@ -69,7 +69,7 @@ describe('UNIT > SettingsLoader:', function () {
 
             const settingsLoader = new SettingsLoader({
                 parseYaml: yamlParserStub,
-                storageFolderPath: storageFolderPath
+                settingFilePath: expectedSettingsFile
             });
             const setting = settingsLoader.loadSettingsSync();
             should.exist(setting);
@@ -89,7 +89,7 @@ describe('UNIT > SettingsLoader:', function () {
 
             const settingsLoader = new SettingsLoader({
                 parseYaml: yamlParserStub,
-                storageFolderPath: storageFolderPath
+                settingFilePath: path.join(storageFolderPath, 'routes.yaml')
             });
             try {
                 settingsLoader.loadSettingsSync();
@@ -122,7 +122,7 @@ describe('UNIT > SettingsLoader:', function () {
 
             const settingsLoader = new SettingsLoader({
                 parseYaml: yamlParserStub,
-                storageFolderPath: storageFolderPath
+                settingFilePath: expectedSettingsFile
             });
 
             try {
