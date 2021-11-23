@@ -63,6 +63,7 @@ class OEmbed {
      */
     constructor({config, externalRequest}) {
         this.config = config;
+
         /** @type {IExternalRequest} */
         this.externalRequest = async (url, requestConfig) => {
             if (this.isIpOrLocalhost(url)) {
@@ -74,6 +75,7 @@ class OEmbed {
             }
             return response;
         };
+
         /** @type {ICustomProvider[]} */
         this.customProviders = [];
     }
@@ -106,27 +108,6 @@ class OEmbed {
                 message: err.message
             });
         }
-    }
-
-    /**
-     * @param {string} url
-     */
-    errorHandler(url) {
-        /**
-         * @param {Error|errors.GhostError} err
-         */
-        return async (err) => {
-            // allow specific validation errors through for better error messages
-            if (errors.utils.isIgnitionError(err) && err.errorType === 'ValidationError') {
-                throw err;
-            }
-
-            // log the real error because we're going to throw a generic "Unknown provider" error
-            logging.error(new errors.GhostError({err}));
-
-            // default to unknown provider to avoid leaking any app specifics
-            return this.unknownProvider(url);
-        };
     }
 
     async fetchBookmarkData(url) {
@@ -300,10 +281,9 @@ class OEmbed {
      * @returns {Promise<Object>}
      */
     async fetchOembedDataFromUrl(url, type) {
-        let data;
-
         try {
             const urlObject = new URL(url);
+
             for (const provider of this.customProviders) {
                 if (await provider.canSupportRequest(urlObject)) {
                     const result = await provider.getOEmbedData(urlObject, this.externalRequest);
@@ -313,23 +293,39 @@ class OEmbed {
                 }
             }
 
+            // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
                 return this.fetchBookmarkData(url);
             }
 
-            data = await this.fetchOembedData(url);
+            // attempt to fetch oembed
+            let data = await this.fetchOembedData(url);
 
+            // fallback to bookmark when we can't get oembed
             if (!data && !type) {
                 data = await this.fetchBookmarkData(url);
             }
 
+            // couldn't get anything, throw a validation error
             if (!data) {
-                data = await this.unknownProvider(url);
+                return this.unknownProvider(url);
             }
 
             return data;
-        } catch (e) {
-            return this.errorHandler(url);
+        } catch (err) {
+            // allow specific validation errors through for better error messages
+            if (errors.utils.isIgnitionError(err) && err.errorType === 'ValidationError') {
+                throw err;
+            }
+
+            // log the real error because we're going to throw a generic "Unknown provider" error
+            logging.error(new errors.GhostError({
+                message: 'Encountered error when fetching oembed',
+                err
+            }));
+
+            // default to unknown provider to avoid leaking any app specifics
+            return this.unknownProvider(url);
         }
     }
 }
