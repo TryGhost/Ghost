@@ -50,7 +50,7 @@ class Bridge {
         return themeEngine.getActive();
     }
 
-    activateTheme(loadedTheme, checkedTheme) {
+    async activateTheme(loadedTheme, checkedTheme) {
         let settings = {
             locale: settingsCache.get('lang')
         };
@@ -68,12 +68,12 @@ class Bridge {
 
             if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
                 events.emit('services.themes.api.changed');
-                this.reloadFrontend();
+                await this.reloadFrontend();
             }
 
             const cardAssetConfig = this.getCardAssetConfig();
             debug('reload card assets config', cardAssetConfig);
-            cardAssetService.load(cardAssetConfig);
+            await cardAssetService.load(cardAssetConfig);
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: tpl(messages.activateFailed, {theme: loadedTheme.name}),
@@ -98,12 +98,12 @@ class Bridge {
         }
     }
 
-    reloadFrontend() {
+    async reloadFrontend() {
         const apiVersion = this.getFrontendApiVersion();
 
         debug('reload frontend', apiVersion);
         const siteApp = require('./frontend/web/site');
-        siteApp.reload({apiVersion});
+        await siteApp.reload({apiVersion});
     }
 }
 

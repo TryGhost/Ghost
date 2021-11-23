@@ -14,7 +14,7 @@ module.exports = {
         if (labs.isSet('customThemeSettings')) {
             await customThemeSettings.api.activateTheme(themeName, checkedTheme);
         }
-        bridge.activateTheme(theme, checkedTheme);
+        await bridge.activateTheme(theme, checkedTheme);
     },
     activateFromAPI: async (themeName, theme, checkedTheme) => {
         debug('Activating theme (method B on API "activate")', themeName);
@@ -22,7 +22,7 @@ module.exports = {
         if (labs.isSet('customThemeSettings')) {
             await customThemeSettings.api.activateTheme(themeName, checkedTheme);
         }
-        bridge.activateTheme(theme, checkedTheme);
+        await bridge.activateTheme(theme, checkedTheme);
     },
     activateFromAPIOverride: async (themeName, theme, checkedTheme) => {
         debug('Activating theme (method C on API "override")', themeName);
@@ -30,6 +30,6 @@ module.exports = {
         if (labs.isSet('customThemeSettings')) {
             await customThemeSettings.api.activateTheme(themeName, checkedTheme);
         }
-        bridge.activateTheme(theme, checkedTheme);
+        await bridge.activateTheme(theme, checkedTheme);
     }
 };
