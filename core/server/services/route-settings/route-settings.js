@@ -6,21 +6,7 @@ const urlService = require('../url');
 const debug = require('@tryghost/debug')('services:route-settings');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const config = require('../../../shared/config');
 const bridge = require('../../../bridge');
-const SettingsLoader = require('./settings-loader');
-const parseYaml = require('./yaml-parser');
-const SettingsPathManager = require('@tryghost/settings-path-manager');
-
-const settingsPathManager = new SettingsPathManager({
-    type: 'routes',
-    paths: [config.getContentPath('settings')]
-});
-
-const settingsLoader = new SettingsLoader({
-    parseYaml,
-    storageFolderPath: config.getContentPath('settings')
-});
 
 const messages = {
     loadError: 'Could not load {filename} file.'
@@ -39,7 +25,14 @@ const messages = {
  */
 
 class RouteSettings {
-    constructor() {
+    /**
+     *
+     * @param {Object} options
+     * @param {Object} options.settingsLoader
+     * @param {String} options.settingsPath
+     * @param {String} options.backupPath
+     */
+    constructor({settingsLoader, settingsPath, backupPath}) {
         /**
          * md5 hashes of default routes settings
          * @private
@@ -53,6 +46,10 @@ class RouteSettings {
          * @private
          */
         this.ext = 'yaml';
+
+        this.settingsLoader = settingsLoader;
+        this.settingsPath = settingsPath;
+        this.backupPath = backupPath;
     }
 
     /**
@@ -104,18 +101,15 @@ class RouteSettings {
     }
 
     async setFromFilePath(filePath) {
-        const settingsPath = settingsPathManager.getDefaultFilePath();
-        const backupPath = settingsPathManager.getBackupFilePath();
-
-        await this.createBackupFile(settingsPath, backupPath);
-        await this.saveFile(filePath, settingsPath);
+        await this.createBackupFile(this.settingsPath, this.backupPath);
+        await this.saveFile(filePath, this.settingsPath);
 
         urlService.resetGenerators({releaseResourcesOnly: true});
 
         const bringBackValidRoutes = async () => {
             urlService.resetGenerators({releaseResourcesOnly: true});
 
-            await this.restoreBackupFile(settingsPath, backupPath);
+            await this.restoreBackupFile(this.settingsPath, this.backupPath);
 
             return bridge.reloadFrontend();
         };
@@ -160,9 +154,7 @@ class RouteSettings {
     }
 
     async get() {
-        const settingsFilePath = settingsPathManager.getDefaultFilePath();
-
-        return this.readFile(settingsFilePath);
+        return this.readFile(this.settingsPath);
     }
 
     calculateHash(data) {
@@ -176,7 +168,7 @@ class RouteSettings {
     }
 
     async getCurrentHash() {
-        const data = await settingsLoader.loadSettings();
+        const data = await this.settingsLoader.loadSettings();
 
         return this.calculateHash(JSON.stringify(data));
     }
