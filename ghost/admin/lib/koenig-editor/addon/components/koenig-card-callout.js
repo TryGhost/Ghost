@@ -85,6 +85,7 @@ export default class KoenigCardCalloutComponent extends Component {
         let emojiButtonContainer = document.getElementById('emoji-button-container');
         if (!emojiButtonContainer) {
             emojiButtonContainer = document.createElement('div');
+            emojiButtonContainer.id = 'emoji-button-container';
 
             emojiButtonContainer.addEventListener('click', function (event) {
                 event.preventDefault();
