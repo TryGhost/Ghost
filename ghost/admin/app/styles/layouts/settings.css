@@ -2142,13 +2142,11 @@ p.theme-validation-details {
     padding: 0;
     width: 60px;
     height: 16px;
-    background: transparent;
     border: none;
     margin-left: -4px;
 }
 
 .gh-settings-members-pricelabelcont .gh-select select {
-    background: transparent;
     font-size: 1.4rem;
     font-weight: 500;
     border: none;
