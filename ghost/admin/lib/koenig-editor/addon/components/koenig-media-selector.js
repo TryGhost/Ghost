@@ -38,7 +38,37 @@ export default class KoenigMediaSelectorComponent extends Component {
     @action
     resetScrollPosition() {
         const scrollContainer = document.querySelector(this.args.scrollContainerSelector);
-        scrollContainer.scrollTop = this._scrollTop;
+        const scrollContainerRect = scrollContainer.getBoundingClientRect();
+        const containerRect = this._containerElem.getBoundingClientRect();
+
+        let scrollTop = this._scrollTop;
+
+        const scrollBottom = scrollTop + scrollContainerRect.height;
+        const containerBottom = scrollTop + containerRect.bottom;
+
+        if (containerBottom > scrollBottom) {
+            // bottom of selector is cut-off, scroll it into view
+
+            const amountCutOffBottom = containerBottom - scrollBottom;
+
+            // container 600px - inner container 540px = 60px of shadow
+            // cut 40px off to give a 20px spacing from bottom of screen
+            const bottomBuffer = 40;
+
+            let scrollAdjustment = amountCutOffBottom - bottomBuffer;
+
+            // don't scroll so much the top of the container gets hidden
+            const newContainerTop = containerRect.top - scrollAdjustment;
+            const minDistanceFromTop = 20;
+            if (newContainerTop < minDistanceFromTop) {
+                const amountCutOffTop = Math.abs(newContainerTop - minDistanceFromTop);
+                scrollAdjustment = scrollAdjustment - amountCutOffTop;
+            }
+
+            scrollTop = scrollTop + scrollAdjustment;
+        }
+
+        scrollContainer.scrollTop = scrollTop;
     }
 
     @action
@@ -64,13 +94,13 @@ export default class KoenigMediaSelectorComponent extends Component {
     }
 
     _positionSelector(range) {
-        let {head: {section}} = range;
+        const {head: {section}} = range;
 
         if (section && section.renderNode.element) {
-            let containerRect = this._containerElem.parentNode.getBoundingClientRect();
-            let selectedElement = section.renderNode.element;
-            let selectedElementRect = selectedElement.getBoundingClientRect();
-            let top = selectedElementRect.top - containerRect.top + Y_OFFSET;
+            const containerRect = this._containerElem.parentNode.getBoundingClientRect();
+            const selectedElement = section.renderNode.element;
+            const selectedElementRect = selectedElement.getBoundingClientRect();
+            const top = selectedElementRect.top - containerRect.top + Y_OFFSET;
 
             this._containerElem.style.top = `${top}px`;
         }
