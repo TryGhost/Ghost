@@ -11,8 +11,23 @@ const messages = {
     fileNotFound: 'File not found'
 };
 
+/**
+ * If this request has a ?v= param, make sure the cache has the same key
+ *
+ * @param {Object} req
+ * @param {Object} cache
+ * @returns {boolean}
+ */
+function matchCacheKey(req, cache) {
+    if (req.query && req.query.v && cache && cache.key) {
+        return req.query.v === cache.key;
+    }
+
+    return true;
+}
+
 function createPublicFileMiddleware(location, file, mime, maxAge) {
-    let content;
+    let cache;
     // These files are provided by Ghost, and therefore live inside of the core folder
     const staticFilePath = config.get('paths').publicFilePath;
     // These files are built on the fly, and must be saved in the content folder
@@ -24,9 +39,9 @@ function createPublicFileMiddleware(location, file, mime, maxAge) {
     const blogRegex = /(\{\{blog-url\}\})/g;
 
     return function servePublicFileMiddleware(req, res, next) {
-        if (content) {
-            res.writeHead(200, content.headers);
-            return res.end(content.body);
+        if (cache && matchCacheKey(req, cache)) {
+            res.writeHead(200, cache.headers);
+            return res.end(cache.body);
         }
 
         // send image files directly and let express handle content-length, etag, etc
@@ -67,17 +82,19 @@ function createPublicFileMiddleware(location, file, mime, maxAge) {
                 str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
             }
 
-            content = {
+            cache = {
                 headers: {
                     'Content-Type': mime,
                     'Content-Length': Buffer.from(str).length,
                     ETag: `"${crypto.createHash('md5').update(str, 'utf8').digest('hex')}"`,
                     'Cache-Control': `public, max-age=${maxAge}`
                 },
-                body: str
+                body: str,
+                key: req.query && req.query.v ? req.query.v : null
             };
-            res.writeHead(200, content.headers);
-            res.end(content.body);
+
+            res.writeHead(200, cache.headers);
+            res.end(cache.body);
         });
     };
 }
