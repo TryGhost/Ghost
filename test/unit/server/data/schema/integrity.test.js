@@ -11,6 +11,7 @@ const defaultSettings = require('../../../../../core/server/data/schema/default-
 
 // Routes are yaml so we can require the file directly
 const routeSettings = require('../../../../../core/server/services/route-settings');
+routeSettings.init();
 const validateRouteSettings = require('../../../../../core/server/services/route-settings/validate');
 
 /**
