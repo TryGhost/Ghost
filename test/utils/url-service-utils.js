@@ -1,6 +1,6 @@
 const urlService = require('../../core/server/services/url');
 
-module.exports.isFinished = async (options = {disableDbReadyEvent: false}) => {
+module.exports.isFinished = async () => {
     let timeout;
 
     return new Promise(function (resolve) {
