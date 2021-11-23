@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {run} from '@ember/runloop';
 
-const Y_OFFSET = 0;
+const Y_OFFSET = 40;
 
 export default class KoenigMediaSelectorComponent extends Component {
     constructor() {
