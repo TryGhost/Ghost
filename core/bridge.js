@@ -66,15 +66,14 @@ class Bridge {
             themeEngine.setActive(settings, loadedTheme, checkedTheme);
             const currentGhostAPI = this.getActiveTheme().engine('ghost-api');
 
-            const cardAssetConfig = this.getCardAssetConfig();
-
-            debug('reload card assets config', cardAssetConfig);
-            cardAssetService.load(cardAssetConfig);
-
             if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
                 events.emit('services.themes.api.changed');
                 this.reloadFrontend();
             }
+
+            const cardAssetConfig = this.getCardAssetConfig();
+            debug('reload card assets config', cardAssetConfig);
+            cardAssetService.load(cardAssetConfig);
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: tpl(messages.activateFailed, {theme: loadedTheme.name}),
