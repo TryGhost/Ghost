@@ -361,7 +361,7 @@ describe('Integration - Web - Site v2', function () {
     describe('extended routes.yaml: collections', function () {
         describe('2 collections', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {
                         '/': {templates: ['home']}
                     },
@@ -382,7 +382,7 @@ describe('Integration - Web - Site v2', function () {
                         tag: '/categories/:slug/',
                         author: '/authors/:slug/'
                     }
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon, {theme: 'test-theme'});
@@ -486,13 +486,13 @@ describe('Integration - Web - Site v2', function () {
 
         describe('no collections', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {
                         '/something/': {templates: ['something']}
                     },
                     collections: {},
                     taxonomies: {}
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon, {theme: 'test-theme'});
@@ -531,7 +531,7 @@ describe('Integration - Web - Site v2', function () {
 
         describe('static permalink route', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {},
 
                     collections: {
@@ -546,7 +546,7 @@ describe('Integration - Web - Site v2', function () {
                     },
 
                     taxonomies: {}
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon);
@@ -631,7 +631,7 @@ describe('Integration - Web - Site v2', function () {
 
         describe('primary author permalink', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {},
 
                     collections: {
@@ -641,7 +641,7 @@ describe('Integration - Web - Site v2', function () {
                     },
 
                     taxonomies: {}
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon);
@@ -710,7 +710,7 @@ describe('Integration - Web - Site v2', function () {
 
         describe('primary tag permalink', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {},
 
                     collections: {
@@ -720,7 +720,7 @@ describe('Integration - Web - Site v2', function () {
                     },
 
                     taxonomies: {}
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon);
@@ -804,7 +804,7 @@ describe('Integration - Web - Site v2', function () {
 
         describe('collection/routes with data key', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {
                         '/my-page/': {
                             data: {
@@ -871,7 +871,7 @@ describe('Integration - Web - Site v2', function () {
                         tag: '/categories/:slug/',
                         author: '/authors/:slug/'
                     }
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon);
@@ -969,7 +969,7 @@ describe('Integration - Web - Site v2', function () {
     describe('extended routes.yaml: templates', function () {
         describe('default template, no template', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {},
 
                     collections: {
@@ -981,7 +981,7 @@ describe('Integration - Web - Site v2', function () {
                             permalink: '/magic/:slug/'
                         }
                     }
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon);
@@ -1035,7 +1035,7 @@ describe('Integration - Web - Site v2', function () {
 
         describe('two templates', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {},
 
                     collections: {
@@ -1044,7 +1044,7 @@ describe('Integration - Web - Site v2', function () {
                             templates: ['something', 'default']
                         }
                     }
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon);
@@ -1083,7 +1083,7 @@ describe('Integration - Web - Site v2', function () {
 
         describe('home.hbs priority', function () {
             before(async function () {
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {},
 
                     collections: {
@@ -1096,7 +1096,7 @@ describe('Integration - Web - Site v2', function () {
                             templates: ['something', 'default']
                         }
                     }
-                });
+                }));
 
                 localUtils.urlService.resetGenerators();
                 localUtils.defaultMocks(sinon, {theme: 'test-theme'});
@@ -1158,7 +1158,7 @@ describe('Integration - Web - Site v2', function () {
             before(async function () {
                 localUtils.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
-                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+                sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                     routes: {
                         '/channel1/': {
                             controller: 'channel',
@@ -1278,7 +1278,7 @@ describe('Integration - Web - Site v2', function () {
                         tag: '/tag/:slug/',
                         author: '/author/:slug/'
                     }
-                });
+                }));
 
                 app = await localUtils.initGhost();
                 sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(10);
@@ -1487,7 +1487,7 @@ describe('Integration - Web - Site v2', function () {
 
     describe('extended routes.yaml (5): rss override', function () {
         before(async function () {
-            sinon.stub(routeSettingsService, 'loadRouteSettingsSync').returns({
+            sinon.stub(routeSettingsService, 'loadRouteSettingsSync').get(() => () => ({
                 routes: {
                     '/podcast/rss/': {
                         templates: ['podcast/rss'],
@@ -1519,7 +1519,7 @@ describe('Integration - Web - Site v2', function () {
                 },
 
                 taxonomies: {}
-            });
+            }));
 
             localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {theme: 'test-theme'});
