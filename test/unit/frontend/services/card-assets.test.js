@@ -5,29 +5,9 @@ const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 
-const cardAssetService = require('../../../../core/frontend/services/card-assets');
 const CardAssetService = require('../../../../core/frontend/services/card-assets/service');
 
-const themeEngine = require('../../../../core/frontend/services/theme-engine');
 const themeDefaults = require('../../../../core/frontend/services/theme-engine/config/defaults.json');
-
-describe('Card Asset Init', function () {
-    it('calls loader with config', function () {
-        sinon.stub(themeEngine, 'getActive').returns({
-            config: function (key) {
-                if (key === 'card_assets') {
-                    return 'random-test-value';
-                }
-            }
-        });
-
-        let serviceStub = sinon.stub(cardAssetService, 'load');
-
-        cardAssetService.init();
-        serviceStub.calledOnce.should.eql(true);
-        serviceStub.calledWith('random-test-value').should.eql(true);
-    });
-});
 
 describe('Card Asset Service', function () {
     let testDir,

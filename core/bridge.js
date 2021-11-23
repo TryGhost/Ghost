@@ -16,6 +16,7 @@ const config = require('./shared/config');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
+const cardAssetService = require('./frontend/services/card-assets');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
 
@@ -65,6 +66,11 @@ class Bridge {
             themeEngine.setActive(settings, loadedTheme, checkedTheme);
             const currentGhostAPI = this.getActiveTheme().engine('ghost-api');
 
+            const cardAssetConfig = this.getCardAssetConfig();
+
+            debug('reload card assets config', cardAssetConfig);
+            cardAssetService.load(cardAssetConfig);
+
             if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
                 events.emit('services.themes.api.changed');
                 this.reloadFrontend();
@@ -95,11 +101,6 @@ class Bridge {
 
     reloadFrontend() {
         const apiVersion = this.getFrontendApiVersion();
-        const cardAssetConfig = this.getCardAssetConfig();
-
-        debug('reload card assets config', cardAssetConfig);
-        const cardAssetService = require('./frontend/services/card-assets');
-        cardAssetService.load(cardAssetConfig);
 
         debug('reload frontend', apiVersion);
         const siteApp = require('./frontend/web/site');

@@ -1,3 +1,4 @@
+const debug = require('@tryghost/debug')('card-assets');
 const Minifier = require('@tryghost/minifier');
 const _ = require('lodash');
 const path = require('path');
@@ -98,9 +99,13 @@ class CardAssetService {
             this.config = cardAssetConfig;
         }
 
+        debug('loading with config', cardAssetConfig);
+
         await this.clearFiles();
 
         const globs = this.generateGlobs();
+
+        debug('globs', globs);
 
         this.files = await this.minify(globs) || [];
     }
