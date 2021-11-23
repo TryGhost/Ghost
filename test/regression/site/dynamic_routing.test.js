@@ -607,17 +607,12 @@ describe('Dynamic Routing', function () {
     });
 
     describe('Reload routes.yaml', function () {
-        before(function (done) {
-            testUtils.clearData().then(function () {
-                // we initialise data, but not a user. No user should be required for navigating the frontend
-                return testUtils.initData();
-            }).then(function () {
-                return testUtils.fixtures.overrideOwnerUser('ghost-owner');
-            }).then(function () {
-                return testUtils.initFixtures('settings');
-            }).then(function () {
-                done();
-            }).catch(done);
+        before(async function () {
+            await testUtils.clearData();
+            // we initialize data, but not a user. No user should be required for navigating the frontend
+            await testUtils.initData();
+            await testUtils.fixtures.overrideOwnerUser('ghost-owner');
+            await testUtils.initFixtures('settings');
         });
 
         after(testUtils.teardownDb);
@@ -644,7 +639,7 @@ describe('Dynamic Routing', function () {
                     path: path.join(config.get('paths:appRoot'), 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
                 }
             }).then(() => {
-                return urlServiceUtils.isFinished({disableDbReadyEvent: true});
+                return urlServiceUtils.isFinished();
             });
         });
 
