@@ -1,17 +1,12 @@
-<div class="flex flex-column h-100" {{did-insert this.didInsertContainer}}>
+<div class="kg-media-selector-browser" {{did-insert this.didInsertContainer}}>
     {{!-- static header --}}
-    <header class="flex-shrink-0 flex flex-row-l flex-column justify-between pa8 items-center">
-        <h1 class="flex items-center darkgrey-d2 w-100 nudge-top--4">
-            <a class="gh-tenor-logo" href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
-                {{svg-jar "tenor"}}
-            </a>
-        </h1>
-        <span class="gh-input-icon mw88-l flex-auto w-100 mt3 mt0-l">
+    <header class="kg-media-selector-heading">
+        <span class="gh-input-icon">
             {{svg-jar "search"}}
             <GhTextInput
-                @class="gh-unsplash-search"
+                @class="kg-media-selector-searchbox"
                 @name="searchKeyword"
-                @placeholder="Search Tenor"
+                @placeholder="Search Tenor for GIFs"
                 @tabindex="1"
                 @shouldFocus={{true}}
                 @autocorrect="off"
@@ -22,9 +17,9 @@
     </header>
 
     {{!-- content container --}}
-    <div class="relative h-100 overflow-hidden">
+    <div class="kg-media-selector-content">
         {{!-- scrollable image container --}}
-        <div class="overflow-auto h-100 w-100 pa8">
+        <div class="kg-media-selector-mediagrid">
             {{#if this.tenor.gifs}}
                 <section class="gh-unsplash-grid">
                     {{#each this.tenor.columns as |gifs|}}
