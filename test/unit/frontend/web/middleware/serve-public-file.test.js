@@ -32,33 +32,7 @@ describe('servePublicFile', function () {
         next.called.should.be.true();
     });
 
-    it('should load the file and send it', function () {
-        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
-        const body = 'User-agent: * Disallow: /';
-        req.path = '/robots.txt';
-
-        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
-            cb(null, body);
-        });
-
-        res = {
-            writeHead: sinon.spy(),
-            end: sinon.spy()
-        };
-
-        middleware(req, res, next);
-        next.called.should.be.false();
-        res.writeHead.called.should.be.true();
-        res.writeHead.args[0][0].should.equal(200);
-        res.writeHead.calledWith(200, sinon.match.has('Content-Type')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('Content-Length')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('ETag')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')).should.be.true();
-
-        res.end.calledWith(body).should.be.true();
-    });
-
-    it('should send the correct headers', function () {
+    it('should load the file and send it with the correct headers', function () {
         const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
         const body = 'User-agent: * Disallow: /';
         req.path = '/robots.txt';
@@ -77,6 +51,74 @@ describe('servePublicFile', function () {
         next.called.should.be.false();
         fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
         res.writeHead.called.should.be.true();
+        res.writeHead.args[0][0].should.equal(200);
+        res.writeHead.calledWith(200, sinon.match.has('Content-Type')).should.be.true();
+        res.writeHead.calledWith(200, sinon.match.has('Content-Length')).should.be.true();
+        res.writeHead.calledWith(200, sinon.match.has('ETag')).should.be.true();
+        res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')).should.be.true();
+    });
+
+    it('should send the file from the cache the second time', function () {
+        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
+        const body = 'User-agent: * Disallow: /';
+        req.path = '/robots.txt';
+
+        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            cb(null, body);
+        });
+
+        res = {
+            writeHead: sinon.spy(),
+            end: sinon.spy()
+        };
+
+        middleware(req, res, next);
+        middleware(req, res, next);
+
+        next.called.should.be.false();
+
+        // File only gets read onece
+        fileStub.calledOnce.should.be.true();
+        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
+
+        // File gets served twice
+        res.writeHead.calledTwice.should.be.true();
+        res.writeHead.args[0][0].should.equal(200);
+        res.writeHead.calledWith(200, sinon.match.has('Content-Type')).should.be.true();
+        res.writeHead.calledWith(200, sinon.match.has('Content-Length')).should.be.true();
+        res.writeHead.calledWith(200, sinon.match.has('ETag')).should.be.true();
+        res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')).should.be.true();
+    });
+
+    it('should not cache files requested with a different v tag', function () {
+        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
+        const body = 'User-agent: * Disallow: /';
+        req.path = '/robots.txt';
+        req.query = {v: 1};
+
+        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            cb(null, body);
+        });
+
+        res = {
+            writeHead: sinon.spy(),
+            end: sinon.spy()
+        };
+
+        middleware(req, res, next);
+        middleware(req, res, next);
+
+        // Set a different cache key
+        req.query = {v: 2};
+        middleware(req, res, next);
+
+        fileStub.calledTwice.should.be.true();
+
+        next.called.should.be.false();
+        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
+        fileStub.secondCall.args[0].should.endWith('core/frontend/public/robots.txt');
+
+        res.writeHead.calledThrice.should.be.true();
         res.writeHead.args[0][0].should.equal(200);
         res.writeHead.calledWith(200, sinon.match.has('Content-Type')).should.be.true();
         res.writeHead.calledWith(200, sinon.match.has('Content-Length')).should.be.true();
