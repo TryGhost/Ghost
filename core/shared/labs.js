@@ -41,7 +41,8 @@ const ALPHA_FEATURES = [
     'fileCard',
     'audioCard',
     'videoCard',
-    'productCard'
+    'productCard',
+    'quoteStyles'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
