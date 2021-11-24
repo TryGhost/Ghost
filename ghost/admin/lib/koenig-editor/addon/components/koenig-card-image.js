@@ -4,7 +4,6 @@ import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
-import {NO_CURSOR_MOVEMENT} from './koenig-editor';
 import {action, computed, set, setProperties} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isEmpty} from '@ember/utils';
