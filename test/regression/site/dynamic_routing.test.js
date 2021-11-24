@@ -18,8 +18,6 @@ const settingsCache = require('../../../core/shared/settings-cache');
 let request;
 
 describe('Dynamic Routing', function () {
-    let ghostServer;
-
     function doEnd(done) {
         return function (err, res) {
             if (err) {
@@ -47,8 +45,7 @@ describe('Dynamic Routing', function () {
         });
 
         return testUtils.startGhost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
+            .then(function () {
                 request = supertest.agent(config.get('url'));
             });
     });
@@ -290,8 +287,7 @@ describe('Dynamic Routing', function () {
                 configUtils.set('admin:redirects', false);
 
                 return testUtils.startGhost({forceStart: true})
-                    .then(function (_ghostServer) {
-                        ghostServer = _ghostServer;
+                    .then(function () {
                         request = supertest.agent(config.get('url'));
                     });
             });
@@ -300,8 +296,7 @@ describe('Dynamic Routing', function () {
                 configUtils.restore();
 
                 return testUtils.startGhost({forceStart: true})
-                    .then(function (_ghostServer) {
-                        ghostServer = _ghostServer;
+                    .then(function () {
                         request = supertest.agent(config.get('url'));
                     });
             });
@@ -486,8 +481,7 @@ describe('Dynamic Routing', function () {
                 configUtils.set('admin:redirects', false);
 
                 return testUtils.startGhost({forceStart: true})
-                    .then(function (_ghostServer) {
-                        ghostServer = _ghostServer;
+                    .then(function () {
                         request = supertest.agent(config.get('url'));
                     });
             });
@@ -496,8 +490,7 @@ describe('Dynamic Routing', function () {
                 configUtils.restore();
 
                 return testUtils.startGhost({forceStart: true})
-                    .then(function (_ghostServer) {
-                        ghostServer = _ghostServer;
+                    .then(function () {
                         request = supertest.agent(config.get('url'));
                     });
             });
@@ -616,7 +609,7 @@ describe('Dynamic Routing', function () {
 
         after(testUtils.teardownDb);
         after(function () {
-            return ghostServer.stop();
+            return testUtils.stopGhost();
         });
 
         it('confirm current routing pattern', function (done) {
