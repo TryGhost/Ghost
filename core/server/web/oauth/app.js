@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('web:oauth:app');
 const {URL} = require('url');
 const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');
-const shared = require('../shared');
 const settingsCache = require('../../../shared/settings-cache');
 const models = require('../../models');
 const auth = require('../../services/auth');
@@ -23,9 +22,6 @@ module.exports = function setupOAuthApp() {
         res.sendStatus(404);
     }
     oauthApp.use(labsMiddleware);
-
-    // send 503 json response in case of maintenance
-    oauthApp.use(shared.middleware.maintenance);
 
     /**
      * Configure the passport.authenticate middleware

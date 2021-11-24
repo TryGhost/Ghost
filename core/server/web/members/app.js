@@ -13,9 +13,6 @@ module.exports = function setupMembersApp() {
     debug('Members App setup start');
     const membersApp = express('members');
 
-    // send 503 json response in case of maintenance
-    membersApp.use(shared.middleware.maintenance);
-
     // Members API shouldn't be cached
     membersApp.use(shared.middleware.cacheControl('private'));
 
