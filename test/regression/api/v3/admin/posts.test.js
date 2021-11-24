@@ -8,24 +8,16 @@ const config = require('../../../../../core/shared/config');
 const models = require('../../../../../core/server/models');
 const localUtils = require('./utils');
 const ghost = testUtils.startGhost;
-let request;
 
 describe('Posts API (v3)', function () {
-    let ghostServer;
+    let request;
     let ownerCookie;
 
-    before(function () {
-        return ghost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
-            })
-            .then(function (cookie) {
-                ownerCookie = cookie;
-            });
+    before(async function () {
+        await ghost();
+        request = supertest.agent(config.get('url'));
+
+        ownerCookie = await localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
     });
 
     describe('Browse', function () {
