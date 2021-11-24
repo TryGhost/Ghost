@@ -6,8 +6,6 @@ const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/shared/config');
 
-const ghost = testUtils.startGhost;
-
 let request;
 
 const verifyJWKS = (endpoint, token) => {
@@ -35,7 +33,7 @@ const verifyJWKS = (endpoint, token) => {
 describe('Identities API', function () {
     describe('As Owner', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
@@ -72,7 +70,7 @@ describe('Identities API', function () {
 
     describe('As non-Owner', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     request = supertest.agent(config.get('url'));
                 })

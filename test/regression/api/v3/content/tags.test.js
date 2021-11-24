@@ -6,14 +6,13 @@ const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/configUtils');
 const config = require('../../../../../core/shared/config');
 
-const ghost = testUtils.startGhost;
 let request;
 
 describe('api/v3/content/tags', function () {
     const validKey = localUtils.getValidKey();
 
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
             })

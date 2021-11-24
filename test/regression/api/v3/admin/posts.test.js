@@ -7,14 +7,13 @@ const testUtils = require('../../../../utils');
 const config = require('../../../../../core/shared/config');
 const models = require('../../../../../core/server/models');
 const localUtils = require('./utils');
-const ghost = testUtils.startGhost;
 
 describe('Posts API (v3)', function () {
     let request;
     let ownerCookie;
 
     before(async function () {
-        await ghost();
+        await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
 
         ownerCookie = await localUtils.doAuth(request, 'users:extra', 'posts', 'emails');

@@ -9,14 +9,12 @@ const localUtils = require('./utils');
 // for sinon stubs
 const dnsPromises = require('dns').promises;
 
-const ghost = testUtils.startGhost;
-
 describe('Oembed API (v2)', function () {
     let ghostServer;
     let request;
 
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then((_ghostServer) => {
                 ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));

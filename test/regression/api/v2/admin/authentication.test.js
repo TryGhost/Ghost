@@ -10,7 +10,6 @@ const config = require('../../../../../core/shared/config/index');
 const mailService = require('../../../../../core/server/services/mail/index');
 const configUtils = require('../../../../utils/configUtils');
 
-let ghost = testUtils.startGhost;
 let request;
 
 describe('Authentication API v2', function () {
@@ -18,7 +17,7 @@ describe('Authentication API v2', function () {
 
     describe('Blog setup: default config', function () {
         before(function () {
-            return ghost({forceStart: true})
+            return testUtils.startGhost({forceStart: true})
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
@@ -138,7 +137,7 @@ describe('Authentication API v2', function () {
 
     describe('Blog setup: custom config', function () {
         before(function () {
-            return ghost({forceStart: true})
+            return testUtils.startGhost({forceStart: true})
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
@@ -261,7 +260,7 @@ describe('Authentication API v2', function () {
 
     describe('Invitation', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
@@ -341,7 +340,7 @@ describe('Authentication API v2', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(function () {
-            return ghost({forceStart: true})
+            return testUtils.startGhost({forceStart: true})
                 .then(() => {
                     request = supertest.agent(config.get('url'));
                 })

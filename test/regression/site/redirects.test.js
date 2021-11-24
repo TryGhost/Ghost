@@ -10,7 +10,6 @@ const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const config = require('../../../core/shared/config');
-const ghost = testUtils.startGhost;
 let request;
 
 describe('Frontend Routing:Redirects', function () {
@@ -44,7 +43,7 @@ describe('Frontend Routing:Redirects', function () {
     });
 
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
             });
@@ -61,7 +60,7 @@ describe('Frontend Routing:Redirects', function () {
                 configUtils.set('url', 'http://localhost:2370/');
                 urlUtils.stubUrlUtilsFromConfig();
 
-                return ghost({forceStart: true, redirectsFileExt: ext})
+                return testUtils.startGhost({forceStart: true, redirectsFileExt: ext})
                     .then(function (_ghostServer) {
                         ghostServer = _ghostServer;
                         request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
@@ -347,7 +346,7 @@ describe('Frontend Routing:Redirects', function () {
                 configUtils.set('url', 'http://localhost:2370/blog/');
                 urlUtils.stubUrlUtilsFromConfig();
 
-                return ghost({forceStart: true, subdir: true, redirectsFileExt: ext})
+                return testUtils.startGhost({forceStart: true, subdir: true, redirectsFileExt: ext})
                     .then(function (_ghostServer) {
                         ghostServer = _ghostServer;
                         request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));

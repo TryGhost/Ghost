@@ -3,14 +3,13 @@ const supertest = require('supertest');
 const testUtils = require('../../../../utils');
 const config = require('../../../../../core/shared/config');
 const localUtils = require('./utils');
-const ghost = testUtils.startGhost;
 
 describe('Notifications API', function () {
     describe('As Editor', function () {
         let request;
 
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     request = supertest.agent(config.get('url'));
                 })
@@ -70,7 +69,7 @@ describe('Notifications API', function () {
         let request;
 
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     request = supertest.agent(config.get('url'));
                 })
@@ -118,7 +117,7 @@ describe('Notifications API', function () {
         let notification;
 
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     requestEditor1 = supertest.agent(config.get('url'));
                     requestEditor2 = supertest.agent(config.get('url'));
