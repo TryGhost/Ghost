@@ -201,9 +201,16 @@ export default class KoenigSlashMenuComponent extends Component {
             let payload = Object.assign({}, item.payload);
 
             // params are order-dependent and listed in CARD_MENU for each card
+            // last param will include all remaining text including spaces
             if (!isEmpty(item.params) && !isEmpty(params)) {
                 item.params.forEach((param, i) => {
-                    payload[param] = params[i];
+                    let value = params[i];
+
+                    if (i === item.params.length - 1) {
+                        value = params.slice(i).join(' ');
+                    }
+
+                    payload[param] = value;
                 });
             }
 
