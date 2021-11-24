@@ -4,6 +4,7 @@ import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
+import {NO_CURSOR_MOVEMENT} from './koenig-editor';
 import {action, computed, set, setProperties} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isEmpty} from '@ember/utils';
@@ -39,15 +40,19 @@ export default Component.extend({
     addParagraphAfterCard() {},
     registerComponent() {},
 
-    isEmpty: computed('payload.{imageSelector,src}', function () {
-        return !this.payload.imageSelector && !this.payload.src;
-    }),
+    isEmpty: computed.not('payload.src'),
 
     imageSelector: computed('payload.imageSelector', function () {
         let selector = this.payload.imageSelector;
         let imageSelectors = {
-            unsplash: 'gh-unsplash',
-            tenor: 'gh-tenor'
+            unsplash: {
+                component: 'gh-unsplash',
+                type: 'modal'
+            },
+            tenor: {
+                component: 'koenig-card-image/selector-tenor',
+                type: 'placeholder'
+            }
         };
 
         return imageSelectors[selector];
@@ -247,9 +252,19 @@ export default Component.extend({
             });
         },
 
-        closeImageSelector() {
+        closeImageSelector(reselectParagraph = true) {
             if (!this.payload.src) {
-                return this.deleteCard();
+                return this.editor.run((postEditor) => {
+                    let {builder} = postEditor;
+                    let cardSection = this.env.postModel;
+                    let p = builder.createMarkupSection('p');
+
+                    postEditor.replaceSection(cardSection, p);
+
+                    if (reselectParagraph) {
+                        postEditor.setRange(p.tailPosition());
+                    }
+                });
             }
 
             set(this.payload, 'imageSelector', undefined);
@@ -266,6 +281,12 @@ export default Component.extend({
         cancelEditLink() {
             this.set('isEditing', false);
             this.set('isEditingLink', false);
+        },
+
+        onDeselect() {
+            if (this.imageSelector?.type === 'placeholder' && !this.payload.src) {
+                this.send('closeImageSelector', false);
+            }
         }
     },
 
