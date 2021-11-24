@@ -9,12 +9,11 @@ const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/shared/config');
 
-const ghost = testUtils.startGhost;
 let request;
 
 describe('Redirects API', function () {
     const startGhost = (options) => {
-        return ghost(options)
+        return testUtils.startGhost(options)
             .then(() => {
                 request = supertest.agent(config.get('url'));
             })

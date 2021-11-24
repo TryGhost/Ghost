@@ -7,13 +7,12 @@ const testUtils = require('../../../../utils');
 const config = require('../../../../../core/shared/config');
 const models = require('../../../../../core/server/models');
 const localUtils = require('./utils');
-const ghost = testUtils.startGhost;
 
 describe('Posts API (canary)', function () {
     let request;
 
     before(async function () {
-        await ghost();
+        await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'members');
     });

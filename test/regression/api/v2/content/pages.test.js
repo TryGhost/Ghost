@@ -6,12 +6,11 @@ const localUtils = require('./utils');
 const configUtils = require('../../../../utils/configUtils');
 const config = require('../../../../../core/shared/config');
 
-const ghost = testUtils.startGhost;
 let request;
 
 describe('api/v2/content/pages', function () {
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
             })
