@@ -10,8 +10,6 @@ const config = require('../../../../../core/shared/config/index');
 const testUtils = require('../../../../utils/index');
 const localUtils = require('./utils');
 
-const ghost = testUtils.startGhost;
-
 describe('v3 Schedules API', function () {
     const resources = [];
     let request;
@@ -28,7 +26,7 @@ describe('v3 Schedules API', function () {
     });
 
     before(async function () {
-        await ghost();
+        await testUtils.startGhost();
 
         request = supertest.agent(config.get('url'));
 

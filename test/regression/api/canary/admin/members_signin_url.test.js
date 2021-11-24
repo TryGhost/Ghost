@@ -7,8 +7,6 @@ const localUtils = require('./utils');
 const config = require('../../../../../core/shared/config');
 const labs = require('../../../../../core/shared/labs');
 
-const ghost = testUtils.startGhost;
-
 let request;
 
 describe('Members Sigin URL API', function () {
@@ -22,7 +20,7 @@ describe('Members Sigin URL API', function () {
 
     describe('As Owner', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
@@ -51,7 +49,7 @@ describe('Members Sigin URL API', function () {
 
     describe('As Admin', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
@@ -88,7 +86,7 @@ describe('Members Sigin URL API', function () {
 
     describe('As non-Owner and non-Admin', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     request = supertest.agent(config.get('url'));
                 })

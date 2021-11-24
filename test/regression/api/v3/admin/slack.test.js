@@ -5,7 +5,6 @@ const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/shared/config');
 const events = require('../../../../../core/server/lib/common/events');
-const ghost = testUtils.startGhost;
 
 let request;
 
@@ -13,7 +12,7 @@ describe('Slack API', function () {
     let ghostServer;
 
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));

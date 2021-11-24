@@ -8,13 +8,11 @@ const configUtils = require('../../../../utils/configUtils');
 const urlUtils = require('../../../../utils/urlUtils');
 const config = require('../../../../../core/shared/config');
 
-const ghost = testUtils.startGhost;
-
 describe('api/v3/content/posts', function () {
     let request;
 
     before(async function () {
-        await ghost();
+        await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });

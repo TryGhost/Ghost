@@ -9,8 +9,6 @@ const config = require('../../../../../core/shared/config');
 const labs = require('../../../../../core/shared/labs');
 const mailService = require('../../../../../core/server/services/mail');
 
-const ghost = testUtils.startGhost;
-
 let request;
 
 describe('Members API (canary)', function () {
@@ -23,7 +21,7 @@ describe('Members API (canary)', function () {
     });
 
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
             })
