@@ -20,7 +20,7 @@ describe('Members Sigin URL API', function () {
 
     describe('As Owner', function () {
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await localUtils.doAuth(request, 'member');
         });
@@ -45,7 +45,7 @@ describe('Members Sigin URL API', function () {
 
     describe('As Admin', function () {
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             const admin = await testUtils.createUser({
                 user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
@@ -76,7 +76,7 @@ describe('Members Sigin URL API', function () {
 
     describe('As non-Owner and non-Admin', function () {
         before(function () {
-            return testUtils.startGhost()
+            return localUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
                 })

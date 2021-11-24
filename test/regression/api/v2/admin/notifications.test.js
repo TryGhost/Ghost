@@ -9,7 +9,7 @@ describe('Notifications API', function () {
         let request;
 
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             const user = await testUtils.createUser({
                 user: testUtils.DataGenerator.forKnex.createUser({
@@ -64,7 +64,7 @@ describe('Notifications API', function () {
         let request;
 
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
 
             request = supertest.agent(config.get('url'));
             const user = await testUtils.createUser({
@@ -107,7 +107,7 @@ describe('Notifications API', function () {
         let notification;
 
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
 
             requestEditor1 = supertest.agent(config.get('url'));
             requestEditor2 = supertest.agent(config.get('url'));
