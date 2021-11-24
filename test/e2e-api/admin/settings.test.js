@@ -10,16 +10,15 @@ const labs = require('../../../core/shared/labs');
 
 describe('Settings API', function () {
     let request;
-    let ghostServer;
 
     before(async function () {
-        ghostServer = await localUtils.startGhost();
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
     });
 
     after(function () {
-        return ghostServer.stop();
+        return testUtils.stopGhost();
     });
 
     it('Can request all settings', async function () {
@@ -262,6 +261,6 @@ describe('Settings API', function () {
             .expect(200);
 
         res.headers['x-cache-invalidate'].should.eql('/*');
-        await ghostServer.stop();
+        await testUtils.stopGhost();
     });
 });

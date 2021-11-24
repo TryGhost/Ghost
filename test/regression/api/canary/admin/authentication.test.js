@@ -12,13 +12,10 @@ const mailService = require('../../../../../core/server/services/mail/index');
 let request;
 
 describe('Authentication API v3', function () {
-    let ghostServer;
-
     describe('Blog setup', function () {
         before(function () {
             return testUtils.startGhost({forceStart: true})
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 });
         });
@@ -139,8 +136,7 @@ describe('Authentication API v3', function () {
     describe('Invitation', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
 
                     // simulates blog setup (initialises the owner)

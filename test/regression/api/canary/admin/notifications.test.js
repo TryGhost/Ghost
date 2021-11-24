@@ -10,7 +10,7 @@ describe('Notifications API', function () {
 
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -70,7 +70,7 @@ describe('Notifications API', function () {
 
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -118,7 +118,7 @@ describe('Notifications API', function () {
 
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
+                .then(function () {
                     requestEditor1 = supertest.agent(config.get('url'));
                     requestEditor2 = supertest.agent(config.get('url'));
                 })
