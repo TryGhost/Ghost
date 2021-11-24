@@ -31,6 +31,7 @@ const context = require('./fixtures/context');
 let ghostServer;
 let existingData = {};
 let totalStartTime = 0;
+let totalBoots = 0;
 
 /**
  * Because we use ObjectID we don't know the ID of fixtures ahead of time
@@ -98,11 +99,27 @@ const prepareContentFolder = (options) => {
 // - reload affected services
 const restartModeGhostStart = async ({frontend}) => {
     debug('Reload Mode');
-    // Teardown truncates all tables and also calls urlServiceUtils.reset();
-    await dbUtils.teardown();
 
-    // The tables have been truncated, this runs the fixture init task (init file 2) to re-add our default fixtures
-    await knexMigrator.init({only: 2});
+    if (config.get('database:client') === 'sqlite3') {
+        const dbExists = await fs.pathExists('/tmp/ghost-test.db');
+        if (dbExists) {
+            await fs.copyFile('/tmp/ghost-test.db.orig', '/tmp/ghost-test.db');
+        } else {
+            await knexMigrator.reset({force: true});
+
+            // Do a full database initialisation
+            await knexMigrator.init();
+            await fs.copyFile('/tmp/ghost-test.db', '/tmp/ghost-test.db.orig');
+        }
+
+        urlServiceUtils.reset();
+    } else {
+        // Teardown truncates all tables and also calls urlServiceUtils.reset();
+        await dbUtils.teardown();
+
+        // The tables have been truncated, this runs the fixture init task (init file 2) to re-add our default fixtures
+        await knexMigrator.init({only: 2});
+    }
     debug('init done');
 
     // Reset the settings cache
@@ -151,17 +168,27 @@ const freshModeGhostStart = async (options) => {
         debug('Fresh Start Mode');
     }
 
-    // Reset the DB
-    await knexMigrator.reset({force: true});
-
     // Stop the server (forceStart Mode)
     await stopGhost();
-
     // Reset the settings cache and disable listeners so they don't get triggered further
     settingsService.shutdown();
 
-    // Do a full database initialisation
-    await knexMigrator.init();
+    const isSQLite = config.get('database:client') === 'sqlite3');
+
+    // Reset the DB
+    const dbExists = await fs.pathExists('/tmp/ghost-test.db');
+    if (dbExists && isSQLite) {
+        await fs.copyFile('/tmp/ghost-test.db.orig', '/tmp/ghost-test.db');
+    } else {
+        await knexMigrator.reset({force: true});
+
+        // Do a full database initialisation
+        await knexMigrator.init();
+
+        if (isSQLite) {
+            await fs.copyFile('/tmp/ghost-test.db', '/tmp/ghost-test.db.orig');
+        }
+    }
 
     await settingsService.init();
 
@@ -210,8 +237,9 @@ const startGhost = async (options) => {
     // Reporting
     const totalTime = Date.now() - startTime;
     totalStartTime += totalTime;
+    totalBoots += 1;
     debug(`Started Ghost in ${totalTime / 1000}s`);
-    debug(`Accumulated start time is ${totalStartTime / 1000}s`);
+    debug(`Accumulated start time acrosss ${totalBoots} boots is ${totalStartTime / 1000}s`);
     return ghostServer;
 };
 
