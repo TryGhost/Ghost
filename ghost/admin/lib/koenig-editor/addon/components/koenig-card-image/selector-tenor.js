@@ -60,7 +60,6 @@ export default class KoenigCardImageTenorSelector extends Component {
             type: 'gif'
         };
 
-        this.args.selector.insertCard('image', payload);
-        this.args.selector.close();
+        this.args.select(payload);
     }
 }
