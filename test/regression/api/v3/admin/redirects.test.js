@@ -31,6 +31,7 @@ describe('Redirects API', function () {
                 fs.writeFileSync(path.join(contentFolder, 'data', 'redirects.json'), JSON.stringify([]));
 
                 return startGhost({
+                    frontend: true,
                     redirectsFile: false,
                     contentFolder: contentFolder,
                     forceStart: true
@@ -71,7 +72,10 @@ describe('Redirects API', function () {
             });
 
             it('override', function () {
-                return startGhost({forceStart: true})
+                return startGhost({
+                    frontend: true,
+                    forceStart: true
+                })
                     .then(() => {
                         return request
                             .get('/my-old-blog-post/')
@@ -147,7 +151,11 @@ describe('Redirects API', function () {
     describe('Upload yaml', function () {
         describe('Ensure re-registering redirects works', function () {
             it('no redirects file exists', function () {
-                return startGhost({redirectsFile: false, forceStart: true})
+                return startGhost({
+                    frontend: true,
+                    redirectsFile: false,
+                    forceStart: true
+                })
                     .then(() => {
                         return request
                             .get('/my-old-blog-post/')
@@ -183,7 +191,11 @@ describe('Redirects API', function () {
             it('override', function () {
                 // We want to test if we can override old redirects.json with new redirects.yaml
                 // That's why we start with .json.
-                return startGhost({forceStart: true, redirectsFileExt: '.json'})
+                return startGhost({
+                    frontend: true,
+                    forceStart: true,
+                    redirectsFileExt: '.json'
+                })
                     .then(() => {
                         return request
                             .get('/my-old-blog-post/')
