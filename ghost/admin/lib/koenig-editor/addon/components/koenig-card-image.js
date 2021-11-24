@@ -180,6 +180,10 @@ export default Component.extend({
                 fileInput.click();
             }
         }
+
+        if (this.imageSelector) {
+            this.scrollToCard();
+        }
     },
 
     actions: {
