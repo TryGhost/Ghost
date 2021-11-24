@@ -19,9 +19,6 @@ module.exports = function setupApiApp() {
     // Query parsing
     apiApp.use(boolParser());
 
-    // send 503 json response in case of maintenance
-    apiApp.use(shared.middleware.maintenance);
-
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
     apiApp.use(apiMw.versionMatch);
