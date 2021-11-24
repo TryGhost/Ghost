@@ -9,14 +9,10 @@ describe('Authors Content API', function () {
     const validKey = localUtils.getValidKey();
     let request;
 
-    before(function () {
-        return testUtils.startGhost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return testUtils.initFixtures('owner:post', 'users:no-owner', 'user:inactive', 'posts', 'api_keys');
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await testUtils.initFixtures('owner:post', 'users:no-owner', 'user:inactive', 'posts', 'api_keys');
     });
 
     afterEach(function () {

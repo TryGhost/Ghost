@@ -1262,49 +1262,33 @@ describe('Settings API (canary)', function () {
     });
 
     describe('As Admin', function () {
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    // create admin
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[0].name
-                    });
-                })
-                .then(function (admin) {
-                    request.user = admin;
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
 
-                    // by default we login with the owner
-                    return localUtils.doAuth(request);
-                });
+            // create admin
+            const admin = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[0].name
+            });
+            request.user = admin;
+            // by default we login with the owner
+            await localUtils.doAuth(request);
         });
     });
 
     describe('As Editor', function () {
-        let editor;
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            // create editor
+            request.user = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[1].name
+            });
 
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    // create editor
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[1].name
-                    });
-                })
-                .then(function (_user1) {
-                    editor = _user1;
-                    request.user = editor;
-
-                    // by default we login with the owner
-                    return localUtils.doAuth(request);
-                });
+            // by default we login with the owner
+            await localUtils.doAuth(request);
         });
 
         it('should not be able to edit settings', function () {
@@ -1346,24 +1330,18 @@ describe('Settings API (canary)', function () {
     });
 
     describe('As Author', function () {
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    // create author
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[2].name
-                    });
-                })
-                .then(function (author) {
-                    request.user = author;
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
 
-                    // by default we login with the owner
-                    return localUtils.doAuth(request);
-                });
+            // create author
+            request.user = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[2].name
+            });
+
+            // by default we login with the owner
+            await localUtils.doAuth(request);
         });
 
         it('should not be able to edit settings', function () {
