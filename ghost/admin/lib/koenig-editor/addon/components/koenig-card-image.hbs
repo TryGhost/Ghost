@@ -1,6 +1,6 @@
 <KoenigCard
     @tagName="figure"
-    @class={{concat (kg-style "media-card") " " (kg-style "breakout" size=this.payload.cardWidth) " flex flex-column"}}
+    @class={{concat (kg-style (if (eq this.imageSelector.type "placeholder") "media-card-placeholder" "media-card")) " " (kg-style "breakout" size=this.payload.cardWidth) " flex flex-column"}}
     @showSelectedOutline={{not-eq this.imageSelector.type "placeholder"}}
     @isSelected={{this.isSelected}}
     @isEditing={{this.isEditing}}

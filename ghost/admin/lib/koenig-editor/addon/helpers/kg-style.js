@@ -41,6 +41,9 @@ export function kgStyle([style], options) {
     case 'media-card':
         cssClass = `${pFontStyle} ma0 ba b--transparent kg-card-hover`;
         break;
+    case 'media-card-placeholder':
+        cssClass = `${pFontStyle} ma0 ba b--transparent`;
+        break;
 
     // Media styles & figure caption
     case 'image-normal':
