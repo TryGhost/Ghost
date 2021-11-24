@@ -7,39 +7,21 @@ const localUtils = require('./utils');
 let request;
 
 describe('User API', function () {
-    let editor;
-    let author;
-    let otherAuthor;
-    let admin;
-
     describe('As Owner', function () {
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    // create inactive user
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[2].name
-                    });
-                })
-                .then(function (_user) {
-                    otherAuthor = _user;
+        let otherAuthor;
 
-                    // create admin user
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+admin@ghost.org', slug: 'owner'}),
-                        role: testUtils.DataGenerator.Content.roles[3].name
-                    });
-                })
-                .then(function (_user) {
-                    admin = _user;
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
 
-                    // by default we login with the owner
-                    return localUtils.doAuth(request);
-                });
+            // create inactive user
+            otherAuthor = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[2].name
+            });
+
+            // by default we login with the owner
+            await localUtils.doAuth(request);
         });
 
         describe('Read', function () {
@@ -145,25 +127,20 @@ describe('User API', function () {
     });
 
     describe('As Editor', function () {
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    // create editor
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[1].name
-                    });
-                })
-                .then(function (_user1) {
-                    editor = _user1;
-                    request.user = editor;
+        let editor;
 
-                    // by default we login with the owner
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            // create editor
+            editor = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[1].name
+            });
+
+            request.user = editor;
+            // by default we login with the owner
+            await localUtils.doAuth(request);
         });
 
         describe('success cases', function () {
@@ -224,25 +201,20 @@ describe('User API', function () {
     });
 
     describe('As Author', function () {
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    // create author
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[2].name
-                    });
-                })
-                .then(function (_user2) {
-                    author = _user2;
-                    request.user = author;
+        let author;
 
-                    // by default we login with the owner
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            // create author
+            author = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'test+2@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[2].name
+            });
+
+            request.user = author;
+            // by default we login with the owner
+            await localUtils.doAuth(request);
         });
 
         describe('success cases', function () {
