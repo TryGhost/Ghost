@@ -9,14 +9,10 @@ const events = require('../../../../../core/server/lib/common/events');
 let request;
 
 describe('Slack API', function () {
-    before(function () {
-        return testUtils.startGhost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request);
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request);
     });
     after(function () {
         sinon.restore();

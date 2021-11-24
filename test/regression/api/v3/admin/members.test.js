@@ -20,14 +20,10 @@ describe('Members API', function () {
         sinon.restore();
     });
 
-    before(function () {
-        return testUtils.startGhost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'members');
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request, 'members');
     });
 
     beforeEach(function () {

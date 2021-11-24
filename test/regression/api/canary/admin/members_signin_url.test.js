@@ -19,14 +19,10 @@ describe('Members Sigin URL API', function () {
     });
 
     describe('As Owner', function () {
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return localUtils.doAuth(request, 'member');
-                });
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            await localUtils.doAuth(request, 'member');
         });
 
         it('Can read', function () {
@@ -48,22 +44,16 @@ describe('Members Sigin URL API', function () {
     });
 
     describe('As Admin', function () {
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
-                        role: testUtils.DataGenerator.Content.roles[0].name
-                    });
-                })
-                .then(function (admin) {
-                    request.user = admin;
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            const admin = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
+                role: testUtils.DataGenerator.Content.roles[0].name
+            });
 
-                    return localUtils.doAuth(request, 'member');
-                });
+            request.user = admin;
+            await localUtils.doAuth(request, 'member');
         });
 
         it('Can read', function () {

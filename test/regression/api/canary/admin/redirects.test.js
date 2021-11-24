@@ -12,14 +12,10 @@ const config = require('../../../../../core/shared/config');
 let request;
 
 describe('Redirects API', function () {
-    const startGhost = (options) => {
-        return testUtils.startGhost(options)
-            .then(() => {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(() => {
-                return localUtils.doAuth(request);
-            });
+    const startGhost = async (options) => {
+        await testUtils.startGhost(options);
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request);
     };
 
     describe('Upload', function () {

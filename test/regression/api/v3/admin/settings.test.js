@@ -98,14 +98,10 @@ describe('Settings API (v3)', function () {
     let request;
 
     describe('As Owner', function () {
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            await localUtils.doAuth(request);
         });
 
         it('Can request all settings', function () {

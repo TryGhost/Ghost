@@ -8,23 +8,18 @@ describe('Notifications API', function () {
     describe('As Editor', function () {
         let request;
 
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({
-                            email: 'test+editor@ghost.org'
-                        }),
-                        role: testUtils.DataGenerator.Content.roles[1].name
-                    });
-                })
-                .then((user) => {
-                    request.user = user;
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            await testUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            const user = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({
+                    email: 'test+editor@ghost.org'
+                }),
+                role: testUtils.DataGenerator.Content.roles[1].name
+            });
+
+            request.user = user;
+            await localUtils.doAuth(request);
         });
 
         it('Add notification', function () {
@@ -68,23 +63,18 @@ describe('Notifications API', function () {
     describe('As Author', function () {
         let request;
 
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({
-                            email: 'test+author@ghost.org'
-                        }),
-                        role: testUtils.DataGenerator.Content.roles[2].name
-                    });
-                })
-                .then((user) => {
-                    request.user = user;
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            await testUtils.startGhost();
+
+            request = supertest.agent(config.get('url'));
+            const user = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({
+                    email: 'test+author@ghost.org'
+                }),
+                role: testUtils.DataGenerator.Content.roles[2].name
+            });
+            request.user = user;
+            await localUtils.doAuth(request);
         });
 
         it('Add notification', function () {
@@ -116,52 +106,44 @@ describe('Notifications API', function () {
         let requestEditor2;
         let notification;
 
-        before(function () {
-            return testUtils.startGhost()
-                .then(function () {
-                    requestEditor1 = supertest.agent(config.get('url'));
-                    requestEditor2 = supertest.agent(config.get('url'));
-                })
-                .then(function () {
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({
-                            email: 'test+editor1@ghost.org'
-                        }),
-                        role: testUtils.DataGenerator.Content.roles[1].name
-                    });
-                })
-                .then((user) => {
-                    requestEditor1.user = user;
-                    return localUtils.doAuth(requestEditor1);
-                })
-                .then(function () {
-                    return testUtils.createUser({
-                        user: testUtils.DataGenerator.forKnex.createUser({
-                            email: 'test+editor2@ghost.org'
-                        }),
-                        role: testUtils.DataGenerator.Content.roles[1].name
-                    });
-                })
-                .then((user) => {
-                    requestEditor2.user = user;
-                    return localUtils.doAuth(requestEditor2);
-                })
-                .then(() => {
-                    const newNotification = {
-                        type: 'info',
-                        message: 'multiple views',
-                        custom: true
-                    };
+        before(async function () {
+            await testUtils.startGhost();
 
-                    return requestEditor1.post(localUtils.API.getApiQuery('notifications/'))
-                        .set('Origin', config.get('url'))
-                        .send({notifications: [newNotification]})
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(201)
-                        .then((res) => {
-                            notification = res.body.notifications[0];
-                        });
+            requestEditor1 = supertest.agent(config.get('url'));
+            requestEditor2 = supertest.agent(config.get('url'));
+
+            const editor1User = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({
+                    email: 'test+editor1@ghost.org'
+                }),
+                role: testUtils.DataGenerator.Content.roles[1].name
+            });
+            requestEditor1.user = editor1User;
+            await localUtils.doAuth(requestEditor1);
+
+            const editor2User = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({
+                    email: 'test+editor2@ghost.org'
+                }),
+                role: testUtils.DataGenerator.Content.roles[1].name
+            });
+            requestEditor2.user = editor2User;
+            await localUtils.doAuth(requestEditor2);
+
+            const newNotification = {
+                type: 'info',
+                message: 'multiple views',
+                custom: true
+            };
+
+            await requestEditor1.post(localUtils.API.getApiQuery('notifications/'))
+                .set('Origin', config.get('url'))
+                .send({notifications: [newNotification]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .then((res) => {
+                    notification = res.body.notifications[0];
                 });
         });
 

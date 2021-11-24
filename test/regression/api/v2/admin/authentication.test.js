@@ -14,11 +14,9 @@ let request;
 
 describe('Authentication API v2', function () {
     describe('Blog setup: default config', function () {
-        before(function () {
-            return testUtils.startGhost({forceStart: true})
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                });
+        before(async function () {
+            await testUtils.startGhost({forceStart: true});
+            request = supertest.agent(config.get('url'));
         });
 
         beforeEach(function () {
@@ -133,11 +131,9 @@ describe('Authentication API v2', function () {
     });
 
     describe('Blog setup: custom config', function () {
-        before(function () {
-            return testUtils.startGhost({forceStart: true})
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                });
+        before(async function () {
+            await testUtils.startGhost({forceStart: true});
+            request = supertest.agent(config.get('url'));
         });
 
         beforeEach(function () {
