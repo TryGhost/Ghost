@@ -14,7 +14,6 @@ const cheerio = require('cheerio');
 const config = require('../../../core/shared/config');
 const api = require('../../../core/server/api');
 const settingsCache = require('../../../core/shared/settings-cache');
-const ghost = testUtils.startGhost;
 
 let request;
 
@@ -47,7 +46,7 @@ describe('Dynamic Routing', function () {
             return originalSettingsCacheGetFn(key, options);
         });
 
-        return ghost()
+        return testUtils.startGhost()
             .then(function (_ghostServer) {
                 ghostServer = _ghostServer;
                 request = supertest.agent(config.get('url'));
@@ -290,7 +289,7 @@ describe('Dynamic Routing', function () {
             before(function () {
                 configUtils.set('admin:redirects', false);
 
-                return ghost({forceStart: true})
+                return testUtils.startGhost({forceStart: true})
                     .then(function (_ghostServer) {
                         ghostServer = _ghostServer;
                         request = supertest.agent(config.get('url'));
@@ -300,7 +299,7 @@ describe('Dynamic Routing', function () {
             after(function () {
                 configUtils.restore();
 
-                return ghost({forceStart: true})
+                return testUtils.startGhost({forceStart: true})
                     .then(function (_ghostServer) {
                         ghostServer = _ghostServer;
                         request = supertest.agent(config.get('url'));
@@ -486,7 +485,7 @@ describe('Dynamic Routing', function () {
             before(function () {
                 configUtils.set('admin:redirects', false);
 
-                return ghost({forceStart: true})
+                return testUtils.startGhost({forceStart: true})
                     .then(function (_ghostServer) {
                         ghostServer = _ghostServer;
                         request = supertest.agent(config.get('url'));
@@ -496,7 +495,7 @@ describe('Dynamic Routing', function () {
             after(function () {
                 configUtils.restore();
 
-                return ghost({forceStart: true})
+                return testUtils.startGhost({forceStart: true})
                     .then(function (_ghostServer) {
                         ghostServer = _ghostServer;
                         request = supertest.agent(config.get('url'));

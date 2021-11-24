@@ -11,7 +11,6 @@ const events = require('../../../../../core/server/lib/common/events');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 
-let ghost = testUtils.startGhost;
 let request;
 let eventsTriggered;
 
@@ -20,7 +19,7 @@ describe('DB API (v3)', function () {
     let schedulerKey;
 
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then(() => {
                 request = supertest.agent(config.get('url'));
             })

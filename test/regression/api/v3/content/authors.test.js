@@ -5,14 +5,12 @@ const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/configUtils');
 const config = require('../../../../../core/shared/config');
 
-const ghost = testUtils.startGhost;
-
 describe('Authors Content API', function () {
     const validKey = localUtils.getValidKey();
     let request;
 
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then(function (_ghostServer) {
                 request = supertest.agent(config.get('url'));
             })

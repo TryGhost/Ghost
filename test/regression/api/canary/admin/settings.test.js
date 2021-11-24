@@ -5,7 +5,6 @@ const config = require('../../../../../core/shared/config');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const db = require('../../../../../core/server/data/db');
-const ghost = testUtils.startGhost;
 
 // NOTE: in future iterations these fields should be fetched from a central module.
 //       Have put a list as is here for the lack of better place for it.
@@ -443,7 +442,7 @@ describe('Settings API (canary)', function () {
 
     describe('As Owner', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
@@ -1270,7 +1269,7 @@ describe('Settings API (canary)', function () {
 
     describe('As Admin', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
@@ -1295,7 +1294,7 @@ describe('Settings API (canary)', function () {
         let editor;
 
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));
@@ -1356,7 +1355,7 @@ describe('Settings API (canary)', function () {
 
     describe('As Author', function () {
         before(function () {
-            return ghost()
+            return testUtils.startGhost()
                 .then(function (_ghostServer) {
                     ghostServer = _ghostServer;
                     request = supertest.agent(config.get('url'));

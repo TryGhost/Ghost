@@ -11,7 +11,6 @@ const _ = require('lodash');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const config = require('../../../core/shared/config');
-const ghost = testUtils.startGhost;
 let request;
 
 describe('Frontend Routing', function () {
@@ -45,7 +44,7 @@ describe('Frontend Routing', function () {
     });
 
     before(function () {
-        return ghost()
+        return testUtils.startGhost()
             .then(function () {
                 request = supertest.agent(config.get('url'));
             });
@@ -185,7 +184,7 @@ describe('Frontend Routing', function () {
                 before(function (done) {
                     configUtils.set('admin:redirects', false);
 
-                    ghost({forceStart: true})
+                    testUtils.startGhost({forceStart: true})
                         .then(function () {
                             request = supertest.agent(config.get('url'));
                             addPosts(done);
@@ -195,7 +194,7 @@ describe('Frontend Routing', function () {
                 after(function (done) {
                     configUtils.restore();
 
-                    ghost({forceStart: true})
+                    testUtils.startGhost({forceStart: true})
                         .then(function () {
                             request = supertest.agent(config.get('url'));
                             addPosts(done);
