@@ -10,13 +10,11 @@ const localUtils = require('./utils');
 const dnsPromises = require('dns').promises;
 
 describe('Oembed API (v2)', function () {
-    let ghostServer;
     let request;
 
     before(function () {
         return testUtils.startGhost()
-            .then((_ghostServer) => {
-                ghostServer = _ghostServer;
+            .then(() => {
                 request = supertest.agent(config.get('url'));
             })
             .then(() => {
