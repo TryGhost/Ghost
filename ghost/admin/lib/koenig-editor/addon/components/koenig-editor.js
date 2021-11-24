@@ -696,6 +696,11 @@ export default Component.extend({
             this.deselectCard(card);
         },
 
+        scrollToCard(card) {
+            this.selectCard(card);
+            this._scrollCursorIntoView({jumpToCard: true});
+        },
+
         // range should be set to the full extent of the selection or the
         // appropriate <a> markup. If there's a selection when the link edit
         // component renders it will re-select when finished which should
@@ -1475,7 +1480,15 @@ export default Component.extend({
                 if (atBottom) {
                     this._scrollContainer.scrollTop = this._scrollContainer.scrollHeight;
                 } else {
-                    this._scrollContainer.scrollTop = scrollTop + offsetBottom + distanceFromViewportBottom + 20;
+                    let scrollAdjustment = offsetBottom + distanceFromViewportBottom + 20;
+                    let cursorFromTop = cursorTop - scrollAdjustment;
+
+                    // pull top of cursor back into view if the adjustment pushed it off top of screen
+                    if (cursorFromTop < 20) {
+                        scrollAdjustment = scrollAdjustment + cursorFromTop - 20;
+                    }
+
+                    this._scrollContainer.scrollTop = scrollTop + scrollAdjustment;
                 }
             }
         }
