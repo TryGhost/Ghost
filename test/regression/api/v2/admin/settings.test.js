@@ -91,14 +91,12 @@ const defaultSettingsKeyTypes = [
 ];
 
 describe('Settings API (v2)', function () {
-    let ghostServer;
     let request;
 
     describe('As Owner', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -729,8 +727,7 @@ describe('Settings API (v2)', function () {
     describe('As Admin', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -754,8 +751,7 @@ describe('Settings API (v2)', function () {
 
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -815,8 +811,7 @@ describe('Settings API (v2)', function () {
     describe('As Author', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {

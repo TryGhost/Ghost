@@ -9,12 +9,9 @@ const events = require('../../../../../core/server/lib/common/events');
 let request;
 
 describe('Slack API', function () {
-    let ghostServer;
-
     before(function () {
         return testUtils.startGhost()
-            .then(function (_ghostServer) {
-                ghostServer = _ghostServer;
+            .then(function () {
                 request = supertest.agent(config.get('url'));
             })
             .then(function () {

@@ -437,14 +437,12 @@ const defaultSettingsKeyTypes = [
 ];
 
 describe('Settings API (canary)', function () {
-    let ghostServer;
     let request;
 
     describe('As Owner', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -1270,9 +1268,8 @@ describe('Settings API (canary)', function () {
     describe('As Admin', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
-                    request = supertest.agent(config.get('url'));
+                .then(function () {
+                                         request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
                     // create admin
@@ -1295,8 +1292,7 @@ describe('Settings API (canary)', function () {
 
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -1356,8 +1352,7 @@ describe('Settings API (canary)', function () {
     describe('As Author', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {

@@ -13,13 +13,10 @@ const configUtils = require('../../../../utils/configUtils');
 let request;
 
 describe('Authentication API v2', function () {
-    let ghostServer;
-
     describe('Blog setup: default config', function () {
         before(function () {
             return testUtils.startGhost({forceStart: true})
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 });
         });
@@ -138,8 +135,7 @@ describe('Authentication API v2', function () {
     describe('Blog setup: custom config', function () {
         before(function () {
             return testUtils.startGhost({forceStart: true})
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 });
         });
@@ -261,8 +257,7 @@ describe('Authentication API v2', function () {
     describe('Invitation', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
 
                     // simulates blog setup (initialises the owner)

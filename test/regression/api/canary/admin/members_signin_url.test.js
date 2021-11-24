@@ -87,7 +87,7 @@ describe('Members Sigin URL API', function () {
     describe('As non-Owner and non-Admin', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {

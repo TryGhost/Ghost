@@ -54,15 +54,12 @@ describe('Frontend Routing:Redirects', function () {
 
     redirectsFileExts.forEach((ext) => {
         describe(`Redirects (use redirects${ext} from test/utils/fixtures/data)`, function () {
-            let ghostServer;
-
             before(function () {
                 configUtils.set('url', 'http://localhost:2370/');
                 urlUtils.stubUrlUtilsFromConfig();
 
                 return testUtils.startGhost({forceStart: true, redirectsFileExt: ext})
-                    .then(function (_ghostServer) {
-                        ghostServer = _ghostServer;
+                    .then(function () {
                         request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
                     });
             });
@@ -340,15 +337,12 @@ describe('Frontend Routing:Redirects', function () {
         });
 
         describe(`Subdirectory redirects (use redirects${ext} from test/utils/fixtures/data)`, function () {
-            var ghostServer;
-
             before(function () {
                 configUtils.set('url', 'http://localhost:2370/blog/');
                 urlUtils.stubUrlUtilsFromConfig();
 
                 return testUtils.startGhost({forceStart: true, subdir: true, redirectsFileExt: ext})
-                    .then(function (_ghostServer) {
-                        ghostServer = _ghostServer;
+                    .then(function () {
                         request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
                     });
             });

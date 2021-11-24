@@ -9,15 +9,13 @@ let request;
 describe('User API', function () {
     let editor;
     let author;
-    let ghostServer;
     let otherAuthor;
     let admin;
 
     describe('As Owner', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -149,8 +147,7 @@ describe('User API', function () {
     describe('As Editor', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
@@ -229,8 +226,7 @@ describe('User API', function () {
     describe('As Author', function () {
         before(function () {
             return testUtils.startGhost()
-                .then(function (_ghostServer) {
-                    ghostServer = _ghostServer;
+                .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
                 .then(function () {
