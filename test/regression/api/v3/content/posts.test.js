@@ -1,9 +1,7 @@
 const should = require('should');
-const sinon = require('sinon');
 const moment = require('moment');
 const supertest = require('supertest');
 const _ = require('lodash');
-const labs = require('../../../../../core/shared/labs');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../../../utils/configUtils');
@@ -11,17 +9,14 @@ const urlUtils = require('../../../../utils/urlUtils');
 const config = require('../../../../../core/shared/config');
 
 const ghost = testUtils.startGhost;
-let request;
 
 describe('api/v3/content/posts', function () {
-    before(function () {
-        return ghost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
-            });
+    let request;
+
+    before(async function () {
+        await ghost();
+        request = supertest.agent(config.get('url'));
+        await testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });
 
     afterEach(function () {
@@ -263,11 +258,6 @@ describe('api/v3/content/posts', function () {
         let membersPost;
         let paidPost;
         let membersPostWithPaywallCard;
-
-        before(function () {
-            // NOTE: ideally this would be set through Admin API request not a stub
-            sinon.stub(labs, 'isSet').withArgs('members').returns(true);
-        });
 
         before (function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
