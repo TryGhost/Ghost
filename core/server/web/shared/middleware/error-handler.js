@@ -241,39 +241,36 @@ _private.ThemeErrorRenderer = (err, req, res, next) => {
     });
 };
 
-_private.HTMLErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-    const data = {
-        message: err.message,
-        statusCode: err.statusCode,
-        errorDetails: err.errorDetails || []
-    };
+/**
+ *  Borrowed heavily from finalHandler
+ */
 
-    // e.g. if you serve the admin /ghost and Ghost returns a 503 because it generates the urls at the moment.
-    // This ensures that no matter what res.render will work here
-    // @TODO: put to prepare error function?
-    if (_.isEmpty(req.app.engines)) {
-        res._template = 'error';
-        req.app.engine('hbs', _private.createHbsEngine());
-        req.app.set('view engine', 'hbs');
-        req.app.set('views', config.get('paths').defaultViews);
-    }
+const DOUBLE_SPACE_REGEXP = /\x20{2}/g;
+const NEWLINE_REGEXP = /\n/g;
 
-    res.render('error', data, (_err, html) => {
-        if (!_err) {
-            return res.send(html);
+function createHtmlDocument(status, message) {
+    let body = escapeExpression(message)
+        .replace(NEWLINE_REGEXP, '<br>')
+        .replace(DOUBLE_SPACE_REGEXP, ' &nbsp;');
+
+    return `<!DOCTYPE html>\n
+       <html lang="en">\n
+       <head>\n
+       <meta charset="utf-8">\n
+       <title>${status} Error</title>\n
+       </head>\n
+       <body>\n
+       <pre>${status} ${body}</pre>\n
+       </body>\n
+       </html>\n`;
         }
 
-        // re-attach new error e.g. error template has syntax error or misusage
-        req.err = _err;
-
-        // And then try to explain things to the user...
-        // Cheat and output the error using handlebars escapeExpression
-        return res.status(500).send(_private.ErrorFallbackMessage(_err));
-    });
+_private.HTMLErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+    return res.send(createHtmlDocument(res.statusCode, err.stack));
 };
 
 _private.BasicErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-    return res.send(res.statusCode + ' ' + err.message);
+    return res.send(res.statusCode + ' ' + err.stack);
 };
 
 errorHandler.resourceNotFound = (req, res, next) => {
