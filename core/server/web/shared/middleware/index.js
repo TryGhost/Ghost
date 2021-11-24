@@ -15,10 +15,6 @@ module.exports = {
         return require('./error-handler');
     },
 
-    get maintenance() {
-        return require('./maintenance');
-    },
-
     get prettyUrls() {
         return require('./pretty-urls');
     },

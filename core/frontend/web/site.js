@@ -153,9 +153,6 @@ module.exports = function setupSiteApp(options = {}) {
     sitemapHandler(siteApp);
     debug('Internal apps done');
 
-    // send 503 error page in case of maintenance
-    siteApp.use(shared.middleware.maintenance);
-
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
     siteApp.use(shared.middleware.prettyUrls);

@@ -17,9 +17,6 @@ module.exports = function setupApiApp() {
     // Query parsing
     apiApp.use(boolParser());
 
-    // send 503 json response in case of maintenance
-    apiApp.use(shared.middleware.maintenance);
-
     // API shouldn't be cached
     apiApp.use(shared.middleware.cacheControl('private'));
 

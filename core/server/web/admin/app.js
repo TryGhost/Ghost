@@ -26,9 +26,6 @@ module.exports = function setupAdminApp() {
         });
     }
 
-    // Render error page in case of maintenance
-    adminApp.use(shared.middleware.maintenance);
-
     // Force SSL if required
     // must happen AFTER asset loading and BEFORE routing
     adminApp.use(shared.middleware.urlRedirects.adminSSLAndHostRedirect);
