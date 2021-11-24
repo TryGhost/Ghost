@@ -123,6 +123,23 @@ _private.JSONErrorRenderer = (err, req, res, next) => { // eslint-disable-line n
     });
 };
 
+_private.JSONErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+    const userError = _private.prepareUserMessage(err, req);
+
+    res.json({
+        errors: [{
+            message: userError.message || null,
+            context: userError.context || null,
+            type: err.errorType || null,
+            details: err.errorDetails || null,
+            property: err.property || null,
+            help: err.help || null,
+            code: err.code || null,
+            id: err.id || null
+        }]
+    });
+};
+
 _private.prepareUserMessage = (err, res) => {
     const userError = {
         message: err.message,
@@ -167,23 +184,6 @@ _private.prepareUserMessage = (err, res) => {
     }
 
     return userError;
-};
-
-_private.JSONErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-    const userError = _private.prepareUserMessage(err, req);
-
-    res.json({
-        errors: [{
-            message: userError.message || null,
-            context: userError.context || null,
-            type: err.errorType || null,
-            details: err.errorDetails || null,
-            property: err.property || null,
-            help: err.help || null,
-            code: err.code || null,
-            id: err.id || null
-        }]
-    });
 };
 
 _private.ErrorFallbackMessage = err => `<h1>${tpl(messages.oopsErrorTemplateHasError)}</h1>
