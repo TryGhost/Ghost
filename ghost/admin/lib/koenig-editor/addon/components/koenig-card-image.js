@@ -253,6 +253,11 @@ export default Component.extend({
 
         closeImageSelector(reselectParagraph = true) {
             if (!this.payload.src) {
+                if (!this.env.postModel.parent) {
+                    // card has been deleted by cleanup
+                    return;
+                }
+
                 return this.editor.run((postEditor) => {
                     let {builder} = postEditor;
                     let cardSection = this.env.postModel;
