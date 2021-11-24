@@ -60,6 +60,32 @@ _private.createHbsEngine = () => {
     return engine.express4();
 };
 
+_private.updateStack = (err) => {
+    let stackbits = err.stack.split(/\n/g);
+
+    // We build this up backwards, so we always insert at position 1
+
+    if (process.env.NODE_ENV === 'production' || err.statusCode === 404) {
+        // In production mode, remove the stack trace
+        stackbits.splice(1, stackbits.length - 1);
+    } else {
+        // In dev mode, clearly mark the strack trace
+        stackbits.splice(1, 0, `Stack Trace:`);
+    }
+
+    // Add in our custom cotext and help methods
+
+    if (err.help) {
+        stackbits.splice(1, 0, `${err.help}`);
+    }
+
+    if (err.context) {
+        stackbits.splice(1, 0, `${err.context}`);
+    }
+
+    return stackbits.join('\n');
+};
+
 /**
  * Get an error ready to be shown the the user
  *
@@ -101,6 +127,8 @@ _private.prepareError = (err, req, res, next) => {
 
     // alternative for res.status();
     res.statusCode = err.statusCode;
+
+    err.stack = _private.updateStack(err);
 
     // never cache errors
     res.set({
@@ -263,7 +291,7 @@ function createHtmlDocument(status, message) {
        <pre>${status} ${body}</pre>\n
        </body>\n
        </html>\n`;
-        }
+}
 
 _private.HTMLErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
     return res.send(createHtmlDocument(res.statusCode, err.stack));
