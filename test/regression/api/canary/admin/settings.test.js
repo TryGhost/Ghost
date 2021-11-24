@@ -441,7 +441,7 @@ describe('Settings API (canary)', function () {
 
     describe('As Owner', function () {
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await localUtils.doAuth(request);
         });
@@ -1263,7 +1263,7 @@ describe('Settings API (canary)', function () {
 
     describe('As Admin', function () {
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
 
             // create admin
@@ -1279,7 +1279,7 @@ describe('Settings API (canary)', function () {
 
     describe('As Editor', function () {
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             // create editor
             request.user = await testUtils.createUser({
@@ -1331,7 +1331,7 @@ describe('Settings API (canary)', function () {
 
     describe('As Author', function () {
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
 
             // create author

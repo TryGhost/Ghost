@@ -13,7 +13,7 @@ describe('Oembed API (v2)', function () {
     let request;
 
     before(function () {
-        return testUtils.startGhost()
+        return localUtils.startGhost()
             .then(() => {
                 request = supertest.agent(config.get('url'));
             })

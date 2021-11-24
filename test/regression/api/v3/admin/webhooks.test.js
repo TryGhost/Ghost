@@ -9,7 +9,7 @@ describe('Webhooks API (v3)', function () {
     const API_VERSION = 'v3';
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
 
         request = supertest.agent(config.get('url'));
 
