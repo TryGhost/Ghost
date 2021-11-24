@@ -267,10 +267,6 @@ export default Component.extend({
             }
 
             set(this.payload, 'imageSelector', undefined);
-
-            // ensure focus is returned to the editor so that the card which
-            // appears selected behaves as if it's selected
-            this.editor.focus();
         },
 
         updateHref(href) {
