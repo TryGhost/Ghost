@@ -6,14 +6,10 @@ const localUtils = require('./utils');
 let request;
 
 describe('Pages API', function () {
-    before(function () {
-        return testUtils.startGhost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(function () {
-                return localUtils.doAuth(request, 'posts');
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request, 'posts');
     });
 
     describe('Edit', function () {

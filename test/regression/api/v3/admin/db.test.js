@@ -18,18 +18,12 @@ describe('DB API (v3)', function () {
     let backupKey;
     let schedulerKey;
 
-    before(function () {
-        return testUtils.startGhost()
-            .then(() => {
-                request = supertest.agent(config.get('url'));
-            })
-            .then(() => {
-                return localUtils.doAuth(request);
-            })
-            .then(() => {
-                backupKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-backup'}});
-                schedulerKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-scheduler'}});
-            });
+    before(async function () {
+        await testUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request);
+        backupKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-backup'}});
+        schedulerKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-scheduler'}});
     });
 
     beforeEach(function () {

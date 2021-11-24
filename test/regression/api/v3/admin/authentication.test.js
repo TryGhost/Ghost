@@ -13,11 +13,9 @@ let request;
 
 describe('Authentication API v3', function () {
     describe('Blog setup', function () {
-        before(function () {
-            return testUtils.startGhost({forceStart: true})
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
-                });
+        before(async function () {
+            await testUtils.startGhost({forceStart: true});
+            request = supertest.agent(config.get('url'));
         });
 
         beforeEach(function () {
