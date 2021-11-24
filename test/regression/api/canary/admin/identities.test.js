@@ -33,7 +33,7 @@ const verifyJWKS = (endpoint, token) => {
 describe('Identities API', function () {
     describe('As Owner', function () {
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await localUtils.doAuth(request);
         });
@@ -66,7 +66,7 @@ describe('Identities API', function () {
 
     describe('As non-Owner', function () {
         before(function () {
-            return testUtils.startGhost()
+            return localUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
                 })
