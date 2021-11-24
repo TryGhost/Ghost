@@ -48,7 +48,7 @@ describe('Default Frontend routing', function () {
             await request.get('/content/images/some/file/that/doesnt-exist.jpg')
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .expect(/404 Image not found/)
+                .expect(/Image not found/)
                 .expect(assertCorrectFrontendHeaders);
         });
     });
