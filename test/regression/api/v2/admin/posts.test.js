@@ -12,7 +12,7 @@ describe('Posts API (v2)', function () {
     let ownerCookie;
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         ownerCookie = await localUtils.doAuth(request, 'users:extra', 'posts');
     });

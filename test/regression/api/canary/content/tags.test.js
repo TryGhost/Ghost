@@ -12,7 +12,7 @@ describe('api/canary/content/tags', function () {
     const validKey = localUtils.getValidKey();
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });

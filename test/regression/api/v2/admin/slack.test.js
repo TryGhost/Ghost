@@ -10,7 +10,7 @@ let request;
 
 describe('Slack API', function () {
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
     });

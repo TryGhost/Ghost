@@ -14,7 +14,7 @@ let request;
 describe('Authentication API v3', function () {
     describe('Blog setup', function () {
         before(async function () {
-            await testUtils.startGhost({forceStart: true});
+            await localUtils.startGhost({forceStart: true});
             request = supertest.agent(config.get('url'));
         });
 
@@ -132,7 +132,7 @@ describe('Authentication API v3', function () {
 
     describe('Invitation', function () {
         before(function () {
-            return testUtils.startGhost()
+            return localUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
 
@@ -227,7 +227,7 @@ describe('Authentication API v3', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(function () {
-            return testUtils.startGhost({forceStart: true})
+            return localUtils.startGhost({forceStart: true})
                 .then(() => {
                     request = supertest.agent(config.get('url'));
                 })

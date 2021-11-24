@@ -11,7 +11,7 @@ describe('User API', function () {
         let otherAuthor;
 
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
 
             // create inactive user
@@ -130,7 +130,7 @@ describe('User API', function () {
         let editor;
 
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             // create editor
             editor = await testUtils.createUser({
@@ -204,7 +204,7 @@ describe('User API', function () {
         let author;
 
         before(async function () {
-            await testUtils.startGhost();
+            await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             // create author
             author = await testUtils.createUser({

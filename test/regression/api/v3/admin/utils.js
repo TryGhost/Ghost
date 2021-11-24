@@ -137,6 +137,15 @@ module.exports = {
         return testUtils.API.doAuth(`${API_URL}session/`, ...args);
     },
 
+    async startGhost(overrides = {}) {
+        const defaults = {
+            backend: true,
+            frontend: false
+        };
+
+        return await testUtils.startGhost(Object.assign(defaults, overrides));
+    },
+
     getValidAdminToken(endpoint, key) {
         const jwt = require('jsonwebtoken');
         key = key || testUtils.DataGenerator.Content.api_keys[0];

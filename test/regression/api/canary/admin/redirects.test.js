@@ -13,7 +13,7 @@ let request;
 
 describe('Redirects API', function () {
     const startGhost = async (options) => {
-        await testUtils.startGhost(options);
+        await localUtils.startGhost(options);
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
     };

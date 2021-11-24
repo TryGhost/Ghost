@@ -9,7 +9,7 @@ describe('Webhooks API (canary)', function () {
     const API_VERSION = 'canary';
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
 
         request = supertest.agent(config.get('url'));
 

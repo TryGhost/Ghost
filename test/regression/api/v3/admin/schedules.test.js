@@ -26,7 +26,7 @@ describe('v3 Schedules API', function () {
     });
 
     before(async function () {
-        await testUtils.startGhost();
+        await localUtils.startGhost();
 
         request = supertest.agent(config.get('url'));
 
