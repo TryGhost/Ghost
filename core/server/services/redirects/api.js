@@ -1,6 +1,5 @@
 const fs = require('fs-extra');
 const path = require('path');
-const moment = require('moment-timezone');
 const yaml = require('js-yaml');
 
 const logging = require('@tryghost/logging');
@@ -119,16 +118,6 @@ const parseRedirectsFile = (content, ext) => {
 };
 
 /**
- * @param {string} filePath
- * @returns {string}
- */
-const getBackupRedirectsFilePath = (filePath) => {
-    const {dir, name, ext} = path.parse(filePath);
-
-    return path.join(dir, `${name}-${moment().format('YYYY-MM-DD-HH-mm-ss')}${ext}`);
-};
-
-/**
  * @typedef {object} IRedirectManager
  */
 
@@ -137,17 +126,21 @@ class CustomRedirectsAPI {
      * @param {object} config
      * @param {string} config.basePath
      * @param {Function} config.validate - validates redirects configuration
+     * @param {Function} config.getBackupFilePath
      * @param {IRedirectManager} config.redirectManager
      */
-    constructor({basePath, validate, redirectManager}) {
+    constructor({basePath, validate, redirectManager, getBackupFilePath}) {
         /** @private */
         this.basePath = basePath;
 
         /** @private */
         this.redirectManager = redirectManager;
 
-        /**private */
+        /** @private */
         this.validate = validate;
+
+        /** @private */
+        this.getBackupFilePath = getBackupFilePath;
     }
 
     async init() {
