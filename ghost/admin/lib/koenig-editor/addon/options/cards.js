@@ -187,11 +187,10 @@ export const CARD_MENU = [
             matches: ['gif', 'giphy', 'tenor'],
             type: 'card',
             replaceArg: 'image',
-            params: ['searchTerm'],
+            insertOnSpace: true,
             payload: {
                 imageSelector: 'tenor'
             },
-            selectorComponent: 'koenig-media-selector-tenor',
             isAvailable: ['feature.gifsCard', 'config.tenor.apiKey']
         },
         {
