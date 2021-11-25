@@ -16,8 +16,9 @@ let customRedirectsAPI;
 module.exports = {
     init() {
         customRedirectsAPI = new CustomRedirectsAPI({
-            basePath: config.getContentPath('data')
-        }, redirectManager);
+            basePath: config.getContentPath('data'),
+            redirectManager
+        });
 
         return customRedirectsAPI.init();
     },
