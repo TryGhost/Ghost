@@ -138,12 +138,12 @@ class CustomRedirectsAPI {
     /**
      * @param {object} config
      * @param {string} config.basePath
-     *
-     * @param {IRedirectManager} redirectManager
+     * @param {IRedirectManager} config.redirectManager
      */
-    constructor(config, redirectManager) {
+    constructor({basePath, redirectManager}) {
         /** @private */
-        this.config = config;
+        this.basePath = basePath;
+
         /** @private */
         this.redirectManager = redirectManager;
     }
@@ -187,7 +187,7 @@ class CustomRedirectsAPI {
      * @returns {string}
      */
     createRedirectsFilePath(ext) {
-        return path.join(this.config.basePath, `redirects${ext}`);
+        return path.join(this.basePath, `redirects${ext}`);
     }
 
     /**
