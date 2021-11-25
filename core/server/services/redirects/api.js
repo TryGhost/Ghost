@@ -237,7 +237,7 @@ class CustomRedirectsAPI {
         validation.validate(parsed);
 
         if (ext === '.json') {
-            await fs.writeFile(this.createRedirectsFilePath('.json'), JSON.stringify(content), 'utf-8');
+            await fs.writeFile(this.createRedirectsFilePath('.json'), JSON.stringify(parsed), 'utf-8');
         } else if (ext === '.yaml') {
             await fs.copy(filePath, this.createRedirectsFilePath('.yaml'));
         }
