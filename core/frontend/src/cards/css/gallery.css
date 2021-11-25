@@ -1,8 +1,12 @@
+.kg-gallery-card {
+    --gap: 1.2rem;
+}
+
 .kg-image-card:not(.kg-card-hascaption) + .kg-image-card,
 .kg-image-card:not(.kg-card-hascaption) + .kg-gallery-card,
 .kg-gallery-card:not(.kg-card-hascaption) + .kg-image-card,
 .kg-gallery-card:not(.kg-card-hascaption) + .kg-gallery-card {
-    margin-top: 1.2rem;
+    margin-top: var(--gap);
 }
 
 .kg-gallery-container {
@@ -23,9 +27,15 @@
 }
 
 .kg-gallery-row:not(:first-of-type) {
-    margin: 1.2rem 0 0;
+    margin: var(--gap) 0 0;
 }
 
 .kg-gallery-image:not(:first-of-type) {
-    margin: 0 0 0 1.2rem;
+    margin: 0 0 0 var(--gap);
+}
+
+@media (max-width: 600px) {
+    .kg-gallery-card {
+        --gap: 0.6rem;
+    }
 }
