@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
+        env:
+          FORCE_COLOR: 0
         with:
           node-version: '14.17.0'
       - run: yarn
@@ -49,6 +51,8 @@ jobs:
           fetch-depth: 0
           submodules: true
       - uses: actions/setup-node@v2
+        env:
+          FORCE_COLOR: 0
         with:
           node-version: '14.17.0'
 
@@ -90,6 +94,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
+        env:
+          FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
 
@@ -174,6 +180,8 @@ jobs:
           fetch-depth: 0
           submodules: true
       - uses: actions/setup-node@v2
+        env:
+          FORCE_COLOR: 0
         with:
           node-version: '12.22.1'
       - run: npm install -g ghost-cli@latest
