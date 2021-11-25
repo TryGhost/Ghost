@@ -11,9 +11,9 @@ class OfferName extends ValueObject {
             });
         }
 
-        if (name.length > 191) {
+        if (name.length > 40) {
             throw new InvalidOfferName({
-                message: 'Offer `name` can be a maximum of 191 characters.'
+                message: 'Offer `name` can be a maximum of 40 characters.'
             });
         }
 
