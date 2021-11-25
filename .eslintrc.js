@@ -23,6 +23,38 @@ module.exports = {
             }
         },
         {
+            files: 'core/server/data/migrations/versions/**',
+            excludedFiles: [
+                'core/server/data/migrations/versions/1.*/*',
+                'core/server/data/migrations/versions/2.*/*',
+                'core/server/data/migrations/versions/3.*/*'
+            ]
+        },
+        {
+            files: 'core/server/data/migrations/versions/**',
+            rules: {
+                'no-restricted-syntax': ['warn', {
+                    selector: 'ForStatement',
+                    message: 'For statements can perform badly in migrations'
+                }, {
+                    selector: 'WhileStatement',
+                    message: 'While statements can perform badly in migrations'
+                }, {
+                    selector: 'CallExpression[callee.property.name=\'forEach\']',
+                    message: 'Loop constructs like forEach can perform badly in migrations'
+                }, {
+                    selector: 'CallExpression[callee.object.name=\'_\'][callee.property.name=\'each\']',
+                    message: 'Loop constructs like _.each can perform badly in migrations'
+                }, {
+                    selector: 'ForStatement ReturnStatement',
+                    message: 'Invalid use of a return statement within for-loop in a migration'
+                }, {
+                    selector: 'CallExpression[callee.property.name=/join|innerJoin|leftJoin/] CallExpression[callee.property.name=/join|innerJoin|leftJoin/] CallExpression[callee.name=\'knex\']',
+                    message: 'Use of multiple join statements in a single knex block'
+                }]
+            }
+        },
+        {
             files: 'core/shared/**',
             rules: {
                 'ghost/node/no-restricted-require': ['error', [
