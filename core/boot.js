@@ -131,6 +131,11 @@ async function initServicesForFrontend() {
     await routeSettings.init();
     debug('End: Routing Settings');
 
+    debug('Begin: Redirects');
+    const customRedirects = require('./server/services/redirects');
+    await customRedirects.init(),
+    debug('End: Redirects');
+
     debug('Begin: Themes');
     // customThemSettingsService.api must be initialized before any theme activation occurs
     const customThemeSettingsService = require('./server/services/custom-theme-settings');
@@ -222,7 +227,6 @@ async function initServices({config}) {
     const appService = require('./frontend/services/apps');
     const limits = require('./server/services/limits');
     const scheduling = require('./server/adapters/scheduling');
-    const customRedirects = require('./server/services/redirects');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -236,7 +240,6 @@ async function initServices({config}) {
     await offers.init();
 
     await Promise.all([
-        customRedirects.init(),
         members.init(),
         permissions.init(),
         xmlrpc.listen(),
