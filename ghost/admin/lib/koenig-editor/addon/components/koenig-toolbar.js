@@ -2,6 +2,7 @@ import Component from '@ember/component';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
+import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
 // initially rendered offscreen with opacity 0 so that sizing is available
@@ -19,6 +20,8 @@ export const TOOLBAR_MARGIN = 15;
 const TICK_ADJUSTMENT = 8;
 
 export default Component.extend({
+    feature: service(),
+
     attributeBindings: ['style'],
     classNames: ['absolute', 'z-999'],
 
@@ -121,6 +124,22 @@ export default Component.extend({
 
         toggleSection(sectionName) {
             let range = this.editorRange;
+            this.editor.run((postEditor) => {
+                this.toggleSection(sectionName, postEditor);
+                postEditor.setRange(range);
+            });
+        },
+
+        toggleQuoteSection() {
+            let sectionName = 'blockquote';
+
+            if (this.activeSectionTagNames.isBlockquote) {
+                sectionName = 'aside';
+            } else if (this.activeSectionTagNames.isAside) {
+                sectionName = 'p';
+            }
+
+            const range = this.editorRange;
             this.editor.run((postEditor) => {
                 this.toggleSection(sectionName, postEditor);
                 postEditor.setRange(range);
