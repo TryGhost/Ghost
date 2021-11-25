@@ -3,6 +3,7 @@ const urlUtils = require('../../../shared/url-utils');
 
 const DynamicRedirectManager = require('@tryghost/express-dynamic-redirects');
 const CustomRedirectsAPI = require('./api');
+const validation = require('./validation');
 
 let customRedirectsAPI;
 let redirectManager;
@@ -18,7 +19,8 @@ module.exports = {
 
         customRedirectsAPI = new CustomRedirectsAPI({
             basePath: config.getContentPath('data'),
-            redirectManager
+            redirectManager,
+            validate: validation.validate.bind(validation)
         });
 
         return customRedirectsAPI.init();

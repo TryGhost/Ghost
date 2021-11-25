@@ -7,8 +7,6 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
-const validation = require('./validation');
-
 const messages = {
     jsonParse: 'Could not parse JSON: {context}.',
     yamlParse: 'Could not parse YAML: {context}.',
@@ -22,7 +20,7 @@ const messages = {
  * @typedef {Object} RedirectConfig
  * @property {String} from - Defines the relative incoming URL or pattern (regex)
  * @property {String} to - Defines where the incoming traffic should be redirected to, which can be a static URL, or a dynamic value using regex (example: "to": "/$1/")
- * @property {boolean} permanent - Can be defined with true for a permanent HTTP 301 redirect, or false for a temporary HTTP 302 redirect
+ * @property {boolean} [permanent] - Can be defined with true for a permanent HTTP 301 redirect, or false for a temporary HTTP 302 redirect
  */
 
 /**
@@ -138,14 +136,18 @@ class CustomRedirectsAPI {
     /**
      * @param {object} config
      * @param {string} config.basePath
+     * @param {Function} config.validate - validates redirects configuration
      * @param {IRedirectManager} config.redirectManager
      */
-    constructor({basePath, redirectManager}) {
+    constructor({basePath, validate, redirectManager}) {
         /** @private */
         this.basePath = basePath;
 
         /** @private */
         this.redirectManager = redirectManager;
+
+        /**private */
+        this.validate = validate;
     }
 
     async init() {
@@ -159,7 +161,7 @@ class CustomRedirectsAPI {
                 const content = await readRedirectsFile(filePath);
                 const ext = path.extname(filePath);
                 const redirects = parseRedirectsFile(content, ext);
-                validation.validate(redirects);
+                this.validate(redirects);
 
                 this.redirectManager.removeAllRedirects();
                 for (const redirect of redirects) {
@@ -234,7 +236,7 @@ class CustomRedirectsAPI {
 
         const content = await readRedirectsFile(filePath);
         const parsed = parseRedirectsFile(content, ext);
-        validation.validate(parsed);
+        this.validate(parsed);
 
         if (ext === '.json') {
             await fs.writeFile(this.createRedirectsFilePath('.json'), JSON.stringify(parsed), 'utf-8');
