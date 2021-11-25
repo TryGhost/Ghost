@@ -68,6 +68,12 @@ describe('Redirects API', function () {
 
                         const dataFiles = fs.readdirSync(config.getContentPath('data'));
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(2);
+
+                        const fileContent = fs.readFileSync(path.join(contentFolder, 'data', 'redirects.json'), 'utf-8');
+                        fileContent.should.eql(JSON.stringify([{
+                            from: 'k',
+                            to: 'l'
+                        }]));
                     });
             });
 
@@ -143,6 +149,12 @@ describe('Redirects API', function () {
                     .then(() => {
                         const dataFiles = fs.readdirSync(config.getContentPath('data'));
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(3);
+
+                        const fileContent = fs.readFileSync(path.join(config.get('paths:contentPath'), 'data', 'redirects.json'), 'utf-8');
+                        fileContent.should.eql(JSON.stringify([{
+                            from: 'e',
+                            to: 'b'
+                        }]));
                     });
             });
         });
@@ -198,6 +210,9 @@ describe('Redirects API', function () {
                         const dataFiles = fs.readdirSync(config.getContentPath('data'));
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(2);
 
+                        const fileContent = fs.readFileSync(path.join(config.get('paths:contentPath'), 'data', 'redirects.yaml'), 'utf-8');
+                        fileContent.should.eql('302:\n  c: d');
+
                         // Provide another redirects file in the root directory of the content test folder
                         fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects-something.json'), JSON.stringify([{
                             from: 'e',
@@ -229,6 +244,12 @@ describe('Redirects API', function () {
 
                         const dataFiles = fs.readdirSync(config.getContentPath('data'));
                         dataFiles.join(',').match(/(redirects)/g).length.should.eql(3);
+
+                        const fileContent = fs.readFileSync(path.join(config.get('paths:contentPath'), 'data', 'redirects.json'), 'utf-8');
+                        fileContent.should.eql(JSON.stringify([{
+                            from: 'e',
+                            to: 'b'
+                        }]));
                     });
             });
         });
