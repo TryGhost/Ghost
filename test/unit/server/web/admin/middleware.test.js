@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 
 // Thing we are testing
-const redirectAdminUrls = require('../../../../../core/server/web/admin/middleware')[0];
+const redirectAdminUrls = require('../../../../../core/server/web/admin/middleware/redirect-admin-urls');
 
 describe('Admin App', function () {
     afterEach(function () {
