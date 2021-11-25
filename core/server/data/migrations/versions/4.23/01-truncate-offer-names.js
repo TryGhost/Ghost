@@ -10,11 +10,9 @@ const {createTransactionalMigration} = require('../../utils');
  * @returns {string}
  */
 function getUnique(exists, requested, attempt = requested, n = 1) {
-    console.log('attempt', attempt);
     if (!exists(attempt)) {
         return attempt;
     }
-    console.log('attempt exists');
     const newAttempt = requested.slice(0, -n.toString().length) + n;
     return getUnique(exists, requested, newAttempt, n + 1);
 }
