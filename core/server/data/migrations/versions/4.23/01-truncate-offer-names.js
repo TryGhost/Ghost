@@ -24,7 +24,7 @@ module.exports = createTransactionalMigration(
             .from('offers');
 
         const offersNeedingTrunctation = allOffers.filter((row) => {
-            return row.name.length > 40;
+            return row.name.length >= 40;
         });
 
         if (offersNeedingTrunctation.length === 0) {
