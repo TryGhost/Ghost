@@ -82,7 +82,7 @@
     "@tryghost/members-api": "2.7.4",
     "@tryghost/members-csv": "1.1.8",
     "@tryghost/members-importer": "0.3.4",
-    "@tryghost/members-offers": "0.10.2",
+    "@tryghost/members-offers": "0.10.3",
     "@tryghost/members-ssr": "1.0.15",
     "@tryghost/metrics": "1.0.1",
     "@tryghost/minifier": "0.1.1",
