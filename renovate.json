@@ -11,6 +11,7 @@
       "intl-messageformat",
       "moment",
       "moment-timezone",
+      "oembed-parser",
       "simple-dom"
     ],
   "ignorePaths": ["test"],
