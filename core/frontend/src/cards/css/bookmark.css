@@ -21,6 +21,7 @@
     align-items: flex-start;
     justify-content: flex-start;
     padding: 20px;
+    overflow: hidden;
 }
 
 .kg-bookmark-title {
@@ -49,6 +50,7 @@
     width: 100%;
     font-size: 1.4rem;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .kg-bookmark-metadata > *:not(img) {
@@ -82,6 +84,11 @@
 .kg-bookmark-metadata > span:nth-of-type(2):before {
     content: "•";
     margin: 0 6px;
+}
+
+.kg-bookmark-metadata > span:last-of-type {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .kg-bookmark-thumbnail {
