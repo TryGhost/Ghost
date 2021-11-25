@@ -5,7 +5,7 @@ const config = require('../../../shared/config');
 const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
-const adminMiddleware = require('./middleware');
+const redirectAdminUrls = require('./middleware/redirect-admin-urls');
 
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
@@ -39,7 +39,7 @@ module.exports = function setupAdminApp() {
     adminApp.use(shared.middleware.cacheControl('private'));
 
     // Special redirects for the admin (these should have their own cache-control headers)
-    adminApp.use(adminMiddleware);
+    adminApp.use(redirectAdminUrls);
 
     // Finally, routing
     adminApp.get('*', require('./controller'));
