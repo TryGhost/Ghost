@@ -46,16 +46,16 @@ describe('OfferName', function () {
             }
         });
 
-        it('Requires the string to be a maximum of 191 characters', function () {
-            const maxLengthInput = Array.from({length: 191}).map(() => 'a').join('');
+        it('Requires the string to be a maximum of 40 characters', function () {
+            const maxLengthInput = Array.from({length: 40}).map(() => 'a').join('');
 
-            should.equal(maxLengthInput.length, 191);
+            should.equal(maxLengthInput.length, 40);
 
             OfferName.create(maxLengthInput);
 
             const tooLong = maxLengthInput + 'a';
 
-            should.equal(tooLong.length, 192);
+            should.equal(tooLong.length, 41);
 
             try {
                 OfferName.create(tooLong);
