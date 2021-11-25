@@ -9,10 +9,11 @@ const CustomRedirectsAPI = require('../../../../../core/server/services/redirect
 
 describe('UNIT: redirects CustomRedirectsAPI class', function () {
     let customRedirectsAPI;
+    let redirectManager;
     const basePath = path.join(__dirname, '../../../../utils/fixtures/data/');
 
     before(function () {
-        const redirectManager = new DynamicRedirectManager({
+        redirectManager = new DynamicRedirectManager({
             permanentMaxAge: 100,
             getSubdirectoryURL: (pathname) => {
                 return `/ghost/${pathname}`;
@@ -20,8 +21,11 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
         });
 
         customRedirectsAPI = new CustomRedirectsAPI({
-            basePath
-        }, redirectManager);
+            basePath,
+            redirectManager,
+            getBackupFilePath: () => path.join(basePath, 'backup.json'),
+            validate: () => {}
+        });
     });
 
     beforeEach(function () {
@@ -36,7 +40,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
     describe('init', function () {
         it('initializes without errors when redirects file is not present', async function () {
-            const redirectManager = new DynamicRedirectManager({
+            redirectManager = new DynamicRedirectManager({
                 permanentMaxAge: 100,
                 getSubdirectoryURL: (pathname) => {
                     return `/ghost/${pathname}`;
@@ -44,8 +48,11 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             });
 
             customRedirectsAPI = new CustomRedirectsAPI({
-                basePath
-            }, redirectManager);
+                basePath,
+                redirectManager,
+                getBackupFilePath: {},
+                validate: () => {}
+            });
 
             await customRedirectsAPI.init();
             logging.error.called.should.be.false();
