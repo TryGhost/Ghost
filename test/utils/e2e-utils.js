@@ -31,6 +31,7 @@ const context = require('./fixtures/context');
 let ghostServer;
 let existingData = {};
 let totalStartTime = 0;
+let totalBoots = 0;
 
 /**
  * Because we use ObjectID we don't know the ID of fixtures ahead of time
@@ -210,8 +211,10 @@ const startGhost = async (options) => {
     // Reporting
     const totalTime = Date.now() - startTime;
     totalStartTime += totalTime;
+    totalBoots += 1;
+    const averageBootTime = Math.round(totalStartTime / totalBoots);
     debug(`Started Ghost in ${totalTime / 1000}s`);
-    debug(`Accumulated start time is ${totalStartTime / 1000}s`);
+    debug(`Accumulated start time across ${totalBoots} boots is ${totalStartTime / 1000}s (average = ${averageBootTime}ms)`);
     return ghostServer;
 };
 
