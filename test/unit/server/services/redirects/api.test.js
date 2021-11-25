@@ -12,11 +12,6 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
     const basePath = path.join(__dirname, '../../../../utils/fixtures/data/');
 
     before(function () {
-        redirectManager = {
-            removeAllRedirects: sinon.stub(),
-            addRedirect: sinon.stub()
-        };
-
         customRedirectsAPI = new CustomRedirectsAPI({
             basePath,
             redirectManager,
@@ -26,6 +21,11 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
     });
 
     beforeEach(function () {
+        redirectManager = {
+            removeAllRedirects: sinon.stub(),
+            addRedirect: sinon.stub()
+        };
+
         sinon.stub(fs, 'pathExists');
         sinon.stub(fs, 'writeFile');
         sinon.stub(fs, 'readFile');
@@ -41,11 +41,6 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
     describe('init', function () {
         it('initializes without errors when redirects file is not present', async function () {
-            redirectManager = {
-                removeAllRedirects: sinon.stub(),
-                addRedirect: sinon.stub()
-            };
-
             customRedirectsAPI = new CustomRedirectsAPI({
                 basePath,
                 redirectManager,
@@ -183,6 +178,11 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             // written new routes file
             fs.writeFile.calledWith(existingRedirectsFilePath, redirectsJSONConfig, 'utf-8').should.be.true();
+
+            // redirects have been re-registered
+            redirectManager.removeAllRedirects.calledOnce.should.be.true();
+            // one redirect in total
+            redirectManager.addRedirect.calledOnce.should.be.true();
         });
 
         it('creates a backup file from existing redirects.yaml file', async function () {
@@ -226,6 +226,11 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
             // overwritten with incoming routes.yaml file
             fs.copy.calledWith(incomingFilePath, `${basePath}redirects.yaml`).should.be.true();
+
+            // redirects have been re-registered
+            redirectManager.removeAllRedirects.calledOnce.should.be.true();
+            // two redirects in total
+            redirectManager.addRedirect.calledTwice.should.be.true();
         });
     });
 });
