@@ -1866,10 +1866,10 @@
     "@tryghost/domain-events" "^0.1.3"
     "@tryghost/member-events" "^0.3.1"
 
-"@tryghost/members-api@2.7.4":
-  version "2.7.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.7.4.tgz#0941f8d892fb72c15f820947b2ac444bd570cd6d"
-  integrity sha512-C7w/aKRzDwR3Aol0mVborOQAv6mE8cVV4G0J2L757BjhyKuMeVAOb6X+uCYBLNhe0zabiKow6GwN+f1M/qXp4A==
+"@tryghost/members-api@2.7.5":
+  version "2.7.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.7.5.tgz#693aad037697757e8c5f69f267606208bbb9c19f"
+  integrity sha512-KieQlWshDAUG3CxHjN1J8k3IH5tl/oCDEB7SM3nnbZoVV2frSnFInAHXCLFwkjunGx0dpJEdzVUgr/VdNlb9DA==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/domain-events" "^0.1.3"
@@ -1879,7 +1879,7 @@
     "@tryghost/member-analytics-service" "^0.1.4"
     "@tryghost/member-events" "^0.3.1"
     "@tryghost/members-analytics-ingress" "^0.1.5"
-    "@tryghost/members-payments" "^0.1.4"
+    "@tryghost/members-payments" "^0.1.5"
     "@tryghost/members-stripe-service" "^0.5.0"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
@@ -1914,21 +1914,21 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
-"@tryghost/members-offers@0.10.2", "@tryghost/members-offers@^0.10.2":
-  version "0.10.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.10.2.tgz#5716e9be902ef924c3fb9fad48a7ab38cd58b7c0"
-  integrity sha512-LL+Rrn5VHwGf8cMnIVCFhkkBI6Eg1CkVjLa3qi0/NRncy28IhVn0jjg1aJa6hoicCWZLg1/efT2RhI5RvC4Gzw==
+"@tryghost/members-offers@0.10.3", "@tryghost/members-offers@^0.10.3":
+  version "0.10.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.10.3.tgz#759cf2c0650b09309e9295f178aff17990d29d5c"
+  integrity sha512-W0lGfOfJkRrESxBEgkBW5XqQuhW/5Cj+QIzOb2b6nT8u3VCE4dX0VCkLWrc6HJq+Hpgv0potmGOLoj37xvFmEw==
   dependencies:
     "@nexes/mongo-utils" "^0.3.1"
     "@tryghost/string" "^0.1.20"
 
-"@tryghost/members-payments@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-payments/-/members-payments-0.1.4.tgz#613e588b354a3e432f159f9179c946d90388bf85"
-  integrity sha512-0fA0uLRV5zPaZgEl7XuQYqtLZjJWWJVUXZq2xiKNi5jw4/koCPKjVicBOuMtRWBK0Nn5Mma6B9uBvhkMGUMqgw==
+"@tryghost/members-payments@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-payments/-/members-payments-0.1.5.tgz#9d7f7f48e118a836c5825e19403dc4c0611d4976"
+  integrity sha512-iT61ffRqVH89KUOUtzDrXTn7fG38/LUcKFaFgrnWhTwcVdcglKefE2cWAjm25BNcYKM3lHJFxG/3PTVHmcOvTw==
   dependencies:
     "@tryghost/domain-events" "^0.1.3"
-    "@tryghost/members-offers" "^0.10.2"
+    "@tryghost/members-offers" "^0.10.3"
 
 "@tryghost/members-ssr@1.0.15":
   version "1.0.15"
@@ -3155,7 +3155,7 @@ cacheable-request@^6.0.0:
     normalize-url "^4.1.0"
     responselike "^1.0.2"
 
-cacheable-request@^7.0.1, cacheable-request@^7.0.2:
+cacheable-request@^7.0.2:
   version "7.0.2"
   resolved "https://registry.yarnpkg.com/cacheable-request/-/cacheable-request-7.0.2.tgz#ea0d0b889364a25854757301ca12b2da77f91d27"
   integrity sha512-pouW8/FmiPQbuGpkXQ9BAPv/Mo5xDGANgSNXzTzJ8DrKGuXOssM4wIQRjfanNRh3Yu5cfYPvcorqbhg2KIJtew==
@@ -3787,6 +3787,13 @@ cron-validate@^1.4.1, cron-validate@^1.4.3:
   integrity sha512-N+qKw019oQBEPIP5Qwi8Z5XelQ00ThN6Maahwv+9UGu2u/b/MPb35zngMQI0T8pBoNiBrIXGlhvsmspNSYae/w==
   dependencies:
     yup "0.32.9"
+
+cross-fetch@^3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.1.4.tgz#9723f3a3a247bf8b89039f3a380a9244e8fa2f39"
+  integrity sha512-1eAtFWdIubi6T4XPy6ei9iUFoKpUkIF971QLN8lIvvvwueI65+Nw5haMNKUwfJxabqlIIDODJKGrQ66gxC0PbQ==
+  dependencies:
+    node-fetch "2.6.1"
 
 cross-spawn@^6.0.5:
   version "6.0.5"
@@ -5732,23 +5739,6 @@ got@9.6.0, got@^9.6.0:
     p-cancelable "^1.0.0"
     to-readable-stream "^1.0.0"
     url-parse-lax "^3.0.0"
-
-got@^11.8.2:
-  version "11.8.2"
-  resolved "https://registry.yarnpkg.com/got/-/got-11.8.2.tgz#7abb3959ea28c31f3576f1576c1effce23f33599"
-  integrity sha512-D0QywKgIe30ODs+fm8wMZiAcZjypcCodPNuMz5H9Mny7RJ+IjJ10BdmGW7OM7fHXP+O7r6ZwapQ/YQmMSvB0UQ==
-  dependencies:
-    "@sindresorhus/is" "^4.0.0"
-    "@szmarczak/http-timer" "^4.0.5"
-    "@types/cacheable-request" "^6.0.1"
-    "@types/responselike" "^1.0.0"
-    cacheable-lookup "^5.0.3"
-    cacheable-request "^7.0.1"
-    decompress-response "^6.0.0"
-    http2-wrapper "^1.0.0-beta.5.2"
-    lowercase-keys "^2.0.0"
-    p-cancelable "^2.0.0"
-    responselike "^2.0.0"
 
 got@~11.8.3:
   version "11.8.3"
@@ -8546,6 +8536,11 @@ node-addon-api@^4.2.0:
   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-4.2.0.tgz#117cbb5a959dff0992e1c586ae0393573e4d2a87"
   integrity sha512-eazsqzwG2lskuzBqCGPi7Ac2UgOoMz8JVOXVhTvvPDYhthvNpefx8jWD8Np7Gv+2Sz0FlPWZk0nJV0z598Wn8Q==
 
+node-fetch@2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
+  integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
+
 node-fetch@^2.6.0:
   version "2.6.6"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.6.tgz#1751a7c01834e8e1697758732e9efb6eeadfaf89"
@@ -8857,12 +8852,12 @@ object.pick@^1.2.0, object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-oembed-parser@1.5.2:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.5.2.tgz#a35830793f0cf03519ffedb9a43b815d291f0327"
-  integrity sha512-Um9aqB6fu1+DmxyKawuVcP4TpNv7gw9jmd65mIVxkQxR40+BpEz2jrl/0xaahV67omOl9eGv/OxtK0O7zVh5JQ==
+oembed-parser@1.4.9:
+  version "1.4.9"
+  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.4.9.tgz#d23127c96185dfa2d998b8567e6c7df164f3d824"
+  integrity sha512-RCOjuv20IMm9XekZB1ZefdYPc+x5qe8IyCeY/xcN71I2z70vQl+L420eI5Mjyy/NQFLv+QPEgj/aYh1vptO83w==
   dependencies:
-    got "^11.8.2"
+    cross-fetch "^3.1.4"
 
 on-finished@^2.3.0, on-finished@~2.3.0:
   version "2.3.0"
