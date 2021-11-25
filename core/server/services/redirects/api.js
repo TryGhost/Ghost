@@ -217,7 +217,7 @@ class CustomRedirectsAPI {
         const redirectsFilePath = await this.getRedirectsFilePath();
 
         if (redirectsFilePath) {
-            const backupRedirectsPath = getBackupRedirectsFilePath(redirectsFilePath);
+            const backupRedirectsPath = this.getBackupFilePath(redirectsFilePath);
 
             const backupExists = await fs.pathExists(backupRedirectsPath);
             if (backupExists) {
