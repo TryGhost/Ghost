@@ -130,7 +130,8 @@ export default class KoenigSlashMenuComponent extends Component {
 
         // open a selector item type immediately if it's followed by a space
         // to allow instant media searching
-        if (matchedItems[0]?.items[0]?.type === 'selector' && this.query.charAt(this.query.length - 1) === ' ') {
+        const matchedItem = matchedItems[0]?.items[0];
+        if ((matchedItem?.type === 'selector' || matchedItem?.insertOnSpace === true) && this.query.charAt(this.query.length - 1) === ' ') {
             this.itemClicked(matchedItems[0].items[0]);
         }
 
