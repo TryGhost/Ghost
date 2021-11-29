@@ -46,21 +46,19 @@ const messages = {
 };
 
 const escapeExpression = hbs.Utils.escapeExpression;
-const _private = {};
-const errorHandler = {};
 
 /**
  * This is a bare minimum setup, which allows us to render the error page
  * It uses the {{asset}} helper, and nothing more
  */
-_private.createHbsEngine = () => {
+const createHbsEngine = () => {
     const engine = hbs.create();
     engine.registerHelper('asset', require('../../../../frontend/helpers/asset'));
 
     return engine.express4();
 };
 
-_private.updateStack = (err) => {
+const updateStack = (err) => {
     let stackbits = err.stack.split(/\n/g);
 
     // We build this up backwards, so we always insert at position 1
@@ -88,10 +86,8 @@ _private.updateStack = (err) => {
 
 /**
  * Get an error ready to be shown the the user
- *
- * @TODO: support multiple errors within one single error, see https://github.com/TryGhost/Ghost/issues/7116#issuecomment-252231809
  */
-_private.prepareError = (err, req, res, next) => {
+const prepareError = (err, req, res, next) => {
     debug(err);
 
     if (Array.isArray(err)) {
@@ -100,7 +96,6 @@ _private.prepareError = (err, req, res, next) => {
 
     if (!errors.utils.isIgnitionError(err)) {
         // We need a special case for 404 errors
-        // @TODO look at adding this to the GhostError class
         if (err.statusCode && err.statusCode === 404) {
             err = new errors.NotFoundError({
                 err: err
@@ -120,7 +115,7 @@ _private.prepareError = (err, req, res, next) => {
     // alternative for res.status();
     res.statusCode = err.statusCode;
 
-    err.stack = _private.updateStack(err);
+    err.stack = updateStack(err);
 
     // never cache errors
     res.set({
@@ -130,7 +125,7 @@ _private.prepareError = (err, req, res, next) => {
     next(err);
 };
 
-_private.JSONErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+const jsonErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
     res.json({
         errors: [{
             message: err.message,
@@ -143,8 +138,8 @@ _private.JSONErrorRenderer = (err, req, res, next) => { // eslint-disable-line n
     });
 };
 
-_private.JSONErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-    const userError = _private.prepareUserMessage(err, req);
+const jsonErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+    const userError = prepareUserMessage(err, req);
 
     res.json({
         errors: [{
@@ -160,7 +155,7 @@ _private.JSONErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line
     });
 };
 
-_private.prepareUserMessage = (err, res) => {
+const prepareUserMessage = (err, res) => {
     const userError = {
         message: err.message,
         context: err.context
@@ -206,13 +201,13 @@ _private.prepareUserMessage = (err, res) => {
     return userError;
 };
 
-_private.ErrorFallbackMessage = err => `<h1>${tpl(messages.oopsErrorTemplateHasError)}</h1>
+const errorFallbackMessage = err => `<h1>${tpl(messages.oopsErrorTemplateHasError)}</h1>
      <p>${tpl(messages.encounteredError)}</p>
      <pre>${escapeExpression(err.message || err)}</pre>
      <br ><p>${tpl(messages.whilstTryingToRender)}</p>
      ${err.statusCode} <pre>${escapeExpression(err.message || err)}</pre>`;
 
-_private.ThemeErrorRenderer = (err, req, res, next) => {
+const themeErrorRenderer = (err, req, res, next) => {
     // If the error code is explicitly set to STATIC_FILE_NOT_FOUND,
     // Skip trying to render an HTML error, and move on to the basic error renderer
     // We do this because customised 404 templates could reference the image that's missing
@@ -240,7 +235,7 @@ _private.ThemeErrorRenderer = (err, req, res, next) => {
     // @TODO: split the error handler for assets, admin & theme to refactor this away
     if (_.isEmpty(req.app.engines)) {
         res._template = 'error';
-        req.app.engine('hbs', _private.createHbsEngine());
+        req.app.engine('hbs', createHbsEngine());
         req.app.set('view engine', 'hbs');
         req.app.set('views', config.get('paths').defaultViews);
     }
@@ -257,7 +252,7 @@ _private.ThemeErrorRenderer = (err, req, res, next) => {
 
         // And then try to explain things to the user...
         // Cheat and output the error using handlebars escapeExpression
-        return res.status(500).send(_private.ErrorFallbackMessage(_err));
+        return res.status(500).send(errorFallbackMessage(_err));
     });
 };
 
@@ -285,56 +280,52 @@ function createHtmlDocument(status, message) {
        </html>\n`;
 }
 
-_private.HTMLErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+const htmlErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
     return res.send(createHtmlDocument(res.statusCode, err.stack));
 };
 
-errorHandler.resourceNotFound = (req, res, next) => {
-    // TODO, handle unknown resources & methods differently, so that we can also produce
-    // 405 Method Not Allowed
+module.exports.resourceNotFound = (req, res, next) => {
     next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
 };
 
-errorHandler.pageNotFound = (req, res, next) => {
+module.exports.pageNotFound = (req, res, next) => {
     next(new errors.NotFoundError({message: tpl(messages.pageNotFound)}));
 };
 
-errorHandler.handleJSONResponse = [
+module.exports.handleJSONResponse = [
     // Make sure the error can be served
-    _private.prepareError,
+    prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
     // Render the error using JSON format
-    _private.JSONErrorRenderer
+    jsonErrorRenderer
 ];
 
-errorHandler.handleJSONResponseV2 = [
+module.exports.handleJSONResponseV2 = [
     // Make sure the error can be served
-    _private.prepareError,
+    prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
     // Render the error using JSON format
-    _private.JSONErrorRendererV2
+    jsonErrorRendererV2
 ];
 
-errorHandler.handleHTMLResponse = [
+module.exports.handleHTMLResponse = [
     // Make sure the error can be served
-    _private.prepareError,
+    prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
     // Render the error using HTML format
-    _private.HTMLErrorRenderer
+    htmlErrorRenderer
 ];
 
-errorHandler.handleThemeResponse = [
+module.exports.handleThemeResponse = [
     // Make sure the error can be served
-    _private.prepareError,
+    prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
     // Render the error using theme template
-    _private.ThemeErrorRenderer,
+    themeErrorRenderer,
     // Fall back to basic if HTML is not explicitly accepted
-    _private.HTMLErrorRenderer
+    htmlErrorRenderer
 ];
-
-module.exports = errorHandler;
