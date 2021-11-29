@@ -28,25 +28,8 @@ describe('Frontend Routing:Redirects', function () {
         };
     }
 
-    function addPosts(done) {
-        testUtils.clearData().then(function () {
-            return testUtils.initData();
-        }).then(function () {
-            return testUtils.fixtures.insertPostsAndTags();
-        }).then(function () {
-            done();
-        });
-    }
-
     afterEach(function () {
         sinon.restore();
-    });
-
-    before(function () {
-        return testUtils.startGhost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            });
     });
 
     // TODO: convert to unit tests
