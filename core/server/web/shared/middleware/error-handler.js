@@ -256,34 +256,6 @@ const themeErrorRenderer = (err, req, res, next) => {
     });
 };
 
-/**
- *  Borrowed heavily from finalHandler
- */
-
-const DOUBLE_SPACE_REGEXP = /\x20{2}/g;
-const NEWLINE_REGEXP = /\n/g;
-
-function createHtmlDocument(status, message) {
-    let body = escapeExpression(message)
-        .replace(NEWLINE_REGEXP, '<br>')
-        .replace(DOUBLE_SPACE_REGEXP, ' &nbsp;');
-
-    return `<!DOCTYPE html>\n
-       <html lang="en">\n
-       <head>\n
-       <meta charset="utf-8">\n
-       <title>${status} Error</title>\n
-       </head>\n
-       <body>\n
-       <pre>${status} ${body}</pre>\n
-       </body>\n
-       </html>\n`;
-}
-
-const htmlErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-    return res.send(createHtmlDocument(res.statusCode, err.stack));
-};
-
 module.exports.resourceNotFound = (req, res, next) => {
     next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
 };
@@ -314,9 +286,7 @@ module.exports.handleHTMLResponse = [
     // Make sure the error can be served
     prepareError,
     // Handle the error in Sentry
-    sentry.errorHandler,
-    // Render the error using HTML format
-    htmlErrorRenderer
+    sentry.errorHandler
 ];
 
 module.exports.handleThemeResponse = [
@@ -325,7 +295,5 @@ module.exports.handleThemeResponse = [
     // Handle the error in Sentry
     sentry.errorHandler,
     // Render the error using theme template
-    themeErrorRenderer,
-    // Fall back to basic if HTML is not explicitly accepted
-    htmlErrorRenderer
+    themeErrorRenderer
 ];
