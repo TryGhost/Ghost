@@ -24,6 +24,7 @@ module.exports = {
             key: 'stripe_plans'
         }];
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const operation of defaultOperations) {
             logging.info(`Updating ${operation.key} setting group,type,flags`);
             await knex('settings')
@@ -86,6 +87,7 @@ module.exports = {
             value: JSON.stringify(stripePlans)
         }];
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const operation of valueOperations) {
             logging.info(`Updating ${operation.key} setting value`);
             await knex('settings')
@@ -170,6 +172,7 @@ module.exports = {
             'stripe_secret_key'
         ];
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const setting of settingsToDelete) {
             logging.info(`Deleting ${setting} setting`);
         }

@@ -15,6 +15,7 @@ module.exports = createNonTransactionalMigration(
         });
 
         if (knex.client.config.client === 'sqlite3') {
+            // eslint-disable-next-line no-restricted-syntax
             for (const column of ['name', 'code', 'stripe_coupon_id']) {
                 await addUnique('offers', column, knex);
             }
@@ -32,6 +33,7 @@ module.exports = createNonTransactionalMigration(
         });
 
         if (knex.client.config.client === 'sqlite3') {
+            // eslint-disable-next-line no-restricted-syntax
             for (const column of ['name', 'code', 'stripe_coupon_id']) {
                 await addUnique('offers', column, knex);
             }
