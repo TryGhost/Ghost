@@ -87,12 +87,12 @@ class DynamicRedirectManager {
     /**
      * @param {string} from
      * @param {string} to
-     * @param {object} options
-     * @param {boolean} options.permanent
+     * @param {object} [options]
+     * @param {boolean} [options.permanent]
      *
      * @returns {string} The redirect ID
      */
-    addRedirect(from, to, options) {
+    addRedirect(from, to, options = {}) {
         try {
             const fromRegex = this.buildRegex(from);
             const redirectId = from;
