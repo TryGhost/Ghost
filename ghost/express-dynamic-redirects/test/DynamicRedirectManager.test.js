@@ -314,4 +314,34 @@ describe('DynamicRedirectManager', function () {
             });
         });
     });
+
+    describe('with subdirectory configuration', function () {
+        let manager;
+
+        beforeEach(function () {
+            manager = new DynamicRedirectManager({
+                permanentMaxAge: 100,
+                getSubdirectoryURL: (pathname) => {
+                    return urlJoin('', pathname);
+                }
+            });
+        });
+
+        it('should include the subdirectory', function () {
+            const from = '/my-old-blog-post/';
+            const to = '/revamped-url/';
+
+            manager.addRedirect(from , to, {permanent: true});
+
+            req.url = '/blog/my-old-blog-post/';
+
+            manager.handleRequest(req, res, function next() {
+                should.fail(true, 'next should NOT have been called');
+            });
+
+            should.equal(headers['Cache-Control'], 'public, max-age=100');
+            should.equal(status, 301);
+            should.equal(location, '/blog/revamped-url/');
+        });
+    });
 });
