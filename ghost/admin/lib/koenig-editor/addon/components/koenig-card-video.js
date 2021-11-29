@@ -151,6 +151,7 @@ export default class KoenigCardVideoComponent extends Component {
             this.previewPayload.duration = metadata.duration;
             this.previewPayload.width = metadata.width;
             this.previewPayload.height = metadata.height;
+            this.previewPayload.mimeType = metadata.mimeType;
 
             if (metadata.thumbnailBlob) {
                 // show the thumbnail behind the progress bar whilst uploading

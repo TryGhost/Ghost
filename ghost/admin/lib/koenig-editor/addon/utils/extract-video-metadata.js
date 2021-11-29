@@ -1,5 +1,6 @@
 export default function extractVideoMetadata(file) {
     return new Promise((resolve, reject) => {
+        const mimeType = file.type;
         let duration, width, height;
 
         const video = document.createElement('video');
@@ -34,6 +35,7 @@ export default function extractVideoMetadata(file) {
                     duration,
                     width,
                     height,
+                    mimeType,
                     thumbnailBlob
                 });
             }, 'image/jpeg', 0.75);
