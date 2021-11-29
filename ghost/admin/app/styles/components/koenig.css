@@ -1668,6 +1668,41 @@ button.emoji-picker__category-button.active {
     color: rgba(124, 139, 154, 0.5)
 }
 
+/* Product card
+/* --------------------------------------------------------------- */
+.kg-product-card {
+    display: flex;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgb(124 139 154 / 25%);
+    border-radius: 5px;
+    flex-direction: column;
+    text-decoration: none;
+    max-width: 512px;
+}
+
+.kg-product-card-image {
+    border-radius: 5px 5px 0 0;
+}
+
+.kg-product-card-text {
+    padding: 20px;
+}
+
+.kg-product-card-title {
+    text-decoration: none;
+    color: #15171A;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
+    font-weight: 700;
+    font-size: 1.9rem;
+}
+
+.kg-product-card-description {
+    font-size: 16px;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
+    color: #656E7A;
+    margin-top: 4px;
+}
+
 /* Button card
 /* --------------------------------------------------------------- */
 .kg-button-card {
