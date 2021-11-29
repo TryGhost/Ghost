@@ -666,5 +666,41 @@ describe('parser-plugins', function () {
             section.payload.html.should.eql('<table id="table1"><tbody><tr><th>title1</th><th>title2</th><th>title3</th></tr><tr><td id="nested"><table id="table2"><tbody><tr><td>cell1</td><td>cell2</td><td>cell3</td></tr></tbody></table></td><td>cell2</td><td>cell3</td></tr><tr><td>cell4</td><td>cell5</td><td>cell6</td></tr></tbody></table>');
         });
     });
+
+    describe('altBlockquoteToAside', function () {
+        it('parses blockquote with alt class as aside keeping formatting', function () {
+            const dom = buildDOM('<blockquote class="kg-blockquote-alt kg-width-wide"><strong>Testing</strong></blockquote>');
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(1);
+
+            const [section] = sections;
+            section.type.should.equal('markup-section');
+            section._tagName.should.equal('aside');
+            section.markers.should.have.lengthOf(1);
+
+            const [m1] = section.markers.toArray();
+            m1.value.should.equal('Testing');
+
+            const [mu1] = m1.markups;
+            mu1.tagName.should.equal('strong');
+        });
+
+        it('handles nested paragraphs like normal blockquote', function () {
+            const dom = buildDOM('<blockquote class="kg-blockquote-alt kg-width-wide"><p>Para 1</p><p>Para 2</p></blockquote>');
+            const sections = parser.parse(dom).sections.toArray();
+
+            sections.length.should.equal(1);
+
+            const [section] = sections;
+            const [m1, m2, m3, m4] = section.markers.toArray();
+            m1.value.should.equal('Para 1');
+            m2.name.should.equal('soft-return');
+            m2.type.should.equal('atom');
+            m3.name.should.equal('soft-return');
+            m3.type.should.equal('atom');
+            m4.value.should.equal('Para 2');
+        });
+    });
 });
 

@@ -415,6 +415,34 @@ export function createParserPlugins(_options = {}) {
         return;
     }
 
+    // we store alt-style blockquotes as `aside` sections as a workaround
+    // for mobiledoc not allowing arbitrary attributes on markup sections
+    function altBlockquoteToAside(node) {
+        if (node.nodeType !== 1 || node.tagName !== 'BLOCKQUOTE') {
+            return;
+        }
+
+        if (!node.classList.contains('kg-blockquote-alt')) {
+            return;
+        }
+
+        const replacementDoc = options.createDocument(`<aside>${node.innerHTML}</aside>`);
+        const aside = replacementDoc.querySelector('aside');
+
+        // bit of an ugly hack because
+        // 1. node.tagName is readonly so we can't directly change it's type
+        // 2. the node list of the current tree branch is not re-evaluated so removing
+        //    this node, replacing it, or adding a new _sibling_ will not be picked up
+        //
+        // relies on mobiledoc-kit's handling of nested elements picking the
+        // inner-most understandable section element when creating sections
+        node.textContent = '';
+        node.appendChild(aside);
+
+        // let the default parser handle the nested aside node, keeping any formatting
+        return;
+    }
+
     function tableToHtmlCard(node, builder, {addSection, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'TABLE') {
             return;
@@ -454,6 +482,7 @@ export function createParserPlugins(_options = {}) {
         embedCard.fromFigureIframe(options),
         embedCard.fromIframe(options), // Process iFrames without figures after ones with
         figureScriptToHtmlCard,
+        altBlockquoteToAside,
         tableToHtmlCard
     ];
 }
