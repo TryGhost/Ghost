@@ -1497,6 +1497,11 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
+"@kapouer/eslint-plugin-no-return-in-loop@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@kapouer/eslint-plugin-no-return-in-loop/-/eslint-plugin-no-return-in-loop-1.0.0.tgz#9fdbe83deca12156c0b5fcbfae1f387e9f2baff5"
+  integrity sha512-IXQp8N68L2fkk7p7RckBBhT/KwAX04GooIGjwzmY5THQanQvsmJpYgwC7A1Io2XDXBJzlGelQkP/C1SRM/aq8w==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -4776,11 +4781,12 @@ eslint-plugin-flowtype@^5.2.0:
     lodash "^4.17.15"
     string-natural-compare "^3.0.1"
 
-eslint-plugin-ghost@2.8.0:
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.8.0.tgz#aaa45539fb5603b8d0b9ee7f6495c05c05c82e37"
-  integrity sha512-fPi3qePZqEY/aeToPNsQ4/an44SWr8s8lEEWObey5+JAsfUvB9ttr7DX/iyJEDNbMjSPEHh3U/P0p4DD04q4mQ==
+eslint-plugin-ghost@2.9.0:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ghost/-/eslint-plugin-ghost-2.9.0.tgz#96992d2a240f0c41011c63107ed7686a33495401"
+  integrity sha512-pc/nFdYjnPmAF9Cs4BhscrE0MhWBUxQlX3gZ5XqkJOP3MqNsuYeecz85QTG6IvjarKLhr6EklVNGoQ42BaJnjA==
   dependencies:
+    "@kapouer/eslint-plugin-no-return-in-loop" "1.0.0"
     eslint-plugin-ember "10.5.7"
     eslint-plugin-filenames "1.3.2"
     eslint-plugin-mocha "7.0.1"
