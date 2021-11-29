@@ -98,12 +98,25 @@ class MobiledocHtmlRenderer {
 
     render(mobiledoc, _cardOptions = {}) {
         const ghostVersion = mobiledoc.ghostVersion || '4.0';
+
         const defaultCardOptions = {
             ghostVersion,
             target: 'html'
         };
         const cardOptions = Object.assign({}, defaultCardOptions, _cardOptions);
-        const rendererOptions = Object.assign({}, this.options, {cardOptions});
+
+        const sectionElementRenderer = {
+            ASIDE: function (tagName, dom) {
+                // we use ASIDE sections in Koenig as a workaround for applying
+                // a different blockquote style because mobiledoc doesn't support
+                // storing arbitrary attributes with sections
+                const blockquote = dom.createElement('blockquote');
+                blockquote.setAttribute('class', 'kg-blockquote-alt kg-width-wide');
+                return blockquote;
+            }
+        };
+
+        const rendererOptions = Object.assign({}, this.options, {cardOptions, sectionElementRenderer});
         const renderer = new Renderer(rendererOptions);
         const rendered = renderer.render(mobiledoc);
         const serializer = new SimpleDom.HTMLSerializer(SimpleDom.voidMap);
