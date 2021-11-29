@@ -115,7 +115,7 @@ module.exports = function (req, res, next) {
     }).then(() => {
         next();
     }).catch(function (err) {
-        if (err.code === 'SHARP_INSTALLATION' || err.errorType === 'NoContentError') {
+        if (err.code === 'SHARP_INSTALLATION' || err.code === 'IMAGE_PROCESSING' || err.errorType === 'NoContentError') {
             return redirectToOriginal();
         }
         next(err);
