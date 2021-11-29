@@ -184,7 +184,7 @@ module.exports = function setupSiteApp(options = {}) {
             app.setupErrorHandling(siteApp);
         }
     });
-    siteApp.use(shared.middleware.errorHandler.handleThemeResponse);
+    siteApp.use(mw.errorHandler.handleThemeResponse);
 
     debug('Site setup end');
 
