@@ -1932,22 +1932,17 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/kg-clean-basic-html@2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.1.tgz#4e7ee5e3ac656487e3e1b3d1bf2ad8c46e19444f"
-  integrity sha512-5mQYk+SnTUs5MptBZNdZGtvR8z0eS1bwoLZXP/AcoJL2Px3iK/TEhwoGzB+xG8Ef2WY5/CI3hvdZ0NfN+fRVdQ==
-
-"@tryghost/kg-clean-basic-html@^2.2.1":
+"@tryghost/kg-clean-basic-html@2.2.3", "@tryghost/kg-clean-basic-html@^2.2.3":
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.3.tgz#d057db8636cd70588725fe44ddb46f78660c0c79"
   integrity sha512-zf+3CndT3Im+t0JKSsSfQkpbg2HvWkKqfWV4j+EtwM3OUUzAXReJS+X7hVfrfpDTXyeFern9Tx09TEDZjs48Rg==
 
-"@tryghost/kg-parser-plugins@2.6.2":
-  version "2.6.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.6.2.tgz#9086422ee7f257b4f36125cfa02942220d734fa0"
-  integrity sha512-YZn9Uuee8F6iFYZZcVRwec3M9NP7xfnPgWiqlj9nX87AQvtPJnaM6MYr6hRv+1wp65blKFk9WgRXBLVsQ+RFpQ==
+"@tryghost/kg-parser-plugins@2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.7.0.tgz#631dce3d5597c2dda8810c2cdfa08848c36dae71"
+  integrity sha512-OavKPJbVM4Qn23fByCzloklQdRK2MIEFC0Ak50oiPq2udfBler+rLnAPWpbPc4+92yQM1DBVG2l2z78ixyQXcA==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^2.2.1"
+    "@tryghost/kg-clean-basic-html" "^2.2.3"
 
 "@tryghost/limit-service@1.0.0":
   version "1.0.0"
@@ -7080,7 +7075,6 @@ ember-power-calendar@^0.16.3:
 
 ember-power-datepicker@cibernox/ember-power-datepicker:
   version "0.8.1"
-  uid da580474a2c449b715444934ddb626b7c07f46a7
   resolved "https://codeload.github.com/cibernox/ember-power-datepicker/tar.gz/da580474a2c449b715444934ddb626b7c07f46a7"
   dependencies:
     ember-basic-dropdown "^3.0.11"
@@ -7107,8 +7101,7 @@ ember-power-select@4.1.5:
     ember-truth-helpers "^2.1.0 || ^3.0.0"
 
 ember-promise-modals@TryGhost/ember-promise-modals#v2.0.0+ghost.3:
-  version "2.0.0+ghost.3"
-  uid "7849fe130359f765673d0eb6b3355100f94129d2"
+  version "2.0.0"
   resolved "https://codeload.github.com/TryGhost/ember-promise-modals/tar.gz/7849fe130359f765673d0eb6b3355100f94129d2"
   dependencies:
     "@ember/test-waiters" "^3.0.0"
@@ -8890,7 +8883,6 @@ gonzales-pe@4.2.4:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@^8.0.1:
@@ -10301,7 +10293,6 @@ just-extend@^4.0.2:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keyv@3.0.0:
@@ -13956,7 +13947,6 @@ simple-swizzle@^0.2.2:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
 sinon@^9.0.0:
