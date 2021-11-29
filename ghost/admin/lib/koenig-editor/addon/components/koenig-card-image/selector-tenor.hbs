@@ -25,7 +25,7 @@
                     {{#each this.tenor.columns as |gifs|}}
                         <div class="gh-unsplash-grid-column">
                             {{#each gifs as |gif|}}
-                                <GhTenor::Gif
+                                <KoenigCardImage::SelectorTenor::Gif
                                     @gif={{gif}}
                                     @select={{fn this.select gif}} />
                             {{/each}}
