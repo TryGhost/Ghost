@@ -168,5 +168,94 @@ describe('DynamicRedirectManager', function () {
                 should.equal(location, '/?something=good');
             });
         });
+
+        describe('Case sensitivity', function () {
+            it('with case insensitive', function () {
+                const from = '/^\\/case-insensitive/i';
+                const to = '/redirected-insensitive';
+
+                manager.addRedirect(from , to);
+
+                req.url = '/CaSe-InSeNsItIvE';
+
+                manager.handleRequest(req, res, function next() {
+                    should.fail(true, 'next should NOT have been called');
+                });
+
+                // NOTE: max-age is "0" because it's not a permanent redirect
+                should.equal(headers['Cache-Control'], 'public, max-age=0');
+                should.equal(status, 302);
+                should.equal(location, '/redirected-insensitive');
+            });
+
+            it('with case sensitive', function () {
+                const from = '^\\/Case-Sensitive';
+                const to = '/redirected-sensitive';
+
+                manager.addRedirect(from , to);
+
+                req.url = '/Case-Sensitive';
+
+                manager.handleRequest(req, res, function next() {
+                    should.fail(true, 'next should NOT have been called');
+                });
+
+                // NOTE: max-age is "0" because it's not a permanent redirect
+                should.equal(headers['Cache-Control'], 'public, max-age=0');
+                should.equal(status, 302);
+                should.equal(location, '/redirected-sensitive');
+            });
+
+            it('defaults to case sensitive', function () {
+                const from = '^\\/Default-Sensitive';
+                const to = '/redirected-default';
+
+                manager.addRedirect(from , to);
+
+                req.url = '/Default-Sensitive';
+
+                manager.handleRequest(req, res, function next() {
+                    should.fail(true, 'next should NOT have been called');
+                });
+
+                should.equal(headers['Cache-Control'], 'public, max-age=0');
+                should.equal(status, 302);
+                should.equal(location, '/redirected-default');
+            });
+
+            it('should not redirect with case sensitive', function () {
+                const from = '^\\/Case-Sensitive';
+                const to = '/redirected-insensitive';
+
+                manager.addRedirect(from , to);
+
+                req.url = '/casE-sensitivE';
+
+                manager.handleRequest(req, res, function next() {
+                    should.ok(true, 'next should have been called');
+                });
+
+                should.equal(headers, null);
+                should.equal(status, null);
+                should.equal(location, null);
+            });
+
+            it('should not redirect with default case sensitive', function () {
+                const from = '^\\/Default-Sensitive';
+                const to = '/redirected-default';
+
+                manager.addRedirect(from , to);
+
+                req.url = '/defaulT-sensitivE';
+
+                manager.handleRequest(req, res, function next() {
+                    should.ok(true, 'next should have been called');
+                });
+
+                should.equal(headers, null);
+                should.equal(status, null);
+                should.equal(location, null);
+            });
+        });
     });
 });
