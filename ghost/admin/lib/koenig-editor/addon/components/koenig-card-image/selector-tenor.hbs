@@ -1,17 +1,21 @@
-<div class="kg-media-selector-browser" {{did-insert this.didInsertContainer}} {{on-key "Escape" @close}}>
+<div class="kg-media-selector-browser"
+    {{did-insert this.didInsertContainer}}
+    {{on-key "Escape" @close}}
+>
     {{!-- static header --}}
     <header class="kg-media-selector-heading">
         <span class="gh-input-icon">
             {{svg-jar "search"}}
-            <GhTextInput
-                @class="kg-media-selector-searchbox"
-                @name="searchKeyword"
-                @placeholder="Search Tenor for GIFs"
-                @tabindex="1"
-                @shouldFocus={{true}}
-                @autocorrect="off"
-                @value={{readonly this.tenor.searchTerm}}
-                @input={{this.search}}
+            <input
+                class="gh-input kg-media-selector-searchbox"
+                name="searchKeyword"
+                placeholder="Search Tenor for GIFs"
+                autocorrect="off"
+                autocomplete="hidden"
+                value={{readonly this.tenor.searchTerm}}
+                {{on "input" this.search}}
+                {{on "focus" this.clearHighlight}}
+                {{autofocus}}
             />
         </span>
     </header>
@@ -27,7 +31,8 @@
                             {{#each gifs as |gif|}}
                                 <KoenigCardImage::SelectorTenor::Gif
                                     @gif={{gif}}
-                                    @select={{fn this.select gif}} />
+                                    @select={{fn this.select gif}}
+                                    @isHighlighted={{eq gif this.highlightedGif}} />
                             {{/each}}
                         </div>
                     {{/each}}

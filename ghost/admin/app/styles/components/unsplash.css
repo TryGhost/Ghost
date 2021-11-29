@@ -294,6 +294,10 @@
     cursor: pointer;
 }
 
+.gh-tenor-gif-highlighted {
+    border: 3px solid var(--blue);
+}
+
 .gh-tenor-logo {
     display: inline-block;
     width: 100px;
