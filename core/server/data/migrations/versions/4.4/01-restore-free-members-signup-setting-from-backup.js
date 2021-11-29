@@ -63,6 +63,7 @@ module.exports = createTransactionalMigration(
 
         let hasRestored = false;
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const backupFile of backupFiles) {
             try {
                 const backup = require(path.join(dataPath, backupFile));

@@ -28,6 +28,7 @@ module.exports = createTransactionalMigration(
 
         const eventChunks = chunk(membersStatusEvents, chunkSize);
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const events of eventChunks) {
             await knex.insert(events).into('members_status_events');
         }

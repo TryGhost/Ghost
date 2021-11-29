@@ -9,6 +9,7 @@ module.exports = createTransactionalMigration(
             .where('status', 'comped');
     },
     async function down(knex) {
+        // eslint-disable-next-line no-restricted-syntax
         const compedMemberIds = (await knex('members')
             .select('members.id')
             .innerJoin(

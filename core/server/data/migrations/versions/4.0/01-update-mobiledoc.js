@@ -15,6 +15,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
         // pushing all queries into the query builder buffer in parallel
         // https://stackoverflow.com/questions/54105280/how-to-loop-through-multi-line-sql-query-and-use-them-in-knex-transactions
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const postIdRow of postIdRows) {
             const {id} = postIdRow;
             const [{mobiledoc: mobiledocJson}] = await knex('posts')
@@ -31,6 +32,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
             }
 
             if (mobiledoc.cards) {
+                // eslint-disable-next-line no-restricted-syntax
                 mobiledoc.cards.forEach((card) => {
                     // card-markdown card was used in 1.0 and aliased to markdown in 2.0 onwards
                     // clean it up here whilst we're already modifying mobiledoc

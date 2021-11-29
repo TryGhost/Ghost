@@ -27,6 +27,7 @@ module.exports = createTransactionalMigration(
             const newSettingKeys = ['newsletter_show_header_title', 'newsletter_show_header_icon'];
             const now = connection.raw('CURRENT_TIMESTAMP');
 
+            // eslint-disable-next-line no-restricted-syntax
             for (const settingKey of newSettingKeys) {
                 const existingSetting = await connection('settings').where('key', settingKey).first();
 

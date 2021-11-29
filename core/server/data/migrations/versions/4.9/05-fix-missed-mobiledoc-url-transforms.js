@@ -33,6 +33,7 @@ module.exports = createTransactionalMigration(
                 .forUpdate()
                 .select('id');
 
+            // eslint-disable-next-line no-restricted-syntax
             for (const postIdRow of postIdRows) {
                 const {id} = postIdRow;
                 const [post] = await knex('posts')

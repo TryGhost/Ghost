@@ -35,6 +35,7 @@ module.exports = {
     },
 
     async up(options) {
+        // eslint-disable-next-line no-restricted-syntax
         for (const renameMapping of renameMappings) {
             const oldSetting = await options.transacting('settings')
                 .where('key', renameMapping.from)
@@ -61,6 +62,7 @@ module.exports = {
     },
 
     async down(options) {
+        // eslint-disable-next-line no-restricted-syntax
         for (const renameMapping of renameMappings) {
             const newSetting = await options.transacting('settings')
                 .where('key', renameMapping.to)

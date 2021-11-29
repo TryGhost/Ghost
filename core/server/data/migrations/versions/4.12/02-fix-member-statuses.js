@@ -26,6 +26,7 @@ module.exports = createTransactionalMigration(
 
         const chunks = chunkArray(freeMembersIds, chunkSize);
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const chunk of chunks) {
             await knex('members')
                 .update('status', 'free')

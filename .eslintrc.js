@@ -28,13 +28,22 @@ module.exports = {
                 'core/server/data/migrations/versions/1.*/*',
                 'core/server/data/migrations/versions/2.*/*',
                 'core/server/data/migrations/versions/3.*/*'
-            ]
+            ],
+            rules: {
+                'ghost/filenames/match-regex': ['error', '^(?:\\d{2}|\\d{4}(?:-\\d{2}){4})(?:-[a-zA-Z]+)+$', true]
+            }
         },
         {
             files: 'core/server/data/migrations/versions/**',
             rules: {
                 'no-restricted-syntax': ['warn', {
                     selector: 'ForStatement',
+                    message: 'For statements can perform badly in migrations'
+                }, {
+                    selector: 'ForOfStatement',
+                    message: 'For statements can perform badly in migrations'
+                }, {
+                    selector: 'ForInStatement',
                     message: 'For statements can perform badly in migrations'
                 }, {
                     selector: 'WhileStatement',
@@ -46,12 +55,10 @@ module.exports = {
                     selector: 'CallExpression[callee.object.name=\'_\'][callee.property.name=\'each\']',
                     message: 'Loop constructs like _.each can perform badly in migrations'
                 }, {
-                    selector: 'ForStatement ReturnStatement',
-                    message: 'Invalid use of a return statement within for-loop in a migration'
-                }, {
                     selector: 'CallExpression[callee.property.name=/join|innerJoin|leftJoin/] CallExpression[callee.property.name=/join|innerJoin|leftJoin/] CallExpression[callee.name=\'knex\']',
                     message: 'Use of multiple join statements in a single knex block'
-                }]
+                }],
+                'ghost/no-return-in-loop/no-return-in-loop': ['error']
             }
         },
         {

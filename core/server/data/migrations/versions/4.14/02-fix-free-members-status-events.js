@@ -49,6 +49,7 @@ module.exports = createTransactionalMigration(
         // and so we're left with 998 for our WHERE IN clause values
         const chunkedEventsToUpdate = _.chunk(eventsToUpdate, 998);
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const chunk of chunkedEventsToUpdate) {
             logging.info(`Updating a chunk of ${chunk.length} member status events`);
             await knex('members_status_events')

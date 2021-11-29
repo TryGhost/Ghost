@@ -20,6 +20,7 @@ module.exports = {
             key: 'stripe_connect_account_id'
         }];
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const operation of defaultOperations) {
             logging.info(`Updating ${operation.key} setting group,type,flags`);
             await knex('settings')
@@ -62,6 +63,7 @@ module.exports = {
             value: stripeConnectIntegration.account_id || ''
         }];
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const operation of valueOperations) {
             logging.info(`Updating ${operation.key} setting value`);
             await knex('settings')

@@ -47,6 +47,7 @@ module.exports = createTransactionalMigration(
             return offers.concat(updatedRow);
         }, []);
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const truncatedOffer of truncatedOffers) {
             await knex('offers')
                 .update('name', truncatedOffer.name)

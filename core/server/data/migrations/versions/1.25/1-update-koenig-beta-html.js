@@ -45,6 +45,7 @@ module.exports.up = function regenerateKoenigBetaHTML(options) {
                     || (mobiledoc && !mobiledocIsCompatibleWithV1(mobiledoc))
                 ) {
                     // change imagecard.payload.imageStyle to imagecard.payload.cardWidth
+                    // eslint-disable-next-line no-restricted-syntax
                     mobiledoc.cards.forEach((card) => {
                         if (card[0] === 'image') {
                             card[1].cardWidth = card[1].imageStyle;

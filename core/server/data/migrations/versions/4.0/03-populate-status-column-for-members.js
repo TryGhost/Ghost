@@ -5,6 +5,7 @@ const logging = require('@tryghost/logging');
 module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Updating members.status based on members_stripe_customers_subscriptions.status');
+        // eslint-disable-next-line no-restricted-syntax
         const paidMemberIds = (await knex('members')
             .select('members.id')
             .innerJoin(
@@ -24,6 +25,7 @@ module.exports = createTransactionalMigration(
                 }
             )).map(({id}) => id);
 
+        // eslint-disable-next-line no-restricted-syntax
         const compedMemberIds = (await knex('members')
             .select('members.id')
             .innerJoin(
@@ -54,6 +56,7 @@ module.exports = createTransactionalMigration(
 
         const paidMemberIdChunks = chunk(paidMemberIds, chunkSize);
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const paidMemberIdsChunk of paidMemberIdChunks) {
             await knex('members')
                 .update('status', 'paid')
@@ -62,6 +65,7 @@ module.exports = createTransactionalMigration(
 
         const compedMemberIdChunks = chunk(compedMemberIds, chunkSize);
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const compedMemberIdsChunk of compedMemberIdChunks) {
             await knex('members')
                 .update('status', 'comped')

@@ -18,6 +18,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
         // pushing all queries into the query builder buffer in parallel
         // https://stackoverflow.com/questions/54105280/how-to-loop-through-multi-line-sql-query-and-use-them-in-knex-transactions
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const postIdRow of postIdRows) {
             const {id} = postIdRow;
             const [post] = await knex('posts')
@@ -80,6 +81,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
             .forUpdate()
             .select('id');
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const userIdRow of userIdRows) {
             const {id} = userIdRow;
             const [user] = await knex('users')
@@ -108,6 +110,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
             .forUpdate()
             .select('id');
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const tagIdRow of tagIdRows) {
             const {id} = tagIdRow;
             const [tag] = await knex('tags')
@@ -148,6 +151,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
             .forUpdate()
             .select('id');
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const snippetIdRow of snippetIdRows) {
             const {id} = snippetIdRow;
             const [snippet] = await knex('snippets')
@@ -180,6 +184,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
                 'twitter_image'
             ]);
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const settingRow of settingsRows) {
             let {key, value} = settingRow;
 
