@@ -32,7 +32,8 @@
                                 <KoenigCardImage::SelectorTenor::Gif
                                     @gif={{gif}}
                                     @select={{fn this.select gif}}
-                                    @isHighlighted={{eq gif this.highlightedGif}} />
+                                    @isHighlighted={{eq gif this.highlightedGif}}
+                                    {{scroll-into-view (eq gif this.highlightedGif) offset=20}} />
                             {{/each}}
                         </div>
                     {{/each}}
