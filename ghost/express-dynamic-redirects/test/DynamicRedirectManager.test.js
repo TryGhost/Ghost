@@ -257,5 +257,61 @@ describe('DynamicRedirectManager', function () {
                 should.equal(location, null);
             });
         });
+
+        describe('External url redirect', function () {
+            it('with trailing slash', function () {
+                const from = '/external-url';
+                const to = 'https://ghost.org';
+
+                manager.addRedirect(from , to);
+
+                req.url = '/external-url/';
+
+                manager.handleRequest(req, res, function next() {
+                    should.fail(true, 'next should NOT have been called');
+                });
+
+                // NOTE: max-age is "0" because it's not a permanent redirect
+                should.equal(headers['Cache-Control'], 'public, max-age=0');
+                should.equal(status, 302);
+                should.equal(location, 'https://ghost.org/');
+            });
+
+            it('without trailing slash', function () {
+                const from = '/external-url';
+                const to = 'https://ghost.org';
+
+                manager.addRedirect(from , to);
+
+                req.url = '/external-url';
+
+                manager.handleRequest(req, res, function next() {
+                    should.fail(true, 'next should NOT have been called');
+                });
+
+                // NOTE: max-age is "0" because it's not a permanent redirect
+                should.equal(headers['Cache-Control'], 'public, max-age=0');
+                should.equal(status, 302);
+                should.equal(location, 'https://ghost.org/');
+            });
+
+            it('with capturing group', function () {
+                const from = '/external-url/(.*)';
+                const to = 'https://ghost.org/$1';
+
+                manager.addRedirect(from , to);
+
+                req.url = '/external-url/docs';
+
+                manager.handleRequest(req, res, function next() {
+                    should.fail(true, 'next should NOT have been called');
+                });
+
+                // NOTE: max-age is "0" because it's not a permanent redirect
+                should.equal(headers['Cache-Control'], 'public, max-age=0');
+                should.equal(status, 302);
+                should.equal(location, 'https://ghost.org/docs');
+            });
+        });
     });
 });
