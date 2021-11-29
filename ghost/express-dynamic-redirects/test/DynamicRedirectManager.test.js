@@ -12,6 +12,32 @@ const urlUtils = {
 };
 
 describe('DynamicRedirectManager', function () {
+    let headers;
+    let status;
+    let location;
+    let req;
+    let res;
+
+    beforeEach(function () {
+        headers = null;
+        status = null;
+        location = null;
+
+        req = {
+            method: 'GET'
+        };
+
+        res = {
+            set(_headers) {
+                headers = _headers;
+            },
+            redirect(_status, _location) {
+                status = _status;
+                location = _location;
+            }
+        };
+    });
+
     it('Prioritizes the query params of the redirect', function () {
         const manager = new DynamicRedirectManager({
             permanentMaxAge: 100,
@@ -24,23 +50,7 @@ describe('DynamicRedirectManager', function () {
             permanent: true
         });
 
-        const req = {
-            method: 'GET',
-            url: '/test-params/?q=123&lang=js'
-        };
-
-        let headers = null;
-        let status = null;
-        let location = null;
-        const res = {
-            set(_headers) {
-                headers = _headers;
-            },
-            redirect(_status, _location) {
-                status = _status;
-                location = _location;
-            }
-        };
+        req.url = '/test-params/?q=123&lang=js';
 
         manager.handleRequest(req, res, function next() {
             should.fail(true, false, 'next should NOT have been called');
@@ -52,29 +62,16 @@ describe('DynamicRedirectManager', function () {
     });
 
     it('Allows redirects to be removed', function () {
-        const manager = new DynamicRedirectManager({permanentMaxAge: 100, getSubdirectoryURL: (pathname) => {
-            return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
-        }});
+        const manager = new DynamicRedirectManager({
+            permanentMaxAge: 100,
+            getSubdirectoryURL: (pathname) => {
+                return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+            }
+        });
         const id = manager.addRedirect('/test-params', '/result?q=abc', {permanent: true});
         manager.removeRedirect(id);
 
-        const req = {
-            method: 'GET',
-            url: '/test-params/?q=123&lang=js'
-        };
-
-        let headers = null;
-        let status = null;
-        let location = null;
-        const res = {
-            set(_headers) {
-                headers = _headers;
-            },
-            redirect(_status, _location) {
-                status = _status;
-                location = _location;
-            }
-        };
+        req.url = '/test-params/?q=123&lang=js';
 
         manager.handleRequest(req, res, function next() {
             should.ok(true, 'next should have been called');
@@ -86,9 +83,12 @@ describe('DynamicRedirectManager', function () {
     });
 
     it('The routing works when passed an invalid regexp for the from parameter', function () {
-        const manager = new DynamicRedirectManager({permanentMaxAge: 100, getSubdirectoryURL: (pathname) => {
-            return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
-        }});
+        const manager = new DynamicRedirectManager({
+            permanentMaxAge: 100,
+            getSubdirectoryURL: (pathname) => {
+                return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+            }
+        });
         const from = '/invalid_regex/(/size/[a-zA-Z0-9_-.]*/[a-zA-Z0-9_-.]*/[0-9]*/[0-9]*/)([a-zA-Z0-9_-.]*)';
         const to = '/';
 
@@ -96,23 +96,7 @@ describe('DynamicRedirectManager', function () {
             permanent: false
         });
 
-        const req = {
-            method: 'GET',
-            url: '/test-params/'
-        };
-
-        let headers = null;
-        let status = null;
-        let location = null;
-        const res = {
-            set(_headers) {
-                headers = _headers;
-            },
-            redirect(_status, _location) {
-                status = _status;
-                location = _location;
-            }
-        };
+        req.url = '/test-params/';
 
         manager.handleRequest(req, res, function next() {
             should.ok(true, 'next should have been called');
@@ -136,23 +120,7 @@ describe('DynamicRedirectManager', function () {
 
             manager.addRedirect(from , to);
 
-            const req = {
-                method: 'GET',
-                url: '/post/10/a-nice-blog-post'
-            };
-
-            let headers = null;
-            let status = null;
-            let location = null;
-            const res = {
-                set(_headers) {
-                    headers = _headers;
-                },
-                redirect(_status, _location) {
-                    status = _status;
-                    location = _location;
-                }
-            };
+            req.url = '/post/10/a-nice-blog-post';
 
             manager.handleRequest(req, res, function next() {
                 should.fail(true, 'next should NOT have been called');
@@ -176,23 +144,7 @@ describe('DynamicRedirectManager', function () {
 
             manager.addRedirect(from , to);
 
-            const req = {
-                method: 'GET',
-                url: '/post/10/a-nice-blog-post/'
-            };
-
-            let headers = null;
-            let status = null;
-            let location = null;
-            const res = {
-                set(_headers) {
-                    headers = _headers;
-                },
-                redirect(_status, _location) {
-                    status = _status;
-                    location = _location;
-                }
-            };
+            req.url = '/post/10/a-nice-blog-post/';
 
             manager.handleRequest(req, res, function next() {
                 should.fail(true, 'next should NOT have been called');
@@ -217,23 +169,7 @@ describe('DynamicRedirectManager', function () {
 
             manager.addRedirect(from , to);
 
-            const req = {
-                method: 'GET',
-                url: '/post/10/a-nice-blog-post?a=b'
-            };
-
-            let headers = null;
-            let status = null;
-            let location = null;
-            const res = {
-                set(_headers) {
-                    headers = _headers;
-                },
-                redirect(_status, _location) {
-                    status = _status;
-                    location = _location;
-                }
-            };
+            req.url = '/post/10/a-nice-blog-post?a=b';
 
             manager.handleRequest(req, res, function next() {
                 should.fail(true, 'next should NOT have been called');
@@ -258,23 +194,7 @@ describe('DynamicRedirectManager', function () {
 
             manager.addRedirect(from , to);
 
-            const req = {
-                method: 'GET',
-                url: '/topic?something=good'
-            };
-
-            let headers = null;
-            let status = null;
-            let location = null;
-            const res = {
-                set(_headers) {
-                    headers = _headers;
-                },
-                redirect(_status, _location) {
-                    status = _status;
-                    location = _location;
-                }
-            };
+            req.url = '/topic?something=good';
 
             manager.handleRequest(req, res, function next() {
                 should.fail(true, 'next should NOT have been called');
