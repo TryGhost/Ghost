@@ -1,4 +1,5 @@
 module.exports = {
+    errorHandler: require('./error-handler'),
     handleImageSizes: require('./handle-image-sizes'),
     redirectGhostToAdmin: require('./redirect-ghost-to-admin'),
     serveFavicon: require('./serve-favicon'),
