@@ -289,10 +289,6 @@ _private.HTMLErrorRenderer = (err, req, res, next) => { // eslint-disable-line n
     return res.send(createHtmlDocument(res.statusCode, err.stack));
 };
 
-_private.BasicErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-    return res.send(res.statusCode + ' ' + err.stack);
-};
-
 errorHandler.resourceNotFound = (req, res, next) => {
     // TODO, handle unknown resources & methods differently, so that we can also produce
     // 405 Method Not Allowed
@@ -327,9 +323,7 @@ errorHandler.handleHTMLResponse = [
     // Handle the error in Sentry
     sentry.errorHandler,
     // Render the error using HTML format
-    _private.HTMLErrorRenderer,
-    // Fall back to basic if HTML is not explicitly accepted
-    _private.BasicErrorRenderer
+    _private.HTMLErrorRenderer
 ];
 
 errorHandler.handleThemeResponse = [
@@ -340,7 +334,7 @@ errorHandler.handleThemeResponse = [
     // Render the error using theme template
     _private.ThemeErrorRenderer,
     // Fall back to basic if HTML is not explicitly accepted
-    _private.BasicErrorRenderer
+    _private.HTMLErrorRenderer
 ];
 
 module.exports = errorHandler;
