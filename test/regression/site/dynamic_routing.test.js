@@ -90,57 +90,6 @@ describe('Dynamic Routing', function () {
                 .expect(/Page not found/)
                 .end(doEnd(done));
         });
-
-        describe('RSS', function () {
-            before(testUtils.teardownDb);
-
-            before(function (done) {
-                testUtils.initData().then(function () {
-                    return testUtils.fixtures.overrideOwnerUser();
-                }).then(function () {
-                    done();
-                });
-            });
-
-            after(testUtils.teardownDb);
-
-            it('should 301 redirect with CC=1year without slash', function (done) {
-                request.get('/rss')
-                    .expect('Location', '/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
-
-            it('should respond with 200 & CC=public', function (done) {
-                request.get('/rss/')
-                    .expect('Content-Type', 'text/xml; charset=utf-8')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(200)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        should.not.exist(res.headers['X-CSRF-Token']);
-                        should.not.exist(res.headers['set-cookie']);
-                        should.exist(res.headers.date);
-                        // The remainder of the XML is tested in the unit/xml_spec.js
-                        res.text.should.match(/^<\?xml version="1.0" encoding="UTF-8"\?><rss/);
-
-                        done();
-                    });
-            });
-
-            it('should get 301 redirect with CC=1year to /rss/ from /feed/', function (done) {
-                request.get('/feed/')
-                    .expect('Location', '/rss/')
-                    .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
-            });
-        });
     });
 
     describe('Collection Entry', function () {
