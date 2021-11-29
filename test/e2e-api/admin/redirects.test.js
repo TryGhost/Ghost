@@ -11,7 +11,7 @@ describe('Redirects API', function () {
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'users:extra', 'posts');
+        await localUtils.doAuth(request);
     });
 
     it('download', function () {
