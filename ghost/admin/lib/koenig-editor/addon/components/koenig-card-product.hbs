@@ -33,7 +33,8 @@
             >
                 <div class="relative{{unless (or this.previewSrc @payload.productImageSrc) " bg-whitegrey-l2"}}">
                     {{#if (or this.previewSrc @payload.productImageSrc)}}
-                        <img src={{or this.previewSrc @payload.productImageSrc}} class="{{kg-style this.kgImgStyle sidebar=this.ui.hasSideNav}}" alt={{@payload.alt}}>
+                        <img src={{or this.previewSrc @payload.productImageSrc}} class="{{kg-style this.kgImgStyle sidebar=this.ui.hasSideNav}}">
+                        <button class="absolute gh-btn gh-btn-grey gh-btn-icon" style="top: 10px; right: 10px; font-size: 1.2rem;" {{action "resetSrcs"}}><span>{{svg-jar "koenig/kg-trash"}}</span></button>
                         {{#if this.isDraggedOver}}
                             <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
                                 <span class="db center sans-serif fw7 f7 white">
