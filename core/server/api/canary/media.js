@@ -23,8 +23,9 @@ module.exports = {
 
     uploadThumbnail: {
         permissions: false,
-        options: [
-            'url'
+        data: [
+            'url',
+            'ref'
         ],
         async query(frame) {
             const mediaStorage = storage.getStorage('media');
