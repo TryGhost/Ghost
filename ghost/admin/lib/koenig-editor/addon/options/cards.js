@@ -227,6 +227,9 @@ export const CARD_MENU = [
             matches: ['video'],
             type: 'card',
             replaceArg: 'video',
+            payload: {
+                triggerBrowse: true
+            },
             isAvailable: 'feature.videoCard'
         },
         {

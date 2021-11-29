@@ -49,7 +49,7 @@
                 {{#if (or uploader.errors uploader.isUploading (not this.payload.src))}}
                     <div class="relative miw-100 flex items-center {{if (not this.previewSrc this.payload.src) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
                         {{#if uploader.errors}}
-                            <span class="db absolute top-0 right-0 left-0 pl2 pr2 bg-red white sans-serif f7">
+                            <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
                                 {{uploader.errors.firstObject.message}}
                             </span>
                         {{/if}}
