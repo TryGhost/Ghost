@@ -95,6 +95,40 @@ describe('DynamicRedirectManager', function () {
             should.equal(location, null);
         });
 
+        it('Throws an error if unexpected internal component throws unknown error', function () {
+            // override internal behavior to throw an unknown error
+            manager.setupRedirect = () => {
+                throw new Error('Unknown error');
+            };
+
+            const from = '/match-me';
+            const to = '/redirect-fails';
+
+            try {
+                manager.addRedirect(from , to);
+                should.fail(false, 'Should have thrown an error');
+            } catch (e) {
+                e.message.should.equal('Unknown error');
+            }
+        });
+
+        it('removes all redirects', function () {
+            const from = '/redirect-me';
+            const to = '/redirected';
+
+            manager.addRedirect(from , to);
+
+            req.url = '/redirect-me';
+
+            manager.removeAllRedirects();
+            manager.redirectIds.should.be.empty();
+            manager.redirects.should.be.empty();
+
+            manager.handleRequest(req, res, function next() {
+                should.ok(true, 'next should have been called');
+            });
+        });
+
         describe('Substitution regex redirects', function () {
             it('Works with substitution redirect case and no trailing slash', function (){
                 const from = '^/post/[0-9]+/([a-z0-9\\-]+)';
