@@ -25,12 +25,14 @@ module.exports = createTransactionalMigration(
         const paidPostIdChunks = chunk(paidPostIds, chunkSize);
         const membersAndPublicPostIdChunks = chunk(membersPostIds.concat(publicPostIds), chunkSize);
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const paidPostIdsChunk of paidPostIdChunks) {
             await connection('emails')
                 .update('recipient_filter', 'paid')
                 .whereIn('post_id', paidPostIdsChunk);
         }
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const membersAndPublicPostIdsChunk of membersAndPublicPostIdChunks) {
             await connection('emails')
                 .update('recipient_filter', 'all')

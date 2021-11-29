@@ -15,6 +15,7 @@ module.exports = createTransactionalMigration(
             logging.info(`Found ${compedMembers.length} comped members - checking members_status_events`);
         }
 
+        // eslint-disable-next-line no-restricted-syntax
         for (const member of compedMembers) {
             const mostRecentStatusEvent = await knex('members_status_events')
                 .select('*')

@@ -3,6 +3,7 @@ const {createTransactionalMigration} = require('../../utils');
 const logging = require('@tryghost/logging');
 
 module.exports = createTransactionalMigration(async function up(knex) {
+    // eslint-disable-next-line no-restricted-syntax
     const compedMemberIds = (await knex('members')
         .select('members.id')
         .innerJoin(
@@ -44,12 +45,14 @@ module.exports = createTransactionalMigration(async function up(knex) {
 
     const compedMemberIdChunks = chunk(compedMemberIds, chunkSize);
 
+    // eslint-disable-next-line no-restricted-syntax
     for (const compedMemberIdsChunk of compedMemberIdChunks) {
         await knex('members')
             .update('status', 'comped')
             .whereIn('id', compedMemberIdsChunk);
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     for (const memberId of compedMemberIds) {
         const mostRecentStatusEvent = await knex('members_status_events')
             .select('*')
