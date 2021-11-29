@@ -5967,7 +5967,15 @@ ember-ajax@5.1.1:
     ember-cli-babel "^7.5.0"
     najax "^1.0.7"
 
-ember-assign-helper@0.3.0, ember-assign-helper@^0.3.0:
+ember-assign-helper@0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.4.0.tgz#f0a313033656c0d2cbbcb29d55b9cd13f04bc7c1"
+  integrity sha512-GKHhT4HD2fhtDnuBk6eCdCA8XGew9hY7TVs8zjrykegiI7weC0CGtpJscmIG3O0gEEb0d07UTkF2pjfNGLx4Nw==
+  dependencies:
+    ember-cli-babel "^7.26.0"
+    ember-cli-htmlbars "^6.0.0"
+
+ember-assign-helper@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.3.0.tgz#7a023dd165ef56b28f77f70fd20e88261380aca7"
   integrity sha512-kDY0IRP6PUSJjghM2gIq24OD7d6XcZ1666zmZrywxEVjCenhaR0Oi/BXUU8JEATrIcXIExMIu34GKrHHlCLw0Q==
@@ -6058,7 +6066,7 @@ ember-cli-babel-plugin-helpers@^1.0.0, ember-cli-babel-plugin-helpers@^1.1.0, em
   resolved "https://registry.yarnpkg.com/ember-cli-babel-plugin-helpers/-/ember-cli-babel-plugin-helpers-1.1.1.tgz#5016b80cdef37036c4282eef2d863e1d73576879"
   integrity sha512-sKvOiPNHr5F/60NLd7SFzMpYPte/nnGkq/tMIfXejfKHIhaiIkYFqX8Z9UFTKWLLn+V7NOaby6niNPZUdvKCRw==
 
-ember-cli-babel@7.26.6, ember-cli-babel@^7.0.0, ember-cli-babel@^7.1.0, ember-cli-babel@^7.1.2, ember-cli-babel@^7.1.3, ember-cli-babel@^7.10.0, ember-cli-babel@^7.11.0, ember-cli-babel@^7.11.1, ember-cli-babel@^7.12.0, ember-cli-babel@^7.13.0, ember-cli-babel@^7.13.2, ember-cli-babel@^7.17.2, ember-cli-babel@^7.18.0, ember-cli-babel@^7.19.0, ember-cli-babel@^7.20.5, ember-cli-babel@^7.21.0, ember-cli-babel@^7.22.1, ember-cli-babel@^7.23.0, ember-cli-babel@^7.23.1, ember-cli-babel@^7.26.2, ember-cli-babel@^7.26.3, ember-cli-babel@^7.26.4, ember-cli-babel@^7.26.5, ember-cli-babel@^7.26.6, ember-cli-babel@^7.4.1, ember-cli-babel@^7.5.0, ember-cli-babel@^7.7.3, ember-cli-babel@~7.26.6:
+ember-cli-babel@7.26.6, ember-cli-babel@^7.0.0, ember-cli-babel@^7.1.0, ember-cli-babel@^7.1.2, ember-cli-babel@^7.1.3, ember-cli-babel@^7.10.0, ember-cli-babel@^7.11.0, ember-cli-babel@^7.11.1, ember-cli-babel@^7.12.0, ember-cli-babel@^7.13.0, ember-cli-babel@^7.13.2, ember-cli-babel@^7.17.2, ember-cli-babel@^7.18.0, ember-cli-babel@^7.19.0, ember-cli-babel@^7.20.5, ember-cli-babel@^7.21.0, ember-cli-babel@^7.22.1, ember-cli-babel@^7.23.0, ember-cli-babel@^7.23.1, ember-cli-babel@^7.26.0, ember-cli-babel@^7.26.2, ember-cli-babel@^7.26.3, ember-cli-babel@^7.26.4, ember-cli-babel@^7.26.5, ember-cli-babel@^7.26.6, ember-cli-babel@^7.4.1, ember-cli-babel@^7.5.0, ember-cli-babel@^7.7.3, ember-cli-babel@~7.26.6:
   version "7.26.6"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-7.26.6.tgz#322fbbd3baad9dd99e3276ff05bc6faef5e54b39"
   integrity sha512-040svtfj2RC35j/WMwdWJFusZaXmNoytLAMyBDGLMSlRvznudTxZjGlPV6UupmtTBApy58cEF8Fq4a+COWoEmQ==
@@ -6226,7 +6234,7 @@ ember-cli-htmlbars-inline-precompile@^2.1.0:
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@6.0.0:
+ember-cli-htmlbars@6.0.0, ember-cli-htmlbars@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-6.0.0.tgz#9d0b67c0f107467b6c8ecdc47d64e877489841bf"
   integrity sha512-7h9Lb1kfvLecMUOX8wCbwjzCsgXdNDs8qpOsDuKV6YaGS9jDZHu4P5xTYLX78YepEUnwOw1atCYWzBUsJHWrzA==
