@@ -1363,12 +1363,12 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@1.3.4":
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-1.3.4.tgz#badc3f562beb5e05e5522336bc0a9ae3716e26c1"
-  integrity sha512-DNP5gy5XdtARov2pv4hZDiwYMUQeXyuOC1sxsfzcvfDXQhNdudlMsPAsRtepQWnfKTD/IV7nx+/ND6G8pNgeAg==
+"@tryghost/html-to-mobiledoc@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-1.4.0.tgz#2da1d4574e14eefe9b5d533eed454aa901408bf4"
+  integrity sha512-3DiiFxm4D1itw6pehPERDH21ZN5FAXs3Hgbd/9F80jLe4m30LHGK27RKOPtIOBztXoO98Sbr9mIg6WuRo4rC4Q==
   dependencies:
-    "@tryghost/kg-parser-plugins" "^2.6.4"
+    "@tryghost/kg-parser-plugins" "^2.7.0"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^16.5.3"
 
@@ -1448,10 +1448,10 @@
     semver "^7.3.4"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@^2.6.4":
-  version "2.6.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.6.4.tgz#280bea23e32caaa2a52231920ccc9fdd67a3df01"
-  integrity sha512-rktL8SYS9nV/q0KOHFVPWVkAjZVlNvLBOcQh868dd+LtWa3gIc0UoRM72gWUkGTVqCsGQ2421gI/QoZezEr+Mw==
+"@tryghost/kg-parser-plugins@^2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.7.0.tgz#631dce3d5597c2dda8810c2cdfa08848c36dae71"
+  integrity sha512-OavKPJbVM4Qn23fByCzloklQdRK2MIEFC0Ak50oiPq2udfBler+rLnAPWpbPc4+92yQM1DBVG2l2z78ixyQXcA==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^2.2.3"
 
