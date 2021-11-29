@@ -1,12 +1,22 @@
-// helper function to insert image cards at or after the current active section
+export function canInsertCardsFromFiles(files) {
+    return filterAllowedFiles(files).length > 0;
+}
+
+// helper function to insert cards at or after the current active section
 // used when pasting or dropping image files
-export function insertImageCards(files, postEditor) {
-    let {builder, editor} = postEditor;
-    let collection = editor.post.sections;
+export function insertCardsFromFiles(_files, postEditor) {
+    const files = filterAllowedFiles(_files);
+
+    if (!files.length) {
+        return;
+    }
+
+    const {builder, editor} = postEditor;
+    const collection = editor.post.sections;
     let section = editor.activeSection;
 
-    // when dropping an image on the editor before it's had focus there will be
-    // no active section so we insert the image at the end of the document
+    // when dropping an file on the editor before it's had focus there will be
+    // no active section so we insert the card at the end of the document
     if (!section) {
         section = editor.post.sections.tail;
 
@@ -14,7 +24,7 @@ export function insertImageCards(files, postEditor) {
         // we use `insertSectionBefore` and don't want the image to be added
         // before the last card
         if (!section.isMarkerable) {
-            let blank = builder.createMarkupSection();
+            const blank = builder.createMarkupSection();
             postEditor.insertSectionAtEnd(blank);
             postEditor.setRange(blank.toRange());
             section = postEditor._range.head.section;
@@ -29,8 +39,8 @@ export function insertImageCards(files, postEditor) {
     // list items cannot contain card sections so insert a blank paragraph after
     // the whole list ready to be replaced by the image cards
     if (section.isListItem) {
-        let list = section.parent;
-        let blank = builder.createMarkupSection();
+        const list = section.parent;
+        const blank = builder.createMarkupSection();
         if (list.next) {
             postEditor.insertSectionBefore(collection, blank, list.next);
         } else {
@@ -40,15 +50,16 @@ export function insertImageCards(files, postEditor) {
         section = postEditor._range.head.section;
     }
 
-    // insert an image card for each image, keep track of the last card to be
+    // insert a card for each file, keep track of the last card to be
     // inserted so that the cursor can be placed on it at the end
-    let lastImageSection;
+    let lastCardSection;
     files.forEach((file) => {
-        let payload = {
+        const cardName = getCardNameFromFile(file);
+        const payload = {
             files: [file]
         };
-        lastImageSection = builder.createCardSection('image', payload);
-        postEditor.insertSectionBefore(collection, lastImageSection, section);
+        lastCardSection = builder.createCardSection(cardName, payload);
+        postEditor.insertSectionBefore(collection, lastCardSection, section);
     });
 
     // remove the current section if it's blank - avoids unexpected blank
@@ -58,5 +69,19 @@ export function insertImageCards(files, postEditor) {
     }
 
     // place cursor on the last inserted image
-    postEditor.setRange(lastImageSection.tailPosition());
+    postEditor.setRange(lastCardSection.tailPosition());
+}
+
+function filterAllowedFiles(files) {
+    return Array.from(files).filter(file => file.type.match(/^(image|video)/));
+}
+
+function getCardNameFromFile(file) {
+    if (file.type.startsWith('image')) {
+        return 'image';
+    }
+
+    if (file.type.startsWith('video')) {
+        return 'video';
+    }
 }

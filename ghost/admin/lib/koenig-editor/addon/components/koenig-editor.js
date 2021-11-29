@@ -21,6 +21,7 @@ import {TrackedObject} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
+import {canInsertCardsFromFiles, insertCardsFromFiles} from '../utils/insert-cards-from-files';
 import {captureMessage} from '@sentry/browser';
 import {createParserPlugins} from '@tryghost/kg-parser-plugins';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
@@ -29,7 +30,6 @@ import {getOwner} from '@ember/application';
 import {getParent} from '../lib/dnd/utils';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {guidFor} from '@ember/object/internals';
-import {insertImageCards} from '../utils/insert-cards-from-files';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {svgJar} from 'ghost-admin/helpers/svg-jar';
@@ -956,19 +956,11 @@ export default Component.extend({
             return;
         }
 
-        // if we have image files pasted, create an image card for each and set
-        // the payload.files property which will cause the image to be auto-uploaded
-        // NOTE: browser support varies as of May 2018:
-        // - Safari: will paste all images
-        // - Chrome: will only paste the first image
-        // - Firefox: will not paste any images
-        let images = Array.from(event.clipboardData.files).filter(file => file.type.indexOf('image') > -1);
-        if (images.length > 0) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-
+        // if we have files pasted, create a card for each and set the
+        // payload.files property which will cause the file to be auto-uploaded
+        if (canInsertCardsFromFiles(event.clipboardData.files)) {
             editor.run((postEditor) => {
-                insertImageCards(images, postEditor);
+                insertCardsFromFiles(event.clipboardData.files, postEditor);
             });
             return;
         }
@@ -1139,14 +1131,11 @@ export default Component.extend({
 
         event.preventDefault();
 
-        if (event.dataTransfer.files) {
-            let images = Array.from(event.dataTransfer.files).filter(file => file.type.indexOf('image') > -1);
-            if (images.length > 0) {
-                this.editor.run((postEditor) => {
-                    insertImageCards(images, postEditor);
-                });
-                this._scrollCursorIntoView({jumpToCard: true});
-            }
+        if (canInsertCardsFromFiles(event.dataTransfer.files)) {
+            this.editor.run((postEditor) => {
+                insertCardsFromFiles(event.dataTransfer.files, postEditor);
+            });
+            this._scrollCursorIntoView({jumpToCard: true});
         }
     },
 
