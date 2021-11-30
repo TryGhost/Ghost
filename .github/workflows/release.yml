@@ -21,6 +21,7 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: '14'
+          cache: yarn
 
       - run: yarn
       - run: grunt release --skip-tests

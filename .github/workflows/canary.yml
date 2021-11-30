@@ -16,6 +16,7 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: '14.17.0'
+          cache: yarn
 
       - name: Set up Git
         run: |
