@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/limit-service",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/limit-service",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "sinon": "11.1.2"
   },
   "dependencies": {
-    "@tryghost/errors": "^1.0.3",
+    "@tryghost/errors": "^1.0.4",
     "lodash": "^4.17.21",
     "luxon": "^1.26.0"
   }
