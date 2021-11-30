@@ -30,7 +30,7 @@ JSONHandler = {
                 // if importData follows JSON-API format `{ db: [exportedData] }`
                 if (_.keys(importData).length === 1) {
                     if (!importData.db || !Array.isArray(importData.db)) {
-                        throw new errors.GhostError({
+                        throw new errors.InternalServerError({
                             message: tpl(messages.invalidJsonFormat)
                         });
                     }

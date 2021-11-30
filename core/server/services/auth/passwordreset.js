@@ -148,7 +148,7 @@ function doReset(options, tokenParts, settingsAPI) {
             return Promise.reject(err);
         })
         .catch((err) => {
-            if (errors.utils.isIgnitionError(err)) {
+            if (errors.utils.isGhostError(err)) {
                 return Promise.reject(err);
             }
             return Promise.reject(new errors.UnauthorizedError({err: err}));

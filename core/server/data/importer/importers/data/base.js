@@ -145,7 +145,7 @@ class Base {
                     });
                 }
             } else {
-                if (!errors.utils.isIgnitionError(err)) {
+                if (!errors.utils.isGhostError(err)) {
                     err = new errors.DataImportError({
                         message: err.message,
                         context: JSON.stringify(obj),

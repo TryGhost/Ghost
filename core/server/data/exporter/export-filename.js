@@ -26,7 +26,7 @@ const exportFileName = async function exportFileName(options) {
 
         return title + 'ghost.' + datetime + '.json';
     } catch (err) {
-        logging.error(new errors.GhostError({err: err}));
+        logging.error(new errors.InternalServerError({err: err}));
         return 'ghost.' + datetime + '.json';
     }
 };

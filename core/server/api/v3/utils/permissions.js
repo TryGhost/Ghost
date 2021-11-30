@@ -66,11 +66,11 @@ const nonePublicAuth = (apiConfig, frame) => {
             return Promise.reject(err);
         }
 
-        if (errors.utils.isIgnitionError(err)) {
+        if (errors.utils.isGhostError(err)) {
             return Promise.reject(err);
         }
 
-        return Promise.reject(new errors.GhostError({
+        return Promise.reject(new errors.InternalServerError({
             err: err
         }));
     });

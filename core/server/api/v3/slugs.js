@@ -39,7 +39,7 @@ module.exports = {
             return models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all'})
                 .then((slug) => {
                     if (!slug) {
-                        return Promise.reject(new errors.GhostError({message: tpl(messages.couldNotGenerateSlug)}));
+                        return Promise.reject(new errors.InternalServerError({message: tpl(messages.couldNotGenerateSlug)}));
                     }
                     return slug;
                 });

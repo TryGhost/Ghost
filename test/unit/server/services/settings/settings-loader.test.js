@@ -82,7 +82,7 @@ describe('UNIT > SettingsLoader:', function () {
 
         it('can handle errors from YAML parser', function (done) {
             const storageFolderPath = path.join(__dirname, '../../../../utils/fixtures/settings/');
-            yamlParserStub.throws(new errors.GhostError({
+            yamlParserStub.throws(new errors.InternalServerError({
                 message: 'could not parse yaml file',
                 context: 'bad indentation of a mapping entry at line 5, column 10'
             }));

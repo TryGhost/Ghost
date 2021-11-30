@@ -18,7 +18,7 @@ if (sentryConfig && !sentryConfig.disabled) {
             shouldHandleError(error) {
                 // Sometimes non-Ghost issues will come into here but they won't
                 // have a statusCode so we should always handle them
-                if (!errors.utils.isIgnitionError(error)) {
+                if (!errors.utils.isGhostError(error)) {
                     return true;
                 }
 
