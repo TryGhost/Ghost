@@ -163,7 +163,7 @@ const freshModeGhostStart = async (options) => {
     // Reset the settings cache and disable listeners so they don't get triggered further
     settingsService.shutdown();
 
-    // Do a full database initialisation
+    // Do a full database initialization
     await knexMigrator.init();
 
     await settingsService.init();
@@ -171,7 +171,7 @@ const freshModeGhostStart = async (options) => {
     // Actually boot Ghost
     await bootGhost(options);
 
-    // Wait for the URL service to be ready, which happens after bootYou
+    // Wait for the URL service to be ready, which happens after boot
     if (options.frontend) {
         await urlServiceUtils.isFinished();
     }
