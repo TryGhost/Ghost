@@ -133,5 +133,8 @@
     "tenor": {
         "apiKey": null,
         "contentFilter": "off"
+    },
+    "opensea": {
+        "privateReadOnlyApiKey": null
     }
 }
