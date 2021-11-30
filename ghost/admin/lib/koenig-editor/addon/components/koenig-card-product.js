@@ -25,13 +25,13 @@ export default class KoenigCardProductComponent extends Component {
     get isEmpty() {
         const {productTitle, productDescription, productUrl, productButton, productImageSrc} = this.args.payload;
 
-        return isBlank(productTitle) && isBlank(productDescription) && isBlank(productUrl) && isBlank(productButton) && isBlank(productImageSrc);
+        return isBlank(productTitle) && isBlank(productDescription) && (isBlank(productUrl) || isBlank(productButton)) && isBlank(productImageSrc);
     }
 
     get isIncomplete() {
-        const {productTitle, productDescription, productUrl, productButton, productImageSrc} = this.args.payload;
+        const {productTitle, productDescription} = this.args.payload;
 
-        return isBlank(productTitle) || isBlank(productDescription) || isBlank(productUrl) || isBlank(productButton) || isBlank(productImageSrc);
+        return isBlank(productTitle) || isBlank(productDescription);
     }
 
     get toolbar() {
@@ -233,5 +233,12 @@ export default class KoenigCardProductComponent extends Component {
             .closest('.__mobiledoc-card')
             .find('input[type="file"]')
             .click();
+    }
+
+    @action
+    changeStars(event) {
+        if (event.target.checked) {
+            this._updatePayloadAttr('productStarRating', event.target.value);
+        }
     }
 }
