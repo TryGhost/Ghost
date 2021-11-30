@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/session-service",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/session-service",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -26,6 +26,6 @@
     "sinon": "11.1.2"
   },
   "dependencies": {
-    "@tryghost/errors": "^1.0.2"
+    "@tryghost/errors": "^1.0.3"
   }
 }
