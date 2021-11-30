@@ -182,6 +182,7 @@ exports.deserialize = function deserialize(errorFormat) {
  */
 exports.isGhostError = function isGhostError(err) {
     const errorName = this.GhostError.name;
+    const legacyErrorName = 'IgnitionError';
 
     const recursiveIsGhostError = function recursiveIsGhostError(obj) {
         // no super constructor available anymore
@@ -189,7 +190,7 @@ exports.isGhostError = function isGhostError(err) {
             return false;
         }
 
-        if (obj.name === errorName) {
+        if (obj.name === errorName || obj.name === legacyErrorName) {
             return true;
         }
 
