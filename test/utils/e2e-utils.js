@@ -168,11 +168,6 @@ const freshModeGhostStart = async (options) => {
 
     await settingsService.init();
 
-    // Reset the URL service generators
-    // @TODO: Prob B: why/how is this different to urlService.reset?
-    // @TODO: why would we do this on a fresh boot?!
-    urlService.resetGenerators();
-
     // Actually boot Ghost
     await bootGhost(options);
 
@@ -239,6 +234,9 @@ const stopGhost = async () => {
     if (ghostServer && ghostServer.httpServer) {
         await ghostServer.stop();
         delete require.cache[require.resolve('../../core/app')];
+        // NOTE: similarly to urlService.reset() there doesn't seem to be a need for this call
+        //       probable best location for this type of cleanup if it's needed is registering
+        //       a hood during the "server cleanup" phase of the server stop
         urlService.resetGenerators();
     }
 };
