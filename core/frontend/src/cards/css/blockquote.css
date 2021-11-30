@@ -1,0 +1,29 @@
+blockquote.kg-blockquote-alt {
+  background: none;
+  font-size: 2.4rem;
+  line-height: 1.7;
+  text-align: center;
+  color: var(--color-midgrey);
+  padding: 1rem 8rem 1.5rem;
+  border: 0 none;
+}
+
+blockquote.kg-blockquote-alt::before {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  blockquote.kg-blockquote-alt {
+    font-size: 2.2rem;
+    padding-left: 6rem;
+    padding-right: 6rem;
+  }
+}
+
+@media (max-width: 600px) {
+  blockquote.kg-blockquote-alt {
+    font-size: 2rem;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  } 
+}
