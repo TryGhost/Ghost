@@ -182,7 +182,7 @@ export const CARD_MENU = [
         {
             label: 'GIF',
             icon: 'koenig/kg-card-type-gif',
-            desc: '/gif [search term]',
+            desc: 'Search and embed gifs',
             iconClass: 'kg-card-type-unsplash',
             matches: ['gif', 'giphy', 'tenor'],
             type: 'card',
