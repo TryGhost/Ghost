@@ -980,7 +980,7 @@
     height: 100%;
     width: 100%;
     overflow: auto;
-    padding: 0 24px 24px;
+    padding: 3px 24px 24px;
 }
 
 /* Card settings panel
