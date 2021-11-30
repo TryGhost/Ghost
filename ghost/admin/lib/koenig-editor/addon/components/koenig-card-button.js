@@ -51,16 +51,16 @@ export default class KoenigCardButtonComponent extends Component {
         const urls = [];
 
         urls.push(...[{
-            name: `Link to ${this.config.get('blogTitle')}`,
+            name: `Homepage`,
             url: this.config.getSiteUrl('/')
         }, {
-            name: 'Free email signup',
+            name: 'Free signup',
             url: this.config.getSiteUrl('/#/portal/signup/free')
         }]);
 
         if (this.membersUtils.isStripeEnabled) {
             urls.push(...[{
-                name: 'Paid subscription',
+                name: 'Paid signup',
                 url: this.config.getSiteUrl('/#/portal/signup')
             }, {
                 name: 'Upgrade or change plan',
