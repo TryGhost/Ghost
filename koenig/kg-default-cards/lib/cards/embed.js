@@ -5,6 +5,7 @@ const {
 } = require('@tryghost/url-utils/lib/utils');
 
 const nftCard = require('./embed/nft');
+const twitterCard = require('./embed/twitter');
 
 module.exports = {
     name: 'embed',
@@ -13,6 +14,10 @@ module.exports = {
     render({payload, env: {dom}, options = {}}) {
         if (!payload.html && payload.type !== 'nft') {
             return dom.createTextNode('');
+        }
+
+        if (payload.type === 'twitter') {
+            return twitterCard.render({payload, env: {dom}, options});
         }
 
         if (payload.metadata && payload.type === 'nft') {
