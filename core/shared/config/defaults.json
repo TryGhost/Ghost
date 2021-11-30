@@ -131,7 +131,7 @@
         "version": "1.12"
     },
     "tenor": {
-        "apiKey": null,
+        "publicReadOnlyApiKey": null,
         "contentFilter": "off"
     },
     "opensea": {
