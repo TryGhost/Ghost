@@ -80,38 +80,38 @@
             @update={{fn this.updatePayloadAttr "caption"}}
             @placeholder="Type caption for video (optional)" />
     {{/if}}
-
-    {{#if (and @isEditing @payload.src)}}
-        <KoenigSettingsPanel>
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <div class="kg-settings-panel-control-label">Video width</div>
-                <div class="kg-settings-panel-control-input">
-                    <div class="gh-btn-group icons">
-                        <button type="button" title="Regular" class="gh-btn gh-btn-icon {{if (not @payload.cardWidth) "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" null)}}><span>{{svg-jar "koenig/kg-img-regular"}}</span></button>
-                        <button type="button" title="Wide" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "wide") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "wide")}}><span>{{svg-jar "koenig/kg-img-wide"}}</span></button>
-                        <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "full")}}><span>{{svg-jar "koenig/kg-img-full"}}</span></button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <label class="kg-settings-panel-control-label" for="loop-toggle">Loop</label>
-                <div class="kg-settings-panel-control-input">
-                    <div class="for-switch x-small">
-                        <label class="switch">
-                            <input type="checkbox" class="gh-input" id="loop-toggle" checked={{@payload.loop}} {{on "input" this.toggleLoop}}>
-                            <span class="input-toggle-component mt1"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="button-url-input">Poster image</label>
-                <div class="kg-settings-panel-control-input">
-
-                </div>
-            </div>
-        </KoenigSettingsPanel>
-    {{/if}}
 </KoenigCard>
+
+{{#if (and @isEditing @payload.src)}}
+    <KoenigSettingsPanel>
+        <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+            <div class="kg-settings-panel-control-label">Video width</div>
+            <div class="kg-settings-panel-control-input">
+                <div class="gh-btn-group icons">
+                    <button type="button" title="Regular" class="gh-btn gh-btn-icon {{if (not @payload.cardWidth) "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" null)}}><span>{{svg-jar "koenig/kg-img-regular"}}</span></button>
+                    <button type="button" title="Wide" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "wide") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "wide")}}><span>{{svg-jar "koenig/kg-img-wide"}}</span></button>
+                    <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "full")}}><span>{{svg-jar "koenig/kg-img-full"}}</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+            <label class="kg-settings-panel-control-label" for="loop-toggle">Loop</label>
+            <div class="kg-settings-panel-control-input">
+                <div class="for-switch x-small">
+                    <label class="switch">
+                        <input type="checkbox" class="gh-input" id="loop-toggle" checked={{@payload.loop}} {{on "input" this.toggleLoop}}>
+                        <span class="input-toggle-component mt1"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="kg-settings-panel-control">
+            <label class="kg-settings-panel-control-label" for="button-url-input">Poster image</label>
+            <div class="kg-settings-panel-control-input">
+
+            </div>
+        </div>
+    </KoenigSettingsPanel>
+{{/if}}
