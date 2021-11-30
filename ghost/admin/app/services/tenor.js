@@ -26,7 +26,7 @@ export default class TenorService extends Service {
     _nextPos = null;
 
     get apiKey() {
-        return this.config.get('tenor.apiKey');
+        return this.config.get('tenor.publicReadOnlyApiKey');
     }
 
     get contentfilter() {
