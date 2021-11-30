@@ -12,20 +12,7 @@ const THREE_COLUMN_WIDTH = 940;
 export default class KoenigCardImageTenorSelector extends Component {
     @service tenor;
 
-    @tracked highlightedColumnIndex;
-    @tracked highlightedRowIndex;
-
-    get highlightedGif() {
-        if (this.highlightedColumnIndex === undefined || this.highlightedRowIndex === undefined) {
-            return null;
-        }
-
-        return this.tenor.columns[this.highlightedColumnIndex][this.highlightedRowIndex];
-    }
-
-    get highlightedColumn() {
-        return this.tenor.columns[this.highlightedColumnIndex];
-    }
+    @tracked highlightedGif;
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -91,74 +78,117 @@ export default class KoenigCardImageTenorSelector extends Component {
 
     @action
     clearHighlight() {
-        this.highlightedColumnIndex = undefined;
-        this.highlightedRowIndex = undefined;
+        this.highlightedGif = undefined;
     }
 
     @action
     highlightFirst() {
-        this.highlightedColumnIndex = 0;
-        this.highlightedRowIndex = 0;
+        this.highlightedGif = this.tenor.gifs[0];
     }
 
     @action
     highlightNext() {
-        if (this.highlightedColumnIndex === this.tenor.columns.length - 1) {
-            // at the end of a row, drop down to the next one
-            const newColumn = 0;
-            const newRow = this.highlightedRowIndex + 1;
-
-            if (newRow >= this.tenor.columns[newColumn].length) {
-                // reached the end, do nothing
-                return;
-            }
-
-            this.highlightedColumnIndex = newColumn;
-            this.highlightedRowIndex = newRow;
-        } else {
-            // mid-row, move to next column
-            this.highlightedColumnIndex += 1;
+        if (this.highlightedGif === this.tenor.gifs[this.tenor.gifs.length - 1]) {
+            // reached the end, do nothing
+            return;
         }
+
+        this.highlightedGif = this.tenor.gifs[this.highlightedGif.index + 1];
     }
 
     @action
     highlightPrev() {
-        if (this.highlightedColumnIndex === 0) {
-            // at the start of a row, jump up to the prev one
-            const newColumn = this.tenor.columns.length - 1;
-            const newRow = this.highlightedRowIndex - 1;
-
-            if (newRow < 0) {
-                // reached the beginning, focus the search bar
-                return this.focusSearch();
-            }
-
-            this.highlightedColumnIndex = newColumn;
-            this.highlightedRowIndex = newRow;
-        } else {
-            // mid-row, move to prev column
-            this.highlightedColumnIndex -= 1;
+        if (this.highlightedGif.index === 0) {
+            // reached the beginning, focus the search bar
+            return this.focusSearch();
         }
+
+        this.highlightedGif = this.tenor.gifs[this.highlightedGif.index - 1];
     }
 
     @action
     moveHighlightDown() {
-        if (this.highlightedRowIndex === this.highlightedColumn.length - 1) {
-            // aready at bottom, do nothing
-            return;
-        }
+        const nextGif = this.tenor.columns[this.highlightedGif.columnIndex][this.highlightedGif.columnRowIndex + 1];
 
-        this.highlightedRowIndex += 1;
+        if (nextGif) {
+            this.highlightedGif = nextGif;
+        }
     }
 
     @action
     moveHighlightUp() {
-        if (this.highlightedRowIndex === 0) {
-            // already at top, focus to the search bar
+        const nextGif = this.tenor.columns[this.highlightedGif.columnIndex][this.highlightedGif.columnRowIndex - 1];
+
+        if (nextGif) {
+            this.highlightedGif = nextGif;
+        } else {
+            // already at top, focus the search bar
+            return this.focusSearch();
+        }
+    }
+
+    @action
+    moveHighlightRight() {
+        if (this.highlightedGif.columnIndex === this.tenor.columns.length - 1) {
+            // we don't wrap and we're on the last column, do nothing
+            return;
+        }
+
+        this._moveToNextHorizontalGif('right');
+    }
+
+    @action
+    moveHighlightLeft() {
+        if (this.highlightedGif.index === 0) {
+            // on the first Gif, focus the search bar
             return this.focusSearch();
         }
 
-        this.highlightedRowIndex -= 1;
+        if (this.highlightedGif.columnIndex === 0) {
+            // we don't wrap and we're on the first column, do nothing
+            return;
+        }
+
+        this._moveToNextHorizontalGif('left');
+    }
+
+    _moveToNextHorizontalGif(direction) {
+        const highlightedElem = document.querySelector(`[data-tenor-index="${this.highlightedGif.index}"]`);
+        const highlightedElemRect = highlightedElem.getBoundingClientRect();
+
+        let x;
+        if (direction === 'left') {
+            x = highlightedElemRect.left - (highlightedElemRect.width / 2);
+        } else {
+            x = highlightedElemRect.right + (highlightedElemRect.width / 2);
+        }
+
+        let y = highlightedElemRect.top + (highlightedElemRect.height / 3);
+
+        let foundGifElem;
+        let jumps = 0;
+
+        // we might hit spacing between gifs, keep moving up 5 px until we get a match
+        while (!foundGifElem) {
+            let possibleMatch = document.elementFromPoint(x, y)?.closest('[data-tenor-index]');
+
+            if (possibleMatch?.dataset.tenorIndex !== undefined) {
+                foundGifElem = possibleMatch;
+                break;
+            }
+
+            jumps += 1;
+            y -= 5;
+
+            if (jumps > 10) {
+                // give up to avoid infinite loop
+                break;
+            }
+        }
+
+        if (foundGifElem) {
+            this.highlightedGif = this.tenor.gifs[foundGifElem.dataset.tenorIndex];
+        }
     }
 
     @onKey('Tab')
@@ -186,7 +216,7 @@ export default class KoenigCardImageTenorSelector extends Component {
     handleLeft(event) {
         if (this.highlightedGif) {
             event.preventDefault();
-            this.highlightPrev();
+            this.moveHighlightLeft();
         }
     }
 
@@ -194,7 +224,7 @@ export default class KoenigCardImageTenorSelector extends Component {
     handleRight(event) {
         if (this.highlightedGif) {
             event.preventDefault();
-            this.highlightNext();
+            this.moveHighlightRight();
         }
     }
 
