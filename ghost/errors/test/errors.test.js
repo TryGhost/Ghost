@@ -6,7 +6,7 @@ const errors = require('../');
 
 describe('Errors', function () {
     it('Ensure we inherit from Error', function () {
-        var ghostError = new errors.GhostError();
+        var ghostError = new errors.InternalServerError();
         (ghostError instanceof Error).should.eql(true);
     });
 
@@ -18,7 +18,7 @@ describe('Errors', function () {
             someError.context = 'test';
             someError.help = 'test';
 
-            ghostError = new errors.GhostError({err: someError});
+            ghostError = new errors.InternalServerError({err: someError});
             ghostError.stack.should.match(/Error: test/);
             ghostError.context.should.eql(someError.context);
             ghostError.help.should.eql(someError.help);
@@ -31,7 +31,7 @@ describe('Errors', function () {
                 a: 'b'
             };
 
-            ghostError = new errors.GhostError({
+            ghostError = new errors.InternalServerError({
                 err: someError
             });
 
@@ -43,7 +43,7 @@ describe('Errors', function () {
 
             someError.context = 'test';
 
-            ghostError = new errors.GhostError({
+            ghostError = new errors.InternalServerError({
                 err: someError,
                 context: 'context'
             });
@@ -54,7 +54,7 @@ describe('Errors', function () {
         it('with custom message', function () {
             var someError = new Error(), ghostError;
 
-            ghostError = new errors.GhostError({
+            ghostError = new errors.InternalServerError({
                 err: someError,
                 message: 'test'
             });
@@ -63,7 +63,7 @@ describe('Errors', function () {
         });
 
         it('error is string', function () {
-            var ghostError = new errors.GhostError({
+            var ghostError = new errors.InternalServerError({
                 err: 'string'
             });
 
