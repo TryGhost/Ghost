@@ -290,6 +290,15 @@ const ghostErrors = {
                 level: 'critical'
             }, options));
         }
+    },
+    NoContentError: class NoContentError extends GhostError {
+        constructor(options) {
+            super(merge({
+                errorType: 'NoContentError',
+                statusCode: 204,
+                hideStack: true
+            }, options));
+        }
     }
 };
 
