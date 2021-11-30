@@ -18,9 +18,9 @@ export const CARD_COMPONENT_MAP = {
     toggle: 'koenig-card-accordion',
     'email-cta': 'koenig-card-email-cta',
     paywall: 'koenig-card-paywall',
-    file: 'koenig-card-file',
-    audio: 'koenig-card-audio',
     video: 'koenig-card-video',
+    audio: 'koenig-card-audio',
+    file: 'koenig-card-file',
     product: 'koenig-card-product'
 };
 
@@ -42,9 +42,9 @@ export const CARD_ICON_MAP = {
     toggle: 'koenig/kg-card-type-accordion',
     'email-cta': 'koenig/kg-card-type-gen-embed',
     paywall: 'koenig/kg-card-type-divider',
-    file: 'koenig/kg-card-type-divider',
-    audio: 'koenig/kg-card-type-divider',
     video: 'koenig/kg-card-type-video',
+    audio: 'koenig/kg-card-type-audio',
+    file: 'koenig/kg-card-type-file',
     product: 'koenig/kg-card-type-product'
 };
 
@@ -66,9 +66,9 @@ export default [
     createComponentCard('callout'),
     createComponentCard('nft', {hasEditMode: false}),
     createComponentCard('toggle'),
-    createComponentCard('file'),
-    createComponentCard('audio'),
     createComponentCard('video'),
+    createComponentCard('audio'),
+    createComponentCard('file'),
     createComponentCard('product'),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
 ];
@@ -203,26 +203,8 @@ export const CARD_MENU = [
             isAvailable: 'feature.accordionCard'
         },
         {
-            label: 'File',
-            icon: 'koenig/kg-card-type-accordion',
-            desc: 'Add a file',
-            matches: ['file'],
-            type: 'card',
-            replaceArg: 'file',
-            isAvailable: 'feature.fileCard'
-        },
-        {
-            label: 'Audio',
-            icon: 'koenig/kg-card-type-accordion',
-            desc: 'Add an audio file',
-            matches: ['audio'],
-            type: 'card',
-            replaceArg: 'audio',
-            isAvailable: 'feature.audioCard'
-        },
-        {
             label: 'Video',
-            icon: 'koenig/kg-card-type-accordion',
+            icon: 'koenig/kg-card-type-video',
             desc: 'Add a video file',
             matches: ['video'],
             type: 'card',
@@ -231,6 +213,24 @@ export const CARD_MENU = [
                 triggerBrowse: true
             },
             isAvailable: 'feature.videoCard'
+        },
+        {
+            label: 'Audio',
+            icon: 'koenig/kg-card-type-audio',
+            desc: 'Add an audio file',
+            matches: ['audio'],
+            type: 'card',
+            replaceArg: 'audio',
+            isAvailable: 'feature.audioCard'
+        },
+        {
+            label: 'File',
+            icon: 'koenig/kg-card-type-file',
+            desc: 'Add a file',
+            matches: ['file'],
+            type: 'card',
+            replaceArg: 'file',
+            isAvailable: 'feature.fileCard'
         },
         {
             label: 'Product',
