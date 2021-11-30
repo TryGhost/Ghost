@@ -136,5 +136,8 @@
     },
     "opensea": {
         "privateReadOnlyApiKey": null
+    },
+    "twitter": {
+        "privateReadOnlyToken": null
     }
 }
