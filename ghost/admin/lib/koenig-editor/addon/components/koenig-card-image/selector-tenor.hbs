@@ -33,7 +33,8 @@
                                     @gif={{gif}}
                                     @select={{fn this.select gif}}
                                     @isHighlighted={{eq gif this.highlightedGif}}
-                                    {{scroll-into-view (eq gif this.highlightedGif) offset=20}} />
+                                    {{scroll-into-view (eq gif this.highlightedGif) offset=20}}
+                                    data-tenor-index={{gif.index}}
                             {{/each}}
                         </div>
                     {{/each}}
