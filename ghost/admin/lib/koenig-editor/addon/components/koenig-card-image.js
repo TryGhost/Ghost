@@ -252,8 +252,10 @@ export default Component.extend({
             // create undo snapshot when selecting an image
             this.editor.run(() => {
                 saveCard(payload, false);
-                this.addParagraphAfterCard({scrollIntoView: true});
             });
+            this.deselectCard();
+            this.selectCard();
+            this.scrollToCard();
         },
 
         closeImageSelector(reselectParagraph = true) {
