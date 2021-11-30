@@ -157,6 +157,16 @@ blockquote {
     letter-spacing: -0.2px;
 }
 
+blockquote.kg-blockquote-alt {
+    border-left: 0 none;
+    padding-left: 50px;
+    padding-right: 50px;
+    margin-bottom: 2.5em;
+    text-align: center;
+    font-size: 1.2em;
+    color: #999999;
+}
+
 blockquote p {
     margin: 0.8em 0;
     font-size: 1em;
@@ -892,6 +902,11 @@ figure blockquote p {
         line-height: 1.6em !important;
         margin-bottom: 0 !important;
         padding-left: 15px !important;
+    }
+
+    table.body blockquote.kg-blockquote-alt {
+        padding-left: 50px !important;
+        margin-bottom: 2.5em !important;
     }
 
     table.body blockquote + * {
