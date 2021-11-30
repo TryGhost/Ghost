@@ -1,1 +1,121 @@
-{{yield}}
+<KoenigCard
+    @env={{@env}}
+    @class={{concat (kg-style "container-card") " kg-video-card mih10 miw-100 relative" (kg-style "breakout" size=@payload.cardWidth)}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{not this.isEmpty}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.didInsert}}
+    {{on "dragover" this.dragOver}}
+    {{on "dragleave" this.dragLeave}}
+    {{on "drop" this.drop}}
+    as |card|
+>
+    <div style="display:flex">
+        <div style="width: 150px;">
+            <GhUploader
+                @uploadUrl="/media/upload/"
+                @resourceName="media"
+                @files={{this.files}}
+                @accept={{this.audioMimeTypes}}
+                @extensions={{this.audioExtensions}}
+                @onStart={{this.audioUploadStarted}}
+                @onComplete={{this.audioUploadCompleted}}
+                @onFailed={{this.audioUploadFailed}}
+                as |uploader|
+            >
+                <div class="relative{{unless (or this.previewThumbnailSrc @payload.thumbnailSrc) " bg-whitegrey-l2"}}">
+                    {{#if (or this.previewThumbnailSrc @payload.thumbnailSrc)}}
+                        <img src={{or this.previewThumbnailSrc @payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
+                        {{#if this.isDraggedOver}}
+                            <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
+                                <span class="db center sans-serif fw7 f7 white">
+                                    Drop to replace audio
+                                </span>
+                            </div>
+                        {{/if}}
+                    {{/if}}
+
+                    {{#if (or uploader.errors uploader.isUploading (not @payload.src))}}
+                        <div class="relative miw-100 flex items-center {{if (not this.previewThumbnailSrc @payload.src) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+                            {{#if uploader.errors}}
+                                <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
+                                    {{uploader.errors.firstObject.message}}
+                                </span>
+                            {{/if}}
+
+                            {{#if this.isDraggedOver}}
+                                <span class="db center sans-serif fw7 f7 middarkgrey">
+                                    Drop it like it's hot 🔥
+                                </span>
+                            {{else if uploader.isUploading}}
+                                {{uploader.progressBar}}
+                            {{else if (not this.previewThumbnailSrc @payload.src)}}
+                                <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" {{on "click" this.triggerAudioFileDialog}}>
+                                    {{svg-jar this.placeholder class="kg-placeholder-image" style="transform:scale(0.5)"}}
+                                    {{!-- <span class="mt2 midgrey">Click to select an audio</span> --}}
+                                </button>
+                            {{/if}}
+                        </div>
+                    {{else}}
+                        <div class="relative miw-100 flex items-center {{if (not this.previewThumbnailSrc @payload.src) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+                            {{#if this.isDraggedOver}}
+                                <span class="db center sans-serif fw7 f7 middarkgrey">
+                                    Drop it like it's hot 🔥
+                                </span>
+                            {{else if uploader.isUploading}}
+                                {{uploader.progressBar}}
+                            {{else if (not this.previewThumbnailSrc @payload.src)}}
+                                <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" {{on "click" this.triggerAudioFileDialog}}>
+                                    {{svg-jar this.placeholder class="kg-placeholder-image" style="transform:scale(0.5)"}}
+                                    {{!-- <span class="mt2 midgrey">Click to select an audio</span> --}}
+                                </button>
+                            {{/if}}
+                        </div>
+                    {{/if}}
+                </div>
+
+                <div style="display:none">
+                    <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.audioMimeTypes}} @onInsert={{this.registerAudioFileInput}} />
+                </div>
+            </GhUploader>
+
+        </div>
+        <div style="flex-grow: 1;display: flex;align-items: center;margin-left: 12px">
+            Click to upload an audio file
+        </div>
+    </div>
+    {{!-- {{#if (or @isSelected (clean-basic-html @payload.caption))}}
+        <card.CaptionInput
+            @caption={{@payload.caption}}
+            @update={{fn this.updatePayloadAttr "caption"}}
+            @placeholder="Type caption for audio (optional)" />
+    {{/if}} --}}
+
+    {{#if (and @isEditing @payload.src)}}
+        <KoenigSettingsPanel>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <label class="kg-settings-panel-control-label" for="loop-toggle">Loop</label>
+                <div class="kg-settings-panel-control-input">
+                    <div class="for-switch x-small">
+                        <label class="switch">
+                            <input type="checkbox" class="gh-input" id="loop-toggle" checked={{@payload.loop}} {{on "input" this.toggleLoop}}>
+                            <span class="input-toggle-component mt1"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </KoenigSettingsPanel>
+    {{/if}}
+</KoenigCard>
