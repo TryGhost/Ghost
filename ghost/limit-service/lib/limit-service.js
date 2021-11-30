@@ -21,7 +21,7 @@ class LimitService {
      * @param {Object} [options.subscription] - hash containing subscription configuration with interval and startDate properties
      * @param {String} options.helpLink - URL pointing to help resources for when limit is reached
      * @param {Object} options.db - knex db connection instance or other data source for the limit checks
-     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
+     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
      */
     loadLimits({limits = {}, subscription, helpLink, db, errors}) {
         if (!errors) {
