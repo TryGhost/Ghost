@@ -680,7 +680,7 @@ export default Component.extend({
             }
         },
 
-        addParagraphAfterCard(card) {
+        addParagraphAfterCard(card, {scrollIntoView = false}) {
             let editor = this.editor;
             let section = this.getSectionFromCard(card);
             let collection = section.parent.sections;
@@ -700,6 +700,10 @@ export default Component.extend({
 
                 postEditor.setRange(newPara.tailPosition());
             });
+
+            if (scrollIntoView) {
+                run.schedule('afterRender', this, this._scrollCursorIntoView);
+            }
         },
 
         openSelectorComponent(componentName, range) {
