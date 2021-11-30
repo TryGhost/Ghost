@@ -3,7 +3,7 @@ const fastq = require('fastq');
 const later = require('@breejs/later');
 const Bree = require('bree');
 const pWaitFor = require('p-wait-for');
-const {IgnitionError, IncorrectUsageError} = require('@tryghost/errors');
+const {UnhandledJobError, IncorrectUsageError} = require('@tryghost/errors');
 const isCronExpression = require('./is-cron-expression');
 const assembleBreeJob = require('./assemble-bree-job');
 
@@ -109,10 +109,7 @@ class JobManager {
                 } catch (err) {
                     // NOTE: each job should be written in a safe way and handle all errors internally
                     //       if the error is caught here jobs implementaton should be changed
-                    this.logging.error(new IgnitionError({
-                        level: 'critical',
-                        errorType: 'UnhandledJobError',
-                        message: 'Processed job threw an unhandled error',
+                    this.logging.error(new UnhandledJobError({
                         context: (typeof job === 'function') ? 'function' : job,
                         err
                     }));

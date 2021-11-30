@@ -18,7 +18,7 @@ class HostLimitError extends Error {
     }
 }
 
-// NOTE: this module is here to serve as a dummy fixture for Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
+// NOTE: this module is here to serve as a dummy fixture for GhostError errors (@tryghost/errors)
 module.exports = {
     IncorrectUsageError,
     HostLimitError

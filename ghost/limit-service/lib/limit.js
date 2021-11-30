@@ -12,7 +12,7 @@ class Limit {
      * @param {String} options.error - error message to use when limit is reached
      * @param {String} options.helpLink - URL to the resource explaining how the limit works
      * @param {Object} [options.db] - instance of knex db connection that currentCountQuery can use to run state check through
-     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
+     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
      */
     constructor({name, error, helpLink, db, errors}) {
         this.name = name;
@@ -49,7 +49,7 @@ class MaxLimit extends Limit {
      * @param {String} [options.config.error] - error message to use when limit is reached
      * @param {String} [options.helpLink] - URL to the resource explaining how the limit works
      * @param {Object} [options.db] - instance of knex db connection that currentCountQuery can use to run state check through
-     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
+     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
      */
     constructor({name, config, helpLink, db, errors}) {
         super({name, error: config.error || '', helpLink, db, errors});
@@ -146,7 +146,7 @@ class MaxPeriodicLimit extends Limit {
      * @param {String} options.config.startDate - start date in ISO 8601 format (https://en.wikipedia.org/wiki/ISO_8601), used to calculate period intervals
      * @param {String} options.helpLink - URL to the resource explaining how the limit works
      * @param {Object} [options.db] - instance of knex db connection that currentCountQuery can use to run state check through
-     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
+     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
      */
     constructor({name, config, helpLink, db, errors}) {
         super({name, error: config.error || '', helpLink, db, errors});
@@ -248,7 +248,7 @@ class FlagLimit extends Limit {
      * @param {String} options.config.error - error message to use when limit is reached
      * @param {String} options.helpLink - URL to the resource explaining how the limit works
      * @param {Object} [options.db] - instance of knex db connection that currentCountQuery can use to run state check through
-     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
+     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
      */
     constructor({name, config, helpLink, db, errors}) {
         super({name, error: config.error || '', helpLink, db, errors});
@@ -296,7 +296,7 @@ class AllowlistLimit extends Limit {
      * @param {[String]} options.config.allowlist - allowlist values that would be compared against
      * @param {String} options.config.error - error message to use when limit is reached
      * @param {String} options.helpLink - URL to the resource explaining how the limit works
-     * @param {Object} options.errors - instance of errors compatible with Ghost-Ignition's errors (https://github.com/TryGhost/Ignition#errors)
+     * @param {Object} options.errors - instance of errors compatible with GhostError errors (@tryghost/errors)
      */
     constructor({name, config, helpLink, errors}) {
         super({name, error: config.error || '', helpLink, errors});
