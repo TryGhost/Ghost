@@ -87,7 +87,9 @@ const prepareContentFolder = (options) => {
         redirects.setupFile(contentFolderForTests, options.redirectsFileExt);
     }
 
-    if (options.copySettings) {
+    if (options.routesFilePath) {
+        fs.copySync(options.routesFilePath, path.join(contentFolderForTests, 'settings', 'routes.yaml'));
+    } else if (options.copySettings) {
         fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     }
 };
@@ -180,6 +182,21 @@ const freshModeGhostStart = async (options) => {
     }
 };
 
+/**
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.backend]
+ * @param {boolean} [options.frontend]
+ * @param {boolean} [options.redirectsFile]
+ * @param {String} [options.redirectsFileExt]
+ * @param {boolean} [options.forceStart]
+ * @param {boolean} [options.copyThemes]
+ * @param {boolean} [options.copySettings]
+ * @param {String} [options.routesFilePath] - path to a routes configuration file to start the instance with
+ * @param {String} [options.contentFolder]
+ * @param {boolean} [options.subdir]
+ * @returns {Promise<GhostServer>}
+ */
 const startGhost = async (options) => {
     const startTime = Date.now();
     debug('Start Ghost');
