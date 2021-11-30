@@ -294,8 +294,10 @@ const ghostErrors = {
 };
 
 module.exports = ghostErrors;
+
+const ghostErrorsWithBase = Object.assign({}, ghostErrors, {GhostError});
 module.exports.utils = {
-    serialize: utils.serialize.bind(ghostErrors),
-    deserialize: utils.deserialize.bind(ghostErrors),
-    isGhostError: utils.isGhostError.bind(ghostErrors)
+    serialize: utils.serialize.bind(ghostErrorsWithBase),
+    deserialize: utils.deserialize.bind(ghostErrorsWithBase),
+    isGhostError: utils.isGhostError.bind(ghostErrorsWithBase)
 };
