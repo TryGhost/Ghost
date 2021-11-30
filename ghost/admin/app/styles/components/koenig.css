@@ -43,7 +43,8 @@
 .koenig-editor__editor h4,
 .koenig-editor__editor h5,
 .koenig-editor__editor h6,
-.koenig-editor__editor blockquote {
+.koenig-editor__editor blockquote,
+.koenig-editor__editor aside {
     margin: 1.6rem 0 0;
     min-width: 100%;
     max-width: 100%;
@@ -111,6 +112,13 @@
 .koenig-editor__editor blockquote + h4,
 .koenig-editor__editor blockquote + h5,
 .koenig-editor__editor blockquote + h6,
+
+.koenig-editor__editor aside + h1,
+.koenig-editor__editor aside + h2,
+.koenig-editor__editor aside + h3,
+.koenig-editor__editor aside + h4,
+.koenig-editor__editor aside + h5,
+.koenig-editor__editor aside + h6,
 
 .koenig-editor__editor ul + h1,
 .koenig-editor__editor ul + h2,
@@ -271,6 +279,7 @@
 
 .koenig-editor__editor p,
 .koenig-editor__editor blockquote,
+.koenig-editor__editor aside,
 .koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar),
 .koenig-editor__editor ol
  {
@@ -297,6 +306,7 @@
 
 .koenig-editor__editor p + p,
 .koenig-editor__editor blockquote + p,
+.koenig-editor__editor aside + p,
 .koenig-editor__editor ul + p,
 .koenig-editor__editor ol + p
  {
@@ -315,6 +325,7 @@
 @media (max-width: 500px) {
     .koenig-editor__editor p,
     .koenig-editor__editor blockquote,
+    .koenig-editor__editor aside,
     .koenig-editor__editor ul:not(.kg-action-bar):not(.kg-link-toolbar),
     .koenig-editor__editor ol
     {
@@ -364,7 +375,9 @@
 .koenig-editor__editor ol + ul:not(.kg-action-bar):not(.kg-link-toolbar),
 .koenig-editor__editor ol + ol,
 .koenig-editor__editor blockquote + ul:not(.kg-action-bar):not(.kg-link-toolbar),
-.koenig-editor__editor blockquote + ol {
+.koenig-editor__editor blockquote + ol,
+.koenig-editor__editor aside + ul:not(.kg-action-bar):not(.kg-link-toolbar),
+.koenig-editor__editor aside + ol {
     margin: 3.0rem 0 0;
 }
 
@@ -420,6 +433,7 @@
 
 .koenig-editor__editor > p + div,
 .koenig-editor__editor > blockquote + div,
+.koenig-editor__editor > aside + div,
 .koenig-editor__editor > ul + div,
 .koenig-editor__editor > ol + div {
     margin: 3.2rem 0 0;
@@ -489,6 +503,58 @@
 
 /* Mobiledoc cards can be selected by their wrapper div element */
 .koenig-editor__editor div + blockquote {
+    margin: 2.8rem 0 0;
+}
+
+
+/* Aside, Blockquote Alternative
+/* -------------------------------------------------------------------- */
+
+.koenig-editor__editor aside p {
+    margin: 0;
+}
+
+.koenig-editor__editor aside {
+    margin: 3.2rem 0 0;
+    padding: 0.5rem 12rem 1rem;
+    font-style: italic;
+    text-align: center;
+    font-size: 2.4rem;
+    color: var(--midgrey-l1);
+}
+
+.koenig-editor__editor h1 + aside,
+.koenig-editor__editor h2 + aside {
+    margin: .8rem 0 0;
+}
+
+.koenig-editor__editor h3 + aside,
+.koenig-editor__editor h4 + aside,
+.koenig-editor__editor h5 + aside,
+.koenig-editor__editor h6 + aside {
+    margin: .4rem 0 0;
+}
+
+.koenig-editor__editor p + aside,
+.koenig-editor__editor blockquote + aside {
+    margin: 3.2rem 0 0;
+}
+
+@media (max-width: 800px) {
+    .koenig-editor__editor aside {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .koenig-editor__editor aside {
+        font-size: 2.2rem;
+    }
+}
+
+/* Mobiledoc cards can be selected by their wrapper div element */
+.koenig-editor__editor div + aside {
     margin: 2.8rem 0 0;
 }
 
