@@ -145,8 +145,8 @@
                 <img src={{@payload.productImageSrc}} class="kg-product-card-image" />
             {{/if}}
             <div class="kg-product-card-text">
-                <h4 class="kg-product-card-title">{{@payload.productTitle}}</h4>
-                <p class="kg-product-card-description">{{@payload.productDescription}}</p>
+                <h4 class="kg-product-card-title">{{{@payload.productTitle}}}</h4>
+                <p class="kg-product-card-description">{{{@payload.productDescription}}}</p>
                 {{#if (and @payload.productButton @payload.productUrl)}}
                     <a href={{@payload.productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer"><span>{{@payload.productButton}}</span></a>
                 {{/if}}
