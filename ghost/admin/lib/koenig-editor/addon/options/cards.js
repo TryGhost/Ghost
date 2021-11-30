@@ -191,7 +191,7 @@ export const CARD_MENU = [
             payload: {
                 imageSelector: 'tenor'
             },
-            isAvailable: ['feature.gifsCard', 'config.tenor.apiKey']
+            isAvailable: ['feature.gifsCard', 'config.tenor.publicReadOnlyApiKey']
         },
         {
             label: 'Toggle',
