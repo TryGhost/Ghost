@@ -200,6 +200,9 @@ export default class TenorService extends Service {
         // add to general gifs list
         this.gifs.push(gif);
 
+        // store index for use in templates and keyboard nav
+        gif.index = this.gifs.indexOf(gif);
+
         // add to least populated column
         this._addGifToColumns(gif);
     }
@@ -211,6 +214,10 @@ export default class TenorService extends Service {
         // use a fixed width when calculating height to compensate for different overall sizes
         this._columnHeights[columnIndex] += 300 * gif.ratio;
         this.columns[columnIndex].push(gif);
+
+        // store the column indexes on the gif for use in keyboard nav
+        gif.columnIndex = columnIndex;
+        gif.columnRowIndex = this.columns[columnIndex].length - 1;
     }
 
     _resetColumns() {
