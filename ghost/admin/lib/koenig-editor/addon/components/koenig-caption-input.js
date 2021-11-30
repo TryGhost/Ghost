@@ -122,6 +122,8 @@ export default Component.extend({
 
     _escape(editor) {
         editor.element.blur();
+        this.deselectCard();
+        this.selectCard();
     },
 
     _upOrLeft(editor, key) {
