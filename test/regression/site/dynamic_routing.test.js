@@ -6,13 +6,10 @@ const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const moment = require('moment');
-const path = require('path');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
-const urlServiceUtils = require('../../utils/url-service-utils');
 const cheerio = require('cheerio');
 const config = require('../../../core/shared/config');
-const api = require('../../../core/server/api');
 const settingsCache = require('../../../core/shared/settings-cache');
 
 let request;
@@ -464,7 +461,7 @@ describe('Dynamic Routing', function () {
             // Add enough posts to trigger pages
             before(function (done) {
                 testUtils.clearData().then(function () {
-                    // we initialise data, but not a user. No user should be required for navigating the frontend
+                    // we initialize data, but not a user. No user should be required for navigating the frontend
                     return testUtils.initData();
                 }).then(function () {
                     return testUtils.fixtures.insertPostsAndTags();
@@ -544,124 +541,6 @@ describe('Dynamic Routing', function () {
                         .end(doEnd(done));
                 });
             });
-        });
-    });
-
-    describe('Reload routes.yaml', function () {
-        before(async function () {
-            await testUtils.clearData();
-            // we initialize data, but not a user. No user should be required for navigating the frontend
-            await testUtils.initData();
-            await testUtils.fixtures.overrideOwnerUser('ghost-owner');
-            await testUtils.initFixtures('settings');
-        });
-
-        after(testUtils.teardownDb);
-        after(function () {
-            return testUtils.stopGhost();
-        });
-
-        it('confirm current routing pattern', function (done) {
-            request.get('/welcome/')
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
-                });
-        });
-
-        it('simulate upload of routes.yaml', function () {
-            return api.settings.upload.query({
-                context: testUtils.context.internal.context,
-                file: {
-                    path: path.join(config.get('paths:appRoot'), 'test', 'utils', 'fixtures', 'settings', 'newroutes.yaml')
-                }
-            }).then(() => {
-                return urlServiceUtils.isFinished();
-            });
-        });
-
-        it('serve welcome post with old permalink structure', function (done) {
-            request.get('/welcome/')
-                .expect(404)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
-                });
-        });
-
-        it('serve welcome post with new permalink structure', function (done) {
-            const year = moment().year();
-            request.get(`/blog/${year}/welcome/`)
-                .expect(200)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
-                });
-        });
-
-        it('serve welcome post with new permalink structure and old date', function (done) {
-            request.get('/blog/2016/welcome/')
-                .expect(301)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
-                });
-        });
-
-        it('serve serve rss', function (done) {
-            request.get('/blog/rss/')
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    const content = res.text;
-                    const todayMoment = moment();
-                    const year = todayMoment.format('YYYY');
-                    const postLink = `/blog/${year}/welcome/`;
-
-                    content.indexOf(postLink).should.be.above(0);
-
-                    done();
-                });
-        });
-
-        it('serve collection index', function (done) {
-            request.get('/blog/')
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
-                });
-        });
-
-        it('serve tag', function (done) {
-            request.get('/category/getting-started/')
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    done();
-                });
         });
     });
 });
