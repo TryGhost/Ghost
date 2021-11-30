@@ -1,5 +1,4 @@
 const should = require('should');
-const sinon = require('sinon');
 const supertest = require('supertest');
 const path = require('path');
 const moment = require('moment');
@@ -15,10 +14,6 @@ function assertCorrectFrontendHeaders(res) {
 
 describe('Custom Frontend routing', function () {
     let request;
-
-    afterEach(function () {
-        sinon.restore();
-    });
 
     before(async function () {
         const routesFilePath = path.join(configUtils.config.get('paths:appRoot'), 'test/utils/fixtures/settings/newroutes.yaml');
