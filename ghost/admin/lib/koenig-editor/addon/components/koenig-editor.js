@@ -680,7 +680,7 @@ export default Component.extend({
             }
         },
 
-        addParagraphAfterCard(card, {scrollIntoView = false}) {
+        addParagraphAfterCard(card, {scrollIntoView = false} = {}) {
             let editor = this.editor;
             let section = this.getSectionFromCard(card);
             let collection = section.parent.sections;
