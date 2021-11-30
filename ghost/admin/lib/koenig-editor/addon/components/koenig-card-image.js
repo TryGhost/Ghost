@@ -253,6 +253,9 @@ export default Component.extend({
             this.editor.run(() => {
                 saveCard(payload, false);
             });
+            this.deselectCard();
+            this.selectCard();
+            this.scrollToCard();
         },
 
         closeImageSelector(reselectParagraph = true) {
