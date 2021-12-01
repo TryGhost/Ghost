@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{concat (kg-style "container-card") " kg-card-callout-container"}}
+    @class={{concat (kg-style "container-card") " kg-callout-card-container"}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -22,7 +22,7 @@
 >
     {{#if @isEditing}}
 
-        <div class="kg-card kg-card-callout kg-card-callout-{{@payload.backgroundColor}}">
+        <div class="kg-card kg-callout-card kg-callout-card-{{@payload.backgroundColor}}">
             {{#if @payload.calloutEmoji}}
             <button type="button" class="kg-callout-emoji {{if this.isPickerVisible "kg-emoji-picker-active"}}" {{on "click" this.changeEmoji}}>{{@payload.calloutEmoji}}</button>
             {{/if}}
@@ -74,7 +74,7 @@
 
     {{else}}
 
-        <div class="kg-card kg-card-callout kg-card-callout-{{@payload.backgroundColor}}">
+        <div class="kg-card kg-callout-card kg-callout-card-{{@payload.backgroundColor}}">
             {{#if @payload.calloutEmoji}}
             <div class="kg-callout-emoji {{if this.isPickerVisible "kg-emoji-picker-active"}}">{{@payload.calloutEmoji}}</div>
             {{/if}}
