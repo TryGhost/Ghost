@@ -308,7 +308,7 @@ describe('Post Model', function () {
                 }).then(function () {
                     done(new Error('expected validation error'));
                 }).catch(function (err) {
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
+                    err[0].name.should.eql('ValidationError');
                     done();
                 });
             });

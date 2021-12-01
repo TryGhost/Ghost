@@ -90,7 +90,7 @@ class RouteSettings {
                     return Promise.resolve([]);
                 }
 
-                if (errors.utils.isIgnitionError(err)) {
+                if (errors.utils.isGhostError(err)) {
                     throw err;
                 }
 

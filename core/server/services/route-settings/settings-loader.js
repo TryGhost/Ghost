@@ -36,11 +36,11 @@ class SettingsLoader {
 
             return validate(object);
         } catch (err) {
-            if (errors.utils.isIgnitionError(err)) {
+            if (errors.utils.isGhostError(err)) {
                 throw err;
             }
 
-            throw new errors.GhostError({
+            throw new errors.InternalServerError({
                 message: tpl(messages.settingsLoaderError, {
                     setting: 'routes',
                     path: this.settingFilePath
@@ -66,11 +66,11 @@ class SettingsLoader {
 
             return validate(object);
         } catch (err) {
-            if (errors.utils.isIgnitionError(err)) {
+            if (errors.utils.isGhostError(err)) {
                 throw err;
             }
 
-            throw new errors.GhostError({
+            throw new errors.InternalServerError({
                 message: tpl(messages.settingsLoaderError, {
                     setting: 'routes',
                     path: this.settingFilePath

@@ -136,7 +136,7 @@ function ping(post) {
                 'Content-type': 'application/json'
             }
         }).catch(function (err) {
-            logging.error(new errors.GhostError({
+            logging.error(new errors.InternalServerError({
                 err: err,
                 context: tpl(messages.requestFailedError, {service: 'slack'}),
                 help: tpl(messages.requestFailedHelp, {url: 'https://ghost.org/docs/'})
