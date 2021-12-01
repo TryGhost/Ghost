@@ -18,7 +18,7 @@ module.exports = {
         }
 
         const template = hbs`
-            <div class="kg-card kg-card-callout kg-card-callout-{{backgroundColor}}">
+            <div class="kg-card kg-callout-card kg-callout-card-{{backgroundColor}}">
                 {{#if calloutEmoji}}
                     <div class="kg-callout-emoji">{{calloutEmoji}}</div>
                 {{/if}}

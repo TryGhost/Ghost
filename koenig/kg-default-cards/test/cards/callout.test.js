@@ -17,7 +17,7 @@ describe('Callout card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-card-callout kg-card-callout-"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text">This is a callout</div></div>');
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-callout-card kg-callout-card-"><div class="kg-callout-emoji">⚠️</div><div class="kg-callout-text">This is a callout</div></div>');
         });
 
         it('renders the callout nodes without the emoji element', function () {
@@ -29,7 +29,7 @@ describe('Callout card', function () {
                 }
             };
 
-            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-card-callout kg-card-callout-"><div class="kg-callout-text">This is a callout</div></div>');
+            serializer.serialize(card.render(opts)).should.equal('<div class="kg-card kg-callout-card kg-callout-card-"><div class="kg-callout-text">This is a callout</div></div>');
         });
     });
 
