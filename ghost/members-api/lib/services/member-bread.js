@@ -172,6 +172,7 @@ module.exports = class MemberBREADService {
 
         const member = model.toJSON(options);
 
+        member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
 
         this.attachOffersToSubscriptions(member, subscriptionOffers);
@@ -317,6 +318,7 @@ module.exports = class MemberBREADService {
         const members = page.data.map(model => model.toJSON(options));
 
         const data = members.map((member) => {
+            member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;
