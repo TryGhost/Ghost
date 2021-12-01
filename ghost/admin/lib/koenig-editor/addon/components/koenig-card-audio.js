@@ -1,4 +1,8 @@
 import Component from '@glimmer/component';
+import {
+    IMAGE_EXTENSIONS,
+    IMAGE_MIME_TYPES
+} from 'ghost-admin/components/gh-image-uploader';
 import {TrackedObject} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
@@ -8,7 +12,6 @@ import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
-
 export const AUDIO_EXTENSIONS = ['mp4', 'mp3', 'wav'];
 export const AUDIO_MIME_TYPES = ['audio/mp4', 'audio/mpeg', 'audio/ogg'];
 
@@ -37,6 +40,7 @@ export default class KoenigCardAudioComponent extends Component {
     @service ghostPaths;
 
     @tracked files;
+    @tracked thumbnailFiles;
     @tracked isDraggedOver = false;
     @tracked previewThumbnailSrc;
 
@@ -46,6 +50,8 @@ export default class KoenigCardAudioComponent extends Component {
 
     audioExtensions = AUDIO_EXTENSIONS;
     audioMimeTypes = AUDIO_MIME_TYPES;
+    imageExtensions = IMAGE_EXTENSIONS;
+    imageMimeTypes = IMAGE_MIME_TYPES;
     placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)]
 
     payloadAudioAttrs = ['src', 'fileName', 'width', 'height', 'duration', 'mimeType', 'thumbnailSrc', 'thumbnailWidth', 'thumbnailHeight'];
@@ -91,6 +97,11 @@ export default class KoenigCardAudioComponent extends Component {
         });
     }
 
+    _afterRender() {
+        // this._placeCursorAtEnd();
+        // this._focusInput();
+    }
+
     @action
     didInsert(element) {
         // required for snippet rects to be calculated - editor reaches in to component,
@@ -122,6 +133,11 @@ export default class KoenigCardAudioComponent extends Component {
     }
 
     @action
+    registerAudioThumbnailFileInput(input) {
+        this._audioThumbnailFileInput = input;
+    }
+
+    @action
     triggerAudioFileDialog(event) {
         if (this._audioFileInput) {
             return this._audioFileInput.click();
@@ -138,7 +154,28 @@ export default class KoenigCardAudioComponent extends Component {
     }
 
     @action
+    triggerThumbnailFileDialog(event) {
+        if (this._audioThumbnailFileInput) {
+            return this._audioThumbnailFileInput.click();
+        }
+
+        const target = event?.target || this.element;
+
+        const cardElem = target.closest('.__mobiledoc-card');
+        const fileInput = cardElem?.querySelector('input[type="file"]');
+
+        if (fileInput) {
+            fileInput.click();
+        }
+    }
+
+    @action
     async audioUploadStarted() {
+        // TODO: Placeholder for any processing on audio upload
+    }
+
+    @action
+    async audioThumbnailUploadStarted() {
         // TODO: Placeholder for any processing on audio upload
     }
 
@@ -159,12 +196,41 @@ export default class KoenigCardAudioComponent extends Component {
     }
 
     @action
+    async audioThumbnailUploadCompleted([audio]) {
+        this.previewPayload.thumbnailSrc = audio.url;
+
+        // save preview payload attrs into actual payload and create undo snapshot
+        this.args.editor.run(() => {
+            this.updatePayloadAttr('thumbnailSrc', this.previewPayload.thumbnailSrc);
+            // this.payloadAudioAttrs.forEach((attr) => {
+            //     this.updatePayloadAttr(attr, this.previewPayload[attr]);
+            // });
+        });
+
+        // reset preview so we're back to rendering saved data
+        this.previewPayload = new TrackedObject({});
+    }
+
+    @action
     audioUploadFailed() {
         // reset all attrs, creating an undo snapshot
         this.args.editor.run(() => {
             this.payloadAudioAttrs.forEach((attr) => {
                 this.updatePayloadAttr(attr, null);
             });
+        });
+    }
+
+    @action
+    setAudioTitle(content) {
+        this.updatePayloadAttr('fileName', content);
+    }
+
+    @action
+    audioThumbnailUploadFailed() {
+        this.previewPayload.thumbnailSrc = null;
+        this.args.editor.run(() => {
+            this.updatePayloadAttr('thumbnailSrc', this.previewPayload.thumbnailSrc);
         });
     }
 
