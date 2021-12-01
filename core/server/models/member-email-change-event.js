@@ -9,11 +9,11 @@ const MemberEmailChangeEvent = ghostBookshelf.Model.extend({
     }
 }, {
     async edit() {
-        throw new errors.IncorrectUsageError('Cannot edit MemberEmailChangeEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot edit MemberEmailChangeEvent'});
     },
 
     async destroy() {
-        throw new errors.IncorrectUsageError('Cannot destroy MemberEmailChangeEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot destroy MemberEmailChangeEvent'});
     }
 });
 

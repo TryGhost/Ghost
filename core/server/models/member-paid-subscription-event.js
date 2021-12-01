@@ -11,7 +11,7 @@ const MemberPaidSubscriptionEvent = ghostBookshelf.Model.extend({
     customQuery(qb, options) {
         if (options.aggregateMRRDeltas) {
             if (options.limit || options.filter) {
-                throw new errors.IncorrectUsageError('aggregateMRRDeltas does not work when passed a filter or limit');
+                throw new errors.IncorrectUsageError({message: 'aggregateMRRDeltas does not work when passed a filter or limit'});
             }
             const knex = ghostBookshelf.knex;
             return qb.clear('select')
@@ -33,11 +33,11 @@ const MemberPaidSubscriptionEvent = ghostBookshelf.Model.extend({
         return options;
     },
     async edit() {
-        throw new errors.IncorrectUsageError('Cannot edit MemberPaidSubscriptionEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot edit MemberPaidSubscriptionEvent'});
     },
 
     async destroy() {
-        throw new errors.IncorrectUsageError('Cannot destroy MemberPaidSubscriptionEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot destroy MemberPaidSubscriptionEvent'});
     }
 });
 

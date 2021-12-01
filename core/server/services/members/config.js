@@ -98,7 +98,7 @@ class MembersConfigProvider {
      */
     getStripeKeys(type) {
         if (type !== 'direct' && type !== 'connect') {
-            throw new errors.IncorrectUsageError(tpl(messages.incorrectKeyType));
+            throw new errors.IncorrectUsageError({message: tpl(messages.incorrectKeyType)});
         }
 
         const secretKey = this._settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}secret_key`);

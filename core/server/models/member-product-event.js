@@ -19,15 +19,15 @@ const MemberProductEvent = ghostBookshelf.Model.extend({
 
 }, {
     async edit() {
-        throw new errors.IncorrectUsageError(
-            tpl(messages.cannotPerformAction, 'edit')
-        );
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.cannotPerformAction, 'edit')
+        });
     },
 
     async destroy() {
-        throw new errors.IncorrectUsageError(
-            tpl(messages.cannotPerformAction, 'destroy')
-        );
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.cannotPerformAction, 'destroy')
+        });
     }
 });
 
