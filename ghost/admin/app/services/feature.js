@@ -63,7 +63,6 @@ export default Service.extend({
     calloutCard: feature('calloutCard', {developer: true}),
     nftCard: feature('nftCard', {developer: true}),
     accordionCard: feature('accordionCard', {developer: true}),
-    gifsCard: feature('gifsCard', {developer: true}),
     fileCard: feature('fileCard', {developer: true}),
     audioCard: feature('audioCard', {developer: true}),
     videoCard: feature('videoCard', {developer: true}),
