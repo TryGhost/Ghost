@@ -143,7 +143,20 @@ module.exports = function MembersAPI({
         productRepository,
         memberRepository,
         eventRepository,
-        sendEmailWithMagicLink
+        /**
+         * @param {string} email
+         */
+        async sendSignupEmail(email) {
+            let requestedType = 'signup';
+            await sendEmailWithMagicLink({
+                email,
+                requestedType,
+                options: {
+                    forceEmailType: true
+                },
+                tokenData: {}
+            });
+        }
     });
 
     const geolocationService = new GeolocationSerice();
