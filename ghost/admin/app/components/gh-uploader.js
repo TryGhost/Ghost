@@ -61,6 +61,7 @@ export default Component.extend({
     paramsHash: null,
     resourceName: 'images',
     uploadUrl: null,
+    requestMethod: 'post',
 
     // Interal attributes
     errors: null, // [{fileName: 'x', message: 'y'}, ...]
@@ -247,7 +248,7 @@ export default Component.extend({
         try {
             this.onUploadStart(file);
 
-            let response = yield ajax.post(url, {
+            let response = yield ajax[this.requestMethod](url, {
                 data: formData,
                 processData: false,
                 contentType: false,
