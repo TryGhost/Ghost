@@ -107,7 +107,7 @@ class RouteSettings {
         };
 
         try {
-            bridge.reloadFrontend();
+            await bridge.reloadFrontend();
         } catch (err) {
             return bringBackValidRoutes()
                 .finally(() => {
