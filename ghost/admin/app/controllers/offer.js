@@ -100,6 +100,9 @@ export default class OffersController extends Controller {
     @task({drop: true})
     *fetchProducts() {
         this.products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
+        this.products = this.products.filter((d) => {
+            return d.monthlyPrice && d.yearlyPrice;
+        });
         const cadences = [];
         this.products.forEach((product) => {
             let monthlyLabel;
