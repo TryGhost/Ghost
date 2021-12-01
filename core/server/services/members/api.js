@@ -6,6 +6,7 @@ const mail = require('../mail');
 const models = require('../../models');
 const signinEmail = require('./emails/signin');
 const signupEmail = require('./emails/signup');
+const signupPaidEmail = require('./emails/signup-paid');
 const subscribeEmail = require('./emails/subscribe');
 const updateEmail = require('./emails/updateEmail');
 const SingleUseTokenProvider = require('./SingleUseTokenProvider');
@@ -49,6 +50,8 @@ function createApiInstance(config) {
                     return `📫 Confirm your subscription to ${siteTitle}`;
                 case 'signup':
                     return `🙌 Complete your sign up to ${siteTitle}!`;
+                case 'signup-paid':
+                    return `🙌 Thank you for signing up to ${siteTitle}!`;
                 case 'updateEmail':
                     return `📫 Confirm your email update for ${siteTitle}!`;
                 case 'signin':
@@ -92,6 +95,23 @@ function createApiInstance(config) {
 
                         Sent to ${email}
                         If you did not make this request, you can simply delete this message. You will not be signed up, and no account will be created for you.
+                        `;
+                case 'signup-paid':
+                    return `
+                        Thank you for subscribing to ${siteTitle}!
+
+                        Tap the link below to be automatically signed in:
+
+                        ${url}
+
+                        For your security, the link will expire in 24 hours time.
+
+                        See you soon!
+
+                        ---
+
+                        Sent to ${email}
+                        Thank you for subscribing to ${siteTitle}!
                         `;
                 case 'updateEmail':
                     return `
@@ -139,6 +159,8 @@ function createApiInstance(config) {
                     return subscribeEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signup':
                     return signupEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                case 'signup-paid':
+                    return signupPaidEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'updateEmail':
                     return updateEmail({url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signin':
