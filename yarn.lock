@@ -1348,7 +1348,7 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.0.4":
+"@tryghost/errors@1.0.4", "@tryghost/errors@^1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.0.4.tgz#9692cfd4c27a269ddbce77d93d02cfa8c52cc7ad"
   integrity sha512-ImfwkOc54Ur9zjYgPaG3Y9wFeH00eJnqClYBZSB5/K0T6nqTXnIOyFIq33vZkmXuxQLX1xRb82OeWYxHxgFWDA==
@@ -1356,7 +1356,7 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.12", "@tryghost/errors@^0.2.13", "@tryghost/errors@^0.2.14", "@tryghost/errors@^0.2.16", "@tryghost/errors@^0.2.17", "@tryghost/errors@^0.2.9":
+"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.12", "@tryghost/errors@^0.2.13", "@tryghost/errors@^0.2.14", "@tryghost/errors@^0.2.17", "@tryghost/errors@^0.2.9":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
   integrity sha512-Mj+bedWOwfooNA8fQdp6gIcRvWcKhJ/hOyGzu6OLFDLgEosFEeuFgXE6SsAWkf9+9NTYX30w88qGIWZqOhEAmQ==
@@ -1641,13 +1641,13 @@
   optionalDependencies:
     promise.allsettled "^1.0.5"
 
-"@tryghost/minifier@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.1.tgz#2e7550f417effcdb7dc445e14b5e000556318d87"
-  integrity sha512-vNRYoUGYVy95PVoL6OTOL4Oekz71VAGyEorP6gvmAv5SHUh8aXkkU4I5Thw9TzAVGkqhLvN7CL3AE4oW9csusg==
+"@tryghost/minifier@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.6.tgz#cd605e7deb7499f9b6babc2aabc759febd584391"
+  integrity sha512-ceiYp0qAl3rp+NC24XyqF9SSRHxkNmuyJWOZ6mPQm+sg2TgVAf+rF+aJdquf8fJh4INiSSviLOB9iZf05W3UKg==
   dependencies:
     "@tryghost/debug" "^0.1.8"
-    "@tryghost/errors" "^0.2.16"
+    "@tryghost/errors" "^1.0.4"
     "@tryghost/tpl" "^0.1.7"
     csso "4.2.0"
     terser "^5.9.0"
