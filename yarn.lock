@@ -1485,22 +1485,6 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
-"@tryghost/logging@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.2.tgz#8a8828ee5a22abfeb7a7aca67900b3cd129b37d8"
-  integrity sha512-D/KFMb40dA/1dExe2nbw7m1SFY5B8ghJHPYfLYXAK+Qi4GGO0c9D+3zbWcPoyCfveNW+7Uwgexwg+nAWMH+vmg==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch" "^1.0.0"
-    "@tryghost/pretty-stream" "^0.1.2"
-    "@tryghost/root-utils" "^0.3.7"
-    bunyan "^1.8.15"
-    bunyan-loggly "^1.4.2"
-    fs-extra "^10.0.0"
-    gelf-stream "^1.1.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.17.21"
-
 "@tryghost/magic-link@1.0.14", "@tryghost/magic-link@^1.0.14":
   version "1.0.14"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.14.tgz#3636a023de4f2ecbd59dff1b56cde029106590f0"
@@ -5609,16 +5593,16 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.13.3:
-  version "4.13.3"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.13.3.tgz#01da40ed46ecb907922090a274c069a732535815"
-  integrity sha512-4PkBu5hgH9TlxKxSucFAXzKpmLcB6hkVf4jmIWmMnRQJJGMvENRWQU1NloqItIT+jQWu/pRO/GRvW+LpJqOPmQ==
+gscan@4.13.2:
+  version "4.13.2"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.13.2.tgz#120a8d88a8100f25795cdf179c0c5dcb5793836e"
+  integrity sha512-RyR16GSLfFCiDsdQoLv75PqDmFeSuB91EsFZ/F+qmE/LWGKoyYLi5tJtZPGSixcyjV9/+DchgjUVnVy47UgTnw==
   dependencies:
     "@sentry/node" "6.15.0"
     "@tryghost/config" "0.2.1"
     "@tryghost/debug" "0.1.9"
     "@tryghost/ignition-errors" "0.1.8"
-    "@tryghost/logging" "1.0.2"
+    "@tryghost/logging" "1.0.1"
     "@tryghost/pretty-cli" "1.2.22"
     "@tryghost/server" "0.1.0"
     "@tryghost/zip" "1.1.18"
