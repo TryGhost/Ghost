@@ -6,6 +6,7 @@ const middleware = require('../../../../../core/frontend/services/theme-engine')
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const customThemeSettingsCache = require('../../../../../core/shared/custom-theme-settings-cache');
+const labs = require('../../../../../core/shared/labs');
 
 const sandbox = sinon.createSandbox();
 
@@ -67,8 +68,9 @@ describe('Themes middleware', function () {
             .returns(fakeActiveTheme);
 
         sandbox.stub(settingsCache, 'get')
-            .withArgs('labs').returns(fakeLabsData)
             .withArgs('active_theme').returns(fakeActiveThemeName);
+
+        sandbox.stub(labs, 'getAll').returns(fakeLabsData);
 
         sandbox.stub(settingsCache, 'getPublic')
             .returns(fakeSiteData);
