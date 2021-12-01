@@ -1356,7 +1356,7 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.12", "@tryghost/errors@^0.2.13", "@tryghost/errors@^0.2.14", "@tryghost/errors@^0.2.17", "@tryghost/errors@^0.2.9":
+"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.12", "@tryghost/errors@^0.2.13", "@tryghost/errors@^0.2.14", "@tryghost/errors@^0.2.9":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
   integrity sha512-Mj+bedWOwfooNA8fQdp6gIcRvWcKhJ/hOyGzu6OLFDLgEosFEeuFgXE6SsAWkf9+9NTYX30w88qGIWZqOhEAmQ==
@@ -1404,10 +1404,10 @@
   optionalDependencies:
     sharp "^0.29.0"
 
-"@tryghost/job-manager@0.8.13":
-  version "0.8.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.13.tgz#e8ac3bfdba0f8b97aa4bd19b5e814e121e36c820"
-  integrity sha512-RuHm5YqZpU5R9RssgXWhqeBLhnFK/XpB4Id9jqYTkNDrVhizCsAnqbAmMvvAk4de2XDQljmfydoDUk70sJx+tA==
+"@tryghost/job-manager@0.8.15":
+  version "0.8.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.15.tgz#e2986aed08c69130cae772acc39ff13e7ab40a2c"
+  integrity sha512-2VwGsJLtH6ED8IlHV+qafNAjknGuVGSkNWfDEF0LRTwv/O4yMeDTFTrIBKuTXT6WT1gCRtr3XSNwS+0IlVUahg==
   dependencies:
     "@breejs/later" "^4.0.2"
     bree "^6.2.0"
