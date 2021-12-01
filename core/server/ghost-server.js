@@ -107,13 +107,13 @@ class GhostServer {
                 let ghostError;
 
                 if (error.code === 'EADDRINUSE') {
-                    ghostError = new errors.GhostError({
+                    ghostError = new errors.InternalServerError({
                         message: tpl(messages.addressInUse.error),
                         context: tpl(messages.addressInUse.context, {port: config.get('server').port}),
                         help: tpl(messages.addressInUse.help)
                     });
                 } else {
-                    ghostError = new errors.GhostError({
+                    ghostError = new errors.InternalServerError({
                         message: tpl(messages.otherError.error, {errorNumber: error.errno}),
                         context: tpl(messages.otherError.context),
                         help: tpl(messages.otherError.help)

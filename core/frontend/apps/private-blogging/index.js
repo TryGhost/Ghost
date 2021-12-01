@@ -24,7 +24,7 @@ let checkSubdir = function checkSubdir() {
         paths = urlUtils.getSubdir().split('/');
 
         if (paths.pop() === PRIVATE_KEYWORD) {
-            logging.error(new errors.GhostError({
+            logging.error(new errors.InternalServerError({
                 message: tpl(messages.urlCannotContainPrivateSubdir.error),
                 context: tpl(messages.urlCannotContainPrivateSubdir.description),
                 help: tpl(messages.urlCannotContainPrivateSubdir.help)

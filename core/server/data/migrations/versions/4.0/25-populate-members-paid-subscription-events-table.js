@@ -44,7 +44,7 @@ module.exports = createTransactionalMigration(
                 return amount * 30;
             }
 
-            throw new errors.GhostError({
+            throw new errors.InternalServerError({
                 message: tpl(messages.unknownSubscriptionIntervalError , {
                     interval
                 })

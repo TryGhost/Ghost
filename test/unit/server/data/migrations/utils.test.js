@@ -375,7 +375,7 @@ describe('migrations/utils/permissions', function () {
                     runDownMigration = await runUpMigration(knex, migration);
                     should.fail('addPermissionToRole up migration did not throw');
                 } catch (err) {
-                    should.equal(err instanceof errors.GhostError, true);
+                    should.equal(errors.utils.isGhostError(err), true);
                     err.message.should.equal('Cannot add permission(Unimaginable) with role(Not there) - permission does not exist');
                 }
             });
@@ -408,7 +408,7 @@ describe('migrations/utils/permissions', function () {
                     await runUpMigration(knex, migration);
                     should.fail('addPermissionToRole did not throw');
                 } catch (err) {
-                    should.equal(err instanceof errors.GhostError, true);
+                    should.equal(errors.utils.isGhostError(err), true);
                     err.message.should.equal('Cannot add permission(Permission Name) with role(Not there) - role does not exist');
                 }
             });

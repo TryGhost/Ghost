@@ -131,7 +131,7 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
     // `paid` and `free` were swapped out for NQL filters in 4.5.0, we shouldn't see them here now
     case 'paid':
     case 'free':
-        throw new errors.GhostError({
+        throw new errors.InternalServerError({
             message: tpl(messages.unexpectedFilterError, {
                 property: errorProperty,
                 value: emailRecipientFilter
@@ -140,7 +140,7 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
     case 'all':
         return 'subscribed:true';
     case 'none':
-        throw new errors.GhostError({
+        throw new errors.InternalServerError({
             message: tpl(messages.noneFilterError, {
                 property: errorProperty
             })
@@ -352,7 +352,7 @@ async function sendEmailJob({emailModel, options}) {
             error: errorMessage
         }, {patch: true});
 
-        throw new errors.GhostError({
+        throw new errors.InternalServerError({
             err: error,
             context: tpl(messages.sendEmailRequestFailed)
         });

@@ -404,8 +404,8 @@ async function bootGhost({backend = true, frontend = true} = {}) {
 
         // Ensure the error we have is an ignition error
         let serverStartError = error;
-        if (!errors.utils.isIgnitionError(serverStartError)) {
-            serverStartError = new errors.GhostError({message: serverStartError.message, err: serverStartError});
+        if (!errors.utils.isGhostError(serverStartError)) {
+            serverStartError = new errors.InternalServerError({message: serverStartError.message, err: serverStartError});
         }
 
         logging.error(serverStartError);

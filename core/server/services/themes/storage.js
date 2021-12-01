@@ -112,7 +112,7 @@ module.exports = {
             if (checkedTheme) {
                 fs.remove(checkedTheme.path)
                     .catch((err) => {
-                        logging.error(new errors.GhostError({err: err}));
+                        logging.error(new errors.InternalServerError({err: err}));
                     });
             }
 
@@ -120,7 +120,7 @@ module.exports = {
             getStorage()
                 .delete(backupName)
                 .catch((err) => {
-                    logging.error(new errors.GhostError({err: err}));
+                    logging.error(new errors.InternalServerError({err: err}));
                 });
         }
     },

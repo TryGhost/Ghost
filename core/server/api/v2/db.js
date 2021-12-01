@@ -51,7 +51,7 @@ module.exports = {
             return Promise.resolve()
                 .then(() => exporter.doExport({include: frame.options.withRelated}))
                 .catch((err) => {
-                    return Promise.reject(new errors.GhostError({err: err}));
+                    return Promise.reject(new errors.InternalServerError({err: err}));
                 });
         }
     },
@@ -107,7 +107,7 @@ module.exports = {
                             }, {concurrency: 100});
                         })
                         .catch((err) => {
-                            throw new errors.GhostError({
+                            throw new errors.InternalServerError({
                                 err: err
                             });
                         });

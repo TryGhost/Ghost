@@ -42,7 +42,7 @@ const session = {
                 });
             });
         }).catch(async (err) => {
-            if (!errors.utils.isIgnitionError(err)) {
+            if (!errors.utils.isGhostError(err)) {
                 throw new errors.UnauthorizedError({
                     message: tpl(messages.authAccessDenied),
                     err

@@ -100,11 +100,11 @@ const login = (request, API_URL) => {
             .then(function then(res) {
                 if (res.statusCode === 302) {
                     // This can happen if you already have an instance running e.g. if you've been using Ghost CLI recently
-                    return reject(new errors.GhostError({
+                    return reject(new errors.InternalServerError({
                         message: 'Ghost is redirecting, do you have an instance already running on port 2369?'
                     }));
                 } else if (res.statusCode !== 200 && res.statusCode !== 201) {
-                    return reject(new errors.GhostError({
+                    return reject(new errors.InternalServerError({
                         message: res.body.errors[0].message
                     }));
                 }
