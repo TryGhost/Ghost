@@ -1166,12 +1166,12 @@
     "@tryghost/errors" "^0.2.10"
     lodash "^4.17.11"
 
-"@tryghost/bookshelf-collision@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-collision/-/bookshelf-collision-0.1.7.tgz#4f7b65d74c5d783e731149ed3a15ecec4f7e818f"
-  integrity sha512-hwls5rGcm93NYgbVn9hKI/X7qX7zbh2gGsIZhaETWqi8TAPKoiqm6/g3j621yRTek7y37p/KPUn3pXmyeE/Y7Q==
+"@tryghost/bookshelf-collision@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-collision/-/bookshelf-collision-0.1.8.tgz#20153c4a9cc2bb013e6a0a9c5ddd6baeef979d9a"
+  integrity sha512-wY4vuaeB9Q8vYNc+CMyl8Pum0uLGs4DzvtGRiEpE0g9BcFtt2c+A8n7GOEoEDeIHkO45ZP09DgACxKgEuCL08w==
   dependencies:
-    "@tryghost/errors" "^0.2.12"
+    "@tryghost/errors" "^1.0.0"
     lodash "^4.17.21"
     moment-timezone "^0.5.33"
 
@@ -1188,14 +1188,14 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-filter@^0.3.4":
-  version "0.3.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.3.4.tgz#8e3961638f3fbe93ff491dfc0c407c28d6db8468"
-  integrity sha512-RaI5T8WgwKLZfuwYK4ceRoBVuItaJWK4IVq4AeBFz6267DJlArqHFdmVJ+sP/QDurJQEA2uu1zq941q5O53j7w==
+"@tryghost/bookshelf-filter@^0.3.5":
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.3.5.tgz#0a2e9d0994970eb01d06d38ea3592072daa34ba8"
+  integrity sha512-J0n3Sh6fYMjy/tRUL7lnV86mU8hVhzwT+k6fKSaWhgltPPtaTuyjsdnH0AXq+VreRe8QDyY+jp+ENxAijHGrYQ==
   dependencies:
     "@nexes/nql" "0.6.0"
     "@tryghost/debug" "^0.1.9"
-    "@tryghost/errors" "^0.2.12"
+    "@tryghost/errors" "^1.0.0"
     "@tryghost/tpl" "^0.1.8"
 
 "@tryghost/bookshelf-has-posts@^0.1.9":
@@ -1221,28 +1221,28 @@
   dependencies:
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-pagination@^0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-pagination/-/bookshelf-pagination-0.1.8.tgz#66b1d482109cb380c8b6ff668ca5d800cd2815c5"
-  integrity sha512-rBbAIQZ5FGNyKfPo+Iy4a8KZkXQNq/PN7qYMht2KreQFKTm5H2iuEz+osa70Cq2Z5l22Z1FR+VlmP9kRU76VoA==
+"@tryghost/bookshelf-pagination@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-pagination/-/bookshelf-pagination-0.1.9.tgz#69c4a6f35594ae515ae93974fe964918075d2c8b"
+  integrity sha512-OSZlzuBkoaUOZo+ZsTNT06hePUgb3HA2MmCmBXWBaLG+cOXHPYPGcv3qVEhR2bQ2mXxMPhBqob5yDzuSyiyt8A==
   dependencies:
-    "@tryghost/errors" "^0.2.12"
+    "@tryghost/errors" "^1.0.0"
     "@tryghost/tpl" "^0.1.8"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-plugins@0.3.4":
-  version "0.3.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.3.4.tgz#d701b78e053deb8e7d4fadf2b0e433faaf8a8a6c"
-  integrity sha512-v1z+Piks5ymefSqmrvN1fXgvvZVN+O2pDx+Y9OAB+0i3hi3ceY4sF4AqphC3OqMf6j49l7Bmv+0oFYxYahsZzA==
+"@tryghost/bookshelf-plugins@0.3.5":
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.3.5.tgz#4e9544a19e4267d4d3149746daafc50a81dee127"
+  integrity sha512-UANLU6XjiLgCZ5zrYZ8ObzBbZzeM/qpphTG23VmhTqP/GJ9a4YWYJdJHUEQ8l5TJpBXiePy1xeFOZU2bNpRJAA==
   dependencies:
-    "@tryghost/bookshelf-collision" "^0.1.7"
+    "@tryghost/bookshelf-collision" "^0.1.8"
     "@tryghost/bookshelf-custom-query" "^0.1.7"
     "@tryghost/bookshelf-eager-load" "^0.1.8"
-    "@tryghost/bookshelf-filter" "^0.3.4"
+    "@tryghost/bookshelf-filter" "^0.3.5"
     "@tryghost/bookshelf-has-posts" "^0.1.9"
     "@tryghost/bookshelf-include-count" "^0.1.8"
     "@tryghost/bookshelf-order" "^0.1.7"
-    "@tryghost/bookshelf-pagination" "^0.1.8"
+    "@tryghost/bookshelf-pagination" "^0.1.9"
     "@tryghost/bookshelf-search" "^0.1.7"
     "@tryghost/bookshelf-transaction-events" "^0.1.7"
 
@@ -1348,7 +1348,7 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.0.4", "@tryghost/errors@^1.0.4":
+"@tryghost/errors@1.0.4", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.0.4.tgz#9692cfd4c27a269ddbce77d93d02cfa8c52cc7ad"
   integrity sha512-ImfwkOc54Ur9zjYgPaG3Y9wFeH00eJnqClYBZSB5/K0T6nqTXnIOyFIq33vZkmXuxQLX1xRb82OeWYxHxgFWDA==
