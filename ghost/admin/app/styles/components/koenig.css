@@ -1875,7 +1875,59 @@ button.emoji-picker__category-button.active {
     margin-top: 20px;
 }
 
-/* .kg-nft-card  */
+/* Audio card
+/* --------------------------------------------------------------- */
+
+.kg-audio-card .kg-audio-container {
+    display: flex;
+    border-radius: var(--border-radius);
+    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
+}
+
+.kg-media-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 8px;
+    background: var(--whitegrey-l1);
+    border-radius: var(--border-radius);
+}
+
+.kg-audio-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+}
+
+.kg-audio-button svg {
+    fill: var(--midlightgrey);
+    opacity: 0.85;
+    transition: var(--animation-speed-normal) ease-out;
+    transform: scale(1.0);
+  }
+  
+  .kg-audio-button:hover svg {
+    opacity: 1.0;
+    fill: var(--green);
+  }
+
+  .kg-placeholder-audio {
+    width: 28px;
+    height: 28px;
+}
+
+.kg-placeholder-text {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    margin-left: 12px;
+    color: var(--midgrey);
+    font-family: var(--font-family);
+    font-size: 1.45rem;
+    font-weight: 400;
+}
 
 /* Codemirror overrides
 /* --------------------------------------------------------------- */

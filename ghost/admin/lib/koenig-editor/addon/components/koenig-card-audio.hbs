@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{concat (kg-style "container-card") " kg-video-card mih10 miw-100 relative" (kg-style "breakout" size=@payload.cardWidth)}}
+    @class={{concat (kg-style "media-card") " kg-card kg-audio-card mih10 miw-100 relative" (kg-style "breakout" size=@payload.cardWidth)}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -22,8 +22,8 @@
     {{on "drop" this.drop}}
     as |card|
 >
-    <div style="display:flex">
-        <div style="width: 150px;">
+    <div class="kg-audio-container">
+        <div class="kg-media-container">
             {{#if (not @payload.src)}}
                 <GhUploader
                     @uploadUrl="/media/upload/"
@@ -36,39 +36,37 @@
                     @onFailed={{this.audioUploadFailed}}
                     as |uploader|
                 >
-                    <div class="relative{{unless @payload.src " bg-whitegrey-l2"}}">
-                        {{#if (or uploader.errors uploader.isUploading)}}
-                            <div class="relative miw-100 flex items-center {{if (not this.previewThumbnailSrc @payload.src) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
-                                {{#if uploader.errors}}
-                                    <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
-                                        {{uploader.errors.firstObject.message}}
-                                    </span>
-                                {{/if}}
+                    {{#if (or uploader.errors uploader.isUploading)}}
+                        <div class="relative miw-100 flex items-center {{if (not this.previewThumbnailSrc @payload.src) "kg-media-placeholder" "absolute absolute--fill bg-white-50"}}">
+                            {{#if uploader.errors}}
+                                <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
+                                    {{uploader.errors.firstObject.message}}
+                                </span>
+                            {{/if}}
 
-                                {{#if this.isDraggedOver}}
-                                    <span class="db center sans-serif fw7 f7 middarkgrey">
-                                        Drop it like it's hot 🔥
-                                    </span>
-                                {{else if uploader.isUploading}}
-                                    {{uploader.progressBar}}
-                                {{/if}}
-                            </div>
-                        {{else}}
-                            <div class="relative miw-100 flex items-center kg-media-placeholder ba b--whitegrey">
-                                {{#if this.isDraggedOver}}
-                                    <span class="db center sans-serif fw7 f7 middarkgrey">
-                                        Drop it like it's hot 🔥
-                                    </span>
-                                {{else if uploader.isUploading}}
-                                    {{uploader.progressBar}}
-                                {{else}}
-                                    <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" {{on "click" this.triggerAudioFileDialog}}>
-                                        {{svg-jar this.placeholder class="kg-placeholder-image" style="transform:scale(0.5)"}}
-                                    </button>
-                                {{/if}}
-                            </div>
-                        {{/if}}
-                    </div>
+                            {{#if this.isDraggedOver}}
+                                <span class="db center sans-serif fw7 f7 middarkgrey">
+                                    Drop it like it's hot 🔥
+                                </span>
+                            {{else if uploader.isUploading}}
+                                {{uploader.progressBar}}
+                            {{/if}}
+                        </div>
+                    {{else}}
+                        <div class="kg-media-placeholder">
+                            {{#if this.isDraggedOver}}
+                                <span class="db center sans-serif fw7 f7 middarkgrey">
+                                    Drop it like it's hot 🔥
+                                </span>
+                            {{else if uploader.isUploading}}
+                                {{uploader.progressBar}}
+                            {{else}}
+                                <button class="kg-audio-button" {{on "click" this.triggerAudioFileDialog}}>
+                                    {{svg-jar "audio-upload" class="kg-placeholder-audio"}}
+                                </button>
+                            {{/if}}
+                        </div>
+                    {{/if}}
 
                     <div style="display:none">
                         <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.audioMimeTypes}} @onInsert={{this.registerAudioFileInput}} />
@@ -88,10 +86,10 @@
                     @paramsHash={{hash url=@payload.src}}
                     as |uploader|
                 >
-                    <div class="relative{{unless @payload.thumbnailSrc " bg-whitegrey-l2"}}">
+                    <div class="relative">
 
                         {{#if (or uploader.errors uploader.isUploading)}}
-                            <div class="relative miw-100 flex items-center {{if (not @payload.thumbnailSrc) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+                            <div class="relative miw-100 flex items-center {{if (not @payload.thumbnailSrc) "kg-media-placeholder" "absolute absolute--fill bg-white-50"}}">
                                 {{#if uploader.errors}}
                                     <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
                                         {{uploader.errors.firstObject.message}}
@@ -105,12 +103,12 @@
                                 {{else if uploader.isUploading}}
                                     {{uploader.progressBar}}
                                 {{else if (not @payload.thumbnailSrc)}}
-                                    <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" {{on "click" this.triggerThumbnailFileDialog}}>
-                                        {{svg-jar this.placeholder class="kg-placeholder-image" style="transform:scale(0.5)"}}
+                                    <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                                        {{svg-jar "audio-upload" class="kg-placeholder-audio"}}
                                         {{!-- <span class="mt2 midgrey">Click to select an audio</span> --}}
                                     </button>
                                 {{else}}
-                                    <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                                    <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
                                         <img src={{@payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
                                         {{!-- <span class="mt2 midgrey">Click to select an audio</span> --}}
                                     </button>
@@ -124,7 +122,7 @@
                                 {{/if}}
                             </div>
                         {{else}}
-                            <div class="relative miw-100 flex items-center kg-media-placeholder ba b--whitegrey">
+                            <div class="kg-media-placeholder">
                                 {{#if this.isDraggedOver}}
                                     <span class="db center sans-serif fw7 f7 middarkgrey">
                                         Drop it like it's hot 🔥
@@ -132,12 +130,12 @@
                                 {{else if uploader.isUploading}}
                                     {{uploader.progressBar}}
                                 {{else if @payload.thumbnailSrc}}
-                                    <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                                    <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
                                         <img src={{@payload.thumbnailSrc}} style="width: 150px" />
                                     </button>
                                 {{else}}
-                                    <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" {{on "click" this.triggerThumbnailFileDialog}}>
-                                        {{svg-jar this.placeholder class="kg-placeholder-image" style="transform:scale(0.5)"}}
+                                    <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                                        {{svg-jar "audio-upload" class="kg-placeholder-audio"}}
                                     </button>
                                 {{/if}}
                             </div>
@@ -160,7 +158,7 @@
                 />
             </div>
         {{else}}
-            <div style="flex-grow: 1;display: flex;align-items: center;margin-left: 12px;line-height:3rem">
+            <div class="kg-placeholder-text">
                 Click to upload an audio file
             </div>
         {{/if}}
