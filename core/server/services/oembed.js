@@ -85,6 +85,8 @@ class OEmbed {
     }
 
     async fetchBookmarkData(url) {
+        // Metascraper doesn't handle leading/trailing whitespace
+        url = url.trim();
         const metascraper = require('metascraper')([
             require('metascraper-url')(),
             require('metascraper-title')(),
@@ -154,6 +156,10 @@ class OEmbed {
     }
 
     fetchOembedData(_url, cardType) {
+        // Trimming solves the difference of url validation between `new URL(url)`
+        // and metascraper.
+        _url = _url.trim();
+
         // parse the url then validate the protocol and host to make sure it's
         // http(s) and not an IP address or localhost to avoid potential access to
         // internal network endpoints
