@@ -1151,12 +1151,12 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@tryghost/adapter-manager@0.2.18":
-  version "0.2.18"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.18.tgz#fd3aba19ef52a01c8521798b0d869c3ac8a496c5"
-  integrity sha512-hXPDkinIBTOHndQ7deuBFXDrbO50h201tI0uWieU/RHtbAE1HTjbQidfyfuYJ12eRLkMd8/l4fO9kqD11TmzLg==
+"@tryghost/adapter-manager@0.2.23":
+  version "0.2.23"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.23.tgz#c7c5102fcfd64f7cd422cd3077a75a5128f41b1d"
+  integrity sha512-hjHmr/aJF7jbSO6Qj+jSOv7W+S+07WQx5gKr9FSHfHeArMt5kcFidULuaGW/D3CzFCTn1n0Rj2Y4yyei4hPogg==
   dependencies:
-    "@tryghost/errors" "^0.2.17"
+    "@tryghost/errors" "^1.0.4"
 
 "@tryghost/admin-api-schema@2.6.1":
   version "2.6.1"
@@ -1348,7 +1348,7 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.0.4":
+"@tryghost/errors@1.0.4", "@tryghost/errors@^1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.0.4.tgz#9692cfd4c27a269ddbce77d93d02cfa8c52cc7ad"
   integrity sha512-ImfwkOc54Ur9zjYgPaG3Y9wFeH00eJnqClYBZSB5/K0T6nqTXnIOyFIq33vZkmXuxQLX1xRb82OeWYxHxgFWDA==
