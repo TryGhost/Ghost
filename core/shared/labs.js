@@ -33,7 +33,6 @@ const ALPHA_FEATURES = [
     'mediaAPI',
     'filesAPI',
     'membersAutoLogin',
-    'buttonCard',
     'calloutCard',
     'nftCard',
     'accordionCard',
