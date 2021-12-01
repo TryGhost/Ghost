@@ -216,11 +216,6 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
-            if (!successUrl) {
-                const checkoutSuccessUrl = new URL(siteUrl);
-                checkoutSuccessUrl.searchParams.set('stripe', 'success');
-                successUrl = checkoutSuccessUrl.href;
-            }
 
             if (!cancelUrl) {
                 const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
