@@ -204,7 +204,7 @@ export const CARD_MENU = [
         {
             label: 'Video',
             icon: 'koenig/kg-card-type-video',
-            desc: 'Add a video file',
+            desc: 'Upload and play a video',
             matches: ['video'],
             type: 'card',
             replaceArg: 'video',
@@ -216,7 +216,7 @@ export const CARD_MENU = [
         {
             label: 'Audio',
             icon: 'koenig/kg-card-type-audio',
-            desc: 'Add an audio file',
+            desc: 'Upload and play an audio file',
             matches: ['audio'],
             type: 'card',
             replaceArg: 'audio',
@@ -225,7 +225,7 @@ export const CARD_MENU = [
         {
             label: 'File',
             icon: 'koenig/kg-card-type-file',
-            desc: 'Add a file',
+            desc: 'Upload a downloadable file',
             matches: ['file'],
             type: 'card',
             replaceArg: 'file',
