@@ -11,7 +11,9 @@ const MemberSubscribeEvent = ghostBookshelf.Model.extend({
     customQuery(qb, options) {
         if (options.aggregateSubscriptionDeltas) {
             if (options.limit || options.filter) {
-                throw new errors.IncorrectUsageError('aggregateSubscriptionDeltas does not work when passed a filter or limit');
+                throw new errors.IncorrectUsageError({
+                    message: 'aggregateSubscriptionDeltas does not work when passed a filter or limit'
+                });
             }
             const knex = ghostBookshelf.knex;
             return qb.clear('select')
@@ -32,11 +34,15 @@ const MemberSubscribeEvent = ghostBookshelf.Model.extend({
         return options;
     },
     async edit() {
-        throw new errors.IncorrectUsageError('Cannot edit MemberSubscribeEvent');
+        throw new errors.IncorrectUsageError({
+            message: 'Cannot edit MemberSubscribeEvent'
+        });
     },
 
     async destroy() {
-        throw new errors.IncorrectUsageError('Cannot destroy MemberSubscribeEvent');
+        throw new errors.IncorrectUsageError({
+            message: 'Cannot destroy MemberSubscribeEvent'
+        });
     }
 });
 

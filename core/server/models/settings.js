@@ -346,7 +346,7 @@ Settings = ghostBookshelf.Model.extend({
             );
 
             if (validationErrors.length) {
-                throw new errors.ValidationError(validationErrors.join('\n'));
+                throw new errors.ValidationError({message: validationErrors.join('\n')});
             }
         },
         async labs(model) {

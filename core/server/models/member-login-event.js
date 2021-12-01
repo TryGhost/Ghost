@@ -9,11 +9,11 @@ const MemberLoginEvent = ghostBookshelf.Model.extend({
     }
 }, {
     async edit() {
-        throw new errors.IncorrectUsageError('Cannot edit MemberLoginEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot edit MemberLoginEvent'});
     },
 
     async destroy() {
-        throw new errors.IncorrectUsageError('Cannot destroy MemberLoginEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot destroy MemberLoginEvent'});
     }
 });
 

@@ -40,9 +40,9 @@ module.exports = {
 
         // Check for an activate() method on the app.
         if (!_.isFunction(app.activate)) {
-            return Promise.reject(new errors.IncorrectUsageError(
-                tpl(messages.noActivateMethodLoadingAppError, {name: name})
-            ));
+            return Promise.reject(new errors.IncorrectUsageError({
+                message: tpl(messages.noActivateMethodLoadingAppError, {name: name})
+            }));
         }
 
         // Wrapping the activate() with a when because it's possible

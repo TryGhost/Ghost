@@ -159,12 +159,16 @@ const membersService = {
             }
 
             if (stripeService.api.configured && stripeService.api.mode === 'live') {
-                throw new errors.IncorrectUsageError(tpl(messages.noLiveKeysInDevelopment));
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.noLiveKeysInDevelopment)
+                });
             }
         } else {
             const siteUrl = urlUtils.getSiteUrl();
             if (!/^https/.test(siteUrl) && stripeService.api.configured) {
-                throw new errors.IncorrectUsageError(tpl(messages.sslRequiredForStripe));
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.sslRequiredForStripe)
+                });
             }
         }
         if (!membersApi) {

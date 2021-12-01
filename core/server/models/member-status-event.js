@@ -11,7 +11,9 @@ const MemberStatusEvent = ghostBookshelf.Model.extend({
     customQuery(qb, options) {
         if (options.aggregateStatusCounts) {
             if (options.limit || options.filter) {
-                throw new errors.IncorrectUsageError('aggregateStatusCounts does not work when passed a filter or limit');
+                throw new errors.IncorrectUsageError({
+                    message: 'aggregateStatusCounts does not work when passed a filter or limit'
+                });
             }
             const knex = ghostBookshelf.knex;
             return qb.clear('select')
@@ -46,11 +48,11 @@ const MemberStatusEvent = ghostBookshelf.Model.extend({
         return options;
     },
     async edit() {
-        throw new errors.IncorrectUsageError('Cannot edit MemberStatusEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot edit MemberStatusEvent'});
     },
 
     async destroy() {
-        throw new errors.IncorrectUsageError('Cannot destroy MemberStatusEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot destroy MemberStatusEvent'});
     }
 });
 
