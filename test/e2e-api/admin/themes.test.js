@@ -162,11 +162,11 @@ describe('Themes API', function () {
 
         // ensure tmp theme folder contains one theme again now
         const tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
-        tmpFolderContents.forEach((theme, index) => {
-            if (theme.match(/^\./) || theme === 'README.md') {
-                tmpFolderContents.splice(index, 1);
+        for (let i = 0; i < tmpFolderContents.length; i++) {
+            while (tmpFolderContents[i].match(/^\./) || tmpFolderContents[i] === 'README.md') {
+                tmpFolderContents.splice(i, 1);
             }
-        });
+        }
         tmpFolderContents.should.be.an.Array().with.lengthOf(10);
 
         tmpFolderContents.should.eql([
