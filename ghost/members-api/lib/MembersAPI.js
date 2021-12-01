@@ -148,6 +148,9 @@ module.exports = function MembersAPI({
          */
         async sendSignupEmail(email) {
             let requestedType = 'signup';
+            if (labsService.isSet('membersAutoLogin')) {
+                requestedType = 'signup-paid';
+            }
             await sendEmailWithMagicLink({
                 email,
                 requestedType,
