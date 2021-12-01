@@ -18,12 +18,9 @@ module.exports = {
             'stripeDirect',
             'mailgunIsConfigured',
             'emailAnalytics',
-            'hostSettings'
+            'hostSettings',
+            'tenor'
         ];
-
-        if (labs.isSet('gifsCard')) {
-            keys.push('tenor');
-        }
 
         frame.response = {
             config: _.pick(data, keys)
