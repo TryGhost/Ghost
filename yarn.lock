@@ -1348,7 +1348,7 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.0.4":
+"@tryghost/errors@1.0.4", "@tryghost/errors@^1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.0.4.tgz#9692cfd4c27a269ddbce77d93d02cfa8c52cc7ad"
   integrity sha512-ImfwkOc54Ur9zjYgPaG3Y9wFeH00eJnqClYBZSB5/K0T6nqTXnIOyFIq33vZkmXuxQLX1xRb82OeWYxHxgFWDA==
@@ -1758,12 +1758,12 @@
     "@tryghost/debug" "^0.1.9"
     "@tryghost/logging" "^1.0.0"
 
-"@tryghost/session-service@0.1.28":
-  version "0.1.28"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.28.tgz#65cb91294155e12eac9be36adcaddb2531042a03"
-  integrity sha512-NdcHMJIDq/OzJASI5u8a12dgXj8QqPJ0iiF9td6MTMoy+if1yeEfluKq1gOGl9oW7uZZ+Dj/4q+U8JLYOcEU2Q==
+"@tryghost/session-service@0.1.33":
+  version "0.1.33"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.33.tgz#de3f81a072a7b610dff7141e89a1f3cae35b2318"
+  integrity sha512-GEpGELBN9PhDbdgYM1sccphh+G/zLVbAnnRxUa1ZFyoI28IZB4a+aewzNbnujARKvesKQdYppwKzj0cSkvZuAA==
   dependencies:
-    "@tryghost/errors" "^0.2.17"
+    "@tryghost/errors" "^1.0.4"
 
 "@tryghost/settings-path-manager@0.1.2":
   version "0.1.2"
