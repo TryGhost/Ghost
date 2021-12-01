@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const labs = require('../../../../../../shared/labs');
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:config');
 
 module.exports = {
