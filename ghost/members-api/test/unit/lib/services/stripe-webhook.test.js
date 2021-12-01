@@ -42,4 +42,77 @@ describe('StripeWebhookService', function () {
             }
         });
     });
+    describe('customer.subscription.updated webhooks', function () {
+        it('Should throw a 400 error when a subscription has multiple prices', async function () {
+            const stripeWebhookService = new StripeWebhookService({
+                stripeAPIService: mock(StripeAPIService),
+                productRepository: mock(ProductRepository),
+                memberRepository: mock(MemberRepository)
+            });
+
+            stripeWebhookService._stripeAPIService.getSubscription.resolves({
+                customer: 'customer_id',
+                plan: {
+                    product: 'product_id'
+                }
+            });
+
+            stripeWebhookService._memberRepository.get.resolves(null);
+
+            stripeWebhookService._productRepository.get.resolves({
+                id: 'product_id'
+            });
+
+            try {
+                await stripeWebhookService.subscriptionEvent({
+                    items: {
+                        data: [
+                            {
+                                id: 'si_1',
+                                price: {}
+                            },
+                            {
+                                id: 'si_2',
+                                price: {}
+                            }
+                        ]
+                    }
+                });
+                should.fail();
+            } catch (err) {
+                should.equal(err.statusCode, 400);
+            }
+        });
+        it('Should throw a 400 error when a subscription has 0 prices', async function () {
+            const stripeWebhookService = new StripeWebhookService({
+                stripeAPIService: mock(StripeAPIService),
+                productRepository: mock(ProductRepository),
+                memberRepository: mock(MemberRepository)
+            });
+
+            stripeWebhookService._stripeAPIService.getSubscription.resolves({
+                customer: 'customer_id',
+                plan: {
+                    product: 'product_id'
+                }
+            });
+
+            stripeWebhookService._memberRepository.get.resolves(null);
+
+            stripeWebhookService._productRepository.get.resolves({
+                id: 'product_id'
+            });
+
+            try {
+                await stripeWebhookService.subscriptionEvent({
+                    items: {
+                        data: []
+                    }
+                });
+                should.fail();
+            } catch (err) {
+                should.equal(err.statusCode, 400);
+            }
+        });
+    });
 });
