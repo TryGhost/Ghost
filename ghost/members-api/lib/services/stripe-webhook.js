@@ -134,7 +134,17 @@ module.exports = class StripeWebhookService {
             return;
         }
 
-        await this[this.handlers[event.type]](event.data.object);
+        try {
+            await this[this.handlers[event.type]](event.data.object);
+        } catch (err) {
+            if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+                throw err;
+            }
+            throw new errors.GhostError({
+                err,
+                statusCode: 409
+            });
+        }
     }
 
     async subscriptionEvent(subscription) {
