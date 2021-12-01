@@ -81,6 +81,14 @@ module.exports.prepareError = (err, req, res, next) => {
             err = new errors.NotFoundError({
                 err: err
             });
+        } else if (err.stack.match(/node_modules\/handlebars\//)) {
+            // Temporary handling of theme errors from handlebars
+            // @TODO remove this when #10496 is solved properly
+            err = new errors.IncorrectUsageError({
+                err: err,
+                message: err.message,
+                statusCode: err.statusCode
+            });
         } else {
             err = new errors.InternalServerError({
                 err: err,
