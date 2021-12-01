@@ -166,10 +166,27 @@ async function initFrontend() {
  * @param {Object} options
  * @param {Boolean} options.backend
  * @param {Boolean} options.frontend
+ * @param {Object} options.config
  */
-async function initExpressApps(options) {
+async function initExpressApps({frontend, backend, config}) {
     debug('Begin: initExpressApps');
-    const parentApp = require('./server/web/parent/app')(options);
+
+    const parentApp = require('./server/web/parent/app')();
+    const vhost = require('@tryghost/vhost-middleware');
+
+    // Mount the express apps on the parentApp
+    if (backend) {
+        // ADMIN + API
+        const backendApp = require('./server/web/parent/backend')();
+        parentApp.use(vhost(config.getBackendMountPath(), backendApp));
+    }
+
+    if (frontend) {
+        // SITE + MEMBERS
+        const frontendApp = require('./server/web/parent/frontend')({});
+        parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
+    }
+
     debug('End: initExpressApps');
     return parentApp;
 }
@@ -373,7 +390,7 @@ async function bootGhost({backend = true, frontend = true} = {}) {
         if (frontend) {
             await initFrontend();
         }
-        const ghostApp = await initExpressApps({frontend, backend});
+        const ghostApp = await initExpressApps({frontend, backend, config});
 
         if (frontend) {
             await initDynamicRouting();
