@@ -60,7 +60,6 @@ export default Service.extend({
     urlCache: feature('urlCache', {developer: true}),
     mediaAPI: feature('mediaAPI', {developer: true}),
     filesAPI: feature('filesAPI', {developer: true}),
-    buttonCard: feature('buttonCard', {developer: true}),
     calloutCard: feature('calloutCard', {developer: true}),
     nftCard: feature('nftCard', {developer: true}),
     accordionCard: feature('accordionCard', {developer: true}),
