@@ -167,8 +167,7 @@ export const CARD_MENU = [
             desc: 'Add a button to your post',
             matches: ['button'],
             type: 'card',
-            replaceArg: 'button',
-            isAvailable: 'feature.buttonCard'
+            replaceArg: 'button'
         },
         {
             label: 'Callout',
