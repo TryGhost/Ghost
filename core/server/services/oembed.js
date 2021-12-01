@@ -284,6 +284,10 @@ class OEmbed {
         try {
             const urlObject = new URL(url);
 
+            // Trimming solves the difference of url validation between `new URL(url)`
+            // and metascraper.
+            url = url.trim();
+
             for (const provider of this.customProviders) {
                 if (await provider.canSupportRequest(urlObject)) {
                     const result = await provider.getOEmbedData(urlObject, this.externalRequest);
