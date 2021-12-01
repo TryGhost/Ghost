@@ -36,7 +36,6 @@ const ALPHA_FEATURES = [
     'calloutCard',
     'nftCard',
     'accordionCard',
-    'gifsCard',
     'fileCard',
     'audioCard',
     'videoCard',
