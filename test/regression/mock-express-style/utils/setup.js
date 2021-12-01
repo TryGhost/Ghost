@@ -52,6 +52,10 @@ module.exports = {
         await settingsService.init();
         urlServiceUtils.init();
 
+        const customRedirects = require('../../../../core/server/services/redirects');
+        await customRedirects.init();
+        const routeSettings = require('../../../../core/server/services/route-settings');
+        await routeSettings.init();
         const customThemeSettingsService = require('../../../../core/server/services/custom-theme-settings');
         customThemeSettingsService.init();
         const themeService = require('../../../../core/server/services/themes');
