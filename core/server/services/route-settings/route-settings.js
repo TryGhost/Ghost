@@ -9,7 +9,7 @@ const tpl = require('@tryghost/tpl');
 const bridge = require('../../../bridge');
 
 const messages = {
-    loadError: 'Could not load {filename} file.'
+    loadError: 'Could not load routes.yaml file.'
 };
 
 /**
@@ -38,14 +38,6 @@ class RouteSettings {
          * @private
          */
         this.defaultRoutesSettingHash = '3d180d52c663d173a6be791ef411ed01';
-        /**
-         * @private
-         */
-        this.filename = 'routes';
-        /**
-         * @private
-         */
-        this.ext = 'yaml';
 
         this.settingsLoader = settingsLoader;
         this.settingsPath = settingsPath;
@@ -134,7 +126,7 @@ class RouteSettings {
                     if (!urlService.hasFinished()) {
                         if (tries > 5) {
                             throw new errors.InternalServerError({
-                                message: tpl(messages.loadError, {filename: `${this.filename}.${this.ext}`})
+                                message: tpl(messages.loadError)
                             });
                         }
 
