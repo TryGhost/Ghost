@@ -80,3 +80,9 @@
         @modifier="action wide"
     />
 {{/if}}
+
+{{!--
+    Workaround to have an always-shown element to attach key handlers to.
+    TODO: Move onto main element once converted to a glimmer component
+--}}
+<div class="hidden" {{on-key "cmd+shift+p" (action "publishFromShortcut")}}></div>

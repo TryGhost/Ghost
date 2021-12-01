@@ -7,7 +7,6 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 let generalShortcuts = {};
-generalShortcuts[`${ctrlOrCmd}+shift+p`] = 'publish';
 generalShortcuts[`${ctrlOrCmd}+p`] = 'preview';
 
 export default AuthenticatedRoute.extend(ShortcutsRoute, {
@@ -44,13 +43,6 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
     actions: {
         save() {
             this._blurAndScheduleAction(function () {
-                this.controller.send('save');
-            });
-        },
-
-        publish() {
-            this._blurAndScheduleAction(function () {
-                this.controller.send('setSaveType', 'publish');
                 this.controller.send('save');
             });
         },

@@ -3,6 +3,7 @@ import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import {action} from '@ember/object';
 import {computed} from '@ember/object';
 import {or, reads} from '@ember/object/computed';
+import {schedule} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
@@ -280,6 +281,25 @@ export default Component.extend({
 
         updateMemberCount(count) {
             this.memberCount = count;
+        },
+
+        publishFromShortcut() {
+            // trigger blur for inputs and textareas to trigger any actions
+            // before attempting to save so we're saving after the result
+            if (document.activeElement?.matches('input[type="text"], textarea')) {
+                // trigger focusout so that it bubbles
+                const focusout = new Event('focusout');
+                document.activeElement.dispatchEvent(focusout);
+
+                // make sure blur event is triggered too
+                document.activeElement.blur();
+            }
+
+            // wait for actions to be triggered by the focusout/blur before saving
+            schedule('actions', this, function () {
+                this.send('setSaveType', 'published');
+                this.save.perform();
+            });
         }
     },
 
