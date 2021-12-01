@@ -127,6 +127,12 @@ _private.JSONAPIDeserialize = function JSONAPIDeserialize(errorFormat) {
     return internalError;
 };
 
+exports.wrapStack = function wrapStack(err, internalErr) {
+    const extraLine = err.stack.split(/\n/g)[1];
+    const [firstLine, ...rest] = internalErr.stack.split(/\n/g);
+    return [firstLine, extraLine, ...rest].join('\n');
+};
+
 /**
  * @description Serialize GhostError instance to error JSON format
  *
