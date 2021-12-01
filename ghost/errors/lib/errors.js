@@ -1,6 +1,7 @@
 const uuid = require('uuid');
 const merge = require('lodash/merge');
 const isString = require('lodash/isString');
+const cloneDeep = require('lodash/cloneDeep');
 const utils = require('./utils');
 
 class GhostError extends Error {
@@ -59,13 +60,44 @@ class GhostError extends Error {
                 }
 
                 if (property === 'stack') {
-                    this[property] += '\n\n' + options.err[property];
+                    if (this.hideStack) {
+                        return;
+                    }
+                    this[property] = utils.wrapStack(this, options.err);
                     return;
                 }
 
                 this[property] = options.err[property] || this[property];
             });
         }
+    }
+
+    prepareErrorForUser() {
+        const error = cloneDeep(this);
+
+        let stackbits = error.stack.split(/\n/);
+    
+        // We build this up backwards, so we always insert at position 1
+    
+        if (process.env.NODE_ENV === 'production') {
+            stackbits.splice(1, stackbits.length - 1);
+        } else {
+            // Clearly mark the strack trace
+            stackbits.splice(1, 0, `Stack Trace:`);
+        }
+    
+        // Add in our custom cotext and help methods
+    
+        if (this.help) {
+            stackbits.splice(1, 0, `${this.help}`);
+        }
+    
+        if (this.context) {
+            stackbits.splice(1, 0, `${this.context}`);
+        }
+    
+        error.stack = stackbits.join('\n');
+        return error;
     }
 }
 
@@ -95,7 +127,8 @@ const ghostErrors = {
             super(merge({
                 statusCode: 404,
                 errorType: 'NotFoundError',
-                message: 'Resource could not be found.'
+                message: 'Resource could not be found.',
+                hideStack: true
             }, options));
         }
     },
