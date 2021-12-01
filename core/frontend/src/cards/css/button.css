@@ -6,6 +6,10 @@
     justify-content: center;
 }
 
+.kg-button-card.kg-align-left {
+    justify-content: flex-start;
+}
+
 a.kg-btn {
     display: flex;
     position: static;
