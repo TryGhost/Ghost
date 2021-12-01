@@ -18,7 +18,7 @@ module.exports = {
 
         return Promise.map(appsToLoad, appName => loader.activateAppByName(appName))
             .catch(function (err) {
-                logging.error(new errors.GhostError({
+                logging.error(new errors.InternalServerError({
                     err: err,
                     context: tpl(messages.appWillNotBeLoadedError),
                     help: tpl(messages.appWillNotBeLoadedHelp)

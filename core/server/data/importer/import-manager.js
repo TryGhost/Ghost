@@ -121,7 +121,7 @@ class ImportManager {
 
         fs.remove(self.fileToDelete, function (err) {
             if (err) {
-                logging.error(new errors.GhostError({
+                logging.error(new errors.InternalServerError({
                     err: err,
                     context: tpl(messages.couldNotCleanUpFile.error),
                     help: tpl(messages.couldNotCleanUpFile.context)

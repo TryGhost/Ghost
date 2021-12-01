@@ -69,13 +69,13 @@ events.on('settings.timezone.edited', function (settingModel, options) {
                 try {
                     await models.Post.edit(post.toJSON(), _.merge({id: post.id}, options));
                 } catch (err) {
-                    logging.error(new errors.GhostError({
+                    logging.error(new errors.InternalServerError({
                         err
                     }));
                 }
             });
         } catch (err) {
-            logging.error(new errors.GhostError({
+            logging.error(new errors.InternalServerError({
                 err: err,
                 level: 'critical'
             }));

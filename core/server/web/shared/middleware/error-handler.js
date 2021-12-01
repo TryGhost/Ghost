@@ -75,14 +75,14 @@ module.exports.prepareError = (err, req, res, next) => {
         err = err[0];
     }
 
-    if (!errors.utils.isIgnitionError(err)) {
+    if (!errors.utils.isGhostError(err)) {
         // We need a special case for 404 errors
         if (err.statusCode && err.statusCode === 404) {
             err = new errors.NotFoundError({
                 err: err
             });
         } else {
-            err = new errors.GhostError({
+            err = new errors.InternalServerError({
                 err: err,
                 message: err.message,
                 statusCode: err.statusCode

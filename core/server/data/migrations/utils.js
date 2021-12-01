@@ -143,7 +143,7 @@ function addPermissionToRole(config) {
             }).first();
 
             if (!permission) {
-                throw new errors.GhostError({
+                throw new errors.InternalServerError({
                     message: tpl(messages.permissionRoleActionError, {
                         action: 'add',
                         permission: config.permission,
@@ -158,7 +158,7 @@ function addPermissionToRole(config) {
             }).first();
 
             if (!role) {
-                throw new errors.GhostError({
+                throw new errors.InternalServerError({
                     message: tpl(messages.permissionRoleActionError, {
                         action: 'add',
                         permission: config.permission,

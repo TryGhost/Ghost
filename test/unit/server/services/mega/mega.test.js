@@ -16,7 +16,7 @@ describe('MEGA', function () {
                 await addEmail(postModel);
                 should.fail('addEmail did not throw');
             } catch (err) {
-                should.equal(err instanceof errors.GhostError, true);
+                should.equal(errors.utils.isGhostError(err), true);
                 err.message.should.equal('Unexpected email_recipient_filter value "free", expected an NQL equivalent');
             }
         });
@@ -31,7 +31,7 @@ describe('MEGA', function () {
                 await addEmail(postModel);
                 should.fail('addEmail did not throw');
             } catch (err) {
-                should.equal(err instanceof errors.GhostError, true);
+                should.equal(errors.utils.isGhostError(err), true);
                 err.message.should.equal('Cannot send email to "none" email_recipient_filter');
             }
         });
@@ -54,7 +54,7 @@ describe('MEGA', function () {
                 await _getEmailMemberRows({emailModel});
                 should.fail('getEmailMemberRows did not throw');
             } catch (err) {
-                should.equal(err instanceof errors.GhostError, true);
+                should.equal(errors.utils.isGhostError(err), true);
                 err.message.should.equal('Unexpected recipient_filter value "paid", expected an NQL equivalent');
             }
         });
@@ -68,7 +68,7 @@ describe('MEGA', function () {
                 await _getEmailMemberRows({emailModel});
                 should.fail('getEmailMemberRows did not throw');
             } catch (err) {
-                should.equal(err instanceof errors.GhostError, true);
+                should.equal(errors.utils.isGhostError(err), true);
                 err.message.should.equal('Cannot send email to "none" recipient_filter');
             }
         });

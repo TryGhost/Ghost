@@ -17,7 +17,7 @@ function asyncHelperWrapper(hbsInstance, name, fn) {
         Promise.resolve(fn.call(this, context, options)).then(function asyncHelperSuccess(result) {
             cb(result);
         }).catch(function asyncHelperError(err) {
-            const wrappedErr = err instanceof errors.GhostError ? err : new errors.IncorrectUsageError({
+            const wrappedErr = errors.utils.isGhostError(err) ? err : new errors.IncorrectUsageError({
                 err: err,
                 context: 'registerAsyncThemeHelper: ' + name,
                 errorDetails: {

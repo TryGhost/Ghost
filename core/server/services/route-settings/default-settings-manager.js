@@ -48,7 +48,7 @@ class DefaultSettingsManager {
                 });
             }).catch((error) => {
                 // CASE: we might have a permission error, as we can't access the directory
-                throw new errors.GhostError({
+                throw new errors.InternalServerError({
                     message: tpl(messages.ensureSettings, {
                         path: this.destinationFolderPath
                     }),

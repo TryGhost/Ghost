@@ -35,7 +35,7 @@ module.exports = function parseYaml(file) {
 
         return parsed;
     } catch (error) {
-        if (errors.utils.isIgnitionError(error)) {
+        if (errors.utils.isGhostError(error)) {
             throw error;
         }
 

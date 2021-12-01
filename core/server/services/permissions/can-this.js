@@ -128,7 +128,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     context = parseContext(context);
 
     if (actionsMap.empty()) {
-        throw new errors.GhostError({message: tpl(messages.noActionsMapFoundError)});
+        throw new errors.InternalServerError({message: tpl(messages.noActionsMapFoundError)});
     }
 
     // Kick off loading of user permissions if necessary

@@ -143,7 +143,7 @@ function getAmperizeHTML(html, post) {
                 if (err) {
                     if (err.src) {
                         // This is a valid 500 GhostError because it means the amperize parser is unable to handle some Ghost HTML.
-                        logging.error(new errors.GhostError({
+                        logging.error(new errors.InternalServerError({
                             message: `AMP HTML couldn't be parsed: ${err.src}`,
                             code: 'AMP_PARSER_ERROR',
                             err: err,
@@ -151,7 +151,7 @@ function getAmperizeHTML(html, post) {
                             help: 'Please share this error on GitHub or https://forum.ghost.org'
                         }));
                     } else {
-                        logging.error(new errors.GhostError({err, code: 'AMP_PARSER_ERROR'}));
+                        logging.error(new errors.InternalServerError({err, code: 'AMP_PARSER_ERROR'}));
                     }
 
                     // save it in cache to prevent multiple calls to Amperize until

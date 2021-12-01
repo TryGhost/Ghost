@@ -59,7 +59,7 @@ async function setupUser(userData) {
     const owner = await models.User.findOne({role: 'Owner', status: 'all'});
 
     if (!owner) {
-        throw new errors.GhostError({
+        throw new errors.InternalServerError({
             message: tpl(messages.setupUnableToRun)
         });
     }

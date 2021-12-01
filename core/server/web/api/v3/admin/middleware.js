@@ -44,7 +44,7 @@ const notImplemented = function (req, res, next) {
         }
     }
 
-    next(new errors.GhostError({
+    next(new errors.InternalServerError({
         errorType: 'NotImplementedError',
         message: tpl(messages.notImplemented),
         statusCode: '501'

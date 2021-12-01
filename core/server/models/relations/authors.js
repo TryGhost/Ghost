@@ -324,7 +324,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                             .then(() => response);
                     })
                     .catch((err) => {
-                        throw new errors.GhostError({err: err});
+                        throw new errors.InternalServerError({err: err});
                     });
             });
 

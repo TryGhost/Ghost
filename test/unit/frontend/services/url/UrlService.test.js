@@ -102,7 +102,7 @@ describe('Unit: services/url/UrlService', function () {
                 urlService.getResource('/blog-post/');
                 throw new Error('Expected error.');
             } catch (err) {
-                (err instanceof errors.InternalServerError).should.be.true();
+                errors.utils.isGhostError(err).should.be.true();
             }
         });
 

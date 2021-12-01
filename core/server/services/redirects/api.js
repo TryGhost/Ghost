@@ -34,7 +34,7 @@ const readRedirectsFile = async (redirectsPath) => {
             return '';
         }
 
-        if (errors.utils.isIgnitionError(err)) {
+        if (errors.utils.isGhostError(err)) {
             throw err;
         }
 
@@ -162,7 +162,7 @@ class CustomRedirectsAPI {
                 }
             }
         } catch (err) {
-            if (errors.utils.isIgnitionError(err)) {
+            if (errors.utils.isGhostError(err)) {
                 logging.error(err);
             } else {
                 logging.error(new errors.IncorrectUsageError({

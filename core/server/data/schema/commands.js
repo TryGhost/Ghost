@@ -139,7 +139,7 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
     const client = knex.client.config.client;
 
     if (client !== 'sqlite3') {
-        throw new errors.GhostError({
+        throw new errors.InternalServerError({
             message: tpl(messages.hasForeignSQLite3)
         });
     }
@@ -265,7 +265,7 @@ async function hasPrimaryKeySQLite(tableName, transaction) {
     const client = knex.client.config.client;
 
     if (client !== 'sqlite3') {
-        throw new errors.GhostError({
+        throw new errors.InternalServerError({
             message: tpl(messages.hasPrimaryKeySQLiteError)
         });
     }

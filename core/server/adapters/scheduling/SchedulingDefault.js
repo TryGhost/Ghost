@@ -307,7 +307,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
                 this._pingUrl(object);
             }, this.retryTimeoutInMs);
 
-            logging.error(new errors.GhostError({
+            logging.error(new errors.InternalServerError({
                 err,
                 context: 'Retrying...',
                 level: 'normal'
@@ -316,7 +316,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
             return;
         }
 
-        logging.error(new errors.GhostError({
+        logging.error(new errors.InternalServerError({
             err,
             level: 'critical'
         }));

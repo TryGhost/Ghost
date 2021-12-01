@@ -177,7 +177,7 @@ class ImageSize {
                 context: err.url || imagePath
             }));
         }).catch(function (err) {
-            if (errors.utils.isIgnitionError(err)) {
+            if (errors.utils.isGhostError(err)) {
                 return Promise.reject(err);
             }
 
@@ -241,7 +241,7 @@ class ImageSize {
                     }
                 }));
             }).catch((err) => {
-                if (errors.utils.isIgnitionError(err)) {
+                if (errors.utils.isGhostError(err)) {
                     return Promise.reject(err);
                 }
 

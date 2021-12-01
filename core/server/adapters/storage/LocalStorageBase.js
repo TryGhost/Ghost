@@ -147,7 +147,7 @@ class LocalStorageBase extends StorageBase {
                         return next(new errors.NoPermissionError({err: err}));
                     }
 
-                    return next(new errors.GhostError({err: err}));
+                    return next(new errors.InternalServerError({err: err}));
                 }
 
                 next();
@@ -196,7 +196,7 @@ class LocalStorageBase extends StorageBase {
                         return reject(new errors.NoPermissionError({err: err}));
                     }
 
-                    return reject(new errors.GhostError({
+                    return reject(new errors.InternalServerError({
                         err: err,
                         message: tpl(this.errorMessages.cannotRead, {file: options.path})
                     }));
