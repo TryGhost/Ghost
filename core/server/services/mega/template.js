@@ -557,56 +557,56 @@ figure blockquote p {
     padding-bottom: 4px;
 }
 
-.kg-card-callout {
+.kg-callout-card {
     display: flex;
     margin: 0 0 1.5em 0;
     padding: 20px 28px;
     border-radius: 3px;
 }
 
-.kg-card-callout p {
+.kg-callout-card p {
     margin: 0
 }
 
-.kg-card-callout-grey {
+.kg-callout-card-grey {
     background: #eef0f2;
 }
 
-.kg-card-callout-white {
+.kg-callout-card-white {
     background: #fff;
     box-shadow: inset 0 0 0 1px #dddedf;
 }
 
-.kg-card-callout-blue {
+.kg-callout-card-blue {
     background: #E9F6FB;
 }
 
-.kg-card-callout-green {
+.kg-callout-card-green {
     background: #E8F8EA;
 }
 
-.kg-card-callout-yellow {
+.kg-callout-card-yellow {
     background: #FCF4E3;
 }
 
-.kg-card-callout-red {
+.kg-callout-card-red {
     background: #FBE9E9;
 }
 
-.kg-card-callout-pink {
+.kg-callout-card-pink {
     background: #FCEEF8;
 }
 
-.kg-card-callout-purple {
+.kg-callout-card-purple {
     background: #F2EDFC;
 }
 
-.kg-card-callout-accent {
+.kg-callout-card-accent {
     background: ${templateSettings.accentColor || '#15212A'};
     color: #fff;
 }
 
-.kg-card-callout-accent a {
+.kg-callout-card-accent a {
     color: #fff;
 }
 
