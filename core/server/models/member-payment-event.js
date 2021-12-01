@@ -11,7 +11,7 @@ const MemberPaymentEvent = ghostBookshelf.Model.extend({
     customQuery(qb, options) {
         if (options.aggregatePaymentVolume) {
             if (options.limit || options.filter) {
-                throw new errors.IncorrectUsageError('aggregatePaymentVolume does not work when passed a filter or limit');
+                throw new errors.IncorrectUsageError({message: 'aggregatePaymentVolume does not work when passed a filter or limit'});
             }
             const knex = ghostBookshelf.knex;
             return qb.clear('select')
@@ -33,11 +33,11 @@ const MemberPaymentEvent = ghostBookshelf.Model.extend({
         return options;
     },
     async edit() {
-        throw new errors.IncorrectUsageError('Cannot edit MemberPaymentEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot edit MemberPaymentEvent'});
     },
 
     async destroy() {
-        throw new errors.IncorrectUsageError('Cannot destroy MemberPaymentEvent');
+        throw new errors.IncorrectUsageError({message: 'Cannot destroy MemberPaymentEvent'});
     }
 });
 

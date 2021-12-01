@@ -416,7 +416,9 @@ function partitionMembersBySegment(memberRows, segments) {
             segmentedMemberRows = memberRows.filter(member => member.status !== 'free');
             memberRows = memberRows.filter(member => member.status === 'free');
         } else {
-            throw new errors.ValidationError(tpl(messages.invalidSegment));
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidSegment)
+            });
         }
 
         partitions[memberSegment] = segmentedMemberRows;

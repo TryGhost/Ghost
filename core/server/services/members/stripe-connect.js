@@ -63,7 +63,7 @@ async function getStripeConnectTokenData(encodedData, getSessionProp) {
     const state = await getSessionProp(STATE_PROP);
 
     if (state !== data.s) {
-        throw new errors.NoPermissionError(tpl(messages.incorrectState));
+        throw new errors.NoPermissionError({message: tpl(messages.incorrectState)});
     }
 
     return {
@@ -81,7 +81,9 @@ function checkCanConnect() {
     const siteUrlUsingSSL = /^https/.test(siteUrl);
     const cannotConnectToStripe = productionMode && !siteUrlUsingSSL;
     if (cannotConnectToStripe) {
-        throw new errors.BadRequestError('Cannot connect to stripe unless site is using https://');
+        throw new errors.BadRequestError({
+            message: 'Cannot connect to stripe unless site is using https://'
+        });
     }
 }
 
