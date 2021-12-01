@@ -61,7 +61,7 @@ export default Service.extend({
     mediaAPI: feature('mediaAPI', {developer: true}),
     filesAPI: feature('filesAPI', {developer: true}),
     calloutCard: feature('calloutCard', {developer: true}),
-    nftCard: feature('nftCard', {developer: true}),
+    nftCard: feature('nftCard'),
     accordionCard: feature('accordionCard', {developer: true}),
     fileCard: feature('fileCard', {developer: true}),
     audioCard: feature('audioCard', {developer: true}),
