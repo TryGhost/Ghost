@@ -11,7 +11,7 @@ module.exports = class StripeWebhookService {
      * @param {import('../../repositories/member')} deps.memberRepository
      * @param {import('../../repositories/product')} deps.productRepository
      * @param {import('../../repositories/event')} deps.eventRepository
-     * @param {any} deps.sendEmailWithMagicLink
+     * @param {(email: string) => Promise<void>} deps.sendSignupEmail
      */
     constructor({
         StripeWebhook,
@@ -19,14 +19,15 @@ module.exports = class StripeWebhookService {
         productRepository,
         memberRepository,
         eventRepository,
-        sendEmailWithMagicLink
+        sendSignupEmail
     }) {
         this._StripeWebhook = StripeWebhook;
         this._stripeAPIService = stripeAPIService;
         this._productRepository = productRepository;
         this._memberRepository = memberRepository;
         this._eventRepository = eventRepository;
-        this._sendEmailWithMagicLink = sendEmailWithMagicLink;
+        /** @private */
+        this.sendSignupEmail = sendSignupEmail;
         this.handlers = {};
         this.registerHandler('customer.subscription.deleted', this.subscriptionEvent);
         this.registerHandler('customer.subscription.updated', this.subscriptionEvent);
@@ -248,7 +249,6 @@ module.exports = class StripeWebhookService {
             });
 
             const checkoutType = _.get(session, 'metadata.checkoutType');
-            const requestSrc = _.get(session, 'metadata.requestSrc') || '';
 
             if (!member) {
                 const metadataName = _.get(session, 'metadata.name');
@@ -288,14 +288,7 @@ module.exports = class StripeWebhookService {
             DomainEvents.dispatch(event);
 
             if (checkoutType !== 'upgrade') {
-                const emailType = 'signup';
-                this._sendEmailWithMagicLink({
-                    email: customer.email,
-                    requestedType: emailType,
-                    requestSrc,
-                    options: {forceEmailType: true},
-                    tokenData: {}
-                });
+                this.sendSignupEmail(customer.email);
             }
         }
     }
