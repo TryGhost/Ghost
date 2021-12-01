@@ -1348,7 +1348,7 @@
     ghost-ignition "^4.2.4"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.0.4":
+"@tryghost/errors@1.0.4", "@tryghost/errors@^1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.0.4.tgz#9692cfd4c27a269ddbce77d93d02cfa8c52cc7ad"
   integrity sha512-ImfwkOc54Ur9zjYgPaG3Y9wFeH00eJnqClYBZSB5/K0T6nqTXnIOyFIq33vZkmXuxQLX1xRb82OeWYxHxgFWDA==
@@ -1393,12 +1393,12 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/image-transform@1.0.18":
-  version "1.0.18"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.18.tgz#bb8d63a0c683c4f04b20f662e187660d0bfcb168"
-  integrity sha512-+ZVdixV3Apw1AMiAr9e3aSYKc2tR9OTVUs61M96BTVZbVHWT3YMd53mvGZDvk4WRWOOMjBBmcml0ijuhI1taPw==
+"@tryghost/image-transform@1.0.23":
+  version "1.0.23"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.23.tgz#dcc2bda3ca77ae674c43a4eabc2f90945aa4abb7"
+  integrity sha512-wUzjkQcUf28zzHr56i78QjfZpFn9FqbH0GuDY10qT1+hwKS0pan2xt8MLHcE/onPOLLGPer2Zm9PsEIiuLOPDg==
   dependencies:
-    "@tryghost/errors" "^0.2.17"
+    "@tryghost/errors" "^1.0.4"
     bluebird "^3.7.2"
     fs-extra "^9.1.0"
   optionalDependencies:
