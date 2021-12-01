@@ -64,9 +64,8 @@ describe('Errors', function () {
 
         it('error is string', function () {
             var ghostError = new errors.InternalServerError({
-                err: 'string'
+                err: new Error('string')
             });
-
             ghostError.stack.should.match(/Error: string/);
         });
     });
