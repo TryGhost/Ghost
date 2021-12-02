@@ -83,7 +83,7 @@
     "@tryghost/members-csv": "1.2.0",
     "@tryghost/members-importer": "0.3.5",
     "@tryghost/members-offers": "0.10.3",
-    "@tryghost/members-ssr": "1.0.15",
+    "@tryghost/members-ssr": "1.0.16",
     "@tryghost/metrics": "1.0.1",
     "@tryghost/minifier": "0.1.6",
     "@tryghost/mw-session-from-token": "0.1.26",
