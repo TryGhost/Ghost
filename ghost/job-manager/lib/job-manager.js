@@ -4,6 +4,7 @@ const later = require('@breejs/later');
 const Bree = require('bree');
 const pWaitFor = require('p-wait-for');
 const {UnhandledJobError, IncorrectUsageError} = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const isCronExpression = require('./is-cron-expression');
 const assembleBreeJob = require('./assemble-bree-job');
 
@@ -28,11 +29,10 @@ const handler = (error, result) => {
 class JobManager {
     /**
      * @param {Object} options
-     * @param {Object} [options.logging] - custom logging handler, defaults to console
      * @param {Function} [options.errorHandler] - custom job error handler
      * @param {Function} [options.workerMessageHandler] - custom message handler coming from workers
      */
-    constructor({logging, errorHandler, workerMessageHandler}) {
+    constructor({errorHandler, workerMessageHandler}) {
         this.queue = fastq(this, worker, 1);
 
         this.bree = new Bree({
@@ -43,8 +43,6 @@ class JobManager {
             errorHandler: errorHandler,
             workerMessageHandler: workerMessageHandler
         });
-
-        this.logging = logging;
     }
 
     /**
@@ -60,7 +58,7 @@ class JobManager {
      */
     addJob({name, at, job, data, offloaded = true}) {
         if (offloaded) {
-            this.logging.info('Adding offloaded job to the queue');
+            logging.info('Adding offloaded job to the queue');
             let schedule;
 
             if (!name) {
@@ -86,18 +84,18 @@ class JobManager {
                     });
                 }
 
-                this.logging.info(`Scheduling job ${name} at ${at}. Next run on: ${later.schedule(schedule).next()}`);
+                logging.info(`Scheduling job ${name} at ${at}. Next run on: ${later.schedule(schedule).next()}`);
             } else if (at !== undefined) {
-                this.logging.info(`Scheduling job ${name} at ${at}`);
+                logging.info(`Scheduling job ${name} at ${at}`);
             } else {
-                this.logging.info(`Scheduling job ${name} to run immediately`);
+                logging.info(`Scheduling job ${name} to run immediately`);
             }
 
             const breeJob = assembleBreeJob(at, job, data, name);
             this.bree.add(breeJob);
             return this.bree.start(name);
         } else {
-            this.logging.info('Adding one off inline job to the queue');
+            logging.info('Adding one off inline job to the queue');
 
             this.queue.push(async () => {
                 try {
@@ -109,7 +107,7 @@ class JobManager {
                 } catch (err) {
                     // NOTE: each job should be written in a safe way and handle all errors internally
                     //       if the error is caught here jobs implementaton should be changed
-                    this.logging.error(new UnhandledJobError({
+                    logging.error(new UnhandledJobError({
                         context: (typeof job === 'function') ? 'function' : job,
                         err
                     }));
@@ -144,11 +142,11 @@ class JobManager {
             return;
         }
 
-        this.logging.warn('Waiting for busy job queue');
+        logging.warn('Waiting for busy job queue');
 
         await pWaitFor(() => this.queue.idle() === true, options);
 
-        this.logging.warn('Job queue finished');
+        logging.warn('Job queue finished');
     }
 }
 

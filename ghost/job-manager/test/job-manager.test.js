@@ -5,22 +5,25 @@ const path = require('path');
 const sinon = require('sinon');
 const delay = require('delay');
 const FakeTimers = require('@sinonjs/fake-timers');
+const logging = require('@tryghost/logging');
 
 const JobManager = require('../index');
 
-describe('Job Manager', function () {
-    let logging;
+const sandbox = sinon.createSandbox();
 
+describe('Job Manager', function () {
     beforeEach(function () {
-        logging = {
-            info: sinon.stub(),
-            warn: sinon.stub(),
-            error: sinon.stub()
-        };
+        sandbox.stub(logging, 'info');
+        sandbox.stub(logging, 'warn');
+        sandbox.stub(logging, 'error');
+    });
+
+    afterEach(function () {
+        sandbox.restore();
     });
 
     it('public interface', function () {
-        const jobManager = new JobManager({logging});
+        const jobManager = new JobManager({});
 
         should.exist(jobManager.addJob);
     });
@@ -29,7 +32,7 @@ describe('Job Manager', function () {
         describe('Inline jobs', function () {
             it('adds a job to a queue', async function () {
                 const spy = sinon.spy();
-                const jobManager = new JobManager({logging});
+                const jobManager = new JobManager({});
 
                 jobManager.addJob({
                     job: spy,
@@ -48,7 +51,7 @@ describe('Job Manager', function () {
 
             it('handles failed job gracefully', async function () {
                 const spy = sinon.stub().throws();
-                const jobManager = new JobManager({logging});
+                const jobManager = new JobManager({});
 
                 jobManager.addJob({
                     job: spy,
@@ -69,7 +72,7 @@ describe('Job Manager', function () {
 
         describe('Offloaded jobs', function () {
             it('fails to schedule for invalid scheduling expression', function () {
-                const jobManager = new JobManager({logging});
+                const jobManager = new JobManager({});
 
                 try {
                     jobManager.addJob({
@@ -82,7 +85,7 @@ describe('Job Manager', function () {
             });
 
             it('fails to schedule for no job name', function () {
-                const jobManager = new JobManager({logging});
+                const jobManager = new JobManager({});
 
                 try {
                     jobManager.addJob({
@@ -95,7 +98,7 @@ describe('Job Manager', function () {
             });
 
             it('schedules a job using date format', async function () {
-                const jobManager = new JobManager({logging});
+                const jobManager = new JobManager({});
                 const timeInTenSeconds = new Date(Date.now() + 10);
                 const jobPath = path.resolve(__dirname, './jobs/simple.js');
 
@@ -133,7 +136,7 @@ describe('Job Manager', function () {
             });
 
             it('schedules a job to run immediately', async function () {
-                const jobManager = new JobManager({logging});
+                const jobManager = new JobManager({});
                 const clock = FakeTimers.install({now: Date.now()});
 
                 const jobPath = path.resolve(__dirname, './jobs/simple.js');
@@ -165,7 +168,7 @@ describe('Job Manager', function () {
             });
 
             it('fails to schedule a job with the same name to run immediately one after another', async function () {
-                const jobManager = new JobManager({logging});
+                const jobManager = new JobManager({});
                 const clock = FakeTimers.install({now: Date.now()});
 
                 const jobPath = path.resolve(__dirname, './jobs/simple.js');
@@ -208,7 +211,7 @@ describe('Job Manager', function () {
                     throw new Error('job error');
                 };
                 const spyHandler = sinon.spy();
-                const jobManager = new JobManager({logging, errorHandler: spyHandler});
+                const jobManager = new JobManager({errorHandler: spyHandler});
 
                 jobManager.addJob({
                     job,
@@ -228,7 +231,7 @@ describe('Job Manager', function () {
 
             it('uses worker message handler when job sends a message', async function (){
                 const workerMessageHandlerSpy = sinon.spy();
-                const jobManager = new JobManager({logging, workerMessageHandler: workerMessageHandlerSpy});
+                const jobManager = new JobManager({workerMessageHandler: workerMessageHandlerSpy});
 
                 jobManager.addJob({
                     job: path.resolve(__dirname, './jobs/message.js'),
@@ -250,7 +253,7 @@ describe('Job Manager', function () {
 
     describe('Remove a job', function () {
         it('removes a scheduled job from the queue', async function () {
-            const jobManager = new JobManager({logging});
+            const jobManager = new JobManager({});
 
             const timeInTenSeconds = new Date(Date.now() + 10);
             const jobPath = path.resolve(__dirname, './jobs/simple.js');
@@ -270,7 +273,7 @@ describe('Job Manager', function () {
 
     describe('Shutdown', function () {
         it('gracefully shuts down an inline jobs', async function () {
-            const jobManager = new JobManager({logging});
+            const jobManager = new JobManager({});
 
             jobManager.addJob({
                 job: require('./jobs/timed-job'),
@@ -286,7 +289,7 @@ describe('Job Manager', function () {
         });
 
         it('gracefully shuts down an interval job', async function () {
-            const jobManager = new JobManager({logging});
+            const jobManager = new JobManager({});
 
             jobManager.addJob({
                 at: 'every 5 seconds',
