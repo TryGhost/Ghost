@@ -9,7 +9,7 @@ const url = require('../../../../core/frontend/helpers/url');
 const urlService = require('../../../../core/server/services/url');
 const api = require('../../../../core/server/api');
 
-describe('{{url}} helper', function () {
+describe.only('{{url}} helper', function () {
     let rendered;
 
     beforeEach(function () {
@@ -266,6 +266,12 @@ describe('{{url}} helper', function () {
                 {url: '/?foo=space%20bar', label: 'Foo', slug: 'foo', current: true});
             should.exist(rendered);
             rendered.string.should.equal('/?foo=space%20bar');
+        });
+
+        it('should an empty string when we can\'t parse a string', function () {
+            rendered = url.call({url: '/?foo=space%%bar', label: 'Baz', slug: 'baz', current: true});
+            should.exist(rendered);
+            rendered.string.should.equal('');
         });
     });
 

@@ -6,6 +6,9 @@
 
 const {metaData} = require('../services/proxy');
 const {SafeString} = require('../services/rendering');
+const logging = require('@tryghost/logging');
+const sentry = require('../../shared/sentry');
+const errors = require('@tryghost/errors');
 
 const {getMetaDataUrl} = metaData;
 
@@ -13,7 +16,21 @@ module.exports = function url(options) {
     const absolute = options && options.hash.absolute && options.hash.absolute !== 'false';
     let outputUrl = getMetaDataUrl(this, absolute);
 
-    outputUrl = encodeURI(decodeURI(outputUrl));
+    try {
+        outputUrl = encodeURI(decodeURI(outputUrl));
+    } catch (err) {
+        // Happens when the outputURL contains an invalid URI character like "%%" or "%80"
+
+        // Send the error not to be blind to these
+        const error = new errors.IncorrectUsageError({
+            message: `The url "${outputUrl}" couldn't be escaped correctly`,
+            err: err
+        });
+        sentry.captureException(error);
+        logging.error(error);
+
+        return new SafeString('');
+    }
 
     return new SafeString(outputUrl);
 };
