@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -14,22 +15,13 @@ const messages = {
  * @prop {() => Promise<JWKS>} getPublicKeys
  */
 
-/**
- * @typedef {object} ILogging
- * @prop {(msg) => void} info
- * @prop {(msg) => void} warn
- * @prop {(msg) => void} error
- */
-
 module.exports = class WellKnownController {
     /**
      * 
      * @param {object} deps 
-     * @param {ITokenService} deps.tokenService 
-     * @param {ILogging} deps.logging 
+     * @param {ITokenService} deps.tokenService
      */
     constructor(deps) {
-        this._logging = deps.logging;
         this._tokenService = deps.tokenService;
     }
 
@@ -47,7 +39,7 @@ module.exports = class WellKnownController {
                 message: tpl(messages.keyStoreError),
                 err
             });
-            this._logging.error(error);
+            logging.error(error);
             throw error;
         }
     }

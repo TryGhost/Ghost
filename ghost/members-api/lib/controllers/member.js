@@ -1,4 +1,4 @@
-const errors = require('@tryghost/ignition-errors');
+const errors = require('@tryghost/errors');
 
 module.exports = class MemberController {
     /**

@@ -5,7 +5,7 @@ const debug = require('@tryghost/debug')('members-ssr');
 const {
     BadRequestError,
     IncorrectUsageError
-} = require('@tryghost/ignition-errors');
+} = require('@tryghost/errors');
 
 /**
  * @typedef {import('http').IncomingMessage} Request

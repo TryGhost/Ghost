@@ -4,15 +4,13 @@ module.exports = class EventRepository {
         MemberPaymentEvent,
         MemberStatusEvent,
         MemberLoginEvent,
-        MemberPaidSubscriptionEvent,
-        logger
+        MemberPaidSubscriptionEvent
     }) {
         this._MemberSubscribeEvent = MemberSubscribeEvent;
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberPaymentEvent = MemberPaymentEvent;
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberLoginEvent = MemberLoginEvent;
-        this._logging = logger;
     }
 
     async registerPayment(data) {
