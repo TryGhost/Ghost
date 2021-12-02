@@ -1,4 +1,4 @@
-const common = require('../../lib/common');
+const logging = require('@tryghost/logging');
 const _ = require('lodash');
 
 module.exports = class RouterController {
@@ -17,7 +17,6 @@ module.exports = class RouterController {
      * @param {any} deps.tokenService
      * @param {{isSet(name: string): boolean}} deps.labsService
      * @param {any} deps.config
-     * @param {any} deps.logging
      */
     constructor({
         offersAPI,
@@ -31,8 +30,7 @@ module.exports = class RouterController {
         tokenService,
         sendEmailWithMagicLink,
         labsService,
-        config,
-        logging
+        config
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -46,7 +44,6 @@ module.exports = class RouterController {
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
         this.labsService = labsService;
         this._config = config;
-        this._logging = logging;
     }
 
     async ensureStripe(_req, res, next) {
@@ -248,7 +245,7 @@ module.exports = class RouterController {
                     break;
                 }
             } catch (err) {
-                this._logging.info('Ignoring error for fetching customer for checkout');
+                logging.info('Ignoring error for fetching customer for checkout');
             }
         }
 
@@ -304,7 +301,7 @@ module.exports = class RouterController {
             return res.end('Created.');
         } catch (err) {
             const statusCode = (err && err.statusCode) || 500;
-            common.logging.error(err);
+            logging.error(err);
             res.writeHead(statusCode);
             return res.end('Internal Server Error.');
         }

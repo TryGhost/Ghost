@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
 const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
@@ -33,7 +34,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.productRepository
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
      * @param {ITokenService} deps.tokenService
-     * @param {any} deps.logger
      */
     constructor({
         Member,
@@ -47,8 +47,7 @@ module.exports = class MemberRepository {
         OfferRedemption,
         stripeAPIService,
         productRepository,
-        tokenService,
-        logger
+        tokenService
     }) {
         this._Member = Member;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -61,7 +60,6 @@ module.exports = class MemberRepository {
         this._stripeAPIService = stripeAPIService;
         this._productRepository = productRepository;
         this.tokenService = tokenService;
-        this._logging = logger;
 
         DomainEvents.subscribe(SubscriptionCreatedEvent, async function (event) {
             if (!event.data.offerId) {
@@ -586,11 +584,11 @@ module.exports = class MemberRepository {
                 }, options);
             } else {
                 // Log error if no Ghost products found
-                this._logging.error(`There was an error linking subscription - ${subscription.id}, no Products exist.`);
+                logging.error(`There was an error linking subscription - ${subscription.id}, no Products exist.`);
             }
         } catch (e) {
-            this._logging.error(`Failed to handle prices and product for - ${subscription.id}.`);
-            this._logging.error(e);
+            logging.error(`Failed to handle prices and product for - ${subscription.id}.`);
+            logging.error(e);
         }
 
         const subscriptionData = {
@@ -679,8 +677,8 @@ module.exports = class MemberRepository {
                                     activeSubscriptionForChangedProduct = true;
                                 }
                             } catch (e) {
-                                this._logging.error(`Failed to attach products to member - ${data.id}`);
-                                this._logging.error(e);
+                                logging.error(`Failed to attach products to member - ${data.id}`);
+                                logging.error(e);
                             }
                         }
                     }
@@ -704,8 +702,8 @@ module.exports = class MemberRepository {
                             activeSubscriptionForGhostProduct = true;
                         }
                     } catch (e) {
-                        this._logging.error(`Failed to attach products to member - ${data.id}`);
-                        this._logging.error(e);
+                        logging.error(`Failed to attach products to member - ${data.id}`);
+                        logging.error(e);
                     }
                 }
             }
@@ -730,8 +728,8 @@ module.exports = class MemberRepository {
             // Edit member with updated products assoicated
             updatedMember = await this._Member.edit({status: status, products: memberProducts}, {...options, id: data.id});
         } catch (e) {
-            this._logging.error(`Failed to update member - ${data.id} - with related products`);
-            this._logging.error(e);
+            logging.error(`Failed to update member - ${data.id} - with related products`);
+            logging.error(e);
             updatedMember = await this._Member.edit({status: status}, {...options, id: data.id});
         }
 
@@ -909,7 +907,7 @@ module.exports = class MemberRepository {
                 const fetchedCustomer = await this._stripeAPIService.getCustomer(customer.get('customer_id'));
                 stripeCustomer = fetchedCustomer;
             } catch (err) {
-                this._logging.info('Ignoring error for fetching customer for checkout');
+                logging.info('Ignoring error for fetching customer for checkout');
             }
         }
 
@@ -1072,8 +1070,8 @@ module.exports = class MemberRepository {
                         subscription: updatedSubscription
                     });
                 } catch (err) {
-                    this._logging.error(`There was an error cancelling subscription ${subscription.get('subscription_id')}`);
-                    this._logging.error(err);
+                    logging.error(`There was an error cancelling subscription ${subscription.get('subscription_id')}`);
+                    logging.error(err);
                 }
             }
         }

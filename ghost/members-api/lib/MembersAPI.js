@@ -1,7 +1,8 @@
 const {Router} = require('express');
 const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
-const common = require('./common');
+const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 
 const MemberAnalyticsService = require('@tryghost/member-analytics-service');
 const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
@@ -59,13 +60,8 @@ module.exports = function MembersAPI({
     },
     stripeAPIService,
     offersAPI,
-    logger,
     labsService
 }) {
-    if (logger) {
-        common.logging.setLogger(logger);
-    }
-
     const tokenService = new TokenService({
         privateKey,
         publicKey,
@@ -83,8 +79,7 @@ module.exports = function MembersAPI({
         StripeProduct,
         StripePrice,
         Product,
-        Settings,
-        logger
+        Settings
     });
 
     const productRepository = new ProductRepository({
@@ -96,7 +91,6 @@ module.exports = function MembersAPI({
 
     const memberRepository = new MemberRepository({
         stripeAPIService,
-        logger,
         tokenService,
         productRepository,
         Member,
@@ -111,7 +105,6 @@ module.exports = function MembersAPI({
     });
 
     const eventRepository = new EventRepository({
-        logger,
         MemberSubscribeEvent,
         MemberPaidSubscriptionEvent,
         MemberPaymentEvent,
@@ -204,13 +197,11 @@ module.exports = function MembersAPI({
             checkoutCancelUrl: stripeConfig.checkoutCancelUrl,
             billingSuccessUrl: stripeConfig.billingSuccessUrl,
             billingCancelUrl: stripeConfig.billingCancelUrl
-        },
-        logging: common.logging
+        }
     });
 
     const wellKnownController = new WellKnownController({
-        tokenService,
-        logging: common.logging
+        tokenService
     });
 
     async function disconnectStripe() {
@@ -348,7 +339,7 @@ module.exports = function MembersAPI({
 
     async function setMemberGeolocationFromIp(email, ip) {
         if (!email || !ip) {
-            throw new common.errors.IncorrectUsageError({
+            throw new errors.IncorrectUsageError({
                 message: 'setMemberGeolocationFromIp() expects email and ip arguments to be present'
             });
         }
@@ -358,7 +349,7 @@ module.exports = function MembersAPI({
         const member = (await users.get({email})).toJSON();
 
         if (!member) {
-            throw new common.errors.NotFoundError({
+            throw new errors.NotFoundError({
                 message: `Member with email address ${email} does not exist`
             });
         }
@@ -407,7 +398,7 @@ module.exports = function MembersAPI({
 
     middleware.handleStripeWebhook.use(body.raw({type: 'application/json'}), async function (req, res) {
         if (!stripeAPIService.configured) {
-            common.logging.error(`Stripe not configured, not handling webhook`);
+            logging.error(`Stripe not configured, not handling webhook`);
             res.writeHead(400);
             return res.end();
         }
@@ -420,17 +411,17 @@ module.exports = function MembersAPI({
         try {
             event = stripeWebhookService.parseWebhook(req.body, req.headers['stripe-signature']);
         } catch (err) {
-            common.logging.error(err);
+            logging.error(err);
             res.writeHead(401);
             return res.end();
         }
-        common.logging.info(`Handling webhook ${event.type}`);
+        logging.info(`Handling webhook ${event.type}`);
         try {
             await stripeWebhookService.handleWebhook(event);
             res.writeHead(200);
             res.end();
         } catch (err) {
-            common.logging.error(`Error handling webhook ${event.type}`, err);
+            logging.error(`Error handling webhook ${event.type}`, err);
             res.writeHead(err.statusCode || 500);
             res.end();
         }

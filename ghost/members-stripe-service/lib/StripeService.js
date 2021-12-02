@@ -16,13 +16,6 @@ const STRIPE_API_VERSION = '2020-08-27';
  */
 
 /**
- * @typedef {object} ILogger
- * @prop {(x: any) => void} error
- * @prop {(x: any) => void} info
- * @prop {(x: any) => void} warn
- */
-
-/**
  * @typedef {object} IStripeServiceConfig
  * @prop {string} secretKey
  * @prop {string} publicKey
@@ -39,13 +32,11 @@ module.exports = class StripeService {
      * StripeService
      *
      * @param {object} params
-     * @param {ILogger} params.logger
      * @param {IStripeServiceConfig} params.config
      */
-    constructor({config, logger}) {
+    constructor({config}) {
         /** @type {Stripe} */
         this._stripe = null;
-        this.logging = logger;
         this._configured = false;
         if (config.secretKey) {
             this.configure(config);
