@@ -106,16 +106,19 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     });
     debug('End: Url Service');
 
-    // Job Service allows parts of Ghost to run in the background
-    debug('Begin: Job Service');
-    const jobService = require('./server/services/jobs');
-    ghostServer.registerCleanupTask(async () => {
-        await jobService.shutdown();
-    });
-    ghostServer.registerCleanupTask(async () => {
-        await urlService.shutdown();
-    });
-    debug('End: Job Service');
+    if (ghostServer) {
+        // Job Service allows parts of Ghost to run in the background
+        debug('Begin: Job Service');
+        const jobService = require('./server/services/jobs');
+        ghostServer.registerCleanupTask(async () => {
+            await jobService.shutdown();
+        });
+        debug('End: Job Service');
+
+        ghostServer.registerCleanupTask(async () => {
+            await urlService.shutdown();
+        });
+    }
 
     debug('End: initCore');
 }
@@ -320,7 +323,7 @@ async function initBackgroundServices({config}) {
 
  * @returns {Promise<object>} ghostServer
  */
-async function bootGhost({backend = true, frontend = true} = {}) {
+async function bootGhost({backend = true, frontend = true, server = true} = {}) {
     // Metrics
     const startTime = Date.now();
     debug('Begin Boot');
@@ -370,11 +373,13 @@ async function bootGhost({backend = true, frontend = true} = {}) {
         debug('Begin: load server + minimal app');
         const rootApp = require('./app');
 
-        const GhostServer = require('./server/ghost-server');
-        ghostServer = new GhostServer({url: config.getSiteUrl()});
-        await ghostServer.start(rootApp);
-        bootLogger.log('server started');
-        debug('End: load server + minimal app');
+        if (server) {
+            const GhostServer = require('./server/ghost-server');
+            ghostServer = new GhostServer({url: config.getSiteUrl()});
+            await ghostServer.start(rootApp);
+            bootLogger.log('server started');
+            debug('End: load server + minimal app');
+        }
 
         // Step 3 - Get the DB ready
         debug('Begin: Get DB ready');
@@ -414,8 +419,13 @@ async function bootGhost({backend = true, frontend = true} = {}) {
         initBackgroundServices({config});
 
         // We return the server purely for testing purposes
-        debug('End Boot: Returning Ghost Server');
-        return ghostServer;
+        if (server) {
+            debug('End Boot: Returning Ghost Server');
+            return ghostServer;
+        } else {
+            debug('End boot: Returning Root App');
+            return rootApp;
+        }
     } catch (error) {
         const errors = require('@tryghost/errors');
 
