@@ -36,7 +36,7 @@
 .kg-toggle-heading svg {
     width: 14px;
     color: rgba(124, 139, 154, 0.5);
-    transition: padding 0.1s ease-in;
+    transition: all 0.3s;
     transform: rotate(-180deg);
 }
 
@@ -46,13 +46,9 @@
 }
 
 .kg-toggle-content {
-    transition: all .3s;
+    transition: padding 0.1s ease-in;
     padding-top: 1.5rem;
     max-height: 100vh;
     overflow: hidden;
     opacity: 1;
-}
-
-.kg-toggle-content > *+* {
-
 }
