@@ -17,6 +17,7 @@ const messages = {
 const GA_FEATURES = [
     'customThemeSettings',
     'nftCard',
+    'calloutCard',
     'accordionCard'
 ];
 
@@ -35,7 +36,6 @@ const ALPHA_FEATURES = [
     'mediaAPI',
     'filesAPI',
     'membersAutoLogin',
-    'calloutCard',
     'fileCard',
     'audioCard',
     'videoCard',
