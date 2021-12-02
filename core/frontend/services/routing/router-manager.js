@@ -82,7 +82,7 @@ class RouterManager {
         this.registry.setRouter('siteRouter', this.siteRouter);
 
         if (start) {
-            apiVersion = apiVersion || this.defaultApiVersion;
+            apiVersion = 'canary';
             this.start(apiVersion, routerSettings);
         }
 
@@ -106,6 +106,7 @@ class RouterManager {
      * @param {object} routerSettings
      */
     start(apiVersion, routerSettings) {
+        apiVersion = 'canary';
         debug('routing start', apiVersion, routerSettings);
         const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
 
