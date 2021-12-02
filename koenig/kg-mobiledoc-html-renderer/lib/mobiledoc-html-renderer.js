@@ -111,7 +111,7 @@ class MobiledocHtmlRenderer {
                 // a different blockquote style because mobiledoc doesn't support
                 // storing arbitrary attributes with sections
                 const blockquote = dom.createElement('blockquote');
-                blockquote.setAttribute('class', 'kg-blockquote-alt kg-width-wide');
+                blockquote.setAttribute('class', 'kg-blockquote-alt');
                 return blockquote;
             }
         };

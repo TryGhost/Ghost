@@ -266,7 +266,7 @@ describe('Mobiledoc HTML renderer', function () {
 
             const output = renderer.render(mobiledoc);
 
-            output.should.equal('<blockquote class="kg-blockquote-alt kg-width-wide">Test</blockquote>');
+            output.should.equal('<blockquote class="kg-blockquote-alt">Test</blockquote>');
         });
     });
 });
