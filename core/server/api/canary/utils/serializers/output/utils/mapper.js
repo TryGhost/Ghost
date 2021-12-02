@@ -39,10 +39,6 @@ const mapPost = (model, frame) => {
     extraAttrs.forPost(frame, model, jsonModel);
 
     if (utils.isContentAPI(frame)) {
-        // Content api v2 still expects page prop
-        if (jsonModel.type === 'page') {
-            jsonModel.page = true;
-        }
         date.forPost(jsonModel);
         gating.forPost(jsonModel, frame);
     }

@@ -11,7 +11,7 @@ const mailService = require('../../../../../core/server/services/mail/index');
 
 let request;
 
-describe('Authentication API v3', function () {
+describe('Authentication API', function () {
     describe('Blog setup', function () {
         before(async function () {
             await localUtils.startGhost({forceStart: true});

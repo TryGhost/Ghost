@@ -22,7 +22,7 @@ describe('{{#get}} helper', function () {
         fn = sinon.spy();
         inverse = sinon.spy();
 
-        locals = {root: {_locals: {apiVersion: 'v2'}}, globalProp: {foo: 'bar'}};
+        locals = {root: {_locals: {apiVersion: 'canary'}}, globalProp: {foo: 'bar'}};
     });
 
     afterEach(function () {
@@ -59,36 +59,6 @@ describe('{{#get}} helper', function () {
         });
     });
 
-    describe('authors v2', function () {
-        let browseAuthorsStub;
-        const meta = {pagination: {}};
-
-        beforeEach(function () {
-            locals = {root: {_locals: {apiVersion: 'v2'}}};
-
-            browseAuthorsStub = sinon.stub(api.v2, 'authorsPublic').get(() => {
-                return {
-                    browse: sinon.stub().resolves({authors: [], meta: meta})
-                };
-            });
-        });
-
-        it('browse authors', function (done) {
-            get.call(
-                {},
-                'authors',
-                {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                fn.called.should.be.true();
-                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
-                fn.firstCall.args[0].authors.should.eql([]);
-                inverse.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-    });
-
     describe('authors canary', function () {
         let browseAuthorsStub;
         const meta = {pagination: {}};
@@ -97,36 +67,6 @@ describe('{{#get}} helper', function () {
             locals = {root: {_locals: {apiVersion: 'canary'}}};
 
             browseAuthorsStub = sinon.stub(api.canary, 'authorsPublic').get(() => {
-                return {
-                    browse: sinon.stub().resolves({authors: [], meta: meta})
-                };
-            });
-        });
-
-        it('browse authors', function (done) {
-            get.call(
-                {},
-                'authors',
-                {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                fn.called.should.be.true();
-                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
-                fn.firstCall.args[0].authors.should.eql([]);
-                inverse.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-    });
-
-    describe('authors v3', function () {
-        let browseAuthorsStub;
-        const meta = {pagination: {}};
-
-        beforeEach(function () {
-            locals = {root: {_locals: {apiVersion: 'v3'}}};
-
-            browseAuthorsStub = sinon.stub(api.v3, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -208,7 +148,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             browseStub = sinon.stub().resolves();
             readStub = sinon.stub().resolves();
-            sinon.stub(api.v2, 'postsPublic').get(() => {
+            sinon.stub(api.canary, 'postsPublic').get(() => {
                 return {
                     browse: browseStub,
                     read: readStub

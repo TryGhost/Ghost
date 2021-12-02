@@ -556,6 +556,6 @@ module.exports = {
 };
 
 /**
- * @typedef {'v2' | 'v3' | 'v4' | 'canary' } ValidAPIVersion
+ * @typedef { 'canary' } ValidAPIVersion
  * @typedef {'status:free' | 'status:-free'} ValidMemberSegment
  */

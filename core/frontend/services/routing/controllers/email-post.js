@@ -51,10 +51,6 @@ module.exports = function emailPostController(req, res, next) {
                 return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
-            if (res.locals.apiVersion !== 'v0.1' && res.locals.apiVersion !== 'v2') {
-                post.access = !!post.html;
-            }
-
             // @TODO: See helpers/secure
             helpers.secure(req, post);
 

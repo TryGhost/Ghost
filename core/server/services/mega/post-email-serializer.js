@@ -85,7 +85,7 @@ const createUnsubscribeUrl = (uuid) => {
 
 // NOTE: serialization is needed to make sure we are using current API and do post transformations
 //       such as image URL transformation from relative to absolute
-const serializePostModel = async (model, apiVersion = 'v4') => {
+const serializePostModel = async (model, apiVersion = 'canary') => {
     // fetch mobiledoc rather than html and plaintext so we can render email-specific contents
     const frame = {options: {context: {user: true}, formats: 'mobiledoc'}};
     const docName = 'posts';
@@ -221,7 +221,7 @@ const getTemplateSettings = async () => {
     return templateSettings;
 };
 
-const serialize = async (postModel, options = {isBrowserPreview: false, apiVersion: 'v4'}) => {
+const serialize = async (postModel, options = {isBrowserPreview: false, apiVersion: 'canary'}) => {
     const post = await serializePostModel(postModel, options.apiVersion);
 
     const timezone = settingsCache.get('timezone');

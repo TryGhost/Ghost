@@ -33,7 +33,7 @@ describe('Unit - services/routing/controllers/static', function () {
         formatResponseStub.entries = sinon.stub();
 
         tagsReadStub = sinon.stub().resolves();
-        sinon.stub(api.v2, 'tagsPublic').get(() => {
+        sinon.stub(api.canary, 'tagsPublic').get(() => {
             return {
                 read: tagsReadStub
             };
@@ -74,7 +74,7 @@ describe('Unit - services/routing/controllers/static', function () {
             render: sinon.spy(),
             redirect: sinon.spy(),
             locals: {
-                apiVersion: 'v2'
+                apiVersion: 'canary'
             }
         };
     });

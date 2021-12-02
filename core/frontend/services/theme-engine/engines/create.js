@@ -8,9 +8,7 @@ const config = require('../../../../shared/config');
  * ^2.0.0
  * 2.0.0
  * v4
- * v3
- * v2
- * canary
+* canary
  *
  * Goal: Extract major version from input.
  *

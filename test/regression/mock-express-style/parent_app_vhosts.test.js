@@ -100,7 +100,7 @@ describe('Integration - Web - vhosts', function () {
             const req = {
                 secure: false,
                 method: 'GET',
-                url: '/ghost/api/v2/admin/site/',
+                url: '/ghost/api/canary/admin/site/',
                 host: 'example.com'
             };
 
@@ -114,7 +114,7 @@ describe('Integration - Web - vhosts', function () {
             const req = {
                 secure: false,
                 method: 'GET',
-                url: '/ghost/api/v2/admin/site/',
+                url: '/ghost/api/canary/admin/site/',
                 host: 'localhost'
             };
 
@@ -135,7 +135,7 @@ describe('Integration - Web - vhosts', function () {
 
             app = await localUtils.initGhost({backend: true});
 
-            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('canary');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
         });
 
@@ -196,7 +196,7 @@ describe('Integration - Web - vhosts', function () {
             const req = {
                 secure: false,
                 method: 'GET',
-                url: '/ghost/api/v2/admin/site/',
+                url: '/ghost/api/canary/admin/site/',
                 host: 'example.com'
             };
 
@@ -210,7 +210,7 @@ describe('Integration - Web - vhosts', function () {
             const req = {
                 secure: false,
                 method: 'GET',
-                url: '/ghost/api/v2/admin/site/',
+                url: '/ghost/api/canary/admin/site/',
                 host: 'localhost'
             };
 
@@ -238,7 +238,7 @@ describe('Integration - Web - vhosts', function () {
             const req = {
                 secure: true,
                 method: 'GET',
-                url: '/ghost/api/v2/admin/site/',
+                url: '/ghost/api/canary/admin/site/',
                 host: 'admin.example.com'
             };
 
@@ -287,7 +287,7 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('admin:url', 'https://admin.example.com');
             configUtils.set('admin:redirects', false);
 
-            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('canary');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
             app = await localUtils.initGhost({backend: true});
@@ -327,7 +327,7 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://example.com');
 
-            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
+            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('canary');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
             app = await localUtils.initGhost({backend: true});
@@ -413,14 +413,14 @@ describe('Integration - Web - vhosts', function () {
             const req = {
                 secure: false,
                 method: 'GET',
-                url: '/ghost/api/v2/admin/site/',
+                url: '/ghost/api/canary/admin/site/',
                 host: 'example.com'
             };
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
-                    response.headers.location.should.eql('https://example.com/ghost/api/v2/admin/site/');
+                    response.headers.location.should.eql('https://example.com/ghost/api/canary/admin/site/');
                 });
         });
 
@@ -457,7 +457,7 @@ describe('Integration - Web - vhosts', function () {
             const req = {
                 secure: true,
                 method: 'GET',
-                url: '/ghost/api/v2/admin/site/',
+                url: '/ghost/api/canary/admin/site/',
                 host: 'example.com'
             };
 
@@ -471,14 +471,14 @@ describe('Integration - Web - vhosts', function () {
             const req = {
                 secure: false,
                 method: 'GET',
-                url: '/ghost/api/v2/admin/site/',
+                url: '/ghost/api/canary/admin/site/',
                 host: 'localhost'
             };
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
-                    response.headers.location.should.eql('https://example.com/ghost/api/v2/admin/site/');
+                    response.headers.location.should.eql('https://example.com/ghost/api/canary/admin/site/');
                 });
         });
     });

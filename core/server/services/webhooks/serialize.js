@@ -3,7 +3,7 @@ module.exports = (event, model) => {
     const {sequence} = require('@tryghost/promise');
     const api = require('../../api');
 
-    const apiVersion = model.get('api_version') || 'v4';
+    const apiVersion = model.get('api_version') || 'canary';
 
     const resourceName = event.match(/(\w+)\./)[1];
     const docName = `${resourceName}s`;

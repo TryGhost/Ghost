@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const api = require('../../../../../../core/server/api').v2;
+const api = require('../../../../../../core/server/api').canary;
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
 const testUtils = require('../../../../../utils');
 
@@ -47,7 +47,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             };
         });
 
-        locals = {apiVersion: 'v2'};
+        locals = {apiVersion: 'canary'};
     });
 
     afterEach(function () {

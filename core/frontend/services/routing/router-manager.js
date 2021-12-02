@@ -13,7 +13,7 @@ const UnsubscribeRouter = require('./UnsubscribeRouter');
 const events = require('../../../server/lib/common/events');
 
 class RouterManager {
-    constructor({registry, defaultApiVersion = 'v4'}) {
+    constructor({registry, defaultApiVersion = 'canary'}) {
         this.registry = registry;
         this.defaultApiVersion = defaultApiVersion;
         this.siteRouter = null;
