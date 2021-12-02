@@ -1399,7 +1399,7 @@ describe('Integration - Web - Site canary', function () {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('index');
 
-                        $('.post-card').length.should.equal(4);
+                        $('.post-card').length.should.equal(10);
                     });
             });
 
@@ -1418,7 +1418,7 @@ describe('Integration - Web - Site canary', function () {
                         response.statusCode.should.eql(200);
                         response.template.should.eql('index');
 
-                        $('.post-card').length.should.equal(4);
+                        $('.post-card').length.should.equal(10);
                     });
             });
 
