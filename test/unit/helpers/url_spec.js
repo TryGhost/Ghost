@@ -268,6 +268,12 @@ describe('{{url}} helper', function () {
             should.exist(rendered);
             rendered.string.should.equal('/?foo=space%20bar');
         });
+
+        it('should an empty string when we can\'t parse a string', function () {
+            rendered = helpers.url.call({url: '/?foo=space%%bar', label: 'Baz', slug: 'baz', current: true});
+            should.exist(rendered);
+            rendered.string.should.equal('');
+        });
     });
 
     describe('with subdir', function () {
