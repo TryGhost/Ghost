@@ -16,7 +16,7 @@ module.exports = {
         }
 
         const frontendTemplate = hbs`
-                <div class="kg-card kg-toggle-card" data-kg-card="toggle" data-kg-toggle-state="close">
+            <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
                 <div class="kg-toggle-heading">
                     <h4 class="kg-toggle-heading-text">{{{heading}}}</h4>
                     <div class="kg-toggle-card-icon">
