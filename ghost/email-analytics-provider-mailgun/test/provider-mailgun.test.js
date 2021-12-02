@@ -9,13 +9,12 @@ const sinon = require('sinon');
 const EmailAnalyticsProviderMailgun = require('../');
 
 describe('EmailAnalyticsProviderMailgun', function () {
-    let config, settings, logging;
+    let config, settings;
 
     beforeEach(function () {
         // options objects that can be stubbed or spied
         config = {get() {}};
         settings = {get() {}};
-        logging = {warn() {}};
     });
 
     afterEach(function () {
@@ -43,7 +42,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 items: []
             });
 
-        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, logging});
+        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
         await mailgunProvider.fetchAll(() => {});
 
         eventsMock.isDone().should.be.true();
@@ -66,7 +65,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 items: []
             });
 
-        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, logging});
+        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
         await mailgunProvider.fetchAll(() => {});
 
         eventsMock.isDone().should.be.true();
@@ -89,7 +88,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 items: []
             });
 
-        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, logging});
+        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
         await mailgunProvider.fetchAll(() => {});
 
         settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey2');
@@ -148,7 +147,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                     items: []
                 });
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, logging});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
 
             const batchHandler = sinon.spy();
 
@@ -194,7 +193,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                     items: []
                 });
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, logging});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
 
             const batchHandler = sinon.spy();
 
@@ -242,7 +241,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                     items: []
                 });
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, logging});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
 
             const batchHandler = sinon.spy();
 
@@ -291,7 +290,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                     items: []
                 });
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, logging});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
 
             const batchHandler = sinon.spy();
 
@@ -320,7 +319,7 @@ describe('EmailAnalyticsProviderMailgun', function () {
                 }
             };
 
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings, logging});
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
             const result = mailgunProvider.normalizeEvent(event);
 
             result.should.deepEqual({
