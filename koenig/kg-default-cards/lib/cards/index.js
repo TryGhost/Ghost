@@ -12,5 +12,6 @@ module.exports = [
     require('./paywall'),
     require('./button'),
     require('./callout'),
-    require('./toggle')
+    require('./toggle'),
+    require('./audio')
 ];
