@@ -136,7 +136,7 @@
     "postcss-custom-media": "7.0.8",
     "postcss-custom-properties": "10.0.0",
     "postcss-import": "12.0.1",
-    "pretender": "3.4.3",
+    "pretender": "3.4.7",
     "reframe.js": "3.0.3",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
     "testem": "3.6.0",
