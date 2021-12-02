@@ -7,7 +7,7 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 
-export default class KoenigCardAccordionComponent extends Component {
+export default class KoenigCardToggleComponent extends Component {
     @service config;
     @service feature;
     @service store;
@@ -138,7 +138,7 @@ export default class KoenigCardAccordionComponent extends Component {
     }
 
     _focusInput() {
-        let headingInput = this.element.querySelector('.kg-accordion-card-heading .koenig-basic-html-input__editor');
+        let headingInput = this.element.querySelector('.kg-toggle-card-heading .koenig-basic-html-input__editor');
 
         if (headingInput) {
             headingInput.focus();
