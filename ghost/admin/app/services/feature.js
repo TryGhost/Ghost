@@ -21,10 +21,6 @@ export function feature(name, options = {}) {
                 enabled = this.get(`labs.${name}`) || false;
             }
 
-            if (options.developer) {
-                enabled = enabled && this.get('config.enableDeveloperExperiments');
-            }
-
             return enabled;
         },
         set(key, value) {
@@ -52,22 +48,22 @@ export default Service.extend({
     emailAnalytics: feature('emailAnalytics'),
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
     multipleProducts: feature('multipleProducts'),
-    oauthLogin: feature('oauthLogin', {developer: true}),
+    oauthLogin: feature('oauthLogin'),
     customThemeSettings: feature('customThemeSettings'),
-    membersActivity: feature('membersActivity', {developer: true}),
-    cardSettingsPanel: feature('cardSettingsPanel', {developer: true}),
-    membersAutoLogin: feature('membersAutoLogin', {developer: true}),
-    urlCache: feature('urlCache', {developer: true}),
-    mediaAPI: feature('mediaAPI', {developer: true}),
-    filesAPI: feature('filesAPI', {developer: true}),
-    calloutCard: feature('calloutCard', {developer: true}),
+    membersActivity: feature('membersActivity'),
+    cardSettingsPanel: feature('cardSettingsPanel'),
+    membersAutoLogin: feature('membersAutoLogin'),
+    urlCache: feature('urlCache'),
+    mediaAPI: feature('mediaAPI'),
+    filesAPI: feature('filesAPI'),
+    calloutCard: feature('calloutCard'),
     nftCard: feature('nftCard'),
-    accordionCard: feature('accordionCard', {developer: true}),
-    fileCard: feature('fileCard', {developer: true}),
-    audioCard: feature('audioCard', {developer: true}),
-    videoCard: feature('videoCard', {developer: true}),
-    productCard: feature('productCard', {developer: true}),
-    quoteStyles: feature('quoteStyles', {developer: true}),
+    accordionCard: feature('accordionCard'),
+    fileCard: feature('fileCard'),
+    audioCard: feature('audioCard'),
+    videoCard: feature('videoCard'),
+    productCard: feature('productCard'),
+    quoteStyles: feature('quoteStyles'),
 
     _user: null,
 
