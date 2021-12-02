@@ -1,5 +1,7 @@
 const {
-    htmlToTransformReady
+    htmlToTransformReady,
+    htmlAbsoluteToRelative,
+    htmlRelativeToAbsolute
 } = require('@tryghost/url-utils/lib/utils');
 const {
     hbs,
@@ -43,6 +45,16 @@ module.exports = {
         }));
 
         return dom.createRawHTMLSection(html);
+    },
+
+    absoluteToRelative(payload, options) {
+        payload.content = payload.content && htmlAbsoluteToRelative(payload.content, options.siteUrl, options);
+        return payload;
+    },
+
+    relativeToAbsolute(payload, options) {
+        payload.content = payload.content && htmlRelativeToAbsolute(payload.content, options.siteUrl, options.itemUrl, options);
+        return payload;
     },
 
     toTransformReady(payload, options) {
