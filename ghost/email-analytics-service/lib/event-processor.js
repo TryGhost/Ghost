@@ -1,6 +1,5 @@
 module.exports = class EventProcessor {
-    constructor({logging} = {}) {
-        this.logging = logging || console;
+    constructor() {
     }
 
     // override these in a sub-class to define app-specific behaviour

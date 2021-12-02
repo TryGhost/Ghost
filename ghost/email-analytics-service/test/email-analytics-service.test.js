@@ -135,7 +135,6 @@ describe('EmailAnalyticsService', function () {
 
         beforeEach(function () {
             service = new EmailAnalyticsService({
-                logging: sinon.spy(),
                 queries: {
                     aggregateEmailStats: sinon.spy(),
                     aggregateMemberStats: sinon.spy()

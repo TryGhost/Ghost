@@ -1,14 +1,13 @@
 const EventProcessingResult = require('./event-processing-result');
-const debug = require('ghost-ignition').debug('services:email-analytics');
+const debug = require('@tryghost/debug')('services:email-analytics');
 
 module.exports = class EmailAnalyticsService {
-    constructor({config, settings, queries, eventProcessor, providers, logging} = {}) {
+    constructor({config, settings, queries, eventProcessor, providers} = {}) {
         this.config = config;
         this.settings = settings;
         this.queries = queries;
         this.eventProcessor = eventProcessor;
         this.providers = providers;
-        this.logging = logging || console;
     }
 
     async fetchAll() {
