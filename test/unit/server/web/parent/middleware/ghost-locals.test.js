@@ -16,7 +16,7 @@ describe('Theme Handler', function () {
         sinon.stub(bridge, 'getActiveTheme').callsFake(() => {
             return {
                 engine() {
-                    return 'v3';
+                    return 'canary';
                 }
             };
         });
@@ -37,7 +37,7 @@ describe('Theme Handler', function () {
             should.exist(res.locals.safeVersion);
             should.exist(res.locals.apiVersion);
             res.locals.relativeUrl.should.equal(req.path);
-            res.locals.apiVersion.should.equal('v3');
+            res.locals.apiVersion.should.equal('canary');
             next.called.should.be.true();
         });
     });
