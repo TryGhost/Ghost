@@ -57,7 +57,6 @@ export default Component.extend({
     didCreateEditor() {},
     onChange() {},
     onNewline() {},
-    onTab() {},
     onFocus() {},
     onBlur() {},
 
@@ -231,13 +230,7 @@ export default Component.extend({
         let editorElement = this.element.querySelector('[data-kg="editor"]');
 
         this._pasteHandler = run.bind(this, this.handlePaste);
-        this._tabHandler = run.bind(this, this.onTab);
         editorElement.addEventListener('paste', this._pasteHandler);
-        editorElement.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-                this._tabHandler(e);
-            }
-        });
 
         this.element.dataset[DRAG_DISABLED_DATA_ATTR] = 'true';
     },

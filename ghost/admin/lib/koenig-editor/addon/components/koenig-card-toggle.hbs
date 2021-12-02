@@ -34,9 +34,7 @@
                 @onChange={{action "setHeadingText"}}
                 @onFocus={{action (mut this.isFocused) true}}
                 @onBlur={{action (mut this.isFocused) false}}
-                {{!-- @onNewline={{action "handleEnter"}} --}}
-                @onTab={{action "handleTab"}}
-                @didCreateEditor={{action "registerEditor"}}
+                @didCreateEditor={{this.registerHeadingEditor}}
             />
             <KoenigBasicHtmlTextarea
                 @html={{@payload.content}}
@@ -45,7 +43,7 @@
                 @onChange={{action "setContentText"}}
                 @onFocus={{action (mut this.isFocused) true}}
                 @onBlur={{action (mut this.isFocused) false}}
-                @didCreateEditor={{action "registerEditor"}}
+                @didCreateEditor={{action "registerContentEditor"}}
             />
         </div>
     {{else}}
