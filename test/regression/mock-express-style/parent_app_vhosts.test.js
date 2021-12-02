@@ -30,7 +30,7 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', null);
 
-            app = await localUtils.initGhost();
+            app = await localUtils.initGhost({backend: true});
         });
 
         before(function () {
@@ -139,10 +139,10 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://admin.example.com');
 
+            app = await localUtils.initGhost({backend: true});
+
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
-            app = await localUtils.initGhost();
         });
 
         before(function () {
@@ -297,7 +297,7 @@ describe('Integration - Web - vhosts', function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-            app = await localUtils.initGhost();
+            app = await localUtils.initGhost({backend: true});
         });
 
         before(function () {
@@ -337,7 +337,7 @@ describe('Integration - Web - vhosts', function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-            app = await localUtils.initGhost();
+            app = await localUtils.initGhost({backend: true});
         });
 
         before(function () {
