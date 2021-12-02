@@ -87,6 +87,17 @@ export default class KoenigCardToggleComponent extends Component {
     }
 
     @action
+    handleTab(event) {
+        event?.preventDefault();
+        event?.stopImmediatePropagation();
+        let contentInput = this.element.querySelector('.kg-accordion-card-content .koenig-basic-html-textarea__editor');
+
+        if (contentInput) {
+            contentInput.focus();
+        }
+    }
+
+    @action
     registerEditor(textReplacementEditor) {
         let commands = {
             'META+ENTER': run.bind(this, this._enter, 'meta'),
