@@ -11,7 +11,12 @@ module.exports = function url(options) {
     const absolute = options && options.hash.absolute && options.hash.absolute !== 'false';
     let outputUrl = getMetaDataUrl(this, absolute);
 
-    outputUrl = encodeURI(decodeURI(outputUrl));
+    try {
+        outputUrl = encodeURI(decodeURI(outputUrl));
+    } catch (err) {
+        // Happens when the outputURL contains an invalid URI character like "%%" or "%80"
+        return new SafeString('');
+    }
 
     return new SafeString(outputUrl);
 };
