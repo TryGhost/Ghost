@@ -87,10 +87,8 @@ export default class KoenigCardToggleComponent extends Component {
     }
 
     @action
-    handleTab(event) {
-        event?.preventDefault();
-        event?.stopImmediatePropagation();
-        let contentInput = this.element.querySelector('.kg-accordion-card-content .koenig-basic-html-textarea__editor');
+    handleTab() {
+        let contentInput = this.element.querySelector('.kg-toggle-card-content .koenig-basic-html-textarea__editor');
 
         if (contentInput) {
             contentInput.focus();
@@ -98,8 +96,31 @@ export default class KoenigCardToggleComponent extends Component {
     }
 
     @action
-    registerEditor(textReplacementEditor) {
+    registerContentEditor(textReplacementEditor) {
         let commands = {
+            'META+ENTER': run.bind(this, this._enter, 'meta'),
+            'CTRL+ENTER': run.bind(this, this._enter, 'ctrl')
+        };
+
+        Object.keys(commands).forEach((str) => {
+            textReplacementEditor.registerKeyCommand({
+                str,
+                run() {
+                    return commands[str](textReplacementEditor, str);
+                }
+            });
+        });
+
+        this._textReplacementEditor = textReplacementEditor;
+
+        run.scheduleOnce('afterRender', this, this._afterRender);
+    }
+
+    @action
+    registerHeadingEditor(textReplacementEditor) {
+        let commands = {
+            ENTER: this.handleTab,
+            TAB: this.handleTab,
             'META+ENTER': run.bind(this, this._enter, 'meta'),
             'CTRL+ENTER': run.bind(this, this._enter, 'ctrl')
         };
