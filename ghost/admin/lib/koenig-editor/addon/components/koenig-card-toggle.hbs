@@ -35,6 +35,7 @@
                 @onFocus={{action (mut this.isFocused) true}}
                 @onBlur={{action (mut this.isFocused) false}}
                 {{!-- @onNewline={{action "handleEnter"}} --}}
+                @onTab={{action "handleTab"}}
                 @didCreateEditor={{action "registerEditor"}}
             />
             <KoenigBasicHtmlTextarea
