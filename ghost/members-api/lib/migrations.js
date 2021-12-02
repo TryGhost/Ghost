@@ -1,18 +1,12 @@
 const _ = require('lodash');
+const logging = require('@tryghost/logging');
 
-/**
- * @typedef {object} ILogger
- * @prop {(x: any) => void} error
- * @prop {(x: any) => void} info
- * @prop {(x: any) => void} warn
- */
 module.exports = class StripeMigrations {
     /**
      * StripeMigrations
      *
      * @param {object} params
      *
-     * @param {ILogger} params.logger
      * @param {any} params.StripeCustomerSubscription
      * @param {any} params.StripeProduct
      * @param {any} params.StripePrice
@@ -26,10 +20,8 @@ module.exports = class StripeMigrations {
         StripePrice,
         Product,
         Settings,
-        stripeAPIService,
-        logger
+        stripeAPIService
     }) {
-        this._logging = logger;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._StripeProduct = StripeProduct;
         this._StripePrice = StripePrice;
@@ -52,7 +44,7 @@ module.exports = class StripeMigrations {
 
         if (subscriptions.length > 0 && products.length === 0 && prices.length === 0 && defaultProduct) {
             try {
-                this._logging.info(`Populating products and prices for existing stripe customers`);
+                logging.info(`Populating products and prices for existing stripe customers`);
                 const uniquePlans = _.uniq(subscriptions.map(d => _.get(d, 'plan.id')));
 
                 let stripePrices = [];
@@ -64,13 +56,13 @@ module.exports = class StripeMigrations {
                         stripePrices.push(stripePrice);
                     } catch (err) {
                         if (err && err.statusCode === 404) {
-                            this._logging.warn(`Plan ${plan} not found on Stripe - ignoring`);
+                            logging.warn(`Plan ${plan} not found on Stripe - ignoring`);
                         } else {
                             throw err;
                         }
                     }
                 }
-                this._logging.info(`Adding ${stripePrices.length} prices from Stripe`);
+                logging.info(`Adding ${stripePrices.length} prices from Stripe`);
                 for (const stripePrice of stripePrices) {
                     // We expanded the product when fetching this price.
                     /** @type {import('stripe').Stripe.Product} */
@@ -93,8 +85,8 @@ module.exports = class StripeMigrations {
                     });
                 }
             } catch (e) {
-                this._logging.error(`Failed to populate products/prices from stripe`);
-                this._logging.error(e);
+                logging.error(`Failed to populate products/prices from stripe`);
+                logging.error(e);
             }
         }
     }
@@ -129,7 +121,7 @@ module.exports = class StripeMigrations {
 
     async populateStripePricesFromStripePlansSetting(plans) {
         if (!plans) {
-            this._logging.info('Skipping stripe_plans -> stripe_prices migration');
+            logging.info('Skipping stripe_plans -> stripe_prices migration');
             return;
         }
         let defaultStripeProduct;
@@ -137,14 +129,14 @@ module.exports = class StripeMigrations {
         defaultStripeProduct = stripeProductsPage.data[0];
 
         if (!defaultStripeProduct) {
-            this._logging.info('Could not find Stripe Product - creating one');
+            logging.info('Could not find Stripe Product - creating one');
             const productsPage = await this._Product.findPage({limit: 1});
             const defaultProduct = productsPage.data[0];
             const stripeProduct = await this._stripeAPIService.createProduct({
                 name: defaultProduct.get('name')
             });
             if (!defaultProduct) {
-                this._logging.error('Could not find Product - skipping stripe_plans -> stripe_prices migration');
+                logging.error('Could not find Product - skipping stripe_plans -> stripe_prices migration');
                 return;
             }
             defaultStripeProduct = await this._StripeProduct.add({
@@ -157,10 +149,10 @@ module.exports = class StripeMigrations {
             const price = await this.findPriceByPlan(plan);
 
             if (!price) {
-                this._logging.info(`Could not find Stripe Price ${JSON.stringify(plan)}`);
+                logging.info(`Could not find Stripe Price ${JSON.stringify(plan)}`);
 
                 try {
-                    this._logging.info(`Creating Stripe Price ${JSON.stringify(plan)}`);
+                    logging.info(`Creating Stripe Price ${JSON.stringify(plan)}`);
                     const price = await this._stripeAPIService.createPrice({
                         currency: plan.currency,
                         amount: plan.amount,
@@ -182,21 +174,21 @@ module.exports = class StripeMigrations {
                         interval: price.recurring.interval
                     });
                 } catch (err) {
-                    this._logging.error({err, message: 'Adding price failed'});
+                    logging.error({err, message: 'Adding price failed'});
                 }
             }
         }
     }
 
     async updatePortalPlansSetting(plans) {
-        this._logging.info('Migrating portal_plans setting from names to ids');
+        logging.info('Migrating portal_plans setting from names to ids');
         const portalPlansSetting = await this._Settings.findOne({key: 'portal_plans'});
 
         let portalPlans;
         try {
             portalPlans = JSON.parse(portalPlansSetting.get('value'));
         } catch (err) {
-            this._logging.error({
+            logging.error({
                 message: 'Could not parse portal_plans setting, skipping migration',
                 err
             });
@@ -208,7 +200,7 @@ module.exports = class StripeMigrations {
         });
 
         if (!containsOldValues) {
-            this._logging.info('Could not find names in portal_plans setting, skipping migration');
+            logging.info('Could not find names in portal_plans setting, skipping migration');
             return;
         }
 
@@ -238,7 +230,7 @@ module.exports = class StripeMigrations {
             return newPortalPlans.concat(newPlan);
         }, []);
 
-        this._logging.info(`Updating portal_plans setting to ${JSON.stringify(newPortalPlans)}`);
+        logging.info(`Updating portal_plans setting to ${JSON.stringify(newPortalPlans)}`);
         await this._Settings.edit({
             key: 'portal_plans',
             value: JSON.stringify(newPortalPlans)
@@ -248,11 +240,11 @@ module.exports = class StripeMigrations {
     }
 
     async populateMembersMonthlyPriceIdSettings() {
-        this._logging.info('Populating members_monthly_price_id from stripe_plans');
+        logging.info('Populating members_monthly_price_id from stripe_plans');
         const monthlyPriceId = await this._Settings.findOne({key: 'members_monthly_price_id'});
 
         if (monthlyPriceId.get('value')) {
-            this._logging.info('Skipping population of members_monthly_price_id, already populated');
+            logging.info('Skipping population of members_monthly_price_id, already populated');
             return;
         }
 
@@ -261,7 +253,7 @@ module.exports = class StripeMigrations {
         try {
             plans = JSON.parse(stripePlans.get('value'));
         } catch (err) {
-            this._logging.warn('Skipping population of members_monthly_price_id, could not parse stripe_plans');
+            logging.warn('Skipping population of members_monthly_price_id, could not parse stripe_plans');
             return;
         }
 
@@ -270,7 +262,7 @@ module.exports = class StripeMigrations {
         });
 
         if (!monthlyPlan) {
-            this._logging.warn('Skipping population of members_monthly_price_id, could not find Monthly plan');
+            logging.warn('Skipping population of members_monthly_price_id, could not find Monthly plan');
             return;
         }
 
@@ -284,13 +276,13 @@ module.exports = class StripeMigrations {
         });
 
         if (!monthlyPrice) {
-            this._logging.info('Could not find active Monthly price from stripe_plans - searching by interval');
+            logging.info('Could not find active Monthly price from stripe_plans - searching by interval');
             monthlyPrice = await this._StripePrice.where('amount', '>', 0)
                 .where({interval: 'month', active: true}).fetch();
         }
 
         if (!monthlyPrice) {
-            this._logging.info('Could not any active Monthly price - creating a new one');
+            logging.info('Could not any active Monthly price - creating a new one');
             let defaultStripeProduct;
             const stripeProductsPage = await this._StripeProduct.findPage({limit: 1});
             defaultStripeProduct = stripeProductsPage.data[0];
@@ -320,11 +312,11 @@ module.exports = class StripeMigrations {
     }
 
     async populateMembersYearlyPriceIdSettings() {
-        this._logging.info('Populating members_yearly_price_id from stripe_plans');
+        logging.info('Populating members_yearly_price_id from stripe_plans');
         const yearlyPriceId = await this._Settings.findOne({key: 'members_yearly_price_id'});
 
         if (yearlyPriceId.get('value')) {
-            this._logging.info('Skipping population of members_yearly_price_id, already populated');
+            logging.info('Skipping population of members_yearly_price_id, already populated');
             return;
         }
 
@@ -333,7 +325,7 @@ module.exports = class StripeMigrations {
         try {
             plans = JSON.parse(stripePlans.get('value'));
         } catch (err) {
-            this._logging.warn('Skipping population of members_yearly_price_id, could not parse stripe_plans');
+            logging.warn('Skipping population of members_yearly_price_id, could not parse stripe_plans');
         }
 
         const yearlyPlan = plans.find((plan) => {
@@ -341,7 +333,7 @@ module.exports = class StripeMigrations {
         });
 
         if (!yearlyPlan) {
-            this._logging.warn('Skipping population of members_yearly_price_id, could not find yearly plan');
+            logging.warn('Skipping population of members_yearly_price_id, could not find yearly plan');
             return;
         }
 
@@ -355,13 +347,13 @@ module.exports = class StripeMigrations {
         });
 
         if (!yearlyPrice) {
-            this._logging.info('Could not find active yearly price from stripe_plans - searching by interval');
+            logging.info('Could not find active yearly price from stripe_plans - searching by interval');
             yearlyPrice = await this._StripePrice.where('amount', '>', 0)
                 .where({interval: 'year', active: true}).fetch();
         }
 
         if (!yearlyPrice) {
-            this._logging.info('Could not any active yearly price - creating a new one');
+            logging.info('Could not any active yearly price - creating a new one');
             let defaultStripeProduct;
             const stripeProductsPage = await this._StripeProduct.findPage({limit: 1});
             defaultStripeProduct = stripeProductsPage.data[0];
@@ -391,12 +383,12 @@ module.exports = class StripeMigrations {
     }
 
     async populateDefaultProductMonthlyPriceId() {
-        this._logging.info('Migrating members_monthly_price_id setting to monthly_price_id column');
+        logging.info('Migrating members_monthly_price_id setting to monthly_price_id column');
         const productsPage = await this._Product.findPage({limit: 1});
         const defaultProduct = productsPage.data[0];
 
         if (defaultProduct.get('monthly_price_id')) {
-            this._logging.warn('Skipping migration, monthly_price_id already set');
+            logging.warn('Skipping migration, monthly_price_id already set');
             return;
         }
 
@@ -407,12 +399,12 @@ module.exports = class StripeMigrations {
     }
 
     async populateDefaultProductYearlyPriceId() {
-        this._logging.info('Migrating members_yearly_price_id setting to yearly_price_id column');
+        logging.info('Migrating members_yearly_price_id setting to yearly_price_id column');
         const productsPage = await this._Product.findPage({limit: 1});
         const defaultProduct = productsPage.data[0];
 
         if (defaultProduct.get('yearly_price_id')) {
-            this._logging.warn('Skipping migration, yearly_price_id already set');
+            logging.warn('Skipping migration, yearly_price_id already set');
             return;
         }
 
@@ -423,14 +415,14 @@ module.exports = class StripeMigrations {
     }
 
     async revertPortalPlansSetting() {
-        this._logging.info('Migrating portal_plans setting from ids to names');
+        logging.info('Migrating portal_plans setting from ids to names');
         const portalPlansSetting = await this._Settings.findOne({key: 'portal_plans'});
 
         let portalPlans;
         try {
             portalPlans = JSON.parse(portalPlansSetting.get('value'));
         } catch (err) {
-            this._logging.error({
+            logging.error({
                 message: 'Could not parse portal_plans setting, skipping migration',
                 err
             });
@@ -442,7 +434,7 @@ module.exports = class StripeMigrations {
         });
 
         if (containsNamedValues) {
-            this._logging.info('The portal_plans setting already contains names, skipping migration');
+            logging.info('The portal_plans setting already contains names, skipping migration');
             return;
         }
         const portalPlanIds = portalPlans.filter((plan) => {
@@ -450,7 +442,7 @@ module.exports = class StripeMigrations {
         });
 
         if (portalPlanIds.length === 0) {
-            this._logging.info('No price ids found in portal_plans setting, skipping migration');
+            logging.info('No price ids found in portal_plans setting, skipping migration');
             return;
         }
         const defaultPortalPlans = portalPlans.filter((plan) => {
@@ -469,7 +461,7 @@ module.exports = class StripeMigrations {
 
             return updatedPortalPlans;
         }, defaultPortalPlans);
-        this._logging.info(`Updating portal_plans setting to ${JSON.stringify(newPortalPlans)}`);
+        logging.info(`Updating portal_plans setting to ${JSON.stringify(newPortalPlans)}`);
         await this._Settings.edit({
             key: 'portal_plans',
             value: JSON.stringify(newPortalPlans)
@@ -486,13 +478,13 @@ module.exports = class StripeMigrations {
             return !sub.toJSON().price;
         });
         if (invalidSubscriptions.length > 0) {
-            this._logging.warn(`Deleting ${invalidSubscriptions.length} invalid subscription(s)`);
+            logging.warn(`Deleting ${invalidSubscriptions.length} invalid subscription(s)`);
             for (let sub of invalidSubscriptions) {
-                this._logging.warn(`Deleting subscription - ${sub.id} - no price found`);
+                logging.warn(`Deleting subscription - ${sub.id} - no price found`);
                 await sub.destroy();
             }
         } else {
-            this._logging.info(`No invalid subscriptions, skipping migration`);
+            logging.info(`No invalid subscriptions, skipping migration`);
         }
     }
 };
