@@ -149,13 +149,19 @@
             {{/if}}
         </div>
         {{#if @payload.src}}
-            <div style="flex-grow: 1;display: flex;justify-content: center;margin-left: 12px;line-height:3rem">
-                <GhTextInput
-                    @value={{@payload.fileName}}
-                    @input={{action "setAudioTitle" value="target.value"}}
-                    @class="w-100 fw4 bn bg-transparent bw0"
-                    style="border-width: 0"
-                />
+            <div style="flex-grow: 1;">
+                <div style="flex-grow: 1;display: flex;justify-content: center;margin-left: 12px;line-height:3rem">
+                    <GhTextInput
+                        @value={{@payload.fileName}}
+                        @input={{action "setAudioTitle" value="target.value"}}
+                        @class="w-100 fw4 bn bg-transparent bw0"
+                        style="border-width: 0"
+                    />
+                </div>
+                <audio controls src="{{@payload.src}}" loop style="pointer-events:none;width: 90%">
+                    Your browser does not support the
+                    <code>audio</code> element.
+                </audio>
             </div>
         {{else}}
             <div class="kg-placeholder-text">
