@@ -2,14 +2,11 @@
 const path = require('path');
 
 // Ghost Internals
-const models = require('../../../../core/server/models');
 const routingService = require('../../../../core/frontend/services/routing');
-const settingsService = require('../../../../core/server/services/settings');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const imageLib = require('../../../../core/server/lib/image');
-const appService = require('../../../../core/frontend/services/apps');
 
-const siteApp = require('../../../../core/server/web/parent/app');
+const boot = require('../../../../core/boot');
 
 // Other Test Utilities
 const configUtils = require('../../../utils/configUtils');
@@ -48,25 +45,11 @@ module.exports = {
      * @returns {object} express App
      */
     initGhost: async () => {
-        models.init();
-        await settingsService.init();
-        urlServiceUtils.init();
-
-        const customRedirects = require('../../../../core/server/services/redirects');
-        await customRedirects.init();
-        const routeSettings = require('../../../../core/server/services/route-settings');
-        await routeSettings.init();
-        const customThemeSettingsService = require('../../../../core/server/services/custom-theme-settings');
-        customThemeSettingsService.init();
-        const themeService = require('../../../../core/server/services/themes');
-        await themeService.init();
-        const helperService = require('../../../../core/frontend/services/helpers');
-        await helperService.init();
-
-        const app = siteApp({
-            start: true
+        const app = await boot({
+            server: false,
+            backend: false
         });
-        await appService.init();
+
         await urlServiceUtils.isFinished();
 
         return app;
