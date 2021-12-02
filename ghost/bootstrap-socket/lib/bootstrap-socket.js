@@ -1,4 +1,6 @@
-module.exports.connectAndSend = (socketAddress, logging, message) => {
+const logging = require('@tryghost/logging');
+
+module.exports.connectAndSend = (socketAddress, message) => {
     // Very basic guard against bad calls
     if (!socketAddress || !socketAddress.host || !socketAddress.port || !logging || !logging.info || !logging.warn || !message) {
         return Promise.resolve();
