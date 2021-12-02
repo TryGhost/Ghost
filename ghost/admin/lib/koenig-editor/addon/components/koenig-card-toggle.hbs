@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{concat (kg-style "container-card") " kg-accordion-card-container"}}
+    @class={{concat (kg-style "container-card") " kg-toggle-card-container"}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -24,11 +24,11 @@
 
         {{!-- edit mode view --}}
 
-        <div class="kg-accordion-card">
+        <div class="kg-toggle-card">
             <KoenigBasicHtmlInput
                 @html={{@payload.heading}}
                 @placeholder="Add your heading here..."
-                @class="w-100 fw4 bn bg-transparent kg-accordion-card-heading"
+                @class="w-100 fw4 bn bg-transparent kg-toggle-card-heading"
                 @name="toggle-heading"
                 @defaultTag="h4"
                 @onChange={{action "setHeadingText"}}
@@ -40,7 +40,7 @@
             <KoenigBasicHtmlTextarea
                 @html={{@payload.content}}
                 @placeholder="Add your content here..."
-                @class="w-100 bn bg-transparent kg-accordion-card-content"
+                @class="w-100 bn bg-transparent kg-toggle-card-content"
                 @onChange={{action "setContentText"}}
                 @onFocus={{action (mut this.isFocused) true}}
                 @onBlur={{action (mut this.isFocused) false}}
@@ -51,18 +51,18 @@
 
         {{!-- rendered (non-edit) mode view --}}
 
-        <div class="kg-accordion-card">
-            <div class="kg-accordion-card-header">
-                <div class="kg-accordion-card-heading">
+        <div class="kg-toggle-card">
+            <div class="kg-toggle-card-header">
+                <div class="kg-toggle-card-heading">
                     <h4>{{{this.formattedHeading}}}</h4>
                 </div>
-                <div class="kg-accordion-card-arrow-container">
-                    <div class="kg-accordion-card-arrow">
+                <div class="kg-toggle-card-arrow-container">
+                    <div class="kg-toggle-card-arrow">
                         {{svg-jar "koenig/kg-toggle-card-open-arrow"}}
                     </div>
                 </div>
             </div>
-            <div class="kg-accordion-card-content">
+            <div class="kg-toggle-card-content">
                 {{{this.formattedContent}}}
             </div>
 

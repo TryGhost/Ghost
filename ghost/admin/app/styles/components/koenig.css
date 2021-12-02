@@ -1672,10 +1672,10 @@ button.emoji-picker__category-button.active {
     letter-spacing: 0 !important;
 }
 
-/* Accordion card
+/* Toggle card
 /* --------------------------------------------------------------- */
 
-.kg-accordion-card-container {
+.kg-toggle-card-container {
     position: relative;
     min-height: 4rem;
     min-width: 100%;
@@ -1683,7 +1683,7 @@ button.emoji-picker__category-button.active {
     padding: 0;
 }
 
-.kg-accordion-card {
+.kg-toggle-card {
     display: flex;
     padding: 16px 24px;
     background: transparent;
@@ -1692,36 +1692,36 @@ button.emoji-picker__category-button.active {
     flex-direction: column;
 }
 
-.kg-accordion-card-header {
+.kg-toggle-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
 
-.kg-accordion-card-heading {
+.kg-toggle-card-heading {
     margin-right: 16px;
 }
 
-.kg-accordion-card-heading h4 {
+.kg-toggle-card-heading h4 {
     font-weight: 600 !important;
 }
 
-.kg-accordion-card-heading ::after {
+.kg-toggle-card-heading ::after {
     font-weight: 600 !important;
     font-size: 2rem !important;
     letter-spacing: .02rem;
     line-height: 1.6em;
 }
 
-.kg-accordion-card-content ::after {
+.kg-toggle-card-content ::after {
     line-height: 1.6em;
 }
 
-.kg-accordion-card-content {
+.kg-toggle-card-content {
     margin-top: 8px;
 }
 
-.kg-accordion-card-arrow-container {
+.kg-toggle-card-arrow-container {
     width: 24px;
     height: 24px;
     display: flex;
@@ -1729,7 +1729,7 @@ button.emoji-picker__category-button.active {
     align-items: center;
 }
 
-.kg-accordion-card-arrow {
+.kg-toggle-card-arrow {
     width: 14px;
     color: rgba(124, 139, 154, 0.5)
 }
@@ -1973,7 +1973,7 @@ button.emoji-picker__category-button.active {
     transition: var(--animation-speed-normal) ease-out;
     transform: scale(1.0);
   }
-  
+
   .kg-audio-button:hover svg {
     opacity: 1.0;
     fill: var(--green);
