@@ -112,7 +112,7 @@ module.exports = function setupSiteApp(options = {}) {
 
     // Card assets
     siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', constants.ONE_YEAR_S));
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'text/js', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'text/javascript', constants.ONE_YEAR_S));
 
     // Serve blog images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
