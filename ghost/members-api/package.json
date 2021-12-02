@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-api",
-  "version": "2.8.3",
+  "version": "2.8.4",
   "repository": "https://github.com/TryGhost/Members/tree/master/packages/members-api",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -35,7 +35,7 @@
     "@tryghost/member-events": "^0.3.1",
     "@tryghost/members-analytics-ingress": "^0.1.5",
     "@tryghost/members-payments": "^0.1.5",
-    "@tryghost/members-stripe-service": "^0.5.0",
+    "@tryghost/members-stripe-service": "^0.5.1",
     "@tryghost/tpl": "^0.1.2",
     "@types/jsonwebtoken": "^8.5.1",
     "bluebird": "^3.5.4",
