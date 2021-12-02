@@ -40,7 +40,8 @@ const ALPHA_FEATURES = [
     'audioCard',
     'videoCard',
     'productCard',
-    'quoteStyles'
+    'quoteStyles',
+    'beforeAfterCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
