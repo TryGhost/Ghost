@@ -9,7 +9,7 @@ const url = require('../../../../core/frontend/helpers/url');
 const urlService = require('../../../../core/server/services/url');
 const api = require('../../../../core/server/api');
 
-describe.only('{{url}} helper', function () {
+describe('{{url}} helper', function () {
     let rendered;
 
     beforeEach(function () {
