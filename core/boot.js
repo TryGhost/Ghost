@@ -371,7 +371,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
-        const rootApp = require('./app');
+        const rootApp = require('./app')();
 
         if (server) {
             const GhostServer = require('./server/ghost-server');
