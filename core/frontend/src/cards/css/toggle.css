@@ -1,8 +1,26 @@
 .kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
-    visibility: hidden;
+    height: auto;
+    opacity: 1;
+    transition: opacity 1s ease, top .35s ease;
+    top: 0;
+    position: relative;
+}
+
+.kg-toggle-content {
+    height: 0;
+    overflow: hidden;
+    transition: opacity .5s ease, top .35s ease;
     opacity: 0;
-    max-height: 0;
-    padding-top: 0px;
+    top: -0.5em;
+    position: relative;
+}
+
+.kg-toggle-content p:first-of-type {
+    margin-top: 0.5em;
+}
+
+.kg-toggle-content p {
+    font-size: 0.95em;
 }
 
 .kg-toggle-card[data-kg-toggle-state="close"] svg {
@@ -13,11 +31,10 @@
     background: transparent;
     box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
     border-radius: 4px;
-    padding: 20px;
+    padding: 1.2em;
 }
 
 .kg-toggle-heading {
-    font-weight: 600;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -30,8 +47,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-left: 16px;
+    margin-left: 1em;
     background: none;
+    border: 0;
 }
 
 .kg-toggle-heading svg {
@@ -44,12 +62,6 @@
 .kg-toggle-heading-text {
     margin-top: 0;
     margin-bottom: 0;
-}
-
-.kg-toggle-content {
-    transition: padding 0.1s ease-in;
-    padding-top: 1.5rem;
-    max-height: 100vh;
-    overflow: hidden;
-    opacity: 1;
+    line-height: 1.3em;
+    font-size: 1.1em;
 }
