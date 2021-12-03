@@ -27,7 +27,7 @@
         <div class="kg-toggle-card">
             <KoenigBasicHtmlInput
                 @html={{@payload.heading}}
-                @placeholder="Add your heading here..."
+                @placeholder="Toggle header"
                 @class="w-100 fw4 bn bg-transparent kg-toggle-card-heading"
                 @name="toggle-heading"
                 @defaultTag="h4"
@@ -38,7 +38,7 @@
             />
             <KoenigBasicHtmlTextarea
                 @html={{@payload.content}}
-                @placeholder="Add your content here..."
+                @placeholder="Collapsible content"
                 @class="w-100 bn bg-transparent kg-toggle-card-content"
                 @onChange={{action "setContentText"}}
                 @onFocus={{action (mut this.isFocused) true}}
