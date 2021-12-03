@@ -1367,7 +1367,7 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.12", "@tryghost/errors@^0.2.13", "@tryghost/errors@^0.2.14":
+"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.13", "@tryghost/errors@^0.2.14":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
   integrity sha512-Mj+bedWOwfooNA8fQdp6gIcRvWcKhJ/hOyGzu6OLFDLgEosFEeuFgXE6SsAWkf9+9NTYX30w88qGIWZqOhEAmQ==
@@ -1733,13 +1733,13 @@
   dependencies:
     bluebird "^3.7.2"
 
-"@tryghost/request@0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.9.tgz#105d09922fb3e722859b6f483b84a2098674444a"
-  integrity sha512-TWITKVZrJ1FbQIDxsOey/KpK5nubW0QD3H+Z3O0rtRTmN4al+sdz30z7+PbbTxm9+LyjjUZJidC1cQXFR59yOA==
+"@tryghost/request@0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.10.tgz#1315ae6388d414b5350f3b76fedf911df8ec8647"
+  integrity sha512-dDqvRzP1FNylIjpsMjR7fTYdDiHUgMXIfv2xGKDrD5fzCOowYxFRGO2hBOcLe15P6Ps9CgbWZA3mPra7zN687g==
   dependencies:
-    "@tryghost/errors" "^0.2.12"
-    "@tryghost/validator" "^0.1.8"
+    "@tryghost/errors" "^1.0.0"
+    "@tryghost/validator" "^0.1.9"
     "@tryghost/version" "^0.1.7"
     got "9.6.0"
     lodash "^4.17.21"
@@ -1837,23 +1837,12 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/validator@0.1.9":
+"@tryghost/validator@0.1.9", "@tryghost/validator@^0.1.9":
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.9.tgz#d86b6a961520e43859117c15547bb3d78bcf5105"
   integrity sha512-UwUHKtzZ7He1wRgh+Ya30js1f+p6gQu0ak11NwyHzoFxVAjqkRySdV7tGEwj/6t+Qx9iPTv3LuriXEsMNC0Y0g==
   dependencies:
     "@tryghost/errors" "^1.0.0"
-    "@tryghost/tpl" "^0.1.8"
-    lodash "^4.17.21"
-    moment-timezone "0.5.23"
-    validator "7.2.0"
-
-"@tryghost/validator@^0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.8.tgz#af746ac120e80b01bf62bc6f65dc693fddd3c879"
-  integrity sha512-lbDKA/6Tq1LNaAXeSPU1UpYiVV/Tpsdmj8o6942WA6d13g1m+BiroiD7TVIWG9m6uVUGyTqR8wQwbBHNQAVkhA==
-  dependencies:
-    "@tryghost/errors" "^0.2.13"
     "@tryghost/tpl" "^0.1.8"
     lodash "^4.17.21"
     moment-timezone "0.5.23"
