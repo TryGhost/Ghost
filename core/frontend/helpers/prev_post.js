@@ -18,7 +18,7 @@ const messages = {
 const createFrame = hbs.handlebars.createFrame;
 
 const buildApiOptions = function buildApiOptions(options, post) {
-    const publishedAt = DateTime.fromISO(post.published_at).format('yyyy-MM-dd HH:mm:ss');
+    const publishedAt = DateTime.fromISO(post.published_at).toFormat('yyyy-MM-dd HH:mm:ss');
     const slug = post.slug;
     const op = options.name === 'prev_post' ? '<=' : '>';
     const order = options.name === 'prev_post' ? 'desc' : 'asc';
