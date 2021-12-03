@@ -1700,10 +1700,7 @@ button.emoji-picker__category-button.active {
 
 .kg-toggle-card-heading {
     margin-right: 16px;
-}
-
-.kg-toggle-card-heading h4 {
-    font-weight: 600 !important;
+    width: 100%;
 }
 
 .kg-toggle-card-heading ::after {
