@@ -1393,7 +1393,7 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^16.5.3"
 
-"@tryghost/ignition-errors@0.1.8", "@tryghost/ignition-errors@^0.1.0", "@tryghost/ignition-errors@^0.1.2":
+"@tryghost/ignition-errors@0.1.8", "@tryghost/ignition-errors@^0.1.0":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@tryghost/ignition-errors/-/ignition-errors-0.1.8.tgz#6d4c4d4e02d32403ca1e574eaa91b3c0d138d6f6"
   integrity sha512-4KYU+kDXZyP7tmzyHiUkfDy9RWxKAtA/6xTGdxYHurE5ZlT++cDDfdUtF0v3308GGUzKlBzRc3jmLjDYpngcBQ==
@@ -1401,12 +1401,12 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/image-transform@1.0.23":
-  version "1.0.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.23.tgz#dcc2bda3ca77ae674c43a4eabc2f90945aa4abb7"
-  integrity sha512-wUzjkQcUf28zzHr56i78QjfZpFn9FqbH0GuDY10qT1+hwKS0pan2xt8MLHcE/onPOLLGPer2Zm9PsEIiuLOPDg==
+"@tryghost/image-transform@1.0.24":
+  version "1.0.24"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.24.tgz#b0df944d2b78ece0e696184b17a8551986bd8d37"
+  integrity sha512-prmOyWK1nv3AIBCk+u6pxDOB2Mq2XneRHNRduMWVHKDeXsovmNiCg/0R8ZlkVhBy67y/awDl/RUMczWR3QyPfQ==
   dependencies:
-    "@tryghost/errors" "^1.0.4"
+    "@tryghost/errors" "^1.1.0"
     bluebird "^3.7.2"
     fs-extra "^9.1.0"
   optionalDependencies:
