@@ -1151,12 +1151,12 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@tryghost/adapter-manager@0.2.23":
-  version "0.2.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.23.tgz#c7c5102fcfd64f7cd422cd3077a75a5128f41b1d"
-  integrity sha512-hjHmr/aJF7jbSO6Qj+jSOv7W+S+07WQx5gKr9FSHfHeArMt5kcFidULuaGW/D3CzFCTn1n0Rj2Y4yyei4hPogg==
+"@tryghost/adapter-manager@0.2.24":
+  version "0.2.24"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.24.tgz#003a014f9a3fb588382cf97c01d240fc285fa1fa"
+  integrity sha512-6FnNaTsp8qFZCFguX9eSrMgY2sY8ch5C+Y1dwE/Ma7NbytPb0nqXD8qzi76EjhBtk7iEPKxr67a03C0JEFYHpg==
   dependencies:
-    "@tryghost/errors" "^1.0.4"
+    "@tryghost/errors" "^1.1.0"
 
 "@tryghost/admin-api-schema@2.6.1":
   version "2.6.1"
