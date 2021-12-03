@@ -1487,10 +1487,10 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@1.0.1", "@tryghost/logging@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.1.tgz#26f8dc45f70550efed583244ee79ff7721e4dc58"
-  integrity sha512-e01V4kYlsqKuJsSw3VPWSrGBF2PaZ4NMXhh9jokVksB9EXOgX1DUElHM0nu1vKcewYvQJnMxkPoOSi3SvxeA7w==
+"@tryghost/logging@1.0.2", "@tryghost/logging@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.2.tgz#8a8828ee5a22abfeb7a7aca67900b3cd129b37d8"
+  integrity sha512-D/KFMb40dA/1dExe2nbw7m1SFY5B8ghJHPYfLYXAK+Qi4GGO0c9D+3zbWcPoyCfveNW+7Uwgexwg+nAWMH+vmg==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
     "@tryghost/elasticsearch" "^1.0.0"
@@ -1503,10 +1503,10 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
-"@tryghost/logging@1.0.2", "@tryghost/logging@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.2.tgz#8a8828ee5a22abfeb7a7aca67900b3cd129b37d8"
-  integrity sha512-D/KFMb40dA/1dExe2nbw7m1SFY5B8ghJHPYfLYXAK+Qi4GGO0c9D+3zbWcPoyCfveNW+7Uwgexwg+nAWMH+vmg==
+"@tryghost/logging@^1.0.0":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.1.tgz#26f8dc45f70550efed583244ee79ff7721e4dc58"
+  integrity sha512-e01V4kYlsqKuJsSw3VPWSrGBF2PaZ4NMXhh9jokVksB9EXOgX1DUElHM0nu1vKcewYvQJnMxkPoOSi3SvxeA7w==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
     "@tryghost/elasticsearch" "^1.0.0"
