@@ -1256,10 +1256,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-transaction-events/-/bookshelf-transaction-events-0.1.7.tgz#3833a01df655efb11894f228ddbc66b788fb6be6"
   integrity sha512-j1hbi+NPaUFhHYAVCWJoUmmIrnD5iSR3UP4nvYnYwCAHQ0Xu4Rc3+kIpdcrnSvwIEJNtVxNCaSarJTK/D/a0JQ==
 
-"@tryghost/bootstrap-socket@0.2.13":
-  version "0.2.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.13.tgz#70272e5b233caa794bee6cbd1e883adaeb4ae39b"
-  integrity sha512-xNE/SGu/4PCrj077J01dKJHkGfZWKCpi5IN9nkCu7nmVhyWNDVPKNztHocL4rAouLroBrr1zn1k3zYgFXgqFyA==
+"@tryghost/bootstrap-socket@0.2.14":
+  version "0.2.14"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.14.tgz#d03caf3f51cd2acf37f0c3ee5cd511a953993197"
+  integrity sha512-95dYoV8EfQg7g2iF750xLJv/Yli1HhcZb3Zl6Nty8rX1GhZ8vFn57Agmh180MyFhO87oXRzihYRn18LAcEH6Ng==
+  dependencies:
+    "@tryghost/logging" "^1.0.2"
 
 "@tryghost/bunyan-rotating-filestream@0.0.7", "@tryghost/bunyan-rotating-filestream@^0.0.7":
   version "0.0.7"
@@ -1393,7 +1395,7 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^16.5.3"
 
-"@tryghost/ignition-errors@0.1.8", "@tryghost/ignition-errors@^0.1.0", "@tryghost/ignition-errors@^0.1.2":
+"@tryghost/ignition-errors@0.1.8", "@tryghost/ignition-errors@^0.1.0":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@tryghost/ignition-errors/-/ignition-errors-0.1.8.tgz#6d4c4d4e02d32403ca1e574eaa91b3c0d138d6f6"
   integrity sha512-4KYU+kDXZyP7tmzyHiUkfDy9RWxKAtA/6xTGdxYHurE5ZlT++cDDfdUtF0v3308GGUzKlBzRc3jmLjDYpngcBQ==
