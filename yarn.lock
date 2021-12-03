@@ -1414,12 +1414,13 @@
   optionalDependencies:
     sharp "^0.29.0"
 
-"@tryghost/job-manager@0.8.15":
-  version "0.8.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.15.tgz#e2986aed08c69130cae772acc39ff13e7ab40a2c"
-  integrity sha512-2VwGsJLtH6ED8IlHV+qafNAjknGuVGSkNWfDEF0LRTwv/O4yMeDTFTrIBKuTXT6WT1gCRtr3XSNwS+0IlVUahg==
+"@tryghost/job-manager@0.8.16":
+  version "0.8.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.16.tgz#bd97b86fa72d564f08d7f00b5783e18685aab84c"
+  integrity sha512-4xfrkMdn2UHI/BFERAckoIsTgPepekvCDXykU/OLrkwbkqrChj+G6gL3EIGjjilSB6wzmJQ0BNinOn2o6M+NJQ==
   dependencies:
     "@breejs/later" "^4.0.2"
+    "@tryghost/logging" "^1.0.2"
     bree "^6.2.0"
     cron-validate "^1.4.3"
     fastq "^1.11.0"
