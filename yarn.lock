@@ -1343,15 +1343,7 @@
     mailgun-js "^0.22.0"
     moment "^2.29.1"
 
-"@tryghost/email-analytics-service@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.4.tgz#abf14521784e8026d37feb902fbc5e572968d9fe"
-  integrity sha512-37gSHxmbXKrbdtJNPBRbNsfDWWOvuJYqt8w4XPQwF13myol5WRGZ7dWuMH23KSeLiqVRKlwj1rVFLzQqPYrzCQ==
-  dependencies:
-    ghost-ignition "^4.2.4"
-    lodash "^4.17.20"
-
-"@tryghost/email-analytics-service@^1.0.5":
+"@tryghost/email-analytics-service@1.0.5", "@tryghost/email-analytics-service@^1.0.5":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.5.tgz#0be4ca8848b048d4ebefbbaeceaa03916b816a07"
   integrity sha512-7iBxTGneQjarFlsP+p34h4JjKhFB1EVQVivKK99hMXTioL6pjpeYbgoZ2ndKIPPZoF6mK6Jg4hS1YnIPnCvLUQ==
@@ -5305,7 +5297,7 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@4.6.3, ghost-ignition@^4.2.4, ghost-ignition@^4.6.2:
+ghost-ignition@4.6.3, ghost-ignition@^4.6.2:
   version "4.6.3"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.3.tgz#eea33bbd84e4e26096f9b7c8838f972acdab7533"
   integrity sha512-F9Kms91NG7miRH8FdmvHvWGt9crVHaKYap3gFrGekCi0TTpssN6duGi0NERSqAcf+7gC7QXT3BP/yCWwBr3fqw==
