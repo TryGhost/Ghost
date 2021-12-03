@@ -31,6 +31,7 @@
     justify-content: center;
     align-items: center;
     margin-left: 16px;
+    background: none;
 }
 
 .kg-toggle-heading svg {
