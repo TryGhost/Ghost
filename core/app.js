@@ -27,10 +27,14 @@ const maintenanceMiddleware = (req, res, next) => {
     fs.createReadStream(path.resolve(__dirname, './server/views/maintenance.html')).pipe(res);
 };
 
-const rootApp = express('root');
-rootApp.use(sentry.requestHandler);
+const rootApp = () => {
+    const app = express('root');
+    app.use(sentry.requestHandler);
 
-rootApp.enable('maintenance');
-rootApp.use(maintenanceMiddleware);
+    app.enable('maintenance');
+    app.use(maintenanceMiddleware);
+
+    return app;
+};
 
 module.exports = rootApp;
