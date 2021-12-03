@@ -46,7 +46,7 @@ class NFTOEmbedProvider {
         return {
             version: '1.0',
             type: 'nft',
-            title: result.body.name,
+            title: result.body.name ? result.body.name : `#${result.body.token_id}`,
             author_name: result.body.creator.user.username,
             author_url: `https://opensea.io/${result.body.creator.user.username}`,
             provider_name: 'OpenSea',
