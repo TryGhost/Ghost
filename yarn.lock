@@ -1661,13 +1661,13 @@
   optionalDependencies:
     promise.allsettled "^1.0.5"
 
-"@tryghost/minifier@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.6.tgz#cd605e7deb7499f9b6babc2aabc759febd584391"
-  integrity sha512-ceiYp0qAl3rp+NC24XyqF9SSRHxkNmuyJWOZ6mPQm+sg2TgVAf+rF+aJdquf8fJh4INiSSviLOB9iZf05W3UKg==
+"@tryghost/minifier@0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.7.tgz#1e2bfbd51c23bbafa9ea3c8a3406bcf7935820e0"
+  integrity sha512-WHAndFqytZ/bRcufk0Ek65st2cX6QrGiY/sAsrZlDfWMPeVTqUnTWoYVH/jv3/kfUSeKEGVCxhsbXRX6BuewCA==
   dependencies:
     "@tryghost/debug" "^0.1.8"
-    "@tryghost/errors" "^1.0.4"
+    "@tryghost/errors" "^1.1.0"
     "@tryghost/tpl" "^0.1.7"
     csso "4.2.0"
     terser "^5.9.0"
