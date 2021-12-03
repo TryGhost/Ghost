@@ -42,6 +42,10 @@
     color: #fff;
 }
 
+.kg-callout-card-accent a {
+    color: #fff;
+}
+
 .kg-callout-emoji {
     padding-right: .8em;
     line-height: 1.3em;
