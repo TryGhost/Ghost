@@ -29,7 +29,7 @@ module.exports = (name) => {
 };
 
 // Wrap the main express router call
-// This is mostly an experiement, and can likely be removed soon
+// This is mostly an experiment, and can likely be removed soon
 module.exports.Router = (name, options) => {
     debug('new Router start', name);
     const router = express.Router(options);
