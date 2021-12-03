@@ -93,7 +93,7 @@
     "@tryghost/request": "0.1.9",
     "@tryghost/root-utils": "0.3.7",
     "@tryghost/security": "0.2.13",
-    "@tryghost/session-service": "0.1.33",
+    "@tryghost/session-service": "0.1.34",
     "@tryghost/settings-path-manager": "0.1.2",
     "@tryghost/social-urls": "0.1.27",
     "@tryghost/string": "0.1.21",
