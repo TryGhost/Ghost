@@ -90,7 +90,7 @@
     "@tryghost/nodemailer": "0.3.8",
     "@tryghost/package-json": "1.0.11",
     "@tryghost/promise": "0.1.13",
-    "@tryghost/request": "0.1.9",
+    "@tryghost/request": "0.1.10",
     "@tryghost/root-utils": "0.3.7",
     "@tryghost/security": "0.2.13",
     "@tryghost/session-service": "0.1.33",
