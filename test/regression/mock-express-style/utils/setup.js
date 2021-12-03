@@ -44,11 +44,11 @@ module.exports = {
      * With something based on the real boot
      * @returns {object} express App
      */
-    initGhost: async () => {
-        const app = await boot({
+    initGhost: async (options = {}) => {
+        const app = await boot(Object.assign({
             server: false,
             backend: false
-        });
+        }, options));
 
         await urlServiceUtils.isFinished();
 
