@@ -1462,10 +1462,10 @@
     markdown-it-mark "^3.0.0"
     semver "^7.3.4"
 
-"@tryghost/kg-mobiledoc-html-renderer@5.3.0":
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-5.3.0.tgz#d3fe1cca78b830cd71e4d4b0ec5fdbf9c0d741af"
-  integrity sha512-ESbc12+C1um4cnaB1vGm3wGjt8cZkGnSPo14A+mF7KBH0u6iA69Epnp3VX0k3VagpEaDoRhHyOfrafvLj3ib2A==
+"@tryghost/kg-mobiledoc-html-renderer@5.3.1":
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-5.3.1.tgz#ee8dc66a48a4056f76cd64567fc3a1f36715aaa4"
+  integrity sha512-GzJ9EwHBEyFpGwJPx03Hi/RNz0mdS+DK+LsvqxLg55VQGG6o05srikE0/uB3+ESg0rdH2GC+jYr36JirAdrKZw==
   dependencies:
     mobiledoc-dom-renderer "^0.7.0"
     semver "^7.3.4"
