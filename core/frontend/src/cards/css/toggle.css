@@ -1,3 +1,7 @@
+.kg-toggle-card+.kg-toggle-card {
+    margin-top: 1em;
+}
+
 .kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
     height: auto;
     opacity: 1;
