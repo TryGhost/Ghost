@@ -1,6 +1,6 @@
 .kg-callout-card {
     display: flex;
-    padding: 20px 28px;
+    padding: 1.2em 1.6em;
     border-radius: 3px;
 }
 
@@ -42,8 +42,17 @@
     color: #fff;
 }
 
+.kg-callout-card-accent a {
+    color: #fff;
+}
+
 .kg-callout-emoji {
-    padding-right: 16px;
-    line-height: 1.6;
-    font-size: 2rem;
+    padding-right: .8em;
+    line-height: 1.3em;
+    font-size: 1.2em;
+}
+
+.kg-callout-text {
+    font-size: .95em;
+    line-height: 1.5em;
 }

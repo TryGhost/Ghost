@@ -98,9 +98,9 @@ function createApiInstance(config) {
                         `;
                 case 'signup-paid':
                     return `
-                        Thank you for subscribing to ${siteTitle}!
+                        Hey there!
 
-                        Tap the link below to be automatically signed in:
+                        Thank you for subscribing to ${siteTitle}. Tap the link below to be automatically signed in:
 
                         ${url}
 
