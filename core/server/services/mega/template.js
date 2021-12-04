@@ -567,6 +567,16 @@ figure blockquote p {
     padding-bottom: 4px;
 }
 
+.kg-twitter-link {
+    display: block; 
+    text-decoration: none !important; 
+    color: #15212A !important; 
+    font-family: inherit !important;
+    font-size: 15px;
+    padding: 8px;
+    line-height: 1.3em;
+}
+
 .kg-callout-card {
     display: flex;
     margin: 0 0 1.5em 0;
