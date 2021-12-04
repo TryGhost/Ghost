@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const xml = require('xml');
-const moment = require('moment');
 const path = require('path');
 const urlUtils = require('../../../shared/url-utils');
 const localUtils = require('./utils');
@@ -83,9 +82,9 @@ class BaseSiteMapGenerator {
         if (datum.updated_at || datum.published_at || datum.created_at) {
             const modifiedDate = datum.updated_at || datum.published_at || datum.created_at;
 
-            return moment(modifiedDate);
+            return modifiedDate;
         } else {
-            return moment();
+            return Date.now();
         }
     }
 
@@ -104,7 +103,7 @@ class BaseSiteMapGenerator {
         node = {
             url: [
                 {loc: url},
-                {lastmod: moment(this.getLastModifiedForDatum(datum)).toISOString()}
+                {lastmod: this.getLastModifiedForDatum(datum)}
             ]
         };
 
