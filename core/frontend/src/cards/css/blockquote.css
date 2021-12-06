@@ -1,11 +1,9 @@
 blockquote.kg-blockquote-alt {
   background: none;
-  font-size: 2.4rem;
-  line-height: 1.7;
+  font-size: 1.6em;
+  line-height: 1.7em;
   text-align: center;
-  color: var(--color-midgrey);
-  padding: 1rem 8rem 1.5rem;
-  border: 0 none;
+  padding: 0.5em 2.5em 0.75em;
 }
 
 blockquote.kg-blockquote-alt::before {
@@ -14,16 +12,16 @@ blockquote.kg-blockquote-alt::before {
 
 @media (max-width: 800px) {
   blockquote.kg-blockquote-alt {
-    font-size: 2.2rem;
-    padding-left: 6rem;
-    padding-right: 6rem;
+    font-size: 1.4em;
+    padding-left: 2em;
+    padding-right: 2em;
   }
 }
 
 @media (max-width: 600px) {
   blockquote.kg-blockquote-alt {
-    font-size: 2rem;
-    padding-left: 3rem;
-    padding-right: 3rem;
+    font-size: 1.2em;
+    padding-left: 1.75em;
+    padding-right: 1.75em;
   } 
 }
