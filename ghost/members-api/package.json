@@ -29,7 +29,7 @@
     "@tryghost/debug": "^0.1.2",
     "@tryghost/domain-events": "^0.1.3",
     "@tryghost/errors": "^1.1.0",
-    "@tryghost/logging": "^1.0.2",
+    "@tryghost/logging": "^2.0.0",
     "@tryghost/magic-link": "^1.0.14",
     "@tryghost/member-analytics-service": "^0.1.4",
     "@tryghost/member-events": "^0.3.1",
