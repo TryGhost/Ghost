@@ -34,7 +34,7 @@
                 <div class="relative{{unless (or this.previewSrc @payload.productImageSrc) " bg-whitegrey-l2"}}">
                     {{#if (or this.previewSrc @payload.productImageSrc)}}
                         <img src={{or this.previewSrc @payload.productImageSrc}} class="{{kg-style this.kgImgStyle sidebar=this.ui.hasSideNav}} kg-product-card-image">
-                        <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; right: 20px; font-size: 1.2rem;" {{action "resetSrcs"}}><span>{{svg-jar "koenig/kg-trash"}}</span></button>
+                        <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; right: 20px; font-size: 1.2rem;" {{action "resetSrcs"}}><span>{{svg-jar "koenig/kg-edit"}}</span></button>
                         {{#if this.isDraggedOver}}
                             <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
                                 <span class="db center sans-serif fw7 f7 white">
@@ -91,12 +91,22 @@
                     @onChange={{action "setProductDescription"}}
                     @didCreateEditor={{action "registerEditor"}}
                 />
-                <div class="kg-product-card-rating-edit" style="height: auto;">
-                    <input type="radio" id="star5" name="rating" value="5" onchange={{action "changeStars"}} checked={{eq @payload.productStarRating "5"}}/><label for="star5" title="5 stars">5 stars</label>
-                    <input type="radio" id="star4" name="rating" value="4" onchange={{action "changeStars"}} checked={{eq @payload.productStarRating "4"}}/><label for="star4" title="4 stars">4 stars</label>
-                    <input type="radio" id="star3" name="rating" value="3" onchange={{action "changeStars"}} checked={{eq @payload.productStarRating "3"}}/><label for="star3" title="3 stars">3 stars</label>
-                    <input type="radio" id="star2" name="rating" value="2" onchange={{action "changeStars"}} checked={{eq @payload.productStarRating "2"}}/><label for="star2" title="2 stars">2 stars</label>
-                    <input type="radio" id="star1" name="rating" value="1" onchange={{action "changeStars"}} checked={{eq @payload.productStarRating "1"}}/><label for="star1" title="1 star">1 star</label>
+                <div class="kg-product-card-rating-edit gh-btn-group icons" style="line-height: auto;">
+                    <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="1" onclick={{action "changeStars"}}>
+                        <span>{{svg-jar "koenig/kg-edit"}}</span>
+                    </button>
+                    <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="2" onclick={{action "changeStars"}}>
+                        <span>{{svg-jar "koenig/kg-edit"}}</span>
+                    </button>
+                    <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="3" onclick={{action "changeStars"}}>
+                        <span>{{svg-jar "koenig/kg-edit"}}</span>
+                    </button>
+                    <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="4" onclick={{action "changeStars"}}>
+                        <span>{{svg-jar "koenig/kg-edit"}}</span>
+                    </button>
+                    <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="5" onclick={{action "changeStars"}}>
+                        <span>{{svg-jar "koenig/kg-edit"}}</span>
+                    </button>
                 </div>
                 {{#if (and @payload.productButton @payload.productUrl)}}
                     <a href={{@payload.productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer"><span>{{@payload.productButton}}</span></a>
@@ -147,6 +157,15 @@
             <div class="kg-product-card-text">
                 <h4 class="kg-product-card-title">{{{@payload.productTitle}}}</h4>
                 <p class="kg-product-card-description">{{{@payload.productDescription}}}</p>
+                {{#if @payload.productStarRating}}
+                    <div class="kg-product-card-rating-edit">
+                        <span class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                    </div>
+                {{/if}}
                 {{#if (and @payload.productButton @payload.productUrl)}}
                     <a href={{@payload.productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer"><span>{{@payload.productButton}}</span></a>
                 {{/if}}
