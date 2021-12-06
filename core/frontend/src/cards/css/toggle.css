@@ -63,6 +63,15 @@
     transform: rotate(-180deg);
 }
 
+.kg-toggle-heading path {
+    fill: none;
+    stroke: currentcolor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+    fill-rule: evenodd;
+}
+
 .kg-toggle-heading-text {
     margin-top: 0;
     margin-bottom: 0;
