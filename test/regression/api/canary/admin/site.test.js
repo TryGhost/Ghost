@@ -7,7 +7,7 @@ describe('Config API', function () {
     let request;
 
     before(async function () {
-        request = await localUtils.getAuthenticatedRequestAgent();
+        request = await localUtils.getAuthenticatedAgent();
     });
 
     it('can retrieve config and all expected properties', async function () {
