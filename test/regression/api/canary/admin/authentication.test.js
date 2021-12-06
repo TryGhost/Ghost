@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const supertest = require('supertest');
 const localUtils = require('./utils');
 const testUtils = require('../../../../utils/index');
 const models = require('../../../../../core/server/models/index');
@@ -132,7 +131,10 @@ describe('Authentication API canary', function () {
 
     describe('Invitation', function () {
         before(async function () {
-            request = await localUtils.getAuthenticatedAgent(undefined, 'invites');
+            request = await localUtils.getAgent();
+            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
+            await localUtils.initFixtures('invites');
+            await localUtils.login(request);
         });
 
         it('check invite with invalid email', function () {
@@ -221,7 +223,10 @@ describe('Authentication API canary', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(async function () {
-            request = await localUtils.getAuthenticatedAgent({forceStart: true});
+            request = await localUtils.getAgent({forceStart: true});
+            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
+            await localUtils.initFixtures();
+            await localUtils.login(request);
         });
 
         beforeEach(function () {
@@ -381,7 +386,10 @@ describe('Authentication API canary', function () {
     describe('Reset all passwords', function () {
         let sendEmail;
         before(async function () {
-            request = await localUtils.getAuthenticatedAgent({forceStart: true});
+            request = await localUtils.getAgent({forceStart: true});
+            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
+            await localUtils.initFixtures();
+            await localUtils.login(request);
         });
 
         beforeEach(function () {
