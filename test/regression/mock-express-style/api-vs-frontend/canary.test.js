@@ -21,11 +21,9 @@ describe('Integration - Web - Site canary', function () {
 
     describe('default routes.yaml', function () {
         before(async function () {
-            localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {amp: true});
             localUtils.overrideGhostConfig(configUtils);
 
-            await routeSettingsService.init();
             app = await localUtils.initGhost();
         });
 
