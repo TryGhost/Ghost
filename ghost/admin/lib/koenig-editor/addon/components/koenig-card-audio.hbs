@@ -69,7 +69,12 @@
                     {{/if}}
 
                     <div style="display:none">
-                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.audioMimeTypes}} @onInsert={{this.registerAudioFileInput}} />
+                        <GhFileInput
+                            @multiple={{false}}
+                            @action={{uploader.setFiles}}
+                            @accept={{this.audioMimeTypes}}
+                            @onInsert={{uploader.registerFileInput}}
+                        />
                     </div>
                 </GhUploader>
 
@@ -142,7 +147,12 @@
                         {{/if}}
                     </div>
                     <div style="display:none">
-                        <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} @onInsert={{this.registerAudioThumbnailFileInput}} />
+                        <GhFileInput
+                            @multiple={{false}}
+                            @action={{uploader.setFiles}}
+                            @accept={{this.imageMimeTypes}}
+                            @onInsert={{uploader.registerFileInput}}
+                        />
                     </div>
                 </GhUploader>
 
