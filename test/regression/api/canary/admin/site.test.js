@@ -1,5 +1,4 @@
 const should = require('should');
-const supertest = require('supertest');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/shared/config');
@@ -8,9 +7,7 @@ describe('Config API', function () {
     let request;
 
     before(async function () {
-        const app = await localUtils.startGhost();
-        request = supertest.agent(app);
-        await localUtils.doAuth(request);
+        request = await localUtils.getAuthenticatedRequestAgent();
     });
 
     it('can retrieve config and all expected properties', async function () {
