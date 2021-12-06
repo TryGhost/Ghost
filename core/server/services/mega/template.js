@@ -148,7 +148,7 @@ dd {
 }
 
 blockquote {
-    margin: 2em 0;
+    margin: 2em 0 2em 0;
     padding: 0 25px 0 25px;
     border-left: ${templateSettings.accentColor || '#15212A'} 2px solid;
     font-size: 17px;
@@ -159,11 +159,10 @@ blockquote {
 
 blockquote.kg-blockquote-alt {
     border-left: 0 none;
-    padding-left: 50px;
-    padding-right: 50px;
-    margin-bottom: 2.5em;
+    padding: 0 50px 0 50px;
     text-align: center;
     font-size: 1.2em;
+    font-style: italic;
     color: #999999;
 }
 
@@ -908,15 +907,17 @@ figure blockquote p {
     }
 
     table.body blockquote {
-        font-size: 17px !important;
-        line-height: 1.6em !important;
-        margin-bottom: 0 !important;
-        padding-left: 15px !important;
+        font-size: 17px;
+        line-height: 1.6em;
+        margin-bottom: 0;
+        padding-left: 15px;
     }
 
     table.body blockquote.kg-blockquote-alt {
-        padding-left: 50px !important;
-        margin-bottom: 2.5em !important;
+        border-left: 0 none !important;
+        margin: 0 0 2.5em 0;
+        padding: 0 50px 0 50px;
+        font-size: 1.2em;
     }
 
     table.body blockquote + * {
