@@ -6,7 +6,6 @@ const Invites = require('./invites');
 
 module.exports = new Invites({
     settingsCache,
-    logging,
     mailService,
     urlUtils
 });

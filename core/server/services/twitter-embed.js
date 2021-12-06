@@ -1,4 +1,5 @@
 const {extract} = require('oembed-parser');
+const logging = require('@tryghost/logging');
 
 /**
  * @typedef {import('./oembed').ICustomProvider} ICustomProvider
@@ -67,7 +68,7 @@ class TwitterOEmbedProvider {
 
                 oembedData.tweet_data = body.data;
             } catch (err) {
-                this.dependencies.logging.error(err);
+                logging.error(err);
             }
         }
 
