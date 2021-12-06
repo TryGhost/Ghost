@@ -21,7 +21,6 @@ describe('Integration - Web - Site v2', function () {
 
     describe('default routes.yaml', function () {
         before(async function () {
-            localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {amp: true});
             localUtils.overrideGhostConfig(configUtils);
 
