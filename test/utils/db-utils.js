@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('test:dbUtils');
 
 // Utility Packages
+const fs = require('fs-extra');
 const Promise = require('bluebird');
 const KnexMigrator = require('knex-migrator');
 const knexMigrator = new KnexMigrator();
@@ -13,6 +14,34 @@ const schemaTables = Object.keys(schema);
 
 // Other Test Utilities
 const urlServiceUtils = require('./url-service-utils');
+
+const dbHash = Date.now();
+
+module.exports.reset = async () => {
+    // Only run this copy in CI until it gets fleshed out
+    if (process.env.CI && config.get('database:client') === 'sqlite3') {
+        const filename = config.get('database:connection:filename');
+        const filenameOrig = `${filename}.${dbHash}-orig`;
+
+        const dbExists = await fs.pathExists(filenameOrig);
+
+        if (dbExists) {
+            await fs.copyFile(filenameOrig, filename);
+        } else {
+            await knexMigrator.reset({force: true});
+
+            // Do a full database initialisation
+            await knexMigrator.init();
+
+            await fs.copyFile(filename, filenameOrig);
+        }
+    } else {
+        await knexMigrator.reset({force: true});
+
+        // Do a full database initialisation
+        await knexMigrator.init();
+    }
+};
 
 module.exports.initData = async () => {
     await knexMigrator.init();
