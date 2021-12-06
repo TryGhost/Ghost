@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const adminUtils = require('../../utils/admin-utils');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
@@ -10,10 +9,7 @@ const themeEngine = require('../../../core/frontend/services/theme-engine');
 describe('Integration - Web - vhosts', function () {
     let app;
 
-    before(localUtils.urlService.resetGenerators);
     before(testUtils.teardownDb);
-    before(testUtils.setup('users:roles', 'posts'));
-    before(adminUtils.stubClientFiles);
 
     after(function () {
         configUtils.restore();
@@ -23,7 +19,6 @@ describe('Integration - Web - vhosts', function () {
 
     describe('no separate admin', function () {
         before(async function () {
-            localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {amp: true});
             localUtils.overrideGhostConfig(configUtils);
 
@@ -132,7 +127,6 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host', function () {
         before(async function () {
-            localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {amp: true});
             localUtils.overrideGhostConfig(configUtils);
 
@@ -286,7 +280,6 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host w/ admin redirects disabled', function () {
         before(async function () {
-            localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {amp: true});
             localUtils.overrideGhostConfig(configUtils);
 
