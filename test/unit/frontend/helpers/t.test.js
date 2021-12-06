@@ -15,7 +15,7 @@ describe('{{t}} helper', function () {
     });
 
     it('theme translation is DE', function () {
-        themeI18n.init({activeTheme: 'casper', locale: 'de'});
+        themeI18n.init({activeTheme: 'locale-theme', locale: 'de'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -25,7 +25,7 @@ describe('{{t}} helper', function () {
     });
 
     it('theme translation is EN', function () {
-        themeI18n.init({activeTheme: 'casper', locale: 'en'});
+        themeI18n.init({activeTheme: 'locale-theme', locale: 'en'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -35,7 +35,7 @@ describe('{{t}} helper', function () {
     });
 
     it('[fallback] no theme translation file found for FR', function () {
-        themeI18n.init({activeTheme: 'casper', locale: 'fr'});
+        themeI18n.init({activeTheme: 'locale-theme', locale: 'fr'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -45,7 +45,7 @@ describe('{{t}} helper', function () {
     });
 
     it('[fallback] no theme files at all, use key as translation', function () {
-        themeI18n.init({activeTheme: 'casper-1.4', locale: 'de'});
+        themeI18n.init({activeTheme: 'locale-theme-1.4', locale: 'de'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
