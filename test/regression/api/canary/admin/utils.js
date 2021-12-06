@@ -1,5 +1,6 @@
 const url = require('url');
 const _ = require('lodash');
+const supertest = require('supertest');
 const testUtils = require('../../../../utils');
 
 const API_URL = '/ghost/api/canary/admin/';
@@ -212,6 +213,19 @@ module.exports = {
         };
 
         return await testUtils.startGhost(Object.assign(defaults, overrides));
+    },
+
+    async getAgent(options) {
+        const app = await this.startGhost(options);
+
+        return supertest.agent(app);
+    },
+
+    async getAuthenticatedAgent(bootOptions, fixtureOptions) {
+        const request = await this.getAgent(bootOptions);
+        await this.doAuth(request, fixtureOptions);
+
+        return request;
     },
 
     getValidAdminToken(endpoint, key) {
