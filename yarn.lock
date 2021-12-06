@@ -1333,13 +1333,13 @@
     "@elastic/elasticsearch" "^7.15.0"
     "@tryghost/debug" "^0.1.9"
 
-"@tryghost/email-analytics-provider-mailgun@1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.6.tgz#7897699cb9054c8c35844bd38c5994103cbf1569"
-  integrity sha512-41owQfyrDke937FUk68osbi4n+6TZI4EfcH8+Kf6MkGfLy8xt42idk7QCQE+l++YKcENOkknSce+biAkGtmnkw==
+"@tryghost/email-analytics-provider-mailgun@1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.7.tgz#e8b0da0f9f137ad90b7eb8ee031be88a66811e06"
+  integrity sha512-OD4spZ0FmRPcIL5+DXE5N+HV26eyIC39yZwXKoQTZFPfU7LvTbbF/hJOFXC/CK4+DT8gd5flXZ32v0o6FUIinA==
   dependencies:
     "@tryghost/email-analytics-service" "^1.0.5"
-    "@tryghost/logging" "^1.0.2"
+    "@tryghost/logging" "^2.0.0"
     mailgun-js "^0.22.0"
     moment "^2.29.1"
 
@@ -1493,6 +1493,22 @@
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.2.tgz#8a8828ee5a22abfeb7a7aca67900b3cd129b37d8"
   integrity sha512-D/KFMb40dA/1dExe2nbw7m1SFY5B8ghJHPYfLYXAK+Qi4GGO0c9D+3zbWcPoyCfveNW+7Uwgexwg+nAWMH+vmg==
+  dependencies:
+    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
+    "@tryghost/elasticsearch" "^1.0.0"
+    "@tryghost/pretty-stream" "^0.1.2"
+    "@tryghost/root-utils" "^0.3.7"
+    bunyan "^1.8.15"
+    bunyan-loggly "^1.4.2"
+    fs-extra "^10.0.0"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.21"
+
+"@tryghost/logging@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.0.tgz#587c579d703ef15fe468b8bb8efdd9cdfefb90ef"
+  integrity sha512-eWKtiHWDtVVf+xn+ecKb8mUepFDK1RXOhl1tFMF1b7eFASn5WIDLFSMH9Xl9gyCi6dnsXp5fAm2G3baZ77bPZg==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
     "@tryghost/elasticsearch" "^1.0.0"
