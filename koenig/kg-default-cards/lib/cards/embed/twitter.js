@@ -6,8 +6,6 @@ module.exports = {
         figure.setAttribute('class', 'kg-card kg-embed-card');
 
         let html = payload.html;
-        // @TODO:
-        // - \n in text should be replaced with <br>'s
 
         const tweetData = payload && payload.metadata && payload.metadata.tweet_data;
 
@@ -65,7 +63,7 @@ module.exports = {
 
                 tweetContent = parts.reduce((content, part) => {
                     if (part.type === 'text') {
-                        return content + part.data;
+                        return content + part.data.replace('\n', '<br>');
                     }
                     if (part.type === 'mention') {
                         return content + `<span style="color: #1DA1F2;">${part.data}</span>`;
