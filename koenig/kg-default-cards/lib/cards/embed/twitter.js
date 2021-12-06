@@ -25,7 +25,8 @@ module.exports = {
 
             const mentions = tweetData.entities && tweetData.entities.mentions || [];
             const urls = tweetData.entities && tweetData.entities.urls || [];
-            const entities = mentions.concat(urls).sort((a, b) => a.start - b.start);
+            const hashtags = tweetData.entities && tweetData.entities.hashtags || [];
+            const entities = mentions.concat(urls).concat(hashtags).sort((a, b) => a.start - b.start);
             let tweetContent = tweetData.text;
 
             let tweetImageUrl = null;
@@ -51,6 +52,9 @@ module.exports = {
                     if (entity.username) {
                         type = 'mention';
                     }
+                    if (entity.tag) {
+                        type = 'hashtag';
+                    }
                     parts.push({
                         type: 'text',
                         data: content.slice(last, entity.start).join('').replace(/\n/g, '<br>')
@@ -71,6 +75,9 @@ module.exports = {
                         return content + part.data;
                     }
                     if (part.type === 'mention') {
+                        return content + `<span style="color: #1DA1F2;">${part.data}</span>`;
+                    }
+                    if (part.type === 'hashtag') {
                         return content + `<span style="color: #1DA1F2;">${part.data}</span>`;
                     }
                     if (part.type === 'url') {
