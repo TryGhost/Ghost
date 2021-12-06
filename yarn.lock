@@ -1351,10 +1351,10 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.0.4.tgz#9692cfd4c27a269ddbce77d93d02cfa8c52cc7ad"
-  integrity sha512-ImfwkOc54Ur9zjYgPaG3Y9wFeH00eJnqClYBZSB5/K0T6nqTXnIOyFIq33vZkmXuxQLX1xRb82OeWYxHxgFWDA==
+"@tryghost/errors@1.1.1", "@tryghost/errors@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.1.1.tgz#dc38e40591b018b0ac6b5742f7bab5d379c67e60"
+  integrity sha512-na0qB5sdy1BWgquzn+m530ohJ3fTeF451xUTR7I8b76TBEL9snnIkXCv5Qdjmnevmgod7aAGsHi2syyKFlvEvQ==
   dependencies:
     lodash "^4.17.21"
     uuid "^8.3.2"
@@ -1489,7 +1489,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@1.0.2", "@tryghost/logging@^1.0.2":
+"@tryghost/logging@1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-1.0.2.tgz#8a8828ee5a22abfeb7a7aca67900b3cd129b37d8"
   integrity sha512-D/KFMb40dA/1dExe2nbw7m1SFY5B8ghJHPYfLYXAK+Qi4GGO0c9D+3zbWcPoyCfveNW+7Uwgexwg+nAWMH+vmg==
@@ -1570,15 +1570,15 @@
     "@tryghost/domain-events" "^0.1.3"
     "@tryghost/member-events" "^0.3.1"
 
-"@tryghost/members-api@2.8.4":
-  version "2.8.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.8.4.tgz#e61303eb47d3d4bfdf18cb754f1fea472562c08e"
-  integrity sha512-dngeDd29z4DjK/RLQHVOCKbsuP8Io39l9dLXWSiP9cdVTqjE5ax53GccDZOPLhD2H/fU3GAes37Sxzd7jPOtnw==
+"@tryghost/members-api@2.8.6":
+  version "2.8.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.8.6.tgz#c960df76b1a5e2cb52b15822971c92e02f4feb77"
+  integrity sha512-g1vbdZGmk/yXtvgjXH8pmUf+P8IDxhMgsPaXHUJJ8qyS2Lzrp51mbANbyIyp5TsoNpUwk3V/pfj1lzgtkswF0A==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/domain-events" "^0.1.3"
-    "@tryghost/errors" "^1.1.0"
-    "@tryghost/logging" "^1.0.2"
+    "@tryghost/errors" "^1.1.1"
+    "@tryghost/logging" "^2.0.0"
     "@tryghost/magic-link" "^1.0.14"
     "@tryghost/member-analytics-service" "^0.1.4"
     "@tryghost/member-events" "^0.3.1"
