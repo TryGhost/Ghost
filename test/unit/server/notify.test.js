@@ -68,9 +68,8 @@ describe('Notify', function () {
 
             socketStub.calledOnce.should.be.true();
             socketStub.firstCall.args[0].should.eql('testing');
-            socketStub.firstCall.args[1].should.be.an.Object().with.properties('info', 'warn');
 
-            let message = socketStub.firstCall.args[2];
+            let message = socketStub.firstCall.args[1];
             message.should.be.an.Object().with.properties('started', 'debug');
             message.should.not.have.property('error');
             message.started.should.be.true();
@@ -83,9 +82,8 @@ describe('Notify', function () {
 
             socketStub.calledOnce.should.be.true();
             socketStub.firstCall.args[0].should.eql('testing');
-            socketStub.firstCall.args[1].should.be.an.Object().with.properties('info', 'warn');
 
-            let message = socketStub.firstCall.args[2];
+            let message = socketStub.firstCall.args[1];
             message.should.be.an.Object().with.properties('started', 'debug', 'error');
             message.started.should.be.false();
             message.error.should.be.an.Object().with.properties('message');

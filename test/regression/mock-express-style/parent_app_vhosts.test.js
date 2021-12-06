@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const adminUtils = require('../../utils/admin-utils');
 const configUtils = require('../../utils/configUtils');
 const urlUtils = require('../../utils/urlUtils');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
@@ -10,10 +9,7 @@ const themeEngine = require('../../../core/frontend/services/theme-engine');
 describe('Integration - Web - vhosts', function () {
     let app;
 
-    before(localUtils.urlService.resetGenerators);
     before(testUtils.teardownDb);
-    before(testUtils.setup('users:roles', 'posts'));
-    before(adminUtils.stubClientFiles);
 
     after(function () {
         configUtils.restore();
@@ -23,14 +19,13 @@ describe('Integration - Web - vhosts', function () {
 
     describe('no separate admin', function () {
         before(async function () {
-            localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {amp: true});
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', null);
 
-            app = await localUtils.initGhost();
+            app = await localUtils.initGhost({backend: true});
         });
 
         before(function () {
@@ -132,17 +127,16 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host', function () {
         before(async function () {
-            localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {amp: true});
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://admin.example.com');
 
+            app = await localUtils.initGhost({backend: true});
+
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-
-            app = await localUtils.initGhost();
         });
 
         before(function () {
@@ -286,7 +280,6 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host w/ admin redirects disabled', function () {
         before(async function () {
-            localUtils.urlService.resetGenerators();
             localUtils.defaultMocks(sinon, {amp: true});
             localUtils.overrideGhostConfig(configUtils);
 
@@ -297,7 +290,7 @@ describe('Integration - Web - vhosts', function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-            app = await localUtils.initGhost();
+            app = await localUtils.initGhost({backend: true});
         });
 
         before(function () {
@@ -337,7 +330,7 @@ describe('Integration - Web - vhosts', function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('v2');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
-            app = await localUtils.initGhost();
+            app = await localUtils.initGhost({backend: true});
         });
 
         before(function () {

@@ -50,16 +50,14 @@ function notifyServerReady(error) {
 /**
   * Get the Database into a ready state
   * - DatabaseStateManager handles doing all this for us
-  * - Passing logging makes it output state messages
   *
   * @param {object} options
   * @param {object} options.config
-  * @param {object} options.logging
   */
-async function initDatabase({config, logging}) {
+async function initDatabase({config}) {
     const DatabaseStateManager = require('./server/data/db/state-manager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
-    await dbStateManager.makeReady({logging});
+    await dbStateManager.makeReady();
 }
 
 /**
@@ -106,16 +104,19 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     });
     debug('End: Url Service');
 
-    // Job Service allows parts of Ghost to run in the background
-    debug('Begin: Job Service');
-    const jobService = require('./server/services/jobs');
-    ghostServer.registerCleanupTask(async () => {
-        await jobService.shutdown();
-    });
-    ghostServer.registerCleanupTask(async () => {
-        await urlService.shutdown();
-    });
-    debug('End: Job Service');
+    if (ghostServer) {
+        // Job Service allows parts of Ghost to run in the background
+        debug('Begin: Job Service');
+        const jobService = require('./server/services/jobs');
+        ghostServer.registerCleanupTask(async () => {
+            await jobService.shutdown();
+        });
+        debug('End: Job Service');
+
+        ghostServer.registerCleanupTask(async () => {
+            await urlService.shutdown();
+        });
+    }
 
     debug('End: initCore');
 }
@@ -166,10 +167,27 @@ async function initFrontend() {
  * @param {Object} options
  * @param {Boolean} options.backend
  * @param {Boolean} options.frontend
+ * @param {Object} options.config
  */
-async function initExpressApps(options) {
+async function initExpressApps({frontend, backend, config}) {
     debug('Begin: initExpressApps');
-    const parentApp = require('./server/web/parent/app')(options);
+
+    const parentApp = require('./server/web/parent/app')();
+    const vhost = require('@tryghost/vhost-middleware');
+
+    // Mount the express apps on the parentApp
+    if (backend) {
+        // ADMIN + API
+        const backendApp = require('./server/web/parent/backend')();
+        parentApp.use(vhost(config.getBackendMountPath(), backendApp));
+    }
+
+    if (frontend) {
+        // SITE + MEMBERS
+        const frontendApp = require('./server/web/parent/frontend')({});
+        parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
+    }
+
     debug('End: initExpressApps');
     return parentApp;
 }
@@ -303,7 +321,7 @@ async function initBackgroundServices({config}) {
 
  * @returns {Promise<object>} ghostServer
  */
-async function bootGhost({backend = true, frontend = true} = {}) {
+async function bootGhost({backend = true, frontend = true, server = true} = {}) {
     // Metrics
     const startTime = Date.now();
     debug('Begin Boot');
@@ -351,17 +369,19 @@ async function bootGhost({backend = true, frontend = true} = {}) {
 
         // Step 2 - Start server with minimal app in global maintenance mode
         debug('Begin: load server + minimal app');
-        const rootApp = require('./app');
+        const rootApp = require('./app')();
 
-        const GhostServer = require('./server/ghost-server');
-        ghostServer = new GhostServer({url: config.getSiteUrl()});
-        await ghostServer.start(rootApp);
-        bootLogger.log('server started');
-        debug('End: load server + minimal app');
+        if (server) {
+            const GhostServer = require('./server/ghost-server');
+            ghostServer = new GhostServer({url: config.getSiteUrl()});
+            await ghostServer.start(rootApp);
+            bootLogger.log('server started');
+            debug('End: load server + minimal app');
+        }
 
         // Step 3 - Get the DB ready
         debug('Begin: Get DB ready');
-        await initDatabase({config, logging});
+        await initDatabase({config});
         bootLogger.log('database ready');
         debug('End: Get DB ready');
 
@@ -373,7 +393,7 @@ async function bootGhost({backend = true, frontend = true} = {}) {
         if (frontend) {
             await initFrontend();
         }
-        const ghostApp = await initExpressApps({frontend, backend});
+        const ghostApp = await initExpressApps({frontend, backend, config});
 
         if (frontend) {
             await initDynamicRouting();
@@ -397,8 +417,13 @@ async function bootGhost({backend = true, frontend = true} = {}) {
         initBackgroundServices({config});
 
         // We return the server purely for testing purposes
-        debug('End Boot: Returning Ghost Server');
-        return ghostServer;
+        if (server) {
+            debug('End Boot: Returning Ghost Server');
+            return ghostServer;
+        } else {
+            debug('End boot: Returning Root App');
+            return rootApp;
+        }
     } catch (error) {
         const errors = require('@tryghost/errors');
 
