@@ -22,16 +22,19 @@ module.exports = {
         }
 
         const frontendTemplate = hbs`
-            <div class="kg-card kg-audio-card" data-kg-card="audio" style="display:flex">
-                <img src="{{thumbnailSrc}}" alt="" width="100%" border="0" style="width: 150px;">
-                <div style="height:100%;display:flex;flex-direction:column">
-                    <div style="display:flex;justify-content:center">
-                        {{fileName}}
-                    </div>
-                    <audio controls src="{{src}}" loop={{loop}}>
-                        Your browser does not support the
-                        <code>audio</code> element.
-                    </audio>
+            <div class="kg-card kg-audio-card" style="display:flex" data-kg-audio-src="{{src}}">
+                <img src="{{thumbnailSrc}}" alt="" border="0" style="max-width: 150px;height: 130px">
+                <div class="kg-audio-player-container">
+                    <audio src="{{src}}" preload="metadata" loop={{loop}}></audio>
+                    <p>{{fileName}}</p>
+                    <button class="kg-audio-play-icon">&gt;</button>
+                    <span class="kg-audio-current-time">0:00</span>
+                    <input type="range" class="kg-audio-seek-slider" max="100" value="0">
+                    <span class="kg-audio-duration" class="time">0:00</span>
+                    <output class="kg-audio-volume-output">100</output>
+                    <input type="range" class="kg-audio-volume-slider" max="100" value="100">
+                    <button class="kg-audio-mute-icon">M</button>
+                    <button class="kg-audio-playback-rate">1x</button>
                 </div>
             </div>
         `;
