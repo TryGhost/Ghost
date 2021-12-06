@@ -11,11 +11,11 @@ const mailService = require('../../../../../core/server/services/mail/index');
 
 let request;
 
-describe('Authentication API v3', function () {
+describe('Authentication API canary', function () {
     describe('Blog setup', function () {
         before(async function () {
-            await localUtils.startGhost({forceStart: true});
-            request = supertest.agent(config.get('url'));
+            const app = await localUtils.startGhost({forceStart: true});
+            request = supertest.agent(app);
         });
 
         beforeEach(function () {
@@ -132,14 +132,11 @@ describe('Authentication API v3', function () {
     });
 
     describe('Invitation', function () {
-        before(function () {
-            return localUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
+        before(async function () {
+            const app = await localUtils.startGhost();
+            request = supertest.agent(app);
 
-                    // simulates blog setup (initialises the owner)
-                    return localUtils.doAuth(request, 'invites');
-                });
+            await localUtils.doAuth(request, 'invites');
         });
 
         it('check invite with invalid email', function () {
@@ -227,14 +224,11 @@ describe('Authentication API v3', function () {
     describe('Password reset', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
-        before(function () {
-            return localUtils.startGhost({forceStart: true})
-                .then(() => {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(() => {
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            const app = await localUtils.startGhost({forceStart: true});
+            request = supertest.agent(app);
+
+            await localUtils.doAuth(request);
         });
 
         beforeEach(function () {
@@ -393,14 +387,11 @@ describe('Authentication API v3', function () {
 
     describe('Reset all passwords', function () {
         let sendEmail;
-        before(function () {
-            return localUtils.startGhost({forceStart: true})
-                .then(() => {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(() => {
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            const app = await localUtils.startGhost({forceStart: true});
+            request = supertest.agent(app);
+
+            await localUtils.doAuth(request);
         });
 
         beforeEach(function () {
