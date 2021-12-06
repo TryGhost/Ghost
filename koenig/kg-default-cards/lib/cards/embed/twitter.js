@@ -1,4 +1,5 @@
 const {DateTime} = require('luxon');
+const {toArray} = require('lodash');
 
 module.exports = {
     render({payload, env: {dom}, options = {}}) {
@@ -37,7 +38,7 @@ module.exports = {
             if (mentions) {
                 let last = 0;
                 let parts = [];
-                let content = [...tweetContent];
+                let content = toArray(tweetContent);
                 for (const entity of entities) {
                     let type = 'text';
                     let data = content.slice(entity.start, entity.end + 1).join('').replace(/\n/g, '<br>');
