@@ -12,8 +12,9 @@ let request;
 
 describe('Redirects API', function () {
     const startGhost = async (options) => {
-        await localUtils.startGhost(options);
-        request = supertest.agent(config.get('url'));
+        const app = await localUtils.startGhost(options);
+        request = supertest.agent(app);
+
         await localUtils.doAuth(request);
     };
 
