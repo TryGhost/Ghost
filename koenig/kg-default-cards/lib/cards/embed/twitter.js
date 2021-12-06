@@ -44,6 +44,9 @@ module.exports = {
                     let data = content.slice(entity.start, entity.end + 1).join('').replace(/\n/g, '<br>');
                     if (entity.url) {
                         type = 'url';
+                        if (!entity.display_url || entity.display_url.startsWith('pic.twitter.com')) {
+                            type = 'img_url';
+                        }
                     }
                     if (entity.username) {
                         type = 'mention';
@@ -73,6 +76,7 @@ module.exports = {
                     if (part.type === 'url') {
                         return content + `<span style="color: #1DA1F2; word-break: break-all;">${part.data}</span>`;
                     }
+                    return content;
                 }, '');
             }
 
