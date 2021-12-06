@@ -24,7 +24,7 @@ module.exports = {
 
             const mentions = tweetData.entities && tweetData.entities.mentions || [];
             const urls = tweetData.entities && tweetData.entities.urls || [];
-            const entities = mentions.concat(urls);
+            const entities = mentions.concat(urls).sort((a, b) => a.start - b.start);
             let tweetContent = tweetData.text;
 
             let tweetImageUrl = null;
@@ -37,9 +37,10 @@ module.exports = {
             if (mentions) {
                 let last = 0;
                 let parts = [];
+                let content = [...tweetContent];
                 for (const entity of entities) {
                     let type = 'text';
-                    let data = tweetContent.slice(entity.start, entity.end + 1);
+                    let data = content.slice(entity.start, entity.end + 1).join('').replace(/\n/g, '<br>');
                     if (entity.url) {
                         type = 'url';
                     }
@@ -48,7 +49,7 @@ module.exports = {
                     }
                     parts.push({
                         type: 'text',
-                        data: tweetContent.slice(last, entity.start)
+                        data: content.slice(last, entity.start).join('').replace(/\n/g, '<br>')
                     });
                     parts.push({
                         type: type,
@@ -58,12 +59,12 @@ module.exports = {
                 }
                 parts.push({
                     type: 'text',
-                    data: tweetContent.slice(last, tweetContent.length)
+                    data: content.slice(last, content.length).join('').replace(/\n/g, '<br>')
                 });
 
                 tweetContent = parts.reduce((content, part) => {
                     if (part.type === 'text') {
-                        return content + part.data.replace('\n', '<br>');
+                        return content + part.data;
                     }
                     if (part.type === 'mention') {
                         return content + `<span style="color: #1DA1F2;">${part.data}</span>`;
