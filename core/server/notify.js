@@ -53,7 +53,7 @@ async function notify(type, error = null) {
     let socketAddress = config.get('bootstrap-socket');
     if (socketAddress) {
         const bootstrapSocket = require('@tryghost/bootstrap-socket');
-        return bootstrapSocket.connectAndSend(socketAddress, logging, message);
+        return bootstrapSocket.connectAndSend(socketAddress, message);
     }
 
     return Promise.resolve();
