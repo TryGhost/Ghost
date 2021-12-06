@@ -332,6 +332,14 @@ const ghostErrors = {
                 hideStack: true
             }, options));
         }
+    },
+    ConflictError: class ConflictError extends GhostError {
+        constructor(options) {
+            super(merge({
+                errorType: 'ConflictError',
+                statusCode: 409
+            }, options));
+        }
     }
 };
 
