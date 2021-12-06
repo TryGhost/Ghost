@@ -140,9 +140,8 @@ module.exports = class StripeWebhookService {
             if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                 throw err;
             }
-            throw new errors.GhostError({
-                err,
-                statusCode: 409
+            throw new errors.ConflictError({
+                err
             });
         }
     }
