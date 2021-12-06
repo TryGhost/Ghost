@@ -215,14 +215,14 @@ module.exports = {
         return await testUtils.startGhost(Object.assign(defaults, overrides));
     },
 
-    async getAgent(options) {
-        const app = await this.startGhost(options);
+    async getAgent({forceStart}) {
+        const app = await this.startGhost({forceStart});
 
         return supertest.agent(app);
     },
 
-    async getAuthenticatedAgent(bootOptions, fixtureOptions) {
-        const request = await this.getAgent(bootOptions);
+    async getAuthenticatedAgent({forceStart} = {}, fixtureOptions) {
+        const request = await this.getAgent({forceStart});
         await this.doAuth(request, fixtureOptions);
 
         return request;
