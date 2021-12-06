@@ -8,8 +8,8 @@ describe('Config API', function () {
     let request;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
+        const app = await localUtils.startGhost();
+        request = supertest.agent(app);
         await localUtils.doAuth(request);
     });
 

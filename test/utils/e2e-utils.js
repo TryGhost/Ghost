@@ -137,10 +137,6 @@ const restartModeGhostStart = async ({frontend}) => {
     limits.init();
 };
 
-const bootGhost = async ({backend, frontend}) => {
-    ghostServer = await boot({backend, frontend});
-};
-
 // CASE: Ghost Server needs Starting
 // In this case we need to ensure that Ghost is started cleanly:
 // - ensure the DB is reset
@@ -166,7 +162,11 @@ const freshModeGhostStart = async (options) => {
     await settingsService.init();
 
     // Actually boot Ghost
-    await bootGhost(options);
+    ghostServer = await boot({
+        backend: options.backend,
+        frontend: options.frontend,
+        server: options.server
+    });
 
     // Wait for the URL service to be ready, which happens after boot
     if (options.frontend) {
