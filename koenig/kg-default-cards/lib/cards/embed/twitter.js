@@ -79,7 +79,7 @@ module.exports = {
                 <table cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #E9E9E9; border-radius: 5px; width: auto; margin: 0 auto; width: 100%">
                     ${hasImageOrVideo ? `<tr>
                         <td align="center" style="width: 100%;">
-                            <a href="https://twitter.com/twitter/status/${tweetId}"><img src="${tweetImageUrl}" style="width: 100%; border: none; max-width: 560px;" border="0"></a>
+                            <a href="https://twitter.com/twitter/status/${tweetId}"><img src="${tweetImageUrl}" style="width: 100%; border: none; max-width: 560px; border-radius: 4px 4px 0 0;" border="0"></a>
                         </td>
                     </tr>` : ''}
                     <tr>
