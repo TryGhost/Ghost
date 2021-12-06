@@ -33,6 +33,7 @@
     "@tryghost/kg-markdown-html-renderer": "^5.1.0",
     "@tryghost/url-utils": "^2.0.0",
     "handlebars": "^4.7.6",
-    "juice": "^8.0.0"
+    "juice": "^8.0.0",
+    "luxon": "^2.1.1"
   }
 }

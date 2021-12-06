@@ -1,3 +1,5 @@
+const {DateTime} = require('luxon');
+
 module.exports = {
     render({payload, env: {dom}, options = {}}) {
         const figure = dom.createElement('figure');
@@ -16,10 +18,16 @@ module.exports = {
         const tweetData = payload.metadata.tweet_data;
 
         const tweetId = tweetData.id;
-        const retweetCount = tweetData.public_metrics.retweet_count;
-        const likeCount = tweetData.public_metrics.like_count;
+        const numberFormatter = new Intl.NumberFormat('en-US', {
+            style: 'decimal',
+            notation: 'compact',
+            unitDisplay: 'narrow',
+            maximumFractionDigits: 1
+        });
+        const retweetCount = numberFormatter.format(tweetData.public_metrics.retweet_count);
+        const likeCount = numberFormatter.format(tweetData.public_metrics.like_count);
         const authorUser = tweetData.includes.users.find(user => user.id === tweetData.author_id);
-        const tweetDate = tweetData.created_at;
+        const tweetDate = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.DATE_MED);
 
         const mentions = tweetData.entities && tweetData.entities.mentions || [];
         const urls = tweetData.entities && tweetData.entities.urls || [];
