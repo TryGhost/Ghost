@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@tryghost/email-analytics-service": "^1.0.5",
-    "@tryghost/logging": "^1.0.2",
+    "@tryghost/logging": "^2.0.0",
     "mailgun-js": "^0.22.0",
     "moment": "^2.29.1"
   }
