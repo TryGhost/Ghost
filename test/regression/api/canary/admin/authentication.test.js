@@ -14,8 +14,7 @@ let request;
 describe('Authentication API canary', function () {
     describe('Blog setup', function () {
         before(async function () {
-            const app = await localUtils.startGhost({forceStart: true});
-            request = supertest.agent(app);
+            request = await localUtils.getAgent({forceStart: true});
         });
 
         beforeEach(function () {
@@ -133,10 +132,7 @@ describe('Authentication API canary', function () {
 
     describe('Invitation', function () {
         before(async function () {
-            const app = await localUtils.startGhost();
-            request = supertest.agent(app);
-
-            await localUtils.doAuth(request, 'invites');
+            request = await localUtils.getAuthenticatedRequestAgent(null, 'invites');
         });
 
         it('check invite with invalid email', function () {
@@ -225,10 +221,7 @@ describe('Authentication API canary', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(async function () {
-            const app = await localUtils.startGhost({forceStart: true});
-            request = supertest.agent(app);
-
-            await localUtils.doAuth(request);
+            request = await localUtils.getAuthenticatedRequestAgent({forceStart: true});
         });
 
         beforeEach(function () {
@@ -388,10 +381,7 @@ describe('Authentication API canary', function () {
     describe('Reset all passwords', function () {
         let sendEmail;
         before(async function () {
-            const app = await localUtils.startGhost({forceStart: true});
-            request = supertest.agent(app);
-
-            await localUtils.doAuth(request);
+            request = await localUtils.getAuthenticatedRequestAgent({forceStart: true});
         });
 
         beforeEach(function () {
