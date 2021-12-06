@@ -237,8 +237,6 @@ export default class KoenigCardProductComponent extends Component {
 
     @action
     changeStars(event) {
-        if (event.target.checked) {
-            this._updatePayloadAttr('productStarRating', event.target.value);
-        }
+        this._updatePayloadAttr('productStarRating', event.currentTarget.value);
     }
 }

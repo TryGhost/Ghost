@@ -1794,57 +1794,12 @@ button.emoji-picker__category-button.active {
     margin-top: 24px;
 }
 
-.kg-product-card-rating-edit {
-    float:left;
+.kg-product-card-rating-star path {
+    fill: grey;
 }
 
-.kg-product-card-rating-edit + * {
-    clear: both;
-}
-
-.kg-product-card-rating-edit > input {
-    position:absolute;
-    left:-9999px;
-    clip:rect(0,0,0,0);
-}
-
-.kg-product-card-rating-edit > label {
-    float:right;
-    width:1em;
-    padding:0 .1em;
-    overflow:hidden;
-    white-space:nowrap;
-    cursor:pointer;
-    font-size:200%;
-    line-height:1.2;
-    color:#ddd;
-}
-
-.kg-product-card-rating-edit > label:before {
-    content: '★ ';
-}
-
-.kg-product-card-rating-edit > input:checked ~ label {
-    color: #f70;
-}
-
-.kg-product-card-rating-edit:not(:checked) > label:hover,
-.kg-product-card-rating-edit:not(:checked) > label:hover ~ label {
-    color: gold;
-}
-
-.kg-product-card-rating-edit > input:checked + label:hover,
-.kg-product-card-rating-edit > input:checked + label:hover ~ label,
-.kg-product-card-rating-edit > input:checked ~ label:hover,
-.kg-product-card-rating-edit > input:checked ~ label:hover ~ label,
-.kg-product-card-rating-edit > label:hover ~ input:checked ~ label {
-    color: #ea0;
-}
-
-.kg-product-card-rating-edit > label:active {
-    position:relative;
-    top:2px;
-    left:2px;
+.kg-product-card-rating-active.kg-product-card-rating-star path {
+    fill: gold;
 }
 
 /* Button card
