@@ -132,7 +132,7 @@ describe('Authentication API canary', function () {
 
     describe('Invitation', function () {
         before(async function () {
-            request = await localUtils.getAuthenticatedRequestAgent(null, 'invites');
+            request = await localUtils.getAuthenticatedAgent(undefined, 'invites');
         });
 
         it('check invite with invalid email', function () {
@@ -221,7 +221,7 @@ describe('Authentication API canary', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(async function () {
-            request = await localUtils.getAuthenticatedRequestAgent({forceStart: true});
+            request = await localUtils.getAuthenticatedAgent({forceStart: true});
         });
 
         beforeEach(function () {
@@ -381,7 +381,7 @@ describe('Authentication API canary', function () {
     describe('Reset all passwords', function () {
         let sendEmail;
         before(async function () {
-            request = await localUtils.getAuthenticatedRequestAgent({forceStart: true});
+            request = await localUtils.getAuthenticatedAgent({forceStart: true});
         });
 
         beforeEach(function () {
