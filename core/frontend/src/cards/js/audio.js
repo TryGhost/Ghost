@@ -1,10 +1,10 @@
 const handleAudioPlayer = function (audioElementContainer) {
-    const audioPlayerContainer = audioElementContainer.querySelector('.kg-audio-player-container');
+    const audioPlayerContainer = audioElementContainer.querySelector('.kg-player-container');
     const playIconContainer = audioElementContainer.querySelector('.kg-audio-play-icon');
     const seekSlider = audioElementContainer.querySelector('.kg-audio-seek-slider');
-    const volumeSlider = audioElementContainer.querySelector('.kg-audio-volume-slider');
-    const muteIconContainer = audioElementContainer.querySelector('.kg-audio-mute-icon');
     const playbackRateContainer = audioElementContainer.querySelector('.kg-audio-playback-rate');
+    const muteIconContainer = audioElementContainer.querySelector('.kg-audio-mute-icon');
+    const volumeSlider = audioElementContainer.querySelector('.kg-audio-volume-slider');
     const audio = audioElementContainer.querySelector('audio');
     const durationContainer = audioElementContainer.querySelector('.kg-audio-duration');
     const currentTimeContainer = audioElementContainer.querySelector('.kg-audio-current-time');
