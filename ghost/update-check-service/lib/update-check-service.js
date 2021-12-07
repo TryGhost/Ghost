@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const exec = require('child_process').exec;
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const debug = require('@tryghost/debug')('update-check');
 
 const internal = {context: {internal: true}};
@@ -47,11 +48,10 @@ class UpdateCheckService {
      * @param {string} options.config.siteUrl - Ghost instance URL
      * @param {boolean} [options.config.forceUpdate]
      * @param {string} options.config.ghostVersion - Ghost instance version
-     * @param {Object} [options.logging] - logging override defaults to @tryghost/logging if not specified
      * @param {Function} options.request - a HTTP request proxy function
      * @param {Function} options.sendEmail - function handling sending an email
     */
-    constructor({api, config, logging = require('@tryghost/logging'), request, sendEmail}) {
+    constructor({api, config, request, sendEmail}) {
         this.api = api;
         this.config = config;
         this.logging = logging;
