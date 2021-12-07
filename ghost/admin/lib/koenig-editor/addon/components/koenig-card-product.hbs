@@ -202,7 +202,7 @@
                     <div class="kg-product-card-title-container">
                         <h4 class="kg-product-card-title">{{{@payload.productTitle}}}</h4>
                     </div>
-                    {{#if @payload.productStarRating}}
+                    {{#if @payload.productRatingEnabled}}
                         <div class="kg-product-card-rating-edit">
                             <span class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
                             <span class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
