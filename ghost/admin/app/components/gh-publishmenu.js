@@ -1,6 +1,6 @@
 import Component from '@ember/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
-import {action} from '@ember/object';
+import {bind} from '@ember/runloop';
 import {computed} from '@ember/object';
 import {or, reads} from '@ember/object/computed';
 import {schedule} from '@ember/runloop';
@@ -12,12 +12,13 @@ const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 export default Component.extend({
     clock: service(),
-    feature: service(),
-    settings: service(),
     config: service(),
-    session: service(),
-    store: service(),
+    feature: service(),
     limit: service(),
+    modals: service(),
+    session: service(),
+    settings: service(),
+    store: service(),
 
     classNames: 'gh-publishmenu',
     displayState: 'draft',
@@ -297,7 +298,7 @@ export default Component.extend({
 
             // wait for actions to be triggered by the focusout/blur before saving
             schedule('actions', this, function () {
-                this.send('setSaveType', 'published');
+                this.send('setSaveType', 'publish');
                 this.save.perform();
             });
         }
@@ -336,98 +337,15 @@ export default Component.extend({
         }
     }),
 
-    // action is required because <GhFullscreenModal> only uses actions
-    confirmEmailSend: action(function () {
-        return this._confirmEmailSend.perform();
-    }),
-
-    _confirmEmailSend: task(function* () {
-        this.sendEmailConfirmed = true;
-        let post = yield this.save.perform();
-
-        // simulate a validation error if saving failed so that the confirm
-        // modal can react accordingly
-        if (!post || post.errors.length) {
-            throw null;
-        }
-
-        let pollTimeout = 0;
-        if (post.email && post.email.status !== 'submitted') {
-            while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
-                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
-                post = yield post.reload();
-
-                if (post.email.status === 'submitted') {
-                    break;
-                }
-                if (post.email.status === 'failed') {
-                    throw new EmailFailedError(post.email.error);
-                }
-            }
-        }
-
-        return post;
-    }),
-
-    retryEmailSend: action(function () {
-        return this._retryEmailSend.perform();
-    }),
-
-    _retryEmailSend: task(function* () {
-        if (!this.post.email) {
-            return;
-        }
-
-        let email = yield this.post.email.retry();
-
-        let pollTimeout = 0;
-        if (email && email.status !== 'submitted') {
-            while (pollTimeout < CONFIRM_EMAIL_POLL_LENGTH) {
-                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
-                email = yield email.reload();
-
-                if (email.status === 'submitted') {
-                    break;
-                }
-                if (email.status === 'failed') {
-                    throw new EmailFailedError(email.error);
-                }
-            }
-        }
-
-        return email;
-    }),
-
-    openEmailConfirmationModal: action(function (dropdown) {
-        if (dropdown) {
-            this._skipDropdownCloseCleanup = true;
-            dropdown.actions.close();
-        }
-        this.set('showEmailConfirmationModal', true);
-    }),
-
-    closeEmailConfirmationModal: action(function () {
-        this.set('showEmailConfirmationModal', false);
-        this._cleanup();
-    }),
-
     reloadSettingsTask: task(function* () {
         yield this.settings.reload();
     }),
 
-    save: task(function* ({dropdown} = {}) {
-        let {
-            post,
-            emailOnly,
-            sendEmailWhenPublished,
-            sendEmailConfirmed,
-            saveType,
-            typedDateError,
-            distributionAction
-        } = this;
+    save: task(function* (options = {}) {
+        const {post, saveType} = this;
 
         // don't allow save if an invalid schedule date is present
-        if (typedDateError) {
+        if (this.typedDateError) {
             return false;
         }
 
@@ -443,18 +361,66 @@ export default Component.extend({
             return false;
         }
 
-        if (
-            post.status === 'draft' &&
-            !post.email && // email sent previously
-            sendEmailWhenPublished && sendEmailWhenPublished !== 'none' &&
-            distributionAction !== 'publish' &&
-            !sendEmailConfirmed // set once confirmed so normal save happens
-        ) {
-            this.openEmailConfirmationModal(dropdown);
+        // always opens publish confirmation if post will be published/scheduled
+        if (post.status === 'draft' && (saveType === 'publish' || saveType === 'schedule')) {
+            if (options.dropdown) {
+                this._skipDropdownCloseCleanup = true;
+                options.dropdown.actions.close();
+            }
+
+            return yield this.modals.open('modals/editor/confirm-publish', {
+                post: this.post,
+                emailOnly: this.emailOnly,
+                sendEmailWhenPublished: this.sendEmailWhenPublished,
+                isScheduled: saveType === 'schedule',
+                confirm: this.saveWithConfirmedPublish.perform,
+                retryEmailSend: this.retryEmailSendTask.perform
+            }, {
+                beforeClose: bind(this, this._cleanup)
+            });
+        }
+
+        return yield this._saveTask.perform(options);
+    }),
+
+    saveWithConfirmedPublish: task(function* () {
+        return yield this._saveTask.perform();
+    }),
+
+    retryEmailSendTask: task(function* () {
+        if (!this.post.email) {
             return;
         }
 
-        this.sendEmailConfirmed = false;
+        let email = yield this.post.email.retry();
+
+        let pollTimeout = 0;
+        if (email && email.status !== 'submitted') {
+            while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
+                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
+                pollTimeout += CONFIRM_EMAIL_POLL_LENGTH;
+
+                email = yield email.reload();
+
+                if (email.status === 'submitted') {
+                    break;
+                }
+                if (email.status === 'failed') {
+                    throw new EmailFailedError(email.error);
+                }
+            }
+        }
+
+        return email;
+    }),
+
+    _saveTask: task(function* () {
+        let {
+            post,
+            emailOnly,
+            sendEmailWhenPublished,
+            saveType
+        } = this;
 
         // runningText needs to be declared before the other states change during the
         // save action.
@@ -467,6 +433,28 @@ export default Component.extend({
             post = yield this.saveTask.perform({sendEmailWhenPublished, emailOnly});
 
             this._cachePublishedAtBlogTZ();
+
+            if (sendEmailWhenPublished && sendEmailWhenPublished !== 'none') {
+                let pollTimeout = 0;
+                if (post.email && post.email.status !== 'submitted') {
+                    while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
+                        yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
+                        pollTimeout += CONFIRM_EMAIL_POLL_LENGTH;
+
+                        post = yield post.reload();
+
+                        if (post.email.status === 'submitted') {
+                            break;
+                        }
+                        if (post.email.status === 'failed') {
+                            throw new EmailFailedError(post.email.error);
+                        }
+                    }
+                }
+            }
+
+            this._cleanup();
+
             return post;
         } catch (error) {
             // re-throw if we don't have a validation error
@@ -482,7 +470,6 @@ export default Component.extend({
 
     _cleanup() {
         this.set('distributionAction', 'publish_send');
-        this.set('showConfirmEmailModal', false);
 
         // when closing the menu we reset the publishedAtBlogTZ date so that the
         // unsaved changes made to the scheduled date aren't reflected in the PSM
