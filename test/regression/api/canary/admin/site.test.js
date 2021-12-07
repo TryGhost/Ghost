@@ -1,4 +1,5 @@
 const should = require('should');
+const framework = require('../../../../utils/e2e-framework');
 const testUtils = require('../../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../../core/shared/config');
@@ -7,7 +8,7 @@ describe('Config API', function () {
     let request;
 
     before(async function () {
-        request = await localUtils.getAuthenticatedAgent();
+        request = await framework.getAgent();
     });
 
     it('can retrieve config and all expected properties', async function () {
