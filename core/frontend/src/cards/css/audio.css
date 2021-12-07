@@ -63,14 +63,20 @@
     padding: 0 4px;
 }
 
-.kg-audio-play-icon {
+.kg-audio-play-icon,
+.kg-audio-pause-icon {
     position: relative;
     bottom: 1px;
     padding: 0px 4px 0 0;
     background: transparent;
 }
 
-.kg-audio-play-icon svg {
+.kg-audio-hide {
+    display: none;
+}
+
+.kg-audio-play-icon svg,
+.kg-audio-pause-icon svg {
     width: 14px;
     height: 14px;
     fill: currentColor;
@@ -92,14 +98,16 @@
     background: transparent;
 }
 
-.kg-audio-mute-icon {
+.kg-audio-mute-icon,
+.kg-audio-unmute-icon {
     position: relative;
     bottom: 1px;
     padding: 0 4px;
     background: transparent;
 }
 
-.kg-audio-mute-icon svg {
+.kg-audio-mute-icon svg,
+.kg-audio-unmute-icon svg {
     width: 16px;
     height: 16px;
     fill: currentColor;
@@ -130,7 +138,7 @@
     cursor: pointer;
     border-color: transparent;
     color: transparent;
-    background: transparent; 
+    background: transparent;
 }
 
 /* Chrome & Safari styles
