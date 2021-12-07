@@ -220,7 +220,10 @@ export const CARD_MENU = [
             matches: ['audio'],
             type: 'card',
             replaceArg: 'audio',
-            isAvailable: 'feature.audioCard'
+            isAvailable: 'feature.audioCard',
+            payload: {
+                triggerBrowse: true
+            }
         },
         {
             label: 'File',
