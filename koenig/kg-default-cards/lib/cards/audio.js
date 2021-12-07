@@ -22,19 +22,30 @@ module.exports = {
         }
 
         const frontendTemplate = hbs`
-            <div class="kg-card kg-audio-card" style="display:flex" data-kg-audio-src="{{src}}">
-                <img src="{{thumbnailSrc}}" alt="" border="0" style="max-width: 150px;height: 130px">
-                <div class="kg-audio-player-container">
-                    <audio src="{{src}}" preload="metadata" loop={{loop}}></audio>
-                    <p>{{fileName}}</p>
-                    <button class="kg-audio-play-icon">&gt;</button>
-                    <span class="kg-audio-current-time">0:00</span>
-                    <input type="range" class="kg-audio-seek-slider" max="100" value="0">
-                    <span class="kg-audio-duration" class="time">0:00</span>
-                    <output class="kg-audio-volume-output">100</output>
-                    <input type="range" class="kg-audio-volume-slider" max="100" value="100">
-                    <button class="kg-audio-mute-icon">M</button>
-                    <button class="kg-audio-playback-rate">1x</button>
+            <div class="kg-card kg-audio-card" data-kg-audio-src="{{src}}">
+                <img src="{{thumbnailSrc}}" alt="audio-thumbnail" class="kg-audio-thumbnail">
+                <div class="kg-player-container">
+                    <audio src="{{src}}" preload="metadata"></audio>
+                    <div class="kg-audio-title">{{fileName}}</div>
+                    <div class="kg-player">
+                        <button class="kg-audio-play-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M23.14 10.608 2.253.164A1.559 1.559 0 0 0 0 1.557v20.887a1.558 1.558 0 0 0 2.253 1.392L23.14 13.393a1.557 1.557 0 0 0 0-2.785Z"/>
+                            </svg>                      
+                        </button>
+                        <span class="kg-audio-current-time">0:00</span>
+                        <div class="kg-audio-time">
+                            /<span class="kg-audio-duration">0:00</span>
+                        </div>
+                        <input type="range" class="kg-audio-seek-slider" max="100" value="0">
+                        <button class="kg-audio-playback-rate">1&#215;</button>
+                        <button class="kg-audio-mute-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M15.189 2.021a9.728 9.728 0 0 0-7.924 4.85.249.249 0 0 1-.221.133H5.25a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h1.794a.249.249 0 0 1 .221.133 9.73 9.73 0 0 0 7.924 4.85h.06a1 1 0 0 0 1-1V3.02a1 1 0 0 0-1.06-.998Z"/>
+                            </svg>                                          
+                        </button>
+                        <input type="range" class="kg-audio-volume-slider" max="100" value="100">
+                    </div>
                 </div>
             </div>
         `;
