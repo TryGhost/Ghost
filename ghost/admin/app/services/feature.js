@@ -65,6 +65,7 @@ export default Service.extend({
     productCard: feature('productCard'),
     quoteStyles: feature('quoteStyles'),
     beforeAfterCard: feature('beforeAfterCard'),
+    richTwitterNewsletters: feature('richTwitterNewsletters'),
 
     _user: null,
 
