@@ -249,14 +249,13 @@
     justify-content: space-between;
 }
 
-.modal-footer button {
-    margin-left: 12px;
+.modal-footer .gh-btn {
     min-width: 100px;
     text-align: center;
 }
 
-.modal-footer button:first-of-type {
-    margin-left: 0;
+.modal-footer .gh-btn:not(:first-child) {
+    margin-left: 12px;
 }
 
 .modal-footer-hint {
