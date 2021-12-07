@@ -44,9 +44,11 @@ module.exports = {
                     let type = 'text';
                     let data = content.slice(entity.start, entity.end + 1).join('').replace(/\n/g, '<br>');
                     if (entity.url) {
-                        type = 'url';
                         if (!entity.display_url || entity.display_url.startsWith('pic.twitter.com')) {
                             type = 'img_url';
+                        } else {
+                            type = 'url';
+                            data = data.replace(entity.url, entity.display_url);
                         }
                     }
                     if (entity.username) {
