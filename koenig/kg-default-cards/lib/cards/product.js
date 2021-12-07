@@ -21,32 +21,34 @@ module.exports = {
         }
 
         const template = hbs`
-        <div class="kg-product-card">
-            {{#if productImageEnabled}}
-                <img src={{productImageSrc}} class="kg-product-card-image" />
-            {{/if}}
-            <div class="kg-product-card-header">
-                <div class="kg-product-card-title-container">
-                    <h4 class="kg-product-card-title">{{{productTitle}}}</h4>
+        <div class="kg-card kg-embed-card kg-product-card-container">
+            <div class="kg-product-card">
+                {{#if productImageEnabled}}
+                    <img src={{productImageSrc}} class="kg-product-card-image" />
+                {{/if}}
+                <div class="kg-product-card-header">
+                    <div class="kg-product-card-title-container">
+                        <h4 class="kg-product-card-title">{{{productTitle}}}</h4>
+                    </div>
+                    {{#if productRatingEnabled}}
+                    <div class="kg-product-card-rating">
+                        <span class="{{star1}} kg-product-card-rating-star">{{{starIcon}}}</span>
+                        <span class="{{star2}} kg-product-card-rating-star">{{{starIcon}}}</span>
+                        <span class="{{star3}} kg-product-card-rating-star">{{{starIcon}}}</span>
+                        <span class="{{star4}} kg-product-card-rating-star">{{{starIcon}}}</span>
+                        <span class="{{star5}} kg-product-card-rating-star">{{{starIcon}}}</span>
+                    </div>
+                    {{/if}}
                 </div>
-                {{#if productRatingEnabled}}
-                <div class="kg-product-card-rating">
-                    <span class="{{star1}} kg-product-card-rating-star">{{{starIcon}}}</span>
-                    <span class="{{star2}} kg-product-card-rating-star">{{{starIcon}}}</span>
-                    <span class="{{star3}} kg-product-card-rating-star">{{{starIcon}}}</span>
-                    <span class="{{star4}} kg-product-card-rating-star">{{{starIcon}}}</span>
-                    <span class="{{star5}} kg-product-card-rating-star">{{{starIcon}}}</span>
-                </div>
+                <p class="kg-product-card-description">{{{productDescription}}}</p>
+                {{#if productButtonEnabled}}
+                    <a href={{productUrl}} class="kg-btn kg-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer">
+                        <span>
+                            {{productButton}}
+                        </span>
+                    </a>
                 {{/if}}
             </div>
-            <p class="kg-product-card-description">{{{productDescription}}}</p>
-            {{#if productButtonEnabled}}
-                <a href={{productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer">
-                    <span>
-                        {{productButton}}
-                    </span>
-                </a>
-            {{/if}}
         </div>
         `;
 
