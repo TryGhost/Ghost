@@ -233,7 +233,7 @@ export const CARD_MENU = [
         },
         {
             label: 'Product',
-            icon: 'koenig/kg-card-type-other',
+            icon: 'koenig/kg-card-type-product',
             desc: 'Add a product recommendation',
             matches: ['product'],
             type: 'card',
