@@ -1740,12 +1740,12 @@ button.emoji-picker__category-button.active {
     border-radius: 5px;
     flex-direction: column;
     text-decoration: none;
-    min-width: 512px;
+    min-width: 420px;
     max-width: 512px;
     padding: 20px;
 }
 
-.kg-product-card-image, .kg-product-card-image-placeholder {
+.kg-product-card-image-container {
     margin-bottom: 1.6rem;
 }
 
