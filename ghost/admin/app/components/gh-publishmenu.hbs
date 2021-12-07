@@ -66,21 +66,6 @@
 </GhBasicDropdown>
 {{/if}}
 
-{{#if this.showEmailConfirmationModal}}
-    <GhFullscreenModal
-        @modal="confirm-email-send"
-        @model={{hash
-            sendEmailWhenPublished=this.sendEmailWhenPublished
-            isScheduled=(eq this.saveType "schedule")
-            emailOnly=this.emailOnly
-            retryEmailSend=this.retryEmailSend
-        }}
-        @confirm={{this.confirmEmailSend}}
-        @close={{this.closeEmailConfirmationModal}}
-        @modifier="action wide"
-    />
-{{/if}}
-
 {{!--
     Workaround to have an always-shown element to attach key handlers to.
     TODO: Move onto main element once converted to a glimmer component

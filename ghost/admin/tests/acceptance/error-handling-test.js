@@ -38,7 +38,8 @@ describe('Acceptance: Error Handling', function () {
                 await visit('/posts');
                 await click('.posts-list li:nth-of-type(2) a'); // select second post
                 await click('[data-test-publishmenu-trigger]');
-                await click('[data-test-publishmenu-save]'); // "Save post"
+                await click('[data-test-publishmenu-save]');
+                await click('[data-test-button="confirm-publish"]'); // "Save post"
 
                 // has the refresh to update alert
                 expect(findAll('.gh-alert').length).to.equal(1);
@@ -100,6 +101,7 @@ describe('Acceptance: Error Handling', function () {
             await visit('/editor/post/1');
             await click('[data-test-publishmenu-trigger]');
             await click('[data-test-publishmenu-save]');
+            await click('[data-test-button="confirm-publish"]');
 
             expect(findAll('.gh-alert').length).to.equal(1);
             expect(find('.gh-alert').textContent).to.not.match(/html>/);
