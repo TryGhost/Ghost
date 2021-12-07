@@ -96,11 +96,11 @@ const handleAudioPlayer = function (audioElementContainer) {
         if (playbackRate === 1.0) {
             audio.playbackRate = 2;
             playbackRate = 2;
-            playbackRateContainer.textContent = '2x';
+            playbackRateContainer.textContent = '2×';
         } else {
             audio.playbackRate = 1.0;
             playbackRate = 1.0;
-            playbackRateContainer.textContent = '1x';
+            playbackRateContainer.textContent = '1×';
         }
     });
 
