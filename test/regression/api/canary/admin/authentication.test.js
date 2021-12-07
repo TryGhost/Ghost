@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const localUtils = require('./utils');
 const testUtils = require('../../../../utils/index');
+const framework = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models/index');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -13,7 +14,11 @@ let request;
 describe('Authentication API canary', function () {
     describe('Blog setup', function () {
         before(async function () {
-            request = await localUtils.getAgent({forceStart: true});
+            request = await framework.getAgent('/ghost/api/canary/admin/');
+        });
+
+        after(async function () {
+            await framework.resetDb();
         });
 
         beforeEach(function () {
@@ -26,7 +31,7 @@ describe('Authentication API canary', function () {
 
         it('is setup? no', function () {
             return request
-                .get(localUtils.API.getApiQuery('authentication/setup'))
+                .get('authentication/setup')
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -37,7 +42,7 @@ describe('Authentication API canary', function () {
 
         it('complete setup', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/setup'))
+                .post('authentication/setup')
                 .set('Origin', config.get('url'))
                 .send({
                     setup: [{
@@ -70,7 +75,7 @@ describe('Authentication API canary', function () {
 
         it('is setup? yes', function () {
             return request
-                .get(localUtils.API.getApiQuery('authentication/setup'))
+                .get('authentication/setup')
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -81,7 +86,7 @@ describe('Authentication API canary', function () {
 
         it('complete setup again', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/setup'))
+                .post('authentication/setup')
                 .set('Origin', config.get('url'))
                 .send({
                     setup: [{
@@ -95,51 +100,54 @@ describe('Authentication API canary', function () {
                 .expect(403);
         });
 
-        it('update setup', function () {
-            return localUtils.doAuth(request)
-                .then(() => {
-                    return request
-                        .put(localUtils.API.getApiQuery('authentication/setup'))
-                        .set('Origin', config.get('url'))
-                        .send({
-                            setup: [{
-                                name: 'test user edit',
-                                email: 'test-edit@example.com',
-                                password: 'thisissupersafe',
-                                blogTitle: 'a test blog'
-                            }]
-                        })
-                        .expect('Content-Type', /json/)
-                        .expect(200);
+        it('update setup', async function () {
+            await framework.initFixtures();
+            await request.loginAsOwner();
+
+            const res = await request
+                .put('authentication/setup')
+                .set('Origin', config.get('url'))
+                .send({
+                    setup: [{
+                        name: 'test user edit',
+                        email: 'test-edit@example.com',
+                        password: 'thisissupersafe',
+                        blogTitle: 'a test blog'
+                    }]
                 })
-                .then((res) => {
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.users);
-                    should.not.exist(jsonResponse.meta);
-                    should.exist(res.headers['x-cache-invalidate']);
+                .expect('Content-Type', /json/)
+                .expect(200);
 
-                    jsonResponse.users.should.have.length(1);
-                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+            const jsonResponse = res.body;
+            should.exist(jsonResponse.users);
+            should.not.exist(jsonResponse.meta);
+            should.exist(res.headers['x-cache-invalidate']);
 
-                    const newUser = jsonResponse.users[0];
-                    newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    newUser.name.should.equal('test user edit');
-                    newUser.email.should.equal('test-edit@example.com');
-                });
+            jsonResponse.users.should.have.length(1);
+            localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+
+            const newUser = jsonResponse.users[0];
+            newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
+            newUser.name.should.equal('test user edit');
+            newUser.email.should.equal('test-edit@example.com');
         });
     });
 
     describe('Invitation', function () {
         before(async function () {
-            request = await localUtils.getAgent();
+            request = await framework.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
-            await localUtils.initFixtures('invites');
-            await localUtils.login(request);
+            await framework.initFixtures('invites');
+            await request.loginAsOwner();
+        });
+
+        after(async function () {
+            await framework.resetDb();
         });
 
         it('check invite with invalid email', function () {
             return request
-                .get(localUtils.API.getApiQuery('authentication/invitation?email=invalidemail'))
+                .get('authentication/invitation?email=invalidemail')
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect(400);
@@ -147,7 +155,7 @@ describe('Authentication API canary', function () {
 
         it('check valid invite', function () {
             return request
-                .get(localUtils.API.getApiQuery(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`))
+                .get(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`)
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -158,7 +166,7 @@ describe('Authentication API canary', function () {
 
         it('check invalid invite', function () {
             return request
-                .get(localUtils.API.getApiQuery(`authentication/invitation?email=notinvited@example.org`))
+                .get(`authentication/invitation?email=notinvited@example.org`)
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect(200)
@@ -169,7 +177,7 @@ describe('Authentication API canary', function () {
 
         it('try to accept without invite', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/invitation'))
+                .post('authentication/invitation')
                 .set('Origin', config.get('url'))
                 .send({
                     invitation: [{
@@ -185,7 +193,7 @@ describe('Authentication API canary', function () {
 
         it('try to accept with invite and existing email address', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/invitation'))
+                .post('authentication/invitation')
                 .set('Origin', config.get('url'))
                 .send({
                     invitation: [{
@@ -201,7 +209,7 @@ describe('Authentication API canary', function () {
 
         it('try to accept with invite', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/invitation'))
+                .post('authentication/invitation')
                 .set('Origin', config.get('url'))
                 .send({
                     invitation: [{
@@ -223,10 +231,14 @@ describe('Authentication API canary', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(async function () {
-            request = await localUtils.getAgent({forceStart: true});
+            request = await framework.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
-            await localUtils.initFixtures();
-            await localUtils.login(request);
+            await framework.initFixtures('invites');
+            await request.loginAsOwner();
+        });
+
+        after(async function () {
+            await framework.resetDb();
         });
 
         beforeEach(function () {
@@ -247,7 +259,7 @@ describe('Authentication API canary', function () {
                         password: ownerUser.get('password')
                     });
 
-                    request.put(localUtils.API.getApiQuery('authentication/passwordreset'))
+                    request.put('authentication/passwordreset')
                         .set('Origin', config.get('url'))
                         .set('Accept', 'application/json')
                         .send({
@@ -276,7 +288,7 @@ describe('Authentication API canary', function () {
 
         it('reset password: invalid token', function () {
             return request
-                .put(localUtils.API.getApiQuery('authentication/passwordreset'))
+                .put('authentication/passwordreset')
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({
@@ -309,7 +321,7 @@ describe('Authentication API canary', function () {
                     });
 
                     return request
-                        .put(localUtils.API.getApiQuery('authentication/passwordreset'))
+                        .put('authentication/passwordreset')
                         .set('Origin', config.get('url'))
                         .set('Accept', 'application/json')
                         .send({
@@ -340,7 +352,7 @@ describe('Authentication API canary', function () {
             });
 
             return request
-                .put(localUtils.API.getApiQuery('authentication/passwordreset'))
+                .put('authentication/passwordreset')
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({
@@ -363,7 +375,7 @@ describe('Authentication API canary', function () {
 
         it('reset password: generate reset token', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/passwordreset'))
+                .post('authentication/passwordreset')
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({
@@ -386,10 +398,14 @@ describe('Authentication API canary', function () {
     describe('Reset all passwords', function () {
         let sendEmail;
         before(async function () {
-            request = await localUtils.getAgent({forceStart: true});
+            request = await framework.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
-            await localUtils.initFixtures();
-            await localUtils.login(request);
+            await framework.initFixtures('invites');
+            await request.loginAsOwner();
+        });
+
+        after(async function () {
+            await framework.resetDb();
         });
 
         beforeEach(function () {
@@ -401,7 +417,7 @@ describe('Authentication API canary', function () {
         });
 
         it('reset all passwords returns 200', function (done) {
-            request.post(localUtils.API.getApiQuery('authentication/reset_all_passwords'))
+            request.post('authentication/reset_all_passwords')
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({})
