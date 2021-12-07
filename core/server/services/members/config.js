@@ -16,14 +16,11 @@ class MembersConfigProvider {
      * @param {{get: (key: string) => any}} options.settingsCache
      * @param {{get: (key: string) => any}} options.config
      * @param {any} options.urlUtils
-     * @param {any} options.logging
-     * @param {{original: string}} options.ghostVersion
      */
     constructor(options) {
         this._settingsCache = options.settingsCache;
         this._config = options.config;
         this._urlUtils = options.urlUtils;
-        this._ghostVersion = options.ghostVersion;
     }
 
     /**
