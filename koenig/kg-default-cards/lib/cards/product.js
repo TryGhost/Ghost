@@ -21,8 +21,8 @@ module.exports = {
         }
 
         const template = hbs`
-        <div class="kg-card kg-embed-card kg-product-card-container">
-            <div class="kg-product-card">
+        <div class="kg-card kg-product-card">
+            <div class="kg-product-card-container">
                 {{#if productImageEnabled}}
                     <img src={{productImageSrc}} class="kg-product-card-image" />
                 {{/if}}
