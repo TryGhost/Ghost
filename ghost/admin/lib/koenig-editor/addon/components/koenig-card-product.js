@@ -23,7 +23,7 @@ export default class KoenigCardProductComponent extends Component {
     imageMimeTypes = IMAGE_MIME_TYPES;
 
     get isEmpty() {
-        const {productTitle, productDescription, productUrl, productButton, productImageSrc, productRatingEnabled, productButtonEnabled, productStarRating} = this.args.payload;
+        const {productTitle, productDescription, productUrl, productButton, productImageSrc, productRatingEnabled, productButtonEnabled} = this.args.payload;
 
         return isBlank(productTitle) && isBlank(productDescription) && (!productButtonEnabled || (isBlank(productUrl) || isBlank(productButton))) && isBlank(productImageSrc) && !productRatingEnabled;
     }
