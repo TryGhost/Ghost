@@ -82,11 +82,13 @@
 }
 
 .kg-audio-playback-rate {
+    width: 36px;
     padding: 0 4px;
     font-family: inherit;
     font-size: .85em;
     font-weight: 600;
     line-height: 1.4em;
+    text-align: left;
     background: transparent;
 }
 
