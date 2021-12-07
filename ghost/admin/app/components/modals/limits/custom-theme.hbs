@@ -20,7 +20,7 @@
             <span>Cancel</span>
         </button>
 
-        <LinkTo @route="pro" class="gh-btn gh-btn-green" data-test-button="upgrade-plan">
+        <LinkTo @route="pro" class="gh-btn gh-btn-green" {{on "click" @close}} data-test-button="upgrade-plan">
             <span>Upgrade</span>
         </LinkTo>
     </div>
