@@ -915,8 +915,8 @@ figure blockquote p {
 
     table.body blockquote.kg-blockquote-alt {
         border-left: 0 none !important;
-        margin: 0 0 2.5em 0;
-        padding: 0 50px 0 50px;
+        margin: 0 0 2.5em 0 !important;
+        padding: 0 50px 0 50px !important;
         font-size: 1.2em;
     }
 
