@@ -41,7 +41,8 @@ const ALPHA_FEATURES = [
     'videoCard',
     'productCard',
     'quoteStyles',
-    'beforeAfterCard'
+    'beforeAfterCard',
+    'richTwitterNewsletters'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
