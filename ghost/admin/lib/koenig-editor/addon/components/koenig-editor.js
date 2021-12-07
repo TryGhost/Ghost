@@ -966,6 +966,9 @@ export default Component.extend({
             editor.run((postEditor) => {
                 insertCardsFromFiles(event.clipboardData.files, postEditor);
             });
+            // prevent mobiledoc's default paste event handler firing
+            event.preventDefault();
+            event.stopImmediatePropagation();
             return;
         }
 
