@@ -1028,20 +1028,20 @@ export default Controller.extend({
         let {
             publishedAtUTC,
             emailRecipientFilter,
-            previewUrl
+            previewUrl,
+            emailOnly
         } = this.post;
         let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.get('timezone'));
 
         let title = 'Scheduled';
-        let description = ['Will be published'];
+        let description = emailOnly ? ['Will be sent'] : ['Will be published'];
 
         if (emailRecipientFilter && emailRecipientFilter !== 'none') {
             const recipientCount = await this.membersCountCache.countString(`subscribed:true+(${emailRecipientFilter})`);
-            description.push(`and delivered to <span><strong>${recipientCount}</strong></span>`);
+            description.push(`${!emailOnly ? 'and delivered ' : ''}to <span><strong>${recipientCount}</strong></span>`);
         }
 
         description.push(`on <span><strong>${publishedAtBlogTZ.format('MMM Do')}</strong></span>`);
-
         description.push(`at <span><strong>${publishedAtBlogTZ.format('HH:mm')}</strong>`);
         if (publishedAtBlogTZ.utcOffset() === 0) {
             description.push('(UTC)</span>');
