@@ -12,6 +12,7 @@ module.exports = [
     require('./paywall'),
     require('./button'),
     require('./callout'),
+    require('./product'),
     require('./toggle'),
     require('./audio')
 ];
