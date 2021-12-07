@@ -150,10 +150,11 @@
     width: 12px;
     height: 12px;
     margin: -5px 0 0 0;
-    border: 1px solid rgba(124,139,154,.7);
+    border: 0;
     cursor: pointer;
     background: #fff;
     border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,0.24);
 }
 
 .kg-player-container input[type="range"]:active::-webkit-slider-thumb {
@@ -172,18 +173,19 @@
 }
 
 .kg-player-container input[type="range"]::-moz-range-progress {
-    background: rgba(124,139,154,.7);
-    bordfer-radius: 2px;
+    background: currentColor;
+    border-radius: 2px;
 }
 
 .kg-player-container input[type="range"]::-moz-range-thumb {
     box-sizing: content-box;
     width: 12px;
     height: 12px;
-    border: 1px solid rgba(124,139,154,.7);
+    border: 0;
     cursor: pointer;
     background: #fff;
     border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,0.24);
 }
 
 .kg-player-container input[type="range"]:active::-moz-range-thumb {
@@ -207,17 +209,18 @@
 }
 
 .kg-player-container input[type="range"]::-ms-fill-upper {
-    background: rgba(124, 139, 154, 0.25);
+    background: currentColor;
 }
 
 .kg-player-container input[type="range"]::-ms-thumb {
     box-sizing: content-box;
     width: 12px;
     height: 12px;
-    border: 1px solid rgba(124,139,154,.7);
+    border: 0;
     cursor: pointer;
     background: #fff;
     border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,0.24);
 }
 
 .kg-player-container input[type="range"]:active::-ms-thumb {
