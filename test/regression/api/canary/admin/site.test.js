@@ -8,12 +8,12 @@ describe('Config API', function () {
     let request;
 
     before(async function () {
-        request = await framework.getAgent();
+        request = await framework.getAgent('/ghost/api/canary/admin/');
     });
 
     it('can retrieve config and all expected properties', async function () {
         const res = await request
-            .get(localUtils.API.getApiQuery('site/'))
+            .get('site/')
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
