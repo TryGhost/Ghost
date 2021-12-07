@@ -21,7 +21,8 @@ module.exports = {
             const retweetCount = numberFormatter.format(tweetData.public_metrics.retweet_count);
             const likeCount = numberFormatter.format(tweetData.public_metrics.like_count);
             const authorUser = tweetData.includes.users.find(user => user.id === tweetData.author_id);
-            const tweetDate = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.DATETIME_MED);
+            const tweetTime = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.TIME_SIMPLE);
+            const tweetDate = DateTime.fromISO(tweetData.created_at).toLocaleString(DateTime.DATE_MED);
 
             const mentions = tweetData.entities && tweetData.entities.mentions || [];
             const urls = tweetData.entities && tweetData.entities.urls || [];
@@ -123,7 +124,7 @@ module.exports = {
                                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
                                                 <td>
-                                                <a href="https://twitter.com/twitter/status/${tweetId}" class="kg-twitter-link" style="padding-top: 4px; padding-right: 16px; padding-bottom: 12px; padding-left: 16px;"><span style="color: #838383;">${tweetDate}</span></a>
+                                                <a href="https://twitter.com/twitter/status/${tweetId}" class="kg-twitter-link" style="padding-top: 4px; padding-right: 16px; padding-bottom: 12px; padding-left: 16px;"><span style="color: #838383;">${tweetTime} &bull; ${tweetDate}</span></a>
                                                 </td>
                                             </tr>
                                         </table>
