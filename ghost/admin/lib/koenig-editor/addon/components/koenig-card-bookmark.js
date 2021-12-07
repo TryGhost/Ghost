@@ -169,7 +169,7 @@ export default Component.extend({
 
             this.set('hasError', true);
         }
-    }),
+    }).drop(),
 
     _focusInput() {
         let urlInput = this.element.querySelector('[name="url"]');
