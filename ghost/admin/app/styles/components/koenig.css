@@ -1740,12 +1740,12 @@ button.emoji-picker__category-button.active {
     border-radius: 5px;
     flex-direction: column;
     text-decoration: none;
-    min-width: 440px;
+    min-width: 512px;
     max-width: 512px;
     padding: 20px;
 }
 
-.kg-product-card-image {
+.kg-product-card-image, .kg-product-card-image-placeholder {
     margin-bottom: 1.6rem;
 }
 
@@ -1761,7 +1761,6 @@ button.emoji-picker__category-button.active {
 .kg-product-card-header {
     display: flex;
     align-items: flex-start;
-    margin-top: 16px;
 }
 
 .kg-product-card-title-container {
@@ -1781,6 +1780,7 @@ button.emoji-picker__category-button.active {
     font-size: 2rem !important;
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
     letter-spacing: .02rem;
+    line-height: 1.4em;
 }
 
 .kg-product-card-description, .kg-product-card-description p {
