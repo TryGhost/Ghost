@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
+const ghostVersion = require('@tryghost/version');
 const moment = require('moment');
 const Notifications = require('../../../../../core/server/services/notifications/notifications');
 const {owner} = require('../../../../utils/fixtures/context');
@@ -13,9 +14,9 @@ describe('Notifications Service', function () {
                 get: sinon.fake.returns(existingNotifications)
             };
 
+            sinon.stub(ghostVersion, 'full').value('4.1.0');
             const notificationsSvc = new Notifications({
-                settingsCache,
-                ghostVersion: '4.1.0'
+                settingsCache
             });
 
             const {allNotifications, notificationsToAdd} = notificationsSvc.add({
@@ -60,9 +61,9 @@ describe('Notifications Service', function () {
                 }])
             };
 
+            sinon.stub(ghostVersion, 'full').value('4.1.0');
             const notificationSvc = new Notifications({
-                settingsCache,
-                ghostVersion: '4.1.0'
+                settingsCache
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -89,9 +90,9 @@ describe('Notifications Service', function () {
                 }])
             };
 
+            sinon.stub(ghostVersion, 'full').value('4.0.0');
             const notificationSvc = new Notifications({
-                settingsCache,
-                ghostVersion: '4.0.0'
+                settingsCache
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -118,9 +119,9 @@ describe('Notifications Service', function () {
                 }])
             };
 
+            sinon.stub(ghostVersion, 'full').value('3.0.0');
             const notificationSvc = new Notifications({
-                settingsCache,
-                ghostVersion: '3.0.0'
+                settingsCache
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -147,9 +148,9 @@ describe('Notifications Service', function () {
                 }])
             };
 
+            sinon.stub(ghostVersion, 'full').value('4.0.0');
             const notificationSvc = new Notifications({
-                settingsCache,
-                ghostVersion: '4.0.0'
+                settingsCache
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -176,9 +177,9 @@ describe('Notifications Service', function () {
                 }])
             };
 
+            sinon.stub(ghostVersion, 'full').value('5.0.0');
             const notificationSvc = new Notifications({
-                settingsCache,
-                ghostVersion: '5.0.0'
+                settingsCache
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -218,9 +219,9 @@ describe('Notifications Service', function () {
                 }])
             };
 
+            sinon.stub(ghostVersion, 'full').value('4.1.0');
             const notificationSvc = new Notifications({
-                settingsCache,
-                ghostVersion: '4.1.0'
+                settingsCache
             });
 
             const notifications = notificationSvc.browse({user: owner});
@@ -243,7 +244,6 @@ describe('Notifications Service', function () {
 
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: '5.0.0',
                 SettingsModel: {
                     edit: settingsModelStub
                 }
@@ -269,9 +269,9 @@ describe('Notifications Service', function () {
             };
             const settingsModelStub = sinon.stub().resolves();
 
+            sinon.stub(ghostVersion, 'full').value('5.0.0');
             const notificationSvc = new Notifications({
                 settingsCache,
-                ghostVersion: '5.0.0',
                 SettingsModel: {
                     edit: settingsModelStub
                 }
