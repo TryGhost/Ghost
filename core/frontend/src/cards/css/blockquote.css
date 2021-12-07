@@ -1,14 +1,9 @@
 .kg-blockquote-alt {
-  background: none;
   font-size: 1.5em;
   font-style: italic;
   line-height: 1.7em;
   text-align: center;
   padding: 0 2.5em;
-}
-
-.kg-blockquote-alt::before {
-  display: none;
 }
 
 @media (max-width: 800px) {
