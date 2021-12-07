@@ -196,15 +196,13 @@ export default class KoenigCardAudioComponent extends Component {
     }
 
     @action
-    async audioThumbnailUploadCompleted([audio]) {
-        this.previewPayload.thumbnailSrc = audio.url;
+    async audioThumbnailUploadCompleted([thumb]) {
+        const thumbnailGuid = Date.now().valueOf();
+        this.previewPayload.thumbnailSrc = `${thumb.url}?v=${thumbnailGuid}`;
 
-        // save preview payload attrs into actual payload and create undo snapshot
+        // save preview payload attr into actual payload
         this.args.editor.run(() => {
             this.updatePayloadAttr('thumbnailSrc', this.previewPayload.thumbnailSrc);
-            // this.payloadAudioAttrs.forEach((attr) => {
-            //     this.updatePayloadAttr(attr, this.previewPayload[attr]);
-            // });
         });
 
         // reset preview so we're back to rendering saved data
