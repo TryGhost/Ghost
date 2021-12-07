@@ -20,6 +20,8 @@ const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/redirects');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
+const errorHandler = require('@tryghost/mw-error-handler');
+const sentry = require('../../shared/sentry');
 const mw = require('./middleware');
 const labs = require('../../shared/labs');
 
@@ -176,7 +178,7 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(SiteRouter);
 
     // ### Error handlers
-    siteApp.use(shared.middleware.errorHandler.pageNotFound);
+    siteApp.use(errorHandler.pageNotFound);
     config.get('apps:internal').forEach((appName) => {
         const app = require(path.join(config.get('paths').internalAppPath, appName));
 
@@ -184,7 +186,7 @@ module.exports = function setupSiteApp(options = {}) {
             app.setupErrorHandling(siteApp);
         }
     });
-    siteApp.use(mw.errorHandler.handleThemeResponse);
+    siteApp.use(errorHandler.handleThemeResponse(sentry));
 
     debug('Site setup end');
 

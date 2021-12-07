@@ -11,10 +11,6 @@ module.exports = {
         return require('./cache-control');
     },
 
-    get errorHandler() {
-        return require('./error-handler');
-    },
-
     get prettyUrls() {
         return require('./pretty-urls');
     },

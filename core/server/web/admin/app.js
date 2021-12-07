@@ -5,6 +5,8 @@ const config = require('../../../shared/config');
 const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
 const shared = require('../shared');
+const errorHandler = require('@tryghost/mw-error-handler');
+const sentry = require('../../../shared/sentry');
 const redirectAdminUrls = require('./middleware/redirect-admin-urls');
 
 module.exports = function setupAdminApp() {
@@ -44,8 +46,8 @@ module.exports = function setupAdminApp() {
     // Finally, routing
     adminApp.get('*', require('./controller'));
 
-    adminApp.use(shared.middleware.errorHandler.pageNotFound);
-    adminApp.use(shared.middleware.errorHandler.handleHTMLResponse);
+    adminApp.use(errorHandler.pageNotFound);
+    adminApp.use(errorHandler.handleHTMLResponse(sentry));
 
     debug('Admin setup end');
 

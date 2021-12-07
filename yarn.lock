@@ -1712,6 +1712,14 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
+"@tryghost/mw-error-handler@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.1.0.tgz#7d47989a29a5a0d800747620f3d1e1dfc20b5d98"
+  integrity sha512-gAUI/GApkgPYtPMH05kArHcksO/ih+GJQ3Ocgep+FbThj+o6gPLSVE0qyLdSGzGPJnf6dCGbUo8v7DO3nNSUUg==
+  dependencies:
+    "@tryghost/debug" "^0.1.9"
+    "@tryghost/tpl" "^0.1.8"
+
 "@tryghost/mw-session-from-token@0.1.26":
   version "0.1.26"
   resolved "https://registry.npmjs.org/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.26.tgz"

@@ -86,6 +86,7 @@
     "@tryghost/members-ssr": "1.0.16",
     "@tryghost/metrics": "1.0.1",
     "@tryghost/minifier": "0.1.8",
+    "@tryghost/mw-error-handler": "^0.1.0",
     "@tryghost/mw-session-from-token": "0.1.26",
     "@tryghost/nodemailer": "0.3.8",
     "@tryghost/package-json": "1.0.13",

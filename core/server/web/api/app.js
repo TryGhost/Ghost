@@ -2,7 +2,8 @@ const debug = require('@tryghost/debug')('web:api:default:app');
 const config = require('../../../shared/config');
 const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');
-const errorHandler = require('../shared/middleware/error-handler');
+const sentry = require('../../../shared/sentry');
+const errorHandler = require('@tryghost/mw-error-handler');
 
 module.exports = function setupApiApp() {
     debug('Parent API setup start');
@@ -25,8 +26,8 @@ module.exports = function setupApiApp() {
     apiApp.lazyUse(urlUtils.getVersionPath({version: 'canary', type: 'admin'}), require('./canary/admin/app'));
 
     // Error handling for requests to non-existent API versions
-    apiApp.use(errorHandler.resourceNotFound);
-    apiApp.use(errorHandler.handleJSONResponse);
+    apiApp.use(errorHandler.resourceNotFound(sentry));
+    apiApp.use(errorHandler.handleJSONResponse(sentry));
 
     debug('Parent API setup end');
     return apiApp;
