@@ -15,6 +15,7 @@ import * as buttonCard from './cards/button';
 import * as embedCard from './cards/embed';
 import * as htmlCard from './cards/html';
 import * as softReturn from './cards/softReturn';
+import * as productCard from './cards/product';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -467,6 +468,7 @@ export function createParserPlugins(_options = {}) {
         buttonCard.fromSubstackButton(options),
         kgCalloutCardToCard,
         kgToggleCardToCard,
+        productCard.fromKoenigCard(options),
         blockquoteWithChildren,
         softReturn.fromBr(options),
         removeLeadingNewline,
