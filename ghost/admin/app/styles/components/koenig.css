@@ -1742,6 +1742,7 @@ button.emoji-picker__category-button.active {
     text-decoration: none;
     min-width: 440px;
     max-width: 512px;
+    padding: 20px;
 }
 
 .kg-product-card-image {
@@ -1757,8 +1758,10 @@ button.emoji-picker__category-button.active {
     fill: #15171a;
 }
 
-.kg-product-card-text {
-    padding: 20px;
+.kg-product-card-header {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 16px;
 }
 
 .kg-product-card-title {
@@ -1794,12 +1797,21 @@ button.emoji-picker__category-button.active {
     margin-top: 24px;
 }
 
+.kg-product-card-rating-star:hover {
+    opacity: 0.7;
+}
+
+.kg-product-card-rating-edit {
+    background: none;
+    display: flex;
+}
+
 .kg-product-card-rating-star path {
-    fill: grey;
+    fill: var(--whitegrey);
 }
 
 .kg-product-card-rating-active.kg-product-card-rating-star path {
-    fill: gold;
+    fill: var(--darkgrey);
 }
 
 /* Button card
