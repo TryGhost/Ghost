@@ -110,8 +110,26 @@
                     @onChange={{action "setProductDescription"}}
                     @didCreateEditor={{action "registerEditor"}}
                 />
-                
-                {{#if (and @payload.productButton @payload.productUrl)}}
+                {{#if @payload.productRatingEnabled}}
+                    <div class="kg-product-card-rating-edit gh-btn-group icons" style="line-height: auto;">
+                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="1" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        </button>
+                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="2" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        </button>
+                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="3" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        </button>
+                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="4" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        </button>
+                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="5" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        </button>
+                    </div>
+                {{/if}}
+                {{#if @payload.productButtonEnabled}}
                     <a href={{@payload.productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer"><span>{{@payload.productButton}}</span></a>
                 {{/if}}
             </div>
@@ -119,6 +137,39 @@
         </div>
 
         <KoenigSettingsPanel>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Rating</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="for-switch x-small">
+                        <label class="switch" for="has-rating">
+                            <input
+                                type="checkbox"
+                                checked={{@payload.productRatingEnabled}}
+                                id="has-rating"
+                                {{on "click" this.toggleProductRating}}
+                            >
+                            <span class="input-toggle-component mt1"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <hr class="kg-settings-panel-divider">
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Button</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="for-switch x-small">
+                        <label class="switch" for="has-button">
+                            <input
+                                type="checkbox"
+                                checked={{@payload.productButtonEnabled}}
+                                id="has-button"
+                                {{on "click" this.toggleProductButton}}
+                            >
+                            <span class="input-toggle-component mt1"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="kg-settings-panel-control">
                 <label class="kg-settings-panel-control-label" for="product-button-input">Button title</label>
                 <div class="kg-settings-panel-control-input">
@@ -171,9 +222,25 @@
                     {{/if}}
                 </div>
                 <p class="kg-product-card-description">{{{@payload.productDescription}}}</p>
-                
-                {{#if (and @payload.productButton @payload.productUrl)}}
-                    <a href={{@payload.productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer"><span>{{@payload.productButton}}</span></a>
+                {{#if @payload.productRatingEnabled}}
+                    <div class="kg-product-card-rating-edit">
+                        <span class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                    </div>
+                {{/if}}
+                {{#if @payload.productButtonEnabled}}
+                    <a href={{@payload.productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer">
+                        <span>
+                            {{#if @payload.productButton}}
+                                {{@payload.productButton}}
+                            {{else}}
+                                Add button title
+                            {{/if}}
+                        </span>
+                        </a>
                 {{/if}}
             </div>
 
