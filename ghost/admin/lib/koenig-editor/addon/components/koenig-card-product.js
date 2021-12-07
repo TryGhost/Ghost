@@ -23,9 +23,9 @@ export default class KoenigCardProductComponent extends Component {
     imageMimeTypes = IMAGE_MIME_TYPES;
 
     get isEmpty() {
-        const {productTitle, productDescription, productUrl, productButton, productImageSrc} = this.args.payload;
+        const {productTitle, productDescription, productUrl, productButton, productImageSrc, productRatingEnabled, productButtonEnabled, productStarRating} = this.args.payload;
 
-        return isBlank(productTitle) && isBlank(productDescription) && (isBlank(productUrl) || isBlank(productButton)) && isBlank(productImageSrc);
+        return isBlank(productTitle) && isBlank(productDescription) && (!productButtonEnabled || (isBlank(productUrl) || isBlank(productButton))) && isBlank(productImageSrc) && !productRatingEnabled;
     }
 
     get isIncomplete() {
@@ -55,7 +55,11 @@ export default class KoenigCardProductComponent extends Component {
         super(...arguments);
         this.args.registerComponent(this);
 
-        const payloadDefaults = {};
+        const payloadDefaults = {
+            productButtonEnabled: false,
+            productRatingEnabled: false,
+            productStarRating: 5
+        };
 
         Object.entries(payloadDefaults).forEach(([key, value]) => {
             if (this.args.payload[key] === undefined) {
@@ -238,5 +242,15 @@ export default class KoenigCardProductComponent extends Component {
     @action
     changeStars(event) {
         this._updatePayloadAttr('productStarRating', event.currentTarget.value);
+    }
+
+    @action
+    toggleProductButton() {
+        this._updatePayloadAttr('productButtonEnabled', !this.args.payload.productButtonEnabled);
+    }
+
+    @action
+    toggleProductRating() {
+        this._updatePayloadAttr('productRatingEnabled', !this.args.payload.productRatingEnabled);
     }
 }
