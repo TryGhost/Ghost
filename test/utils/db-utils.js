@@ -26,6 +26,7 @@ module.exports.reset = async () => {
         const dbExists = await fs.pathExists(filenameOrig);
 
         if (dbExists) {
+            await db.knex.destroy();
             await fs.copyFile(filenameOrig, filename);
         } else {
             await knexMigrator.reset({force: true});
