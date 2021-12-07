@@ -31,10 +31,17 @@
                 @onFailed={{action "resetSrcs"}}
                 as |uploader|
             >
-                <div class="relative{{unless (or this.previewSrc @payload.productImageSrc) " bg-whitegrey-l2"}}">
+                <div class="relative hide-child{{unless (or this.previewSrc @payload.productImageSrc) " bg-whitegrey-l2"}}">
                     {{#if (or this.previewSrc @payload.productImageSrc)}}
                         <img src={{or this.previewSrc @payload.productImageSrc}} class="{{kg-style this.kgImgStyle sidebar=this.ui.hasSideNav}} kg-product-card-image">
-                        <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; right: 20px; font-size: 1.2rem;" {{action "resetSrcs"}}><span>{{svg-jar "koenig/kg-trash"}}</span></button>
+                        {{#unless this.koenigDragDropHandler.isDragging}}
+                            <div class="bg-image-overlay-top child pe-none {{image.overlayClasses}}">
+                                <div class="flex flex-row-reverse">
+                                    <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; right: 20px; font-size: 1.2rem;" {{action "resetSrcs"}}><span>{{svg-jar "koenig/kg-trash"}}</span></button>
+                                </div>
+                            </div>
+                        {{/unless}}
+                    
                         {{#if this.isDraggedOver}}
                             <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
                                 <span class="db center sans-serif fw7 f7 white">
@@ -83,21 +90,21 @@
                         @onChange={{action "setProductTitle"}}
                         @didCreateEditor={{action "registerEditor"}}
                     />
-                    <div class="kg-product-card-rating-edit gh-btn-group icons" style="line-height: auto;">
-                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="1" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                    <div class="kg-product-card-rating-edit icons" style="line-height: auto;">
+                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="1" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="2" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="2" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="3" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="3" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="4" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="4" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="5" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="5" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
                     </div>
                 </div>
@@ -111,21 +118,21 @@
                     @didCreateEditor={{action "registerEditor"}}
                 />
                 {{#if @payload.productRatingEnabled}}
-                    <div class="kg-product-card-rating-edit gh-btn-group icons" style="line-height: auto;">
-                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="1" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                    <div class="kg-product-card-rating-edit icons" style="line-height: auto;">
+                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="1" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="2" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="2" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="3" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="3" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="4" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="4" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} gh-btn gh-btn-icon kg-product-card-rating-star" value="5" onclick={{action "changeStars"}}>
-                            <span>{{svg-jar "koenig/kg-edit"}}</span>
+                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="5" onclick={{action "changeStars"}}>
+                            <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
                     </div>
                 {{/if}}
@@ -208,27 +215,28 @@
             {{#if @payload.productImageSrc}}
                 <img src={{@payload.productImageSrc}} class="kg-product-card-image" />
             {{/if}}
-            <div class="kg-product-card-text">
                 <div class="kg-product-card-header">
-                    <h4 class="kg-product-card-title">{{{@payload.productTitle}}}</h4>
+                    <div class="kg-product-card-title-container">
+                        <h4 class="kg-product-card-title">{{{@payload.productTitle}}}</h4>
+                    </div>
                     {{#if @payload.productStarRating}}
                         <div class="kg-product-card-rating-edit">
-                            <span class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
-                            <span class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
-                            <span class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
-                            <span class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
-                            <span class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                            <span class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
+                            <span class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
+                            <span class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
+                            <span class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
+                            <span class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
                         </div>
                     {{/if}}
                 </div>
                 <p class="kg-product-card-description">{{{@payload.productDescription}}}</p>
                 {{#if @payload.productRatingEnabled}}
-                    <div class="kg-product-card-rating-edit">
-                        <span class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
-                        <span class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
-                        <span class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
-                        <span class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
-                        <span class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-edit" class="w4 h4"}}</span>
+                    <div class="kg-product-card-rating-preview">
+                        <span class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
+                        <span class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active gh-btn-group-selected"}} kg-product-card-rating-star">{{svg-jar "koenig/kg-star" class="w4 h4"}}</span>
                     </div>
                 {{/if}}
                 {{#if @payload.productButtonEnabled}}
@@ -242,8 +250,6 @@
                         </span>
                         </a>
                 {{/if}}
-            </div>
-
         </div>
     {{/if}}
 </KoenigCard>
