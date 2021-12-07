@@ -32,7 +32,7 @@
     font-family: inherit;
     font-size: 1em;
     font-weight: 700;
-=    background: transparent;
+    background: transparent;
 }
 
 .kg-player {
@@ -116,6 +116,41 @@
 .kg-audio-volume-slider {
     width: 80px;
 }
+
+.kg-audio-seek-slider::before {
+    position: absolute;
+    content: "";
+    left: 0;
+    width: var(--seek-before-width) !important;
+    height: 3px;
+    background-color: rgba(0, 125, 181, 0.6);
+    cursor: pointer;
+}
+
+.kg-audio-volume-slider::before {
+    position: absolute;
+    content: "";
+    left: 0;
+    width: var(--volume-before-width) !important;
+    height: 3px;
+    background-color: rgba(0, 125, 181, 0.6);
+    cursor: pointer;
+}
+
+/* Browser styles for slider */
+
+/* .kg-audio-volume-slider::-webkit-slider-runnable-track {
+    background: rgba(0, 125, 181, 0.6) !important;
+}
+.kg-audio-volume-slider::-moz-range-track {
+    background: rgba(0, 125, 181, 0.6) !important;
+}
+.kg-audio-volume-slider::-ms-fill-upper {
+    background: rgba(0, 125, 181, 0.6) !important;
+}
+.kg-audio-volume-slider::before {
+    width: var(--volume-before-width) !important;
+} */
 
 /* Resetting browser styles
 /* --------------------------------------------------------------- */
