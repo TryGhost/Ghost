@@ -1820,7 +1820,7 @@ button.emoji-picker__category-button.active {
     fill: #fff;
 }
 
-.kg-product-card-rating-edit .kg-product-card-rating-star:hover {
+.kg-product-card-rating-star-hovered {
     opacity: 0.7;
 }
 

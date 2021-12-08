@@ -302,4 +302,21 @@ export default class KoenigCardProductComponent extends Component {
     toggleProductRating() {
         this._updatePayloadAttr('productRatingEnabled', !this.args.payload.productRatingEnabled);
     }
+
+    @action
+    hoverStarOn(event) {
+        const val = event.currentTarget.value;
+        const stars = this.element.querySelectorAll('.kg-product-card-rating-star');
+        for (let i = 0; i + 1 <= val && i < stars.length; i++) {
+            stars[i].classList.add('kg-product-card-rating-star-hovered');
+        }
+    }
+
+    @action
+    hoverStarOff() {
+        const stars = this.element.querySelectorAll('.kg-product-card-rating-star');
+        for (let i = 0; i < stars.length; i++) {
+            stars[i].classList.remove('kg-product-card-rating-star-hovered');
+        }
+    }
 }
