@@ -21,15 +21,9 @@ const PLACEHOLDERS = ['summer', 'mountains', 'ufo-attack'];
 {
     src: 'https://ghostsite.com/media/...',
     fileName: '...',
-    width: 640,
-    height: 480,
     duration: 60,
-    mimeType: 'audio/mp4'
-    thumbnailSrc: 'https://ghostsite.com/images/...',
-    thumbnailWidth: 640,
-    thumbnailHeight: 640,
-    cardWidth: 'normal|wide|full',
-    loop: true|false (default: false)
+    mimeType: 'audio/mp4',
+    thumbnailSrc: 'https://ghostsite.com/content/media/...'
 }
 */
 
@@ -95,11 +89,6 @@ export default class KoenigCardAudioComponent extends Component {
                 this.updatePayloadAttr(key, value);
             }
         });
-    }
-
-    _afterRender() {
-        // this._placeCursorAtEnd();
-        // this._focusInput();
     }
 
     @action
@@ -179,10 +168,15 @@ export default class KoenigCardAudioComponent extends Component {
         // TODO: Placeholder for any processing on audio upload
     }
 
+    prettifyFileName(filename) {
+        let updatedName = filename.split('.').slice(0, -1).join('.').replace(/[-_]/g,' ').replace(/[^\w\s]+/g,'').replace(/\s\s+/g, ' ');
+        return updatedName.charAt(0).toUpperCase() + updatedName.slice(1);
+    }
+
     @action
     async audioUploadCompleted([audio]) {
         this.previewPayload.src = audio.url;
-        this.previewPayload.fileName = audio.fileName;
+        this.previewPayload.fileName = this.prettifyFileName(audio.fileName);
 
         // save preview payload attrs into actual payload and create undo snapshot
         this.args.editor.run(() => {
