@@ -17,6 +17,9 @@
     @moveCursorToPrevSection={{@moveCursorToPrevSection}}
     @moveCursorToNextSection={{@moveCursorToNextSection}}
     @editor={{@editor}}
+    {{on "dragover" this.dragOver}}
+    {{on "dragleave" this.dragLeave}}
+    {{on "drop" this.drop}}
     {{did-insert this.registerElement}}
     as |card|
 >

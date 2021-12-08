@@ -19,12 +19,17 @@ export default class KoenigCardProductComponent extends Component {
     @service membersUtils;
     @service ui;
 
-    files= null;
+    @tracked
+    files = null;
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
 
     @tracked
     previewSrc = null;
+    @tracked
+    isDraggedOver = false;
+
+    handlesDragDrop = true;
 
     get isButtonIncomplete() {
         const {productUrl, productButton} = this.args.payload;
@@ -317,6 +322,41 @@ export default class KoenigCardProductComponent extends Component {
         const stars = this.element.querySelectorAll('.kg-product-card-rating-star');
         for (let i = 0; i < stars.length; i++) {
             stars[i].classList.remove('kg-product-card-rating-star-hovered');
+        }
+    }
+
+    @action
+    dragOver(event) {
+        if (!event.dataTransfer) {
+            return;
+        }
+
+        // this is needed to work around inconsistencies with dropping files
+        // from Chrome's downloads bar
+        if (navigator.userAgent.indexOf('Chrome') > -1) {
+            let eA = event.dataTransfer.effectAllowed;
+            event.dataTransfer.dropEffect = (eA === 'move' || eA === 'linkMove') ? 'move' : 'copy';
+        }
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        this.isDraggedOver = true;
+    }
+
+    @action
+    dragLeave(event) {
+        event.preventDefault();
+        this.isDraggedOver = false;
+    }
+
+    @action
+    drop(event) {
+        event.preventDefault();
+        this.isDraggedOver = false;
+
+        if (event.dataTransfer.files) {
+            this.files = [event.dataTransfer.files[0]];
         }
     }
 }
