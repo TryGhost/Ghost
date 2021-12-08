@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{concat (kg-style "container-card") " kg-card kg-video-card mih10 miw-100 relative " (kg-style "breakout" size=@payload.cardWidth)}}
+    @class={{concat (kg-style "media-card") " kg-card kg-video-card mih10 miw-100 relative " (kg-style "breakout" size=@payload.cardWidth)}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -61,8 +61,8 @@
                         {{uploader.progressBar}}
                     {{else if (not this.previewThumbnailSrc @payload.src)}}
                         <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" {{on "click" this.triggerVideoFileDialog}}>
-                            {{svg-jar this.placeholder class="kg-placeholder-image"}}
-                            <span class="mt2 midgrey">Click to select a video</span>
+                            {{svg-jar "film-camera" class="kg-placeholder-video"}}
+                            <span class="mt4 kg-placeholder-text">Click to select a video</span>
                         </button>
                     {{/if}}
                 </div>
@@ -88,9 +88,9 @@
             <div class="kg-settings-panel-control-label">Video width</div>
             <div class="kg-settings-panel-control-input">
                 <div class="gh-btn-group icons">
-                    <button type="button" title="Regular" class="gh-btn gh-btn-icon {{if (not @payload.cardWidth) "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" null)}}><span>{{svg-jar "koenig/kg-img-regular"}}</span></button>
-                    <button type="button" title="Wide" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "wide") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "wide")}}><span>{{svg-jar "koenig/kg-img-wide"}}</span></button>
-                    <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "full")}}><span>{{svg-jar "koenig/kg-img-full"}}</span></button>
+                    <button type="button" title="Regular" class="gh-btn gh-btn-icon {{if (not @payload.cardWidth) "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" null)}}><span>{{svg-jar "koenig/kg-img-regular" class="fill-darkgrey"}}</span></button>
+                    <button type="button" title="Wide" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "wide") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "wide")}}><span>{{svg-jar "koenig/kg-img-wide" class="fill-darkgrey"}}</span></button>
+                    <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "full")}}><span>{{svg-jar "koenig/kg-img-full" class="fill-darkgrey"}}</span></button>
                 </div>
             </div>
         </div>
@@ -106,6 +106,7 @@
                 </div>
             </div>
         </div>
+        <div class="kg-settings-panel-control-info video">Autoplay your video on a loop without sound.</div>
 
         <div class="kg-settings-panel-control">
             <label class="kg-settings-panel-control-label" for="button-url-input">Poster image</label>
