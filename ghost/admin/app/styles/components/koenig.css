@@ -1747,6 +1747,9 @@ button.emoji-picker__category-button.active {
 
 .kg-product-card-image-container {
     margin-bottom: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .kg-product-card-trash-icon svg {
