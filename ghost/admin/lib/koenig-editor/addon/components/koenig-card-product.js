@@ -111,7 +111,7 @@ export default class KoenigCardProductComponent extends Component {
     }
 
     handleTitleTab() {
-        let contentInput = this.element.querySelector('.kg-product-card-description .koenig-basic-html-input__editor');
+        let contentInput = this.element.querySelector('.kg-product-card-description .koenig-basic-html-textarea__editor');
 
         if (contentInput) {
             contentInput.focus();
