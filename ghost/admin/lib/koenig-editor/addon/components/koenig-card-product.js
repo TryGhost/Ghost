@@ -10,6 +10,7 @@ import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
+import {tracked} from '@glimmer/tracking';
 
 export default class KoenigCardProductComponent extends Component {
     @service config;
@@ -21,6 +22,9 @@ export default class KoenigCardProductComponent extends Component {
     files= null;
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
+
+    @tracked
+    previewSrc = null;
 
     get isEmpty() {
         const {productTitle, productDescription, productUrl, productButton, productImageSrc, productRatingEnabled, productButtonEnabled} = this.args.payload;
