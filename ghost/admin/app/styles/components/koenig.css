@@ -1936,20 +1936,69 @@ button.emoji-picker__category-button.active {
 /* Audio card
 /* --------------------------------------------------------------- */
 
-.kg-audio-card .kg-audio-container {
+.kg-audio-container {
     display: flex;
     width: 100%;
     border-radius: var(--border-radius);
     box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
 }
 
+.kg-audio-container-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 96px;
+    background: var(--whitegrey-l2);
+    cursor: pointer;
+}
+
+.kg-audio-container-empty svg {
+    width: 24px;
+    height: auto;
+    margin-right: 8px;
+    fill: var(--midgrey-l2);
+    opacity: 0.85;
+    transition: var(--animation-speed-fast) ease-out;
+    transform: scale(1.0);
+}
+
+.kg-audio-container-empty:hover svg {
+    opacity: 1.0;
+    transform: scale(1.04);
+}
+
+.kg-audio-container-empty .gh-progress-container-progress {
+    width: 30%;
+    background: linear-gradient(to bottom, var(--whitegrey-l1), var(--whitegrey));
+}
+
+.kg-placeholder-text {
+    color: var(--midgrey);
+    font-family: var(--font-family);
+    font-size: 1.45rem;
+    font-weight: 400;
+    line-height: 1.6em;
+}
+
+.kg-audio-container-empty:hover .kg-placeholder-text {
+    color: var(--midgrey-d2);
+}
+
 .kg-media-container {
     position: relative;
-    width: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
     height: 80px;
+    max-width: 80px;
     margin: 8px;
-    background: var(--whitegrey-l1);
+    background: var(--accent-color);
     border-radius: var(--border-radius);
+}
+
+.kg-media-container .gh-progress-container-progress {
+    background: rgba(225, 225, 225, .2);
 }
 
 .kg-audio-button {
@@ -1960,49 +2009,52 @@ button.emoji-picker__category-button.active {
     height: 80px;
 }
 
-.kg-audio-button svg {
-    fill: var(--midlightgrey);
-    opacity: 0.85;
-    transition: var(--animation-speed-normal) ease-out;
-    transform: scale(1.0);
-  }
-
-  .kg-audio-button:hover svg {
-    opacity: 1.0;
-    fill: var(--green);
-  }
-
-  .kg-placeholder-audio {
-    width: 28px;
-    height: 28px;
+.kg-audio-button .koenig-audio-replace-icon,
+.kg-audio-button .koenig-audio-upload-icon {
+    width: 18px;
+    height: 18px;
+    margin: .6rem .8rem;
 }
 
-.kg-placeholder-text {
-    display: flex;
-    flex-grow: 1;
-    align-items: center;
-    margin-left: 12px;
-    color: var(--midgrey);
-    font-family: var(--font-family);
-    font-size: 1.45rem;
-    font-weight: 400;
+.koenig-audio-upload-icon path {
+    stroke: var(--darkgrey);
+    stroke-width: 2;
 }
 
+  .kg-audio-button .image-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 6px;
+    color: #fff;
+    background-image: linear-gradient(180deg,rgba(0,0,0,0.2) 0,transparent 70%,transparent 100%);
+    opacity: 0;
+    transition: all 0.15s ease-in-out;
+  }
 
-.kg-audio-card {
-    display: flex;
+  .kg-audio-button:hover .image-overlay {
+    opacity: 1;
+  }  
+
+  .kg-audio-button .kg-audio-icon {
+    width: 24px;
+    height: 24px;
+    fill: var(--white);
+    transition: all 0.15s ease-in-out;
+  }
+
+  .kg-audio-button:hover .kg-audio-icon {
+    opacity: .6;
+  }
+
+  .kg-audio-button img {
     width: 100%;
-    min-height: 96px;
-    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
-}
-
-.kg-audio-thumbnail {
-    width: 80px;
-    margin: 8px;
+    height: 100%;
     object-fit: cover;
-    aspect-ratio: 1/1;
-    border-radius: 3px;
-}
+    border-radius: var(--border-radius);
+  }
 
 .kg-player-container {
     position: relative;
@@ -2016,12 +2068,15 @@ button.emoji-picker__category-button.active {
 .kg-audio-title {
     width: 100%;
     margin: 8px 0 0 0;
-    padding: 8px 12px 0;
+    padding: 8px 12px;
     border: none;
-    font-family: inherit;
-    font-size: 1em;
+    font-size: 1.7rem;
     font-weight: 700;
     background: transparent;
+}
+
+.kg-audio-title:focus {
+    box-shadow: none;
 }
 
 .kg-player {
@@ -2111,9 +2166,10 @@ button.emoji-picker__category-button.active {
     content: "";
     left: 0;
     width: 10% !important;
-    height: 3px;
-    background-color: rgba(0, 125, 181, 0.6);
+    height: 4px;
+    background-color: currentColor;
     cursor: pointer;
+    border-radius: 2px;
 }
 
 .kg-audio-volume-slider::before {
@@ -2121,9 +2177,10 @@ button.emoji-picker__category-button.active {
     content: "";
     left: 0;
     width: 70% !important;
-    height: 3px;
-    background-color: rgba(0, 125, 181, 0.6);
+    height: 4px;
+    background-color: currentColor;
     cursor: pointer;
+    border-radius: 2px;
 }
 
 
@@ -2243,6 +2300,7 @@ button.emoji-picker__category-button.active {
 
 .kg-player-container input[type="range"]:active::-ms-thumb {
     transform: scale(1.2);
+
 }
 
 /* Codemirror overrides
