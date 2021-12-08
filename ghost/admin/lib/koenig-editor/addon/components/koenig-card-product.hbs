@@ -112,15 +112,13 @@
                     </div>
                     {{/if}}
                 </div>
-                <KoenigBasicHtmlInput
+                <KoenigBasicHtmlTextarea
                     @html={{@payload.productDescription}}
                     @placeholder="Description"
-                    @class="w-100 fw4 bn bg-transparent kg-product-card-description"
+                    @class="w-100 fw4 bg-transparent kg-product-card-description"
                     @name="description"
-                    @defaultTag="p"
                     @onChange={{action "setProductDescription"}}
                     @didCreateEditor={{action "registerEditor"}}
-                    @allowBr={{true}}
                 />
                 {{#if @payload.productButtonEnabled}}
                     <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-product-card-button" disabled={{not @payload.productButton}}>
