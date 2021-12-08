@@ -363,6 +363,11 @@ export default Component.extend({
         }
         // -----------------------------------------------------------------
 
+        // convert first section to the expected tag type (might be a heading, blockquote, etc)
+        if (pastedPost.sections.head) {
+            pastedPost.sections.head.tagName = this.defaultTag;
+        }
+
         // same as default
         editor.run((postEditor) => {
             const newPosition = postEditor.insertPost(position, pastedPost);
