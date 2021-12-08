@@ -47,6 +47,32 @@ const cycleHeaderLevel = function cycleHeaderLevel(editor, koenig) {
     setHeader(headerTag, editor, koenig);
 };
 
+const cycleQuoteStyle = function cycleQuoteStyle(editor, koenig) {
+    if (!editor.activeSection.isMarkerable) {
+        return;
+    }
+
+    const range = editor.range;
+    const canKeepRange = !editor.activeSection.isListItem;
+
+    let sectionName = 'blockquote';
+
+    if (editor.activeSection.tagName === 'blockquote') {
+        sectionName = 'aside';
+    }
+    if (editor.activeSection.tagName === 'aside') {
+        sectionName = 'p';
+    }
+
+    editor.run((postEditor) => {
+        koenig.send('toggleSection', sectionName, postEditor);
+
+        if (canKeepRange) {
+            postEditor.setRange(range);
+        }
+    });
+};
+
 export const DEFAULT_KEY_COMMANDS = [{
     str: 'ENTER',
     run(editor, koenig) {
@@ -358,19 +384,7 @@ export const DEFAULT_KEY_COMMANDS = [{
 }, {
     str: 'CTRL+Q',
     run(editor, koenig) {
-        if (!editor.activeSection.isMarkerable) {
-            return;
-        }
-
-        let range = editor.range;
-        let canKeepRange = !editor.activeSection.isListItem;
-
-        editor.run((postEditor) => {
-            koenig.send('toggleSection', 'blockquote', postEditor);
-            if (canKeepRange) {
-                postEditor.setRange(range);
-            }
-        });
+        return cycleQuoteStyle(editor, koenig);
     }
 }, {
     str: 'CTRL+L',
