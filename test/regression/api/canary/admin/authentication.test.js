@@ -1,6 +1,10 @@
+const chai = require('chai');
+const {expect} = require('chai');
+const {any} = require('expect');
+const chaiJestSnapshot = require('@ethanresnick/chai-jest-snapshot');
+
 const should = require('should');
 const sinon = require('sinon');
-const localUtils = require('./utils');
 const testUtils = require('../../../../utils/index');
 const framework = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models/index');
@@ -11,9 +15,10 @@ const mailService = require('../../../../../core/server/services/mail/index');
 
 let request;
 
-describe('Authentication API canary', function () {
+describe.only('Authentication API canary', function () {
     describe('Blog setup', function () {
         before(async function () {
+            chaiJestSnapshot.resetSnapshotRegistry();
             request = await framework.getAgent('/ghost/api/canary/admin/');
         });
 
@@ -22,6 +27,7 @@ describe('Authentication API canary', function () {
         });
 
         beforeEach(function () {
+            chaiJestSnapshot.configureUsingMochaContext(this);
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
         });
 
@@ -33,10 +39,13 @@ describe('Authentication API canary', function () {
             return request
                 .get('authentication/setup')
                 .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
                 .expect(200)
                 .then((res) => {
-                    res.body.setup[0].status.should.be.false();
+                    expect(res.body).to.matchSnapshot();
+                    expect(res.headers).to.matchSnapshot({
+                        date: any(String),
+                        etag: any(String)
+                    });
                 });
         });
 
@@ -55,18 +64,16 @@ describe('Authentication API canary', function () {
                 .expect('Content-Type', /json/)
                 .expect(201)
                 .then((res) => {
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.users);
-                    should.not.exist(jsonResponse.meta);
-                    should.exist(res.headers['x-cache-invalidate']);
-
-                    jsonResponse.users.should.have.length(1);
-                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
-
-                    const newUser = jsonResponse.users[0];
-                    newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    newUser.name.should.equal('test user');
-                    newUser.email.should.equal('test@example.com');
+                    expect(res.body).to.matchSnapshot({
+                        users: [{
+                            created_at: any(Date),
+                            updated_at: any(Date)
+                        }]
+                    });
+                    expect(res.headers).to.matchSnapshot({
+                        date: any(String),
+                        etag: any(String)
+                    });
 
                     mailService.GhostMailer.prototype.send.called.should.be.true();
                     mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
@@ -77,10 +84,12 @@ describe('Authentication API canary', function () {
             return request
                 .get('authentication/setup')
                 .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect(200)
                 .then((res) => {
-                    res.body.setup[0].status.should.be.true();
+                    expect(res.body).to.matchSnapshot();
+                    expect(res.headers).to.matchSnapshot({
+                        date: any(String),
+                        etag: any(String)
+                    });
                 });
         });
 
@@ -118,18 +127,17 @@ describe('Authentication API canary', function () {
                 .expect('Content-Type', /json/)
                 .expect(200);
 
-            const jsonResponse = res.body;
-            should.exist(jsonResponse.users);
-            should.not.exist(jsonResponse.meta);
-            should.exist(res.headers['x-cache-invalidate']);
-
-            jsonResponse.users.should.have.length(1);
-            localUtils.API.checkResponse(jsonResponse.users[0], 'user');
-
-            const newUser = jsonResponse.users[0];
-            newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-            newUser.name.should.equal('test user edit');
-            newUser.email.should.equal('test-edit@example.com');
+            expect(res.body).to.matchSnapshot({
+                users: [{
+                    created_at: any(String),
+                    last_seen: any(String),
+                    updated_at: any(String)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
     });
 
@@ -160,7 +168,7 @@ describe('Authentication API canary', function () {
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((res) => {
-                    res.body.invitation[0].valid.should.equal(true);
+                    expect(res.body).to.matchSnapshot();
                 });
         });
 
@@ -171,7 +179,7 @@ describe('Authentication API canary', function () {
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((res) => {
-                    res.body.invitation[0].valid.should.equal(false);
+                    expect(res.body).to.matchSnapshot();
                 });
         });
 
@@ -222,7 +230,7 @@ describe('Authentication API canary', function () {
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .then((res) => {
-                    res.body.invitation[0].message.should.equal('Invitation accepted.');
+                    expect(res.body).to.matchSnapshot();
                 });
         });
     });
@@ -269,17 +277,17 @@ describe('Authentication API canary', function () {
                                 ne2Password: 'thisissupersafe'
                             }]
                         })
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(200)
                         .end(function (err, res) {
                             if (err) {
                                 return done(err);
                             }
 
-                            const jsonResponse = res.body;
-                            should.exist(jsonResponse.passwordreset[0].message);
-                            jsonResponse.passwordreset[0].message.should.equal('Password changed successfully.');
+                            expect(res.body).to.matchSnapshot();
+                            expect(res.headers).to.matchSnapshot({
+                                date: any(String),
+                                etag: any(String)
+                            });
                             done();
                         });
                 })
@@ -298,14 +306,17 @@ describe('Authentication API canary', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(401)
                 .then((res) => {
-                    should.exist(res.body.errors);
-                    res.body.errors[0].type.should.eql('UnauthorizedError');
-                    res.body.errors[0].message.should.eql('Cannot reset password.');
-                    res.body.errors[0].context.should.eql('Invalid password reset link.');
+                    expect(res.body).to.matchSnapshot({
+                        errors: [{
+                            id: any(String)
+                        }]
+                    });
+                    expect(res.headers).to.matchSnapshot({
+                        date: any(String),
+                        etag: any(String)
+                    });
                 });
         });
 
@@ -331,15 +342,18 @@ describe('Authentication API canary', function () {
                                 ne2Password: 'thisissupersafe'
                             }]
                         })
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(400);
-                })
-                .then((res) => {
-                    should.exist(res.body.errors);
-                    res.body.errors[0].type.should.eql('BadRequestError');
-                    res.body.errors[0].message.should.eql('Cannot reset password.');
-                    res.body.errors[0].context.should.eql('Password reset link expired.');
+                        .expect(400)
+                        .then((res) => {
+                            expect(res.body).to.matchSnapshot({
+                                errors: [{
+                                    id: any(String)
+                                }]
+                            });
+                            expect(res.headers).to.matchSnapshot({
+                                date: any(String),
+                                etag: any(String)
+                            });
+                        });
                 });
         });
 
@@ -362,14 +376,17 @@ describe('Authentication API canary', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(400)
                 .then((res) => {
-                    should.exist(res.body.errors);
-                    res.body.errors[0].type.should.eql('BadRequestError');
-                    res.body.errors[0].message.should.eql('Cannot reset password.');
-                    res.body.errors[0].context.should.eql('Password reset link has already been used.');
+                    expect(res.body).to.matchSnapshot({
+                        errors: [{
+                            id: any(String)
+                        }]
+                    });
+                    expect(res.headers).to.matchSnapshot({
+                        date: any(String),
+                        etag: any(String)
+                    });
                 });
         });
 
@@ -383,14 +400,13 @@ describe('Authentication API canary', function () {
                         email: user.email
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .then((res) => {
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.passwordreset[0].message);
-                    jsonResponse.passwordreset[0].message.should.equal('Check your email for further instructions.');
-                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal(user.email);
+                    expect(res.body).to.matchSnapshot();
+                    expect(res.headers).to.matchSnapshot({
+                        date: any(String),
+                        etag: any(String)
+                    });
                 });
         });
     });
@@ -421,15 +437,17 @@ describe('Authentication API canary', function () {
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({})
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
                 .end(async function (err, res) {
                     if (err) {
                         return done(err);
                     }
                     try {
-                        should(res.body).be.an.empty().Object();
+                        expect(res.body).to.matchSnapshot();
+                        expect(res.headers).to.matchSnapshot({
+                            date: any(String),
+                            etag: any(String)
+                        });
 
                         // All users locked
                         const users = await models.User.fetchAll();
