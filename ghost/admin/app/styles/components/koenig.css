@@ -2183,8 +2183,7 @@ button.emoji-picker__category-button.active {
     border-radius: 2px;
 }
 
-
-/* Resetting browser styles
+/* Resetting player browser styles
 /* --------------------------------------------------------------- */
 
 .kg-player-container input[type=range] {
@@ -2208,7 +2207,7 @@ button.emoji-picker__category-button.active {
     background: transparent;
 }
 
-/* Chrome & Safari styles
+/* Player Chrome & Safari styles
 /* --------------------------------------------------------------- */
 
 .kg-player-container input[type="range"]::-webkit-slider-runnable-track {
@@ -2236,7 +2235,7 @@ button.emoji-picker__category-button.active {
     transform: scale(1.2);
 }
 
-/* Firefox styles
+/* Player Firefox styles
 /* --------------------------------------------------------------- */
 
 .kg-player-container input[type="range"]::-moz-range-track {
@@ -2267,7 +2266,7 @@ button.emoji-picker__category-button.active {
     transform: scale(1.2);
 }
 
-/* Edge & IE styles
+/* Player Edge & IE styles
 /* --------------------------------------------------------------- */
 
 .kg-player-container input[type="range"]::-ms-track {
@@ -2301,6 +2300,20 @@ button.emoji-picker__category-button.active {
 .kg-player-container input[type="range"]:active::-ms-thumb {
     transform: scale(1.2);
 
+}
+
+/* Video card
+/* --------------------------------------------------------------- */
+
+.kg-settings-panel-control-info.video {
+    width: 75%;
+    margin-top: -10px;
+}
+
+.kg-placeholder-video {
+    width: 48px;
+    height: 48px;
+    fill: var(--midgrey-l2);
 }
 
 /* Codemirror overrides
