@@ -26,6 +26,11 @@ export default class KoenigCardProductComponent extends Component {
     @tracked
     previewSrc = null;
 
+    get isButtonIncomplete() {
+        const {productUrl, productButton} = this.args.payload;
+        return !productUrl || !productButton;
+    }
+
     get isEmpty() {
         const {productTitle, productDescription, productUrl, productButton, productImageSrc, productRatingEnabled, productButtonEnabled} = this.args.payload;
 
