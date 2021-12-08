@@ -52,7 +52,7 @@
                     {{/if}}
 
                     {{#if (or uploader.errors uploader.isUploading (not @payload.productImageSrc))}}
-                        <div class="relative miw-100 flex items-center {{if (not this.previewSrc @payload.productImageSrc) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+                        <div class="relative miw-100 h-100 flex items-center {{if (not this.previewSrc @payload.productImageSrc) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
                             {{#if uploader.errors}}
                                 <span class="db absolute top-0 right-0 left-0 pl2 pr2 bg-red white sans-serif f7">
                                     {{uploader.errors.firstObject.message}}
@@ -65,10 +65,12 @@
                                 </span>
                             {{else if uploader.isUploading}}
                                 {{uploader.progressBar}}
-                            {{else if (not this.previewSrc @payload.productImageSrc)}}
-                                <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" onclick={{action "triggerFileDialog"}}>
-                                    {{svg-jar this.placeholder class="kg-placeholder-image"}}
-                                    <span class="mt2 midgrey">Click to select an image</span>
+                            {{else if (not this.previewSrc @payload.productImageSrc)}} 
+                                <button class="w-100 h-100 sans-serif fw4 f7 middarkgrey kg-image-button" onclick={{action "triggerFileDialog"}}>
+                                    <div class="flex flex-column items-center">
+                                        {{svg-jar this.placeholder class="kg-placeholder-image"}}
+                                        <span class="mt4 midgrey">Click to select an image</span>
+                                    </div>
                                 </button>
                             {{/if}}
                         </div>
