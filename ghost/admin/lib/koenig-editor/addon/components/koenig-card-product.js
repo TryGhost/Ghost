@@ -66,6 +66,9 @@ export default class KoenigCardProductComponent extends Component {
                 this._updatePayloadAttr(key, value);
             }
         });
+
+        let placeholders = ['summer', 'mountains', 'ufo-attack'];
+        this.placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
     }
 
     // required for snippet rects to be calculated - editor reaches in to component,
