@@ -20,10 +20,19 @@ module.exports = {
         if (!payload.src) {
             return dom.createTextNode('');
         }
-
+        let thumbnailCls = 'kg-audio-thumbnail';
+        let emptyThumbnailCls = 'kg-audio-thumbnail';
+        if (!payload.thumbnailSrc) {
+            thumbnailCls += ' kg-audio-hide';
+        } else {
+            emptyThumbnailCls += ' kg-audio-hide';
+        }
         const frontendTemplate = hbs`
             <div class="kg-card kg-audio-card" data-kg-audio-src="{{src}}">
-                <img src="{{thumbnailSrc}}" alt="audio-thumbnail" class="kg-audio-thumbnail">
+                <img src="{{thumbnailSrc}}" alt="audio-thumbnail" class="${thumbnailCls}">
+                <div class="${emptyThumbnailCls}">
+
+                </div>
                 <div class="kg-player-container">
                     <audio src="{{src}}" preload="metadata"></audio>
                     <div class="kg-audio-title">{{fileName}}</div>
