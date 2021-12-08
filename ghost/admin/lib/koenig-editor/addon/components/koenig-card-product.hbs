@@ -94,19 +94,19 @@
                     />
                     {{#if @payload.productRatingEnabled}}
                     <div class="kg-product-card-rating-edit icons" style="line-height: auto;">
-                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="1" onclick={{action "changeStars"}}>
+                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="1" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="2" onclick={{action "changeStars"}}>
+                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="2" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="3" onclick={{action "changeStars"}}>
+                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="3" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="4" onclick={{action "changeStars"}}>
+                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="4" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="5" onclick={{action "changeStars"}}>
+                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="5" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
                     </div>
