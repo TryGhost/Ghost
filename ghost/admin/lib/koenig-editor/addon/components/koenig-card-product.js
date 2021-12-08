@@ -88,6 +88,37 @@ export default class KoenigCardProductComponent extends Component {
     }
 
     @action
+    registerTitleEditor(textReplacementEditor) {
+        let commands = {
+            ENTER: this.handleTitleTab.bind(this),
+            TAB: this.handleTitleTab.bind(this),
+            'META+ENTER': run.bind(this, this._enter, 'meta'),
+            'CTRL+ENTER': run.bind(this, this._enter, 'ctrl')
+        };
+
+        Object.keys(commands).forEach((str) => {
+            textReplacementEditor.registerKeyCommand({
+                str,
+                run() {
+                    return commands[str](textReplacementEditor, str);
+                }
+            });
+        });
+
+        this._textReplacementEditor = textReplacementEditor;
+
+        run.scheduleOnce('afterRender', this, this._afterRender);
+    }
+
+    handleTitleTab() {
+        let contentInput = this.element.querySelector('.kg-product-card-description .koenig-basic-html-input__editor');
+
+        if (contentInput) {
+            contentInput.focus();
+        }
+    }
+
+    @action
     registerEditor(textReplacementEditor) {
         let commands = {
             'META+ENTER': run.bind(this, this._enter, 'meta'),
