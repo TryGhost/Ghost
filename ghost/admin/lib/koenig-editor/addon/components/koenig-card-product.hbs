@@ -222,7 +222,7 @@
                         </div>
                     {{/if}}
                 </div>
-                <p class="kg-product-card-description">{{{@payload.productDescription}}}</p>
+                <div class="kg-product-card-description">{{{@payload.productDescription}}}</div>
                 {{#if @payload.productButtonEnabled}}
                     <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-product-card-button {{if this.isButtonIncomplete "o-50"}}" disabled={{not @payload.productButton}}>
                         <span>
