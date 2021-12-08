@@ -50,14 +50,16 @@ function notifyServerReady(error) {
 /**
   * Get the Database into a ready state
   * - DatabaseStateManager handles doing all this for us
+  * - Passing logging makes it output state messages
   *
   * @param {object} options
   * @param {object} options.config
+  * @param {object} options.logging
   */
-async function initDatabase({config}) {
+async function initDatabase({config, logging}) {
     const DatabaseStateManager = require('./server/data/db/state-manager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
-    await dbStateManager.makeReady();
+    await dbStateManager.makeReady({logging});
 }
 
 /**
@@ -381,7 +383,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 3 - Get the DB ready
         debug('Begin: Get DB ready');
-        await initDatabase({config});
+        await initDatabase({config, logging});
         bootLogger.log('database ready');
         debug('End: Get DB ready');
 
