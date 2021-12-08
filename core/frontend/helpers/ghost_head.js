@@ -199,7 +199,7 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
 
                 // @TODO do this in a more "frameworky" way
                 if (cardAssetService.hasFile('js')) {
-                    head.push(`<script async src="${getAssetUrl('public/cards.min.js')}"></script>`);
+                    head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
                 }
                 if (cardAssetService.hasFile('css')) {
                     head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
