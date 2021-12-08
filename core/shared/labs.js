@@ -41,7 +41,6 @@ const ALPHA_FEATURES = [
     'audioCard',
     'videoCard',
     'productCard',
-    'quoteStyles',
     'beforeAfterCard',
     'tweetGridCard'
 ];
