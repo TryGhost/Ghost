@@ -90,7 +90,7 @@
                         @name="title"
                         @defaultTag="h4"
                         @onChange={{action "setProductTitle"}}
-                        @didCreateEditor={{action "registerEditor"}}
+                        @didCreateEditor={{action "registerTitleEditor"}}
                     />
                     {{#if @payload.productRatingEnabled}}
                     <div class="kg-product-card-rating-edit icons" style="line-height: auto;">
