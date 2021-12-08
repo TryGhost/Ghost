@@ -10,11 +10,25 @@ const handleAudioPlayer = function (audioElementContainer) {
     const audio = audioElementContainer.querySelector('audio');
     const durationContainer = audioElementContainer.querySelector('.kg-audio-duration');
     const currentTimeContainer = audioElementContainer.querySelector('.kg-audio-current-time');
-    const outputContainer = audioElementContainer.querySelector('.kg-audio-volume-output');
-    // let playState = 'play';
-    // let muteState = 'unmute';
-    let playbackRate = 1.0;
+    let playbackRates = [{
+        rate: 0.75,
+        label: '0.7×'
+    }, {
+        rate: 1.0,
+        label: '1×'
+    }, {
+        rate: 1.25,
+        label: '1.2×'
+    }, {
+        rate: 1.75,
+        label: '1.7×'
+    }, {
+        rate: 2.0,
+        label: '2×'
+    }];
+
     let raf = null;
+    let currentPlaybackRateIdx = 1;
 
     audio.src = audioElementContainer.getAttribute('data-kg-audio-src');
 
@@ -95,15 +109,10 @@ const handleAudioPlayer = function (audioElementContainer) {
     });
 
     playbackRateContainer.addEventListener('click', () => {
-        if (playbackRate === 1.0) {
-            audio.playbackRate = 2;
-            playbackRate = 2;
-            playbackRateContainer.textContent = '2×';
-        } else {
-            audio.playbackRate = 1.0;
-            playbackRate = 1.0;
-            playbackRateContainer.textContent = '1×';
-        }
+        let nextPlaybackRate = playbackRates[(currentPlaybackRateIdx + 1) % 5];
+        currentPlaybackRateIdx = currentPlaybackRateIdx + 1;
+        audio.playbackRate = nextPlaybackRate.rate;
+        playbackRateContainer.textContent = nextPlaybackRate.label;
     });
 
     audio.addEventListener('progress', displayBufferedAmount);
