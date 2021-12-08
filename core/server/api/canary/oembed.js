@@ -15,7 +15,8 @@ const Twitter = require('../../services/twitter-embed');
 const twitter = new Twitter({
     config: {
         bearerToken: config.get('twitter').privateReadOnlyToken
-    }
+    },
+    logging: require('@tryghost/logging')
 });
 
 oembed.registerProvider(nft);
