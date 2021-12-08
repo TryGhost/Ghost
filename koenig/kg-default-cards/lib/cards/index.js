@@ -14,5 +14,6 @@ module.exports = [
     require('./callout'),
     require('./product'),
     require('./toggle'),
-    require('./audio')
+    require('./audio'),
+    require('./video')
 ];
