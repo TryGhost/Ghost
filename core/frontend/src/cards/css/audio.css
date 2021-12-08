@@ -118,39 +118,26 @@
 }
 
 .kg-audio-seek-slider::before {
-    position: absolute;
     content: "";
+    position: absolute;
     left: 0;
     width: var(--seek-before-width) !important;
-    height: 3px;
-    background-color: rgba(0, 125, 181, 0.6);
+    height: 4px;
     cursor: pointer;
+    background-color: currentColor;
+    border-radius: 2px;
 }
 
 .kg-audio-volume-slider::before {
-    position: absolute;
     content: "";
+    position: absolute;
     left: 0;
     width: var(--volume-before-width) !important;
-    height: 3px;
-    background-color: rgba(0, 125, 181, 0.6);
+    height: 4px;
     cursor: pointer;
+    background-color: currentColor;
+    border-radius: 2px;
 }
-
-/* Browser styles for slider */
-
-/* .kg-audio-volume-slider::-webkit-slider-runnable-track {
-    background: rgba(0, 125, 181, 0.6) !important;
-}
-.kg-audio-volume-slider::-moz-range-track {
-    background: rgba(0, 125, 181, 0.6) !important;
-}
-.kg-audio-volume-slider::-ms-fill-upper {
-    background: rgba(0, 125, 181, 0.6) !important;
-}
-.kg-audio-volume-slider::before {
-    width: var(--volume-before-width) !important;
-} */
 
 /* Resetting browser styles
 /* --------------------------------------------------------------- */
