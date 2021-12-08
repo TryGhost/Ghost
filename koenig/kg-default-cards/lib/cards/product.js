@@ -70,7 +70,7 @@ module.exports = {
         const starActiveClasses = 'kg-product-card-rating-active';
         for (let i = 1; i <= 5; i++) {
             filteredPayload['star' + i] = '';
-            if (payload.productStarRating > i) {
+            if (payload.productStarRating >= i) {
                 filteredPayload['star' + i] = starActiveClasses;
             }
         }
