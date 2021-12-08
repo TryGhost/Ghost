@@ -65,7 +65,7 @@
                                 </span>
                             {{else if uploader.isUploading}}
                                 {{uploader.progressBar}}
-                            {{else if (not this.previewSrc @payload.productImageSrc)}} 
+                            {{else if (not this.previewSrc @payload.productImageSrc)}}
                                 <button class="w-100 h-100 sans-serif fw4 f7 middarkgrey kg-image-button" onclick={{action "triggerFileDialog"}}>
                                     <div class="flex flex-column items-center">
                                         {{svg-jar this.placeholder class="kg-placeholder-image"}}
@@ -120,6 +120,7 @@
                     @defaultTag="p"
                     @onChange={{action "setProductDescription"}}
                     @didCreateEditor={{action "registerEditor"}}
+                    @allowBr={{true}}
                 />
                 {{#if @payload.productButtonEnabled}}
                     <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-product-card-button" disabled={{not @payload.productButton}}>
