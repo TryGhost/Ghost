@@ -28,6 +28,7 @@
                 <GhUploader
                     @uploadUrl="/media/thumbnail/upload/"
                     @resourceName="media"
+                    @files={{this.thumbnailFiles}}
                     @requestMethod="put"
                     @accept={{this.imageMimeTypes}}
                     @extensions={{this.imageExtensions}}
@@ -54,20 +55,17 @@
                         {{else if (not @payload.thumbnailSrc)}}
                             <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
                                 {{svg-jar "audio-upload"}}
-                                {{!-- <span class="mt2 midgrey">Click to select an audio</span> --}}
                             </button>
                         {{else}}
                             <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
                                 <img src={{@payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
                                 {{!-- <span class="mt2 midgrey">Click to select an audio</span> --}}
                             </button>
-                            {{#if true}}
-                                <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
-                                    <span class="fw6 f7 white">
-                                        Drop to replace thumbnail
-                                    </span>
-                                </div>
-                            {{/if}}
+                            {{!-- <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
+                                <span class="fw6 f7 white">
+                                    Drop to replace thumbnail
+                                </span>
+                            </div> --}}
                         {{/if}}
                     {{else}}
                         {{#if this.isDraggedOver}}
@@ -159,7 +157,7 @@
                     {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{/if}}
-                {{else}}            
+                {{else}}
                     {{#if this.isDraggedOver}}
                         <span class="db center sans-serif fw7 f7 middarkgrey">
                             Drop it like it's hot 🔥

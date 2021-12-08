@@ -2039,7 +2039,7 @@ button.emoji-picker__category-button.active {
 
   .kg-audio-button:hover .image-overlay {
     opacity: 1;
-  }  
+  }
 
   .kg-audio-button .kg-audio-icon {
     width: 24px;
@@ -2057,6 +2057,7 @@ button.emoji-picker__category-button.active {
     height: 100%;
     object-fit: cover;
     border-radius: var(--border-radius);
+    background: var(--white);
   }
 
 .kg-player-container {

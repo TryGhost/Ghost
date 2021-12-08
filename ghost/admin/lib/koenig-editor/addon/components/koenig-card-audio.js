@@ -285,7 +285,11 @@ export default class KoenigCardAudioComponent extends Component {
         this.isDraggedOver = false;
 
         if (event.dataTransfer.files) {
-            this.files = [event.dataTransfer.files[0]];
+            if (!this.args.payload.src) {
+                this.files = [event.dataTransfer.files[0]];
+            } else {
+                this.thumbnailFiles = [event.dataTransfer.files[0]];
+            }
         }
     }
 }
