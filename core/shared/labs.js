@@ -42,6 +42,7 @@ const ALPHA_FEATURES = [
     'productCard',
     'quoteStyles',
     'beforeAfterCard',
+    'tweetGridCard',
     'richTwitterNewsletters'
 ];
 
