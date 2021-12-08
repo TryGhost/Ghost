@@ -115,11 +115,17 @@ export default class KoenigCardProductComponent extends Component {
     @action
     setProductUrl(event) {
         this._updatePayloadAttr('productUrl', event.target.value);
+        if (!this.args.payload.productButtonEnabled) {
+            this._updatePayloadAttr('productButtonEnabled', true);
+        }
     }
 
     @action
     setProductButton(event) {
         this._updatePayloadAttr('productButton', event.target.value);
+        if (!this.args.payload.productButtonEnabled) {
+            this._updatePayloadAttr('productButtonEnabled', true);
+        }
     }
 
     @action
