@@ -120,7 +120,11 @@
                     @didCreateEditor={{action "registerEditor"}}
                 />
                 {{#if @payload.productButtonEnabled}}
-                    <a href={{@payload.productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer"><span>{{@payload.productButton}}</span></a>
+                    <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-product-card-button" disabled={{not @payload.productButton}}>
+                        <span>
+                            {{or @payload.productButton "Add button text"}}
+                        </span>
+                    </a>
                 {{/if}}
             </div>
 
@@ -216,15 +220,11 @@
                 </div>
                 <p class="kg-product-card-description">{{{@payload.productDescription}}}</p>
                 {{#if @payload.productButtonEnabled}}
-                    <a href={{@payload.productUrl}} class="gh-btn gh-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer">
+                    <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-product-card-button {{if this.isButtonIncomplete "o-50"}}" disabled={{not @payload.productButton}}>
                         <span>
-                            {{#if @payload.productButton}}
-                                {{@payload.productButton}}
-                            {{else}}
-                                Add button title
-                            {{/if}}
+                            {{or @payload.productButton "Add button text"}}
                         </span>
-                        </a>
+                    </a>
                 {{/if}}
         </div>
     {{/if}}
