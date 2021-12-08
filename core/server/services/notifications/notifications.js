@@ -3,7 +3,6 @@ const semver = require('semver');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const ghostVersion = require('@tryghost/version');
 const tpl = require('@tryghost/tpl');
 const ObjectId = require('bson-objectid');
 
@@ -17,10 +16,12 @@ class Notifications {
      *
      * @param {Object} options
      * @param {Object} options.settingsCache - settings cache instance
+     * @param {String} options.ghostVersion - Ghost instance version in "full" format - major.minor.patch
      * @param {Object} options.SettingsModel - Ghost's Setting model instance
      */
-    constructor({settingsCache, SettingsModel}) {
+    constructor({settingsCache, ghostVersion, SettingsModel}) {
         this.settingsCache = settingsCache;
+        this.ghostVersion = ghostVersion;
         this.SettingsModel = SettingsModel;
     }
 
@@ -73,7 +74,7 @@ class Notifications {
     browse({user}) {
         let allNotifications = this.fetchAllNotifications();
         allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
-        const blogVersion = ghostVersion.full.match(/^(\d+\.)(\d+\.)(\d+)/);
+        const blogVersion = this.ghostVersion.match(/^(\d+\.)(\d+\.)(\d+)/);
 
         allNotifications = allNotifications.filter((notification) => {
             if (notification.createdAtVersion && !this.wasSeen(notification, user)) {
@@ -127,7 +128,7 @@ class Notifications {
             location: 'bottom',
             status: 'alert',
             id: ObjectId().toHexString(),
-            createdAtVersion: ghostVersion.full
+            createdAtVersion: this.ghostVersion
         };
 
         const overrides = {
