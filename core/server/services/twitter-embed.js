@@ -1,5 +1,4 @@
 const {extract} = require('oembed-parser');
-const logging = require('@tryghost/logging');
 const labs = require('../../shared/labs');
 
 /**
@@ -70,7 +69,7 @@ class TwitterOEmbedProvider {
                 oembedData.tweet_data = body.data;
                 oembedData.tweet_data.includes = body.includes;
             } catch (err) {
-                logging.error(err);
+                this.dependencies.logging.error(err);
             }
         }
 

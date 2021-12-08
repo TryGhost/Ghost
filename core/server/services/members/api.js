@@ -207,6 +207,7 @@ function createApiInstance(config) {
             Settings: models.Settings
         },
         stripeAPIService: stripeService.api,
+        logger: logging,
         offersAPI: offersService.api,
         labsService: labsService
     });

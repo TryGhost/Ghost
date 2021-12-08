@@ -1,5 +1,4 @@
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const fs = require('fs-extra');
 const path = require('path');
 const MessageFormat = require('intl-messageformat');
@@ -13,15 +12,17 @@ const get = require('lodash/get');
 
 class I18n {
     /**
-     * @param {object} [options]
+     * @param {objec} [options]
      * @param {string} basePath - the base path to the translations directory
      * @param {string} [locale] - a locale string
      * @param {{dot|fulltext}} [stringMode] - which mode our translation keys use
+     * @param {{object}} [logging] - logging method
      */
     constructor(options = {}) {
         this._basePath = options.basePath || __dirname;
         this._locale = options.locale || this.defaultLocale();
         this._stringMode = options.stringMode || 'dot';
+        this._logging = options.logging || console;
 
         this._strings = null;
     }
@@ -34,8 +35,8 @@ class I18n {
     }
 
     /**
-     * Need to call init after this
-     */
+         * Need to call init after this
+         */
     get basePath() {
         return this._basePath;
     }
@@ -261,34 +262,34 @@ class I18n {
     }
 
     _handleUninitialisedError(key) {
-        logging.warn(`i18n was used before it was initialised with key ${key}`);
+        this._logging.warn(`i18n was used before it was initialised with key ${key}`);
         this.init();
     }
 
     _handleFormatError(err) {
-        logging.error(err.message);
+        this._logging.error(err.message);
     }
 
     _handleFallbackToDefault() {
-        logging.warn(`i18n is falling back to ${this.defaultLocale()}.json.`);
+        this._logging.warn(`i18n is falling back to ${this.defaultLocale()}.json.`);
     }
 
     _handleMissingFileError(locale) {
-        logging.warn(`i18n was unable to find ${locale}.json.`);
+        this._logging.warn(`i18n was unable to find ${locale}.json.`);
     }
     _handleInvalidFileError(locale, err) {
-        logging.error(new errors.IncorrectUsageError({
+        this._logging.error(new errors.IncorrectUsageError({
             err,
             message: `i18n was unable to parse ${locale}.json. Please check that it is valid JSON.`
         }));
     }
 
     _handleEmptyKeyError() {
-        logging.warn('i18n.t() was called without a key');
+        this._logging.warn('i18n.t() was called without a key');
     }
 
     _handleMissingKeyError(key) {
-        logging.error(new errors.IncorrectUsageError({
+        this._logging.error(new errors.IncorrectUsageError({
             message: `i18n.t() was called with a key that could not be found: ${key}`
         }));
     }

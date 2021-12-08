@@ -1,6 +1,5 @@
 const KnexMigrator = require('knex-migrator');
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 
 const states = {
     READY: 0,
@@ -9,7 +8,7 @@ const states = {
     ERROR: 3
 };
 
-const printState = ({state}) => {
+const printState = ({state, logging}) => {
     if (state === states.READY) {
         logging.info('Database is in a ready state.');
     }
@@ -68,11 +67,13 @@ class DatabaseStateManager {
         }
     }
 
-    async makeReady() {
+    async makeReady({logging}) {
         try {
             let state = await this.getState();
 
-            printState({state});
+            if (logging) {
+                printState({state, logging});
+            }
 
             if (state === states.READY) {
                 return;
@@ -88,7 +89,9 @@ class DatabaseStateManager {
 
             state = await this.getState();
 
-            printState({state});
+            if (logging) {
+                printState({state, logging});
+            }
         } catch (error) {
             let errorToThrow = error;
             if (!errors.utils.isGhostError(error)) {
