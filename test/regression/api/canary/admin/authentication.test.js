@@ -15,7 +15,7 @@ const mailService = require('../../../../../core/server/services/mail/index');
 
 let request;
 
-describe.only('Authentication API canary', function () {
+describe('Authentication API canary', function () {
     describe('Blog setup', function () {
         before(async function () {
             chaiJestSnapshot.resetSnapshotRegistry();
@@ -35,22 +35,21 @@ describe.only('Authentication API canary', function () {
             sinon.restore();
         });
 
-        it('is setup? no', function () {
-            return request
+        it('is setup? no', async function () {
+            const res = await request
                 .get('authentication/setup')
                 .set('Origin', config.get('url'))
-                .expect(200)
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot();
-                    expect(res.headers).to.matchSnapshot({
-                        date: any(String),
-                        etag: any(String)
-                    });
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
 
-        it('complete setup', function () {
-            return request
+        it('complete setup', async function () {
+            const res = await request
                 .post('authentication/setup')
                 .set('Origin', config.get('url'))
                 .send({
@@ -62,35 +61,33 @@ describe.only('Authentication API canary', function () {
                     }]
                 })
                 .expect('Content-Type', /json/)
-                .expect(201)
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot({
-                        users: [{
-                            created_at: any(Date),
-                            updated_at: any(Date)
-                        }]
-                    });
-                    expect(res.headers).to.matchSnapshot({
-                        date: any(String),
-                        etag: any(String)
-                    });
+                .expect(201);
 
-                    mailService.GhostMailer.prototype.send.called.should.be.true();
-                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
-                });
+            expect(res.body).to.matchSnapshot({
+                users: [{
+                    created_at: any(Date),
+                    updated_at: any(Date)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
+
+            mailService.GhostMailer.prototype.send.called.should.be.true();
+            mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
         });
 
-        it('is setup? yes', function () {
-            return request
+        it('is setup? yes', async function () {
+            const res = await request
                 .get('authentication/setup')
-                .set('Origin', config.get('url'))
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot();
-                    expect(res.headers).to.matchSnapshot({
-                        date: any(String),
-                        etag: any(String)
-                    });
-                });
+                .set('Origin', config.get('url'));
+
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
 
         it('complete setup again', function () {
@@ -161,26 +158,24 @@ describe.only('Authentication API canary', function () {
                 .expect(400);
         });
 
-        it('check valid invite', function () {
-            return request
+        it('check valid invite', async function () {
+            const res = await request
                 .get(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`)
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
-                .expect(200)
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot();
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
         });
 
-        it('check invalid invite', function () {
-            return request
+        it('check invalid invite', async function () {
+            const res = await request
                 .get(`authentication/invitation?email=notinvited@example.org`)
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
-                .expect(200)
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot();
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
         });
 
         it('try to accept without invite', function () {
@@ -215,8 +210,8 @@ describe.only('Authentication API canary', function () {
                 .expect(422);
         });
 
-        it('try to accept with invite', function () {
-            return request
+        it('try to accept with invite', async function () {
+            const res = await request
                 .post('authentication/invitation')
                 .set('Origin', config.get('url'))
                 .send({
@@ -228,10 +223,9 @@ describe.only('Authentication API canary', function () {
                     }]
                 })
                 .expect('Content-Type', /json/)
-                .expect(200)
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot();
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
         });
     });
 
@@ -257,45 +251,37 @@ describe.only('Authentication API canary', function () {
             sinon.restore();
         });
 
-        it('reset password', function (done) {
-            models.User.getOwnerUser(testUtils.context.internal)
-                .then(function (ownerUser) {
-                    const token = security.tokens.resetToken.generateHash({
-                        expires: Date.now() + (1000 * 60),
-                        email: user.email,
-                        dbHash: settingsCache.get('db_hash'),
-                        password: ownerUser.get('password')
-                    });
+        it('reset password', async function () {
+            const ownerUser = await models.User.getOwnerUser(testUtils.context.internal);
 
-                    request.put('authentication/passwordreset')
-                        .set('Origin', config.get('url'))
-                        .set('Accept', 'application/json')
-                        .send({
-                            passwordreset: [{
-                                token: token,
-                                newPassword: 'thisissupersafe',
-                                ne2Password: 'thisissupersafe'
-                            }]
-                        })
-                        .expect(200)
-                        .end(function (err, res) {
-                            if (err) {
-                                return done(err);
-                            }
+            const token = security.tokens.resetToken.generateHash({
+                expires: Date.now() + (1000 * 60),
+                email: user.email,
+                dbHash: settingsCache.get('db_hash'),
+                password: ownerUser.get('password')
+            });
 
-                            expect(res.body).to.matchSnapshot();
-                            expect(res.headers).to.matchSnapshot({
-                                date: any(String),
-                                etag: any(String)
-                            });
-                            done();
-                        });
+            const res = await request.put('authentication/passwordreset')
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        token: token,
+                        newPassword: 'thisissupersafe',
+                        ne2Password: 'thisissupersafe'
+                    }]
                 })
-                .catch(done);
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
 
-        it('reset password: invalid token', function () {
-            return request
+        it('reset password: invalid token', async function () {
+            const res = await request
                 .put('authentication/passwordreset')
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
@@ -306,66 +292,31 @@ describe.only('Authentication API canary', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect(401)
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot({
-                        errors: [{
-                            id: any(String)
-                        }]
-                    });
-                    expect(res.headers).to.matchSnapshot({
-                        date: any(String),
-                        etag: any(String)
-                    });
-                });
+                .expect(401);
+
+            expect(res.body).to.matchSnapshot({
+                errors: [{
+                    id: any(String)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
 
-        it('reset password: expired token', function () {
-            return models.User.getOwnerUser(testUtils.context.internal)
-                .then(function (ownerUser) {
-                    const dateInThePast = Date.now() - (1000 * 60);
-                    const token = security.tokens.resetToken.generateHash({
-                        expires: dateInThePast,
-                        email: user.email,
-                        dbHash: settingsCache.get('db_hash'),
-                        password: ownerUser.get('password')
-                    });
+        it('reset password: expired token', async function () {
+            const ownerUser = await models.User.getOwnerUser(testUtils.context.internal);
 
-                    return request
-                        .put('authentication/passwordreset')
-                        .set('Origin', config.get('url'))
-                        .set('Accept', 'application/json')
-                        .send({
-                            passwordreset: [{
-                                token: token,
-                                newPassword: 'thisissupersafe',
-                                ne2Password: 'thisissupersafe'
-                            }]
-                        })
-                        .expect(400)
-                        .then((res) => {
-                            expect(res.body).to.matchSnapshot({
-                                errors: [{
-                                    id: any(String)
-                                }]
-                            });
-                            expect(res.headers).to.matchSnapshot({
-                                date: any(String),
-                                etag: any(String)
-                            });
-                        });
-                });
-        });
-
-        it('reset password: unmatched token', function () {
+            const dateInThePast = Date.now() - (1000 * 60);
             const token = security.tokens.resetToken.generateHash({
-                expires: Date.now() + (1000 * 60),
+                expires: dateInThePast,
                 email: user.email,
                 dbHash: settingsCache.get('db_hash'),
-                password: 'invalid_password'
+                password: ownerUser.get('password')
             });
 
-            return request
+            const res = await request
                 .put('authentication/passwordreset')
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
@@ -376,22 +327,53 @@ describe.only('Authentication API canary', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect(400)
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot({
-                        errors: [{
-                            id: any(String)
-                        }]
-                    });
-                    expect(res.headers).to.matchSnapshot({
-                        date: any(String),
-                        etag: any(String)
-                    });
-                });
+                .expect(400);
+
+            expect(res.body).to.matchSnapshot({
+                errors: [{
+                    id: any(String)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
 
-        it('reset password: generate reset token', function () {
-            return request
+        it('reset password: unmatched token', async function () {
+            const token = security.tokens.resetToken.generateHash({
+                expires: Date.now() + (1000 * 60),
+                email: user.email,
+                dbHash: settingsCache.get('db_hash'),
+                password: 'invalid_password'
+            });
+
+            const res = await request
+                .put('authentication/passwordreset')
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        token: token,
+                        newPassword: 'thisissupersafe',
+                        ne2Password: 'thisissupersafe'
+                    }]
+                })
+                .expect(400);
+
+            expect(res.body).to.matchSnapshot({
+                errors: [{
+                    id: any(String)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
+        });
+
+        it('reset password: generate reset token', async function () {
+            const res = await request
                 .post('authentication/passwordreset')
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
@@ -400,14 +382,13 @@ describe.only('Authentication API canary', function () {
                         email: user.email
                     }]
                 })
-                .expect(200)
-                .then((res) => {
-                    expect(res.body).to.matchSnapshot();
-                    expect(res.headers).to.matchSnapshot({
-                        date: any(String),
-                        etag: any(String)
-                    });
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
     });
 
@@ -432,42 +413,32 @@ describe.only('Authentication API canary', function () {
             sinon.restore();
         });
 
-        it('reset all passwords returns 200', function (done) {
-            request.post('authentication/reset_all_passwords')
+        it('reset all passwords returns 200', async function () {
+            const res = await request.post('authentication/reset_all_passwords')
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({})
-                .expect(200)
-                .end(async function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    try {
-                        expect(res.body).to.matchSnapshot();
-                        expect(res.headers).to.matchSnapshot({
-                            date: any(String),
-                            etag: any(String)
-                        });
+                .expect(200);
 
-                        // All users locked
-                        const users = await models.User.fetchAll();
-                        for (const user of users) {
-                            user.get('status').should.be.eql('locked');
-                        }
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
 
-                        // No session left
-                        const sessions = await models.Session.fetchAll();
-                        sessions.length.should.be.eql(0);
+            // All users locked
+            const users = await models.User.fetchAll();
+            for (const user of users) {
+                user.get('status').should.be.eql('locked');
+            }
 
-                        sendEmail.callCount.should.be.eql(2);
-                        sendEmail.firstCall.args[0].subject.should.be.eql('Reset Password');
-                        sendEmail.secondCall.args[0].subject.should.be.eql('Reset Password');
+            // No session left
+            const sessions = await models.Session.fetchAll();
+            sessions.length.should.be.eql(0);
 
-                        done();
-                    } catch (error) {
-                        done(error);
-                    }
-                });
+            sendEmail.callCount.should.be.eql(2);
+            sendEmail.firstCall.args[0].subject.should.be.eql('Reset Password');
+            sendEmail.secondCall.args[0].subject.should.be.eql('Reset Password');
         });
     });
 });
