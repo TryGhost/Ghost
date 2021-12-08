@@ -63,7 +63,6 @@ export default Service.extend({
     audioCard: feature('audioCard'),
     videoCard: feature('videoCard'),
     productCard: feature('productCard'),
-    quoteStyles: feature('quoteStyles'),
     beforeAfterCard: feature('beforeAfterCard'),
     richTwitterNewsletters: feature('richTwitterNewsletters'),
     tweetGridCard: feature('tweetGridCard'),
