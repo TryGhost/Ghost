@@ -116,7 +116,7 @@ module.exports = {
                                 </tr>
                                 ${hasImageOrVideo ? `<tr>
                                     <td colspan="3" align="center" style="width: 100%;">
-                                        <a href="https://twitter.com/twitter/status/${tweetId}"><img src="${tweetImageUrl}" style="width: 100%; border: 1px solid #E9E9E9; max-width: 520px; border-radius: 10px;" border="0"></a>
+                                        <a href="https://twitter.com/twitter/status/${tweetId}" style="display: block; padding-top: 0; padding-left: 16px; padding-right: 16px; padding-bottom: 0;"><img src="${tweetImageUrl}" style="width: 100%; border: 1px solid #E9E9E9; max-width: 528px; border-radius: 10px;" border="0"></a>
                                     </td>
                                 </tr>` : ''}
                                 <tr>
