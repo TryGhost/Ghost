@@ -60,6 +60,7 @@
     font-size: .85em;
     font-weight: 500;
     line-height: 1.4em;
+    white-space: nowrap;
 }
 
 .kg-audio-time {
@@ -68,6 +69,7 @@
     font-size: .85em;
     font-weight: 500;
     line-height: 1.4em;
+    white-space: nowrap;
 }
 
 .kg-audio-duration {
@@ -79,6 +81,7 @@
     position: relative;
     bottom: 1px;
     padding: 0px 4px 0 0;
+    font-size: 0;
     background: transparent;
 }
 
@@ -99,7 +102,7 @@
 }
 
 .kg-audio-playback-rate {
-    width: 37px;
+    min-width: 37px;
     padding: 0 4px;
     font-family: inherit;
     font-size: .85em;
@@ -107,6 +110,7 @@
     line-height: 1.4em;
     text-align: left;
     background: transparent;
+    white-space: nowrap;
 }
 
 .kg-audio-mute-icon,
@@ -114,6 +118,7 @@
     position: relative;
     bottom: 1px;
     padding: 0 4px;
+    font-size: 0;
     background: transparent;
 }
 
@@ -172,6 +177,16 @@
     border-color: transparent;
     color: transparent;
     background: transparent;
+}
+
+.kg-player-container button {
+    border: 0;
+}
+
+.kg-player-container input[type="range"] {
+    height: auto;
+    padding: 0;
+    border: 0;
 }
 
 /* Chrome & Safari styles
