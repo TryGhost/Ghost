@@ -1568,6 +1568,22 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
+"@tryghost/logging@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.0.tgz#587c579d703ef15fe468b8bb8efdd9cdfefb90ef"
+  integrity sha512-eWKtiHWDtVVf+xn+ecKb8mUepFDK1RXOhl1tFMF1b7eFASn5WIDLFSMH9Xl9gyCi6dnsXp5fAm2G3baZ77bPZg==
+  dependencies:
+    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
+    "@tryghost/elasticsearch" "^1.0.0"
+    "@tryghost/pretty-stream" "^0.1.2"
+    "@tryghost/root-utils" "^0.3.7"
+    bunyan "^1.8.15"
+    bunyan-loggly "^1.4.2"
+    fs-extra "^10.0.0"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.21"
+
 "@tryghost/magic-link@1.0.14", "@tryghost/magic-link@^1.0.14":
   version "1.0.14"
   resolved "https://registry.npmjs.org/@tryghost/magic-link/-/magic-link-1.0.14.tgz"
@@ -1851,14 +1867,14 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/update-check-service@0.2.5":
-  version "0.2.5"
-  resolved "https://registry.npmjs.org/@tryghost/update-check-service/-/update-check-service-0.2.5.tgz"
-  integrity sha512-LdvSpwtnsOX/il5v5VAoFFQc8V1mUsVqKptW/mvsvfMAEVnVtNHXAL0hZry/TDeq+4IU0h2UX+/Ziul8Wf4amA==
+"@tryghost/update-check-service@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.3.0.tgz#0483160e0c6df5361d5fbffc522a44a6f14895ef"
+  integrity sha512-Io0e5S0eF9foTlZ7pH5hemDQiDKrl52TSGm+a6XG1a237LwunS8y0KPcz5FUzuPU5FhExQ1AXMnPjjTA3E06Qw==
   dependencies:
     "@tryghost/debug" "^0.1.5"
     "@tryghost/errors" "^0.2.11"
-    "@tryghost/logging" "^1.0.0"
+    "@tryghost/logging" "^2.0.0"
     "@tryghost/tpl" "^0.1.3"
     bluebird "^3.7.2"
     lodash "^4.17.21"
