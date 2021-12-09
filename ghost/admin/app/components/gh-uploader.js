@@ -244,9 +244,10 @@ export default Component.extend({
         let ajax = this.ajax;
         let formData = this._getFormData(file);
         let url = `${ghostPaths().apiRoot}${this.uploadUrl}`;
+        let metadata = null;
 
         try {
-            this.onUploadStart(file);
+            metadata = yield Promise.resolve(this.onUploadStart(file));
 
             let response = yield ajax[this.requestMethod](url, {
                 data: formData,
@@ -296,7 +297,7 @@ export default Component.extend({
             };
 
             this.uploadUrls[index] = result;
-            this.onUploadSuccess(result);
+            this.onUploadSuccess(result, metadata);
 
             return true;
         } catch (error) {
@@ -317,7 +318,7 @@ export default Component.extend({
 
             // TODO: check for or expose known error types?
             this.errors.pushObject(result);
-            this.onUploadFailure(result);
+            this.onUploadFailure(result, metadata);
         }
     }).maxConcurrency(MAX_SIMULTANEOUS_UPLOADS).enqueue(),
 
