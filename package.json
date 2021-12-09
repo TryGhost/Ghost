@@ -73,7 +73,7 @@
     "@tryghost/job-manager": "0.8.16",
     "@tryghost/kg-card-factory": "3.1.0",
     "@tryghost/kg-default-atoms": "3.1.0",
-    "@tryghost/kg-default-cards": "5.12.0",
+    "@tryghost/kg-default-cards": "5.13.1",
     "@tryghost/kg-markdown-html-renderer": "5.1.0",
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.1",
     "@tryghost/limit-service": "1.0.6",
@@ -174,14 +174,14 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "1.5.0",
+    "@tryghost/html-to-mobiledoc": "1.5.2",
     "sqlite3": "5.0.2"
   },
   "devDependencies": {
+    "@ethanresnick/chai-jest-snapshot": "3.0.0",
     "@lodder/grunt-postcss": "3.1.1",
     "c8": "7.10.0",
     "chai": "4.3.4",
-    "@ethanresnick/chai-jest-snapshot": "3.0.0",
     "coffeescript": "2.6.1",
     "cssnano": "5.0.12",
     "eslint": "7.32.0",
