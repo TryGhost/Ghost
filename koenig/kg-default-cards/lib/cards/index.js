@@ -15,5 +15,6 @@ module.exports = [
     require('./product'),
     require('./toggle'),
     require('./audio'),
-    require('./video')
+    require('./video'),
+    require('./file')
 ];
