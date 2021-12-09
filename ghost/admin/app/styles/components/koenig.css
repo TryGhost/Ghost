@@ -2104,14 +2104,6 @@ button.emoji-picker__category-button.active {
     box-shadow: none;
 }
 
-.kg-player {
-    display: flex;
-    flex-grow: 1;
-    align-items: center;
-    padding: 8px 12px;
-    pointer-events: none;
-}
-
 .kg-audio-current-time {
     min-width: 38px;
     padding: 0 4px;
@@ -2209,8 +2201,94 @@ button.emoji-picker__category-button.active {
     border-radius: 2px;
 }
 
-/* Resetting player browser styles
+/* Video card
 /* --------------------------------------------------------------- */
+
+.kg-video-card .kg-player-container {
+    position: absolute;
+    bottom: 0;
+    height: 80px;
+    background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.5));
+}
+
+.kg-video-card .kg-player {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    z-index: 9999;
+}
+
+.kg-placeholder-video {
+    width: 48px;
+    height: 48px;
+    fill: var(--midgrey-l2);
+}
+
+.kg-video-card .kg-player-container input[type="range"]::-moz-range-progress {
+    background: var(--lightgrey);
+}
+
+.kg-video-card .kg-audio-current-time {
+    color: var(--white);
+}
+
+.kg-video-card .kg-audio-playback-rate {
+    color: var(--white);
+}
+
+.kg-video-card .kg-audio-play-icon svg,
+.kg-video-card .kg-audio-mute-icon svg,
+.kg-video-card .kg-audio-unmute-icon svg {
+    fill: var(--white);
+}
+
+.kg-video-card .kg-large-play-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 72px;
+    height: 72px;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+}
+
+.kg-video-card .kg-large-play-icon svg {
+    width: 20px;
+    height: auto;
+    margin-left: 2px;
+    fill: var(--white);
+}
+
+.kg-video-card .image-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: linear-gradient(180deg,rgba(0,0,0,0.3) 0,transparent 70%,transparent 100%);
+}
+
+.kg-settings-panel-control-info.video {
+    width: 75%;
+    margin-top: -10px;
+}
+
+/* Multimedia player UI
+/* --------------------------------------------------------------- */
+
+.kg-player {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    padding: 8px 12px;
+    pointer-events: none;
+}
+
+/* Reset default browser styling */
 
 .kg-player-container input[type=range] {
     position: relative;
@@ -2233,8 +2311,7 @@ button.emoji-picker__category-button.active {
     background: transparent;
 }
 
-/* Player Chrome & Safari styles
-/* --------------------------------------------------------------- */
+/* Player Chrome & Safari styles */
 
 .kg-player-container input[type="range"]::-webkit-slider-runnable-track {
     width: 100%;
@@ -2261,8 +2338,7 @@ button.emoji-picker__category-button.active {
     transform: scale(1.2);
 }
 
-/* Player Firefox styles
-/* --------------------------------------------------------------- */
+/* Player Firefox styles */
 
 .kg-player-container input[type="range"]::-moz-range-track {
     width: 100%;
@@ -2292,8 +2368,7 @@ button.emoji-picker__category-button.active {
     transform: scale(1.2);
 }
 
-/* Player Edge & IE styles
-/* --------------------------------------------------------------- */
+/* Player Edge & IE styles */
 
 .kg-player-container input[type="range"]::-ms-track {
     width: 100%;
@@ -2326,20 +2401,6 @@ button.emoji-picker__category-button.active {
 .kg-player-container input[type="range"]:active::-ms-thumb {
     transform: scale(1.2);
 
-}
-
-/* Video card
-/* --------------------------------------------------------------- */
-
-.kg-settings-panel-control-info.video {
-    width: 75%;
-    margin-top: -10px;
-}
-
-.kg-placeholder-video {
-    width: 48px;
-    height: 48px;
-    fill: var(--midgrey-l2);
 }
 
 /* Codemirror overrides
