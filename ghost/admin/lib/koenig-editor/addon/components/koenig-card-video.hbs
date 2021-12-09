@@ -33,9 +33,9 @@
         @onFailed={{this.videoUploadFailed}}
         as |uploader|
     >
-        <div class="relative{{unless (or this.previewThumbnailSrc @payload.thumbnailSrc) " bg-whitegrey-l2"}}">
-            {{#if (or this.previewThumbnailSrc @payload.thumbnailSrc)}}
-                <img src={{or this.previewThumbnailSrc @payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
+        <div class="relative{{unless (or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc) " bg-whitegrey-l2"}}">
+            {{#if (or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc)}}
+                <img src={{or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
                 <div class="image-overlay">
                     <button class="kg-large-play-icon">{{svg-jar "play"}}</button>
                 </div>
@@ -127,13 +127,11 @@
         <div class="kg-settings-panel-control-info video">Autoplay your video on a loop without sound.</div>
 
         <GhUploader
-            @uploadUrl="/media/thumbnail/upload/"
-            @resourceName="media"
-            @requestMethod="put"
+            @uploadUrl="/images/upload/"
             @accept={{this.imageMimeTypes}}
             @extensions={{this.imageExtensions}}
-            @onComplete={{this.thumbnailUploadCompleted}}
-            @paramsHash={{hash url=@payload.src}}
+            @onStart={{this.customThumbnailUploadStarted}}
+            @onComplete={{this.customThumbnailUploadCompleted}}
             as |uploader|
         >
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
@@ -141,13 +139,13 @@
                 <div class="kg-settings-panel-control-input">
                         <div class="relative">
                             <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg">
-                                {{#if (or uploader.isUploading this.uploadThumbnailFromBlobTask.isRunning)}}
+                                {{#if uploader.isUploading}}
                                     {{!-- {{uploader.progressBar}} --}}
                                     <GhLoadingSpinner />
-                                {{else if @payload.thumbnailSrc}}
+                                {{else if @payload.customThumbnailSrc}}
                                     <div class="gh-branding-image-container transparent-bg">
-                                        <img class="blog-icon" src={{@payload.thumbnailSrc}} {{on "click" uploader.triggerFileDialog}}>
-                                        <button type="button" class="gh-setting-action-smallimg-delete absolute top-0" {{on "click" (fn this.updatePayloadAttr "thumbnailSrc" null)}}>
+                                        <img class="blog-icon" src={{@payload.customThumbnailSrc}} {{on "click" uploader.triggerFileDialog}}>
+                                        <button type="button" class="gh-setting-action-smallimg-delete absolute top-0" {{on "click" (fn this.updatePayloadAttr "customThumbnailSrc" null)}}>
                                             {{svg-jar "trash" class="w4 h4 fill-white"}}
                                         </button>
                                     </div>

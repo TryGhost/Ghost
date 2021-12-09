@@ -27,6 +27,9 @@ const PLACEHOLDERS = ['summer', 'mountains', 'ufo-attack'];
     thumbnailSrc: 'https://ghostsite.com/images/...',
     thumbnailWidth: 640,
     thumbnailHeight: 640,
+    customThumbnailSrc: 'https://ghostsite.com/images/...',
+    customThumbnailWdith: 640,
+    customThumbnailHeight: 480,
     cardWidth: 'normal|wide|full',
     loop: true|false (default: false)
 }
@@ -227,24 +230,28 @@ export default class KoenigCardVideoComponent extends Component {
     *uploadThumbnailFromBlobTask(videoUrl, fileBlob) {
         const formData = new FormData();
         formData.append('file', fileBlob, `media-thumbnail-${guidFor(this)}.jpg`);
-        formData.append('url', videoUrl);
 
-        const url = `${this.ghostPaths.apiRoot}/media/thumbnail/upload/`;
+        const url = `${this.ghostPaths.apiRoot}/images/upload/`;
 
-        const response = yield this.ajax.put(url, {
+        const response = yield this.ajax.post(url, {
             data: formData,
             processData: false,
             contentType: false,
             dataType: 'json'
         });
 
-        return response.media[0].url;
+        return response.images[0].url;
     }
 
     @action
-    async thumbnailUploadCompleted([image]) {
+    async customThumbnailUploadStarted() {
+        // TODO: get image dimensions
+    }
+
+    @action
+    async customThumbnailUploadCompleted([image]) {
         this.args.editor.run(() => {
-            this.updatePayloadAttr('thumbnailSrc', image.url);
+            this.updatePayloadAttr('customThumbnailSrc', image.url);
         });
     }
 
