@@ -8,6 +8,7 @@
     max-width: 550px;
     padding: 20px;
     width: 100%;
+    align-items: center;
 }
 
 .kg-product-card {
@@ -27,6 +28,7 @@
     gap: 8px;
     flex-wrap: wrap;
     justify-content: space-between;
+    width: 100%;
 }
 
 .kg-product-card-title-container {
@@ -47,6 +49,7 @@
     line-height: 1.6em;
     opacity: .7;
     margin-top: 8px;
+    width: 100%;
 }
 
 .kg-product-card-button {
@@ -89,11 +92,12 @@
 }
 
 .kg-product-card-rating-star svg {
-    fill: #ebeef0;
+    fill: currentColor;
+    opacity: 0.15;
 }
 
 .kg-product-card-rating-active.kg-product-card-rating-star svg {
-    fill: #394047;
+    opacity: 1;
 }
 
 .kg-product-card-button {
