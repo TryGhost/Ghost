@@ -1,9 +1,5 @@
 const url = require('url');
-const _ = require('lodash');
-const supertest = require('supertest');
 const testUtils = require('../../../../utils');
-const fixtures = require('../../../../utils/fixture-utils');
-const {sequence} = require('@tryghost/promise');
 
 const API_URL = '/ghost/api/canary/admin/';
 
@@ -214,35 +210,6 @@ module.exports = {
         };
 
         return await testUtils.startGhost(Object.assign(defaults, overrides));
-    },
-
-    async getAgent({forceStart} = {}) {
-        const app = await this.startGhost({forceStart});
-
-        return supertest.agent(app);
-    },
-
-    async login(request) {
-        return testUtils.API.login(request, `${API_URL}session/`);
-    },
-
-    async getAuthenticatedAgent({forceStart} = {}) {
-        const request = await this.getAgent({forceStart});
-        await this.login(request);
-        return request;
-    },
-
-    async initFixtures(...options) {
-        // No DB setup, but override the owner
-        options = _.merge({'owner:post': true}, _.transform(options, function (result, val) {
-            if (val) {
-                result[val] = true;
-            }
-        }));
-
-        const fixtureOps = fixtures.getFixtureOps(options);
-
-        return sequence(fixtureOps);
     },
 
     getValidAdminToken(endpoint, key) {
