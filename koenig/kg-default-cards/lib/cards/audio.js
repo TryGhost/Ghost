@@ -22,6 +22,7 @@ module.exports = {
         }
         let thumbnailCls = 'kg-audio-thumbnail';
         let emptyThumbnailCls = 'kg-audio-thumbnail';
+        let hasThumbnail = Boolean(payload.thumbnailSrc);
         if (!payload.thumbnailSrc) {
             thumbnailCls += ' kg-audio-hide';
         } else {
@@ -75,29 +76,49 @@ module.exports = {
         `;
 
         const emailTemplate = hbs`
-            <table cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #E9E9E9; border-radius: 3px; width: auto; margin: 0 auto; width: 100%">
+            <table cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #E9E9E9; border-radius: 3px; width: auto; margin: 0 auto 1.5em; width: 100%;">
                 <tr>
                     <td>
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
-                                <td width="56" height="56" style="width: 56px; height: 56px;">
-                                    <img src="{{thumbnailSrc}}" class="${thumbnailCls}" style="width: 56px; height: 56px; object-fit: cover; border: 0; border-radius: 2px 0 0 2px;">
+                                <td width="60">
+                                    <a href="https://ghost.org" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
+                                        ${hasThumbnail ? `
+                                        <img src="{{thumbnailSrc}}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
+                                        ` : `
+                                        <img src="https://static.ghost.org/v4.0.0/images/audio-file-icon.png" style="width: 24px; height: 24px; padding: 18px; background: #e9e9e9; border-radius: 2px;">
+                                        `}
+                                    </a>
                                 </td>
-                                <td width="56" height="56" style="width: 56px; height: 56px; text-align: center; vertical-align: middle">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#738a94" xmlns="http://www.w3.org/2000/svg">
-                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z"/>
-                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M14.486 6.81A2.25 2.25 0 0 1 17.25 9v5.579a.75.75 0 0 1-1.5 0v-5.58a.75.75 0 0 0-.932-.727.755.755 0 0 1-.059.013l-4.465.744a.75.75 0 0 0-.544.72v6.33a.75.75 0 0 1-1.5 0v-6.33a2.25 2.25 0 0 1 1.763-2.194l4.473-.746Z"/>
-                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z"/>
-                                    </svg>
-                                </td>
-                                <td height="56" style="height: 56px; vertical-align: middle">
-                                    <p style="margin: 0; font-size: 16px; font-weight: 600; line-height: 1.4em;">{{fileName}}</p>
+                                <td style="position: relative; vertical-align: center;" valign="middle">
+                                    <a href="https://ghost.org" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
+                                    <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                                        <tr>
+                                            <td>
+                                                <a href="https://ghost.org" style="display: block; font-size: 16px; font-weight: 600; line-height: 18px; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; text-decoration: none; color: #121212;">{{fileName}}</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                    <tr>
+                                                        <td width="24" style="vertical-align: middle;" valign="middle">
+                                                            <a href="https://ghost.org" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
+                                                        </td>
+                                                        <td style="vertical-align: middle;" valign="middle">
+                                                            <a href="https://ghost.org" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">5:29</a>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
-            </table
+            </table>
         `;
 
         const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
