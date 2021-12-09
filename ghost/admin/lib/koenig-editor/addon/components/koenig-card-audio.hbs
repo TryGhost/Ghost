@@ -32,7 +32,6 @@
                     @requestMethod="put"
                     @accept={{this.imageMimeTypes}}
                     @extensions={{this.imageExtensions}}
-                    @onStart={{this.audioThumbnailUploadStarted}}
                     @onComplete={{this.audioThumbnailUploadCompleted}}
                     @onFailed={{this.audioThumbnailUploadFailed}}
                     @paramsHash={{hash url=@payload.src}}
@@ -111,7 +110,7 @@
 
             <div class="kg-player-container">
                 <GhTextInput
-                    @value={{@payload.fileName}}
+                    @value={{@payload.title}}
                     @input={{action "setAudioTitle" value="target.value"}}
                     @class="kg-audio-title"
                 />

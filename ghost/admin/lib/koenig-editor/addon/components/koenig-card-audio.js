@@ -13,17 +13,17 @@ import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
-export const AUDIO_EXTENSIONS = ['mp4', 'mp3', 'wav'];
-export const AUDIO_MIME_TYPES = ['audio/mp4', 'audio/mpeg', 'audio/ogg'];
+export const AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'm4a'];
+export const AUDIO_MIME_TYPES = ['audio/mp3', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/mp4'];
 
 const PLACEHOLDERS = ['summer', 'mountains', 'ufo-attack'];
 
 /* Payload
 {
     src: 'https://ghostsite.com/media/...',
-    fileName: '...',
+    title: '...',
     duration: 60,
-    mimeType: 'audio/mp4',
+    mimeType: 'audio/mp3',
     thumbnailSrc: 'https://ghostsite.com/content/media/...'
 }
 */
@@ -49,7 +49,7 @@ export default class KoenigCardAudioComponent extends Component {
     imageMimeTypes = IMAGE_MIME_TYPES;
     placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)]
 
-    payloadAudioAttrs = ['src', 'fileName', 'width', 'height', 'duration', 'mimeType', 'thumbnailSrc', 'thumbnailWidth', 'thumbnailHeight'];
+    payloadAudioAttrs = ['src', 'title', 'duration', 'mimeType', 'thumbnailSrc'];
 
     get isEmpty() {
         return isBlank(this.args.payload.src);
@@ -189,12 +189,10 @@ export default class KoenigCardAudioComponent extends Component {
         return formattedDuration;
     }
 
-    @action
-    async audioThumbnailUploadStarted() {
-        // TODO: Placeholder for any processing on audio upload
-    }
-
     prettifyFileName(filename) {
+        if (!filename || typeof filename !== 'string') {
+            return '';
+        }
         let updatedName = filename.split('.').slice(0, -1).join('.').replace(/[-_]/g,' ').replace(/[^\w\s]+/g,'').replace(/\s\s+/g, ' ');
         return updatedName.charAt(0).toUpperCase() + updatedName.slice(1);
     }
@@ -202,7 +200,7 @@ export default class KoenigCardAudioComponent extends Component {
     @action
     async audioUploadCompleted([audio]) {
         this.previewPayload.src = audio.url;
-        this.previewPayload.fileName = this.prettifyFileName(audio.fileName);
+        this.previewPayload.title = this.prettifyFileName(audio.fileName);
 
         // upload can complete before metadata is extracted when running locally
         await this.extractAudioMetadataTask.last;
@@ -244,7 +242,7 @@ export default class KoenigCardAudioComponent extends Component {
 
     @action
     setAudioTitle(content) {
-        this.updatePayloadAttr('fileName', content);
+        this.updatePayloadAttr('title', content);
     }
 
     @action
