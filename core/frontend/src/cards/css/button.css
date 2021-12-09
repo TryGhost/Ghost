@@ -14,10 +14,10 @@ a.kg-btn {
     display: flex;
     position: static;
     align-items: center;
-    padding: 0 2.0rem;
-    height: 4.0rem;
-    line-height: 4.0rem;
-    font-size: 1.65rem;
+    padding: 0 1.2em;
+    height: 2.4em;
+    line-height: 1em;
+    font-size: 0.95em;
     font-weight: 600;
     text-decoration: none;
     border-radius: 5px;
