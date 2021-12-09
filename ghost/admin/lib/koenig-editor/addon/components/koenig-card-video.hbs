@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{concat (kg-style "media-card") " kg-card kg-video-card mih10 miw-100 relative " (kg-style "breakout" size=@payload.cardWidth)}}
+    @class={{" kg-card kg-video-card mih10 miw-100 relative " (kg-style "breakout" size=@payload.cardWidth)}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -36,6 +36,9 @@
         <div class="relative{{unless (or this.previewThumbnailSrc @payload.thumbnailSrc) " bg-whitegrey-l2"}}">
             {{#if (or this.previewThumbnailSrc @payload.thumbnailSrc)}}
                 <img src={{or this.previewThumbnailSrc @payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
+                <div class="image-overlay">
+                    <button class="kg-large-play-icon">{{svg-jar "play"}}</button>
+                </div>
                 {{#if this.isDraggedOver}}
                     <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
                         <span class="db center sans-serif fw7 f7 white">
@@ -67,6 +70,21 @@
                     {{/if}}
                 </div>
             {{/if}}
+            <div class="kg-player-container">
+                <div class="kg-player">
+                    <button class="kg-audio-play-icon">{{svg-jar "play"}}</button>
+                    <button class="kg-audio-pause-icon kg-audio-hide">{{svg-jar "pause"}}</button>
+                    <span class="kg-audio-current-time">0:00</span>
+                    <div class="kg-audio-time">
+                        /<span class="kg-audio-duration">{{this.totalDuration}}</span>
+                    </div>
+                    <input type="range" class="kg-audio-seek-slider" max="100" value="0">
+                    <button class="kg-audio-playback-rate">1&#215;</button>
+                    <button class="kg-audio-unmute-icon">{{svg-jar "unmute"}}</button>
+                    <button class="kg-audio-mute-icon kg-audio-hide">{{svg-jar "mute"}}</button>
+                    <input type="range" class="kg-audio-volume-slider" max="100" value="70">
+                </div>
+            </div>
         </div>
 
         <div style="display:none">
