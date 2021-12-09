@@ -75,6 +75,8 @@ module.exports = {
             </div>
         `;
 
+        const postUrl = options.postUrl || 'https://ghost.org';
+
         const emailTemplate = hbs`
             <table cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #E9E9E9; border-radius: 3px; width: auto; margin: 0 auto 1.5em; width: 100%;">
                 <tr>
@@ -82,7 +84,7 @@ module.exports = {
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td width="60">
-                                    <a href="https://ghost.org" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
+                                    <a href="${postUrl}" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
                                         ${hasThumbnail ? `
                                         <img src="{{thumbnailSrc}}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
                                         ` : `
@@ -91,11 +93,11 @@ module.exports = {
                                     </a>
                                 </td>
                                 <td style="position: relative; vertical-align: center;" valign="middle">
-                                    <a href="https://ghost.org" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
+                                    <a href="${postUrl}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                         <tr>
                                             <td>
-                                                <a href="https://ghost.org" style="display: block; font-size: 16px; font-weight: 600; line-height: 18px; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; text-decoration: none; color: #121212;">{{fileName}}</a>
+                                                <a href="${postUrl}" style="display: block; font-size: 16px; font-weight: 600; line-height: 18px; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; text-decoration: none; color: #121212;">{{fileName}}</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -103,10 +105,10 @@ module.exports = {
                                                 <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                                     <tr>
                                                         <td width="24" style="vertical-align: middle;" valign="middle">
-                                                            <a href="https://ghost.org" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
+                                                            <a href="${postUrl}" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
                                                         </td>
                                                         <td style="vertical-align: middle;" valign="middle">
-                                                            <a href="https://ghost.org" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">5:29</a>
+                                                            <a href="${postUrl}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">5:29</a>
                                                         </td>
                                                     </tr>
                                                 </table>
