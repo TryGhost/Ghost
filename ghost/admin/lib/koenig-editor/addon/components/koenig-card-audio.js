@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import extractAudioMetadata from '../utils/extract-audio-metadata';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
@@ -74,6 +75,11 @@ export default class KoenigCardAudioComponent extends Component {
                 action: bind(this, this.args.editCard)
             }]
         };
+    }
+
+    get totalDuration() {
+        let duration = this.args.payload.duration || this.previewPayload.duration;
+        return this.getFormattedDuration(duration);
     }
 
     constructor() {
@@ -158,9 +164,29 @@ export default class KoenigCardAudioComponent extends Component {
         }
     }
 
+    @task
+    *extractAudioMetadataTask(file) {
+        return yield extractAudioMetadata(file);
+    }
+
     @action
-    async audioUploadStarted() {
-        // TODO: Placeholder for any processing on audio upload
+    async audioUploadStarted(files) {
+        // extract metadata into temporary payload whilst audio is uploading
+        const file = files[0];
+        if (file) {
+            // use a task here so we can wait for it later if the upload is quicker
+            const metadata = await this.extractAudioMetadataTask.perform(file);
+
+            this.previewPayload.duration = metadata?.duration;
+            this.previewPayload.mimeType = metadata?.mimeType;
+        }
+    }
+
+    getFormattedDuration(duration = 200) {
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration - (minutes * 60));
+        const formattedDuration = `${minutes}:${seconds}`;
+        return formattedDuration;
     }
 
     @action
@@ -177,6 +203,9 @@ export default class KoenigCardAudioComponent extends Component {
     async audioUploadCompleted([audio]) {
         this.previewPayload.src = audio.url;
         this.previewPayload.fileName = this.prettifyFileName(audio.fileName);
+
+        // upload can complete before metadata is extracted when running locally
+        await this.extractAudioMetadataTask.last;
 
         // save preview payload attrs into actual payload and create undo snapshot
         this.args.editor.run(() => {
