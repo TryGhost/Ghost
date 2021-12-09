@@ -6,11 +6,22 @@
 }
 
 .kg-audio-thumbnail {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 80px;
+    min-width: 80px;
     margin: 8px;
+    background: var(--ghost-accent-color);
     object-fit: cover;
     aspect-ratio: 1/1;
     border-radius: 3px;
+}
+
+.kg-audio-thumbnail svg {
+    width: 24px;
+    height: 24px;
+    fill: white;
 }
 
 .kg-player-container {
