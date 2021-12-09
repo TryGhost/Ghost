@@ -1937,6 +1937,27 @@ button.emoji-picker__category-button.active {
     margin-top: 20px;
 }
 
+/* File card
+/* --------------------------------------------------------------- */
+
+.kg-file-data-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.kg-file-data-container input {
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 24px;
+}
+
+.kg-file-data-container .kg-file-card-caption {
+    margin-top: 0;
+}
+
+
 /* Audio card
 /* --------------------------------------------------------------- */
 
