@@ -108,8 +108,6 @@ const resetDb = async () => {
     await db.teardown();
 };
 
-
-
 /**
  * Creates a TestAgent which is a drop-in substitution for supertest hooked into Ghost.
  * @param {String} apiURL
