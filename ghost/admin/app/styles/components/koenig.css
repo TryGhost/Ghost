@@ -1750,6 +1750,7 @@ button.emoji-picker__category-button.active {
     display: flex;
     flex-direction: column;
     width: 100%;
+    align-items: center;
 }
 
 .kg-product-card-trash-icon svg {
