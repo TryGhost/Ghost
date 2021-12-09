@@ -52,6 +52,10 @@
     width: 100%;
 }
 
+.kg-product-card-description p+p {
+    margin-top: 1em;
+}
+
 .kg-product-card-button {
     width: 100%;
     margin-top: 16px;
