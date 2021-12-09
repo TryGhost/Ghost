@@ -40,7 +40,7 @@ module.exports = {
                     </div>
                     {{/if}}
                 </div>
-                <p class="kg-product-card-description">{{{productDescription}}}</p>
+                <div class="kg-product-card-description">{{{productDescription}}}</div>
                 {{#if productButtonEnabled}}
                     <a href={{productUrl}} class="kg-btn kg-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer">
                         <span>
