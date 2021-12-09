@@ -73,7 +73,7 @@ export function insertCardsFromFiles(_files, postEditor) {
 }
 
 function filterAllowedFiles(files) {
-    return Array.from(files).filter(file => file.type.match(/^(image|video)/));
+    return Array.from(files).filter(file => file.type.match(/^(image|video|audio)/));
 }
 
 function getCardNameFromFile(file) {
@@ -83,5 +83,9 @@ function getCardNameFromFile(file) {
 
     if (file.type.startsWith('video')) {
         return 'video';
+    }
+
+    if (file.type.startsWith('audio')) {
+        return 'audio';
     }
 }
