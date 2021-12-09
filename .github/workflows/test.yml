@@ -124,7 +124,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '10.13.0'
-      - run: npm install -g ghost-cli@latest
+      - run: npm install -g ghost-cli@1.17.4
       - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
       - run: zip -r ghost.zip .
 
