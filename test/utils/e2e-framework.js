@@ -18,9 +18,11 @@ const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 const uuid = require('uuid');
+
 const fixtures = require('./fixture-utils');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
+const mockUtils = require('./e2e-framework-mock-utils');
 
 const boot = require('../../core/boot');
 const TestAgent = require('./test-agent');
@@ -106,6 +108,8 @@ const resetDb = async () => {
     await db.teardown();
 };
 
+
+
 /**
  * Creates a TestAgent which is a drop-in substitution for supertest hooked into Ghost.
  * @param {String} apiURL
@@ -120,7 +124,9 @@ const getAgent = async (apiURL) => {
 // request agent
 module.exports.getAgent = getAgent;
 
-// state building
+// state manipulation
 module.exports.initFixtures = initFixtures;
 module.exports.getFixture = getFixture;
 module.exports.resetDb = resetDb;
+module.exports.stubMail = mockUtils.stubMail;
+module.exports.restoreMocks = mockUtils.restoreMocks;

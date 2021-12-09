@@ -3,19 +3,17 @@ const {expect} = require('chai');
 const {any} = require('expect');
 const chaiJestSnapshot = require('@ethanresnick/chai-jest-snapshot');
 
-const should = require('should');
-const sinon = require('sinon');
 const testUtils = require('../../../../utils/index');
 const framework = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models/index');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const config = require('../../../../../core/shared/config/index');
-const mailService = require('../../../../../core/server/services/mail/index');
-
-let request;
 
 describe('Authentication API canary', function () {
+    let request;
+    let emailStub;
+
     describe('Blog setup', function () {
         before(async function () {
             chaiJestSnapshot.resetSnapshotRegistry();
@@ -28,11 +26,11 @@ describe('Authentication API canary', function () {
 
         beforeEach(function () {
             chaiJestSnapshot.configureUsingMochaContext(this);
-            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+            emailStub = framework.stubMail();
         });
 
         afterEach(function () {
-            sinon.restore();
+            framework.restoreMocks();
         });
 
         it('is setup? no', async function () {
@@ -74,8 +72,7 @@ describe('Authentication API canary', function () {
                 etag: any(String)
             });
 
-            mailService.GhostMailer.prototype.send.called.should.be.true();
-            mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
+            expect(emailStub.called).to.be.true;
         });
 
         it('is setup? yes', async function () {
@@ -244,11 +241,11 @@ describe('Authentication API canary', function () {
         });
 
         beforeEach(function () {
-            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+            emailStub = framework.stubMail();
         });
 
         afterEach(function () {
-            sinon.restore();
+            framework.restoreMocks();
         });
 
         it('reset password', async function () {
@@ -406,11 +403,11 @@ describe('Authentication API canary', function () {
         });
 
         beforeEach(function () {
-            sendEmail = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+            emailStub = framework.stubMail();
         });
 
         afterEach(function () {
-            sinon.restore();
+            framework.restoreMocks();
         });
 
         it('reset all passwords returns 200', async function () {
@@ -429,16 +426,16 @@ describe('Authentication API canary', function () {
             // All users locked
             const users = await models.User.fetchAll();
             for (const user of users) {
-                user.get('status').should.be.eql('locked');
+                expect(user.get('status')).to.equal('locked');
             }
 
             // No session left
             const sessions = await models.Session.fetchAll();
-            sessions.length.should.be.eql(0);
+            expect(sessions.length).to.equal(0);
 
-            sendEmail.callCount.should.be.eql(2);
-            sendEmail.firstCall.args[0].subject.should.be.eql('Reset Password');
-            sendEmail.secondCall.args[0].subject.should.be.eql('Reset Password');
+            expect(emailStub.callCount).to.equal(2);
+            expect(emailStub.firstCall.args[0].subject).to.equal('Reset Password');
+            expect(emailStub.secondCall.args[0].subject).to.equal('Reset Password');
         });
     });
 });
