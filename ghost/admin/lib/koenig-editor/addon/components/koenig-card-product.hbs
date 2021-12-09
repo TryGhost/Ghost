@@ -169,7 +169,7 @@
                 </div>
             </div>
             <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="product-button-input">Button title</label>
+                <label class="kg-settings-panel-control-label" for="product-button-input">Button text</label>
                 <div class="kg-settings-panel-control-input">
                     <input
                         type="text"
@@ -177,14 +177,14 @@
                         id="product-button-input"
                         name="product-button"
                         value={{@payload.productButton}}
-                        placeholder="Add product button"
+                        placeholder="Add button text"
                         {{on "input" this.setProductButton}}
                         {{on-key "Enter" (fn this.focusElement "#product-button-input")}}
                     >
                 </div>
             </div>
             <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="product-url-input">Button url</label>
+                <label class="kg-settings-panel-control-label" for="product-url-input">Button URL</label>
                 <div class="kg-settings-panel-control-input">
                     <input
                         type="text"
@@ -192,7 +192,7 @@
                         id="product-url-input"
                         name="product-url"
                         value={{@payload.productUrl}}
-                        placeholder="Add product url"
+                        placeholder="Add URL"
                         {{on "input" this.setProductUrl}}
                         {{on-key "Enter" (fn this.focusElement "#product-url-input")}}
                     >
