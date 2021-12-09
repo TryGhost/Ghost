@@ -118,11 +118,11 @@
                 <div class="kg-player">
                     <button class="kg-audio-play-icon">{{svg-jar "play"}}</button>
                     <button class="kg-audio-pause-icon kg-audio-hide">{{svg-jar "pause"}}</button>
-                    <span class="kg-audio-current-time">0:10</span>
+                    <span class="kg-audio-current-time">0:00</span>
                     <div class="kg-audio-time">
                         /<span class="kg-audio-duration">{{this.totalDuration}}</span>
                     </div>
-                    <input type="range" class="kg-audio-seek-slider" max="100" value="10">
+                    <input type="range" class="kg-audio-seek-slider" max="100" value="0">
                     <button class="kg-audio-playback-rate">1&#215;</button>
                     <button class="kg-audio-unmute-icon">{{svg-jar "unmute"}}</button>
                     <button class="kg-audio-mute-icon kg-audio-hide">{{svg-jar "mute"}}</button>
@@ -131,7 +131,7 @@
             </div>
         </div>
     {{else}}
-        <div class="kg-audio-container kg-audio-container-empty" {{on "click" this.triggerAudioFileDialog}}>
+        <div class="kg-audio-container kg-audio-container-empty">
             <GhUploader
                 @uploadUrl="/media/upload/"
                 @resourceName="media"
@@ -165,10 +165,12 @@
                     {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{else}}
-                        {{svg-jar "audio-upload"}}
+                        <div {{on "click" this.triggerAudioFileDialog}} class="flex pa4">
+                            {{svg-jar "audio-upload"}}
                             <span class="kg-placeholder-text">
                                 Click to upload an audio file
                             </span>
+                        </div>
                     {{/if}}
                 {{/if}}
 
