@@ -1,12 +1,10 @@
-const chai = require('chai');
 const {expect} = require('chai');
 const {any} = require('expect');
-const chaiJestSnapshot = require('@ethanresnick/chai-jest-snapshot');
+const security = require('@tryghost/security');
 
 const testUtils = require('../../../../utils/index');
 const framework = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models/index');
-const security = require('@tryghost/security');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const config = require('../../../../../core/shared/config/index');
 
@@ -16,7 +14,6 @@ describe('Authentication API canary', function () {
 
     describe('Blog setup', function () {
         before(async function () {
-            chaiJestSnapshot.resetSnapshotRegistry();
             request = await framework.getAgent('/ghost/api/canary/admin/');
         });
 
@@ -25,7 +22,6 @@ describe('Authentication API canary', function () {
         });
 
         beforeEach(function () {
-            chaiJestSnapshot.configureUsingMochaContext(this);
             emailStub = framework.stubMail();
         });
 
