@@ -56,8 +56,8 @@ export default class KoenigCardAudioComponent extends Component {
     }
 
     get isIncomplete() {
-        const {src, thumbnailSrc} = this.args.payload;
-        return isBlank(src) || isBlank(thumbnailSrc);
+        const {src} = this.args.payload;
+        return isBlank(src);
     }
 
     get toolbar() {
