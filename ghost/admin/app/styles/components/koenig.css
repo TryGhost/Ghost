@@ -2183,7 +2183,7 @@ button.emoji-picker__category-button.active {
     position: absolute;
     content: "";
     left: 0;
-    width: 10% !important;
+    width: 0% !important;
     height: 4px;
     background-color: currentColor;
     cursor: pointer;
