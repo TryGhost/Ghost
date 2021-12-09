@@ -105,7 +105,7 @@ const login = (request, API_URL) => {
                     }));
                 } else if (res.statusCode !== 200 && res.statusCode !== 201) {
                     return reject(new errors.InternalServerError({
-                        message: res.body.errors[0].message
+                        message: _.get(res, 'body.errors[0].message') || res.error.message
                     }));
                 }
 
