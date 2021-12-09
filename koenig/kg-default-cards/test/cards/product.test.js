@@ -41,6 +41,92 @@ describe('Product card', function () {
         serializer.serialize(card.render(opts)).should.equal('');
     });
 
+    describe('email render', function () {
+        it('generates an email-friendly product card', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    productButton: 'Click me',
+                    productButtonEnabled: true,
+                    productDescription: 'This product is ok',
+                    productImageSrc: 'https://example.com/images/ok.jpg',
+                    productRatingEnabled: true,
+                    productStarRating: 3,
+                    productTitle: 'Product title!',
+                    productUrl: 'https://example.com/product/ok'
+                },
+                options: {
+                    target: 'email'
+                }
+            };
+
+            const html = `<table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;"><tr><td align="center"><img src="https://example.com/images/ok.jpg" style="max-width: 520px; border: none; width: 100%; padding-bottom: 16px;" border="0"></td></tr><tr><td><table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td colspan="2"><div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">This product is ok</div></td></tr><tr><td colspan="2"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px #3498db;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;background-color: #FF1A75;border-color: #FF1A75;color: #FFFFFF; width: 100%; text-align: center;">Click me</a></td></tr></table></td></tr></table>`;
+
+            serializer.serialize(card.render(opts)).should.equal(html);
+        });
+
+        it('generates the same card when the star-rating is disabled', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    productButton: 'Click me',
+                    productButtonEnabled: true,
+                    productDescription: 'This product is ok',
+                    productImageSrc: 'https://example.com/images/ok.jpg',
+                    productRatingEnabled: false,
+                    productTitle: 'Product title!',
+                    productUrl: 'https://example.com/product/ok'
+                },
+                options: {
+                    target: 'email'
+                }
+            };
+
+            const html = `<table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;"><tr><td align="center"><img src="https://example.com/images/ok.jpg" style="max-width: 520px; border: none; width: 100%; padding-bottom: 16px;" border="0"></td></tr><tr><td><table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td colspan="2"><div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">This product is ok</div></td></tr><tr><td colspan="2"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px #3498db;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;background-color: #FF1A75;border-color: #FF1A75;color: #FFFFFF; width: 100%; text-align: center;">Click me</a></td></tr></table></td></tr></table>`;
+
+            serializer.serialize(card.render(opts)).should.equal(html);
+        });
+
+        it('allows disabling the button', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    productButtonEnabled: false,
+                    productDescription: 'This product is ok',
+                    productImageSrc: 'https://example.com/images/ok.jpg',
+                    productRatingEnabled: false,
+                    productTitle: 'Product title!'
+                },
+                options: {
+                    target: 'email'
+                }
+            };
+
+            const html = `<table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;"><tr><td align="center"><img src="https://example.com/images/ok.jpg" style="max-width: 520px; border: none; width: 100%; padding-bottom: 16px;" border="0"></td></tr><tr><td><table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td colspan="2"><div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">This product is ok</div></td></tr></table></td></tr></table>`;
+
+            serializer.serialize(card.render(opts)).should.equal(html);
+        });
+
+        it('renders without an image if the attribute isn\'t there', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    productButtonEnabled: false,
+                    productDescription: 'This product is ok',
+                    productRatingEnabled: false,
+                    productTitle: 'Product title!'
+                },
+                options: {
+                    target: 'email'
+                }
+            };
+
+            const html = `<table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;"><tr><td><table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td colspan="2"><div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">This product is ok</div></td></tr></table></td></tr></table>`;
+
+            serializer.serialize(card.render(opts)).should.equal(html);
+        });
+    });
+
     it('transforms product urls absolute to relative', function () {
         let payload = {
             productButton: 'Click me',

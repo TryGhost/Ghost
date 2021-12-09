@@ -15,12 +15,12 @@ module.exports = {
     name: 'product',
     type: 'dom',
 
-    render({payload, env: {dom}}) {
+    render({payload, env: {dom}, options = {}}) {
         if (!payload.productTitle && !payload.productDescription) {
             return dom.createTextNode('');
         }
 
-        const template = hbs`
+        const frontendTemplate = hbs`
         <div class="kg-card kg-product-card">
             <div class="kg-product-card-container">
                 {{#if productImageEnabled}}
@@ -52,7 +52,42 @@ module.exports = {
         </div>
         `;
 
-        const filteredPayload = {
+        const emailTemplate = hbs`
+        <table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;">
+            {{#if productImageEnabled}}
+            <tr>
+                <td align="center">
+                    <img src="{{productImageSrc}}" style="max-width: 520px; border: none; width: 100%; padding-bottom: 16px;" border="0">
+                </td>
+            </tr>
+            {{/if}}
+            <tr>
+                <td>
+                    <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <tr>
+                            <td valign="top">
+                                <h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">{{{productTitle}}}</h4>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">{{{productDescription}}}</div>
+                            </td>
+                        </tr>
+                        {{#if productButtonEnabled}}
+                        <tr>
+                            <td colspan="2">
+                                <a href="{{productUrl}}" style="overflow-wrap: anywhere;border: solid 1px #3498db;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;background-color: #FF1A75;border-color: #FF1A75;color: #FFFFFF; width: 100%; text-align: center;">{{productButton}}</a>
+                            </td>
+                        </tr>
+                        {{/if}}
+                    </table>
+                </td>
+            </tr>
+        </table>
+        `;
+
+        const templateData = {
             productButtonEnabled: payload.productButtonEnabled && payload.productButton && payload.productUrl,
             productRatingEnabled: payload.productRatingEnabled,
             productImageEnabled: Boolean(payload.productImageSrc),
@@ -69,13 +104,14 @@ module.exports = {
 
         const starActiveClasses = 'kg-product-card-rating-active';
         for (let i = 1; i <= 5; i++) {
-            filteredPayload['star' + i] = '';
+            templateData['star' + i] = '';
             if (payload.productStarRating >= i) {
-                filteredPayload['star' + i] = starActiveClasses;
+                templateData['star' + i] = starActiveClasses;
             }
         }
 
-        const html = dedent(template(filteredPayload));
+        const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
+        const html = dedent(renderTemplate(templateData));
 
         return dom.createRawHTMLSection(html);
     },
