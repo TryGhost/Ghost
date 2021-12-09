@@ -12,6 +12,13 @@ const {
     dedent
 } = require('../utils');
 
+function getFormattedDuration(duration = 200) {
+    const minutes = Math.floor(duration / 60);
+    const seconds = Math.floor(duration - (minutes * 60));
+    const formattedDuration = `${minutes}:${seconds}`;
+    return formattedDuration;
+}
+
 module.exports = {
     name: 'audio',
     type: 'dom',
@@ -29,7 +36,7 @@ module.exports = {
             emptyThumbnailCls += ' kg-audio-hide';
         }
         const frontendTemplate = hbs`
-            <div class="kg-card kg-audio-card" data-kg-audio-src="{{src}}">
+            <div class="kg-card kg-audio-card">
                 <img src="{{thumbnailSrc}}" alt="audio-thumbnail" class="${thumbnailCls}">
                 <div class="${emptyThumbnailCls}">
                     <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,7 +47,7 @@ module.exports = {
                 </div>
                 <div class="kg-player-container">
                     <audio src="{{src}}" preload="metadata"></audio>
-                    <div class="kg-audio-title">{{fileName}}</div>
+                    <div class="kg-audio-title">{{title}}</div>
                     <div class="kg-player">
                         <button class="kg-audio-play-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -55,7 +62,7 @@ module.exports = {
                         </button>
                         <span class="kg-audio-current-time">0:00</span>
                         <div class="kg-audio-time">
-                            /<span class="kg-audio-duration">0:00</span>
+                            /<span class="kg-audio-duration">{{duration}}</span>
                         </div>
                         <input type="range" class="kg-audio-seek-slider" max="100" value="0">
                         <button class="kg-audio-playback-rate">1&#215;</button>
@@ -97,7 +104,7 @@ module.exports = {
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                         <tr>
                                             <td>
-                                                <a href="${postUrl}" style="display: block; font-size: 16px; font-weight: 600; line-height: 18px; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; text-decoration: none; color: #121212;">{{fileName}}</a>
+                                                <a href="${postUrl}" style="display: block; font-size: 16px; font-weight: 600; line-height: 18px; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; text-decoration: none; color: #121212;">{{title}}</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -108,7 +115,7 @@ module.exports = {
                                                             <a href="${postUrl}" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
                                                         </td>
                                                         <td style="vertical-align: middle;" valign="middle">
-                                                            <a href="${postUrl}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">5:29</a>
+                                                            <a href="${postUrl}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">{{duration}}</a>
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -128,8 +135,8 @@ module.exports = {
         const html = dedent(renderTemplate({
             src: payload.src,
             thumbnailSrc: payload.thumbnailSrc,
-            loop: payload.loop,
-            fileName: payload.fileName
+            duration: getFormattedDuration(payload.duration),
+            title: payload.title
         }));
 
         return dom.createRawHTMLSection(html);

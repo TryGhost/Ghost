@@ -7,9 +7,11 @@ export function fromKoenigCard() {
         const titleNode = node.querySelector('.kg-audio-title');
         const audioNode = node.querySelector('.kg-player-container audio');
         const thumbnailNode = node.querySelector('.kg-audio-thumbnail');
+        const durationNode = node.querySelector('.kg-audio-duration');
         const title = titleNode && titleNode.innerHTML.trim();
         const audioSrc = audioNode && audioNode.src;
         const thumbnailSrc = thumbnailNode && thumbnailNode.src;
+        const durationText = durationNode && durationNode.innerHTML.trim();
 
         if (!audioSrc) {
             return;
@@ -17,10 +19,19 @@ export function fromKoenigCard() {
 
         const payload = {
             src: audioSrc,
-            fileName: title
+            title: title
         };
         if (thumbnailSrc) {
             payload.thumbnailSrc = thumbnailSrc;
+        }
+
+        if (durationText) {
+            const {minutes, seconds} = durationText.split(':');
+            try {
+                payload.duration = parseInt(minutes) * 60 + parseInt(seconds);
+            } catch (e) {
+                // ignore duration
+            }
         }
 
         const cardSection = builder.createCardSection('audio', payload);
