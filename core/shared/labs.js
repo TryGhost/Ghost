@@ -42,7 +42,8 @@ const ALPHA_FEATURES = [
     'videoCard',
     'productCard',
     'beforeAfterCard',
-    'tweetGridCard'
+    'tweetGridCard',
+    'headerCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
