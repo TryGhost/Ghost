@@ -232,7 +232,10 @@ export const CARD_MENU = [
             matches: ['file'],
             type: 'card',
             replaceArg: 'file',
-            isAvailable: 'feature.fileCard'
+            isAvailable: 'feature.fileCard',
+            payload: {
+                triggerBrowse: true
+            }
         },
         {
             label: 'Product',

@@ -1,1 +1,102 @@
-{{yield}}
+<KoenigCard
+    @env={{@env}}
+    @class={{"ba b--transparent relative kg-card-hover kg-card kg-audio-card mih10 miw-100 relative" (kg-style "breakout" size=@payload.cardWidth)}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{not this.isEmpty}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.didInsert}}
+    {{on "dragover" this.dragOver}}
+    {{on "dragleave" this.dragLeave}}
+    {{on "drop" this.drop}}
+    as |card|
+>
+    {{#if @payload.src}}
+        <div class="kg-audio-container">
+            <div class="kg-media-container">
+                <button class="kg-audio-button">
+                    {{svg-jar "audio-file" class="kg-audio-icon"}}
+                </button>
+            </div>
+
+            <div class="kg-file-data-container">
+                <GhTextInput
+                    @value={{@payload.fileTitle}}
+                    @placeholder="File Title"
+                    @input={{action "setFileTitle" value="target.value"}}
+                    @class="kg-audio-title"
+                />
+                <GhTextInput
+                    @value={{@payload.fileCaption}}
+                    @input={{action "setFileCaption" value="target.value"}}
+                    @placeholder="File Caption"
+                    @class="kg-audio-title kg-file-card-caption"
+                />
+                <div style="display:flex;line-height:1.15;margin-top:10px;margin-left:10px;font-size:1.3rem">
+                    <div style="margin-right: 12px;font-weight:bold"> {{this.fileName}} </div>
+                    <div> {{this.fileSize}} </div>
+                </div>
+            </div>
+        </div>
+    {{else}}
+        <div class="kg-audio-container kg-audio-container-empty" {{on "click" this.triggerFileDialog}}>
+            <GhUploader
+                @uploadUrl="/media/upload/"
+                @resourceName="media"
+                @files={{this.files}}
+                @onStart={{this.fileUploadStarted}}
+                @onComplete={{this.fileUploadCompleted}}
+                @onFailed={{this.fileUploadFailed}}
+                as |uploader|
+            >
+                {{#if (or uploader.errors uploader.isUploading)}}
+                    {{#if uploader.errors}}
+                        <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
+                            {{uploader.errors.firstObject.message}}
+                        </span>
+                    {{/if}}
+
+                    {{#if this.isDraggedOver}}
+                        <span class="db center sans-serif fw7 f7 middarkgrey">
+                            Drop it like it's hot 🔥
+                        </span>
+                    {{else if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{/if}}
+                {{else}}
+                    {{#if this.isDraggedOver}}
+                        <span class="db center sans-serif fw7 f7 middarkgrey">
+                            Drop it like it's hot 🔥
+                        </span>
+                    {{else if uploader.isUploading}}
+                        {{uploader.progressBar}}
+                    {{else}}
+                        {{svg-jar "audio-upload"}}
+                            <span class="kg-placeholder-text">
+                                Click to upload an audio file
+                            </span>
+                    {{/if}}
+                {{/if}}
+
+                <div style="display:none">
+                    <GhFileInput
+                        @multiple={{false}}
+                        @action={{uploader.setFiles}}
+                        @onInsert={{uploader.registerFileInput}}
+                    />
+                </div>
+            </GhUploader>
+        </div>
+    {{/if}}
+</KoenigCard>
