@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import extractVideoMetadata from '../utils/extract-video-metadata';
+import {IMAGE_EXTENSIONS, IMAGE_MIME_TYPES} from 'ghost-admin/components/gh-image-uploader';
 import {TrackedObject} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
@@ -49,6 +50,10 @@ export default class KoenigCardVideoComponent extends Component {
 
     videoExtensions = VIDEO_EXTENSIONS;
     videoMimeTypes = VIDEO_MIME_TYPES;
+
+    imageExtensions = IMAGE_EXTENSIONS;
+    imageMimeTypes = IMAGE_MIME_TYPES;
+
     placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)]
 
     payloadVideoAttrs = ['src', 'fileName', 'width', 'height', 'duration', 'mimeType', 'thumbnailSrc', 'thumbnailWidth', 'thumbnailHeight'];
@@ -234,6 +239,13 @@ export default class KoenigCardVideoComponent extends Component {
         });
 
         return response.media[0].url;
+    }
+
+    @action
+    async thumbnailUploadCompleted([image]) {
+        this.args.editor.run(() => {
+            this.updatePayloadAttr('thumbnailSrc', image.url);
+        });
     }
 
     @action

@@ -108,11 +108,55 @@
         </div>
         <div class="kg-settings-panel-control-info video">Autoplay your video on a loop without sound.</div>
 
-        <div class="kg-settings-panel-control">
-            <label class="kg-settings-panel-control-label" for="button-url-input">Poster image</label>
-            <div class="kg-settings-panel-control-input">
-
+        <GhUploader
+            @uploadUrl="/media/thumbnail/upload/"
+            @resourceName="media"
+            @requestMethod="put"
+            @accept={{this.imageMimeTypes}}
+            @extensions={{this.imageExtensions}}
+            @onComplete={{this.thumbnailUploadCompleted}}
+            @paramsHash={{hash url=@payload.src}}
+            as |uploader|
+        >
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <label class="kg-settings-panel-control-label">Custom thumbnail</label>
+                <div class="kg-settings-panel-control-input">
+                        <div class="relative">
+                            <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg">
+                                {{#if (or uploader.isUploading this.uploadThumbnailFromBlobTask.isRunning)}}
+                                    {{!-- {{uploader.progressBar}} --}}
+                                    <GhLoadingSpinner />
+                                {{else if @payload.thumbnailSrc}}
+                                    <div class="gh-branding-image-container transparent-bg">
+                                        <img class="blog-icon" src={{@payload.thumbnailSrc}} {{on "click" uploader.triggerFileDialog}}>
+                                        <button type="button" class="gh-setting-action-smallimg-delete absolute top-0" {{on "click" (fn this.updatePayloadAttr "thumbnailSrc" null)}}>
+                                            {{svg-jar "trash" class="w4 h4 fill-white"}}
+                                        </button>
+                                    </div>
+                                {{else}}
+                                    <button type="button" class="gh-btn gh-btn-icon gh-btn-white self-center" {{on "click" uploader.triggerFileDialog}}>
+                                        <span>{{svg-jar "upload-fill"}}</span>
+                                    </button>
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div style="display:none">
+                            <GhFileInput
+                                @multiple={{false}}
+                                @action={{uploader.setFiles}}
+                                @accept={{this.imageMimeTypes}}
+                                @onInsert={{uploader.registerFileInput}}
+                            />
+                        </div>
+                </div>
+                {{#if uploader.errors}}
+                    <div class="kg-settings-panel-control-info">
+                        {{#each uploader.errors as |error|}}
+                            <span class="red">{{error.message}}</span>
+                        {{/each}}
+                    </div>
+                {{/if}}
             </div>
-        </div>
+        </GhUploader>
     </KoenigSettingsPanel>
 {{/if}}
