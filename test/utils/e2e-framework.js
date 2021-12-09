@@ -14,13 +14,29 @@
 // The output state checker is responsible for checking the response from the app after performing a request.
 const _ = require('lodash');
 const {sequence} = require('@tryghost/promise');
+const fs = require('fs-extra');
+const path = require('path');
+const os = require('os');
+const uuid = require('uuid');
 const fixtures = require('./fixture-utils');
+const redirectsUtils = require('./redirects');
+const configUtils = require('./configUtils');
 
 const boot = require('../../core/boot');
 const TestAgent = require('./test-agent');
 const db = require('./db-utils');
 
 const startGhost = async () => {
+    /**
+     * We never use the root content folder for testing!
+     * We use a tmp folder.
+     */
+    const contentFolder = path.join(os.tmpdir(), uuid.v4(), 'ghost-test');
+    await prepareContentFolder({contentFolder});
+
+    // NOTE: need to pass this config to the server instance
+    configUtils.set('paths:contentPath', contentFolder);
+
     const defaults = {
         backend: true,
         frontend: false,
@@ -28,6 +44,40 @@ const startGhost = async () => {
     };
 
     return boot(defaults);
+};
+
+/**
+ * Slightly simplified copy-paste from e2e-utils.
+ * @param {Object} options
+ */
+const prepareContentFolder = ({contentFolder, redirectsFile = true, routesFile = true}) => {
+    const contentFolderForTests = contentFolder;
+
+    fs.ensureDir(contentFolderForTests);
+    fs.ensureDir(path.join(contentFolderForTests, 'data'));
+    fs.ensureDir(path.join(contentFolderForTests, 'themes'));
+    fs.ensureDir(path.join(contentFolderForTests, 'images'));
+    fs.ensureDir(path.join(contentFolderForTests, 'logs'));
+    fs.ensureDir(path.join(contentFolderForTests, 'adapters'));
+    fs.ensureDir(path.join(contentFolderForTests, 'settings'));
+
+    // Copy all themes into the new test content folder. Default active theme is always casper.
+    // If you want to use a different theme, you have to set the active theme (e.g. stub)
+    fs.copySync(
+        path.join(__dirname, 'fixtures', 'themes'),
+        path.join(contentFolderForTests, 'themes')
+    );
+
+    if (redirectsFile) {
+        redirectsUtils.setupFile(contentFolderForTests, '.yaml');
+    }
+
+    if (routesFile) {
+        fs.copySync(
+            path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'),
+            path.join(contentFolderForTests, 'settings', 'routes.yaml')
+        );
+    }
 };
 
 /**
