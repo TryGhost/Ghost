@@ -16,6 +16,7 @@ import * as embedCard from './cards/embed';
 import * as htmlCard from './cards/html';
 import * as softReturn from './cards/softReturn';
 import * as productCard from './cards/product';
+import * as audioCard from './cards/audio';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -469,6 +470,7 @@ export function createParserPlugins(_options = {}) {
         kgCalloutCardToCard,
         kgToggleCardToCard,
         productCard.fromKoenigCard(options),
+        audioCard.fromKoenigCard(options),
         blockquoteWithChildren,
         softReturn.fromBr(options),
         removeLeadingNewline,
