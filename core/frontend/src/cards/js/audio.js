@@ -31,8 +31,6 @@
         let raf = null;
         let currentPlaybackRateIdx = 1;
 
-        audio.src = audioElementContainer.getAttribute('data-kg-audio-src');
-
         const whilePlaying = () => {
             seekSlider.value = Math.floor(audio.currentTime);
             currentTimeContainer.textContent = calculateTime(seekSlider.value);
