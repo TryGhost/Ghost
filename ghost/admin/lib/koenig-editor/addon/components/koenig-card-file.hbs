@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{"ba b--transparent relative kg-card-hover kg-card kg-audio-card mih10 miw-100 relative" (kg-style "breakout" size=@payload.cardWidth)}}
+    @class={{"ba b--transparent relative kg-card-hover kg-card kg-file-card mih10 miw-100 relative" (kg-style "breakout" size=@payload.cardWidth)}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -23,34 +23,36 @@
     as |card|
 >
     {{#if @payload.src}}
-        <div class="kg-audio-container">
-            <div class="kg-media-container">
-                <button class="kg-audio-button">
-                    {{svg-jar "audio-file" class="kg-audio-icon"}}
+        <div class="kg-upload-container">
+            <div class="kg-media-container light">
+                <button class="kg-upload-button">
+                    {{svg-jar "file-download" class="kg-audio-icon"}}
                 </button>
             </div>
 
             <div class="kg-file-data-container">
-                <GhTextInput
-                    @value={{@payload.fileTitle}}
-                    @placeholder="File Title"
-                    @input={{action "setFileTitle" value="target.value"}}
-                    @class="kg-audio-title"
-                />
-                <GhTextInput
-                    @value={{@payload.fileCaption}}
-                    @input={{action "setFileCaption" value="target.value"}}
-                    @placeholder="File Caption"
-                    @class="kg-audio-title kg-file-card-caption"
-                />
-                <div style="display:flex;line-height:1.15;margin-top:10px;margin-left:10px;font-size:1.3rem">
-                    <div style="margin-right: 12px;font-weight:bold"> {{this.fileName}} </div>
-                    <div> {{this.fileSize}} </div>
+                <div>
+                    <GhTextInput
+                        @value={{@payload.fileTitle}}
+                        @placeholder="File Title"
+                        @input={{action "setFileTitle" value="target.value"}}
+                        @class="kg-upload-title"
+                    />
+                    <GhTextInput
+                        @value={{@payload.fileCaption}}
+                        @input={{action "setFileCaption" value="target.value"}}
+                        @placeholder="File Caption"
+                        @class="kg-upload-caption"
+                    />
+                </div>
+                <div class="kg-upload-metadata">
+                {{!-- </div>style="display:flex;line-height:1.15;margin-top:10px;margin-left:10px;font-size:1.3rem"> --}}
+                    {{this.fileName}} <span class="kg-upload-filesize">&bull; {{this.fileSize}}</span>
                 </div>
             </div>
         </div>
     {{else}}
-        <div class="kg-audio-container kg-audio-container-empty" {{on "click" this.triggerFileDialog}}>
+        <div class="kg-upload-container kg-upload-container-empty">
             <GhUploader
                 @uploadUrl="/files/upload/"
                 @resourceName="files"
@@ -82,10 +84,12 @@
                     {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{else}}
-                        {{svg-jar "audio-upload"}}
-                            <span class="kg-placeholder-text">
+                        <div {{on "click" this.triggerFileDialog}} class="flex pa4 midgrey">
+                            {{svg-jar "file-upload"}}
+                            <span class="kg-upload-placeholder-text">
                                 Click to upload a file
                             </span>
+                        </div>
                     {{/if}}
                 {{/if}}
 

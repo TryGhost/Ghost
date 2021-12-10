@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{"ba b--transparent relative kg-card-hover kg-card kg-audio-card mih10 miw-100 relative" (kg-style "breakout" size=@payload.cardWidth)}}
+    @class={{"ba b--transparent relative kg-card-hover kg-card kg-upload-card mih10 miw-100 relative" (kg-style "breakout" size=@payload.cardWidth)}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -23,7 +23,7 @@
     as |card|
 >
     {{#if @payload.src}}
-        <div class="kg-audio-container">
+        <div class="kg-upload-container">
             <div class="kg-media-container">
                 <GhUploader
                     @uploadUrl="/media/thumbnail/upload/"
@@ -52,11 +52,11 @@
                         {{else if uploader.isUploading}}
                             {{uploader.progressBar}}
                         {{else if (not @payload.thumbnailSrc)}}
-                            <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                            <button class="kg-upload-button" {{on "click" this.triggerThumbnailFileDialog}}>
                                 {{svg-jar "audio-upload"}}
                             </button>
                         {{else}}
-                            <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                            <button class="kg-upload-button" {{on "click" this.triggerThumbnailFileDialog}}>
                                 <img src={{@payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
                                 {{!-- <span class="mt2 midgrey">Click to select an audio</span> --}}
                             </button>
@@ -74,7 +74,7 @@
                         {{else if uploader.isUploading}}
                             {{uploader.progressBar}}
                         {{else if @payload.thumbnailSrc}}
-                            <div class="kg-audio-button">
+                            <div class="kg-upload-button">
                                 <img src={{@payload.thumbnailSrc}} />
                                 <div class="image-overlay">
                                     <div class="flex flex-row-reverse">
@@ -85,7 +85,7 @@
                                 </div>
                             </div>
                         {{else}}
-                            <button class="kg-audio-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                            <button class="kg-upload-button" {{on "click" this.triggerThumbnailFileDialog}}>
                                 {{svg-jar "audio-file" class="kg-audio-icon"}}
                                 <div class="image-overlay">
                                     <div class="flex flex-row-reverse">
@@ -112,7 +112,7 @@
                 <GhTextInput
                     @value={{@payload.title}}
                     @input={{action "setAudioTitle" value="target.value"}}
-                    @class="kg-audio-title"
+                    @class="kg-upload-title"
                 />
                 <div class="kg-player">
                     <button class="kg-audio-play-icon">{{svg-jar "play"}}</button>
@@ -130,7 +130,7 @@
             </div>
         </div>
     {{else}}
-        <div class="kg-audio-container kg-audio-container-empty">
+        <div class="kg-upload-container kg-upload-container-empty">
             <GhUploader
                 @uploadUrl="/media/upload/"
                 @resourceName="media"
@@ -166,7 +166,7 @@
                     {{else}}
                         <div {{on "click" this.triggerAudioFileDialog}} class="flex pa4">
                             {{svg-jar "audio-upload"}}
-                            <span class="kg-placeholder-text">
+                            <span class="kg-upload-placeholder-text">
                                 Click to upload an audio file
                             </span>
                         </div>
