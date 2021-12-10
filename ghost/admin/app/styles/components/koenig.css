@@ -1937,38 +1937,18 @@ button.emoji-picker__category-button.active {
     margin-top: 20px;
 }
 
-/* File card
+
+/* Upload cards: audio and file
 /* --------------------------------------------------------------- */
 
-.kg-file-data-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
-.kg-file-data-container input {
-    padding-top: 0;
-    padding-bottom: 0;
-    height: 24px;
-}
-
-.kg-file-data-container .kg-file-card-caption {
-    margin-top: 0;
-}
-
-
-/* Audio card
-/* --------------------------------------------------------------- */
-
-.kg-audio-container {
+.kg-upload-container {
     display: flex;
     width: 100%;
     border-radius: var(--border-radius);
     box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
 }
 
-.kg-audio-container-empty {
+.kg-upload-container-empty {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1977,7 +1957,7 @@ button.emoji-picker__category-button.active {
     cursor: pointer;
 }
 
-.kg-audio-container-empty svg {
+.kg-upload-container-empty svg {
     width: 24px;
     height: auto;
     margin-right: 8px;
@@ -1987,17 +1967,17 @@ button.emoji-picker__category-button.active {
     transform: scale(1.0);
 }
 
-.kg-audio-container-empty:hover svg {
+.kg-upload-container-empty:hover svg {
     opacity: 1.0;
     transform: scale(1.04);
 }
 
-.kg-audio-container-empty .gh-progress-container-progress {
+.kg-upload-container-empty .gh-progress-container-progress {
     width: 30%;
     background: linear-gradient(to bottom, var(--whitegrey-l1), var(--whitegrey));
 }
 
-.kg-placeholder-text {
+.kg-upload-placeholder-text {
     color: var(--midgrey);
     font-family: var(--font-family);
     font-size: 1.45rem;
@@ -2005,7 +1985,7 @@ button.emoji-picker__category-button.active {
     line-height: 1.6em;
 }
 
-.kg-audio-container-empty:hover .kg-placeholder-text {
+.kg-upload-container-empty:hover .kg-upload-placeholder-text {
     color: var(--midgrey-d2);
 }
 
@@ -2022,11 +2002,16 @@ button.emoji-picker__category-button.active {
     border-radius: var(--border-radius);
 }
 
+.kg-media-container.light {
+    background: var(--whitegrey);
+    color: var(--pink);
+}
+
 .kg-media-container .gh-progress-container-progress {
     background: rgba(225, 225, 225, .2);
 }
 
-.kg-audio-button {
+.kg-upload-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2034,8 +2019,8 @@ button.emoji-picker__category-button.active {
     height: 80px;
 }
 
-.kg-audio-button .koenig-audio-replace-icon,
-.kg-audio-button .koenig-audio-upload-icon {
+.kg-upload-button .koenig-audio-replace-icon,
+.kg-upload-button .koenig-audio-upload-icon {
     width: 18px;
     height: 18px;
     margin: .6rem .8rem;
@@ -2046,7 +2031,7 @@ button.emoji-picker__category-button.active {
     stroke-width: 2;
 }
 
-  .kg-audio-button .image-overlay {
+.kg-upload-button .image-overlay {
     position: absolute;
     top: 0;
     right: 0;
@@ -2057,30 +2042,30 @@ button.emoji-picker__category-button.active {
     background-image: linear-gradient(180deg,rgba(0,0,0,0.2) 0,transparent 70%,transparent 100%);
     opacity: 0;
     transition: all 0.15s ease-in-out;
-  }
+}
 
-  .kg-audio-button:hover .image-overlay {
+.kg-upload-button:hover .image-overlay {
     opacity: 1;
-  }
+}
 
-  .kg-audio-button .kg-audio-icon {
+.kg-upload-button .kg-audio-icon {
     width: 24px;
     height: 24px;
     fill: var(--white);
     transition: all 0.15s ease-in-out;
-  }
+}
 
-  .kg-audio-button:hover .kg-audio-icon {
+.kg-upload-button:hover .kg-audio-icon {
     opacity: .6;
-  }
+}
 
-  .kg-audio-button img {
+.kg-upload-button img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: var(--border-radius);
     background: var(--white);
-  }
+}
 
 .kg-player-container {
     position: relative;
@@ -2090,7 +2075,8 @@ button.emoji-picker__category-button.active {
     width: 100%;
 }
 
-.kg-audio-title {
+.kg-upload-title,
+.kg-upload-caption {
     width: 100%;
     margin: 8px 0 0 0;
     padding: 8px 12px;
@@ -2100,8 +2086,28 @@ button.emoji-picker__category-button.active {
     background: transparent;
 }
 
-.kg-audio-title:focus {
+.kg-upload-title:focus,
+.kg-upload-caption:focus {
     box-shadow: none;
+}
+
+.kg-upload-caption {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--midgrey);
+    margin-top: 4px;
+}
+
+.kg-upload-metadata {
+    line-height: 1em;
+    margin: 0 12px 14px;
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.kg-upload-filesize {
+    color: var(--midgrey);
+    font-weight: 400;
 }
 
 .kg-audio-current-time {
@@ -2199,6 +2205,31 @@ button.emoji-picker__category-button.active {
     background-color: currentColor;
     cursor: pointer;
     border-radius: 2px;
+}
+
+.kg-file-data-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.kg-file-data-container .kg-upload-title {
+    padding-top: 4px;
+    padding-bottom: 0px;
+    height: 30px;
+}
+
+.kg-file-data-container .kg-upload-caption {
+    padding-top: 0;
+    height: 26px;
+    margin-top: 0px;
+    font-weight: 400;
+}
+
+.kg-file-data-container .kg-file-card-caption {
+    margin-top: 0;
 }
 
 /* Video card
