@@ -41,12 +41,12 @@
     font-size: 1.4em;
     margin-top: 0;
     margin-bottom: 0;
-    line-height: 1.4em;
+    line-height: 1.25em;
 }
 
 .kg-product-card-description {
     font-size: 1em;
-    line-height: 1.6em;
+    line-height: 1.4em;
     opacity: .7;
     margin-top: 8px;
     width: 100%;
