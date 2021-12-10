@@ -60,7 +60,11 @@ describe('Product card', function () {
                 }
             };
 
-            const html = `<table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;"><tr><td align="center"><img src="https://example.com/images/ok.jpg" style="max-width: 520px; border: none; width: 100%; padding-bottom: 16px;" border="0"></td></tr><tr><td><table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td colspan="2"><div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">This product is ok</div></td></tr><tr><td colspan="2"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px #3498db;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;background-color: #FF1A75;border-color: #FF1A75;color: #FFFFFF; width: 100%; text-align: center;">Click me</a></td></tr></table></td></tr></table>`;
+            const html = `<table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #DDE1E5; border-radius: 5px; margin: 0 0 1.5em;"><tr><td align="center"><img src="https://example.com/images/ok.jpg" style="border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td><div style="padding-top: 16px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr><tr><td><div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;"><table border="0" cellspacing="0" cellpadding="0" width="100%" style="width: 100% !important;"><tr><td style="
+            font-size: 18px;
+            vertical-align: top;
+            border-radius: 5px;
+            text-align: center;"><a href="{{productUrl}}" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;">Click me</a></td></tr></table></div></td></tr></table>`;
 
             serializer.serialize(card.render(opts)).should.equal(html);
         });
@@ -82,7 +86,40 @@ describe('Product card', function () {
                 }
             };
 
-            const html = `<table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;"><tr><td align="center"><img src="https://example.com/images/ok.jpg" style="max-width: 520px; border: none; width: 100%; padding-bottom: 16px;" border="0"></td></tr><tr><td><table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td colspan="2"><div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">This product is ok</div></td></tr><tr><td colspan="2"><a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px #3498db;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;background-color: #FF1A75;border-color: #FF1A75;color: #FFFFFF; width: 100%; text-align: center;">Click me</a></td></tr></table></td></tr></table>`;
+            const html = `<table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #DDE1E5; border-radius: 5px; margin: 0 0 1.5em;">
+                <tr>
+                    <td align="center">
+                        <img src="https://example.com/images/ok.jpg" style="border: none; padding-bottom: 16px;" border="0">
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top">
+                        <h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="padding-top: 16px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;">
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width: 100% !important;">
+                                <tr>
+                                    <td style="
+                                    font-size: 18px;
+                                    vertical-align: top;
+                                    border-radius: 5px;
+                                    text-align: center;">
+                                        <a href="https://example.com/product/ok" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;">Click me</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </table>`;
 
             serializer.serialize(card.render(opts)).should.equal(html);
         });
@@ -102,7 +139,7 @@ describe('Product card', function () {
                 }
             };
 
-            const html = `<table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;"><tr><td align="center"><img src="https://example.com/images/ok.jpg" style="max-width: 520px; border: none; width: 100%; padding-bottom: 16px;" border="0"></td></tr><tr><td><table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td colspan="2"><div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">This product is ok</div></td></tr></table></td></tr></table>`;
+            const html = `<table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #DDE1E5; border-radius: 5px; margin: 0 0 1.5em;"><tr><td align="center"><img src="https://example.com/images/ok.jpg" style="border: none; padding-bottom: 16px;" border="0"></td></tr><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td><div style="padding-top: 16px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr></table>`;
 
             serializer.serialize(card.render(opts)).should.equal(html);
         });
@@ -121,7 +158,7 @@ describe('Product card', function () {
                 }
             };
 
-            const html = `<table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;"><tr><td><table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td colspan="2"><div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">This product is ok</div></td></tr></table></td></tr></table>`;
+            const html = `<table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #DDE1E5; border-radius: 5px; margin: 0 0 1.5em;"><tr><td valign="top"><h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">Product title!</h4></td></tr><tr><td><div style="padding-top: 16px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">This product is ok</div></td></tr></table>`;
 
             serializer.serialize(card.render(opts)).should.equal(html);
         });

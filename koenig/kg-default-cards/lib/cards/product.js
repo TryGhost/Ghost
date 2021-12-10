@@ -65,8 +65,9 @@ module.exports = {
                 <td valign="top">
                     <h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">{{{productTitle}}}</h4>
                 </td>
+            </tr>
             <tr>
-                <td colspan="2">
+                <td>
                     <div style="padding-top: 16px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">{{{productDescription}}}</div>
                 </td>
             </tr>
