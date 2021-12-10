@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import prettifyFileName from '../utils/prettify-file-name';
 import {TrackedObject} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
@@ -6,17 +7,16 @@ import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
-
 const PLACEHOLDERS = ['summer', 'mountains', 'ufo-attack'];
 
 /* Payload
 {
     src: 'https://ghostsite.com/media/...',
-    fileSrc: '...',
     fileName: '...',
     fileSize: 2048,
     fileTitle: '...',
     fileCaption: '...',
+    mimeType: '...'
 }
 */
 
@@ -63,21 +63,9 @@ export default class KoenigCardFileComponent extends Component {
         };
     }
 
-    bytesToSize(bytes) {
-        if (!bytes) {
-            return '0 Byte';
-        }
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        if (bytes === 0) {
-            return '0 Byte';
-        }
-        const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-        return Math.round((bytes / Math.pow(1024, i))) + ' ' + sizes[i];
-    }
-
     get fileSize() {
         const sizeInBytes = this.args.payload.fileSize || this.previewPayload.fileSize;
-        return this.bytesToSize(sizeInBytes);
+        return this._bytesToSize(sizeInBytes);
     }
 
     get fileName() {
@@ -149,16 +137,11 @@ export default class KoenigCardFileComponent extends Component {
         }
     }
 
-    prettifyFileName(filename) {
-        let updatedName = filename.split('.').slice(0, -1).join('.').replace(/[-_]/g,' ').replace(/[^\w\s]+/g,'').replace(/\s\s+/g, ' ');
-        return updatedName.charAt(0).toUpperCase() + updatedName.slice(1);
-    }
-
     @action
     async fileUploadCompleted([uploadedFile]) {
         this.previewPayload.src = uploadedFile.url;
         this.previewPayload.fileName = uploadedFile.fileName;
-        this.previewPayload.fileTitle = this.prettifyFileName(uploadedFile.fileName);
+        this.previewPayload.fileTitle = prettifyFileName(uploadedFile.fileName);
         this.previewPayload.fileCaption = '';
 
         // save preview payload attrs into actual payload and create undo snapshot
@@ -230,5 +213,17 @@ export default class KoenigCardFileComponent extends Component {
         if (event.dataTransfer.files) {
             this.files = [event.dataTransfer.files[0]];
         }
+    }
+
+    _bytesToSize(bytes) {
+        if (!bytes) {
+            return '0 Byte';
+        }
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        if (bytes === 0) {
+            return '0 Byte';
+        }
+        const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+        return Math.round((bytes / Math.pow(1024, i))) + ' ' + sizes[i];
     }
 }
