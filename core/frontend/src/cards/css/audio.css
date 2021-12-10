@@ -86,7 +86,7 @@
 }
 
 .kg-audio-hide {
-    display: none;
+    display: none !important;
 }
 
 .kg-audio-play-icon svg,
@@ -180,6 +180,8 @@
 }
 
 .kg-player-container button {
+    display: flex;
+    align-items: center;
     border: 0;
 }
 
