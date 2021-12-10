@@ -53,37 +53,42 @@ module.exports = {
         `;
 
         const emailTemplate = hbs`
-        <table cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; width:100%; margin:24px auto; padding: 20px; border: 1px solid #DDE1E5; border-radius: 5px; width: auto; margin: 0 auto;">
+        <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #DDE1E5; border-radius: 5px; margin: 0 0 1.5em;">
             {{#if productImageEnabled}}
             <tr>
                 <td align="center">
-                    <img src="{{productImageSrc}}" style="max-width: 520px; border: none; width: 100%; padding-bottom: 16px;" border="0">
+                    <img src="{{productImageSrc}}" style="border: none; padding-bottom: 16px;" border="0">
                 </td>
             </tr>
             {{/if}}
             <tr>
-                <td>
-                    <table cellspacing="0" cellpadding="0" border="0" width="100%">
-                        <tr>
-                            <td valign="top">
-                                <h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">{{{productTitle}}}</h4>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <div style="padding-bottom: 20px; padding-top: 16px; max-width: 440px; opacity: 0.7; font-size: 17px; line-height: 1.4;">{{{productDescription}}}</div>
-                            </td>
-                        </tr>
-                        {{#if productButtonEnabled}}
-                        <tr>
-                            <td colspan="2">
-                                <a href="{{productUrl}}" style="overflow-wrap: anywhere;border: solid 1px #3498db;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;background-color: #FF1A75;border-color: #FF1A75;color: #FFFFFF; width: 100%; text-align: center;">{{productButton}}</a>
-                            </td>
-                        </tr>
-                        {{/if}}
-                    </table>
+                <td valign="top">
+                    <h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 600;">{{{productTitle}}}</h4>
+                </td>
+            <tr>
+                <td colspan="2">
+                    <div style="padding-top: 16px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">{{{productDescription}}}</div>
                 </td>
             </tr>
+            {{#if productButtonEnabled}}
+            <tr>
+                <td>
+                    <div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;">
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="width: 100% !important;">
+                            <tr>
+                                <td style="
+                                font-size: 18px;
+                                vertical-align: top;
+                                border-radius: 5px;
+                                text-align: center;">
+                                <a href="{{productUrl}}" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;">{{productButton}}</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            {{/if}}
         </table>
         `;
 
