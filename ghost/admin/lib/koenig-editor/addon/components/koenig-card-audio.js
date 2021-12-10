@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import extractAudioMetadata from '../utils/extract-audio-metadata';
+import prettifyFileName from '../utils/prettify-file-name';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
@@ -189,18 +190,10 @@ export default class KoenigCardAudioComponent extends Component {
         return formattedDuration;
     }
 
-    prettifyFileName(filename) {
-        if (!filename || typeof filename !== 'string') {
-            return '';
-        }
-        let updatedName = filename.split('.').slice(0, -1).join('.').replace(/[-_]/g,' ').replace(/[^\w\s]+/g,'').replace(/\s\s+/g, ' ');
-        return updatedName.charAt(0).toUpperCase() + updatedName.slice(1);
-    }
-
     @action
     async audioUploadCompleted([audio]) {
         this.previewPayload.src = audio.url;
-        this.previewPayload.title = this.prettifyFileName(audio.fileName);
+        this.previewPayload.title = prettifyFileName(audio.fileName);
 
         // upload can complete before metadata is extracted when running locally
         await this.extractAudioMetadataTask.last;
