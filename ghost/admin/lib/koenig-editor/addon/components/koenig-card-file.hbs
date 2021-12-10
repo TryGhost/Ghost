@@ -52,8 +52,8 @@
     {{else}}
         <div class="kg-audio-container kg-audio-container-empty" {{on "click" this.triggerFileDialog}}>
             <GhUploader
-                @uploadUrl="/media/upload/"
-                @resourceName="media"
+                @uploadUrl="/files/upload/"
+                @resourceName="files"
                 @files={{this.files}}
                 @onStart={{this.fileUploadStarted}}
                 @onComplete={{this.fileUploadCompleted}}
@@ -84,7 +84,7 @@
                     {{else}}
                         {{svg-jar "audio-upload"}}
                             <span class="kg-placeholder-text">
-                                Click to upload an audio file
+                                Click to upload a file
                             </span>
                     {{/if}}
                 {{/if}}
