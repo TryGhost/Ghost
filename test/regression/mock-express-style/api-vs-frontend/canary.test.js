@@ -17,8 +17,6 @@ describe('Integration - Web - Site canary', function () {
     before(testUtils.teardownDb);
     before(testUtils.setup('users:roles', 'posts'));
 
-    let postSpy;
-
     describe('default routes.yaml', function () {
         before(async function () {
             localUtils.defaultMocks(sinon, {amp: true});
@@ -35,12 +33,9 @@ describe('Integration - Web - Site canary', function () {
         beforeEach(function () {
             sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('canary');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-            const postsAPI = require('../../../../core/server/api/canary/posts-public');
-            postSpy = sinon.spy(postsAPI.browse, 'query');
         });
 
         afterEach(function () {
-            postSpy.restore();
             sinon.restore();
         });
 
@@ -48,183 +43,6 @@ describe('Integration - Web - Site canary', function () {
             configUtils.restore();
             urlUtils.restore();
             sinon.restore();
-        });
-
-        describe('behaviour: default cases', function () {
-            it('serve post', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/html-ipsum/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('post');
-                    });
-            });
-
-            it('serve amp', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/html-ipsum/amp/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.match(/amp\.hbs/);
-                        response.body.should.match(/<h1>HTML Ipsum Presents<\/h1>/);
-                    });
-            });
-
-            it('post not found', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/not-found/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(404);
-                        response.template.should.eql('error-404');
-                    });
-            });
-
-            it('serve static page', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/static-page-test/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('page');
-                    });
-            });
-
-            it('serve author', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/author/joe-bloggs/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        const $ = cheerio.load(response.body);
-
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('author');
-
-                        $('.author-bio').length.should.equal(1);
-                    });
-            });
-
-            it('serve tag', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/tag/bacon/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('tag');
-
-                        postSpy.args[0][0].options.filter.should.eql('(tags:\'bacon\'+tags.visibility:public)+type:post');
-                        postSpy.args[0][0].options.page.should.eql(1);
-                        postSpy.args[0][0].options.limit.should.eql(2);
-                    });
-            });
-
-            it('serve tag rss', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/tag/bacon/rss/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                    });
-            });
-
-            it('serve collection', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        const $ = cheerio.load(response.body);
-
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
-
-                        $('.post-card').length.should.equal(2);
-
-                        should.exist(response.res.locals.context);
-                        should.exist(response.res.locals.version);
-                        should.exist(response.res.locals.safeVersion);
-                        should.exist(response.res.locals.safeVersion);
-                        should.exist(response.res.locals.relativeUrl);
-                        should.exist(response.res.locals.secure);
-                        should.exist(response.res.routerOptions);
-                    });
-            });
-
-            it('serve collection: page 2', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/page/2/',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        const $ = cheerio.load(response.body);
-
-                        response.statusCode.should.eql(200);
-                        response.template.should.eql('index');
-
-                        $('.post-card').length.should.equal(2);
-                    });
-            });
-
-            it('serve theme asset', function () {
-                //configUtils.set('url', 'https://example.com');
-
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/assets/css/screen.css',
-                    host: 'example.com'
-                };
-
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                    });
-            });
         });
 
         describe('behaviour: prettify', function () {
