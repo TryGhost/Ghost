@@ -115,8 +115,13 @@ const resetDb = async () => {
  */
 const getAgent = async (apiURL) => {
     const app = await startGhost();
+    const originURL = configUtils.config.get('url');
 
-    return new TestAgent(apiURL, app);
+    return new TestAgent({
+        apiURL,
+        app,
+        originURL
+    });
 };
 
 // request agent
