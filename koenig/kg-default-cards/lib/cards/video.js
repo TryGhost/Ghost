@@ -22,7 +22,7 @@ module.exports = {
 
         const frontendTemplate = hbs`
             <figure class="{{cardClasses}}">
-                <video src="{{payload.src}}" poster="{{posterSpacerSrc}}" width="{{payload.width}}" height="{{payload.height}}" loop="{{payload.loop}}" controls preload="metadata" style="background: transparent url('{{thumbnailSrc}}') 50% 50% / cover no-repeat;" /></video>
+                <video src="{{payload.src}}" poster="{{posterSpacerSrc}}" width="{{payload.width}}" height="{{payload.height}}"{{#if payload.loop}} loop{{/if}} controls preload="metadata" style="background: transparent url('{{thumbnailSrc}}') 50% 50% / cover no-repeat;" /></video>
 
                 {{#if payload.caption}}
                     <figcaption>{{{payload.caption}}}</figcaption>

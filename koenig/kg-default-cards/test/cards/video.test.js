@@ -20,7 +20,7 @@ describe('Video card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.equal('<figure class="kg-card kg-video-card"><video src="https://example.com/video.mp4" poster="https://img.spacergif.org/v1/640x480/0a/spacer.png" width="640" height="480" loop="false" controls preload="metadata" style="background: transparent url(\'https://example.com/video.png\') 50% 50% / cover no-repeat;" /></video></figure>');
+        serializer.serialize(card.render(opts)).should.equal('<figure class="kg-card kg-video-card"><video src="https://example.com/video.mp4" poster="https://img.spacergif.org/v1/640x480/0a/spacer.png" width="640" height="480" controls preload="metadata" style="background: transparent url(\'https://example.com/video.png\') 50% 50% / cover no-repeat;" /></video></figure>');
     });
 
     it('renders for email target', function () {
@@ -75,6 +75,24 @@ describe('Video card', function () {
         };
 
         serializer.serialize(card.render(opts)).should.containEql('kg-card kg-video-card kg-width-wide');
+    });
+
+    it('renders loop attribute', function () {
+        let opts = {
+            env: {
+                dom: new SimpleDom.Document()
+            },
+            payload: {
+                src: 'https://example.com/video.mp4',
+                width: 640,
+                height: 480,
+                loop: true,
+                thumbnailSrc: 'https://example.com/video.png',
+                cardWidth: 'wide'
+            }
+        };
+
+        serializer.serialize(card.render(opts)).should.containEql(' loop ');
     });
 
     it('renders caption when provided', function () {
