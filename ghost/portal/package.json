@@ -18,8 +18,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@sentry/react": "6.16.0",
-    "@sentry/tracing": "6.16.0",
+    "@sentry/react": "6.16.1",
+    "@sentry/tracing": "6.16.1",
     "@testing-library/jest-dom": "5.16.1",
     "@testing-library/react": "12.1.2",
     "@testing-library/user-event": "13.5.0",
