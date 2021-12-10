@@ -5,6 +5,7 @@ import {TrackedObject} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
 import {guidFor} from '@ember/object/internals';
+import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
@@ -85,6 +86,11 @@ export default class KoenigCardVideoComponent extends Component {
                 action: bind(this, this.args.editCard)
             }]
         };
+    }
+
+    get aspectRatioPaddingStyle() {
+        const {width, height} = this.args.payload || {};
+        return htmlSafe(`padding-top: calc(${height} / ${width} * 100%)`);
     }
 
     constructor() {

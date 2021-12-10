@@ -2240,6 +2240,7 @@ button.emoji-picker__category-button.active {
     bottom: 0;
     height: 80px;
     background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.5));
+    z-index: 999;
 }
 
 .kg-video-card .kg-player {
@@ -2301,6 +2302,7 @@ button.emoji-picker__category-button.active {
     justify-content: center;
     align-items: center;
     background-image: linear-gradient(180deg,rgba(0,0,0,0.3) 0,transparent 70%,transparent 100%);
+    z-index: 999;
 }
 
 .kg-settings-panel-control-info.video {

@@ -35,7 +35,9 @@
     >
         <div class="relative{{unless (or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc) " bg-whitegrey-l2"}}">
             {{#if (or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc)}}
-                <img src={{or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
+                <div class="aspect-ratio" style={{this.aspectRatioPaddingStyle}}>
+                    <img src={{or this.previewThumbnailSrc @payload.customThumbnailSrc @payload.thumbnailSrc}} class="aspect-ratio--object" style="object-fit: cover">
+                </div>
                 <div class="image-overlay">
                     <button class="kg-large-play-icon">{{svg-jar "play"}}</button>
                 </div>
