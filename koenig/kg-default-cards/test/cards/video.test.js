@@ -20,7 +20,7 @@ describe('Video card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.equal('<figure class="kg-card kg-video-card"><video src="https://example.com/video.mp4" poster="https://example.com/video.png" width="640" height="480" loop="false" controls preload="metadata" /></video></figure>');
+        serializer.serialize(card.render(opts)).should.equal('<figure class="kg-card kg-video-card"><video src="https://example.com/video.mp4" poster="https://img.spacergif.org/v1/640x480/0a/spacer.png" width="640" height="480" loop="false" controls preload="metadata" style="background: transparent url(\'https://example.com/video.png\') 50% 50% / cover no-repeat;" /></video></figure>');
     });
 
     it('renders for email target', function () {
@@ -35,14 +35,15 @@ describe('Video card', function () {
                 thumbnailSrc: 'https://example.com/video.png'
             },
             options: {
-                target: 'email'
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
             }
         };
 
         let output = serializer.serialize(card.render(opts));
         output.should.not.containEql('<video');
         output.should.containEql('<figure class="kg-card kg-video-card"');
-        output.should.containEql('<a class="kg-video-preview" href="https://example.com/video.mp4"');
+        output.should.containEql('<a class="kg-video-preview" href="https://example.com/my-post"');
         output.should.containEql('background="https://example.com/video.png"');
     });
 
@@ -96,6 +97,7 @@ describe('Video card', function () {
         let payload = {
             src: 'http://127.0.0.1:2369/video.mp4',
             thumbnailSrc: 'http://127.0.0.1:2369/video.png',
+            customThumbnailSrc: 'http://127.0.0.1:2369/custom.png',
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
@@ -103,6 +105,7 @@ describe('Video card', function () {
 
         transformed.src.should.equal('/video.mp4');
         transformed.thumbnailSrc.should.equal('/video.png');
+        transformed.customThumbnailSrc.should.equal('/custom.png');
         transformed.caption
             .should.equal('A link to <a href="/post">an internal post</a>');
     });
@@ -111,6 +114,7 @@ describe('Video card', function () {
         let payload = {
             src: '/video.mp4',
             thumbnailSrc: '/video.png',
+            customThumbnailSrc: '/custom.png',
             caption: 'A link to <a href="/post">an internal post</a>'
         };
 
@@ -118,6 +122,7 @@ describe('Video card', function () {
 
         transformed.src.should.equal('http://127.0.0.1:2369/video.mp4');
         transformed.thumbnailSrc.should.equal('http://127.0.0.1:2369/video.png');
+        transformed.customThumbnailSrc.should.equal('http://127.0.0.1:2369/custom.png');
         transformed.caption
             .should.equal('A link to <a href="http://127.0.0.1:2369/post">an internal post</a>');
     });
@@ -126,6 +131,7 @@ describe('Video card', function () {
         let payload = {
             src: 'http://127.0.0.1:2369/video.mp4',
             thumbnailSrc: 'http://127.0.0.1:2369/video.png',
+            customThumbnailSrc: 'http://127.0.0.1:2369/custom.png',
             caption: 'A link to <a href="http://127.0.0.1:2369/post">an internal post</a>'
         };
 
@@ -133,6 +139,7 @@ describe('Video card', function () {
 
         transformed.src.should.equal('__GHOST_URL__/video.mp4');
         transformed.thumbnailSrc.should.equal('__GHOST_URL__/video.png');
+        transformed.customThumbnailSrc.should.equal('__GHOST_URL__/custom.png');
         transformed.caption
             .should.equal('A link to <a href="__GHOST_URL__/post">an internal post</a>');
     });
