@@ -6,7 +6,6 @@ const testUtils = require('../../../../utils/index');
 const framework = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models/index');
 const settingsCache = require('../../../../../core/shared/settings-cache');
-const config = require('../../../../../core/shared/config/index');
 
 describe('Authentication API canary', function () {
     let request;
@@ -32,7 +31,6 @@ describe('Authentication API canary', function () {
         it('is setup? no', async function () {
             const res = await request
                 .get('authentication/setup')
-                .set('Origin', config.get('url'))
                 .expect(200);
 
             expect(res.body).to.matchSnapshot();
@@ -45,7 +43,6 @@ describe('Authentication API canary', function () {
         it('complete setup', async function () {
             const res = await request
                 .post('authentication/setup')
-                .set('Origin', config.get('url'))
                 .send({
                     setup: [{
                         name: 'test user',
@@ -73,8 +70,7 @@ describe('Authentication API canary', function () {
 
         it('is setup? yes', async function () {
             const res = await request
-                .get('authentication/setup')
-                .set('Origin', config.get('url'));
+                .get('authentication/setup');
 
             expect(res.body).to.matchSnapshot();
             expect(res.headers).to.matchSnapshot({
@@ -86,7 +82,6 @@ describe('Authentication API canary', function () {
         it('complete setup again', function () {
             return request
                 .post('authentication/setup')
-                .set('Origin', config.get('url'))
                 .send({
                     setup: [{
                         name: 'test user',
@@ -105,7 +100,6 @@ describe('Authentication API canary', function () {
 
             const res = await request
                 .put('authentication/setup')
-                .set('Origin', config.get('url'))
                 .send({
                     setup: [{
                         name: 'test user edit',
@@ -146,7 +140,6 @@ describe('Authentication API canary', function () {
         it('check invite with invalid email', function () {
             return request
                 .get('authentication/invitation?email=invalidemail')
-                .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect(400);
         });
@@ -154,7 +147,6 @@ describe('Authentication API canary', function () {
         it('check valid invite', async function () {
             const res = await request
                 .get(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`)
-                .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect(200);
 
@@ -164,7 +156,6 @@ describe('Authentication API canary', function () {
         it('check invalid invite', async function () {
             const res = await request
                 .get(`authentication/invitation?email=notinvited@example.org`)
-                .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect(200);
 
@@ -174,7 +165,6 @@ describe('Authentication API canary', function () {
         it('try to accept without invite', function () {
             return request
                 .post('authentication/invitation')
-                .set('Origin', config.get('url'))
                 .send({
                     invitation: [{
                         token: 'lul11111',
@@ -190,7 +180,6 @@ describe('Authentication API canary', function () {
         it('try to accept with invite and existing email address', function () {
             return request
                 .post('authentication/invitation')
-                .set('Origin', config.get('url'))
                 .send({
                     invitation: [{
                         token: testUtils.DataGenerator.forKnex.invites[0].token,
@@ -206,7 +195,6 @@ describe('Authentication API canary', function () {
         it('try to accept with invite', async function () {
             const res = await request
                 .post('authentication/invitation')
-                .set('Origin', config.get('url'))
                 .send({
                     invitation: [{
                         token: testUtils.DataGenerator.forKnex.invites[0].token,
@@ -255,7 +243,6 @@ describe('Authentication API canary', function () {
             });
 
             const res = await request.put('authentication/passwordreset')
-                .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({
                     passwordreset: [{
@@ -276,7 +263,6 @@ describe('Authentication API canary', function () {
         it('reset password: invalid token', async function () {
             const res = await request
                 .put('authentication/passwordreset')
-                .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({
                     passwordreset: [{
@@ -311,7 +297,6 @@ describe('Authentication API canary', function () {
 
             const res = await request
                 .put('authentication/passwordreset')
-                .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({
                     passwordreset: [{
@@ -343,7 +328,6 @@ describe('Authentication API canary', function () {
 
             const res = await request
                 .put('authentication/passwordreset')
-                .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({
                     passwordreset: [{
@@ -368,7 +352,6 @@ describe('Authentication API canary', function () {
         it('reset password: generate reset token', async function () {
             const res = await request
                 .post('authentication/passwordreset')
-                .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({
                     passwordreset: [{
@@ -408,7 +391,6 @@ describe('Authentication API canary', function () {
 
         it('reset all passwords returns 200', async function () {
             const res = await request.post('authentication/reset_all_passwords')
-                .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .send({})
                 .expect(200);

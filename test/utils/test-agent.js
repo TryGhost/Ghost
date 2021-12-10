@@ -4,12 +4,15 @@ const errors = require('@tryghost/errors');
 class TestAgent {
     /**
      * @constructor
-     * @param {String} API_URL
-     * @param {Object} app  Ghost express app instance
+     * @param {Object} options
+     * @param {String} options.apiURL
+     * @param {String} options.originURL
+     * @param {Object} options.app  Ghost express app instance
      */
-    constructor(API_URL, app) {
-        this.API_URL = API_URL;
+    constructor({apiURL, app, originURL}) {
+        this.API_URL = apiURL;
         this.app = app;
+        this.originURL = originURL;
         this.request = supertest.agent(app);
     }
 
@@ -26,19 +29,23 @@ class TestAgent {
 
     // Forward get(), post(), put(), and delete() straight to the request agent & handle the URL
     get(url) {
-        return this.request.get(this.makeUrl(url));
+        return this.request.get(this.makeUrl(url))
+            .set('Origin', this.originURL);
     }
 
     post(url) {
-        return this.request.post(this.makeUrl(url));
+        return this.request.post(this.makeUrl(url))
+            .set('Origin', this.originURL);
     }
 
     put(url) {
-        return this.request.put(this.makeUrl(url));
+        return this.request.put(this.makeUrl(url))
+            .set('Origin', this.originURL);
     }
 
     delete(url) {
-        return this.request.delete(this.makeUrl(url));
+        return this.request.delete(this.makeUrl(url))
+            .set('Origin', this.originURL);
     }
 
     async loginAs(email, password) {
