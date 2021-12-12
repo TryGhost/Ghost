@@ -80,7 +80,7 @@ module.exports = {
                 {{/if}}
             </tr>
             <tr>
-                <td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
+                <td colspan="2" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
                     <div style="padding-top: 16px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">{{{productDescription}}}</div>
                 </td>
             </tr>
