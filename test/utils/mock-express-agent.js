@@ -46,21 +46,12 @@ class MockExpressAgent {
         const app = this.app;
 
         return new Promise(function (resolve) {
-            res.end = function (body) {
+            res.send = res.end = function (body) {
                 resolve({
                     err: res.req.err,
                     body: body,
                     statusCode: res.statusCode,
-                    req: req,
-                    res: res
-                });
-            };
-
-            res.send = function (body) {
-                resolve({
-                    err: res.req.err,
-                    body: body,
-                    statusCode: res.statusCode,
+                    headers: res._headers,
                     req: req,
                     res: res
                 });
