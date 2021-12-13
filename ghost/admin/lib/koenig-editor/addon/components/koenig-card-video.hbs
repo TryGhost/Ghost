@@ -147,7 +147,7 @@
                                 {{else if @payload.customThumbnailSrc}}
                                     <div class="gh-branding-image-container transparent-bg">
                                         <img class="blog-icon" src={{@payload.customThumbnailSrc}} {{on "click" uploader.triggerFileDialog}}>
-                                        <button type="button" class="gh-setting-action-smallimg-delete absolute top-0" {{on "click" (fn this.updatePayloadAttr "customThumbnailSrc" null)}}>
+                                        <button type="button" class="gh-setting-action-smallimg-delete absolute top-0" {{on "click" this.deleteCustomThumbnail}}>
                                             {{svg-jar "trash" class="w4 h4 fill-white"}}
                                         </button>
                                     </div>
