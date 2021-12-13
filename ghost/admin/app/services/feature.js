@@ -66,6 +66,7 @@ export default Service.extend({
     beforeAfterCard: feature('beforeAfterCard'),
     richTwitterNewsletters: feature('richTwitterNewsletters'),
     tweetGridCard: feature('tweetGridCard'),
+    headerCard: feature('headerCard'),
 
     _user: null,
 
