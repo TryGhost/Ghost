@@ -2182,7 +2182,6 @@ button.emoji-picker__category-button.active {
     }
 }
 
-.kg-audio-mute-icon,
 .kg-audio-unmute-icon {
     position: relative;
     bottom: -1px;
@@ -2191,13 +2190,11 @@ button.emoji-picker__category-button.active {
 }
 
 @media (max-width: 800px) {
-    .kg-audio-mute-icon,
     .kg-audio-unmute-icon {
         margin-left: auto;
     }
 }
 
-.kg-audio-mute-icon svg,
 .kg-audio-unmute-icon svg {
     width: 16px;
     height: 16px;
@@ -2309,7 +2306,6 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-video-card .kg-audio-play-icon svg,
-.kg-video-card .kg-audio-mute-icon svg,
 .kg-video-card .kg-audio-unmute-icon svg {
     fill: var(--white);
 }
