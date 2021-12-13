@@ -1436,6 +1436,14 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
+"@tryghost/errors@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.1.1.tgz#dc38e40591b018b0ac6b5742f7bab5d379c67e60"
+  integrity sha512-na0qB5sdy1BWgquzn+m530ohJ3fTeF451xUTR7I8b76TBEL9snnIkXCv5Qdjmnevmgod7aAGsHi2syyKFlvEvQ==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
 "@tryghost/express-dynamic-redirects@0.2.2":
   version "0.2.2"
   resolved "https://registry.npmjs.org/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.2.tgz"
@@ -1568,6 +1576,22 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
+"@tryghost/logging@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.0.tgz#587c579d703ef15fe468b8bb8efdd9cdfefb90ef"
+  integrity sha512-eWKtiHWDtVVf+xn+ecKb8mUepFDK1RXOhl1tFMF1b7eFASn5WIDLFSMH9Xl9gyCi6dnsXp5fAm2G3baZ77bPZg==
+  dependencies:
+    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
+    "@tryghost/elasticsearch" "^1.0.0"
+    "@tryghost/pretty-stream" "^0.1.2"
+    "@tryghost/root-utils" "^0.3.7"
+    bunyan "^1.8.15"
+    bunyan-loggly "^1.4.2"
+    fs-extra "^10.0.0"
+    gelf-stream "^1.1.1"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.21"
+
 "@tryghost/magic-link@1.0.14", "@tryghost/magic-link@^1.0.14":
   version "1.0.14"
   resolved "https://registry.npmjs.org/@tryghost/magic-link/-/magic-link-1.0.14.tgz"
@@ -1601,15 +1625,15 @@
     "@tryghost/domain-events" "^0.1.3"
     "@tryghost/member-events" "^0.3.1"
 
-"@tryghost/members-api@2.8.4":
-  version "2.8.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.8.4.tgz#e61303eb47d3d4bfdf18cb754f1fea472562c08e"
-  integrity sha512-dngeDd29z4DjK/RLQHVOCKbsuP8Io39l9dLXWSiP9cdVTqjE5ax53GccDZOPLhD2H/fU3GAes37Sxzd7jPOtnw==
+"@tryghost/members-api@2.8.6":
+  version "2.8.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-2.8.6.tgz#c960df76b1a5e2cb52b15822971c92e02f4feb77"
+  integrity sha512-g1vbdZGmk/yXtvgjXH8pmUf+P8IDxhMgsPaXHUJJ8qyS2Lzrp51mbANbyIyp5TsoNpUwk3V/pfj1lzgtkswF0A==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/domain-events" "^0.1.3"
-    "@tryghost/errors" "^1.1.0"
-    "@tryghost/logging" "^1.0.2"
+    "@tryghost/errors" "^1.1.1"
+    "@tryghost/logging" "^2.0.0"
     "@tryghost/magic-link" "^1.0.14"
     "@tryghost/member-analytics-service" "^0.1.4"
     "@tryghost/member-events" "^0.3.1"
