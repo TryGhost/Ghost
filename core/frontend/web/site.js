@@ -21,7 +21,6 @@ const customRedirects = require('../../server/services/redirects');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
-const sentry = require('../../shared/sentry');
 const mw = require('./middleware');
 const labs = require('../../shared/labs');
 
@@ -186,7 +185,7 @@ module.exports = function setupSiteApp(options = {}) {
             app.setupErrorHandling(siteApp);
         }
     });
-    siteApp.use(errorHandler.handleThemeResponse(sentry));
+    siteApp.use(mw.errorHandler.handleThemeResponse);
 
     debug('Site setup end');
 
