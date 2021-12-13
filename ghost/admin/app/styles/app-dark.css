@@ -739,6 +739,18 @@ input:focus,
     background: var(--lightgrey) !important;
 }
 
+.kg-upload-title {
+    background: transparent;
+}
+
+.kg-upload-button .kg-audio-icon {
+    fill: var(--black);
+}
+
+.image-overlay button {
+    background: var(--whitegrey);
+}
+
 /* Editor  */
 @media (max-width: 1024px) {
     .gh-editor-header {
