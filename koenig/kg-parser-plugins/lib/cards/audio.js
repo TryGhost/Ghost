@@ -5,7 +5,7 @@ export function fromKoenigCard() {
         }
 
         const titleNode = node.querySelector('.kg-audio-title');
-        const audioNode = node.querySelector('.kg-player-container audio');
+        const audioNode = node.querySelector('.kg-audio-player-container audio');
         const thumbnailNode = node.querySelector('.kg-audio-thumbnail');
         const durationNode = node.querySelector('.kg-audio-duration');
         const title = titleNode && titleNode.innerHTML.trim();
