@@ -2081,7 +2081,7 @@ button.emoji-picker__category-button.active {
     margin: 8px 0 0 0;
     padding: 8px 12px;
     border: none;
-    font-size: 1.7rem;
+    font-size: 1.8rem;
     font-weight: 700;
     background: transparent;
 }
@@ -2155,6 +2155,12 @@ button.emoji-picker__category-button.active {
     margin: 0 4px;
 }
 
+@media (max-width: 800px) {
+    .kg-audio-seek-slider {
+        display: none;
+    }
+}
+
 .kg-audio-playback-rate {
     width: 36px;
     padding: 0 4px;
@@ -2166,12 +2172,25 @@ button.emoji-picker__category-button.active {
     background: transparent;
 }
 
+@media (max-width: 800px) {
+    .kg-audio-playback-rate {
+        padding-left: 8px;
+    }
+}
+
 .kg-audio-mute-icon,
 .kg-audio-unmute-icon {
     position: relative;
     bottom: -1px;
     padding: 0 4px;
     background: transparent;
+}
+
+@media (max-width: 800px) {
+    .kg-audio-mute-icon,
+    .kg-audio-unmute-icon {
+        margin-left: auto;
+    }
 }
 
 .kg-audio-mute-icon svg,
@@ -2183,6 +2202,18 @@ button.emoji-picker__category-button.active {
 
 .kg-audio-volume-slider {
     width: 80px;
+}
+
+@media (min-width: 500px) and (max-width: 550px) {
+    .kg-audio-volume-slider {
+        display: none;
+    }
+}
+
+@media (max-width: 430px) {
+    .kg-audio-volume-slider {
+        display: none;
+    }
 }
 
 .kg-audio-seek-slider::before {
