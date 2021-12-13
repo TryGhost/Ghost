@@ -51,6 +51,9 @@
                 </div>
             </div>
         </div>
+        {{#if (not @isEditing)}}
+            <div class="koenig-card-click-overlay"></div>
+        {{/if}}
     {{else}}
         <div class="kg-upload-container kg-upload-container-empty">
             <GhUploader
