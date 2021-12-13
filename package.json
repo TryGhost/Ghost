@@ -204,7 +204,7 @@
     "mock-knex": "0.4.10",
     "nock": "13.2.1",
     "papaparse": "5.3.1",
-    "postcss": "8.4.4",
+    "postcss": "8.4.5",
     "rewire": "5.0.0",
     "should": "13.2.3",
     "sinon": "11.1.2",
