@@ -54,7 +54,7 @@ module.exports = {
         <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #DDE1E5; border-radius: 5px; margin: 0 0 1.5em; width: 100%;">
             {{#if productImageEnabled}}
             <tr>
-                <td align="center" colspan="2" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
+                <td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
                     <img src="{{productImageSrc}}" style="border: none; padding-bottom: 16px;" border="0">
                 </td>
             </tr>
@@ -63,30 +63,32 @@ module.exports = {
                 <td valign="top">
                     <h4 style="font-size: 22px !important; margin-top: 0 !important; margin-bottom: 0 !important; font-weight: 700;">{{{productTitle}}}</h4>
                 </td>
-                {{#if productRatingEnabled}}
-                <td class="text-align:right;" align="right" valign="top">
+            </tr>
+            {{#if productRatingEnabled}}
+            <tr style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
+                <td valign="top">
                     {{#if star5}}
-                    star5
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-5.png" style="border: none; width: 96px;" border="0">
                     {{else if star4}}
-                    star4
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-4.png" style="border: none; width: 96px;" border="0">
                     {{else if star3}}
-                    star3
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" style="border: none; width: 96px;" border="0">
                     {{else if star2}}
-                    star2
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-2.png" style="border: none; width: 96px;" border="0">
                     {{else if star1}}
-                    star1
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-1.png" style="border: none; width: 96px;" border="0">
                     {{/if}}
                 </td>
-                {{/if}}
             </tr>
+            {{/if}}
             <tr>
-                <td colspan="2" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
-                    <div style="padding-top: 16px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">{{{productDescription}}}</div>
+                <td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
+                    <div style="padding-top: 8px; opacity: 0.7; font-size: 17px; line-height: 1.4; margin-bottom: -24px;">{{{productDescription}}}</div>
                 </td>
             </tr>
             {{#if productButtonEnabled}}
             <tr>
-                <td colspan="2" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
+                <td style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
                     <div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;">
                         <a href="{{productUrl}}" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;">{{productButton}}</a>
                     </div>
