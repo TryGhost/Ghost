@@ -28,7 +28,7 @@ module.exports = {
             return dom.createTextNode('');
         }
         let thumbnailCls = 'kg-audio-thumbnail';
-        let emptyThumbnailCls = 'kg-audio-thumbnail';
+        let emptyThumbnailCls = 'kg-audio-thumbnail placeholder';
         let hasThumbnail = Boolean(payload.thumbnailSrc);
         if (!payload.thumbnailSrc) {
             thumbnailCls += ' kg-audio-hide';
