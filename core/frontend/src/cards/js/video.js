@@ -73,11 +73,29 @@
             displayDuration();
             setSliderMax();
             displayBufferedAmount();
+            if (videoEl.autoplay) {
+                raf = requestAnimationFrame(whilePlaying);
+                playIconContainer.classList.add("kg-video-hide");
+                pauseIconContainer.classList.remove("kg-video-hide");
+            }
+            if (videoEl.muted) {
+                unmuteIconContainer.classList.add("kg-video-hide");
+                muteIconContainer.classList.remove("kg-video-hide");
+            }
         } else {
             videoEl.addEventListener('loadedmetadata', () => {
                 displayDuration();
                 setSliderMax();
                 displayBufferedAmount();
+                if (videoEl.autoplay) {
+                    raf = requestAnimationFrame(whilePlaying);
+                    playIconContainer.classList.add("kg-video-hide");
+                    pauseIconContainer.classList.remove("kg-video-hide");
+                }
+                if (videoEl.muted) {
+                    unmuteIconContainer.classList.add("kg-video-hide");
+                    muteIconContainer.classList.remove("kg-video-hide");
+                }
             });
         }
 
@@ -85,7 +103,7 @@
             playIconContainer.classList.add("kg-video-hide");
             pauseIconContainer.classList.remove("kg-video-hide");
             videoEl.play();
-            requestAnimationFrame(whilePlaying);
+            raf = requestAnimationFrame(whilePlaying);
         });
 
         pauseIconContainer.addEventListener('click', () => {
