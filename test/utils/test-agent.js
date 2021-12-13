@@ -8,11 +8,15 @@ class TestAgent {
      * @param {String} options.apiURL
      * @param {String} options.originURL
      * @param {Object} options.app  Ghost express app instance
+     * @param {Object} options.ownerUser owner used for login
+     * @param {String} options.ownerUser.email
+     * @param {String} options.ownerUser.password
      */
-    constructor({apiURL, app, originURL}) {
+    constructor({apiURL, app, originURL, ownerUser}) {
         this.API_URL = apiURL;
         this.app = app;
         this.originURL = originURL;
+        this.ownerUser = ownerUser;
         this.request = supertest.agent(app);
     }
 
@@ -72,18 +76,7 @@ class TestAgent {
     }
 
     async loginAsOwner() {
-        // temporary copy-pasta
-        let user = {
-            // owner (owner is still id 1 because of permissions)
-            id: '1',
-            name: 'Joe Bloggs',
-            slug: 'joe-bloggs',
-            email: 'jbloggs@example.com',
-            password: 'Sl1m3rson99',
-            profile_image: 'https://example.com/super_photo.jpg'
-        };
-
-        await this.loginAs(user.email, user.password);
+        await this.loginAs(this.ownerUser.email, this.ownerUser.password);
     }
 }
 
