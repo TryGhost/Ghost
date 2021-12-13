@@ -165,6 +165,11 @@ export default class KoenigCardAudioComponent extends Component {
         }
     }
 
+    @action
+    deleteThumbnail() {
+        this.updatePayloadAttr('thumbnailSrc', null);
+    }
+
     @task
     *extractAudioMetadataTask(file) {
         return yield extractAudioMetadata(file);
