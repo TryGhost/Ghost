@@ -1,0 +1,16 @@
+.kg-before-after-card > div {
+    position: relative;
+    margin: 0 auto;
+}
+
+.kg-before-after-card-image-before {
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    left: 0;
+}
+
+.kg-before-after-card img {
+    max-width: none;
+    width: unset;
+}
