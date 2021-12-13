@@ -56,6 +56,18 @@
     margin-bottom: 6px; 
 }
 
+.kg-product-card-description ul {
+    margin-top: 1rem;
+}
+
+.kg-product-card-description li {
+    line-height: 1.4em;
+}
+
+.kg-product-card-description li+li {
+    margin-top: 0.2em;
+}
+
 .kg-product-card-button {
     grid-column: 1 / 3;
     width: 100%;
