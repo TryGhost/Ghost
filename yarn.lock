@@ -1412,10 +1412,10 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.0.4", "@tryghost/errors@^1.0.0":
-  version "1.0.4"
-  resolved "https://registry.npmjs.org/@tryghost/errors/-/errors-1.0.4.tgz"
-  integrity sha512-ImfwkOc54Ur9zjYgPaG3Y9wFeH00eJnqClYBZSB5/K0T6nqTXnIOyFIq33vZkmXuxQLX1xRb82OeWYxHxgFWDA==
+"@tryghost/errors@1.1.1", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/@tryghost/errors/-/errors-1.1.1.tgz"
+  integrity sha512-na0qB5sdy1BWgquzn+m530ohJ3fTeF451xUTR7I8b76TBEL9snnIkXCv5Qdjmnevmgod7aAGsHi2syyKFlvEvQ==
   dependencies:
     lodash "^4.17.21"
     uuid "^8.3.2"
@@ -1428,10 +1428,10 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
-"@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.npmjs.org/@tryghost/errors/-/errors-1.1.1.tgz"
-  integrity sha512-na0qB5sdy1BWgquzn+m530ohJ3fTeF451xUTR7I8b76TBEL9snnIkXCv5Qdjmnevmgod7aAGsHi2syyKFlvEvQ==
+"@tryghost/errors@^1.0.0":
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/@tryghost/errors/-/errors-1.0.4.tgz"
+  integrity sha512-ImfwkOc54Ur9zjYgPaG3Y9wFeH00eJnqClYBZSB5/K0T6nqTXnIOyFIq33vZkmXuxQLX1xRb82OeWYxHxgFWDA==
   dependencies:
     lodash "^4.17.21"
     uuid "^8.3.2"
