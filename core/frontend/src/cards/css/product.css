@@ -7,9 +7,9 @@
 
 .kg-product-card-container {
     display: grid;
-    grid-template-columns: auto 100px;
+    grid-template-columns: auto min-content;
     align-items: center;
-    grid-gap: 16px;
+    grid-row-gap: 16px;
     background: transparent;
     max-width: 550px;
     padding: 20px;
@@ -67,6 +67,7 @@
     grid-column: 2 / 3;
     align-self: start;
     justify-self: end;
+    padding-left: 16px;
 }
 
 @media (max-width: 400px) {
@@ -78,6 +79,7 @@
         grid-column: 1 / 3;
         justify-self: start;
         margin-top: -15px;
+        padding-left: 0;
     }
 }
 
