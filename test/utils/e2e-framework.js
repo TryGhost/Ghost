@@ -27,6 +27,7 @@ const mockUtils = require('./e2e-framework-mock-utils');
 const boot = require('../../core/boot');
 const TestAgent = require('./test-agent');
 const db = require('./db-utils');
+const DataGenerator = require('./fixtures/data-generator');
 
 const startGhost = async () => {
     /**
@@ -116,11 +117,16 @@ const resetDb = async () => {
 const getAgent = async (apiURL) => {
     const app = await startGhost();
     const originURL = configUtils.config.get('url');
+    const ownerUser = {
+        email: DataGenerator.Content.users[0].email,
+        password: DataGenerator.Content.users[0].password
+    };
 
     return new TestAgent({
         apiURL,
         app,
-        originURL
+        originURL,
+        ownerUser
     });
 };
 
