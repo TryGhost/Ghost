@@ -96,7 +96,7 @@ module.exports = {
                                         <img src="{{thumbnailSrc}}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
                                         ` : `
                                         <img src="https://static.ghost.org/v4.0.0/images/audio-file-icon.png" style="width: 24px; height: 24px; padding: 18px; background: #e9e9e9; border-radius: 2px;">
-                                        `}
+                                        `}     color: ${templateSettings.accentColor || '#08121A'};
                                     </a>
                                 </td>
                                 <td style="position: relative; vertical-align: center;" valign="middle">
@@ -115,7 +115,7 @@ module.exports = {
                                                             <a href="${postUrl}" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
                                                         </td>
                                                         <td style="vertical-align: middle;" valign="middle">
-                                                            <a href="${postUrl}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">{{duration}}</a>
+                                                            <a href="${postUrl}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">{{duration}}<span style="color: #738a94"> • Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </table>
