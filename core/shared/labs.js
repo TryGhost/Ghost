@@ -19,6 +19,7 @@ const GA_FEATURES = [
     'nftCard',
     'calloutCard',
     'accordionCard',
+    'productCard',
     'richTwitterNewsletters'
 ];
 
@@ -40,7 +41,6 @@ const ALPHA_FEATURES = [
     'fileCard',
     'audioCard',
     'videoCard',
-    'productCard',
     'beforeAfterCard',
     'tweetGridCard',
     'headerCard'
