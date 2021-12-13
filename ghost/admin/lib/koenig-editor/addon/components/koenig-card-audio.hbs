@@ -58,13 +58,7 @@
                         {{else}}
                             <button class="kg-upload-button" {{on "click" this.triggerThumbnailFileDialog}}>
                                 <img src={{@payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
-                                {{!-- <span class="mt2 midgrey">Click to select an audio</span> --}}
                             </button>
-                            {{!-- <div class="absolute absolute--fill flex items-center bg-black-60 pe-none">
-                                <span class="fw6 f7 white">
-                                    Drop to replace thumbnail
-                                </span>
-                            </div> --}}
                         {{/if}}
                     {{else}}
                         {{#if this.isDraggedOver}}
@@ -129,6 +123,9 @@
                 </div>
             </div>
         </div>
+        {{#if (not @isEditing)}}
+            <div class="koenig-card-click-overlay"></div>
+        {{/if}}
     {{else}}
         <div class="kg-upload-container kg-upload-container-empty">
             <GhUploader
