@@ -15,7 +15,8 @@ const {
 function getFormattedDuration(duration = 200) {
     const minutes = Math.floor(duration / 60);
     const seconds = Math.floor(duration - (minutes * 60));
-    const formattedDuration = `${minutes}:${seconds}`;
+    const paddedSeconds = String(seconds).padStart(2, '0');
+    const formattedDuration = `${minutes}:${paddedSeconds}`;
     return formattedDuration;
 }
 
