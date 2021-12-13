@@ -29,16 +29,16 @@ module.exports = {
         if (!payload.src) {
             return dom.createTextNode('');
         }
-        let thumbnailCls = 'kg-audio-thumbnail';
-        let emptyThumbnailCls = 'kg-audio-thumbnail';
+        let thumbnailCls = 'kg-file-thumbnail';
+        let emptyThumbnailCls = 'kg-file-thumbnail';
         if (!payload.thumbnailSrc) {
-            thumbnailCls += ' kg-audio-hide';
+            thumbnailCls += ' kg-file-hide';
         } else {
-            emptyThumbnailCls += ' kg-audio-hide';
+            emptyThumbnailCls += ' kg-file-hide';
         }
         const frontendTemplate = hbs`
-            <div class="kg-card kg-audio-card" data-kg-audio-src="{{src}}">
-                <img src="{{thumbnailSrc}}" alt="audio-thumbnail" class="${thumbnailCls}">
+            <div class="kg-card kg-file-card">
+                <img src="{{thumbnailSrc}}" alt="file-thumbnail" class="${thumbnailCls}">
                 <div class="${emptyThumbnailCls}">
                     <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 15.33a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM15 13.83a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0Z"/>
@@ -46,11 +46,10 @@ module.exports = {
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M3 1.5a.75.75 0 0 0-.75.75v19.5a.75.75 0 0 0 .75.75h18a.75.75 0 0 0 .75-.75V5.133a.75.75 0 0 0-.225-.535l-.002-.002-3-2.883A.75.75 0 0 0 18 1.5H3ZM1.409.659A2.25 2.25 0 0 1 3 0h15a2.25 2.25 0 0 1 1.568.637l.003.002 3 2.883a2.25 2.25 0 0 1 .679 1.61V21.75A2.25 2.25 0 0 1 21 24H3a2.25 2.25 0 0 1-2.25-2.25V2.25c0-.597.237-1.169.659-1.591Z"/>
                     </svg>
                 </div>
-                <div class="kg-player-container">
-                    <audio src="{{src}}" preload="metadata"></audio>
-                    <div class="kg-audio-title">{{fileTitle}}</div>
-                    <div class="kg-audio-title">{{fileCaption}}</div>
-                    <div class="kg-player">
+                <div class="kg-file-card-container">
+                    <div class="kg-file-title">{{fileTitle}}</div>
+                    <div class="kg-file-caption">{{fileCaption}}</div>
+                    <div class="kg-file-details">
                         <div> {{fileName}} </div>
                         <div style="margin-left: 12px"> {{fileSize}} </div>
                         <a href="{{src}}" download="{{fileName}}" style="margin-left: 12px">Download</a>
