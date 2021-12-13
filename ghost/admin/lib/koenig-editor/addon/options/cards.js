@@ -22,7 +22,8 @@ export const CARD_COMPONENT_MAP = {
     audio: 'koenig-card-audio',
     file: 'koenig-card-file',
     product: 'koenig-card-product',
-    'before-after': 'koenig-card-before-after'
+    'before-after': 'koenig-card-before-after',
+    header: 'koenig-card-header'
 };
 
 // map card names to generic icons (used for ghost elements when dragging)
@@ -47,7 +48,8 @@ export const CARD_ICON_MAP = {
     audio: 'koenig/kg-card-type-audio',
     file: 'koenig/kg-card-type-file',
     product: 'koenig/kg-card-type-product',
-    'before-after': 'koenig-card-before-after'
+    'before-after': 'koenig-card-before-after',
+    header: 'koenig/kg-card-type-gen-embed'
 };
 
 // TODO: move koenigOptions directly into cards now that card components register
@@ -73,7 +75,8 @@ export default [
     createComponentCard('file'),
     createComponentCard('product'),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false}),
-    createComponentCard('before-after')
+    createComponentCard('before-after'),
+    createComponentCard('header')
 ];
 
 export const CARD_MENU = [
@@ -257,6 +260,14 @@ export const CARD_MENU = [
             type: 'card',
             replaceArg: 'before-after',
             isAvailable: 'feature.beforeAfterCard'
+        }, {
+            label: 'Header',
+            icon: 'koenig/kg-card-type-other',
+            desc: 'Add a bold section header',
+            matches: ['header'],
+            type: 'card',
+            replaceArg: 'header',
+            isAvailable: 'feature.headerCard'
         }]
     },
     {
