@@ -1941,6 +1941,12 @@ button.emoji-picker__category-button.active {
     margin-top: 20px;
 }
 
+/* Before/After card
+/* --------------------------------------------------------------- */
+.kg-before-after-card img {
+    max-width: none;
+}
+
 
 /* Upload cards: audio and file
 /* --------------------------------------------------------------- */
