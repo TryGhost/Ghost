@@ -5907,10 +5907,10 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.16.1:
-  version "4.16.1"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.16.1.tgz#d9c67ec484ddb7ac3a2a4b9e63ac5c33939c9628"
-  integrity sha512-lACz4KnEX1ukihemN3vdYfBI6xtOI0jBeX3GOU7i5aEKg7bkwmDosv9VdQ1w90EZCI+bHjT6kQtoOGY47iKNxg==
+gscan@4.17.0:
+  version "4.17.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.17.0.tgz#dab52e6b1985aaad067a6085b5cfb0c6f561f7df"
+  integrity sha512-e5lw5XU4SvoTygNR8E+T6C5B/baVJwYpeOUJhfmfNuF90mHS/ZvzT0+0wpUeM/gKTuv18q35JdY1yTH0Hqrt3A==
   dependencies:
     "@sentry/node" "6.16.1"
     "@tryghost/config" "0.2.1"
