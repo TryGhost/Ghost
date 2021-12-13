@@ -1,6 +1,6 @@
 (function() {
     const handleAudioPlayer = function (audioElementContainer) {
-        const audioPlayerContainer = audioElementContainer.querySelector('.kg-player-container');
+        const audioPlayerContainer = audioElementContainer.querySelector('.kg-audio-player-container');
         const playIconContainer = audioElementContainer.querySelector('.kg-audio-play-icon');
         const pauseIconContainer = audioElementContainer.querySelector('.kg-audio-pause-icon');
         const seekSlider = audioElementContainer.querySelector('.kg-audio-seek-slider');
