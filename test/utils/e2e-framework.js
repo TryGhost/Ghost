@@ -18,6 +18,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 const uuid = require('uuid');
+const url = require('url');
 
 const fixtures = require('./fixture-utils');
 const redirectsUtils = require('./redirects');
@@ -26,6 +27,7 @@ const mockUtils = require('./e2e-framework-mock-utils');
 
 const boot = require('../../core/boot');
 const TestAgent = require('./test-agent');
+const MockExpressAgent = require('./mock-express-agent');
 const db = require('./db-utils');
 
 const startGhost = async () => {
@@ -117,6 +119,11 @@ const getAgent = async (apiURL) => {
     const app = await startGhost();
     const originURL = configUtils.config.get('url');
 
+    // return new MockExpressAgent({
+    //     app,
+    //     host: url.parse(originURL).host,
+    //     urlPrefix: apiURL
+    // });
     return new TestAgent({
         apiURL,
         app,

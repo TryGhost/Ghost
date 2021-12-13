@@ -1,4 +1,4 @@
-const MockExpressAgent = require('./mock-express-agent');
+const MockExpressAgent = require('../../../utils/mock-express-agent');
 const setup = require('./setup');
 
 module.exports = setup;

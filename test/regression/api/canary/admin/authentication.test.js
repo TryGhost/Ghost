@@ -28,16 +28,16 @@ describe('Authentication API canary', function () {
             framework.restoreMocks();
         });
 
-        it('is setup? no', async function () {
+        it.only('is setup? no', async function () {
             const res = await request
-                .get('authentication/setup')
-                .expect(200);
+                .get('authentication/setup');
 
             expect(res.body).to.matchSnapshot();
             expect(res.headers).to.matchSnapshot({
                 date: any(String),
                 etag: any(String)
             });
+            expect(res.statusCode).to.equal(200);
         });
 
         it('complete setup', async function () {

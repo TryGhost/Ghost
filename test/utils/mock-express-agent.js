@@ -1,9 +1,19 @@
 const http = require('http');
-
+// const express = require('express');
 class MockExpressAgent {
-    constructor({app, host}) {
+    constructor({app, host, urlPrefix}) {
         this.app = app;
         this.host = host || 'localhost';
+        this.urlPrefix = urlPrefix;
+    }
+
+    jsonResponse(body, res) {
+        if (res.headers) {
+            res.setHeader('content-type', 'application/json; charset=utf-8');
+        }
+        res.setHeader('Content-Length', Buffer.byteLength(body));
+
+        return JSON.parse(body);
     }
 
     buildRequestResponse({url, host, method = 'GET', secure = true}) {
@@ -12,6 +22,7 @@ class MockExpressAgent {
             method: method
         });
 
+        // THIS needs a better patch for CORS headers to start working
         res.end = function () {
             this.emit('finish');
         };
@@ -21,7 +32,13 @@ class MockExpressAgent {
         };
 
         req.method = 'GET';
-        req.url = url;
+
+        if (this.urlPrefix) {
+            req.url = this.urlPrefix + url;
+        } else {
+            req.url = url;
+        }
+
         req.headers = {
             host: this.host
         };
@@ -44,14 +61,17 @@ class MockExpressAgent {
             url
         });
         const app = this.app;
+        const jsonResponse = this.jsonResponse;
 
         return new Promise(function (resolve) {
             res.send = res.end = function (body) {
+                const parsedBody = jsonResponse(body, res);
+
                 resolve({
                     err: res.req.err,
-                    body: body,
+                    body: parsedBody,
                     statusCode: res.statusCode,
-                    headers: res._headers,
+                    headers: res.getHeaders(),
                     req: req,
                     res: res
                 });
