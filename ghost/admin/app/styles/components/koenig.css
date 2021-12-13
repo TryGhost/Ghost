@@ -2279,6 +2279,11 @@ button.emoji-picker__category-button.active {
     bottom: 0;
     width: 100%;
     z-index: 9999;
+    padding: 12px 16px;
+}
+
+.kg-video-card .kg-player-full {
+    padding: 16px 28px;
 }
 
 .kg-placeholder-video {
