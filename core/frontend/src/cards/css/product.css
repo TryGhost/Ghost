@@ -1,22 +1,21 @@
-.kg-product-card-container {
-    background: transparent;
-    box-shadow: inset 0 0 0 1px rgb(124 139 154 / 25%);
-    border-radius: 5px;
-    flex-direction: column;
-    max-width: 550px;
-    padding: 20px;
+.kg-product-card {
+    display: flex;
     align-items: center;
-    display: grid;
+    flex-direction: column;
     width: 100%;
-    grid-template-columns: auto 100px;
-    gap: 16px;
 }
 
-.kg-product-card {
+.kg-product-card-container {
+    display: grid;
+    grid-template-columns: auto 100px;
     align-items: center;
-    display: flex;
-    flex-direction: column;
+    grid-gap: 16px;
+    background: transparent;
+    max-width: 550px;
+    padding: 20px;
     width: 100%;
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1px rgb(124 139 154 / 25%);
 }
 
 .kg-product-card-image {
@@ -38,34 +37,51 @@
 }
 
 .kg-product-card-description {
+    grid-column: 1 / 3;
     font-size: 1em;
     line-height: 1.4em;
     opacity: .7;
-    grid-column: 1 / 3;
 }
 
-.kg-product-card-description p+p {
-    margin-top: 1em;
+.kg-product-card-description p:not(:first-of-type) {
+    margin-top: 0.8em;
+    margin-bottom: 0;
+}
+
+.kg-product-card-description p:first-of-type {
+    margin-top: -4px;
+}
+
+.kg-product-card-description p:last-of-type {
+    margin-bottom: 6px; 
 }
 
 .kg-product-card-button {
-    width: 100%;
     grid-column: 1 / 3;
+    width: 100%;
 }
 
 .kg-product-card-rating {
     display: flex;
     align-items: center;
-    flex: 0 0 100px;
     grid-column: 2 / 3;
     align-self: start;
     justify-self: end;
 }
 
+@media (max-width: 400px) {
+    .kg-product-card-title-container {
+        grid-column: 1 / 3;
+    }
+
+    .kg-product-card-rating {
+        grid-column: 1 / 3;
+        justify-self: start;
+        margin-top: -15px;
+    }
+}
+
 .kg-product-card-rating-star {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     height: 28px;
     width: 20px;
 }
@@ -73,24 +89,6 @@
 .kg-product-card-rating-star svg {
     width: 16px;
     height: 16px;
-    fill: #fff;
-}
-
-.kg-product-card-rating-edit .kg-product-card-rating-star:hover {
-    opacity: 0.7;
-}
-
-.kg-product-card-rating-edit {
-    background: none;
-    display: flex;
-    align-items: center;
-}
-
-.kg-product-card-rating-preview {
-    display: flex;
-}
-
-.kg-product-card-rating-star svg {
     fill: currentColor;
     opacity: 0.15;
 }
