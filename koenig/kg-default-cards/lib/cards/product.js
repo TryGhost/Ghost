@@ -67,17 +67,7 @@ module.exports = {
             {{#if productRatingEnabled}}
             <tr style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
                 <td valign="top">
-                    {{#if star5}}
-                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-5.png" style="border: none; width: 96px;" border="0">
-                    {{else if star4}}
-                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-4.png" style="border: none; width: 96px;" border="0">
-                    {{else if star3}}
-                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" style="border: none; width: 96px;" border="0">
-                    {{else if star2}}
-                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-2.png" style="border: none; width: 96px;" border="0">
-                    {{else if star1}}
-                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-1.png" style="border: none; width: 96px;" border="0">
-                    {{/if}}
+                    <img src="https://static.ghost.org/v4.0.0/images/star-rating-{{productStarRating}}.png" style="border: none; width: 96px;" border="0">
                 </td>
             </tr>
             {{/if}}
