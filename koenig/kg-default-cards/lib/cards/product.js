@@ -88,15 +88,7 @@ module.exports = {
             <tr>
                 <td colspan="2" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
                     <div class="btn btn-accent" style="box-sizing: border-box;display: table;width: 100%;padding-top: 16px;">
-                        <tr>
-                            <td style="
-                            font-size: 18px;
-                            vertical-align: top;
-                            border-radius: 5px;
-                            text-align: center;">
-                            <a href="{{productUrl}}" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;">{{productButton}}</a>
-                            </td>
-                        </tr>
+                        <a href="{{productUrl}}" style="overflow-wrap: anywhere;border: solid 1px;border-radius: 5px;box-sizing: border-box;cursor: pointer;display: inline-block;font-size: 14px;font-weight: bold;margin: 0;padding: 12px 25px;text-decoration: none;color: #FFFFFF; width: 100%; text-align: center;">{{productButton}}</a>
                     </div>
                 </td>
             </tr>
