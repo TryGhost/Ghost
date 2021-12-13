@@ -1,6 +1,6 @@
 (function() {
     const handleVideoPlayer = function (videoElementContainer) {
-        const videoPlayerContainer = videoElementContainer.querySelector('.kg-player');
+        const videoPlayerContainer = videoElementContainer.querySelector('.kg-video-player');
         const playIconContainer = videoElementContainer.querySelector('.kg-video-play-icon');
         const pauseIconContainer = videoElementContainer.querySelector('.kg-video-pause-icon');
         const seekSlider = videoElementContainer.querySelector('.kg-video-seek-slider');
