@@ -79,7 +79,7 @@
                                 </div>
                             </div>
                         {{else}}
-                            <button class="kg-upload-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                            <button class="kg-upload-button">
                                 {{svg-jar "audio-file" class="kg-audio-icon"}}
                                 <div class="image-overlay">
                                     <div class="flex flex-row-reverse">
@@ -159,7 +159,7 @@
                     {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{else}}
-                        <div {{on "click" this.triggerAudioFileDialog}} class="flex pa4">
+                        <div {{on "click" this.triggerAudioFileDialog}} class="flex pa4 pointer">
                             {{svg-jar "audio-upload"}}
                             <span class="kg-upload-placeholder-text">
                                 Click to upload an audio file
