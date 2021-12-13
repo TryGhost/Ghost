@@ -2,6 +2,7 @@
     display: flex;
     width: 100%;
     min-height: 96px;
+    border-radius: 3px;
     box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
 }
 
@@ -51,6 +52,7 @@
     font-family: inherit;
     font-size: 1.1em;
     font-weight: 700;
+    line-height: 1.15em;
     background: transparent;
 }
 
@@ -238,8 +240,8 @@
 .kg-audio-player-container input[type="range"]::-webkit-slider-thumb {
     position: relative;
     box-sizing: content-box;
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     margin: -5px 0 0 0;
     border: 0;
     cursor: pointer;
@@ -270,8 +272,8 @@
 
 .kg-audio-player-container input[type="range"]::-moz-range-thumb {
     box-sizing: content-box;
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     border: 0;
     cursor: pointer;
     background: #fff;
@@ -305,8 +307,8 @@
 
 .kg-audio-player-container input[type="range"]::-ms-thumb {
     box-sizing: content-box;
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     border: 0;
     cursor: pointer;
     background: #fff;
