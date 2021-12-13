@@ -132,7 +132,7 @@
 .kg-audio-mute-icon,
 .kg-audio-unmute-icon {
     position: relative;
-    bottom: 1px;
+    bottom: -1px;
     padding: 0 4px;
     font-size: 0;
     background: transparent;
