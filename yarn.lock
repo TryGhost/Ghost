@@ -1051,17 +1051,6 @@
     component-type "^1.2.1"
     join-component "^1.1.0"
 
-"@sentry/core@6.16.0":
-  version "6.16.0"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.16.0.tgz#3312e38c6ab66c9d9c4704db696194676c25d001"
-  integrity sha512-XqIlMjefuJmwQSAzv9J1PtV6+sXiz1dgBbtRr6e+QGIYZ+BDkuyDQv/HsGPfxxMHxgJBxBzi71FFLjEJsF6CBg==
-  dependencies:
-    "@sentry/hub" "6.16.0"
-    "@sentry/minimal" "6.16.0"
-    "@sentry/types" "6.16.0"
-    "@sentry/utils" "6.16.0"
-    tslib "^1.9.3"
-
 "@sentry/core@6.16.1":
   version "6.16.1"
   resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.16.1.tgz#d9f7a75f641acaddf21b6aafa7a32e142f68f17c"
@@ -1073,15 +1062,6 @@
     "@sentry/utils" "6.16.1"
     tslib "^1.9.3"
 
-"@sentry/hub@6.16.0":
-  version "6.16.0"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.16.0.tgz#98b3b68abfe8ec85065a883f92a04a9953f92c16"
-  integrity sha512-NBkcgGjnYsoXyIJwi2TGCxGnxbDJc/t++0ukFoBRy6RL/pw2YnryCu8PWNFsDkZdlb1zt5SIC6Kui+q1ViNS/A==
-  dependencies:
-    "@sentry/types" "6.16.0"
-    "@sentry/utils" "6.16.0"
-    tslib "^1.9.3"
-
 "@sentry/hub@6.16.1":
   version "6.16.1"
   resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.16.1.tgz#526e19db51f4412da8634734044c605b936a7b80"
@@ -1091,15 +1071,6 @@
     "@sentry/utils" "6.16.1"
     tslib "^1.9.3"
 
-"@sentry/minimal@6.16.0":
-  version "6.16.0"
-  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.16.0.tgz#0f41337be90470fbdccc390aaac6a22cb250ed7f"
-  integrity sha512-9/h0J9BDDY5W/dKILGEq3ewECspNoxcXuly/WOWQdt2SQpIcoh8l/dF8iTXle+icndin0EiMEyHOzaCPWG24oQ==
-  dependencies:
-    "@sentry/hub" "6.16.0"
-    "@sentry/types" "6.16.0"
-    tslib "^1.9.3"
-
 "@sentry/minimal@6.16.1":
   version "6.16.1"
   resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.16.1.tgz#6a9506a92623d2ff1fc17d60989688323326772e"
@@ -1107,21 +1078,6 @@
   dependencies:
     "@sentry/hub" "6.16.1"
     "@sentry/types" "6.16.1"
-    tslib "^1.9.3"
-
-"@sentry/node@6.16.0":
-  version "6.16.0"
-  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-6.16.0.tgz#9c641927b0f5c28a093d7857471578b230c8879c"
-  integrity sha512-gvZ9aAo/AklkMeUMoL9HsQd+1de8VNmsQSJV2R5/AII69DlcoO+lnVs/XWZxEmTUsjeNQfsaKxwUjE7n/5cQOQ==
-  dependencies:
-    "@sentry/core" "6.16.0"
-    "@sentry/hub" "6.16.0"
-    "@sentry/tracing" "6.16.0"
-    "@sentry/types" "6.16.0"
-    "@sentry/utils" "6.16.0"
-    cookie "^0.4.1"
-    https-proxy-agent "^5.0.0"
-    lru_map "^0.3.3"
     tslib "^1.9.3"
 
 "@sentry/node@6.16.1":
@@ -1139,17 +1095,6 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
-"@sentry/tracing@6.16.0":
-  version "6.16.0"
-  resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-6.16.0.tgz#cb1592608ba4d8e4d32bc52a60abe9856b2ac119"
-  integrity sha512-vTTjGnLc9fa3jM0RKkEgOLW23CiPb1Kh6bkHbUw68d3DVz6o0Tj2SqzW+Y+LaIwlFjhrozf+YV/KS9vj4BhHTw==
-  dependencies:
-    "@sentry/hub" "6.16.0"
-    "@sentry/minimal" "6.16.0"
-    "@sentry/types" "6.16.0"
-    "@sentry/utils" "6.16.0"
-    tslib "^1.9.3"
-
 "@sentry/tracing@6.16.1":
   version "6.16.1"
   resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-6.16.1.tgz#32fba3e07748e9a955055afd559a65996acb7d71"
@@ -1161,23 +1106,10 @@
     "@sentry/utils" "6.16.1"
     tslib "^1.9.3"
 
-"@sentry/types@6.16.0":
-  version "6.16.0"
-  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.16.0.tgz#05a8daea73ac9faac8036ae5f84b89f27ffb0ec8"
-  integrity sha512-ZgIyLYlQS4SPi+d68XD8n9FzoObrNQLWxBuMYMnG3uJSuFeYAJrVYkDRtW4OW0D3awuajYGiHJZC2O5qTRGflA==
-
 "@sentry/types@6.16.1":
   version "6.16.1"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.16.1.tgz#4917607115b30315757c2cf84f80bac5100b8ac0"
   integrity sha512-Wh354g30UsJ5kYJbercektGX4ZMc9MHU++1NjeN2bTMnbofEcpUDWIiKeulZEY65IC1iU+1zRQQgtYO+/hgCUQ==
-
-"@sentry/utils@6.16.0":
-  version "6.16.0"
-  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.16.0.tgz#f04f1a46fea95662dbb26dc2cde02962fe18acb9"
-  integrity sha512-FJl1AyUVAIzxfEXufWsgX7KxIvOrQawxhAhLXO4vU5xrFrJOteicxAIFJO+GG0QDELgr9siP0Qgeb8LoINWcrw==
-  dependencies:
-    "@sentry/types" "6.16.0"
-    tslib "^1.9.3"
 
 "@sentry/utils@6.16.1":
   version "6.16.1"
@@ -5975,12 +5907,12 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.16.0:
-  version "4.16.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.16.0.tgz#c74feec42681090df87186ebc6a70ccb25eaee5b"
-  integrity sha512-SyME4OLcvblPi3d9hPTIQdDGpx52f3ctoGF8RX42X3EzzCTd8inXUs8LZXSy6o43+iKq11FIOblsPGvhsOF7GA==
+gscan@4.16.1:
+  version "4.16.1"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.16.1.tgz#d9c67ec484ddb7ac3a2a4b9e63ac5c33939c9628"
+  integrity sha512-lACz4KnEX1ukihemN3vdYfBI6xtOI0jBeX3GOU7i5aEKg7bkwmDosv9VdQ1w90EZCI+bHjT6kQtoOGY47iKNxg==
   dependencies:
-    "@sentry/node" "6.16.0"
+    "@sentry/node" "6.16.1"
     "@tryghost/config" "0.2.1"
     "@tryghost/debug" "0.1.9"
     "@tryghost/ignition-errors" "0.1.8"
