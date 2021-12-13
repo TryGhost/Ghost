@@ -267,6 +267,12 @@ export default class KoenigCardVideoComponent extends Component {
     }
 
     @action
+    deleteCustomThumbnail(event) {
+        event?.stopPropagation();
+        this.updatePayloadAttr('customThumbnailSrc', null);
+    }
+
+    @action
     updatePayloadAttr(attr, value) {
         const {payload} = this.args;
 
