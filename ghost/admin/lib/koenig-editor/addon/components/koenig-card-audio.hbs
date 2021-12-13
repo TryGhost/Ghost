@@ -79,16 +79,15 @@
                                 </div>
                             </div>
                         {{else}}
-                            <button class="kg-upload-button">
-                                {{svg-jar "audio-file" class="kg-audio-icon"}}
-                                <div class="image-overlay">
-                                    <div class="flex flex-row-reverse">
-                                        <button class="bg-white-90 br3 pe-auto" {{on "click" this.triggerThumbnailFileDialog}}>
-                                            {{svg-jar "upload" class="koenig-audio-upload-icon"}}
-                                        </button>
-                                    </div>
-                                </div>
-                            </button>
+                            {{#if @isEditing}}
+                                <button class="kg-upload-button pointer" {{on "click" this.triggerThumbnailFileDialog}}>
+                                    {{svg-jar "upload" class="kg-audio-upload-icon"}}
+                                </button>
+                            {{else}}
+                                <button class="kg-upload-button">
+                                    {{svg-jar "audio-file" class="kg-audio-icon"}}
+                                </button>
+                            {{/if}}
                         {{/if}}
                     {{/if}}
                     <div style="display:none">
