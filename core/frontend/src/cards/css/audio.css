@@ -12,13 +12,17 @@
     width: 80px;
     min-width: 80px;
     margin: 8px;
-    background: var(--ghost-accent-color);
+    background: transparent;
     object-fit: cover;
     aspect-ratio: 1/1;
     border-radius: 3px;
 }
 
-.kg-audio-thumbnail svg {
+.kg-audio-thumbnail.placeholder {
+    background: var(--ghost-accent-color);
+}
+
+.kg-audio-thumbnail.placeholder svg {
     width: 24px;
     height: 24px;
     fill: white;
