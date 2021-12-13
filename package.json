@@ -212,6 +212,7 @@
     "tmp": "0.2.1"
   },
   "resolutions": {
+    "@tryghost/logging": "2.0.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   }
