@@ -26,7 +26,7 @@ module.exports = function setupApiApp() {
     apiApp.lazyUse(urlUtils.getVersionPath({version: 'canary', type: 'admin'}), require('./canary/admin/app'));
 
     // Error handling for requests to non-existent API versions
-    apiApp.use(errorHandler.resourceNotFound(sentry));
+    apiApp.use(errorHandler.resourceNotFound);
     apiApp.use(errorHandler.handleJSONResponse(sentry));
 
     debug('Parent API setup end');
