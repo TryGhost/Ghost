@@ -96,7 +96,7 @@ module.exports = {
                                         <img src="{{thumbnailSrc}}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
                                         ` : `
                                         <img src="https://static.ghost.org/v4.0.0/images/audio-file-icon.png" style="width: 24px; height: 24px; padding: 18px; background: #e9e9e9; border-radius: 2px;">
-                                        `}     color: ${templateSettings.accentColor || '#08121A'};
+                                        `}
                                     </a>
                                 </td>
                                 <td style="position: relative; vertical-align: center;" valign="middle">
