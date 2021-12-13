@@ -1428,17 +1428,9 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
-"@tryghost/errors@^1.1.0":
+"@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1":
   version "1.1.1"
   resolved "https://registry.npmjs.org/@tryghost/errors/-/errors-1.1.1.tgz"
-  integrity sha512-na0qB5sdy1BWgquzn+m530ohJ3fTeF451xUTR7I8b76TBEL9snnIkXCv5Qdjmnevmgod7aAGsHi2syyKFlvEvQ==
-  dependencies:
-    lodash "^4.17.21"
-    uuid "^8.3.2"
-
-"@tryghost/errors@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.1.1.tgz#dc38e40591b018b0ac6b5742f7bab5d379c67e60"
   integrity sha512-na0qB5sdy1BWgquzn+m530ohJ3fTeF451xUTR7I8b76TBEL9snnIkXCv5Qdjmnevmgod7aAGsHi2syyKFlvEvQ==
   dependencies:
     lodash "^4.17.21"
@@ -1560,23 +1552,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@1.0.2", "@tryghost/logging@^1.0.0", "@tryghost/logging@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.npmjs.org/@tryghost/logging/-/logging-1.0.2.tgz"
-  integrity sha512-D/KFMb40dA/1dExe2nbw7m1SFY5B8ghJHPYfLYXAK+Qi4GGO0c9D+3zbWcPoyCfveNW+7Uwgexwg+nAWMH+vmg==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch" "^1.0.0"
-    "@tryghost/pretty-stream" "^0.1.2"
-    "@tryghost/root-utils" "^0.3.7"
-    bunyan "^1.8.15"
-    bunyan-loggly "^1.4.2"
-    fs-extra "^10.0.0"
-    gelf-stream "^1.1.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.17.21"
-
-"@tryghost/logging@^2.0.0":
+"@tryghost/logging@1.0.2", "@tryghost/logging@2.0.0", "@tryghost/logging@^1.0.0", "@tryghost/logging@^1.0.2", "@tryghost/logging@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.0.tgz#587c579d703ef15fe468b8bb8efdd9cdfefb90ef"
   integrity sha512-eWKtiHWDtVVf+xn+ecKb8mUepFDK1RXOhl1tFMF1b7eFASn5WIDLFSMH9Xl9gyCi6dnsXp5fAm2G3baZ77bPZg==
