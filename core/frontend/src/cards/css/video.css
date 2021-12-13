@@ -40,7 +40,7 @@
     background: transparent;
 }
 
-.kg-player {
+.kg-video-player {
     display: flex;
     flex-grow: 1;
     align-items: center;
