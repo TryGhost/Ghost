@@ -168,6 +168,7 @@
                     </div>
                 </div>
             </div>
+            {{#if @payload.productButtonEnabled}}
             <div class="kg-settings-panel-control">
                 <label class="kg-settings-panel-control-label" for="product-button-input">Button text</label>
                 <div class="kg-settings-panel-control-input">
@@ -198,6 +199,7 @@
                     >
                 </div>
             </div>
+            {{/if}}
         </KoenigSettingsPanel>
 
     {{else}}
