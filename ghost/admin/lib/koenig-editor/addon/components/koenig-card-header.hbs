@@ -1,0 +1,140 @@
+<KoenigCard
+    @env={{@env}}
+    @class={{concat (kg-style "breakout" size=@payload.cardWidth) " flex flex-column mih10 miw-100 relative"}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{true}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @onLeaveEdit={{this.leaveEditMode}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.registerElement}}
+    as |card|
+>
+    {{#if @isEditing}}
+        <div class="kg-header-card">
+            <div class="kg-header-card-container kg-header-card-alignment-{{@payload.alignment}}">
+                <KoenigBasicHtmlInput
+                    @html={{@payload.header}}
+                    @placeholder="Header"
+                    @class="w-100 fw4 bn bg-transparent kg-header-card-header"
+                    @name="header"
+                    @defaultTag="h2"
+                    @onChange={{action "setHeader"}}
+                    @didCreateEditor={{action "registerHeaderEditor"}}
+                />
+                <KoenigBasicHtmlInput
+                    @html={{@payload.subheader}}
+                    @placeholder="Subheader"
+                    @class="w-100 fw4 bg-transparent kg-header-card-subheader"
+                    @name="subheader"
+                    @defaultTag="h3"
+                    @onChange={{action "setSubheader"}}
+                    @didCreateEditor={{action "registerSubheaderEditor"}}
+                    @allowBr={{true}}
+                />
+                {{#if @payload.buttonEnabled}}
+                    <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-header-card-button" disabled={{not @payload.buttonText}}>
+                        <span>
+                            {{or @payload.buttonText "Add button text"}}
+                        </span>
+                    </a>
+                {{/if}}
+            </div>
+        </div>
+
+        <KoenigSettingsPanel>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Width</div>
+                <div class="kg-settings-panel-control-input">
+                    <button type="button" class="gh-btn gh-btn-icon" onclick={{action "setLayoutFull"}}><span>Full width</span></button>
+                    <button type="button" class="gh-btn gh-btn-icon" onclick={{action "setLayoutWide"}}><span>Wide width</span></button>
+                </div>
+            </div>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Alignment</div>
+                <div class="kg-settings-panel-control-input">
+                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setAlignment "center")}}><span>Center</span></button>
+                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setAlignment "left")}}><span>Left</span></button>
+                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setAlignment "left-50-percent")}}><span>Left at 50% starting point</span></button>
+                </div>
+            </div>
+            <hr class="kg-settings-panel-divider">
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Button</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="for-switch x-small">
+                        <label class="switch" for="has-button">
+                            <input
+                                type="checkbox"
+                                checked={{@payload.buttonEnabled}}
+                                id="has-button"
+                                {{on "click" this.toggleButton}}
+                            >
+                            <span class="input-toggle-component mt1"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            {{#if @payload.buttonEnabled}}
+            <div class="kg-settings-panel-control">
+                <label class="kg-settings-panel-control-label" for="header-button-input">Button text</label>
+                <div class="kg-settings-panel-control-input">
+                    <input
+                        type="text"
+                        class="gh-input"
+                        id="header-button-input"
+                        name="header-button"
+                        value={{@payload.buttonText}}
+                        placeholder="Add button text"
+                        {{on "input" this.setButtonText}}
+                        {{on-key "Enter" (fn this.focusElement "#header-button-input")}}
+                    >
+                </div>
+            </div>
+            <div class="kg-settings-panel-control">
+                <label class="kg-settings-panel-control-label" for="header-url-input">Button URL</label>
+                <div class="kg-settings-panel-control-input">
+                    <input
+                        type="text"
+                        class="gh-input"
+                        id="header-url-input"
+                        name="header-url"
+                        value={{@payload.buttonUrl}}
+                        placeholder="Add URL"
+                        {{on "input" this.setButtonUrl}}
+                        {{on-key "Enter" (fn this.focusElement "#header-url-input")}}
+                    >
+                </div>
+            </div>
+            {{/if}}
+        </KoenigSettingsPanel>
+
+    {{else}}
+
+        <div class="kg-header-card">
+            <div class="kg-header-card-container kg-header-card-alignment-{{@payload.alignment}}">
+                <h2 class="kg-header-card-header">{{{@payload.header}}}</h2>
+                {{#if this.hasSubheader}}
+                    <h3 class="kg-header-card-subheader">{{{@payload.subheader}}}</h3>
+                {{/if}}
+                {{#if @payload.buttonEnabled}}
+                    <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-header-card-button {{if this.isButtonIncomplete "o-50"}}" disabled={{not @payload.buttonText}}>
+                        <span>
+                            {{or @payload.buttonText "Add button text"}}
+                        </span>
+                    </a>
+                {{/if}}
+            </div>
+        </div>
+    {{/if}}
+</KoenigCard>
