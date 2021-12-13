@@ -16,5 +16,6 @@ module.exports = [
     require('./toggle'),
     require('./audio'),
     require('./video'),
-    require('./file')
+    require('./file'),
+    require('./before-after')
 ];
