@@ -21,7 +21,8 @@ export const CARD_COMPONENT_MAP = {
     video: 'koenig-card-video',
     audio: 'koenig-card-audio',
     file: 'koenig-card-file',
-    product: 'koenig-card-product'
+    product: 'koenig-card-product',
+    'before-after': 'koenig-card-before-after'
 };
 
 // map card names to generic icons (used for ghost elements when dragging)
@@ -45,7 +46,8 @@ export const CARD_ICON_MAP = {
     video: 'koenig/kg-card-type-video',
     audio: 'koenig/kg-card-type-audio',
     file: 'koenig/kg-card-type-file',
-    product: 'koenig/kg-card-type-product'
+    product: 'koenig/kg-card-type-product',
+    'before-after': 'koenig-card-before-after'
 };
 
 // TODO: move koenigOptions directly into cards now that card components register
@@ -70,7 +72,8 @@ export default [
     createComponentCard('audio'),
     createComponentCard('file'),
     createComponentCard('product'),
-    createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false})
+    createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false}),
+    createComponentCard('before-after')
 ];
 
 export const CARD_MENU = [
@@ -245,6 +248,15 @@ export const CARD_MENU = [
             type: 'card',
             replaceArg: 'product',
             isAvailable: 'feature.productCard'
+        },
+        {
+            label: 'Before/After',
+            icon: 'koenig/kg-card-type-other',
+            desc: 'Compare two images',
+            matches: ['before', 'after', 'compare'],
+            type: 'card',
+            replaceArg: 'before-after',
+            isAvailable: 'feature.beforeAfterCard'
         }]
     },
     {

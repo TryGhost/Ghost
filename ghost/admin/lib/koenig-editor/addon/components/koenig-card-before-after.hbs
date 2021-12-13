@@ -1,0 +1,191 @@
+<KoenigCard
+    @env={{@env}}
+    @tagName="figure"
+    @class={{concat (kg-style "breakout" size=@payload.cardWidth) " flex flex-column"}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{true}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @onLeaveEdit={{this.leaveEditMode}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.registerElement}}
+    as |card|
+>
+    <GhUploader
+        @files={{this.files}}
+        @accept={{this.imageMimeTypes}}
+        @extensions={{this.imageExtensions}}
+        @onUploadStart={{this.uploadStart}}
+        @onUploadSuccess={{this.uploadSuccess}}
+        @onUploadFailure={{this.uploadFailed}}
+        @onFailed={{this.handleErrors}}
+        as |uploader|
+    >
+        <div class="kg-before-after-card relative margin-auto">
+            <div>
+                {{#if @payload.beforeImage}}
+                    <img
+                        src={{@payload.beforeImage.src}}
+                        width={{this.imageWidth}}
+                    />
+                {{/if}}
+            </div>
+            <div
+                class="kg-before-after-card-overlay overflow-hidden absolute top-0 left-0"
+                style="{{this.overlayStyle}}"
+            >
+                {{#if @payload.afterImage}}
+                    <img
+                        src={{@payload.afterImage.src}}
+                        width={{this.imageWidth}}
+                    />
+                {{/if}}
+            </div>
+        </div>
+
+        <div style="display:none">
+            <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} />
+        </div>
+    </GhUploader>
+
+    {{#if @isEditing}}
+        <KoenigSettingsPanel>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">After Image</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="gh-btn-group icons">
+                        {{#if @payload.afterImage}}
+                            <button
+                                type="button"
+                                title="Remove"
+                                class="gh-btn gh-btn-icon"
+                                {{on "click" this.removeAfterImage}}
+                            >
+                                <span>Remove</span>
+                            </button>
+                        {{else}}
+                            <button
+                                type="button"
+                                title="Upload"
+                                class="gh-btn gh-btn-icon"
+                                {{on "click" this.selectAfterImage}}
+                            >
+                                <span>Upload</span>
+                            </button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Before Image</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="gh-btn-group icons">
+                        {{#if @payload.beforeImage}}
+                            <button
+                                type="button"
+                                title="Remove"
+                                class="gh-btn gh-btn-icon"
+                                {{on "click" this.removeBeforeImage}}
+                            >
+                                <span>Remove</span>
+                            </button>
+                        {{else}}
+                            <button
+                                type="button"
+                                title="Upload"
+                                class="gh-btn gh-btn-icon"
+                                {{on "click" this.selectBeforeImage}}
+                            >
+                                <span>Upload</span>
+                            </button>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Layout</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="gh-btn-group icons">
+                        <button
+                            type="button"
+                            title="Wide"
+                            class="gh-btn gh-btn-icon {{
+                                if (eq @payload.cardWidth "wide") "gh-btn-group-selected"
+                            }}"
+                            {{on "click" this.setLayoutWide}}
+                        >
+                            <span>Wide</span>
+                        </button>
+                        <button
+                            type="button"
+                            title="Full"
+                            class="gh-btn gh-btn-icon {{
+                                if (eq @payload.cardWidth "full") "gh-btn-group-selected"
+                            }}"
+                            {{on "click" this.setLayoutFull}}
+                        >
+                            <span>Full</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Orientation</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="gh-btn-group icons">
+                        <button
+                            type="button"
+                            title="Horizontal"
+                            class="gh-btn gh-btn-icon {{
+                                if (eq @payload.orientation "horizontal") "gh-btn-group-selected"
+                            }}"
+                            {{on "click" this.setOrientationHorizontal}}
+                        >
+                            <span>Horizontal</span>
+                        </button>
+                        <button
+                            type="button"
+                            title="Vertical"
+                            class="gh-btn gh-btn-icon {{
+                                if (eq @payload.orientation "vertical") "gh-btn-group-selected"
+                            }}"
+                            {{on "click" this.setOrientationVertical}}
+                        >
+                            <span>Vertical</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Starting position</div>
+                <div class="kg-settings-panel-control-input">
+                    <input
+                        type="range"
+                        title="Starting position"
+                        min="0"
+                        max="100"
+                        value="{{@payload.startingPosition}}"
+                        {{on "input" this.setStartingPosition}}
+                    />
+                </div>
+            </div>
+        </KoenigSettingsPanel>
+    {{/if}}
+    {{#if (or @isSelected (clean-basic-html @payload.caption))}}
+        <card.CaptionInput
+            @caption={{@payload.caption}}
+            @update={{this.setCaption}}
+            @placeholder="Type caption for before/after (optional)"
+        />
+    {{/if}}
+</KoenigCard>
