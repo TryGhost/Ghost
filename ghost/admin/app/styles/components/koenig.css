@@ -1964,7 +1964,6 @@ button.emoji-picker__category-button.active {
     align-items: center;
     height: 96px;
     background: var(--whitegrey-l2);
-    cursor: pointer;
 }
 
 .kg-upload-container-empty svg {
@@ -2027,6 +2026,7 @@ button.emoji-picker__category-button.active {
     justify-content: center;
     width: 80px;
     height: 80px;
+    cursor: auto;
 }
 
 .kg-upload-button .koenig-audio-replace-icon,
