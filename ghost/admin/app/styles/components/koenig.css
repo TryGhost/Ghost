@@ -1946,6 +1946,26 @@ button.emoji-picker__category-button.active {
     max-width: none;
 }
 
+/* Header card
+/* --------------------------------------------------------------- */
+
+.kg-header-card {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.kg-header-card-alignment-center {
+    text-align: center;
+    grid-column: 1 / 3;
+}
+.kg-header-card-alignment-left {
+    text-align: left;
+    grid-column: 1 / 3;
+}
+.kg-header-card-alignment-left-50-percent {
+    text-align: left;
+    grid-column: 2 / 3;
+}
 
 /* Upload cards: audio and file
 /* --------------------------------------------------------------- */
