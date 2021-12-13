@@ -74,8 +74,8 @@ table td {
     max-width: 600px;
 }
 
-.content a { 
-    overflow-wrap: anywhere; 
+.content a {
+    overflow-wrap: anywhere;
 }
 
 /* -------------------------------------
@@ -554,26 +554,30 @@ figure blockquote p {
 }
 
 .kg-nft-link {
-    display: block; 
-    text-decoration: none !important; 
-    color: #15212A !important; 
+    display: block;
+    text-decoration: none !important;
+    color: #15212A !important;
     font-family: inherit !important;
     font-size: 14px;
     line-height: 1.3em;
-    padding-top: 4px; 
-    padding-right: 20px; 
-    padding-left: 20px; 
+    padding-top: 4px;
+    padding-right: 20px;
+    padding-left: 20px;
     padding-bottom: 4px;
 }
 
 .kg-twitter-link {
-    display: block; 
-    text-decoration: none !important; 
-    color: #15212A !important; 
+    display: block;
+    text-decoration: none !important;
+    color: #15212A !important;
     font-family: inherit !important;
     font-size: 15px;
     padding: 8px;
     line-height: 1.3em;
+}
+
+.kg-audio-thumbnail {
+    background: ${templateSettings.accentColor || '#15212A'} !important;
 }
 
 .kg-callout-card {
