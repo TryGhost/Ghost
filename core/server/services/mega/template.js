@@ -576,7 +576,7 @@ figure blockquote p {
     line-height: 1.3em;
 }
 
-.kg-audio-thumbnail {
+.kg-audio-thumbnail.placeholder {
     background: ${templateSettings.accentColor || '#15212A'} !important;
 }
 
