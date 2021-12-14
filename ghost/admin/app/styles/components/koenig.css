@@ -2179,22 +2179,21 @@ button.emoji-picker__category-button.active {
 .kg-upload-title,
 .kg-upload-caption {
     width: 100%;
-    margin: 8px 0 0 0;
-    padding: 8px 12px;
+    margin: 8px 16px 0;
+    padding: 8px 0;
     border: none;
     font-size: 1.8rem;
     font-weight: 700;
     background: transparent;
 }
 
-.kg-upload-title,
-.kg-upload-caption {
-    padding-left: 16px;
-}
-
 .kg-upload-title:focus,
 .kg-upload-caption:focus {
     box-shadow: none;
+}
+
+.kg-upload-title::placeholder {
+    font-weight: 700;
 }
 
 .kg-upload-caption {
@@ -2396,6 +2395,11 @@ button.emoji-picker__category-button.active {
 
 .kg-file-card .kg-upload-container.small .kg-file-inputs {
     display: none;
+}
+
+.kg-file-card .kg-upload-container.small .kg-media-container svg {
+    width: 20px;
+    height: 20px;
 }
 
 /* Video card

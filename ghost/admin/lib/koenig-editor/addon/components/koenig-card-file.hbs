@@ -34,7 +34,7 @@
                 <div class="kg-file-inputs">
                     <GhTextInput
                         @value={{@payload.fileTitle}}
-                        @placeholder="File Title"
+                        @placeholder="File title"
                         @input={{action "setFileTitle" value="target.value"}}
                         @class="kg-upload-title {{if (and (not @isEditing) (not @payload.fileTitle)) "hide"}}"
                         @maxlength="80"
@@ -42,7 +42,7 @@
                     <GhTextInput
                         @value={{@payload.fileCaption}}
                         @input={{action "setFileCaption" value="target.value"}}
-                        @placeholder="File Caption"
+                        @placeholder="File caption"
                         @class="kg-upload-caption  {{if (and (not @isEditing) (not @payload.fileCaption)) "hide"}}"
                         @maxlength="100"
                     />
