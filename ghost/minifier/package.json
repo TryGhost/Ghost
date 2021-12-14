@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/minifier",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/minifier",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "^0.1.8",
-    "@tryghost/errors": "^1.1.1",
+    "@tryghost/errors": "^1.2.0",
     "@tryghost/tpl": "^0.1.7",
     "csso": "4.2.0",
     "terser": "^5.9.0",
