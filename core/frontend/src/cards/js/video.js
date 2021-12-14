@@ -154,11 +154,13 @@
             handleOnPlay();
         });
 
-        playIconContainer.addEventListener('click', () => {
+        playIconContainer.addEventListener('click', (event) => {
+            event.stopPropagation();
             handleOnPlay();
         });
 
-        pauseIconContainer.addEventListener('click', () => {
+        pauseIconContainer.addEventListener('click', (event) => {
+            event.stopPropagation();
             handleOnPause();
         });
 
