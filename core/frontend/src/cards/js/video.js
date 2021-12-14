@@ -33,7 +33,10 @@
 
         let raf = null;
         let currentPlaybackRateIdx = 1;
-
+        if (!!videoEl.loop) {
+            largePlayIcon.classList.add("kg-video-hide-animated");
+            videoOverlay.classList.add("kg-video-hide-animated");
+        }
         const whilePlaying = () => {
             seekSlider.value = Math.floor(videoEl.currentTime);
             currentTimeContainer.textContent = calculateTime(seekSlider.value);
