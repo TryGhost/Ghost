@@ -5,11 +5,8 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {action} from '@ember/object';
-import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {run} from '@ember/runloop';
 import {tracked} from '@glimmer/tracking';
-
-const {countWords} = ghostHelperUtils;
 
 export default class KoenigCardBeforeAfterComponent extends Component {
     @tracked imageWidth;
@@ -26,10 +23,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
             return `height: ${this.args.payload.startingPosition}%`;
         }
         return null;
-    }
-
-    get wordCount() {
-        return countWords(this.payload.caption);
     }
 
     get toolbar() {
