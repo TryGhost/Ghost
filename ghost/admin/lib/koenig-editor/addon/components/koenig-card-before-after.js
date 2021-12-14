@@ -30,9 +30,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     }
 
     get toolbar() {
-        if (this.args.isEditing) {
-            return false;
-        }
         let cardWidth = this.args.payload.cardWidth;
         let orientation = this.args.payload.orientation;
 
@@ -61,13 +58,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
                 action: run.bind(this, this.setLayoutFull)
             }, {
                 divider: true
-            }, {
-                buttonClass: 'fw4 flex items-center white',
-                icon: 'koenig/kg-edit',
-                iconClass: 'fill-white',
-                title: 'Edit',
-                text: '',
-                action: run.bind(this, this.args.editCard)
             }]
         };
     }
