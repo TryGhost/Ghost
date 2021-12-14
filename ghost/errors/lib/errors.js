@@ -1,7 +1,6 @@
 const uuid = require('uuid');
 const merge = require('lodash/merge');
 const isString = require('lodash/isString');
-const cloneDeep = require('lodash/cloneDeep');
 const utils = require('./utils');
 
 class GhostError extends Error {
@@ -70,34 +69,6 @@ class GhostError extends Error {
                 this[property] = options.err[property] || this[property];
             });
         }
-    }
-
-    prepareErrorForUser() {
-        const error = cloneDeep(this);
-
-        let stackbits = error.stack.split(/\n/);
-    
-        // We build this up backwards, so we always insert at position 1
-    
-        if (process.env.NODE_ENV === 'production') {
-            stackbits.splice(1, stackbits.length - 1);
-        } else {
-            // Clearly mark the strack trace
-            stackbits.splice(1, 0, `Stack Trace:`);
-        }
-    
-        // Add in our custom cotext and help methods
-    
-        if (this.help) {
-            stackbits.splice(1, 0, `${this.help}`);
-        }
-    
-        if (this.context) {
-            stackbits.splice(1, 0, `${this.context}`);
-        }
-    
-        error.stack = stackbits.join('\n');
-        return error;
     }
 }
 
@@ -349,5 +320,6 @@ const ghostErrorsWithBase = Object.assign({}, ghostErrors, {GhostError});
 module.exports.utils = {
     serialize: utils.serialize.bind(ghostErrorsWithBase),
     deserialize: utils.deserialize.bind(ghostErrorsWithBase),
-    isGhostError: utils.isGhostError.bind(ghostErrorsWithBase)
+    isGhostError: utils.isGhostError.bind(ghostErrorsWithBase),
+    prepareStackForUser: utils.prepareStackForUser
 };
