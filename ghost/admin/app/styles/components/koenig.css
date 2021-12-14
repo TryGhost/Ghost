@@ -2082,12 +2082,16 @@ button.emoji-picker__category-button.active {
     max-width: 80px;
     margin: 8px;
     background: var(--accent-color);
-    border-radius: var(--border-radius);
+    border-radius: 2px;
 }
 
 .kg-media-container.light {
     background: var(--whitegrey);
     color: var(--pink);
+}
+
+.kg-file-card .kg-media-container {
+    color: var(--accent-color);
 }
 
 .kg-media-container .gh-progress-container-progress {
@@ -2126,10 +2130,11 @@ button.emoji-picker__category-button.active {
     opacity: 1;
 }
 
-.kg-upload-button .kg-audio-icon {
+.kg-upload-button .kg-audio-icon,
+.kg-upload-button .kg-file-icon {
     width: 24px;
     height: 24px;
-    fill: var(--white);
+    fill: #fff;
     transition: all 0.15s ease-in-out;
 }
 
@@ -2159,7 +2164,7 @@ button.emoji-picker__category-button.active {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: var(--border-radius);
+    border-radius: 2px;
     background: var(--white);
 }
 
@@ -2182,6 +2187,11 @@ button.emoji-picker__category-button.active {
     background: transparent;
 }
 
+.kg-upload-title,
+.kg-upload-caption {
+    padding-left: 16px;
+}
+
 .kg-upload-title:focus,
 .kg-upload-caption:focus {
     box-shadow: none;
@@ -2196,7 +2206,7 @@ button.emoji-picker__category-button.active {
 
 .kg-upload-metadata {
     line-height: 1em;
-    margin: 0 12px 14px;
+    margin: 0 16px 14px;
     font-size: 1.4rem;
     font-weight: 500;
 }
@@ -2329,15 +2339,16 @@ button.emoji-picker__category-button.active {
 .kg-file-data-container {
     position: relative;
     display: flex;
+    justify-content: center;
     flex-direction: column;
     width: 100%;
-    justify-content: space-between;
 }
 
 .kg-file-data-container .kg-upload-title {
     padding-top: 4px;
     padding-bottom: 0px;
     height: 30px;
+    margin-bottom: 2px;
 }
 
 .kg-file-data-container .kg-upload-caption {
@@ -2349,6 +2360,42 @@ button.emoji-picker__category-button.active {
 
 .kg-file-data-container .kg-file-card-caption {
     margin-top: 0;
+}
+
+.kg-file-card .kg-media-container {
+    order: 2;
+}
+
+.kg-file-data-container .kg-upload-title.hide,
+.kg-file-data-container .kg-upload-caption.hide {
+    display: none;
+}
+
+.kg-file-card .kg-upload-container.medium .kg-media-container {
+    height: 60px;
+}
+
+.kg-file-card .kg-upload-container.medium .kg-upload-metadata {
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+.kg-file-card .kg-upload-container.medium .kg-upload-title {
+    margin-top: -4px;
+    padding-top: 0;
+    margin-bottom: 2px;
+}
+
+.kg-file-card .kg-upload-container.small .kg-media-container {
+    height: 40px;
+}
+
+.kg-file-card .kg-upload-container.small .kg-upload-metadata {
+    margin-top: 0;
+}
+
+.kg-file-card .kg-upload-container.small .kg-file-inputs {
+    display: none;
 }
 
 /* Video card
