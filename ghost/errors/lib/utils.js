@@ -184,6 +184,36 @@ exports.deserialize = function deserialize(errorFormat) {
 };
 
 /**
+ * @description Replace the stack with a user-facing one
+ * @params {Error} err
+ */
+exports.prepareStackForUser = function prepareStackForUser(error) {
+    let stackbits = error.stack.split(/\n/);
+
+    // We build this up backwards, so we always insert at position 1
+
+    if (process.env.NODE_ENV === 'production') {
+        stackbits.splice(1, stackbits.length - 1);
+    } else {
+        // Clearly mark the strack trace
+        stackbits.splice(1, 0, `Stack Trace:`);
+    }
+
+    // Add in our custom cotext and help methods
+
+    if (this.help) {
+        stackbits.splice(1, 0, `${this.help}`);
+    }
+
+    if (this.context) {
+        stackbits.splice(1, 0, `${this.context}`);
+    }
+
+    error.stack = stackbits.join('\n');
+    return error;
+};
+
+/**
  * @description Check whether an error instance is a GhostError.
  */
 exports.isGhostError = function isGhostError(err) {
