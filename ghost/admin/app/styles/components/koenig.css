@@ -2431,6 +2431,19 @@ button.emoji-picker__category-button.active {
     fill: var(--midgrey-l2);
 }
 
+.kg-upload-error {
+    display: flex;
+    align-items: center;
+    max-width: 60%;
+    height: auto;
+    color: var(--red);
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.6em;
+    text-align: center;
+}
+
 .kg-video-card .kg-player-container input[type="range"]::-moz-range-progress {
     background: #EBEEF0;
 }
@@ -2519,11 +2532,11 @@ button.emoji-picker__category-button.active {
     width: 100%;
     height: 120px;
     border: 1px dashed var(--whitegrey-d2);
-    background: var(--white);
+    background: var(--whitegrey-l2);
 }
 
 .kg-settings-panel .kg-upload-thumbnail-xl:hover {
-    background: var(--white);
+    background: var(--whitegrey-l2);
 }
 
 .kg-settings-panel .kg-upload-thumbnail-xl svg {
@@ -2765,7 +2778,7 @@ button.emoji-picker__category-button.active {
     border-left: none;
     border-right: none;
     border-radius: 0 0 .4rem .4rem;
-    z-index: 9999;
+    z-index: 99999;
     background-color: #fff;
     opacity: 1;
     padding: 6px;
