@@ -113,6 +113,13 @@
             }
         }
 
+        videoEl.addEventListener('click', () => {
+            const isPlaying = !!(videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2);
+            if (isPlaying) {
+                handleOnPause();
+            }
+        });
+
         videoEl.onplay = () => {
             largePlayIcon.classList.add("kg-video-hide");
             videoOverlay.classList.add("kg-video-hide");
