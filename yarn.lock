@@ -1809,12 +1809,12 @@
     "@tryghost/debug" "^0.1.9"
     "@tryghost/logging" "^1.0.0"
 
-"@tryghost/session-service@0.1.34":
-  version "0.1.34"
-  resolved "https://registry.npmjs.org/@tryghost/session-service/-/session-service-0.1.34.tgz"
-  integrity sha512-lIUoi7zoV91fkmhq9w1kmt9kSHPoD/0ZfQB6PdMlys0PW3B4rlSclf+ZvpCynK/2lcwiQ62Z02hpgLb8iw1nxQ==
+"@tryghost/session-service@0.1.35":
+  version "0.1.35"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.35.tgz#756e5271e6c8b058465459ae409fbdf84359b825"
+  integrity sha512-Er6YAqPZOoEfaBQmKlfuH4a9JXXa/Vev+igcKrUYVs0jlvfhsNpMpo6vksPVllA/V6mSvdhjIysRjmhoHdfJ2g==
   dependencies:
-    "@tryghost/errors" "^1.1.0"
+    "@tryghost/errors" "^1.1.1"
 
 "@tryghost/settings-path-manager@0.1.2":
   version "0.1.2"
