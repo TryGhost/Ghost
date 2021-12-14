@@ -1,25 +1,7 @@
 .kg-video-card video {
+    display: block;
     max-width: 100%;
     height: auto;
-}
-
-.kg-video-thumbnail {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 80px;
-    min-width: 80px;
-    margin: 8px;
-    background: var(--ghost-accent-color);
-    object-fit: cover;
-    aspect-ratio: 1/1;
-    border-radius: 3px;
-}
-
-.kg-video-thumbnail svg {
-    width: 24px;
-    height: 24px;
-    fill: white;
 }
 
 .kg-video-card {
@@ -27,6 +9,10 @@
     --seek-before-width: 0%;
     --volume-before-width: 100%;
     --buffered-width: 0%;
+}
+
+.kg-video-container {
+    position: relative;
 }
 
 .kg-video-overlay {
