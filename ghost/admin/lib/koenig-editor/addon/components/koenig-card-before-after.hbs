@@ -113,60 +113,6 @@
                 </div>
             </div>
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <div class="kg-settings-panel-control-label">Layout</div>
-                <div class="kg-settings-panel-control-input">
-                    <div class="gh-btn-group icons">
-                        <button
-                            type="button"
-                            title="Wide"
-                            class="gh-btn gh-btn-icon {{
-                                if (eq @payload.cardWidth "wide") "gh-btn-group-selected"
-                            }}"
-                            {{on "click" this.setLayoutWide}}
-                        >
-                            <span>Wide</span>
-                        </button>
-                        <button
-                            type="button"
-                            title="Full"
-                            class="gh-btn gh-btn-icon {{
-                                if (eq @payload.cardWidth "full") "gh-btn-group-selected"
-                            }}"
-                            {{on "click" this.setLayoutFull}}
-                        >
-                            <span>Full</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <div class="kg-settings-panel-control-label">Orientation</div>
-                <div class="kg-settings-panel-control-input">
-                    <div class="gh-btn-group icons">
-                        <button
-                            type="button"
-                            title="Horizontal"
-                            class="gh-btn gh-btn-icon {{
-                                if (eq @payload.orientation "horizontal") "gh-btn-group-selected"
-                            }}"
-                            {{on "click" this.setOrientationHorizontal}}
-                        >
-                            <span>Horizontal</span>
-                        </button>
-                        <button
-                            type="button"
-                            title="Vertical"
-                            class="gh-btn gh-btn-icon {{
-                                if (eq @payload.orientation "vertical") "gh-btn-group-selected"
-                            }}"
-                            {{on "click" this.setOrientationVertical}}
-                        >
-                            <span>Vertical</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Starting position</div>
                 <div class="kg-settings-panel-control-input">
                     <input
