@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('error-handler');
 const errors = require('@tryghost/errors');
+const {prepareStackForUser} = require('@tryghost/errors').utils;
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -77,7 +78,7 @@ module.exports.prepareError = (err, req, res, next) => {
     // alternative for res.status();
     res.statusCode = err.statusCode;
 
-    err = err.prepareErrorForUser();
+    prepareStackForUser(err);
 
     // never cache errors
     res.set({
@@ -117,14 +118,14 @@ const jsonErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no
     });
 };
 
-const prepareUserMessage = (err, res) => {
+const prepareUserMessage = (err, req) => {
     const userError = {
         message: err.message,
         context: err.context
     };
 
-    const docName = _.get(res, 'frameOptions.docName');
-    const method = _.get(res, 'frameOptions.method');
+    const docName = _.get(req, 'frameOptions.docName');
+    const method = _.get(req, 'frameOptions.method');
 
     if (docName && method) {
         let action;
