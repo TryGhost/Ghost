@@ -29,15 +29,35 @@
     --buffered-width: 0%;
 }
 
-.kg-video-title {
-    width: 100%;
-    margin: 8px 0 0 0;
-    padding: 8px 12px 0;
-    border: none;
-    font-family: inherit;
-    font-size: 1em;
-    font-weight: 700;
-    background: transparent;
+.kg-video-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: linear-gradient(180deg,rgba(0,0,0,0.3) 0,transparent 70%,transparent 100%);
+    z-index: 999;
+}
+
+.kg-video-large-play-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 72px;
+    height: 72px;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+}
+
+.kg-video-large-play-icon svg {
+    width: 20px;
+    height: auto;
+    margin-left: 2px;
+    fill: #fff;
 }
 
 .kg-video-player-container {
