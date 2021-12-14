@@ -20,7 +20,10 @@ const GA_FEATURES = [
     'calloutCard',
     'accordionCard',
     'productCard',
-    'richTwitterNewsletters'
+    'richTwitterNewsletters',
+    'audioCard',
+    'mediaAPI',
+    'filesAPI'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -35,11 +38,8 @@ const ALPHA_FEATURES = [
     'membersActivity',
     'cardSettingsPanel',
     'urlCache',
-    'mediaAPI',
-    'filesAPI',
     'membersAutoLogin',
     'fileCard',
-    'audioCard',
     'videoCard',
     'beforeAfterCard',
     'tweetGridCard',
