@@ -20,10 +20,12 @@ module.exports = {
             return dom.createTextNode('');
         }
 
+        const hideControlsClass = payload.loop ? ' kg-video-hide' : '';
+
         const frontendTemplate = hbs`
             <figure class="{{cardClasses}}">
                 <video src="{{payload.src}}" poster="{{posterSpacerSrc}}" width="{{payload.width}}" height="{{payload.height}}"{{#if payload.loop}} loop autoplay muted{{/if}} preload="metadata" style="background: transparent url('{{thumbnailSrc}}') 50% 50% / cover no-repeat;" /></video>
-                <div class="kg-video-player-container">
+                <div class="kg-video-player-container${hideControlsClass}">
                     <div class="kg-video-player">
                         <button class="kg-video-play-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
