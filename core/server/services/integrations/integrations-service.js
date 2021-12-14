@@ -1,4 +1,4 @@
-const {NotFoundError, GhostError} = require('@tryghost/errors');
+const {NotFoundError, InternalServerError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -29,7 +29,7 @@ class IntegrationsService {
                     withRelated: ['api_keys', 'webhooks']
                 });
             } catch (err) {
-                throw new GhostError({
+                throw new InternalServerError({
                     err: err
                 });
             }
