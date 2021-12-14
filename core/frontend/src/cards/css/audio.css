@@ -20,7 +20,7 @@
     background: transparent;
     object-fit: cover;
     aspect-ratio: 1/1;
-    border-radius: 3px;
+    border-radius: 2px;
 }
 
 .kg-audio-thumbnail.placeholder {
