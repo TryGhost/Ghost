@@ -21,7 +21,7 @@
     as |card|
 >
     {{#if @isEditing}}
-        <div class="kg-header-card kg-header-card-size-{{@payload.size}} kg-header-card-alignment-{{@payload.alignment}} kg-header-card-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
+        <div class="kg-header-card kg-size-{{@payload.size}} kg-align-{{@payload.alignment}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
             <KoenigBasicHtmlInput
                 @html={{@payload.header}}
                 @placeholder="Header"
@@ -177,7 +177,7 @@
 
     {{else}}
 
-        <div class="kg-header-card kg-header-card-size-{{@payload.size}} kg-header-card-alignment-{{@payload.alignment}} kg-header-card-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
+        <div class="kg-header-card kg-size-{{@payload.size}} kg-align-{{@payload.alignment}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
             <h2 class="kg-header-card-header">{{{@payload.header}}}</h2>
             {{#if this.hasSubheader}}
                 <h3 class="kg-header-card-subheader">{{{@payload.subheader}}}</h3>
