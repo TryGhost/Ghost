@@ -29,9 +29,35 @@ export default class KoenigCardBeforeAfterComponent extends Component {
         if (this.args.isEditing) {
             return false;
         }
+        let cardWidth = this.args.payload.cardWidth;
+        let orientation = this.args.payload.orientation;
 
         return {
             items: [{
+                title: 'Horizontal',
+                icon: 'koenig/kg-heading-1',
+                iconClass: orientation === 'horizontal' ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.setOrientationHorizontal)
+            }, {
+                title: 'Vertical',
+                icon: 'koenig/kg-heading-2',
+                iconClass: orientation === 'vertical' ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.setOrientationVertical)
+            }, {
+                divider: true
+            }, {
+                title: 'Wide',
+                icon: 'koenig/kg-img-wide',
+                iconClass: cardWidth === 'wide' ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.setLayoutWide)
+            }, {
+                title: 'Full',
+                icon: 'koenig/kg-img-full',
+                iconClass: cardWidth === 'full' ? 'fill-green-l2' : 'fill-white',
+                action: run.bind(this, this.setLayoutFull)
+            }, {
+                divider: true
+            }, {
                 buttonClass: 'fw4 flex items-center white',
                 icon: 'koenig/kg-edit',
                 iconClass: 'fill-white',
