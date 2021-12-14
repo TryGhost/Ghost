@@ -125,14 +125,15 @@ export default class KoenigCardBeforeAfterComponent extends Component {
             .trigger('click');
     }
 
-    setupListeners(element) {
-        let observer = new MutationObserver(() => {
-            // @TODO Update on specific mutations
-            this.updateImageDimensions();
-        });
-        let config = {attributes: true, childList: true, subtree: true};
-        observer.observe(element, config);
+    setupListeners() {
         this.updateImageDimensions();
+        const handleResize = () => {
+            this.updateImageDimensions();
+        };
+        window.addEventListener('resize', handleResize);
+        this.willDestroy = () => {
+            window.removeEventListener('resize', handleResize);
+        };
     }
 
     @action
@@ -155,7 +156,7 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     @action
     registerElement(element) {
         this.element = element;
-        this.setupListeners(element);
+        this.setupListeners();
     }
 
     @action
@@ -196,6 +197,7 @@ export default class KoenigCardBeforeAfterComponent extends Component {
             };
             let prop = `${metadata.id}Image`;
             this.args.payload[prop] = imageData;
+            this.updateImageDimensions();
         });
         image.src = file.url;
     }
@@ -203,11 +205,13 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     @action
     setLayoutWide() {
         this.args.payload.cardWidth = 'wide';
+        run.scheduleOnce('afterRender', this, this.updateImageDimensions);
     }
 
     @action
     setLayoutFull() {
         this.args.payload.cardWidth = 'full';
+        run.scheduleOnce('afterRender', this, this.updateImageDimensions);
     }
 
     @action
