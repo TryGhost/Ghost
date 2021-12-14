@@ -1,6 +1,7 @@
 (function() {
     const handleVideoPlayer = function (videoElementContainer) {
-        const videoPlayerContainer = videoElementContainer.querySelector('.kg-video-player');
+        const videoPlayer = videoElementContainer.querySelector('.kg-video-player');
+        const videoPlayerContainer = videoElementContainer.querySelector('.kg-video-player-container');
         const playIconContainer = videoElementContainer.querySelector('.kg-video-play-icon');
         const pauseIconContainer = videoElementContainer.querySelector('.kg-video-pause-icon');
         const seekSlider = videoElementContainer.querySelector('.kg-video-seek-slider');
@@ -36,16 +37,16 @@
         const whilePlaying = () => {
             seekSlider.value = Math.floor(videoEl.currentTime);
             currentTimeContainer.textContent = calculateTime(seekSlider.value);
-            videoPlayerContainer.style.setProperty('--seek-before-width', `${seekSlider.value / seekSlider.max * 100}%`);
+            videoPlayer.style.setProperty('--seek-before-width', `${seekSlider.value / seekSlider.max * 100}%`);
             raf = requestAnimationFrame(whilePlaying);
         }
 
         const showRangeProgress = (rangeInput) => {
             if (rangeInput === seekSlider) {
-                videoPlayerContainer.style.setProperty('--seek-before-width', rangeInput.value / rangeInput.max * 100 + '%');
+                videoPlayer.style.setProperty('--seek-before-width', rangeInput.value / rangeInput.max * 100 + '%');
             }
             else {
-                videoPlayerContainer.style.setProperty('--volume-before-width', rangeInput.value / rangeInput.max * 100 + '%');
+                videoPlayer.style.setProperty('--volume-before-width', rangeInput.value / rangeInput.max * 100 + '%');
             }
         }
 
@@ -67,7 +68,7 @@
         const displayBufferedAmount = () => {
             if (videoEl.buffered.length > 0) {
                 const bufferedAmount = Math.floor(videoEl.buffered.end(videoEl.buffered.length - 1));
-                videoPlayerContainer.style.setProperty('--buffered-width', `${(bufferedAmount / seekSlider.max) * 100}%`);
+                videoPlayer.style.setProperty('--buffered-width', `${(bufferedAmount / seekSlider.max) * 100}%`);
             }
         }
 
