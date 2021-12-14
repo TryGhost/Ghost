@@ -3,10 +3,10 @@
     align-items: center;
     justify-content: space-between;
     color: inherit;
-    border: 1px solid rgb(124 139 154 / 25%);
-    border-radius: 3px;
     padding: 6px;
     min-height: 92px;
+    border: 1px solid rgb(124 139 154 / 25%);
+    border-radius: 3px;
     transition: all ease-in-out 0.35s;
 }
 
@@ -65,7 +65,6 @@
     justify-content: center;
     width: 80px;
     height: 100%;
-    border-radius: 2px;
 }
 
 .kg-file-card-icon:before {
@@ -79,6 +78,7 @@
     background: currentColor;
     opacity: 0.06;
     transition: opacity ease-in-out 0.35s;
+    border-radius: 2px;
 }
 
 .kg-file-card:hover .kg-file-card-icon:before {
