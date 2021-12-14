@@ -28,24 +28,6 @@ if (parentPort) {
     const config = require('../../../../shared/config');
     const db = require('../../../data/db');
 
-    const logging = {
-        info(message) {
-            if (parentPort) {
-                parentPort.postMessage(message);
-            }
-        },
-        warn(message) {
-            if (parentPort) {
-                parentPort.postMessage(message);
-            }
-        },
-        error(message) {
-            if (parentPort) {
-                parentPort.postMessage(message);
-            }
-        }
-    };
-
     const settingsRows = await db.knex('settings')
         .whereIn('key', ['mailgun_api_key', 'mailgun_domain', 'mailgun_base_url']);
 
@@ -69,10 +51,9 @@ if (parentPort) {
     const emailAnalyticsService = new EmailAnalyticsService({
         config,
         settings,
-        logging,
-        eventProcessor: new EventProcessor({db, logging}),
+        eventProcessor: new EventProcessor({db}),
         providers: [
-            new MailgunProvider({config, settings, logging})
+            new MailgunProvider({config, settings})
         ],
         queries
     });
