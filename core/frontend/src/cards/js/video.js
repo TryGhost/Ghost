@@ -118,7 +118,6 @@
             videoOverlay.classList.add("kg-video-hide");
             playIconContainer.classList.add("kg-video-hide");
             pauseIconContainer.classList.remove("kg-video-hide");
-            videoPlayerContainer.classList.add("kg-video-hide");
         };
 
         const handleOnPlay = () => {
