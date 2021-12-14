@@ -115,7 +115,7 @@
             }
         }
 
-        videoEl.addEventListener('click', () => {
+        videoElementContainer.addEventListener('click', () => {
             if (!videoEl.loop) {
                 const isPlaying = !!(videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2);
                 if (isPlaying) {
@@ -149,7 +149,8 @@
             cancelAnimationFrame(raf);
         }
 
-        largePlayIcon.addEventListener('click', () => {
+        largePlayIcon.addEventListener('click', (event) => {
+            event.stopPropagation();
             handleOnPlay();
         });
 
