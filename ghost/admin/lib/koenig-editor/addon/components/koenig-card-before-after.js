@@ -20,33 +20,14 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     }
 
     get overlayStyle() {
-        if (this.args.payload.orientation === 'horizontal') {
-            return `width: ${this.args.payload.startingPosition}%`;
-        }
-        if (this.args.payload.orientation === 'vertical') {
-            return `height: ${this.args.payload.startingPosition}%`;
-        }
-        return null;
+        return `width: ${this.args.payload.startingPosition}%`;
     }
 
     get toolbar() {
         let cardWidth = this.args.payload.cardWidth;
-        let orientation = this.args.payload.orientation;
 
         return {
             items: [{
-                title: 'Horizontal',
-                icon: 'koenig/kg-heading-1',
-                iconClass: orientation === 'horizontal' ? 'fill-green-l2' : 'fill-white',
-                action: run.bind(this, this.setOrientationHorizontal)
-            }, {
-                title: 'Vertical',
-                icon: 'koenig/kg-heading-2',
-                iconClass: orientation === 'vertical' ? 'fill-green-l2' : 'fill-white',
-                action: run.bind(this, this.setOrientationVertical)
-            }, {
-                divider: true
-            }, {
                 title: 'Wide',
                 icon: 'koenig/kg-img-wide',
                 iconClass: cardWidth === 'wide' ? 'fill-green-l2' : 'fill-white',
@@ -90,9 +71,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
 
         let placeholders = ['summer', 'mountains', 'ufo-attack'];
         this.placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
-        if (!args.payload.orientation) {
-            args.payload.orientation = 'horizontal';
-        }
         if (!args.payload.cardWidth) {
             args.payload.cardWidth = 'wide';
         }
@@ -202,16 +180,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     setLayoutFull() {
         this.args.payload.cardWidth = 'full';
         run.scheduleOnce('afterRender', this, this.updateImageDimensions);
-    }
-
-    @action
-    setOrientationHorizontal() {
-        this.args.payload.orientation = 'horizontal';
-    }
-
-    @action
-    setOrientationVertical() {
-        this.args.payload.orientation = 'vertical';
     }
 
     @action
