@@ -1946,6 +1946,41 @@ button.emoji-picker__category-button.active {
     max-width: none;
 }
 
+.kg-before-after-card input:disabled {
+    pointer-events: none;
+}
+
+.kg-before-after-card input {
+    top:0;
+    left: -25px;
+    position: absolute;
+    -webkit-appearance: none;
+    appearance: none;
+    width: calc(100% + 50px);
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    outline: none;
+    margin: 0;
+}
+
+.kg-before-after-card input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 50px;
+    height: 50px;
+    background: white;
+    cursor: pointer;
+    border-radius: 25px;
+}
+
+.kg-before-after-card input::-moz-range-thumb {
+    width: 50px;
+    height: 50px;
+    background: white;
+    cursor: pointer;
+    border-radius: 25px;
+}
+
 /* Header card
 /* --------------------------------------------------------------- */
 

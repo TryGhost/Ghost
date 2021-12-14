@@ -15,6 +15,10 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     imageMimeTypes = IMAGE_MIME_TYPES;
     imageExtensions = IMAGE_EXTENSIONS;
 
+    get isPopulated() {
+        return this.args.payload.beforeImage && this.args.payload.afterImage;
+    }
+
     get overlayStyle() {
         if (this.args.payload.orientation === 'horizontal') {
             return `width: ${this.args.payload.startingPosition}%`;
@@ -93,6 +97,9 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     constructor(owner, args) {
         super(owner, args);
         args.registerComponent(this);
+
+        let placeholders = ['summer', 'mountains', 'ufo-attack'];
+        this.placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
         if (!args.payload.orientation) {
             args.payload.orientation = 'horizontal';
         }
@@ -126,6 +133,21 @@ export default class KoenigCardBeforeAfterComponent extends Component {
         let config = {attributes: true, childList: true, subtree: true};
         observer.observe(element, config);
         this.updateImageDimensions();
+    }
+
+    @action
+    preventDefault(e) {
+        e.preventDefault();
+    }
+
+    @action
+    stopPropagation(e) {
+        e.stopPropagation();
+    }
+
+    @action
+    removeFocus(e) {
+        e.target.blur();
     }
 
     // required for snippet rects to be calculated - editor reaches in to component,
@@ -204,11 +226,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     }
 
     @action
-    removeBeforeImage() {
-        this.args.payload.beforeImage = null;
-    }
-
-    @action
     selectBeforeImage() {
         this.selectingFile = 'before';
         this._triggerFileDialog();
@@ -218,11 +235,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     selectAfterImage() {
         this.selectingFile = 'after';
         this._triggerFileDialog();
-    }
-
-    @action
-    removeAfterImage() {
-        this.args.payload.afterImage = null;
     }
 
     @action
