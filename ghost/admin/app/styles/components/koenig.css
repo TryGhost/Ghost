@@ -1988,36 +1988,36 @@ button.emoji-picker__category-button.active {
     padding-left: 2em;
     padding-right: 2em;
 }
-.kg-header-card-size-small {
+.kg-header-card.kg-size-small {
     padding-top: 1em;
     padding-bottom: 1em;
 }
-.kg-header-card-size-medium {
+.kg-header-card.kg-size-medium {
     padding-top: 3em;
     padding-bottom: 3em;
 }
-.kg-header-card-size-large {
+.kg-header-card.kg-size-large {
     padding-top: 7em;
     padding-bottom: 7em;
 }
-.kg-header-card-alignment-left {
+.kg-header-card.kg-align-left {
     text-align: left;
 }
-.kg-header-card-alignment-center {
+.kg-header-card.kg-align-center {
     text-align: center;
 }
-.kg-header-card-style-clear {
+.kg-header-card.kg-style-clear {
     /* nothing here */
 }
-.kg-header-card-style-invert {
+.kg-header-card.kg-style-invert {
     background-color: black;
     color: white;
 }
-.kg-header-card-style-accent {
+.kg-header-card.kg-style-accent {
     color: white;
     background-color: var(--accent-color);
 }
-.kg-header-card-style-image {
+.kg-header-card.kg-style-image {
     background-size: cover;
     background-position: center center;
 }
