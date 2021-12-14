@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{concat (kg-style "breakout" size=@payload.cardWidth) " flex flex-column mih10 miw-100 relative"}}
+    @class={{"koenig-breakout-full flex flex-column mih10 miw-100 relative"}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -21,63 +21,107 @@
     as |card|
 >
     {{#if @isEditing}}
-        <div class="kg-header-card">
-            <div class="kg-header-card-container kg-header-card-alignment-{{@payload.alignment}}">
-                <KoenigBasicHtmlInput
-                    @html={{@payload.header}}
-                    @placeholder="Header"
-                    @class="w-100 fw4 bn bg-transparent kg-header-card-header"
-                    @name="header"
-                    @defaultTag="h2"
-                    @onChange={{action "setHeader"}}
-                    @didCreateEditor={{action "registerHeaderEditor"}}
-                />
-                <KoenigBasicHtmlInput
-                    @html={{@payload.subheader}}
-                    @placeholder="Subheader"
-                    @class="w-100 fw4 bg-transparent kg-header-card-subheader"
-                    @name="subheader"
-                    @defaultTag="h3"
-                    @onChange={{action "setSubheader"}}
-                    @didCreateEditor={{action "registerSubheaderEditor"}}
-                    @allowBr={{true}}
-                />
-                {{#if @payload.buttonEnabled}}
-                    <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-header-card-button" disabled={{not @payload.buttonText}}>
-                        <span>
-                            {{or @payload.buttonText "Add button text"}}
-                        </span>
-                    </a>
-                {{/if}}
-            </div>
+        <div class="kg-header-card kg-header-card-size-{{@payload.size}} kg-header-card-alignment-{{@payload.alignment}} kg-header-card-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
+            <KoenigBasicHtmlInput
+                @html={{@payload.header}}
+                @placeholder="Header"
+                @class="w-100 fw4 bn bg-transparent kg-header-card-header"
+                @name="header"
+                @defaultTag="h2"
+                @onChange={{action "setHeader"}}
+                @didCreateEditor={{action "registerHeaderEditor"}}
+            />
+            <KoenigBasicHtmlInput
+                @html={{@payload.subheader}}
+                @placeholder="Subheader"
+                @class="w-100 fw4 bg-transparent kg-header-card-subheader"
+                @name="subheader"
+                @defaultTag="h3"
+                @onChange={{action "setSubheader"}}
+                @didCreateEditor={{action "registerSubheaderEditor"}}
+                @allowBr={{true}}
+            />
+            {{#if @payload.buttonEnabled}}
+                <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-header-card-button" disabled={{not @payload.buttonText}}>
+                    <span>
+                        {{or @payload.buttonText "Add button text"}}
+                    </span>
+                </a>
+            {{/if}}
         </div>
 
         <KoenigSettingsPanel>
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <div class="kg-settings-panel-control-label">Width</div>
+                <div class="kg-settings-panel-control-label">Size</div>
                 <div class="kg-settings-panel-control-input">
                     <div class="gh-btn-group icons">
-                        <button type="button" title="Wide" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "wide") "gh-btn-group-selected"}}" onclick={{action "setLayoutWide"}}><span>{{svg-jar "koenig/kg-img-wide" class="fill-darkgrey"}}</span></button>
-                        <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" onclick={{action "setLayoutFull"}}><span>{{svg-jar "koenig/kg-img-full" class="fill-darkgrey"}}</span></button>
+                        <button type="button" title="Small" class="gh-btn gh-btn-icon {{if (eq @payload.size "small") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "small")}}><span>S</span></button>
+                        <button type="button" title="Medium" class="gh-btn gh-btn-icon {{if (eq @payload.size "medium") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "medium")}}><span>M</span></button>
+                        <button type="button" title="Large" class="gh-btn gh-btn-icon {{if (eq @payload.size "large") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "large")}}><span>L</span></button>
                     </div>
                 </div>
             </div>
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Alignment</div>
                 <div class="kg-settings-panel-control-input">
-                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setAlignment "center")}}><span>Center</span></button>
-                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setAlignment "left")}}><span>Left</span></button>
-                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setAlignment "left-50-percent")}}><span>Left at 50% starting point</span></button>
+                    <div class="gh-btn-group icons">
+                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                    </div>
                 </div>
             </div>
             <hr class="kg-settings-panel-divider">
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Style</div>
                 <div class="kg-settings-panel-control-input">
-                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setStyle "invert")}}><span>Invert</span></button>
-                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setStyle "clear")}}><span>Clear</span></button>
-                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setStyle "accent")}}><span>Accent</span></button>
-                    <button type="button" class="gh-btn gh-btn-icon" {{on "click" (fn this.setStyle "image")}}><span>Image</span></button>
+                    <div class="gh-btn-group icons">
+                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "invert") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "invert")}}><span>Invert</span></button>
+                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "clear") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "clear")}}><span>Clear</span></button>
+                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "accent") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "accent")}}><span>Accent</span></button>
+                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "image") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "image")}}><span>Image</span></button>
+                    </div>
+
+                    <GhUploader
+                            @uploadUrl="/images/upload/"
+                            @accept={{this.imageMimeTypes}}
+                            @extensions={{this.imageExtensions}}
+                            {{!-- @onStart={{this.customThumbnailUploadStarted}} --}}
+                            @onComplete={{this.backgroundImageUploadCompleted}}
+                            as |uploader|
+                        >
+                    {{#if (eq @payload.style "image")}}
+                        <div class="relative w-100">
+                            {{#if uploader.isUploading}}
+                                <div class="kg-upload-thumbnail-xl">
+                                    {{uploader.progressBar}}
+                                </div>
+                            {{else if @payload.backgroundImageSrc}}
+                                <div class="kg-thumbnail-xl-container">
+                                    <img class="kg-thumbnail-xl" src={{@payload.backgroundImageSrc}} {{on "click" uploader.triggerFileDialog}}>
+                                    <div class="image-overlay">
+                                        <div class="flex flex-row-reverse">
+                                            <button class="bg-white-90 br3 pe-auto" {{on "click" this.deleteBackgroundImage}}>
+                                                {{svg-jar "koenig/kg-trash" class="kg-replace-icon fill-darkgrey"}}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {{else}}
+                                <button type="button" class="gh-btn kg-upload-thumbnail-xl" {{on "click" uploader.triggerFileDialog}}>
+                                    {{svg-jar "upload-fill"}}
+                                </button>
+                            {{/if}}
+                        </div>
+                        <div style="display:none">
+                            <GhFileInput
+                                @multiple={{false}}
+                                @action={{uploader.setFiles}}
+                                @accept={{this.imageMimeTypes}}
+                                @onInsert={{uploader.registerFileInput}}
+                            />
+                        </div>
+                    {{/if}}
+                    </GhUploader>
                 </div>
             </div>
             <hr class="kg-settings-panel-divider">
@@ -133,20 +177,18 @@
 
     {{else}}
 
-        <div class="kg-header-card">
-            <div class="kg-header-card-container kg-header-card-alignment-{{@payload.alignment}}">
-                <h2 class="kg-header-card-header">{{{@payload.header}}}</h2>
-                {{#if this.hasSubheader}}
-                    <h3 class="kg-header-card-subheader">{{{@payload.subheader}}}</h3>
-                {{/if}}
-                {{#if @payload.buttonEnabled}}
-                    <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-header-card-button {{if this.isButtonIncomplete "o-50"}}" disabled={{not @payload.buttonText}}>
-                        <span>
-                            {{or @payload.buttonText "Add button text"}}
-                        </span>
-                    </a>
-                {{/if}}
-            </div>
+        <div class="kg-header-card kg-header-card-size-{{@payload.size}} kg-header-card-alignment-{{@payload.alignment}} kg-header-card-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
+            <h2 class="kg-header-card-header">{{{@payload.header}}}</h2>
+            {{#if this.hasSubheader}}
+                <h3 class="kg-header-card-subheader">{{{@payload.subheader}}}</h3>
+            {{/if}}
+            {{#if @payload.buttonEnabled}}
+                <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-header-card-button {{if this.isButtonIncomplete "o-50"}}" disabled={{not @payload.buttonText}}>
+                    <span>
+                        {{or @payload.buttonText "Add button text"}}
+                    </span>
+                </a>
+            {{/if}}
         </div>
     {{/if}}
 </KoenigCard>

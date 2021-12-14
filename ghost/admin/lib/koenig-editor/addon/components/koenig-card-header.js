@@ -1,5 +1,6 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
+import {IMAGE_EXTENSIONS, IMAGE_MIME_TYPES} from 'ghost-admin/components/gh-image-uploader';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
@@ -12,6 +13,9 @@ export default class KoenigCardHeaderComponent extends Component {
     @service store;
     @service membersUtils;
     @service ui;
+
+    imageExtensions = IMAGE_EXTENSIONS;
+    imageMimeTypes = IMAGE_MIME_TYPES;
 
     get isButtonIncomplete() {
         const {buttonUrl, buttonText} = this.args.payload;
@@ -51,15 +55,22 @@ export default class KoenigCardHeaderComponent extends Component {
         return Boolean(this.args.payload.subheader.replace(/(<br *\/?>)+$/ig, '').trim());
     }
 
+    get backgroundImageStyle() {
+        if (this.args.payload.backgroundImageSrc) {
+            return ` background-image: url(${this.args.payload.backgroundImageSrc});`;
+        }
+        return '';
+    }
+
     constructor() {
         super(...arguments);
         this.args.registerComponent(this);
 
         const payloadDefaults = {
-            buttonEnabled: false,
-            cardWidth: 'wide',
+            size: 'small',
             alignment: 'center',
-            style: 'invert'
+            style: 'invert',
+            buttonEnabled: false
         };
 
         Object.entries(payloadDefaults).forEach(([key, value]) => {
@@ -216,18 +227,15 @@ export default class KoenigCardHeaderComponent extends Component {
     }
 
     @action
-    setLayoutWide() {
-        this.args.payload.cardWidth = 'wide';
-    }
-
-    @action
-    setLayoutFull() {
-        this.args.payload.cardWidth = 'full';
+    setSize(size) {
+        if (['small', 'medium', 'large'].includes(size)) {
+            this._updatePayloadAttr('size', size);
+        }
     }
 
     @action
     setAlignment(alignment) {
-        if (['center', 'left', 'left-50-percent'].includes(alignment)) {
+        if (['center', 'left'].includes(alignment)) {
             this._updatePayloadAttr('alignment', alignment);
         }
     }
@@ -237,5 +245,29 @@ export default class KoenigCardHeaderComponent extends Component {
         if (['invert', 'clear', 'accent', 'image'].includes(style)) {
             this._updatePayloadAttr('style', style);
         }
+    }
+
+    @action
+    triggerFileDialog(event) {
+        const target = event?.target || this.element;
+
+        const cardElem = target.closest('.__mobiledoc-card');
+        const fileInput = cardElem?.querySelector('input[type="file"]');
+
+        if (fileInput) {
+            fileInput.click();
+        }
+    }
+
+    @action
+    backgroundImageUploadCompleted([image]) {
+        this.args.editor.run(() => {
+            this._updatePayloadAttr('backgroundImageSrc', image.url);
+        });
+    }
+
+    @action
+    deleteBackgroundImage() {
+        this._updatePayloadAttr('backgroundImageSrc', null);
     }
 }

@@ -1985,21 +1985,41 @@ button.emoji-picker__category-button.active {
 /* --------------------------------------------------------------- */
 
 .kg-header-card {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    padding-left: 2em;
+    padding-right: 2em;
 }
-
-.kg-header-card-alignment-center {
-    text-align: center;
-    grid-column: 1 / 3;
+.kg-header-card-size-small {
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+.kg-header-card-size-medium {
+    padding-top: 3em;
+    padding-bottom: 3em;
+}
+.kg-header-card-size-large {
+    padding-top: 7em;
+    padding-bottom: 7em;
 }
 .kg-header-card-alignment-left {
     text-align: left;
-    grid-column: 1 / 3;
 }
-.kg-header-card-alignment-left-50-percent {
-    text-align: left;
-    grid-column: 2 / 3;
+.kg-header-card-alignment-center {
+    text-align: center;
+}
+.kg-header-card-style-clear {
+    /* nothing here */
+}
+.kg-header-card-style-invert {
+    background-color: black;
+    color: white;
+}
+.kg-header-card-style-accent {
+    color: white;
+    background-color: var(--accent-color);
+}
+.kg-header-card-style-image {
+    background-size: cover;
+    background-position: center center;
 }
 
 /* Upload cards: audio and file
