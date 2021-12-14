@@ -109,6 +109,7 @@
 .kg-video-hide-animated {
     opacity: 0 !important;
     transition: opacity .2s ease-in-out;
+    cursor: initial;
 }
 
 .kg-video-play-icon svg,
