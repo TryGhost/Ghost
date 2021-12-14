@@ -43,20 +43,6 @@ export default class KoenigCardHeaderComponent extends Component {
                 title: 'Edit',
                 text: '',
                 action: run.bind(this, this.args.editCard)
-            },{
-                buttonClass: 'fw4 flex items-center white',
-                icon: 'koenig/kg-img-wide',
-                iconClass: this.args.payload.cardWidth === 'wide' ? 'fill-green-l2' : 'fill-white',
-                title: 'Wide',
-                text: '',
-                action: run.bind(this, this.setLayoutWide)
-            },{
-                buttonClass: 'fw4 flex items-center white',
-                icon: 'koenig/kg-img-full',
-                iconClass: this.args.payload.cardWidth === 'full' ? 'fill-green-l2' : 'fill-white',
-                title: 'Full',
-                text: '',
-                action: run.bind(this, this.setLayoutFull)
             }]
         };
     }
@@ -72,7 +58,8 @@ export default class KoenigCardHeaderComponent extends Component {
         const payloadDefaults = {
             buttonEnabled: false,
             cardWidth: 'wide',
-            alignment: 'center'
+            alignment: 'center',
+            style: 'invert'
         };
 
         Object.entries(payloadDefaults).forEach(([key, value]) => {
@@ -242,6 +229,13 @@ export default class KoenigCardHeaderComponent extends Component {
     setAlignment(alignment) {
         if (['center', 'left', 'left-50-percent'].includes(alignment)) {
             this._updatePayloadAttr('alignment', alignment);
+        }
+    }
+
+    @action
+    setStyle(style) {
+        if (['invert', 'clear', 'accent', 'image'].includes(style)) {
+            this._updatePayloadAttr('style', style);
         }
     }
 }
