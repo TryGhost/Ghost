@@ -1412,10 +1412,10 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.1.1", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.npmjs.org/@tryghost/errors/-/errors-1.1.1.tgz"
-  integrity sha512-na0qB5sdy1BWgquzn+m530ohJ3fTeF451xUTR7I8b76TBEL9snnIkXCv5Qdjmnevmgod7aAGsHi2syyKFlvEvQ==
+"@tryghost/errors@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.0.tgz#989f10434a17286e952b5a9434e50846ea4ad87c"
+  integrity sha512-80I7LmRgPQt380Bm/90hF8KPkkNqOFHF2T6oO+NXkLd+UTc1qLOfe6nZS17WD9glMmHrqv6IF8U1MjPMDa4VOQ==
   dependencies:
     lodash "^4.17.21"
     uuid "^8.3.2"
@@ -1427,6 +1427,14 @@
   dependencies:
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
+
+"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/@tryghost/errors/-/errors-1.1.1.tgz"
+  integrity sha512-na0qB5sdy1BWgquzn+m530ohJ3fTeF451xUTR7I8b76TBEL9snnIkXCv5Qdjmnevmgod7aAGsHi2syyKFlvEvQ==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
 
 "@tryghost/express-dynamic-redirects@0.2.2":
   version "0.2.2"
@@ -1712,10 +1720,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mw-error-handler@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.1.0.tgz#7d47989a29a5a0d800747620f3d1e1dfc20b5d98"
-  integrity sha512-gAUI/GApkgPYtPMH05kArHcksO/ih+GJQ3Ocgep+FbThj+o6gPLSVE0qyLdSGzGPJnf6dCGbUo8v7DO3nNSUUg==
+"@tryghost/mw-error-handler@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.1.1.tgz#47ad5f534b21ec71db00706f47622d660cde894b"
+  integrity sha512-c1EMdeU5k6FpB640GxjA2sUsyCuTPW8qlWJu1eZAbX/63YBMZOoBkvGNadUM5hdJ1fGwwFQME2j1vzkQ+qRMHg==
   dependencies:
     "@tryghost/debug" "^0.1.9"
     "@tryghost/tpl" "^0.1.8"
