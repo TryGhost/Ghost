@@ -162,19 +162,22 @@
             handleOnPause();
         });
 
-        muteIconContainer.addEventListener('click', () => {
+        muteIconContainer.addEventListener('click', (event) => {
+            event.stopPropagation();
             muteIconContainer.classList.add("kg-video-hide");
             unmuteIconContainer.classList.remove("kg-video-hide");
             videoEl.muted = false;
         });
 
-        unmuteIconContainer.addEventListener('click', () => {
+        unmuteIconContainer.addEventListener('click', (event) => {
+            event.stopPropagation();
             unmuteIconContainer.classList.add("kg-video-hide");
             muteIconContainer.classList.remove("kg-video-hide");
             videoEl.muted = true;
         });
 
-        playbackRateContainer.addEventListener('click', () => {
+        playbackRateContainer.addEventListener('click', (event) => {
+            event.stopPropagation();
             let nextPlaybackRate = playbackRates[(currentPlaybackRateIdx + 1) % 5];
             currentPlaybackRateIdx = currentPlaybackRateIdx + 1;
             videoEl.playbackRate = nextPlaybackRate.rate;
@@ -184,6 +187,7 @@
         videoEl.addEventListener('progress', displayBufferedAmount);
 
         seekSlider.addEventListener('input', (e) => {
+            e.stopPropagation();
             showRangeProgress(e.target);
             currentTimeContainer.textContent = calculateTime(seekSlider.value);
             if (!videoEl.paused) {
@@ -191,14 +195,24 @@
             }
         });
 
-        seekSlider.addEventListener('change', () => {
+        seekSlider.addEventListener('change', (event) => {
+            event.stopPropagation();
             videoEl.currentTime = seekSlider.value;
             if (!videoEl.paused) {
                 requestAnimationFrame(whilePlaying);
             }
         });
 
+        volumeSlider.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        seekSlider.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
         volumeSlider.addEventListener('input', (e) => {
+            e.stopPropagation();
             const value = e.target.value;
             showRangeProgress(e.target);
             videoEl.volume = value / 100;
