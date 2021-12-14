@@ -17,6 +17,7 @@ import * as htmlCard from './cards/html';
 import * as softReturn from './cards/softReturn';
 import * as productCard from './cards/product';
 import * as audioCard from './cards/audio';
+import * as videoCard from './cards/video';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -471,6 +472,7 @@ export function createParserPlugins(_options = {}) {
         kgToggleCardToCard,
         productCard.fromKoenigCard(options),
         audioCard.fromKoenigCard(options),
+        videoCard.fromKoenigCard(options),
         blockquoteWithChildren,
         softReturn.fromBr(options),
         removeLeadingNewline,
