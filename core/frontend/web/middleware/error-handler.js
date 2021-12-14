@@ -7,7 +7,7 @@ const config = require('../../../shared/config');
 const helpers = require('../../services/routing/helpers');
 
 // @TODO: make this properly shared code
-const shared = require('../../../server/web/shared/middleware/error-handler');
+const {prepareError} = require('@tryghost/mw-error-handler');
 
 const messages = {
     oopsErrorTemplateHasError: 'Oops, seems there is an error in the error template.',
@@ -85,7 +85,7 @@ const themeErrorRenderer = (err, req, res, next) => {
 
 module.exports.handleThemeResponse = [
     // Make sure the error can be served
-    shared.prepareError,
+    prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
     // Render the error using theme template

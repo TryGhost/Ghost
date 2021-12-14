@@ -4,10 +4,12 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');
+const sentry = require('../../../shared/sentry');
 const membersService = require('../../services/members');
 const middleware = membersService.middleware;
 const shared = require('../shared');
 const labs = require('../../../shared/labs');
+const errorHandler = require('@tryghost/mw-error-handler');
 
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
@@ -46,12 +48,12 @@ module.exports = function setupMembersApp() {
     membersApp.post('/api/events', labs.enabledMiddleware('membersActivity'), middleware.loadMemberSession, (req, res, next) => membersService.api.middleware.createEvents(req, res, next));
 
     // API error handling
-    membersApp.use('/api', shared.middleware.errorHandler.resourceNotFound);
-    membersApp.use('/api', shared.middleware.errorHandler.handleJSONResponseV2);
+    membersApp.use('/api', errorHandler.resourceNotFound);
+    membersApp.use('/api', errorHandler.handleJSONResponseV2(sentry));
 
     // Webhook error handling
-    membersApp.use('/webhooks', shared.middleware.errorHandler.resourceNotFound);
-    membersApp.use('/webhooks', shared.middleware.errorHandler.handleJSONResponseV2);
+    membersApp.use('/webhooks', errorHandler.resourceNotFound);
+    membersApp.use('/webhooks', errorHandler.handleJSONResponseV2(sentry));
 
     debug('Members App setup end');
 
