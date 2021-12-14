@@ -101,6 +101,25 @@
             });
         }
 
+        videoElementContainer.onmouseover = () => {
+            videoPlayerContainer.classList.remove("kg-video-hide");
+        }
+
+        videoElementContainer.onmouseleave = () => {
+            const isPlaying = !!(videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2);
+            if (isPlaying) {
+                videoPlayerContainer.classList.add("kg-video-hide");
+            }
+        }
+
+        videoEl.onplay = () => {
+            largePlayIcon.classList.add("kg-video-hide");
+            videoOverlay.classList.add("kg-video-hide");
+            playIconContainer.classList.add("kg-video-hide");
+            pauseIconContainer.classList.remove("kg-video-hide");
+            videoPlayerContainer.classList.add("kg-video-hide");
+        };
+
         const handleOnPlay = () => {
             largePlayIcon.classList.add("kg-video-hide");
             videoOverlay.classList.add("kg-video-hide");
