@@ -1412,7 +1412,7 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.2.0":
+"@tryghost/errors@1.2.0", "@tryghost/errors@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.0.tgz#989f10434a17286e952b5a9434e50846ea4ad87c"
   integrity sha512-80I7LmRgPQt380Bm/90hF8KPkkNqOFHF2T6oO+NXkLd+UTc1qLOfe6nZS17WD9glMmHrqv6IF8U1MjPMDa4VOQ==
@@ -1700,13 +1700,13 @@
   optionalDependencies:
     promise.allsettled "^1.0.5"
 
-"@tryghost/minifier@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.8.tgz#51e9f906f823f3e76c992741d89cd42dfd87d610"
-  integrity sha512-0T0aSiCgUsjfQeBBkjp+BntnOgwhPwtC4xNsSrajYEL86Q2dkpTtJaKkRMvZnPQW77wD8igEtoOswV0Fw0e/mA==
+"@tryghost/minifier@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.9.tgz#38ba3f0fad70ec8059df4382eb3c850b8ff8fd02"
+  integrity sha512-xqIoiHwi/VBUUsfdVG7FyeBBDUVY96XhCtehMCG1T/mv6aeRZ8ro6l+NXPVEpz0ebB5K98utAV9XgvIiSTQfBg==
   dependencies:
     "@tryghost/debug" "^0.1.8"
-    "@tryghost/errors" "^1.1.1"
+    "@tryghost/errors" "^1.2.0"
     "@tryghost/tpl" "^0.1.7"
     csso "4.2.0"
     terser "^5.9.0"
