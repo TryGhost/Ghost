@@ -3,6 +3,8 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .kg-nft-card-container {
@@ -18,7 +20,7 @@
                 roboto, noto,
                 'segoe ui', arial,
                 sans-serif;
-    font-size: 1.4rem;
+    font-size: 14px;
     font-weight: 400;
     box-shadow: 0 2px 6px -2px rgb(0 0 0 / 10%), 0 0 1px rgb(0 0 0 / 40%);
     width: 100%;
@@ -40,7 +42,7 @@
 }
 
 .kg-nft-metadata {
-    padding: 2.0rem;
+    padding: 20px;
     width: 100%;
 }
 
@@ -58,7 +60,7 @@
 
 .kg-nft-header h4.kg-nft-title {
     font-family: inherit;
-    font-size: 1.9rem;
+    font-size: 19px;
     font-weight: 700;
     line-height: 1.3em;
     min-width: unset;
@@ -76,7 +78,7 @@
 .kg-nft-creator {
     font-family: inherit;
     line-height: 1.4em;
-    margin: 0.4rem 0 0;
+    margin: 4px 0 0;
     color: #ababab;
 }
 
@@ -87,8 +89,8 @@
 
 .kg-nft-card p.kg-nft-description {
     font-family: inherit;
-    font-size: 1.4rem;
+    font-size: 14px;
     line-height: 1.4em;
-    margin: 2.0rem 0 0;
+    margin: 20px 0 0;
     color: #222;
 }

@@ -3,19 +3,19 @@
 }
 
 .kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content{
-    height: auto;
-    opacity: 1;
-    transition: opacity 1s ease, top .35s ease;
-    top: 0;
-    position: relative;
-}
-
-.kg-toggle-content {
     height: 0;
     overflow: hidden;
     transition: opacity .5s ease, top .35s ease;
     opacity: 0;
     top: -0.5em;
+    position: relative;
+}
+
+.kg-toggle-content {
+    height: auto;
+    opacity: 1;
+    transition: opacity 1s ease, top .35s ease;
+    top: 0;
     position: relative;
 }
 

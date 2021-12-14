@@ -74,8 +74,8 @@ table td {
     max-width: 600px;
 }
 
-.content a { 
-    overflow-wrap: anywhere; 
+.content a {
+    overflow-wrap: anywhere;
 }
 
 /* -------------------------------------
@@ -554,26 +554,30 @@ figure blockquote p {
 }
 
 .kg-nft-link {
-    display: block; 
-    text-decoration: none !important; 
-    color: #15212A !important; 
+    display: block;
+    text-decoration: none !important;
+    color: #15212A !important;
     font-family: inherit !important;
     font-size: 14px;
     line-height: 1.3em;
-    padding-top: 4px; 
-    padding-right: 20px; 
-    padding-left: 20px; 
+    padding-top: 4px;
+    padding-right: 20px;
+    padding-left: 20px;
     padding-bottom: 4px;
 }
 
 .kg-twitter-link {
-    display: block; 
-    text-decoration: none !important; 
-    color: #15212A !important; 
+    display: block;
+    text-decoration: none !important;
+    color: #15212A !important;
     font-family: inherit !important;
     font-size: 15px;
     padding: 8px;
     line-height: 1.3em;
+}
+
+.kg-audio-thumbnail.placeholder {
+    background: ${templateSettings.accentColor || '#15212A'} !important;
 }
 
 .kg-callout-card {
@@ -915,8 +919,8 @@ figure blockquote p {
 
     table.body blockquote.kg-blockquote-alt {
         border-left: 0 none !important;
-        margin: 0 0 2.5em 0;
-        padding: 0 50px 0 50px;
+        margin: 0 0 2.5em 0 !important;
+        padding: 0 50px 0 50px !important;
         font-size: 1.2em;
     }
 

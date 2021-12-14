@@ -134,14 +134,20 @@ jobs:
           endTime="$(date +%s)"
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
+      # Continue on error if TailScale service is down
       - name: Tailscale Action
+        timeout-minutes: 2
+        continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
         uses: tailscale/github-action@v1
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       # Report time taken to metrics service
+      # Continue on error if previous TailScale step fails
       - uses: sam-lord/action-trigger-metric@main
+        timeout-minutes: 1
+        continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
         with:
           metricName: 'test-time'

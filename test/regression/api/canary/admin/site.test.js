@@ -1,29 +1,25 @@
-const should = require('should');
-const supertest = require('supertest');
-const testUtils = require('../../../../utils');
-const localUtils = require('./utils');
-const config = require('../../../../../core/shared/config');
+const {expect} = require('chai');
+const {any, stringMatching} = require('expect');
+
+const framework = require('../../../../utils/e2e-framework');
 
 describe('Config API', function () {
     let request;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request);
+        request = await framework.getAgent('/ghost/api/canary/admin/');
     });
 
     it('can retrieve config and all expected properties', async function () {
         const res = await request
-            .get(localUtils.API.getApiQuery('site/'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+            .get('site/');
 
-        localUtils.API.checkResponse(res.body.site, 'site');
-
-        // minor (safe) version
-        res.body.site.version.should.match(/\d+\.\d+/);
+        expect(res.body.site).to.matchSnapshot({
+            version: stringMatching(/\d+\.\d+/)
+        });
+        expect(res.headers).to.matchSnapshot({
+            date: any(String),
+            etag: any(String)
+        });
     });
 });

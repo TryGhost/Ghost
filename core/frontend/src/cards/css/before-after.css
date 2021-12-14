@@ -1,0 +1,47 @@
+.kg-before-after-card > div {
+    position: relative;
+    margin: 0 auto;
+}
+
+.kg-before-after-card-image-before {
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    left: 0;
+}
+
+.kg-before-after-card img {
+    max-width: none;
+    width: unset;
+}
+
+.kg-before-after-card input {
+    top:0;
+    left: -25px;
+    position: absolute;
+    -webkit-appearance: none;
+    appearance: none;
+    width: calc(100% + 50px);
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    outline: none;
+    margin: 0;
+}
+
+.kg-before-after-card input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 50px;
+    height: 50px;
+    background: white;
+    cursor: pointer;
+    border-radius: 25px;
+}
+
+.kg-before-after-card input::-moz-range-thumb {
+    width: 50px;
+    height: 50px;
+    background: white;
+    cursor: pointer;
+    border-radius: 25px;
+}

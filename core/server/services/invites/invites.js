@@ -1,6 +1,5 @@
 const security = require('@tryghost/security');
 const tpl = require('@tryghost/tpl');
-const logging = require('@tryghost/logging');
 
 const messages = {
     invitedByName: '{invitedByName} has invited you to join {blogName}',
@@ -11,8 +10,9 @@ const messages = {
 };
 
 class Invites {
-    constructor({settingsCache, mailService, urlUtils}) {
+    constructor({settingsCache, logging, mailService, urlUtils}) {
         this.settingsCache = settingsCache;
+        this.logging = logging;
         this.mailService = mailService;
         this.urlUtils = urlUtils;
     }
@@ -80,7 +80,7 @@ class Invites {
                     });
                     const helpText = tpl(messages.errorSendingEmail.help);
                     err.message = `${errorMessage} ${helpText}`;
-                    logging.warn(err.message);
+                    this.logging.warn(err.message);
                 }
 
                 return Promise.reject(err);

@@ -1,0 +1,129 @@
+.kg-product-card {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+.kg-product-card-container {
+    display: grid;
+    grid-template-columns: auto min-content;
+    align-items: center;
+    grid-row-gap: 16px;
+    background: transparent;
+    max-width: 550px;
+    padding: 20px;
+    width: 100%;
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1px rgb(124 139 154 / 25%);
+}
+
+.kg-product-card-image {
+    grid-column: 1 / 3;
+    justify-self: center;
+}
+
+.kg-product-card-title-container {
+    grid-column: 1 / 2;
+}
+
+.kg-product-card-title {
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.4em;
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 1.25em;
+}
+
+.kg-product-card-description {
+    grid-column: 1 / 3;
+    font-size: 1em;
+    line-height: 1.4em;
+    opacity: .7;
+}
+
+.kg-product-card-description p:not(:first-of-type) {
+    margin-top: 0.8em;
+    margin-bottom: 0;
+}
+
+.kg-product-card-description p:first-of-type {
+    margin-top: -4px;
+}
+
+.kg-product-card-description p:last-of-type {
+    margin-bottom: 6px;
+}
+
+.kg-product-card-description ul {
+    margin-top: 1rem;
+}
+
+.kg-product-card-description li {
+    line-height: 1.4em;
+}
+
+.kg-product-card-description li+li {
+    margin-top: 0.2em;
+}
+
+.kg-product-card-rating {
+    display: flex;
+    align-items: center;
+    grid-column: 2 / 3;
+    align-self: start;
+    justify-self: end;
+    padding-left: 16px;
+}
+
+@media (max-width: 400px) {
+    .kg-product-card-title-container {
+        grid-column: 1 / 3;
+    }
+
+    .kg-product-card-rating {
+        grid-column: 1 / 3;
+        justify-self: start;
+        margin-top: -15px;
+        padding-left: 0;
+    }
+}
+
+.kg-product-card-rating-star {
+    height: 28px;
+    width: 20px;
+}
+
+.kg-product-card-rating-star svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    opacity: 0.15;
+}
+
+.kg-product-card-rating-active.kg-product-card-rating-star svg {
+    opacity: 1;
+}
+
+.kg-product-card-button {
+    justify-content: center;
+    grid-column: 1 / 3;
+    width: 100%;
+    display: flex;
+    position: static;
+    align-items: center;
+    padding: 0 1.2em;
+    height: 2.4em;
+    line-height: 1em;
+    font-size: 0.95em;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.kg-product-card-btn-accent {
+    background-color: var(--ghost-accent-color);
+    color: #fff;
+}

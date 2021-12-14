@@ -1,46 +1,48 @@
-const should = require('should');
-const sinon = require('sinon');
-const supertest = require('supertest');
-const localUtils = require('./utils');
-const testUtils = require('../../../../utils/index');
-const models = require('../../../../../core/server/models/index');
+const {expect} = require('chai');
+const {any} = require('expect');
 const security = require('@tryghost/security');
+
+const testUtils = require('../../../../utils/index');
+const framework = require('../../../../utils/e2e-framework');
+const models = require('../../../../../core/server/models/index');
 const settingsCache = require('../../../../../core/shared/settings-cache');
-const config = require('../../../../../core/shared/config/index');
-const mailService = require('../../../../../core/server/services/mail/index');
 
-let request;
+describe('Authentication API canary', function () {
+    let request;
+    let emailStub;
 
-describe('Authentication API v3', function () {
     describe('Blog setup', function () {
         before(async function () {
-            await localUtils.startGhost({forceStart: true});
-            request = supertest.agent(config.get('url'));
+            request = await framework.getAgent('/ghost/api/canary/admin/');
+        });
+
+        after(async function () {
+            await framework.resetDb();
         });
 
         beforeEach(function () {
-            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+            emailStub = framework.stubMail();
         });
 
         afterEach(function () {
-            sinon.restore();
+            framework.restoreMocks();
         });
 
-        it('is setup? no', function () {
-            return request
-                .get(localUtils.API.getApiQuery('authentication/setup'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect(200)
-                .then((res) => {
-                    res.body.setup[0].status.should.be.false();
-                });
+        it('is setup? no', async function () {
+            const res = await request
+                .get('authentication/setup')
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
 
-        it('complete setup', function () {
-            return request
-                .post(localUtils.API.getApiQuery('authentication/setup'))
-                .set('Origin', config.get('url'))
+        it('complete setup', async function () {
+            const res = await request
+                .post('authentication/setup')
                 .send({
                     setup: [{
                         name: 'test user',
@@ -50,41 +52,36 @@ describe('Authentication API v3', function () {
                     }]
                 })
                 .expect('Content-Type', /json/)
-                .expect(201)
-                .then((res) => {
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.users);
-                    should.not.exist(jsonResponse.meta);
-                    should.exist(res.headers['x-cache-invalidate']);
+                .expect(201);
 
-                    jsonResponse.users.should.have.length(1);
-                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
+            expect(res.body).to.matchSnapshot({
+                users: [{
+                    created_at: any(Date),
+                    updated_at: any(Date)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
 
-                    const newUser = jsonResponse.users[0];
-                    newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    newUser.name.should.equal('test user');
-                    newUser.email.should.equal('test@example.com');
-
-                    mailService.GhostMailer.prototype.send.called.should.be.true();
-                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('test@example.com');
-                });
+            expect(emailStub.called).to.be.true;
         });
 
-        it('is setup? yes', function () {
-            return request
-                .get(localUtils.API.getApiQuery('authentication/setup'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect(200)
-                .then((res) => {
-                    res.body.setup[0].status.should.be.true();
-                });
+        it('is setup? yes', async function () {
+            const res = await request
+                .get('authentication/setup');
+
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
 
         it('complete setup again', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/setup'))
-                .set('Origin', config.get('url'))
+                .post('authentication/setup')
                 .send({
                     setup: [{
                         name: 'test user',
@@ -97,85 +94,77 @@ describe('Authentication API v3', function () {
                 .expect(403);
         });
 
-        it('update setup', function () {
-            return localUtils.doAuth(request)
-                .then(() => {
-                    return request
-                        .put(localUtils.API.getApiQuery('authentication/setup'))
-                        .set('Origin', config.get('url'))
-                        .send({
-                            setup: [{
-                                name: 'test user edit',
-                                email: 'test-edit@example.com',
-                                password: 'thisissupersafe',
-                                blogTitle: 'a test blog'
-                            }]
-                        })
-                        .expect('Content-Type', /json/)
-                        .expect(200);
+        it('update setup', async function () {
+            await framework.initFixtures();
+            await request.loginAsOwner();
+
+            const res = await request
+                .put('authentication/setup')
+                .send({
+                    setup: [{
+                        name: 'test user edit',
+                        email: 'test-edit@example.com',
+                        password: 'thisissupersafe',
+                        blogTitle: 'a test blog'
+                    }]
                 })
-                .then((res) => {
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.users);
-                    should.not.exist(jsonResponse.meta);
-                    should.exist(res.headers['x-cache-invalidate']);
+                .expect('Content-Type', /json/)
+                .expect(200);
 
-                    jsonResponse.users.should.have.length(1);
-                    localUtils.API.checkResponse(jsonResponse.users[0], 'user');
-
-                    const newUser = jsonResponse.users[0];
-                    newUser.id.should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    newUser.name.should.equal('test user edit');
-                    newUser.email.should.equal('test-edit@example.com');
-                });
+            expect(res.body).to.matchSnapshot({
+                users: [{
+                    created_at: any(String),
+                    last_seen: any(String),
+                    updated_at: any(String)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
     });
 
     describe('Invitation', function () {
-        before(function () {
-            return localUtils.startGhost()
-                .then(function () {
-                    request = supertest.agent(config.get('url'));
+        before(async function () {
+            request = await framework.getAgent('/ghost/api/canary/admin/');
+            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
+            await framework.initFixtures('invites');
+            await request.loginAsOwner();
+        });
 
-                    // simulates blog setup (initialises the owner)
-                    return localUtils.doAuth(request, 'invites');
-                });
+        after(async function () {
+            await framework.resetDb();
         });
 
         it('check invite with invalid email', function () {
             return request
-                .get(localUtils.API.getApiQuery('authentication/invitation?email=invalidemail'))
-                .set('Origin', config.get('url'))
+                .get('authentication/invitation?email=invalidemail')
                 .expect('Content-Type', /json/)
                 .expect(400);
         });
 
-        it('check valid invite', function () {
-            return request
-                .get(localUtils.API.getApiQuery(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`))
-                .set('Origin', config.get('url'))
+        it('check valid invite', async function () {
+            const res = await request
+                .get(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`)
                 .expect('Content-Type', /json/)
-                .expect(200)
-                .then((res) => {
-                    res.body.invitation[0].valid.should.equal(true);
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
         });
 
-        it('check invalid invite', function () {
-            return request
-                .get(localUtils.API.getApiQuery(`authentication/invitation?email=notinvited@example.org`))
-                .set('Origin', config.get('url'))
+        it('check invalid invite', async function () {
+            const res = await request
+                .get(`authentication/invitation?email=notinvited@example.org`)
                 .expect('Content-Type', /json/)
-                .expect(200)
-                .then((res) => {
-                    res.body.invitation[0].valid.should.equal(false);
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
         });
 
         it('try to accept without invite', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/invitation'))
-                .set('Origin', config.get('url'))
+                .post('authentication/invitation')
                 .send({
                     invitation: [{
                         token: 'lul11111',
@@ -190,8 +179,7 @@ describe('Authentication API v3', function () {
 
         it('try to accept with invite and existing email address', function () {
             return request
-                .post(localUtils.API.getApiQuery('authentication/invitation'))
-                .set('Origin', config.get('url'))
+                .post('authentication/invitation')
                 .send({
                     invitation: [{
                         token: testUtils.DataGenerator.forKnex.invites[0].token,
@@ -204,10 +192,9 @@ describe('Authentication API v3', function () {
                 .expect(422);
         });
 
-        it('try to accept with invite', function () {
-            return request
-                .post(localUtils.API.getApiQuery('authentication/invitation'))
-                .set('Origin', config.get('url'))
+        it('try to accept with invite', async function () {
+            const res = await request
+                .post('authentication/invitation')
                 .send({
                     invitation: [{
                         token: testUtils.DataGenerator.forKnex.invites[0].token,
@@ -217,139 +204,45 @@ describe('Authentication API v3', function () {
                     }]
                 })
                 .expect('Content-Type', /json/)
-                .expect(200)
-                .then((res) => {
-                    res.body.invitation[0].message.should.equal('Invitation accepted.');
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
         });
     });
 
     describe('Password reset', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
-        before(function () {
-            return localUtils.startGhost({forceStart: true})
-                .then(() => {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(() => {
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            request = await framework.getAgent('/ghost/api/canary/admin/');
+            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
+            await framework.initFixtures('invites');
+            await request.loginAsOwner();
+        });
+
+        after(async function () {
+            await framework.resetDb();
         });
 
         beforeEach(function () {
-            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+            emailStub = framework.stubMail();
         });
 
         afterEach(function () {
-            sinon.restore();
+            framework.restoreMocks();
         });
 
-        it('reset password', function (done) {
-            models.User.getOwnerUser(testUtils.context.internal)
-                .then(function (ownerUser) {
-                    const token = security.tokens.resetToken.generateHash({
-                        expires: Date.now() + (1000 * 60),
-                        email: user.email,
-                        dbHash: settingsCache.get('db_hash'),
-                        password: ownerUser.get('password')
-                    });
+        it('reset password', async function () {
+            const ownerUser = await models.User.getOwnerUser(testUtils.context.internal);
 
-                    request.put(localUtils.API.getApiQuery('authentication/passwordreset'))
-                        .set('Origin', config.get('url'))
-                        .set('Accept', 'application/json')
-                        .send({
-                            passwordreset: [{
-                                token: token,
-                                newPassword: 'thisissupersafe',
-                                ne2Password: 'thisissupersafe'
-                            }]
-                        })
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200)
-                        .end(function (err, res) {
-                            if (err) {
-                                return done(err);
-                            }
-
-                            const jsonResponse = res.body;
-                            should.exist(jsonResponse.passwordreset[0].message);
-                            jsonResponse.passwordreset[0].message.should.equal('Password changed successfully.');
-                            done();
-                        });
-                })
-                .catch(done);
-        });
-
-        it('reset password: invalid token', function () {
-            return request
-                .put(localUtils.API.getApiQuery('authentication/passwordreset'))
-                .set('Origin', config.get('url'))
-                .set('Accept', 'application/json')
-                .send({
-                    passwordreset: [{
-                        token: 'invalid',
-                        newPassword: 'thisissupersafe',
-                        ne2Password: 'thisissupersafe'
-                    }]
-                })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(401)
-                .then((res) => {
-                    should.exist(res.body.errors);
-                    res.body.errors[0].type.should.eql('UnauthorizedError');
-                    res.body.errors[0].message.should.eql('Cannot reset password.');
-                    res.body.errors[0].context.should.eql('Invalid password reset link.');
-                });
-        });
-
-        it('reset password: expired token', function () {
-            return models.User.getOwnerUser(testUtils.context.internal)
-                .then(function (ownerUser) {
-                    const dateInThePast = Date.now() - (1000 * 60);
-                    const token = security.tokens.resetToken.generateHash({
-                        expires: dateInThePast,
-                        email: user.email,
-                        dbHash: settingsCache.get('db_hash'),
-                        password: ownerUser.get('password')
-                    });
-
-                    return request
-                        .put(localUtils.API.getApiQuery('authentication/passwordreset'))
-                        .set('Origin', config.get('url'))
-                        .set('Accept', 'application/json')
-                        .send({
-                            passwordreset: [{
-                                token: token,
-                                newPassword: 'thisissupersafe',
-                                ne2Password: 'thisissupersafe'
-                            }]
-                        })
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(400);
-                })
-                .then((res) => {
-                    should.exist(res.body.errors);
-                    res.body.errors[0].type.should.eql('BadRequestError');
-                    res.body.errors[0].message.should.eql('Cannot reset password.');
-                    res.body.errors[0].context.should.eql('Password reset link expired.');
-                });
-        });
-
-        it('reset password: unmatched token', function () {
             const token = security.tokens.resetToken.generateHash({
                 expires: Date.now() + (1000 * 60),
                 email: user.email,
                 dbHash: settingsCache.get('db_hash'),
-                password: 'invalid_password'
+                password: ownerUser.get('password')
             });
 
-            return request
-                .put(localUtils.API.getApiQuery('authentication/passwordreset'))
-                .set('Origin', config.get('url'))
+            const res = await request.put('authentication/passwordreset')
                 .set('Accept', 'application/json')
                 .send({
                     passwordreset: [{
@@ -358,93 +251,169 @@ describe('Authentication API v3', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(400)
-                .then((res) => {
-                    should.exist(res.body.errors);
-                    res.body.errors[0].type.should.eql('BadRequestError');
-                    res.body.errors[0].message.should.eql('Cannot reset password.');
-                    res.body.errors[0].context.should.eql('Password reset link has already been used.');
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
 
-        it('reset password: generate reset token', function () {
-            return request
-                .post(localUtils.API.getApiQuery('authentication/passwordreset'))
-                .set('Origin', config.get('url'))
+        it('reset password: invalid token', async function () {
+            const res = await request
+                .put('authentication/passwordreset')
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        token: 'invalid',
+                        newPassword: 'thisissupersafe',
+                        ne2Password: 'thisissupersafe'
+                    }]
+                })
+                .expect(401);
+
+            expect(res.body).to.matchSnapshot({
+                errors: [{
+                    id: any(String)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
+        });
+
+        it('reset password: expired token', async function () {
+            const ownerUser = await models.User.getOwnerUser(testUtils.context.internal);
+
+            const dateInThePast = Date.now() - (1000 * 60);
+            const token = security.tokens.resetToken.generateHash({
+                expires: dateInThePast,
+                email: user.email,
+                dbHash: settingsCache.get('db_hash'),
+                password: ownerUser.get('password')
+            });
+
+            const res = await request
+                .put('authentication/passwordreset')
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        token: token,
+                        newPassword: 'thisissupersafe',
+                        ne2Password: 'thisissupersafe'
+                    }]
+                })
+                .expect(400);
+
+            expect(res.body).to.matchSnapshot({
+                errors: [{
+                    id: any(String)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
+        });
+
+        it('reset password: unmatched token', async function () {
+            const token = security.tokens.resetToken.generateHash({
+                expires: Date.now() + (1000 * 60),
+                email: user.email,
+                dbHash: settingsCache.get('db_hash'),
+                password: 'invalid_password'
+            });
+
+            const res = await request
+                .put('authentication/passwordreset')
+                .set('Accept', 'application/json')
+                .send({
+                    passwordreset: [{
+                        token: token,
+                        newPassword: 'thisissupersafe',
+                        ne2Password: 'thisissupersafe'
+                    }]
+                })
+                .expect(400);
+
+            expect(res.body).to.matchSnapshot({
+                errors: [{
+                    id: any(String)
+                }]
+            });
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
+        });
+
+        it('reset password: generate reset token', async function () {
+            const res = await request
+                .post('authentication/passwordreset')
                 .set('Accept', 'application/json')
                 .send({
                     passwordreset: [{
                         email: user.email
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .then((res) => {
-                    const jsonResponse = res.body;
-                    should.exist(jsonResponse.passwordreset[0].message);
-                    jsonResponse.passwordreset[0].message.should.equal('Check your email for further instructions.');
-                    mailService.GhostMailer.prototype.send.args[0][0].to.should.equal(user.email);
-                });
+                .expect(200);
+
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
         });
     });
 
     describe('Reset all passwords', function () {
         let sendEmail;
-        before(function () {
-            return localUtils.startGhost({forceStart: true})
-                .then(() => {
-                    request = supertest.agent(config.get('url'));
-                })
-                .then(() => {
-                    return localUtils.doAuth(request);
-                });
+        before(async function () {
+            request = await framework.getAgent('/ghost/api/canary/admin/');
+            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
+            await framework.initFixtures('invites');
+            await request.loginAsOwner();
+        });
+
+        after(async function () {
+            await framework.resetDb();
         });
 
         beforeEach(function () {
-            sendEmail = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+            emailStub = framework.stubMail();
         });
 
         afterEach(function () {
-            sinon.restore();
+            framework.restoreMocks();
         });
 
-        it('reset all passwords returns 200', function (done) {
-            request.post(localUtils.API.getApiQuery('authentication/reset_all_passwords'))
-                .set('Origin', config.get('url'))
+        it('reset all passwords returns 200', async function () {
+            const res = await request.post('authentication/reset_all_passwords')
                 .set('Accept', 'application/json')
                 .send({})
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(async function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    try {
-                        should(res.body).be.an.empty().Object();
+                .expect(200);
 
-                        // All users locked
-                        const users = await models.User.fetchAll();
-                        for (const user of users) {
-                            user.get('status').should.be.eql('locked');
-                        }
+            expect(res.body).to.matchSnapshot();
+            expect(res.headers).to.matchSnapshot({
+                date: any(String),
+                etag: any(String)
+            });
 
-                        // No session left
-                        const sessions = await models.Session.fetchAll();
-                        sessions.length.should.be.eql(0);
+            // All users locked
+            const users = await models.User.fetchAll();
+            for (const user of users) {
+                expect(user.get('status')).to.equal('locked');
+            }
 
-                        sendEmail.callCount.should.be.eql(2);
-                        sendEmail.firstCall.args[0].subject.should.be.eql('Reset Password');
-                        sendEmail.secondCall.args[0].subject.should.be.eql('Reset Password');
+            // No session left
+            const sessions = await models.Session.fetchAll();
+            expect(sessions.length).to.equal(0);
 
-                        done();
-                    } catch (error) {
-                        done(error);
-                    }
-                });
+            expect(emailStub.callCount).to.equal(2);
+            expect(emailStub.firstCall.args[0].subject).to.equal('Reset Password');
+            expect(emailStub.secondCall.args[0].subject).to.equal('Reset Password');
         });
     });
 });

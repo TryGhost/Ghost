@@ -240,7 +240,9 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
         post.excerpt = post.excerpt.replace(/\s\[http(.*?)\]/g, '');
     }
 
-    post.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(post.mobiledoc), {target: 'email'});
+    post.html = mobiledocLib.mobiledocHtmlRenderer.render(
+        JSON.parse(post.mobiledoc), {target: 'email', postUrl: post.url}
+    );
 
     // perform any email specific adjustments to the mobiledoc->HTML render output
     // body wrapper is required so we can get proper top-level selections
