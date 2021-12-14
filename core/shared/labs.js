@@ -23,6 +23,7 @@ const GA_FEATURES = [
     'richTwitterNewsletters',
     'audioCard',
     'mediaAPI',
+    'membersAutoLogin',
     'filesAPI'
 ];
 
@@ -38,7 +39,6 @@ const ALPHA_FEATURES = [
     'membersActivity',
     'cardSettingsPanel',
     'urlCache',
-    'membersAutoLogin',
     'fileCard',
     'videoCard',
     'beforeAfterCard',
