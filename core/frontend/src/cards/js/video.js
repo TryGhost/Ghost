@@ -143,7 +143,6 @@
         }
 
         const handleOnPause = () => {
-            videoOverlay.classList.remove("kg-video-hide-animated");
             pauseIconContainer.classList.add("kg-video-hide");
             playIconContainer.classList.remove("kg-video-hide");
             videoEl.pause();
