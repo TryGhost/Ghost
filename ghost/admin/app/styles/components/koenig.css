@@ -2151,7 +2151,7 @@ button.emoji-picker__category-button.active {
     font-weight: 400;
 }
 
-.kg-audio-current-time {
+.kg-player-current-time {
     min-width: 38px;
     padding: 0 4px;
     font-family: inherit;
@@ -2160,7 +2160,7 @@ button.emoji-picker__category-button.active {
     line-height: 1.4em;
 }
 
-.kg-audio-time {
+.kg-player-time {
     color: #ababab;
     font-family: inherit;
     font-size: .85em;
@@ -2168,41 +2168,36 @@ button.emoji-picker__category-button.active {
     line-height: 1.4em;
 }
 
-.kg-audio-duration {
+.kg-player-duration {
     padding: 0 4px;
 }
 
-.kg-audio-play-icon,
-.kg-audio-pause-icon {
+.kg-player-play-icon,
+.kg-player-pause-icon {
     position: relative;
-    bottom: 1px;
     padding: 0px 4px 0 0;
     background: transparent;
 }
 
-.kg-audio-hide {
-    display: none;
-}
-
-.kg-audio-play-icon svg,
-.kg-audio-pause-icon svg {
+.kg-player-play-icon svg,
+.kg-player-pause-icon svg {
     width: 14px;
     height: 14px;
     fill: currentColor;
 }
 
-.kg-audio-seek-slider {
+.kg-player-seek-slider {
     flex-grow: 1;
     margin: 0 4px;
 }
 
 @media (max-width: 800px) {
-    .kg-audio-seek-slider {
+    .kg-player-seek-slider {
         display: none;
     }
 }
 
-.kg-audio-playback-rate {
+.kg-player-playback-rate {
     width: 36px;
     padding: 0 4px;
     font-family: inherit;
@@ -2214,12 +2209,12 @@ button.emoji-picker__category-button.active {
 }
 
 @media (max-width: 800px) {
-    .kg-audio-playback-rate {
+    .kg-player-playback-rate {
         padding-left: 8px;
     }
 }
 
-.kg-audio-unmute-icon {
+.kg-player-unmute-icon {
     position: relative;
     bottom: -1px;
     padding: 0 4px;
@@ -2227,34 +2222,34 @@ button.emoji-picker__category-button.active {
 }
 
 @media (max-width: 800px) {
-    .kg-audio-unmute-icon {
+    .kg-player-unmute-icon {
         margin-left: auto;
     }
 }
 
-.kg-audio-unmute-icon svg {
+.kg-player-unmute-icon svg {
     width: 16px;
     height: 16px;
     fill: currentColor;
 }
 
-.kg-audio-volume-slider {
+.kg-player-volume-slider {
     width: 80px;
 }
 
 @media (min-width: 500px) and (max-width: 550px) {
-    .kg-audio-volume-slider {
+    .kg-player-volume-slider {
         display: none;
     }
 }
 
 @media (max-width: 430px) {
-    .kg-audio-volume-slider {
+    .kg-player-volume-slider {
         display: none;
     }
 }
 
-.kg-audio-seek-slider::before {
+.kg-player-seek-slider::before {
     position: absolute;
     content: "";
     left: 0;
@@ -2265,7 +2260,7 @@ button.emoji-picker__category-button.active {
     border-radius: 2px;
 }
 
-.kg-audio-volume-slider::before {
+.kg-player-volume-slider::before {
     position: absolute;
     content: "";
     left: 0;
@@ -2331,20 +2326,37 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-video-card .kg-player-container input[type="range"]::-moz-range-progress {
-    background: #CED4D9;
+    background: #EBEEF0;
 }
 
-.kg-video-card .kg-audio-current-time {
+.kg-video-card .kg-player-container input[type="range"]::-moz-range-track {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.kg-video-card .kg-player-container input[type="range"]::-webkit-slider-runnable-track {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+
+.kg-video-card .kg-player-current-time {
     color: #fff;
 }
 
-.kg-video-card .kg-audio-playback-rate {
+.kg-video-card .kg-player-time {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.kg-video-card .kg-player-playback-rate {
     color: #fff;
 }
 
-.kg-video-card .kg-audio-play-icon svg,
-.kg-video-card .kg-audio-unmute-icon svg {
+.kg-video-card .kg-player-play-icon svg,
+.kg-video-card .kg-player-unmute-icon svg {
     fill: #fff;
+}
+
+.kg-video-card .kg-player-volume-slider::before {
+    background-color: #EBEEF0;
 }
 
 .kg-video-card .kg-large-play-icon {
@@ -2497,8 +2509,8 @@ button.emoji-picker__category-button.active {
 .kg-player-container input[type="range"]::-webkit-slider-thumb {
     position: relative;
     box-sizing: content-box;
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     margin: -5px 0 0 0;
     border: 0;
     cursor: pointer;
@@ -2528,8 +2540,8 @@ button.emoji-picker__category-button.active {
 
 .kg-player-container input[type="range"]::-moz-range-thumb {
     box-sizing: content-box;
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     border: 0;
     cursor: pointer;
     background: #fff;
@@ -2562,8 +2574,8 @@ button.emoji-picker__category-button.active {
 
 .kg-player-container input[type="range"]::-ms-thumb {
     box-sizing: content-box;
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     border: 0;
     cursor: pointer;
     background: #fff;

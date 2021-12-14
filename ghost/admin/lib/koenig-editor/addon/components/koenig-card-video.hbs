@@ -74,17 +74,15 @@
             {{/if}}
             <div class="kg-player-container">
                 <div class="kg-player {{if (eq @payload.cardWidth "full") "kg-player-full"}}">
-                    <button class="kg-audio-play-icon">{{svg-jar "play"}}</button>
-                    <button class="kg-audio-pause-icon kg-audio-hide">{{svg-jar "pause"}}</button>
-                    <span class="kg-audio-current-time">0:00</span>
-                    <div class="kg-audio-time">
-                        /<span class="kg-audio-duration">{{this.totalDuration}}</span>
+                    <button class="kg-player-play-icon">{{svg-jar "play"}}</button>
+                    <span class="kg-player-current-time">0:00</span>
+                    <div class="kg-player-time">
+                        /<span class="kg-player-duration">{{this.totalDuration}}</span>
                     </div>
-                    <input type="range" class="kg-audio-seek-slider" max="100" value="0">
-                    <button class="kg-audio-playback-rate">1&#215;</button>
-                    <button class="kg-audio-unmute-icon">{{svg-jar "unmute"}}</button>
-                    <button class="kg-audio-mute-icon kg-audio-hide">{{svg-jar "mute"}}</button>
-                    <input type="range" class="kg-audio-volume-slider" max="100" value="70">
+                    <input type="range" class="kg-player-seek-slider" max="100" value="0">
+                    <button class="kg-player-playback-rate">1&#215;</button>
+                    <button class="kg-player-unmute-icon">{{svg-jar "unmute"}}</button>
+                    <input type="range" class="kg-player-volume-slider" max="100" value="70">
                 </div>
             </div>
         </div>
