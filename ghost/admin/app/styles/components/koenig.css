@@ -2337,6 +2337,17 @@ button.emoji-picker__category-button.active {
     background: rgba(255, 255, 255, 0.2);
 }
 
+.kg-video-card .kg-player-container input[type="range"]::-webkit-slider-thumb {
+    box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.kg-video-card .kg-player-container input[type="range"]::-moz-range-thumb {
+    box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.kg-video-card .kg-player-container input[type="range"]::-ms-thumb {
+    box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,0.2);
+}
 
 .kg-video-card .kg-player-current-time {
     color: #fff;
