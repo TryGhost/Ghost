@@ -116,7 +116,7 @@ module.exports = {
                                                             <a href="${postUrl}" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
                                                         </td>
                                                         <td style="vertical-align: middle;" valign="middle">
-                                                            <a href="${postUrl}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">{{duration}}<span style="color: #738a94"> • Click to play audio</span></a>
+                                                            <a href="${postUrl}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">{{duration}}<span style="color: #999999"> • Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </table>
