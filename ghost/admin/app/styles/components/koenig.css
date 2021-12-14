@@ -2048,16 +2048,10 @@ button.emoji-picker__category-button.active {
     cursor: auto;
 }
 
-.kg-upload-button .koenig-audio-replace-icon,
-.kg-upload-button .koenig-audio-upload-icon {
+.kg-upload-button .kg-replace-icon {
     width: 18px;
     height: 18px;
     margin: .6rem .8rem;
-}
-
-.koenig-audio-upload-icon path {
-    stroke: var(--darkgrey);
-    stroke-width: 2;
 }
 
 .kg-upload-button .image-overlay {
@@ -2337,20 +2331,20 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-video-card .kg-player-container input[type="range"]::-moz-range-progress {
-    background: var(--lightgrey);
+    background: #CED4D9;
 }
 
 .kg-video-card .kg-audio-current-time {
-    color: var(--white);
+    color: #fff;
 }
 
 .kg-video-card .kg-audio-playback-rate {
-    color: var(--white);
+    color: #fff;
 }
 
 .kg-video-card .kg-audio-play-icon svg,
 .kg-video-card .kg-audio-unmute-icon svg {
-    fill: var(--white);
+    fill: #fff;
 }
 
 .kg-video-card .kg-large-play-icon {
@@ -2368,7 +2362,7 @@ button.emoji-picker__category-button.active {
     width: 20px;
     height: auto;
     margin-left: 2px;
-    fill: var(--white);
+    fill: #fff;
 }
 
 .kg-video-card .image-overlay {
@@ -2387,6 +2381,73 @@ button.emoji-picker__category-button.active {
 .kg-settings-panel-control-info.video {
     width: 75%;
     margin-top: -10px;
+}
+
+.kg-settings-panel .kg-upload-thumbnail-xl {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 120px;
+    border: 1px dashed var(--whitegrey-d2);
+    background: var(--white);
+}
+
+.kg-settings-panel .kg-upload-thumbnail-xl:hover {
+    background: var(--white);
+}
+
+.kg-settings-panel .kg-upload-thumbnail-xl svg {
+    width: 20px;
+    height: auto;
+    fill: var(--midgrey);
+    transition: var(--animation-speed-fast) ease-out;
+    transform: scale(1.0);
+}
+
+.kg-settings-panel .kg-upload-thumbnail-xl:hover svg {
+    transform: scale(1.08);
+}
+
+.kg-settings-panel .kg-thumbnail-xl-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 120px;
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23E6EEF2' d='M0 0h24v24H0z'/%3E%3Cpath fill='%23D8E2E8' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E");
+    border-radius: var(--border-radius);
+}
+
+.kg-settings-panel .kg-thumbnail-xl {
+    width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+}
+
+.kg-settings-panel .kg-replace-icon {
+    width: 18px;
+    height: 18px;
+    margin: .6rem .8rem;
+}
+
+.kg-settings-panel .kg-thumbnail-xl-container .image-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 6px;
+    color: #fff;
+    background-image: linear-gradient(180deg,rgba(0,0,0,0.2) 0,transparent 70%,transparent 100%);
+    opacity: 0;
+    transition: all 0.15s ease-in-out;
+}
+
+.kg-settings-panel .kg-thumbnail-xl-container:hover .image-overlay {
+    opacity: 1;
 }
 
 /* Multimedia player UI
@@ -2429,7 +2490,7 @@ button.emoji-picker__category-button.active {
     width: 100%;
     height: 4px;
     cursor: pointer;
-    background: rgba(124, 139, 154, 0.25);
+    background: rgba(124, 139, 154, 0.3);
     border-radius: 2px;
 }
 
@@ -2456,7 +2517,7 @@ button.emoji-picker__category-button.active {
     width: 100%;
     height: 4px;
     cursor: pointer;
-    background: rgba(124, 139, 154, 0.25);
+    background: rgba(124, 139, 154, 0.3);
     border-radius: 2px;
 }
 

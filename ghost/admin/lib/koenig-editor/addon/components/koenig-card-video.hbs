@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{concat "kg-card kg-video-card mih10 miw-100 relative " (kg-style "breakout" size=@payload.cardWidth)}}
+    @class={{concat "kg-card kg-video-card kg-card-hover mih10 miw-100 relative ba b--transparent" (kg-style "breakout" size=@payload.cardWidth)}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -136,27 +136,31 @@
             @onComplete={{this.customThumbnailUploadCompleted}}
             as |uploader|
         >
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+            <div class="kg-settings-panel-control">
                 <label class="kg-settings-panel-control-label">Custom thumbnail</label>
                 <div class="kg-settings-panel-control-input">
-                        <div class="relative">
-                            <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg">
-                                {{#if uploader.isUploading}}
-                                    {{!-- {{uploader.progressBar}} --}}
-                                    <GhLoadingSpinner />
-                                {{else if @payload.customThumbnailSrc}}
-                                    <div class="gh-branding-image-container transparent-bg">
-                                        <img class="blog-icon" src={{@payload.customThumbnailSrc}} {{on "click" uploader.triggerFileDialog}}>
-                                        <button type="button" class="gh-setting-action-smallimg-delete absolute top-0" {{on "click" this.deleteCustomThumbnail}}>
-                                            {{svg-jar "trash" class="w4 h4 fill-white"}}
-                                        </button>
+                        <div class="relative w-100">
+                            {{#if uploader.isUploading}}
+                                {{!-- {{uploader.progressBar}} --}}
+                                <div class="kg-upload-thumbnail-xl">
+                                    {{uploader.progressBar}}
+                                </div>
+                            {{else if @payload.customThumbnailSrc}}
+                                <div class="kg-thumbnail-xl-container">
+                                    <img class="kg-thumbnail-xl" src={{@payload.customThumbnailSrc}} {{on "click" uploader.triggerFileDialog}}>
+                                    <div class="image-overlay">
+                                        <div class="flex flex-row-reverse">
+                                            <button class="bg-white-90 br3 pe-auto" {{on "click" this.deleteCustomThumbnail}}>
+                                                {{svg-jar "koenig/kg-trash" class="kg-replace-icon fill-darkgrey"}}
+                                            </button>
+                                        </div>
                                     </div>
-                                {{else}}
-                                    <button type="button" class="gh-btn gh-btn-icon gh-btn-white self-center" {{on "click" uploader.triggerFileDialog}}>
-                                        <span>{{svg-jar "upload-fill"}}</span>
-                                    </button>
-                                {{/if}}
-                            </div>
+                                </div>
+                            {{else}}
+                                <button type="button" class="gh-btn kg-upload-thumbnail-xl" {{on "click" uploader.triggerFileDialog}}>
+                                    {{svg-jar "upload-fill"}}
+                                </button>
+                            {{/if}}
                         </div>
                         <div style="display:none">
                             <GhFileInput
