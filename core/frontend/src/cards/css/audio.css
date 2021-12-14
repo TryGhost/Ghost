@@ -74,6 +74,7 @@
 }
 
 .kg-audio-time {
+    width: 56px;
     color: #ababab;
     font-family: inherit;
     font-size: .85em;
