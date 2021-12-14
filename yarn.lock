@@ -1729,12 +1729,12 @@
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/package-json@1.0.12":
-  version "1.0.12"
-  resolved "https://registry.npmjs.org/@tryghost/package-json/-/package-json-1.0.12.tgz"
-  integrity sha512-gRcyJnBMRGf8o2pd8NUVE6aF3VR35XC45ZfU2YNsJ06lg+AxjeLxZAEzSC30qMMKyspYgXMG56p7QSutY2QiQA==
+"@tryghost/package-json@1.0.13":
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-1.0.13.tgz#53a151e3c8b204a514450e85f978f8559efb1fa8"
+  integrity sha512-s9VY2S2yxLjq3qINGG6R/i/bcv4Xp/87nyU8NjEcewRLv6ZzYRxdKhFHf6Uci1W+ZGMOarOAbbDYoBuFLqH05Q==
   dependencies:
-    "@tryghost/errors" "^1.1.0"
+    "@tryghost/errors" "^1.1.1"
     "@tryghost/tpl" "^0.1.5"
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
