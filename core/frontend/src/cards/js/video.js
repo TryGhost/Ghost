@@ -103,13 +103,13 @@
         }
 
         videoElementContainer.onmouseover = () => {
-            videoPlayerContainer.classList.remove("kg-video-hide");
+            videoPlayerContainer.classList.remove("kg-video-hide-animated");
         }
 
         videoElementContainer.onmouseleave = () => {
             const isPlaying = !!(videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2);
             if (isPlaying) {
-                videoPlayerContainer.classList.add("kg-video-hide");
+                videoPlayerContainer.classList.add("kg-video-hide-animated");
             }
         }
 
@@ -121,15 +121,15 @@
         });
 
         videoEl.onplay = () => {
-            largePlayIcon.classList.add("kg-video-hide");
-            videoOverlay.classList.add("kg-video-hide");
+            largePlayIcon.classList.add("kg-video-hide-animated");
+            videoOverlay.classList.add("kg-video-hide-animated");
             playIconContainer.classList.add("kg-video-hide");
             pauseIconContainer.classList.remove("kg-video-hide");
         };
 
         const handleOnPlay = () => {
-            largePlayIcon.classList.add("kg-video-hide");
-            videoOverlay.classList.add("kg-video-hide");
+            largePlayIcon.classList.add("kg-video-hide-animated");
+            videoOverlay.classList.add("kg-video-hide-animated");
             playIconContainer.classList.add("kg-video-hide");
             pauseIconContainer.classList.remove("kg-video-hide");
             videoEl.play();
@@ -137,8 +137,8 @@
         }
 
         const handleOnPause = () => {
-            largePlayIcon.classList.remove("kg-video-hide");
-            videoOverlay.classList.remove("kg-video-hide");
+            largePlayIcon.classList.remove("kg-video-hide-animated");
+            videoOverlay.classList.remove("kg-video-hide-animated");
             pauseIconContainer.classList.add("kg-video-hide");
             playIconContainer.classList.remove("kg-video-hide");
             videoEl.pause();
