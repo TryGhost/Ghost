@@ -1212,12 +1212,12 @@
   resolved "https://registry.npmjs.org/@tootallnate/once/-/once-2.0.0.tgz"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@tryghost/adapter-manager@0.2.25":
-  version "0.2.25"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.25.tgz#982517e833b31aab5cd3fddf985366aed6eaf594"
-  integrity sha512-+mGb7A+srCAJBtz7+1/HjIR1s0NYa91IqezVlC5pove0Qt4myvCMueKHTgIl1qW2EFK1T52aEVngZSTHbCtkaQ==
+"@tryghost/adapter-manager@0.2.26":
+  version "0.2.26"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-manager/-/adapter-manager-0.2.26.tgz#a106e3f538350304ef2a6e4cf370f467eed668aa"
+  integrity sha512-VL7pZR6s8xoSHSX/1Hs+ttGmnmEy6xMobg2Av3WSAgO3Occ1AU0CuN7hREQ8ArB02BQl2onxOBX9k8cRkK3L8A==
   dependencies:
-    "@tryghost/errors" "^1.1.1"
+    "@tryghost/errors" "^1.2.0"
 
 "@tryghost/admin-api-schema@2.6.1":
   version "2.6.1"
@@ -1412,7 +1412,7 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.2.0":
+"@tryghost/errors@1.2.0", "@tryghost/errors@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.0.tgz#989f10434a17286e952b5a9434e50846ea4ad87c"
   integrity sha512-80I7LmRgPQt380Bm/90hF8KPkkNqOFHF2T6oO+NXkLd+UTc1qLOfe6nZS17WD9glMmHrqv6IF8U1MjPMDa4VOQ==
