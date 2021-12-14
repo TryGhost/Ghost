@@ -1,5 +1,4 @@
 const config = require('../../../shared/config');
-const logging = require('@tryghost/logging');
 const db = require('../../data/db');
 const settings = require('../../../shared/settings-cache');
 const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
@@ -9,11 +8,10 @@ const queries = require('./lib/queries');
 
 module.exports = new EmailAnalyticsService({
     config,
-    logging,
     settings,
-    eventProcessor: new EventProcessor({db, logging}),
+    eventProcessor: new EventProcessor({db}),
     providers: [
-        new MailgunProvider({config, settings, logging})
+        new MailgunProvider({config, settings})
     ],
     queries
 });

@@ -36,7 +36,6 @@ const membersConfig = new MembersConfigProvider({
     config,
     settingsCache,
     urlUtils,
-    logging,
     ghostVersion
 });
 

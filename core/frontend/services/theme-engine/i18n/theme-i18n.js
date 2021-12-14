@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const I18n = require('./i18n');
 
 class ThemeI18n extends I18n {
@@ -39,23 +40,23 @@ class ThemeI18n extends I18n {
     }
 
     _handleFallbackToDefault() {
-        this._logging.warn(`Theme translations falling back to locales/${this.defaultLocale()}.json.`);
+        logging.warn(`Theme translations falling back to locales/${this.defaultLocale()}.json.`);
     }
 
     _handleMissingFileError(locale) {
         if (locale !== this.defaultLocale()) {
-            this._logging.warn(`Theme translations file locales/${locale}.json not found.`);
+            logging.warn(`Theme translations file locales/${locale}.json not found.`);
         }
     }
     _handleInvalidFileError(locale, err) {
-        this._logging.error(new errors.IncorrectUsageError({
+        logging.error(new errors.IncorrectUsageError({
             err,
             message: `Theme translations unable to parse locales/${locale}.json. Please check that it is valid JSON.`
         }));
     }
 
     _handleEmptyKeyError() {
-        this._logging.warn('Theme translations {{t}} helper called without a translation key.');
+        logging.warn('Theme translations {{t}} helper called without a translation key.');
     }
 
     _handleMissingKeyError() {

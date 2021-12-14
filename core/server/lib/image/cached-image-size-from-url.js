@@ -1,9 +1,8 @@
 const debug = require('@tryghost/debug')('utils:image-size-cache');
 const errors = require('@tryghost/errors');
-
+const logging = require('@tryghost/logging');
 class CachedImageSizeFromUrl {
-    constructor({logging, imageSize}) {
-        this.logging = logging;
+    constructor({imageSize}) {
         this.imageSize = imageSize;
         this.cache = new Map();
     }
@@ -37,7 +36,7 @@ class CachedImageSizeFromUrl {
                 return this.cache.get(url);
             }).catch((err) => {
                 debug('Cached image (error):', url);
-                this.logging.error(err);
+                logging.error(err);
     
                 // in case of error we just attach the url
                 this.cache.set(url, url);

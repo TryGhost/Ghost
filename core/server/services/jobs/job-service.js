@@ -17,6 +17,6 @@ const workerMessageHandler = ({name, message}) => {
     logging.info(`Worker for job ${name} sent a message: ${message}`);
 };
 
-const jobManager = new JobManager({logging, errorHandler, workerMessageHandler});
+const jobManager = new JobManager({errorHandler, workerMessageHandler});
 
 module.exports = jobManager;

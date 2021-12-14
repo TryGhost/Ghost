@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const logging = require('@tryghost/logging');
 const StripeAPIService = require('@tryghost/members-stripe-service');
 
 const config = require('../../../shared/config');
@@ -9,7 +8,6 @@ const events = require('../../lib/common/events');
 const {getConfig} = require('./config');
 
 const api = new StripeAPIService({
-    logger: logging,
     config: {}
 });
 
