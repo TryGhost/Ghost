@@ -93,6 +93,11 @@ export default class KoenigCardVideoComponent extends Component {
         return htmlSafe(`padding-top: calc(${height} / ${width} * 100%)`);
     }
 
+    get totalDuration() {
+        let duration = this.args.payload.duration || this.previewPayload.duration;
+        return this._getFormattedDuration(duration);
+    }
+
     constructor() {
         super(...arguments);
         this.args.registerComponent(this);
@@ -310,5 +315,13 @@ export default class KoenigCardVideoComponent extends Component {
         if (event.dataTransfer.files) {
             this.files = [event.dataTransfer.files[0]];
         }
+    }
+
+    _getFormattedDuration(duration = 200) {
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration - (minutes * 60));
+        const paddedSeconds = String(seconds).padStart(2, '0');
+        const formattedDuration = `${minutes}:${paddedSeconds}`;
+        return formattedDuration;
     }
 }
