@@ -1,73 +1,119 @@
 .kg-file-card {
     display: flex;
-    width: 100%;
-    min-height: 96px;
-    box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
-}
-
-.kg-file-thumbnail {
-    display: flex;
-    justify-content: center;
     align-items: center;
-    width: 80px;
-    min-width: 80px;
-    margin: 8px;
-    background: transparent;
-    object-fit: cover;
-    aspect-ratio: 1/1;
+    justify-content: space-between;
+    color: inherit;
+    border: 1px solid rgb(124 139 154 / 25%);
     border-radius: 3px;
+    padding: 6px;
+    min-height: 92px;
+    transition: all ease-in-out 0.35s;
 }
 
-.kg-file-thumbnail.placeholder {
-    background: var(--ghost-accent-color);
-}
-
-.kg-file-hide {
-    display: none !important;
-}
-
-.kg-file-details {
-    display: flex;
-    flex-grow: 1;
-    align-items: center;
-    padding: 8px 12px;
-}
-
-.kg-file-thumbnail.placeholder svg {
-    width: 24px;
-    height: 24px;
-    fill: white;
+.kg-file-card:hover {
+    border: 1px solid rgb(124 139 154 / 35%);
 }
 
 .kg-file-card-container {
-    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 100%;
-    --seek-before-width: 0%;
-    --volume-before-width: 100%;
-    --buffered-width: 0%;
+    margin-left: 8px;
 }
 
-.kg-file-title {
-    width: 100%;
-    margin: 8px 0 0 0;
-    padding: 8px 12px 0;
-    border: none;
-    font-family: inherit;
-    font-size: 1.1em;
+.kg-file-card-title {
+    font-size: 1.15em;
     font-weight: 700;
-    background: transparent;
+    line-height: 1.3em;
 }
 
-.kg-file-caption {
-    width: 100%;
-    margin: 8px 0 0 0;
-    padding: 8px 12px 0;
-    border: none;
-    font-family: inherit;
-    font-size: 1.1em;
-    font-weight: 700;
-    background: transparent;
+.kg-file-card-caption {
+    font-size: 1.0em;
+    opacity: 0.6;
+    line-height: 1.4em;
+}
+
+.kg-file-card-metadata {
+    display: flex;
+    align-items: baseline;
+    font-size: 0.825em;
+    line-height: 1.4em;
+    margin-top: 2px;
+}
+
+.kg-file-card-filename {
+    font-weight: 500;
+}
+
+.kg-file-card-filesize {
+    display: inline-block;
+    font-size: 0.925em;
+    opacity: 0.6;
+}
+
+.kg-file-card-filesize:before {
+    display: inline-block;
+    content: "\2022";
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.kg-file-card-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 100%;
+    border-radius: 2px;
+}
+
+.kg-file-card-icon:before {
+    position: absolute;
+    display: block;
+    content: "";
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: currentColor;
+    opacity: 0.06;
+    transition: opacity ease-in-out 0.35s;
+}
+
+.kg-file-card:hover .kg-file-card-icon:before {
+    opacity: 0.08;
+}
+
+.kg-file-card-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--ghost-accent-color);
+}
+
+/* Size variations */
+.kg-file-card-medium {
+    min-height: 72px;
+}
+
+.kg-file-card-medium .kg-file-card-container .kg-file-card-caption {
+    opacity: 1.0;
+    font-weight: 500;
+}
+
+.kg-file-card-small {
+    min-height: 52px;
+}
+
+.kg-file-card-small .kg-file-card-metadata {
+    font-size: 1.0em;
+}
+
+.kg-file-card-small .kg-file-card-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.kg-file-card + .kg-file-card {
+    margin-top: 1em;
 }
