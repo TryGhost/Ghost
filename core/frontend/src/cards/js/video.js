@@ -103,7 +103,9 @@
         }
 
         videoElementContainer.onmouseover = () => {
-            videoPlayerContainer.classList.remove("kg-video-hide-animated");
+            if (!videoEl.loop) {
+                videoPlayerContainer.classList.remove("kg-video-hide-animated");
+            }
         }
 
         videoElementContainer.onmouseleave = () => {
@@ -114,9 +116,11 @@
         }
 
         videoEl.addEventListener('click', () => {
-            const isPlaying = !!(videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2);
-            if (isPlaying) {
-                handleOnPause();
+            if (!videoEl.loop) {
+                const isPlaying = !!(videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2);
+                if (isPlaying) {
+                    handleOnPause();
+                }
             }
         });
 
