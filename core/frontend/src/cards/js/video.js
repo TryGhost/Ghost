@@ -11,6 +11,8 @@
         const videoEl = videoElementContainer.querySelector('video');
         const durationContainer = videoElementContainer.querySelector('.kg-video-duration');
         const currentTimeContainer = videoElementContainer.querySelector('.kg-video-current-time');
+        const largePlayIcon = videoElementContainer.querySelector('.kg-video-large-play-icon');
+        const videoOverlay = videoElementContainer.querySelector('.kg-video-overlay');
         let playbackRates = [{
             rate: 0.75,
             label: '0.7×'
@@ -99,18 +101,34 @@
             });
         }
 
-        playIconContainer.addEventListener('click', () => {
+        const handleOnPlay = () => {
+            largePlayIcon.classList.add("kg-video-hide");
+            videoOverlay.classList.add("kg-video-hide");
             playIconContainer.classList.add("kg-video-hide");
             pauseIconContainer.classList.remove("kg-video-hide");
             videoEl.play();
             raf = requestAnimationFrame(whilePlaying);
-        });
+        }
 
-        pauseIconContainer.addEventListener('click', () => {
+        const handleOnPause = () => {
+            largePlayIcon.classList.remove("kg-video-hide");
+            videoOverlay.classList.remove("kg-video-hide");
             pauseIconContainer.classList.add("kg-video-hide");
             playIconContainer.classList.remove("kg-video-hide");
             videoEl.pause();
             cancelAnimationFrame(raf);
+        }
+
+        largePlayIcon.addEventListener('click', () => {
+            handleOnPlay();
+        });
+
+        playIconContainer.addEventListener('click', () => {
+            handleOnPlay();
+        });
+
+        pauseIconContainer.addEventListener('click', () => {
+            handleOnPause();
         });
 
         muteIconContainer.addEventListener('click', () => {
