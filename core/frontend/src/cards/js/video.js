@@ -14,6 +14,7 @@
         const currentTimeContainer = videoElementContainer.querySelector('.kg-video-current-time');
         const largePlayIcon = videoElementContainer.querySelector('.kg-video-large-play-icon');
         const videoOverlay = videoElementContainer.querySelector('.kg-video-overlay');
+        let hasStartedPlayback = false;
         let playbackRates = [{
             rate: 0.75,
             label: '0.7×'
@@ -110,7 +111,7 @@
 
         videoElementContainer.onmouseleave = () => {
             const isPlaying = !!(videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2);
-            if (isPlaying) {
+            if (isPlaying || hasStartedPlayback) {
                 videoPlayerContainer.classList.add("kg-video-hide-animated");
             }
         }
@@ -127,6 +128,7 @@
         });
 
         videoEl.onplay = () => {
+            hasStartedPlayback = true;
             largePlayIcon.classList.add("kg-video-hide-animated");
             videoOverlay.classList.add("kg-video-hide-animated");
             playIconContainer.classList.add("kg-video-hide");
