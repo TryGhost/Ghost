@@ -120,6 +120,8 @@
                 const isPlaying = !!(videoEl.currentTime > 0 && !videoEl.paused && !videoEl.ended && videoEl.readyState > 2);
                 if (isPlaying) {
                     handleOnPause();
+                } else {
+                    handleOnPlay();
                 }
             }
         });
@@ -141,7 +143,6 @@
         }
 
         const handleOnPause = () => {
-            largePlayIcon.classList.remove("kg-video-hide-animated");
             videoOverlay.classList.remove("kg-video-hide-animated");
             pauseIconContainer.classList.add("kg-video-hide");
             playIconContainer.classList.remove("kg-video-hide");
