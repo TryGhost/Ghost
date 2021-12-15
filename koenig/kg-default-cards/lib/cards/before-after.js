@@ -9,7 +9,6 @@ module.exports = {
     type: 'dom',
 
     render({payload, env: {dom}, options = {}}) {
-        const orientation = payload.orientation === 'vertical' ? 'vertical' : 'horizontal';
         const cardWidth = payload.cardWidth === 'full' ? 'full' : 'wide';
         const startingPosition = Math.max(
             0,
@@ -27,19 +26,15 @@ module.exports = {
         );
 
         let html = `
-            <div data-orientation="${orientation}">
+            <div class="kg-before-after-card-slider">
                 <div class="kg-before-after-card-image-after">
-                    <img data-width="${payload.afterImage.width}"
-                        src="${payload.afterImage.src}"
-                        width="${payload.afterImage.width}"/>
+                    <img src="${payload.afterImage.src}" width="${payload.afterImage.width}"/>
                 </div>
                 <div class="kg-before-after-card-image-before">
-                    <img data-width="${payload.beforeImage.width}"
-                        src="${payload.beforeImage.src}"
-                        width="${payload.beforeImage.width}"/>
+                    <img src="${payload.beforeImage.src}" width="${payload.beforeImage.width}"/>
                 </div>
-                <input type="range" min="0" max="100" value="${startingPosition}"/>
-                <span class="kg-before-after-card-slider-button"></span>
+                <input class="kg-before-after-card-slider-input" type="range" min="0" max="100" value="${startingPosition}"/>
+                <span class="kg-before-after-card-slider-handle"></span>
             </div>
         `;
 
