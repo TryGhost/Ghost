@@ -118,12 +118,7 @@
                     disabled="disabled"
                     value="{{@payload.startingPosition}}"
                 />
-<<<<<<< HEAD
-                <span class="kg-before-after-card-slider-handle" style="left: calc({{@payload.startingPosition}}% - 18px);"></span>
-=======
-                <div style="pointer-events: none; position: absolute; left: calc(50% - 2px); top: calc(0); width: 4px; height: 100%; background: white;
-    cursor: pointer;"
->>>>>>> Updated before/after card editor template
+            <span class="kg-before-after-card-slider-handle" style="left: calc({{@payload.startingPosition}}% - 18px);"></span>
             {{/if}}
             {{#if @payload.beforeImage}}
                 <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; left: 20px; font-size: 1.2rem;" {{on "click" this.selectBeforeImage}}><span>{{svg-jar "koenig/kg-replace"}}</span></button>
