@@ -5,18 +5,15 @@
         const isFullWidth = card.classList.contains('kg-width-full');
         const input = card.querySelector('input');
         const overlay = card.querySelector('.kg-before-after-card-image-before');
-        const orientation = card.querySelector('div').getAttribute('data-orientation');
+        const button = card.querySelector('.kg-before-after-card-slider-button');
         const images = [...card.querySelectorAll('img')];
         const smallestImageWidth = Math.min(
             ...images.map(img => parseInt(img.getAttribute('width')))
         );
 
         function updateSlider() {
-            if (orientation === 'vertical') {
-                overlay.setAttribute('style', `height: ${input.value}%`);
-            } else {
-                overlay.setAttribute('style', `width: ${input.value}%`);
-            }
+            overlay.setAttribute('style', `width: ${input.value}%`);
+            button.setAttribute('style', `left: calc(${input.value}% - 18px`);
         }
 
         function updateDimensions() {
