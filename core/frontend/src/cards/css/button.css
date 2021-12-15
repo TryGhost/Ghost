@@ -10,13 +10,14 @@
     justify-content: flex-start;
 }
 
-a.kg-btn {
+.kg-button-card a.kg-btn {
     display: flex;
     position: static;
     align-items: center;
     padding: 0 1.2em;
     height: 2.4em;
     line-height: 1em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     font-size: 0.95em;
     font-weight: 600;
     text-decoration: none;
@@ -24,11 +25,11 @@ a.kg-btn {
     transition: opacity 0.2s ease-in-out;
 }
 
-a.kg-btn:hover {
+.kg-button-card a.kg-btn:hover {
     opacity: 0.85;
 }
 
-a.kg-btn-accent {
+.kg-button-card a.kg-btn-accent {
     background-color: var(--ghost-accent-color);
     color: #fff;
 }

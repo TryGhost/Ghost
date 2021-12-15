@@ -4,13 +4,14 @@
     width: 100%;
 }
 
-.kg-bookmark-container,
-.kg-bookmark-container:hover {
+.kg-bookmark-card a.kg-bookmark-container,
+.kg-bookmark-card a.kg-bookmark-container:hover {
     display: flex;
     text-decoration: none;
     border-radius: 3px;
     border: 1px solid rgb(124 139 154 / 25%);
     overflow: hidden;
+    color: inherit;
 }
 
 .kg-bookmark-content {

@@ -1,4 +1,8 @@
-a.kg-file-card {
+.kg-file-card {
+    display: flex;
+}
+
+.kg-file-card a.kg-file-card-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -9,56 +13,57 @@ a.kg-file-card {
     border-radius: 3px;
     transition: all ease-in-out 0.35s;
     text-decoration: none;
+    width: 100%;
 }
 
-a.kg-file-card:hover {
+.kg-file-card a.kg-file-card-container:hover {
     border: 1px solid rgb(124 139 154 / 35%);
 }
 
-.kg-file-card .kg-file-card-container {
+.kg-file-card-contents {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-left: 8px;
+    margin: 4px 8px;
 }
 
-.kg-file-card .kg-file-card-title {
+.kg-file-card-title {
     font-size: 1.15em;
     font-weight: 700;
     line-height: 1.3em;
 }
 
-.kg-file-card .kg-file-card-caption {
-    font-size: 1.0em;
+.kg-file-card-caption {
+    font-size: 0.95em;
+    line-height: 1.5em;
     opacity: 0.6;
-    line-height: 1.4em;
 }
 
-.kg-file-card .kg-file-card-metadata {
+.kg-file-card-metadata {
     display: inline;
     font-size: 0.825em;
-    line-height: 1.4em;
+    line-height: 1.5em;
     margin-top: 2px;
 }
 
-.kg-file-card .kg-file-card-filename {
+.kg-file-card-filename {
     display: inline;
     font-weight: 500;
 }
 
-.kg-file-card .kg-file-card-filesize {
+.kg-file-card-filesize {
     display: inline-block;
     font-size: 0.925em;
     opacity: 0.6;
 }
 
-.kg-file-card .kg-file-card-filesize:before {
+.kg-file-card-filesize:before {
     display: inline-block;
     content: "\2022";
     margin-right: 4px;
 }
 
-.kg-file-card .kg-file-card-icon {
+.kg-file-card-icon {
     position: relative;
     display: flex;
     align-items: center;
@@ -68,7 +73,7 @@ a.kg-file-card:hover {
     height: 100%;
 }
 
-.kg-file-card .kg-file-card-icon:before {
+.kg-file-card-icon:before {
     position: absolute;
     display: block;
     content: "";
@@ -82,35 +87,36 @@ a.kg-file-card:hover {
     border-radius: 2px;
 }
 
-.kg-file-card:hover .kg-file-card-icon:before {
+.kg-file-card a.kg-file-card-container:hover .kg-file-card-icon:before {
     opacity: 0.08;
 }
 
-.kg-file-card .kg-file-card-icon svg {
+.kg-file-card-icon svg {
     width: 24px;
     height: 24px;
     color: var(--ghost-accent-color);
 }
 
 /* Size variations */
-.kg-file-card.kg-file-card-medium {
+.kg-file-card-medium a.kg-file-card-container {
     min-height: 72px;
 }
 
-.kg-file-card.kg-file-card-medium .kg-file-card-container .kg-file-card-caption {
+.kg-file-card-medium .kg-file-card-caption {
     opacity: 1.0;
     font-weight: 500;
 }
 
-.kg-file-card.kg-file-card-small {
+.kg-file-card-small a.kg-file-card-container {
     min-height: 52px;
 }
 
-.kg-file-card.kg-file-card-small .kg-file-card-metadata {
+.kg-file-card-small .kg-file-card-metadata {
     font-size: 1.0em;
+    margin-top: 0;
 }
 
-.kg-file-card.kg-file-card-small .kg-file-card-icon svg {
+.kg-file-card-small .kg-file-card-icon svg {
     width: 20px;
     height: 20px;
 }
