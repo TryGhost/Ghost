@@ -70,6 +70,7 @@ export default class KoenigCardHeaderComponent extends Component {
             size: 'small',
             alignment: 'center',
             style: 'invert',
+            cardWidth: 'full',
             buttonEnabled: false
         };
 
