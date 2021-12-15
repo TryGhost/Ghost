@@ -2974,3 +2974,13 @@ button.emoji-picker__category-button.active {
     left: 0;
     color: var(--midlightgrey);
 }
+
+.kg-header-card-header .__mobiledoc-editor.__has-no-content:after {
+    top: 36px;
+    font-size: 4em;
+}
+
+.kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after {
+    top: 10px;
+    font-size: 1.4em;
+}
