@@ -1942,6 +1942,10 @@ button.emoji-picker__category-button.active {
 
 /* Before/After card
 /* --------------------------------------------------------------- */
+.kg-before-after-card {
+    margin: 0 auto;
+}
+
 .kg-before-after-card img {
     max-width: none;
 }
