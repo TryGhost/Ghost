@@ -19,6 +19,7 @@ import * as productCard from './cards/product';
 import * as audioCard from './cards/audio';
 import * as videoCard from './cards/video';
 import * as beforeAfterCard from './cards/before-after';
+import * as fileCard from './cards/file';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -476,6 +477,7 @@ export function createParserPlugins(_options = {}) {
         productCard.fromKoenigCard(options),
         audioCard.fromKoenigCard(options),
         videoCard.fromKoenigCard(options),
+        fileCard.fromKoenigCard(options),
         blockquoteWithChildren,
         softReturn.fromBr(options),
         removeLeadingNewline,

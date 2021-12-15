@@ -37,7 +37,7 @@ module.exports = {
             classNames = 'kg-file-card-medium';
             emailStyles.icon = 'margin-top: 6px; height: 24px; width: 24px; max-width: 24px;';
         }
-        
+
         let html = `
         <div class="kg-card kg-file-card ${classNames}">
             <a class="kg-file-card-container" href="${payload.src}" title="Download">
