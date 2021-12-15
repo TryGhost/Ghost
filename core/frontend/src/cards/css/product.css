@@ -44,6 +44,7 @@
 .kg-product-card .kg-product-card-description ol,
 .kg-product-card .kg-product-card-description ul {
     font-size: 0.95em;
+    line-height: 1.5em;
     opacity: .7;
 }
 
@@ -59,10 +60,6 @@
 .kg-product-card .kg-product-card-description ul,
 .kg-product-card .kg-product-card-description ol {
     margin-top: 0.95em;
-}
-
-.kg-product-card .kg-product-card-description li {
-    line-height: 1.4em;
 }
 
 .kg-product-card .kg-product-card-description li+li {
