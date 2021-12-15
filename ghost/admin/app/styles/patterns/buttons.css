@@ -487,6 +487,10 @@ Usage: CTA buttons grouped together horizontally.
     stroke: none;
 }
 
+.gh-btn-group.small .gh-btn span {
+    font-size: 0.9rem;
+}
+
 .gh-btn-block + .gh-btn-block {
     margin-top: 5px;
 }
