@@ -48,7 +48,7 @@
     cursor: pointer;
 }
 
-.kg-before-after-card-slider-button {
+.kg-before-after-card-slider-handle {
     pointer-events: none;
     position: absolute;
     width: 30px;
@@ -62,7 +62,7 @@
     align-items: center;
 }
 
-.kg-before-after-card-slider-button:after {
+.kg-before-after-card-slider-handle:after {
     transform: rotate(-45deg);
     content: '';
     padding: 3px;
@@ -71,7 +71,7 @@
     border-width: 0 2px 2px 0;
 }
 
-.kg-before-after-card-slider-button:before {
+.kg-before-after-card-slider-handle:before {
     transform: rotate(135deg);
     content: '';
     padding: 3px;
