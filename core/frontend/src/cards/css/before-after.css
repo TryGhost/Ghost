@@ -8,6 +8,7 @@
     overflow: hidden;
     top: 0;
     left: 0;
+    height: 100%;
 }
 
 .kg-before-after-card .kg-before-after-card-image-after img {
