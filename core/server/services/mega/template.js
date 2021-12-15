@@ -640,18 +640,18 @@ figure blockquote p {
 
 .kg-header-card {
     margin: 0 0 1.5em 0;
-    padding: 6em 2em;
+    padding: 110px 35px 110px 35px;
     text-align: center;
 }
 
 .kg-header-card.kg-size-small {
-    padding-top: 4em;
-    padding-bottom: 4em;
+    padding-top: 75px;
+    padding-bottom: 75px;
 }
 
 .kg-header-card.kg-size-large {
-    padding-top: 8em;
-    padding-bottom: 8em;
+    padding-top: 140px;
+    padding-bottom: 140px;
 }
 
 .kg-header-card.kg-align-left {
@@ -681,7 +681,7 @@ figure blockquote p {
 }
 
 .kg-header-card h2 {
-    font-size: 5em;
+    font-size: 3em;
     font-weight: 700;
     line-height: 1.1em;
     margin: 0 0 0.125em;
@@ -692,15 +692,15 @@ figure blockquote p {
 }
 
 .kg-header-card.kg-size-small h2 {
-    font-size: 4em;
+    font-size: 2.5em;
 }
 
 .kg-header-card.kg-size-large h2 {
-    font-size: 6em;
+    font-size: 3.5em;
 }
 
 .kg-header-card h3 {
-    font-size: 1.5em;
+    font-size: 1.125em;
     font-weight: 500;
     line-height: 1.3em;
     margin: 0;
@@ -711,16 +711,15 @@ figure blockquote p {
 }
 
 .kg-header-card.kg-size-large h3 {
-    font-size: 1.75em;
+    font-size: 1.25em;
 }
 
 .kg-header-card.kg-size-small h3 {
-    font-size: 1.25em;
+    font-size: 1em;
 }
 
 .kg-header-card-button {
     margin-top: 1.75em;
-    overflow-wrap: anywhere;
     background: ${templateSettings.accentColor || '#15212A'};
     border: solid 1px ${templateSettings.accentColor || '#15212A'};
     border-radius: 5px;
