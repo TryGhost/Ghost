@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{"koenig-breakout-full flex flex-column mih10 miw-100 relative"}}
+    @class={{concat "flex flex-column mih10 miw-100 relative " (kg-style "breakout" size=@payload.cardWidth)}}
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -52,12 +52,11 @@
 
         <KoenigSettingsPanel>
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <div class="kg-settings-panel-control-label">Size</div>
+                <div class="kg-settings-panel-control-label">Width</div>
                 <div class="kg-settings-panel-control-input">
                     <div class="gh-btn-group icons">
-                        <button type="button" title="Small" class="gh-btn gh-btn-icon {{if (eq @payload.size "small") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "small")}}><span>S</span></button>
-                        <button type="button" title="Medium" class="gh-btn gh-btn-icon {{if (eq @payload.size "medium") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "medium")}}><span>M</span></button>
-                        <button type="button" title="Large" class="gh-btn gh-btn-icon {{if (eq @payload.size "large") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "large")}}><span>L</span></button>
+                        <button type="button" title="Normal" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "regular") "gh-btn-group-selected"}}" {{on "click" (fn this.setCardWidth "regular")}}><span>{{svg-jar "koenig/kg-img-regular" class="fill-darkgrey"}}</span></button>
+                        <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" {{on "click" (fn this.setCardWidth "full")}}><span>{{svg-jar "koenig/kg-img-full" class="fill-darkgrey"}}</span></button>
                     </div>
                 </div>
             </div>
@@ -67,6 +66,16 @@
                     <div class="gh-btn-group icons">
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                    </div>
+                </div>
+            </div>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Size</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="gh-btn-group icons">
+                        <button type="button" title="Small" class="gh-btn gh-btn-icon {{if (eq @payload.size "small") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "small")}}><span>S</span></button>
+                        <button type="button" title="Medium" class="gh-btn gh-btn-icon {{if (eq @payload.size "medium") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "medium")}}><span>M</span></button>
+                        <button type="button" title="Large" class="gh-btn gh-btn-icon {{if (eq @payload.size "large") "gh-btn-group-selected"}}" {{on "click" (fn this.setSize "large")}}><span>L</span></button>
                     </div>
                 </div>
             </div>
@@ -183,7 +192,7 @@
                 <h3 class="kg-header-card-subheader">{{{@payload.subheader}}}</h3>
             {{/if}}
             {{#if @payload.buttonEnabled}}
-                <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-header-card-button {{if this.isButtonIncomplete "o-50"}}" disabled={{not @payload.buttonText}}>
+                <a href="javascript:void(0)" class="gh-btn kg-header-card-button {{if this.isButtonIncomplete "o-50"}}" disabled={{not @payload.buttonText}}>
                     <span>
                         {{or @payload.buttonText "Add button text"}}
                     </span>
