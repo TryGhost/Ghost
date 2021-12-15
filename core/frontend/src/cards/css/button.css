@@ -10,7 +10,7 @@
     justify-content: flex-start;
 }
 
-a.kg-btn {
+.kg-button-card a.kg-btn {
     display: flex;
     position: static;
     align-items: center;
@@ -24,11 +24,11 @@ a.kg-btn {
     transition: opacity 0.2s ease-in-out;
 }
 
-a.kg-btn:hover {
+.kg-button-card a.kg-btn:hover {
     opacity: 0.85;
 }
 
-a.kg-btn-accent {
+.kg-button-card a.kg-btn-accent {
     background-color: var(--ghost-accent-color);
     color: #fff;
 }
