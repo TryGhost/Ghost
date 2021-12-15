@@ -2187,8 +2187,8 @@ button.emoji-picker__category-button.active {
 .kg-upload-title,
 .kg-upload-caption {
     width: 100%;
-    margin: 8px 16px 0;
-    padding: 8px 0;
+    margin: 8px 4px 0;
+    padding: 8px 12px;
     border: none;
     font-size: 1.8rem;
     font-weight: 700;
