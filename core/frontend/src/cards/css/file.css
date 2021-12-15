@@ -4,7 +4,7 @@
 
 .kg-file-card a.kg-file-card-container {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
     color: inherit;
     padding: 6px;
@@ -25,6 +25,7 @@
     flex-direction: column;
     justify-content: space-between;
     margin: 4px 8px;
+    width: 100%
 }
 
 .kg-file-card-title {
@@ -35,14 +36,18 @@
 
 .kg-file-card-caption {
     font-size: 0.95em;
-    line-height: 1.5em;
+    line-height: 1.3em;
     opacity: 0.6;
+}
+
+.kg-file-card-title + .kg-file-card-caption {
+    margin-top: -6px;
 }
 
 .kg-file-card-metadata {
     display: inline;
     font-size: 0.825em;
-    line-height: 1.5em;
+    line-height: 1.3em;
     margin-top: 2px;
 }
 
@@ -108,6 +113,7 @@
 }
 
 .kg-file-card-small a.kg-file-card-container {
+    align-items: center;
     min-height: 52px;
 }
 
