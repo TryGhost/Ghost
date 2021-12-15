@@ -15,7 +15,7 @@ module.exports = {
     name: 'header',
     type: 'dom',
 
-    render({payload, env: {dom}, options = {}}) {
+    render({payload, env: {dom}}) {
         if (!payload.header && !payload.subheader && (!payload.buttonEnabled || (!payload.buttonUrl || !payload.buttonText))) {
             return dom.createTextNode('');
         }
