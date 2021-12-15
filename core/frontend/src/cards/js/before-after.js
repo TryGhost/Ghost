@@ -22,6 +22,10 @@
             updateSlider();
         });
 
+        input.addEventListener('change', function () {
+            input.blur();
+        });
+
         window.addEventListener('resize', function () {
             updateDimensions();
         });
