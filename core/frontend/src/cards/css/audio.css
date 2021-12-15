@@ -219,6 +219,7 @@
     display: flex;
     align-items: center;
     border: 0;
+    cursor: pointer;
 }
 
 .kg-audio-player-container input[type="range"] {
