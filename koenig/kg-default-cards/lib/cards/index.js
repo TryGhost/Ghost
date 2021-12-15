@@ -17,5 +17,6 @@ module.exports = [
     require('./audio'),
     require('./video'),
     require('./file'),
+    require('./header'),
     require('./before-after')
 ];
