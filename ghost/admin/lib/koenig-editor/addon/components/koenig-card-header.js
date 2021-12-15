@@ -29,9 +29,9 @@ export default class KoenigCardHeaderComponent extends Component {
     }
 
     get isIncomplete() {
-        const {header, subheader} = this.args.payload;
+        const {header} = this.args.payload;
 
-        return isBlank(header) || isBlank(subheader);
+        return isBlank(header);
     }
 
     get toolbar() {
@@ -52,7 +52,7 @@ export default class KoenigCardHeaderComponent extends Component {
     }
 
     get hasSubheader() {
-        return Boolean(this.args.payload.subheader.replace(/(<br *\/?>)+$/ig, '').trim());
+        return this.args.payload.subheader && Boolean(this.args.payload.subheader.replace(/(<br *\/?>)+$/ig, '').trim());
     }
 
     get backgroundImageStyle() {
@@ -78,9 +78,6 @@ export default class KoenigCardHeaderComponent extends Component {
                 this._updatePayloadAttr(key, value);
             }
         });
-
-        let placeholders = ['summer', 'mountains', 'ufo-attack'];
-        this.placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
     }
 
     // required for snippet rects to be calculated - editor reaches in to component,
@@ -269,5 +266,10 @@ export default class KoenigCardHeaderComponent extends Component {
     @action
     deleteBackgroundImage() {
         this._updatePayloadAttr('backgroundImageSrc', null);
+    }
+
+    @action
+    setCardWidth(width) {
+        this._updatePayloadAttr('cardWidth', width);
     }
 }
