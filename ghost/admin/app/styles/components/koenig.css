@@ -1994,13 +1994,14 @@ button.emoji-picker__category-button.active {
 /* --------------------------------------------------------------- */
 
 .kg-header-card {
-    padding-left: 2em;
-    padding-right: 2em;
+    padding-left: 4em;
+    padding-right: 4em;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: var(--white);
+    transition: background-color var(--animation-speed-fast) ease-in-out;
 }
 
 .kg-header-card h2,
@@ -2018,18 +2019,21 @@ button.emoji-picker__category-button.active {
     padding-top: 4em;
     padding-bottom: 4em;
     height: 40vh;
+    min-height: auto;
 }
 
 .kg-header-card.kg-size-medium {
     padding-top: 6em;
     padding-bottom: 6em;
     height: 60vh;
+    min-height: auto;
 }
 
 .kg-header-card.kg-size-large {
     padding-top: 12em;
-    padding-bottom: 7em;
+    padding-bottom: 12em;
     height: 80vh;
+    min-height: auto;
 }
 
 .kg-header-card.kg-size-large h2 {
@@ -2038,6 +2042,10 @@ button.emoji-picker__category-button.active {
 
 .kg-header-card.kg-size-small h2 {
     font-size: 4em;
+}
+
+.kg-header-card h2 strong {
+    font-weight: 800;
 }
 
 .kg-header-card h3 {
@@ -2064,8 +2072,13 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-header-card.kg-style-invert {
+    background: var(--black);
+    color: var(--white);
+}
+
+.kg-header-card.kg-style-clear {
     color: var(--black);
-    border: 1px solid var(--accent-color);
+    border: 1px solid var(--lightgrey);
     border-width: 1px 0;
 }
 
