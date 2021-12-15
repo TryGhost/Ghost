@@ -129,24 +129,15 @@ export default class KoenigCardBeforeAfterComponent extends Component {
 
     @action
     uploadStart(file) {
-        // @TODO Handle in progress uploads
-        let existingImage = this.args.payload.afterImage || this.args.payload.beforeImage;
-
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             let objectURL = URL.createObjectURL(file);
             let image = new Image();
             image.addEventListener('load', () => {
                 let id = this.selectingFile;
                 this.selectingFile = false;
                 let metadata = {
-                    aspectRatio: image.naturalWidth / image.naturalHeight,
                     id: id
                 };
-                if (existingImage) {
-                    if (metadata.aspectRatio !== existingImage.aspectRatio) {
-                        reject(new Error('Before/After images must have the same aspect ratio'));
-                    }
-                }
                 resolve(metadata);
             });
             image.src = objectURL;
@@ -159,7 +150,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
         image.addEventListener('load', () => {
             let imageData = {
                 src: file.url,
-                aspectRatio: metadata.aspectRatio,
                 width: image.naturalWidth,
                 height: image.naturalHeight
             };
