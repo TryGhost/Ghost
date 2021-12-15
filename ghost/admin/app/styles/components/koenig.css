@@ -2279,8 +2279,8 @@ button.emoji-picker__category-button.active {
 .kg-upload-title,
 .kg-upload-caption {
     width: 100%;
-    margin: 8px 4px 0;
-    padding: 8px 12px;
+    margin: 4px 4px 0;
+    padding: 4px 12px;
     border: none;
     font-size: 1.8rem;
     font-weight: 700;
@@ -2297,7 +2297,7 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-upload-caption {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 500;
     color: var(--midgrey);
     margin-top: 4px;
@@ -2305,7 +2305,7 @@ button.emoji-picker__category-button.active {
 
 .kg-upload-metadata {
     line-height: 1em;
-    margin: 0 16px 14px;
+    margin: 0 16px 4px;
     font-size: 1.4rem;
     font-weight: 500;
 }
@@ -2438,27 +2438,33 @@ button.emoji-picker__category-button.active {
 .kg-file-data-container {
     position: relative;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     flex-direction: column;
     width: 100%;
+    align-items: stretch;
+    margin: 6px 0;
 }
 
 .kg-file-data-container .kg-upload-title {
-    padding-top: 4px;
-    padding-bottom: 0px;
     height: 30px;
-    margin-bottom: 2px;
+    padding-top: 0;
+    padding-bottom: 0px;
+    margin-bottom: 0;
+    margin-top: 0;
 }
 
 .kg-file-data-container .kg-upload-caption {
-    padding-top: 0;
-    height: 26px;
-    margin-top: 0px;
     font-weight: 400;
+    height: 26px;
+    padding-top: 0;
 }
 
 .kg-file-data-container .kg-file-card-caption {
     margin-top: 0;
+}
+
+.kg-file-data-container .kg-upload-title + .kg-upload-caption {
+    margin-top: -2px;
 }
 
 .kg-file-card .kg-media-container {
@@ -2477,6 +2483,10 @@ button.emoji-picker__category-button.active {
 .kg-file-card .kg-upload-container.medium .kg-upload-metadata {
     margin-top: 4px;
     margin-bottom: 0;
+}
+
+.kg-file-card .kg-upload-container.medium .kg-file-data-container {
+    padding: 8px 0;
 }
 
 .kg-file-card .kg-upload-container.medium .kg-upload-title {
@@ -2500,6 +2510,10 @@ button.emoji-picker__category-button.active {
 .kg-file-card .kg-upload-container.small .kg-media-container svg {
     width: 20px;
     height: 20px;
+}
+
+.kg-file-card .kg-upload-container.small .kg-file-data-container {
+    justify-content: center;
 }
 
 /* Video card
