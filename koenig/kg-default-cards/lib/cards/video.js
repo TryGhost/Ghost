@@ -25,7 +25,7 @@ module.exports = {
         const frontendTemplate = hbs`
             <figure class="{{cardClasses}}">
                 <div class="kg-video-container">
-                    <video src="{{payload.src}}" poster="{{posterSpacerSrc}}" width="{{payload.width}}" height="{{payload.height}}"{{#if payload.loop}} loop autoplay muted{{/if}} preload="metadata" style="background: transparent url('{{thumbnailSrc}}') 50% 50% / cover no-repeat;" /></video>
+                    <video src="{{payload.src}}" poster="{{posterSpacerSrc}}" width="{{payload.width}}" height="{{payload.height}}"{{#if payload.loop}} loop autoplay muted playsinline{{/if}} preload="metadata" style="background: transparent url('{{thumbnailSrc}}') 50% 50% / cover no-repeat;" /></video>
                     <div class="kg-video-overlay">
                         <button class="kg-video-large-play-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
