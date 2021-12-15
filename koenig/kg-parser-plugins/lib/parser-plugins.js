@@ -18,6 +18,7 @@ import * as softReturn from './cards/softReturn';
 import * as productCard from './cards/product';
 import * as audioCard from './cards/audio';
 import * as videoCard from './cards/video';
+import * as beforeAfterCard from './cards/before-after';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -462,6 +463,8 @@ export function createParserPlugins(_options = {}) {
     }
 
     return [
+        beforeAfterCard.fromKoenigCard(options),
+        beforeAfterCard.fromJetpackCard(options),
         embedCard.fromNFTEmbed(),
         embedCard.fromMixtape(options),
         htmlCard.fromKoenigCard(options),
