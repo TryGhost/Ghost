@@ -1989,46 +1989,125 @@ button.emoji-picker__category-button.active {
     border-radius: 25px;
 }
 
+
 /* Header card
 /* --------------------------------------------------------------- */
 
 .kg-header-card {
     padding-left: 2em;
     padding-right: 2em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
 }
+
+.kg-header-card h2,
+.kg-header-card h3 {
+    color: var(--white);
+    margin-top: 0 !important;
+}
+
+.kg-header-card h2 {
+    font-size: 5em;
+    font-weight: 700;
+}
+
 .kg-header-card.kg-size-small {
-    padding-top: 1em;
-    padding-bottom: 1em;
+    padding-top: 4em;
+    padding-bottom: 4em;
+    height: 40vh;
 }
+
 .kg-header-card.kg-size-medium {
-    padding-top: 3em;
-    padding-bottom: 3em;
+    padding-top: 6em;
+    padding-bottom: 6em;
+    height: 60vh;
 }
+
 .kg-header-card.kg-size-large {
-    padding-top: 7em;
+    padding-top: 12em;
     padding-bottom: 7em;
+    height: 80vh;
 }
+
+.kg-header-card.kg-size-large h2 {
+    font-size: 6em;
+}
+
+.kg-header-card.kg-size-small h2 {
+    font-size: 4em;
+}
+
+.kg-header-card h3 {
+    font-size: 1.5em;
+    font-weight: 500;
+}
+
+.kg-header-card.kg-size-large h3 {
+    font-size: 1.75em;
+}
+
+.kg-header-card.kg-size-small h3 {
+    font-size: 1.25em;
+}
+
 .kg-header-card.kg-align-left {
     text-align: left;
+    align-items: flex-start;
 }
+
 .kg-header-card.kg-align-center {
     text-align: center;
+    align-items: center;
 }
-.kg-header-card.kg-style-clear {
-    /* nothing here */
-}
+
 .kg-header-card.kg-style-invert {
-    background-color: black;
-    color: white;
+    color: var(--black);
+    border: 1px solid var(--accent-color);
+    border-width: 1px 0;
 }
+
+.kg-header-card.kg-style-clear h2,
+.kg-header-card.kg-style-clear h3 {
+    color: var(--black);
+}
+
 .kg-header-card.kg-style-accent {
-    color: white;
     background-color: var(--accent-color);
 }
+
 .kg-header-card.kg-style-image {
+    background-color: #e7e7eb;
     background-size: cover;
     background-position: center center;
 }
+
+.kg-header-card-button {
+    margin-top: 1.75em;
+    font-weight: 700;
+}
+
+.kg-size-large .kg-header-card-button {
+    margin-top: 2em;
+}
+
+.kg-size-small .kg-header-card-button {
+    margin-top: 1.5em;
+}
+
+.kg-style-invert .kg-header-card-button,
+.kg-style-image .kg-header-card-button {
+    background: var(--white);
+    color: var(--black);
+}
+
+.kg-style-accent .kg-header-card-button {
+    background: var(--white);
+    color: var(--accent-color);
+}
+
 
 /* Upload cards: audio and file
 /* --------------------------------------------------------------- */
