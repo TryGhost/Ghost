@@ -102,6 +102,16 @@
                     value="{{@payload.startingPosition}}"
                 />
             {{/if}}
+            {{#if @payload.beforeImage}}
+                <button class="absolute top-0 left-0 kg-before-after-card-replace-image">
+                    <span class="mt2 midgrey" {{on "click" this.selectBeforeImage}}>Replace before image</span>
+                </button>
+            {{/if}}
+            {{#if @payload.afterImage}}
+                <button class="absolute top-0 right-0 kg-before-after-card-replace-image">
+                    <span class="mt2 midgrey" {{on "click" this.selectAfterImage}}>Replace after image</span>
+                </button>
+            {{/if}}
         </div>
 
         <div style="display:none">
