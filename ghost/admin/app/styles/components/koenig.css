@@ -2021,7 +2021,7 @@ button.emoji-picker__category-button.active {
 /* Header card
 /* --------------------------------------------------------------- */
 .kg-header-card {
-    padding: 6em 4em;
+    padding: 6em 3em;
     min-height: 60vh;
     display: flex;
     flex-direction: column;
@@ -2041,6 +2041,11 @@ button.emoji-picker__category-button.active {
     padding-top: 12em;
     padding-bottom: 12em;
     min-height: 80vh;
+}
+
+.kg-header-card.kg-width-full {
+    padding-left: 4em;
+    padding-right: 4em;
 }
 
 .kg-header-card.kg-align-left {
