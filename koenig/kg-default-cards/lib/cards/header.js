@@ -21,7 +21,7 @@ module.exports = {
         }
 
         const frontendTemplate = hbs`
-            <div class="kg-header-card kg-size-{{size}} kg-align-{{alignment}} kg-style-{{style}}" style="{{backgroundImageStyle}}">
+            <div class="kg-header-card kg-width-full kg-size-{{size}} kg-align-{{alignment}} kg-style-{{style}}" style="{{backgroundImageStyle}}">
                 <h2 class="kg-header-card-header">{{{header}}}</h2>
                 {{#if this.hasSubheader}}
                     <h3 class="kg-header-card-subheader">{{{subheader}}}</h3>
