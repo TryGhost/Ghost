@@ -83,7 +83,7 @@
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Style</div>
                 <div class="kg-settings-panel-control-input">
-                    <div class="gh-btn-group icons">
+                    <div class="gh-btn-group icons small">
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "invert") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "invert")}}><span>Invert</span></button>
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "clear") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "clear")}}><span>Clear</span></button>
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "accent") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "accent")}}><span>Accent</span></button>
@@ -152,7 +152,7 @@
             </div>
             {{#if @payload.buttonEnabled}}
             <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="header-button-input">Button text</label>
+                <label class="kg-settings-panel-control-label" for="header-button-input">Text</label>
                 <div class="kg-settings-panel-control-input">
                     <input
                         type="text"
@@ -167,7 +167,7 @@
                 </div>
             </div>
             <div class="kg-settings-panel-control">
-                <label class="kg-settings-panel-control-label" for="header-url-input">Button URL</label>
+                <label class="kg-settings-panel-control-label" for="header-url-input">URL</label>
                 <div class="kg-settings-panel-control-input">
                     <input
                         type="text"

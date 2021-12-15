@@ -262,7 +262,7 @@ export const CARD_MENU = [
             isAvailable: 'feature.beforeAfterCard'
         }, {
             label: 'Header',
-            icon: 'koenig/kg-card-type-other',
+            icon: 'koenig/kg-card-type-header',
             desc: 'Add a bold section header',
             matches: ['header'],
             type: 'card',
