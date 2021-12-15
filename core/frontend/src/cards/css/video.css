@@ -15,7 +15,8 @@
 .kg-video-container {
     position: relative;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
 }
 
 .kg-video-overlay {

@@ -48,12 +48,11 @@
 
 .kg-callout-card div.kg-callout-emoji {
     padding-right: .8em;
-    line-height: 1.45em;
+    line-height: 1.25em;
     font-size: 1.15em;
 }
 
 .kg-callout-card div.kg-callout-text {
     font-size: .95em;
     line-height: 1.5em;
-    margin-top: 0.15em;
 }
