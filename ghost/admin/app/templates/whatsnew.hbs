@@ -11,7 +11,7 @@
         <div class="gh-about-container">
             <section class="gh-whats-new gh-about-box" {{did-insert (perform this.whatsNew.updateLastSeen)}}>
                 {{#each this.whatsNew.entries as |entry|}}
-                    <div class="gh-wn-entry" {{scroll-to shouldScroll=(eq entry.slug this.entry)}}>
+                    <a href="{{entry.url}}" class="gh-wn-entry" {{scroll-to shouldScroll=(eq entry.slug this.entry)}}>
                         <h4>{{moment-format entry.published_at "DD MMMM YYYY"}}</h4>
                         <h1>{{entry.title}}</h1>
                         {{#if entry.feature_image}}
@@ -25,7 +25,7 @@
                             {{{entry.html}}}
                         {{/if}}
                         </div>
-                    </div>
+                    </a>
                 {{/each}}
                 <a class="green" href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">See all updates &rarr;</a>
             </section>
