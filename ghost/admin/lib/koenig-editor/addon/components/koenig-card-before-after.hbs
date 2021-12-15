@@ -62,6 +62,7 @@
                     {{on "mousedown" this.stopPropagation}}
                     {{on "change" this.removeFocus}}
                 />
+                <span class="kg-before-after-card-slider-handle" style="left: calc({{@payload.startingPosition}}% - 18px);"></span>
             {{else}}
                 <div class="overflow-hidden" style="width:49%; height: 100%; display: inline-block;">
                     {{#if @payload.beforeImage}}
@@ -102,6 +103,7 @@
                     disabled="disabled"
                     value="{{@payload.startingPosition}}"
                 />
+                <span class="kg-before-after-card-slider-handle" style="left: calc({{@payload.startingPosition}}% - 18px);"></span>
             {{/if}}
             {{#if @payload.beforeImage}}
                 <button class="absolute top-0 left-0 kg-before-after-card-replace-image">
