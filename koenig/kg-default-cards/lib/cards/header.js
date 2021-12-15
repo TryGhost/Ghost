@@ -45,7 +45,7 @@ module.exports = {
             buttonText: payload.buttonText,
             header: payload.header,
             subheader: payload.subheader,
-            hasSubheader: Boolean(payload.subheader.replace(/(<br>)+$/g).trim()),
+            hasSubheader: payload.subheader && Boolean(payload.subheader.replace(/(<br>)+$/g).trim()),
             backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : ''
         };
 
