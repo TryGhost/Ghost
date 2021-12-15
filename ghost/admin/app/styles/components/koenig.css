@@ -1946,6 +1946,10 @@ button.emoji-picker__category-button.active {
     max-width: none;
 }
 
+.kg-before-after-card-replace-image {
+    margin: 20px;
+}
+
 .kg-before-after-card input:disabled {
     pointer-events: none;
 }
