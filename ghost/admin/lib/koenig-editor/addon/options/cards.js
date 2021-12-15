@@ -48,7 +48,7 @@ export const CARD_ICON_MAP = {
     audio: 'koenig/kg-card-type-audio',
     file: 'koenig/kg-card-type-file',
     product: 'koenig/kg-card-type-product',
-    'before-after': 'koenig-card-before-after',
+    'before-after': 'koenig/kg-card-type-before-after',
     header: 'koenig/kg-card-type-gen-embed'
 };
 
@@ -254,7 +254,7 @@ export const CARD_MENU = [
         },
         {
             label: 'Before/After',
-            icon: 'koenig/kg-card-type-other',
+            icon: 'koenig/kg-card-type-before-after',
             desc: 'Compare two images',
             matches: ['before', 'after', 'compare'],
             type: 'card',
