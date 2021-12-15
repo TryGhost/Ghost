@@ -39,6 +39,7 @@ module.exports = {
                         width="${payload.beforeImage.width}"/>
                 </div>
                 <input type="range" min="0" max="100" value="${startingPosition}"/>
+                <span class="kg-before-after-card-slider-button"></span>
             </div>
         `;
 
