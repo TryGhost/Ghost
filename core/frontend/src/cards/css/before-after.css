@@ -10,8 +10,13 @@
     left: 0;
 }
 
+.kg-before-after-card .kg-before-after-card-image-after img {
+    width: 100%;
+}
+
 .kg-before-after-card .kg-before-after-card-image-before img {
     max-width: none;
+    object-fit: cover;
 }
 
 .kg-before-after-card input {
