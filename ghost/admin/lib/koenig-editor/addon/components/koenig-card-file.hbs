@@ -42,7 +42,7 @@
                     <GhTextInput
                         @value={{@payload.fileCaption}}
                         @input={{action "setFileCaption" value="target.value"}}
-                        @placeholder="File caption"
+                        @placeholder="Add optional file description"
                         @class="kg-upload-caption  {{if (and (not @isEditing) (not @payload.fileCaption)) "hide"}}"
                         @maxlength="100"
                     />
