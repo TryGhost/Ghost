@@ -18,7 +18,7 @@ export default function cleanBasicHtml(html = '', _options = {}) {
 
     let cleanHtml = html;
 
-    if (!options.allowBr) {
+    if (!options.allowBr || cleanHtml === '<br>') {
         cleanHtml = cleanHtml
             .replace(/<br\s?\/?>/g, ' ');
     }
