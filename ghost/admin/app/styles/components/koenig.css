@@ -2229,6 +2229,15 @@ button.emoji-picker__category-button.active {
     width: 100%;
 }
 
+.kg-header-card .__mobiledoc-editor.__has-no-content:after {
+    opacity: 0.5;
+    color: #fff !important;
+}
+
+.kg-header-card.kg-style-clear .__mobiledoc-editor.__has-no-content:after {
+    color: var(--darkgrey) !important;
+}
+
 /* Upload cards: audio and file
 /* --------------------------------------------------------------- */
 .kg-upload-container {
