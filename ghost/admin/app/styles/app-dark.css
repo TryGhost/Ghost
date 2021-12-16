@@ -1057,3 +1057,11 @@ input:focus,
 .gh-filter-builder .gh-filters {
     background: var(--whitegrey);
 }
+
+.kg-settings-headerstyle-btn-group .gh-btn {
+    border-color: var(--midlightgrey);
+}
+
+.kg-header-card.kg-style-invert {
+    background: #08090C;
+}
