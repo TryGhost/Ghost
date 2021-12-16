@@ -658,12 +658,12 @@ figure blockquote p {
     text-align: left;
 }
 
-.kg-header-card.kg-style-invert {
+.kg-header-card.kg-style-dark {
     background: #15171a;
     color: #ffffff;
 }
 
-.kg-header-card.kg-style-clear {
+.kg-header-card.kg-style-light {
     border-top: 1px solid #e5eff6;
     border-bottom: 1px solid #e5eff6;
 }
