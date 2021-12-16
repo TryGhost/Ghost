@@ -51,7 +51,7 @@
         </div>
 
         <KoenigSettingsPanel>
-            {{!-- <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Width</div>
                 <div class="kg-settings-panel-control-input">
                     <div class="gh-btn-group icons">
@@ -68,7 +68,7 @@
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
                     </div>
                 </div>
-            </div> --}}
+            </div>
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Size</div>
                 <div class="kg-settings-panel-control-input">
@@ -82,13 +82,6 @@
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal-top">
                 <div class="kg-settings-panel-control-label">Style</div>
                 <div class="kg-settings-panel-control-input">
-                    {{!-- <div class="gh-btn-group icons small">
-                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "invert") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "invert")}}><span>Invert</span></button>
-                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "clear") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "clear")}}><span>Clear</span></button>
-                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "accent") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "accent")}}><span>Accent</span></button>
-                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "image") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "image")}}><span>Image</span></button>
-                    </div> --}}
-
                     <div class="gh-btn-group kg-settings-headerstyle-btn-group">
                         <button type="button" class="gh-btn kg-headerstyle-btn-dark {{if (eq @payload.style "invert") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "invert")}}></button>
                         <button type="button" class="gh-btn kg-headerstyle-btn-light {{if (eq @payload.style "clear") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "clear")}}></button>
