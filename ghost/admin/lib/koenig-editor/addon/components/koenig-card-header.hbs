@@ -51,7 +51,7 @@
         </div>
 
         <KoenigSettingsPanel>
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+            {{!-- <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Width</div>
                 <div class="kg-settings-panel-control-input">
                     <div class="gh-btn-group icons">
@@ -68,7 +68,7 @@
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
                     </div>
                 </div>
-            </div>
+            </div> --}}
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Size</div>
                 <div class="kg-settings-panel-control-input">
@@ -79,59 +79,67 @@
                     </div>
                 </div>
             </div>
-            <hr class="kg-settings-panel-divider">
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal-top">
                 <div class="kg-settings-panel-control-label">Style</div>
                 <div class="kg-settings-panel-control-input">
-                    <div class="gh-btn-group icons small">
+                    {{!-- <div class="gh-btn-group icons small">
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "invert") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "invert")}}><span>Invert</span></button>
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "clear") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "clear")}}><span>Clear</span></button>
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "accent") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "accent")}}><span>Accent</span></button>
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.style "image") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "image")}}><span>Image</span></button>
-                    </div>
+                    </div> --}}
 
-                    <GhUploader
-                            @uploadUrl="/images/upload/"
-                            @accept={{this.imageMimeTypes}}
-                            @extensions={{this.imageExtensions}}
-                            {{!-- @onStart={{this.customThumbnailUploadStarted}} --}}
-                            @onComplete={{this.backgroundImageUploadCompleted}}
-                            as |uploader|
-                        >
-                    {{#if (eq @payload.style "image")}}
-                        <div class="relative w-100">
-                            {{#if uploader.isUploading}}
-                                <div class="kg-upload-thumbnail-xl">
-                                    {{uploader.progressBar}}
-                                </div>
-                            {{else if @payload.backgroundImageSrc}}
-                                <div class="kg-thumbnail-xl-container">
-                                    <img class="kg-thumbnail-xl" src={{@payload.backgroundImageSrc}} {{on "click" uploader.triggerFileDialog}}>
-                                    <div class="image-overlay">
-                                        <div class="flex flex-row-reverse">
-                                            <button class="bg-white-90 br3 pe-auto" {{on "click" this.deleteBackgroundImage}}>
-                                                {{svg-jar "koenig/kg-trash" class="kg-replace-icon fill-darkgrey"}}
-                                            </button>
-                                        </div>
+                    <div class="gh-btn-group kg-settings-headerstyle-btn-group">
+                        <button type="button" class="gh-btn kg-headerstyle-btn-dark {{if (eq @payload.style "invert") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "invert")}}></button>
+                        <button type="button" class="gh-btn kg-headerstyle-btn-light {{if (eq @payload.style "clear") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "clear")}}></button>
+                        <button type="button" class="gh-btn kg-headerstyle-btn-accent {{if (eq @payload.style "accent") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "accent")}}></button>
+                        <button type="button" class="gh-btn kg-headerstyle-btn-image {{if (eq @payload.style "image") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "image")}}>{{svg-jar "plus"}}</button>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <GhUploader
+                        @uploadUrl="/images/upload/"
+                        @accept={{this.imageMimeTypes}}
+                        @extensions={{this.imageExtensions}}
+                        {{!-- @onStart={{this.customThumbnailUploadStarted}} --}}
+                        @onComplete={{this.backgroundImageUploadCompleted}}
+                        as |uploader|
+                    >
+                {{#if (eq @payload.style "image")}}
+                    <div class="relative w-100">
+                        {{#if uploader.isUploading}}
+                            <div class="kg-upload-thumbnail-xl">
+                                {{uploader.progressBar}}
+                            </div>
+                        {{else if @payload.backgroundImageSrc}}
+                            <div class="kg-thumbnail-xl-container">
+                                <img class="kg-thumbnail-xl" src={{@payload.backgroundImageSrc}} {{on "click" uploader.triggerFileDialog}}>
+                                <div class="image-overlay">
+                                    <div class="flex flex-row-reverse">
+                                        <button class="bg-white-90 br3 pe-auto" {{on "click" this.deleteBackgroundImage}}>
+                                            {{svg-jar "koenig/kg-trash" class="kg-replace-icon fill-darkgrey"}}
+                                        </button>
                                     </div>
                                 </div>
-                            {{else}}
-                                <button type="button" class="gh-btn kg-upload-thumbnail-xl" {{on "click" uploader.triggerFileDialog}}>
-                                    {{svg-jar "upload-fill"}}
-                                </button>
-                            {{/if}}
-                        </div>
-                    {{/if}}
-                        <div style="display:none">
-                            <GhFileInput
-                                @multiple={{false}}
-                                @action={{uploader.setFiles}}
-                                @accept={{this.imageMimeTypes}}
-                                @onInsert={{uploader.registerFileInput}}
-                            />
-                        </div>
-                    </GhUploader>
-                </div>
+                            </div>
+                        {{else}}
+                            <button type="button" class="gh-btn kg-upload-thumbnail-xl with-label" {{on "click" uploader.triggerFileDialog}}>
+                                {{svg-jar "upload-fill"}}
+                                <span>Click to add background image</span>
+                            </button>
+                        {{/if}}
+                    </div>
+                {{/if}}
+                    <div style="display:none">
+                        <GhFileInput
+                            @multiple={{false}}
+                            @action={{uploader.setFiles}}
+                            @accept={{this.imageMimeTypes}}
+                            @onInsert={{uploader.registerFileInput}}
+                        />
+                    </div>
+                </GhUploader>
             </div>
             <hr class="kg-settings-panel-divider">
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">

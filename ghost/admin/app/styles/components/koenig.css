@@ -1103,6 +1103,17 @@
     justify-content: space-between;
 }
 
+.kg-settings-panel-control-horizontal-top {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.kg-settings-panel-control-horizontal-top .kg-settings-panel-control-label {
+    margin-top: 8px;
+}
+
+
 .kg-settings-panel-control-label {
     font-weight: 700;
 }
@@ -2693,6 +2704,17 @@ button.emoji-picker__category-button.active {
     border-radius: var(--border-radius);
 }
 
+.kg-settings-panel .kg-upload-thumbnail-xl.with-label {
+    flex-direction: column;
+}
+
+.kg-settings-panel .kg-upload-thumbnail-xl.with-label span {
+    display: inline-block;
+    margin-top: -4px;
+    font-weight: 400;
+    color: var(--middarkgrey);
+}
+
 .kg-settings-panel .kg-thumbnail-xl {
     width: 100%;
     height: auto;
@@ -2723,6 +2745,58 @@ button.emoji-picker__category-button.active {
 .kg-settings-panel .kg-thumbnail-xl-container:hover .image-overlay {
     opacity: 1;
 }
+
+.kg-settings-headerstyle-btn-group {
+    background: none;
+}
+
+.kg-settings-headerstyle-btn-group .gh-btn {
+    background: var(--white) !important;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 999px;
+    margin-right: 5px;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-dark {
+    background: #222 !important;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-light {
+    background: #F9F9F9 !important;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-accent {
+    background: var(--accent-color) !important;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image {
+    background: transparent;
+    margin-right: 0;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image svg {
+    width: 12px;
+    height: 12px;
+}
+
+.kg-settings-headerstyle-btn-group .gh-btn-group-selected {
+    position: relative;
+}
+
+.kg-settings-headerstyle-btn-group .gh-btn-group-selected::before {
+    position: absolute;
+    content: "";
+    display: block;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    left: -4px;
+    border: 2px solid var(--green);
+    border-radius: 999px;
+}
+
 
 /* Multimedia player UI
 /* --------------------------------------------------------------- */
