@@ -2152,6 +2152,13 @@ button.emoji-picker__category-button.active {
     opacity: 1.0;
 }
 
+.kg-header-card.kg-style-accent h2 a,
+.kg-header-card.kg-style-accent h3 a,
+.kg-header-card.kg-style-image h2 a,
+.kg-header-card.kg-style-image h3 a {
+    color: #fff !important;
+}
+
 .kg-header-card-button {
     margin-top: 1.75em;
     background-color: var(--white);
@@ -2219,7 +2226,6 @@ button.emoji-picker__category-button.active {
     font-weight: 700;
 }
 
-.kg-header-card-subheader,
 .kg-header-card-subheader .koenig-basic-html-input__editor {
     display: flex;
     flex-direction: column;
@@ -2237,6 +2243,10 @@ button.emoji-picker__category-button.active {
 
 .kg-header-card.kg-style-clear .__mobiledoc-editor.__has-no-content:after {
     color: #15171A !important;
+}
+
+.kg-header-card .kg-link-input {
+    color: var(--middarkgrey);
 }
 
 /* Upload cards: audio and file
