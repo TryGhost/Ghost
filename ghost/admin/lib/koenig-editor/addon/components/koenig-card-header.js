@@ -242,6 +242,9 @@ export default class KoenigCardHeaderComponent extends Component {
     setStyle(style) {
         if (['invert', 'clear', 'accent', 'image'].includes(style)) {
             this._updatePayloadAttr('style', style);
+            if (style === 'image') {
+                this.triggerFileDialog();
+            }
         }
     }
 
