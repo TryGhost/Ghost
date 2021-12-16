@@ -125,34 +125,24 @@
 
 .kg-header-card a.kg-header-card-button {
     display: inline-block;
-    outline: none;
-    background: #fff;
-    color: #15171a;
-    text-decoration: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    fill: #fff;
-    font-weight: 500;
-    border-radius: 3px;
+    height: 44px;
     margin: 1.75em 0 0;
-    transition: opacity .2s ease;
-}
-
-.kg-header-card a.kg-header-card-button span {
-    display: block;
-    overflow: hidden;
+    padding: 0 24px;
+    fill: #fff;
+    background: #fff;
+    border-radius: 3px;
+    outline: none;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     font-size: 1.55rem;
     font-weight: 600;
     text-align: center;
-    height: 44px;
+    text-decoration: none;
     line-height: 44px;
     letter-spacing: .2px;
-    padding: 0 24px;
     white-space: nowrap;
     text-overflow: ellipsis;
+    color: #15171a;
+    transition: opacity .2s ease;
 }
 
 .kg-header-card a.kg-header-card-button:hover {
@@ -161,9 +151,6 @@
 
 .kg-header-card.kg-size-large a.kg-header-card-button {
     margin-top: 2em;
-}
-
-.kg-header-card.kg-size-large a.kg-header-card-button span {
     height: 52px;
     line-height: 52px;
     font-size: 1.65rem;
@@ -172,9 +159,6 @@
 
 .kg-header-card.kg-size-small a.kg-header-card-button {
     margin-top: 1.5em;
-}
-
-.kg-header-card.kg-size-small a.kg-header-card-button span {
     height: 38px;
     line-height: 38px;
     font-size: 1.45rem;
