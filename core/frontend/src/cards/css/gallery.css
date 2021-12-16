@@ -36,7 +36,8 @@
 }
 
 @media (max-width: 600px) {
-    .kg-gallery-card {
+    .kg-gallery-card,
+    .kg-image-card {
         --gap: 0.6rem;
     }
 }
