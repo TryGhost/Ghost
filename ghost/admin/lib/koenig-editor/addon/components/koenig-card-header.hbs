@@ -1,6 +1,6 @@
 <KoenigCard
     @env={{@env}}
-    @class={{concat "flex flex-column mih10 miw-100 relative " (kg-style "breakout" size=@payload.cardWidth)}}
+    @class="flex flex-column mih10 miw-100 relative koenig-breakout-full"
     @headerOffset={{@headerOffset}}
     @toolbar={{this.toolbar}}
     @payload={{@payload}}
@@ -21,7 +21,7 @@
     as |card|
 >
     {{#if @isEditing}}
-        <div class="kg-header-card kg-size-{{@payload.size}} kg-align-{{@payload.alignment}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
+        <div class="kg-header-card kg-size-{{@payload.size}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
             <KoenigBasicHtmlInput
                 @html={{@payload.header}}
                 @placeholder="Header"
@@ -51,24 +51,6 @@
         </div>
 
         <KoenigSettingsPanel>
-            {{!-- <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <div class="kg-settings-panel-control-label">Width</div>
-                <div class="kg-settings-panel-control-input">
-                    <div class="gh-btn-group icons">
-                        <button type="button" title="Normal" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "regular") "gh-btn-group-selected"}}" {{on "click" (fn this.setCardWidth "regular")}}><span>{{svg-jar "koenig/kg-img-regular" class="fill-darkgrey"}}</span></button>
-                        <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" {{on "click" (fn this.setCardWidth "full")}}><span>{{svg-jar "koenig/kg-img-full" class="fill-darkgrey"}}</span></button>
-                    </div>
-                </div>
-            </div>
-            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
-                <div class="kg-settings-panel-control-label">Alignment</div>
-                <div class="kg-settings-panel-control-input">
-                    <div class="gh-btn-group icons">
-                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
-                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
-                    </div>
-                </div>
-            </div> --}}
             <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
                 <div class="kg-settings-panel-control-label">Size</div>
                 <div class="kg-settings-panel-control-input">
@@ -95,7 +77,6 @@
                         @uploadUrl="/images/upload/"
                         @accept={{this.imageMimeTypes}}
                         @extensions={{this.imageExtensions}}
-                        {{!-- @onStart={{this.customThumbnailUploadStarted}} --}}
                         @onComplete={{this.backgroundImageUploadCompleted}}
                         as |uploader|
                     >
@@ -187,7 +168,7 @@
 
     {{else}}
 
-        <div class="kg-header-card kg-size-{{@payload.size}} kg-align-{{@payload.alignment}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
+        <div class="kg-header-card kg-size-{{@payload.size}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
             <h2 class="kg-header-card-header">{{{@payload.header}}}</h2>
             {{#if this.hasSubheader}}
                 <h3 class="kg-header-card-subheader">{{{@payload.subheader}}}</h3>
