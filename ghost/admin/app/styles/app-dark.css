@@ -1062,6 +1062,6 @@ input:focus,
     border-color: var(--midlightgrey);
 }
 
-.kg-header-card.kg-style-invert {
+.kg-header-card.kg-style-dark {
     background: #08090C;
 }

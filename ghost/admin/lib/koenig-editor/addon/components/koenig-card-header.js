@@ -68,7 +68,7 @@ export default class KoenigCardHeaderComponent extends Component {
 
         const payloadDefaults = {
             size: 'small',
-            style: 'invert',
+            style: 'dark',
             buttonEnabled: false
         };
 
@@ -231,7 +231,7 @@ export default class KoenigCardHeaderComponent extends Component {
 
     @action
     setStyle(style) {
-        if (['invert', 'clear', 'accent', 'image'].includes(style)) {
+        if (['dark', 'light', 'accent', 'image'].includes(style)) {
             this._updatePayloadAttr('style', style);
             if (style === 'image' && !this.args.payload.backgroundImageSrc) {
                 this.triggerFileDialog();
