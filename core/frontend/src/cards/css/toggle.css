@@ -51,6 +51,7 @@
     font-size: 0.95em;
     line-height: 1.5em;
     margin-top: 0.95em;
+    margin-bottom: 0;
 }
 
 .kg-toggle-card li + li {
