@@ -116,6 +116,18 @@
     z-index: 999;
 }
 
+.kg-header-card h2.kg-header-card-header a,
+.kg-header-card h3.kg-header-card-subheader a {
+    color: var(--ghost-accent-color);
+}
+
+.kg-header-card.kg-style-accent h2.kg-header-card-header a,
+.kg-header-card.kg-style-accent h3.kg-header-card-subheader a,
+.kg-header-card.kg-style-image h2.kg-header-card-header a,
+.kg-header-card.kg-style-image h3.kg-header-card-subheader a {
+    color: #fff;
+}
+
 .kg-header-card a.kg-header-card-button {
     display: inline-block;
     outline: none;
