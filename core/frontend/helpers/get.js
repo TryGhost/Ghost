@@ -109,6 +109,10 @@ function parseOptions(globals, data, options) {
         options.filter = resolvePaths(globals, data, options.filter);
     }
 
+    if (options.limit === 'all' && config.get('getHelperLimitAllMax')) {
+        options.limit = config.get('getHelperLimitAllMax');
+    }
+
     return options;
 }
 
