@@ -38,6 +38,9 @@
                 "video/ogg",
                 "audio/mpeg",
                 "audio/vnd.wav",
+                "audio/wave",
+                "audio/wav",
+                "audio/x-wav",
                 "audio/ogg"
             ]
         },
