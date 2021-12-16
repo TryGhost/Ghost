@@ -24,7 +24,7 @@
         <div class="kg-header-card kg-size-{{@payload.size}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
             <KoenigBasicHtmlInput
                 @html={{@payload.header}}
-                @placeholder="Header"
+                @placeholder="Enter heading text"
                 @class="w-100 fw4 bn bg-transparent kg-header-card-header"
                 @name="header"
                 @defaultTag="h2"
@@ -33,7 +33,7 @@
             />
             <KoenigBasicHtmlInput
                 @html={{@payload.subheader}}
-                @placeholder="Subheader"
+                @placeholder="Enter subheading text"
                 @class="w-100 fw4 bg-transparent kg-header-card-subheader"
                 @name="subheader"
                 @defaultTag="h3"
