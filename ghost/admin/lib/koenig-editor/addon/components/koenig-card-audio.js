@@ -15,7 +15,7 @@ import {set} from '@ember/object';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 export const AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'm4a'];
-export const AUDIO_MIME_TYPES = ['audio/mp3', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/mp4'];
+export const AUDIO_MIME_TYPES = ['audio/mp3', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/vnd.wav', 'audio/wave', 'audio/x-wav', 'audio/mp4'];
 
 const PLACEHOLDERS = ['summer', 'mountains', 'ufo-attack'];
 
