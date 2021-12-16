@@ -45,7 +45,7 @@ module.exports = {
             header: payload.header,
             subheader: payload.subheader,
             hasSubheader: payload.subheader && Boolean(payload.subheader.replace(/(<br>)+$/g).trim()),
-            backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : '',
+            backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : ''
         };
 
         const html = dedent(frontendTemplate(templateData));
