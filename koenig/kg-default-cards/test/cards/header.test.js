@@ -24,7 +24,7 @@ describe('Header card', function () {
             }
         };
 
-        serializer.serialize(card.render(opts)).should.equal(`<div class="kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image="https://example.com/image.jpg"><h2 class="kg-header-card-header">This is the header card</h2><h3 class="kg-header-card-subheader">hi</h3><a href="https://example.com/" class="kg-header-card-button"><span>The button</span></a></div>`);
+        serializer.serialize(card.render(opts)).should.equal(`<div class="kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image="https://example.com/image.jpg"><h2 class="kg-header-card-header">This is the header card</h2><h3 class="kg-header-card-subheader">hi</h3><a href="https://example.com/" class="kg-header-card-button">The button</a></div>`);
     });
 
     it('renders nothing when header and subheader is undefined and the button is disabled', function () {
