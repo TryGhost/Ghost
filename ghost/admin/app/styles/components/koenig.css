@@ -2117,6 +2117,7 @@ button.emoji-picker__category-button.active {
 
 .kg-header-card.kg-size-small h3 {
     font-size: 1.25em;
+    margin: 0.25em 0 0;
 }
 
 .kg-header-card.kg-size-large h3 {
@@ -2712,7 +2713,7 @@ button.emoji-picker__category-button.active {
     display: inline-block;
     margin-top: -4px;
     font-weight: 400;
-    color: var(--middarkgrey);
+    color: var(--midgrey);
 }
 
 .kg-settings-panel .kg-thumbnail-xl {
