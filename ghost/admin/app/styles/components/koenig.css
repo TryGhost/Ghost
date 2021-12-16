@@ -2042,6 +2042,10 @@ button.emoji-picker__category-button.active {
     transition: background-color var(--animation-speed-fast) ease-in-out;
 }
 
+.kg-header-card a {
+    pointer-events: none;
+}
+
 .kg-header-card.kg-size-small {
     padding-top: 14vmin;
     padding-bottom: 14vmin;
