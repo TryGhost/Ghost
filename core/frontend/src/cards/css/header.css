@@ -1,5 +1,5 @@
 .kg-header-card {
-    padding: 12vmin 8em;
+    padding: 12vmin 4em;
     min-height: 60vh;
     display: flex;
     flex-direction: column;
@@ -18,11 +18,6 @@
     padding-top: 18vmin;
     padding-bottom: 18vmin;
     min-height: 80vh;
-}
-
-.kg-header-card.kg-width-full {
-    padding-left: 4em;
-    padding-right: 4em;
 }
 
 .kg-header-card.kg-align-left {
@@ -84,7 +79,7 @@
     font-size: 1.5em;
     font-weight: 500;
     line-height: 1.4em;
-    margin: 0.35em 0 0 !important;
+    margin: 0.35em 0 0;
     max-width: 40em;
 }
 
@@ -133,7 +128,7 @@
     outline: none;
     background: #fff;
     color: #15171a;
-    text-decoration: none !important;
+    text-decoration: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -142,7 +137,7 @@
     font-weight: 500;
     border-radius: 3px;
     margin: 1.75em 0 0;
-    transition: all .2s ease;
+    transition: opacity .2s ease;
 }
 
 .kg-header-card a.kg-header-card-button span {
@@ -151,7 +146,6 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;  
     font-size: 1.55rem;
     font-weight: 600;
-    text-decoration: none;
     text-align: center;
     height: 44px;
     line-height: 44px;
