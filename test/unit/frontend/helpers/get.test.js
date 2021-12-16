@@ -8,6 +8,7 @@ const get = require('../../../../core/frontend/helpers/get');
 
 const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api');
+const proxy = require('../../../../core/frontend/services/proxy');
 
 describe('{{#get}} helper', function () {
     let fn;
@@ -312,6 +313,79 @@ describe('{{#get}} helper', function () {
 
                 done();
             }).catch(done);
+        });
+    });
+
+    describe('limit=all max', function () {
+        let browseStub;
+
+        beforeEach(function () {
+            browseStub = sinon.stub().resolves();
+            sinon.stub(api.v2, 'postsPublic').get(() => {
+                return {
+                    browse: browseStub
+                };
+            });
+            sinon.stub(api.v3, 'postsPublic').get(() => {
+                return {
+                    browse: browseStub
+                };
+            });
+            sinon.stub(api.canary, 'postsPublic').get(() => {
+                return {
+                    browse: browseStub
+                };
+            });
+        });
+
+        it('Behaves normally without config', async function () {
+            locals = {root: {_locals: {apiVersion: 'v2'}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.firstCall.args[0].limit.should.eql('all');
+            locals = {root: {_locals: {apiVersion: 'v3'}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.secondCall.args[0].limit.should.eql('all');
+            locals = {root: {_locals: {apiVersion: 'canary'}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.thirdCall.args[0].limit.should.eql('all');
+        });
+
+        it('Replaces "all" with "getHelperLimitAllMax" config, if present', async function () {
+            sinon.stub(proxy.config, 'get').withArgs('getHelperLimitAllMax').returns(2);
+
+            locals = {root: {_locals: {apiVersion: 'v2'}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.firstCall.args[0].limit.should.eql(2);
+            locals = {root: {_locals: {apiVersion: 'v3'}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.secondCall.args[0].limit.should.eql(2);
+            locals = {root: {_locals: {apiVersion: 'canary'}}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.thirdCall.args[0].limit.should.eql(2);
         });
     });
 });
