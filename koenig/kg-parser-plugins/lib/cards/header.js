@@ -43,11 +43,11 @@ export function fromKoenigCard() {
             buttonUrl,
             backgroundImageSrc,
             size: 'small',
-            style: 'invert'
+            style: 'dark'
         };
 
         const sizeClass = classes.find(c => /^kg-size-(small|medium|large)$/.test(c));
-        const styleClass = classes.find(c => /^kg-style-(invert|clear|accent|image)$/.test(c));
+        const styleClass = classes.find(c => /^kg-style-(dark|light|accent|image)$/.test(c));
         if (sizeClass) {
             payload.size = sizeClass.replace('kg-size-', '');
         }

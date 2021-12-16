@@ -37,7 +37,7 @@ describe('parser-plugins: header card', function () {
 
     describe('kgHeaderCardToCard', function () {
         it('parses header card divs into cards', function () {
-            const dom = buildDOM('<div class="kg-header-card kg-width-full kg-size-small kg-style-invert" style="" data-kg-background-image="https://example.com/image.jpg"><h2 class="kg-header-card-header">This is the header card</h2><h3 class="kg-header-card-subheader">hi</h3><a href="https://example.com/" class="kg-header-card-button"><span>The button</span></a></div>');
+            const dom = buildDOM('<div class="kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image="https://example.com/image.jpg"><h2 class="kg-header-card-header">This is the header card</h2><h3 class="kg-header-card-subheader">hi</h3><a href="https://example.com/" class="kg-header-card-button"><span>The button</span></a></div>');
             const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
@@ -50,12 +50,12 @@ describe('parser-plugins: header card', function () {
                 buttonUrl: 'https://example.com/',
                 backgroundImageSrc: 'https://example.com/image.jpg',
                 size: 'small',
-                style: 'invert'
+                style: 'dark'
             });
         });
 
         it('parses a minimal header card', function () {
-            const dom = buildDOM(`<div class="kg-header-card kg-width-full kg-size-small kg-style-invert" style="" data-kg-background-image=""><h2 class="kg-header-card-header">hi</h2></div>`);
+            const dom = buildDOM(`<div class="kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image=""><h2 class="kg-header-card-header">hi</h2></div>`);
             const [section] = parser.parse(dom).sections.toArray();
 
             section.type.should.equal('card-section');
@@ -67,14 +67,14 @@ describe('parser-plugins: header card', function () {
                 buttonUrl: '',
                 header: 'hi',
                 size: 'small',
-                style: 'invert',
+                style: 'dark',
                 subheader: ''
             });
         });
 
         it('handles arbitrary whitespace', function () {
             const dom = buildDOM(`
-                <div class="kg-header-card kg-width-full kg-size-small kg-style-invert" style="" data-kg-background-image=" https://example.com/image.jpg ">
+                <div class="kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image=" https://example.com/image.jpg ">
                     <h2 class="kg-header-card-header">
                         This is the header card
                     </h2>
@@ -100,13 +100,13 @@ describe('parser-plugins: header card', function () {
                 buttonUrl: 'https://example.com/',
                 backgroundImageSrc: 'https://example.com/image.jpg',
                 size: 'small',
-                style: 'invert'
+                style: 'dark'
             });
         });
 
         it('falls through if the header, subheader and button are missing', function () {
             const dom = buildDOM(`
-                <div class="kg-header-card kg-width-full kg-size-small kg-style-invert" style="" data-kg-background-image=" https://example.com/image.jpg ">
+                <div class="kg-header-card kg-width-full kg-size-small kg-style-dark" style="" data-kg-background-image=" https://example.com/image.jpg ">
                     <h2 class="kg-header-card-header">
                     </h2>
                     <h3 class="kg-header-card-subheader">
