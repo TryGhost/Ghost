@@ -68,9 +68,7 @@ export default class KoenigCardHeaderComponent extends Component {
 
         const payloadDefaults = {
             size: 'small',
-            alignment: 'center',
             style: 'invert',
-            cardWidth: 'full',
             buttonEnabled: false
         };
 
@@ -232,13 +230,6 @@ export default class KoenigCardHeaderComponent extends Component {
     }
 
     @action
-    setAlignment(alignment) {
-        if (['center', 'left'].includes(alignment)) {
-            this._updatePayloadAttr('alignment', alignment);
-        }
-    }
-
-    @action
     setStyle(style) {
         if (['invert', 'clear', 'accent', 'image'].includes(style)) {
             this._updatePayloadAttr('style', style);
@@ -270,10 +261,5 @@ export default class KoenigCardHeaderComponent extends Component {
     @action
     deleteBackgroundImage() {
         this._updatePayloadAttr('backgroundImageSrc', null);
-    }
-
-    @action
-    setCardWidth(width) {
-        this._updatePayloadAttr('cardWidth', width);
     }
 }
