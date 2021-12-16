@@ -121,6 +121,7 @@
                                 </button>
                             {{/if}}
                         </div>
+                    {{/if}}
                         <div style="display:none">
                             <GhFileInput
                                 @multiple={{false}}
@@ -129,7 +130,6 @@
                                 @onInsert={{uploader.registerFileInput}}
                             />
                         </div>
-                    {{/if}}
                     </GhUploader>
                 </div>
             </div>
