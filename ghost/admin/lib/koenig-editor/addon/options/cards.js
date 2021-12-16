@@ -235,7 +235,7 @@ export const CARD_MENU = [
             label: 'File',
             icon: 'koenig/kg-card-type-file',
             desc: 'Upload a downloadable file',
-            matches: ['file'],
+            matches: ['file', 'upload'],
             type: 'card',
             replaceArg: 'file',
             isAvailable: 'feature.fileCard',
