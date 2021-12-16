@@ -2065,14 +2065,17 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-header-card.kg-style-invert {
-    background: var(--black);
-    color: var(--white);
+    background: #15171A ;
+    color: #fff;
 }
 
 .kg-header-card.kg-style-clear {
-    color: var(--black);
-    border-width: 1px 0;
-    background-color: var(--whitegrey-l2);
+    background-color: #fafafb;
+}
+
+.kg-header-card.kg-style-clear h2,
+.kg-header-card.kg-style-clear h3 {
+    color: #15171A !important;
 }
 
 .kg-header-card.kg-style-accent {
@@ -2084,8 +2087,6 @@ button.emoji-picker__category-button.active {
     background-size: cover;
     background-position: center center;
 }
-
-/* 4em 5em 6em*/
 
 .kg-header-card-header .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card h2 {
@@ -2143,7 +2144,7 @@ button.emoji-picker__category-button.active {
 
 .kg-header-card:not(.kg-style-clear) h2,
 .kg-header-card:not(.kg-style-clear) h3 {
-    color: var(--white);
+    color: #fff;
 }
 
 .kg-header-card.kg-style-accent h3,
@@ -2185,12 +2186,12 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-style-clear .kg-header-card-button {
-    background-color: var(--accent-color);
-    color: #fff;
+    background-color: var(--accent-color) !important;
+    color: #fff !important;
 }
 
 .kg-style-accent .kg-header-card-button {
-    color: var(--darkgrey);
+    color: #15171A !important;
 }
 
 .kg-style-image {
@@ -2235,7 +2236,7 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-header-card.kg-style-clear .__mobiledoc-editor.__has-no-content:after {
-    color: var(--darkgrey) !important;
+    color: #15171A !important;
 }
 
 /* Upload cards: audio and file
@@ -2833,7 +2834,7 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-settings-headerstyle-btn-group {
-    background: none;
+    background: none !important;
 }
 
 .kg-settings-headerstyle-btn-group .gh-btn {
@@ -2846,7 +2847,7 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-dark {
-    background: #222 !important;
+    background: #08090c !important;
 }
 
 .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-light {
@@ -2858,13 +2859,17 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image {
-    background: transparent;
+    background: transparent !important;
     margin-right: 0;
 }
 
 .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image svg {
     width: 12px;
     height: 12px;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image svg path {
+    stroke: var(--midgrey);
 }
 
 .kg-settings-headerstyle-btn-group .gh-btn-group-selected {
