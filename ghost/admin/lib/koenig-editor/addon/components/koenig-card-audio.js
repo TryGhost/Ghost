@@ -191,7 +191,8 @@ export default class KoenigCardAudioComponent extends Component {
     getFormattedDuration(duration = 200) {
         const minutes = Math.floor(duration / 60);
         const seconds = Math.floor(duration - (minutes * 60));
-        const formattedDuration = `${minutes}:${seconds}`;
+        const returnedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
+        const formattedDuration = `${minutes}:${returnedSeconds}`;
         return formattedDuration;
     }
 
