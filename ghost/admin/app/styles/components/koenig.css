@@ -2068,17 +2068,17 @@ button.emoji-picker__category-button.active {
     align-items: flex-start;
 }
 
-.kg-header-card.kg-style-invert {
+.kg-header-card.kg-style-dark {
     background: #15171A ;
     color: #fff;
 }
 
-.kg-header-card.kg-style-clear {
+.kg-header-card.kg-style-light {
     background-color: #fafafb;
 }
 
-.kg-header-card.kg-style-clear h2,
-.kg-header-card.kg-style-clear h3 {
+.kg-header-card.kg-style-light h2,
+.kg-header-card.kg-style-light h3 {
     color: #15171A !important;
 }
 
@@ -2117,7 +2117,7 @@ button.emoji-picker__category-button.active {
     font-size: 6em;
 }
 
-.kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after, 
+.kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card h3 {
     font-size: 1.5em;
     font-weight: 500;
@@ -2146,8 +2146,8 @@ button.emoji-picker__category-button.active {
     line-height: 1.35em;
 }
 
-.kg-header-card:not(.kg-style-clear) h2,
-.kg-header-card:not(.kg-style-clear) h3 {
+.kg-header-card:not(.kg-style-light) h2,
+.kg-header-card:not(.kg-style-light) h3 {
     color: #fff;
 }
 
@@ -2196,7 +2196,7 @@ button.emoji-picker__category-button.active {
     padding: 0 28px;
 }
 
-.kg-style-clear .kg-header-card-button {
+.kg-style-light .kg-header-card-button {
     background-color: var(--accent-color) !important;
     color: #fff !important;
 }
@@ -2245,7 +2245,7 @@ button.emoji-picker__category-button.active {
     color: #fff !important;
 }
 
-.kg-header-card.kg-style-clear .__mobiledoc-editor.__has-no-content:after {
+.kg-header-card.kg-style-light .__mobiledoc-editor.__has-no-content:after {
     color: #15171A !important;
 }
 
