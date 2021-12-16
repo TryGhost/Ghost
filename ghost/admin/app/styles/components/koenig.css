@@ -2085,10 +2085,16 @@ button.emoji-picker__category-button.active {
     background-position: center center;
 }
 
+/* 4em 5em 6em*/
+
+.kg-header-card-header .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card h2 {
     font-size: 5em;
     font-weight: 700;
     line-height: 1.1em;
+}
+
+.kg-header-card h2 {
     margin: 0;
 }
 
@@ -2096,32 +2102,40 @@ button.emoji-picker__category-button.active {
     font-weight: 800;
 }
 
+.kg-header-card.kg-size-small .kg-header-card-header .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card.kg-size-small h2 {
     font-size: 4em;
 }
 
+.kg-header-card.kg-size-large .kg-header-card-header .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card.kg-size-large h2 {
     font-size: 6em;
 }
 
+.kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after, 
 .kg-header-card h3 {
     font-size: 1.5em;
     font-weight: 500;
     line-height: 1.4em;
     margin: 0.35em 0 0 !important;
-    min-width: unset;
     max-width: 40em;
+}
+
+.kg-header-card h3 {
     opacity: 0.85;
+    min-width: unset;
 }
 
 .kg-header-card h3 strong {
     font-weight: 600;
 }
 
+.kg-header-card.kg-size-small .kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card.kg-size-small h3 {
     font-size: 1.25em;
 }
 
+.kg-header-card.kg-size-large .kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card.kg-size-large h3 {
     font-size: 1.75em;
     line-height: 1.35em;
@@ -2198,6 +2212,21 @@ button.emoji-picker__category-button.active {
 .kg-style-image h3,
 .kg-style-image .kg-header-card-button {
     z-index: 999;
+}
+
+.kg-header-card-header .koenig-basic-html-input__editor.__has-no-content {
+    font-weight: 700;
+}
+
+.kg-header-card-subheader,
+.kg-header-card-subheader .koenig-basic-html-input__editor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.kg-header-card-subheader .koenig-basic-html-input__editor-wrappper {
+    width: 100%;
 }
 
 /* Upload cards: audio and file
@@ -3095,20 +3124,4 @@ button.emoji-picker__category-button.active {
     top: 0;
     left: 0;
     color: var(--midlightgrey);
-}
-
-.kg-header-card-header .__mobiledoc-editor.__has-no-content:after {
-    top: 36px;
-    font-size: 4em;
-}
-
-.kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after {
-    top: 10px;
-    font-size: 1.4em;
-}
-
-.kg-header-card-subheader {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
