@@ -20,6 +20,7 @@ import * as audioCard from './cards/audio';
 import * as videoCard from './cards/video';
 import * as beforeAfterCard from './cards/before-after';
 import * as fileCard from './cards/file';
+import * as headerCard from './cards/header';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -478,6 +479,7 @@ export function createParserPlugins(_options = {}) {
         audioCard.fromKoenigCard(options),
         videoCard.fromKoenigCard(options),
         fileCard.fromKoenigCard(options),
+        headerCard.fromKoenigCard(options),
         blockquoteWithChildren,
         softReturn.fromBr(options),
         removeLeadingNewline,

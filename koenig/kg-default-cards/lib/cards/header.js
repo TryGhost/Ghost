@@ -21,7 +21,7 @@ module.exports = {
         }
 
         const frontendTemplate = hbs`
-            <div class="kg-header-card kg-width-full kg-size-{{size}} kg-style-{{style}}" style="{{backgroundImageStyle}}">
+            <div class="kg-header-card kg-width-full kg-size-{{size}} kg-style-{{style}}" style="{{backgroundImageStyle}}" data-kg-background-image="{{backgroundImageSrc}}">
                 <h2 class="kg-header-card-header">{{{header}}}</h2>
                 {{#if this.hasSubheader}}
                     <h3 class="kg-header-card-subheader">{{{subheader}}}</h3>
@@ -45,7 +45,8 @@ module.exports = {
             header: payload.header,
             subheader: payload.subheader,
             hasSubheader: payload.subheader && Boolean(payload.subheader.replace(/(<br>)+$/g).trim()),
-            backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : ''
+            backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : '',
+            backgroundImageSrc: payload.backgroundImageSrc
         };
 
         const html = dedent(frontendTemplate(templateData));
