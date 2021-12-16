@@ -300,6 +300,11 @@ module.exports = class RouterController {
             res.writeHead(201);
             return res.end('Created.');
         } catch (err) {
+            if (err.code === 'EENVELOPE') {
+                logging.error(err);
+                res.writeHead(400);
+                return res.end('Bad Request.');
+            }
             const statusCode = (err && err.statusCode) || 500;
             logging.error(err);
             res.writeHead(statusCode);
