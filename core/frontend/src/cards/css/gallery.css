@@ -1,4 +1,5 @@
-.kg-gallery-card {
+.kg-gallery-card,
+.kg-image-card {
     --gap: 1.2rem;
 }
 
