@@ -65,8 +65,8 @@
                 <div class="kg-settings-panel-control-label">Style</div>
                 <div class="kg-settings-panel-control-input">
                     <div class="gh-btn-group kg-settings-headerstyle-btn-group">
-                        <button type="button" class="gh-btn kg-headerstyle-btn-dark {{if (eq @payload.style "invert") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "invert")}}></button>
-                        <button type="button" class="gh-btn kg-headerstyle-btn-light {{if (eq @payload.style "clear") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "clear")}}></button>
+                        <button type="button" class="gh-btn kg-headerstyle-btn-dark {{if (eq @payload.style "dark") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "dark")}}></button>
+                        <button type="button" class="gh-btn kg-headerstyle-btn-light {{if (eq @payload.style "light") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "light")}}></button>
                         <button type="button" class="gh-btn kg-headerstyle-btn-accent {{if (eq @payload.style "accent") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "accent")}}></button>
                         <button type="button" class="gh-btn kg-headerstyle-btn-image {{if (eq @payload.style "image") "gh-btn-group-selected"}}" {{on "click" (fn this.setStyle "image")}}>{{svg-jar "plus"}}</button>
                     </div>
