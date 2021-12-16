@@ -28,9 +28,7 @@ module.exports = {
                 {{/if}}
                 {{#if buttonEnabled}}
                     <a href="{{buttonUrl}}" class="kg-header-card-button">
-                        <span>
-                            {{buttonText}}
-                        </span>
+                        {{buttonText}}
                     </a>
                 {{/if}}
             </div>
