@@ -21,13 +21,13 @@ module.exports = {
         }
 
         const frontendTemplate = hbs`
-            <div class="kg-header-card {{cardSize}} kg-size-{{size}} kg-align-{{alignment}} kg-style-{{style}}" style="{{backgroundImageStyle}}">
+            <div class="kg-header-card kg-width-full kg-size-{{size}} kg-style-{{style}}" style="{{backgroundImageStyle}}">
                 <h2 class="kg-header-card-header">{{{header}}}</h2>
                 {{#if this.hasSubheader}}
                     <h3 class="kg-header-card-subheader">{{{subheader}}}</h3>
                 {{/if}}
                 {{#if buttonEnabled}}
-                    <a href="{{buttonUrl}}" class="kg-btn kg-header-card-button">
+                    <a href="{{buttonUrl}}" class="kg-header-card-button">
                         <span>
                             {{buttonText}}
                         </span>
@@ -38,16 +38,14 @@ module.exports = {
 
         const templateData = {
             size: payload.size,
-            alignment: payload.alignment,
             style: payload.style,
-            buttonEnabled: payload.buttonEnabled,
+            buttonEnabled: payload.buttonEnabled && Boolean(payload.buttonUrl) && Boolean(payload.buttonText),
             buttonUrl: payload.buttonUrl,
             buttonText: payload.buttonText,
             header: payload.header,
             subheader: payload.subheader,
             hasSubheader: payload.subheader && Boolean(payload.subheader.replace(/(<br>)+$/g).trim()),
             backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : '',
-            cardSize: payload.cardWidth === 'full' ? 'kg-width-full' : ''
         };
 
         const html = dedent(frontendTemplate(templateData));
