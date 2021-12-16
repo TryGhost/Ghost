@@ -2032,7 +2032,7 @@ button.emoji-picker__category-button.active {
 /* Header card
 /* --------------------------------------------------------------- */
 .kg-header-card {
-    padding: 6em 3em;
+    padding: 12vmin 3em;
     min-height: 60vh;
     display: flex;
     flex-direction: column;
@@ -2043,14 +2043,14 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-header-card.kg-size-small {
-    padding-top: 4em;
-    padding-bottom: 4em;
+    padding-top: 14vmin;
+    padding-bottom: 14vmin;
     min-height: 40vh;
 }
 
 .kg-header-card.kg-size-large {
-    padding-top: 12em;
-    padding-bottom: 12em;
+    padding-top: 18vmin;
+    padding-bottom: 18vmin;
     min-height: 80vh;
 }
 
