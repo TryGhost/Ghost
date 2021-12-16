@@ -1113,7 +1113,7 @@ ${ templateSettings.showBadge ? `
 </style>
 </head>
 
-<body class="">
+<body>
     <span class="preheader">${ post.excerpt ? post.excerpt : `${post.title} – ` }</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" width="100%">
 
