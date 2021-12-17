@@ -2122,7 +2122,7 @@ button.emoji-picker__category-button.active {
     font-size: 1.5em;
     font-weight: 500;
     line-height: 1.4em;
-    margin: 0.35em 0 0 !important;
+    margin: 0.35em auto 0 !important;
     max-width: 40em;
 }
 
@@ -2138,6 +2138,10 @@ button.emoji-picker__category-button.active {
 .kg-header-card.kg-size-small .kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card.kg-size-small h3 {
     font-size: 1.25em;
+}
+
+.kg-header-card .kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after {
+    margin-top: 0 !important;
 }
 
 .kg-header-card.kg-size-large .kg-header-card-subheader .__mobiledoc-editor.__has-no-content:after,
@@ -2231,9 +2235,8 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-header-card-subheader .koenig-basic-html-input__editor {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: block;
+    text-align: center;
 }
 
 .kg-header-card-subheader .koenig-basic-html-input__editor-wrappper {
