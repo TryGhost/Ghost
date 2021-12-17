@@ -26,12 +26,12 @@
 }
 
 .kg-header-card.kg-style-dark {
-    background: #15171a;
+    background: #151515;
     color: #ffffff;
 }
 
 .kg-header-card.kg-style-light {
-    background-color: #fafafb;
+    background-color: #fafafa;
 }
 
 .kg-header-card.kg-style-accent {
@@ -40,7 +40,7 @@
 
 .kg-header-card.kg-style-image {
     position: relative;
-    background-color: #e7e7eb;
+    background-color: #e7e7e7;
     background-size: cover;
     background-position: center;
 }
@@ -166,7 +166,7 @@
 .kg-header-card.kg-style-image a.kg-header-card-button,
 .kg-header-card.kg-style-dark a.kg-header-card-button {
     background: #fff;
-    color: #15171a;
+    color: #151515;
 }
 
 .kg-header-card.kg-style-light a.kg-header-card-button {
@@ -176,7 +176,7 @@
 
 .kg-header-card.kg-style-accent a.kg-header-card-button {
     background: #fff;
-    color: #15171a;
+    color: #151515;
 }
 
 @media (max-width: 640px) {
