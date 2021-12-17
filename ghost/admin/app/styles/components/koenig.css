@@ -2256,6 +2256,46 @@ button.emoji-picker__category-button.active {
     color: var(--middarkgrey);
 }
 
+@media (max-width: 1150px) {
+    .kg-header-card.kg-size-large .kg-header-card-header .__mobiledoc-editor.__has-no-content:after, 
+    .kg-header-card.kg-size-large h2 {
+        font-size: 4.8em;
+    }
+}
+
+@media (max-width: 980px) {
+    .kg-header-card {
+        padding: 8vmin 4vmin;
+    }
+
+    .kg-header-card-header .__mobiledoc-editor.__has-no-content:after,
+    .kg-header-card h2 {
+        font-size: 3.8em;
+    }
+
+    .kg-header-card.kg-size-large .kg-header-card-header .__mobiledoc-editor.__has-no-content:after, 
+    .kg-header-card.kg-size-large h2 {
+        font-size: 4.0em;
+    }
+}
+
+@media (max-width: 680px) {
+    .kg-header-card-header .__mobiledoc-editor.__has-no-content:after,
+    .kg-header-card h2 {
+        font-size: 3.0em;
+    }
+
+    .kg-header-card.kg-size-small .kg-header-card-header .__mobiledoc-editor.__has-no-content:after, 
+    .kg-header-card.kg-size-small h2 {
+        font-size: 2.8em;
+    }
+
+    .kg-header-card.kg-size-large .kg-header-card-header .__mobiledoc-editor.__has-no-content:after, 
+    .kg-header-card.kg-size-large h2 {
+        font-size: 3.2em;
+    }
+}
+
 /* Upload cards: audio and file
 /* --------------------------------------------------------------- */
 .kg-upload-container {
