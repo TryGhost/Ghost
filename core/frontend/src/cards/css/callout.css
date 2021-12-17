@@ -1,3 +1,8 @@
+.kg-callout-card,
+.kg-callout-card * {
+    box-sizing: border-box;
+}
+
 .kg-callout-card {
     display: flex;
     padding: 1.2em 1.6em;

@@ -1,3 +1,8 @@
+.kg-file-card,
+.kg-file-card * {
+    box-sizing: border-box;
+}
+
 .kg-file-card {
     display: flex;
 }
@@ -41,7 +46,7 @@
 }
 
 .kg-file-card-title + .kg-file-card-caption {
-    margin-top: -6px;
+    margin-top: -3px;
 }
 
 .kg-file-card-metadata {
