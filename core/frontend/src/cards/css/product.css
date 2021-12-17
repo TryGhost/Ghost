@@ -1,3 +1,8 @@
+.kg-product-card,
+.kg-product-card * {
+    box-sizing: border-box;
+}
+
 .kg-product-card {
     display: flex;
     align-items: center;

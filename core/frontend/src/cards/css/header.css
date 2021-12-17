@@ -1,3 +1,8 @@
+.kg-header-card,
+.kg-header-card * {
+    box-sizing: border-box;
+}
+
 .kg-header-card {
     padding: 12vmin 4em;
     min-height: 60vh;

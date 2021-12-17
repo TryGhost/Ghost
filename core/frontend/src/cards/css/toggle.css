@@ -1,3 +1,8 @@
+.kg-toggle-card,
+.kg-toggle-card * {
+    box-sizing: border-box;
+}
+
 .kg-toggle-card {
     background: transparent;
     box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);

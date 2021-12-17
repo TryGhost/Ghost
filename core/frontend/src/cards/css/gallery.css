@@ -1,4 +1,9 @@
 .kg-gallery-card,
+.kg-gallery-card * {
+    box-sizing: border-box;
+}
+
+.kg-gallery-card,
 .kg-image-card {
     --gap: 1.2rem;
 }

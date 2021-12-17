@@ -1,3 +1,8 @@
+.kg-audio-card,
+.kg-audio-card * {
+    box-sizing: border-box;
+}
+
 .kg-audio-card {
     display: flex;
     width: 100%;

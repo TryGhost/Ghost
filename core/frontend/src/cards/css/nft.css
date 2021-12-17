@@ -1,3 +1,8 @@
+.kg-nft-card,
+.kg-nft-card * {
+    box-sizing: border-box;
+}
+
 .kg-nft-card {
     display: flex;
     flex-direction: column;

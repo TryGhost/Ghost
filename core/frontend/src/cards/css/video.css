@@ -1,3 +1,7 @@
+.kg-video-card,
+.kg-video-card * {
+    box-sizing: border-box;
+}
 
 .kg-video-card {
     position: relative;
