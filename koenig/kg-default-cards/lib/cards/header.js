@@ -21,8 +21,10 @@ module.exports = {
         }
 
         const frontendTemplate = hbs`
-            <div class="kg-header-card kg-width-full kg-size-{{size}} kg-style-{{style}}" style="{{backgroundImageStyle}}" data-kg-background-image="{{backgroundImageSrc}}">
-                <h2 class="kg-header-card-header">{{{header}}}</h2>
+            <div class="kg-card kg-header-card kg-width-full kg-size-{{size}} kg-style-{{style}}" style="{{backgroundImageStyle}}" data-kg-background-image="{{backgroundImageSrc}}">
+                {{#if this.hasHeader}}
+                    <h2 class="kg-header-card-header">{{{header}}}</h2>
+                {{/if}}
                 {{#if this.hasSubheader}}
                     <h3 class="kg-header-card-subheader">{{{subheader}}}</h3>
                 {{/if}}
@@ -42,6 +44,7 @@ module.exports = {
             buttonText: payload.buttonText,
             header: payload.header,
             subheader: payload.subheader,
+            hasHeader: payload.header && true,
             hasSubheader: payload.subheader && Boolean(payload.subheader.replace(/(<br>)+$/g).trim()),
             backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : '',
             backgroundImageSrc: payload.backgroundImageSrc
