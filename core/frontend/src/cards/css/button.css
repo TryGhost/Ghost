@@ -1,3 +1,8 @@
+.kg-button-card,
+.kg-button-card * {
+    box-sizing: border-box;
+}
+
 .kg-button-card {
     display: flex;
     position: static;

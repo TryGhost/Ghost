@@ -1,4 +1,9 @@
 .kg-bookmark-card,
+.kg-bookmark-card * {
+    box-sizing: border-box;
+}
+
+.kg-bookmark-card,
 .kg-bookmark-publisher {
     position: relative;
     width: 100%;
