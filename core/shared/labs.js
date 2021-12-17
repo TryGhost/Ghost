@@ -26,7 +26,8 @@ const GA_FEATURES = [
     'mediaAPI',
     'membersAutoLogin',
     'filesAPI',
-    'fileCard'
+    'fileCard',
+    'headerCard'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -42,8 +43,7 @@ const ALPHA_FEATURES = [
     'cardSettingsPanel',
     'urlCache',
     'beforeAfterCard',
-    'tweetGridCard',
-    'headerCard'
+    'tweetGridCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
