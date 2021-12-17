@@ -80,8 +80,12 @@
     font-size: 1.5em;
     font-weight: 500;
     line-height: 1.4em;
-    margin: 0.35em 0 0;
+    margin: 0;
     max-width: 40em;
+}
+
+.kg-header-card h2 + h3.kg-header-card-subheader {
+    margin: 0.35em 0 0;
 }
 
 .kg-header-card h3.kg-header-card-subheader strong {
@@ -143,9 +147,13 @@
     text-overflow: ellipsis;
     color: #151515;
     height: 2.7em;
-    margin: 1.75em 0 0;
     padding: 0 1.2em;
     transition: opacity .2s ease;
+}
+
+.kg-header-card h2 + a.kg-header-card-button,
+.kg-header-card h3 + a.kg-header-card-button {
+    margin: 1.75em 0 0;
 }
 
 .kg-header-card a.kg-header-card-button:hover {
@@ -153,15 +161,23 @@
 }
 
 .kg-header-card.kg-size-large a.kg-header-card-button {
-    margin-top: 2em;
     font-size: 1.1em;
     height: 2.9em;
 }
 
+.kg-header-card.kg-size-large h2 + a.kg-header-card-button,
+.kg-header-card.kg-size-large h3 + a.kg-header-card-button {
+    margin-top: 2em;
+}
+
 .kg-header-card.kg-size-small a.kg-header-card-button {
-    margin-top: 1.5em;
     height: 2.4em;
     font-size: 1em;
+}
+
+.kg-header-card.kg-size-small h2 + a.kg-header-card-button,
+.kg-header-card.kg-size-small h3 + a.kg-header-card-button {
+    margin-top: 1.5em;
 }
 
 .kg-header-card.kg-style-image a.kg-header-card-button,
