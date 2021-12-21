@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const {URL} = require('url');
 const crypto = require('crypto');
@@ -15,15 +16,11 @@ class MembersConfigProvider {
      * @param {{get: (key: string) => any}} options.settingsCache
      * @param {{get: (key: string) => any}} options.config
      * @param {any} options.urlUtils
-     * @param {any} options.logging
-     * @param {{original: string}} options.ghostVersion
      */
     constructor(options) {
         this._settingsCache = options.settingsCache;
         this._config = options.config;
         this._urlUtils = options.urlUtils;
-        this._logging = options.logging;
-        this._ghostVersion = options.ghostVersion;
     }
 
     /**
@@ -193,12 +190,12 @@ class MembersConfigProvider {
     getAuthSecret() {
         const hexSecret = this._settingsCache.get('members_email_auth_secret');
         if (!hexSecret) {
-            this._logging.warn('Could not find members_email_auth_secret, using dynamically generated secret');
+            logging.warn('Could not find members_email_auth_secret, using dynamically generated secret');
             return crypto.randomBytes(64);
         }
         const secret = Buffer.from(hexSecret, 'hex');
         if (secret.length < 64) {
-            this._logging.warn('members_email_auth_secret not large enough (64 bytes), using dynamically generated secret');
+            logging.warn('members_email_auth_secret not large enough (64 bytes), using dynamically generated secret');
             return crypto.randomBytes(64);
         }
         return secret;
@@ -236,7 +233,7 @@ class MembersConfigProvider {
         let publicKey = this._settingsCache.get('members_public_key');
 
         if (!privateKey || !publicKey) {
-            this._logging.warn('Could not find members_private_key, using dynamically generated keypair');
+            logging.warn('Could not find members_private_key, using dynamically generated keypair');
             const keypair = createKeypair({bits: 1024});
             privateKey = keypair.private;
             publicKey = keypair.public;

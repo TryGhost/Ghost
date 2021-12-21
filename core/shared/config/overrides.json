@@ -32,7 +32,17 @@
         },
         "media": {
             "extensions": [".mp4",".webm", ".ogv", ".mp3", ".wav", ".ogg"],
-            "contentTypes": ["video/mp4", "video/webm", "video/ogg", "audio/mpeg", "audio/vnd.wav", "audio/ogg"]
+            "contentTypes": [
+                "video/mp4",
+                "video/webm",
+                "video/ogg",
+                "audio/mpeg",
+                "audio/vnd.wav",
+                "audio/wave",
+                "audio/wav",
+                "audio/x-wav",
+                "audio/ogg"
+            ]
         },
         "thumbnails": {
             "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico", ".webp"],

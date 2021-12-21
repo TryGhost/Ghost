@@ -1,3 +1,8 @@
+.kg-audio-card,
+.kg-audio-card * {
+    box-sizing: border-box;
+}
+
 .kg-audio-card {
     display: flex;
     width: 100%;
@@ -20,7 +25,7 @@
     background: transparent;
     object-fit: cover;
     aspect-ratio: 1/1;
-    border-radius: 3px;
+    border-radius: 2px;
 }
 
 .kg-audio-thumbnail.placeholder {
@@ -50,7 +55,7 @@
     padding: 8px 12px;
     border: none;
     font-family: inherit;
-    font-size: 1.1em;
+    font-size: 1.15em;
     font-weight: 700;
     line-height: 1.15em;
     background: transparent;
@@ -219,6 +224,7 @@
     display: flex;
     align-items: center;
     border: 0;
+    cursor: pointer;
 }
 
 .kg-audio-player-container input[type="range"] {

@@ -1,3 +1,8 @@
+.kg-callout-card,
+.kg-callout-card * {
+    box-sizing: border-box;
+}
+
 .kg-callout-card {
     display: flex;
     padding: 1.2em 1.6em;
@@ -42,17 +47,22 @@
     color: #fff;
 }
 
-.kg-callout-card-accent a {
+.kg-callout-card.kg-callout-card-accent a {
     color: #fff;
+    text-decoration: underline;
 }
 
-.kg-callout-emoji {
+.kg-callout-card div.kg-callout-emoji {
     padding-right: .8em;
-    line-height: 1.3em;
-    font-size: 1.2em;
+    line-height: 1.25em;
+    font-size: 1.15em;
 }
 
-.kg-callout-text {
+.kg-callout-card div.kg-callout-text {
     font-size: .95em;
     line-height: 1.5em;
+}
+
+.kg-callout-card + .kg-callout-card {
+    margin-top: 1em;
 }

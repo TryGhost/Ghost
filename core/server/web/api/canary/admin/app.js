@@ -4,6 +4,8 @@ const express = require('../../../../../shared/express');
 const bodyParser = require('body-parser');
 const shared = require('../../../shared');
 const apiMw = require('../../middleware');
+const errorHandler = require('@tryghost/mw-error-handler');
+const sentry = require('../../../../../shared/sentry');
 const routes = require('./routes');
 
 module.exports = function setupApiApp() {
@@ -30,8 +32,8 @@ module.exports = function setupApiApp() {
     apiApp.use(routes());
 
     // API error handling
-    apiApp.use(shared.middleware.errorHandler.resourceNotFound);
-    apiApp.use(shared.middleware.errorHandler.handleJSONResponseV2);
+    apiApp.use(errorHandler.resourceNotFound);
+    apiApp.use(errorHandler.handleJSONResponseV2(sentry));
 
     debug('Admin API canary setup end');
 

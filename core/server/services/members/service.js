@@ -13,7 +13,6 @@ const labsService = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const models = require('../../models');
-const ghostVersion = require('@tryghost/version');
 const _ = require('lodash');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
@@ -35,9 +34,7 @@ const ghostMailer = new GhostMailer();
 const membersConfig = new MembersConfigProvider({
     config,
     settingsCache,
-    urlUtils,
-    logging,
-    ghostVersion
+    urlUtils
 });
 
 let membersApi;

@@ -2,8 +2,10 @@ const debug = require('@tryghost/debug')('web:api:v2:content:app');
 const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
 const express = require('../../../../../shared/express');
+const sentry = require('../../../../../shared/sentry');
 const shared = require('../../../shared');
 const routes = require('./routes');
+const errorHandler = require('@tryghost/mw-error-handler');
 
 module.exports = function setupApiApp() {
     debug('Content API v2 setup start');
@@ -24,8 +26,8 @@ module.exports = function setupApiApp() {
     apiApp.use(routes());
 
     // API error handling
-    apiApp.use(shared.middleware.errorHandler.resourceNotFound);
-    apiApp.use(shared.middleware.errorHandler.handleJSONResponse);
+    apiApp.use(errorHandler.resourceNotFound);
+    apiApp.use(errorHandler.handleJSONResponse(sentry));
 
     debug('Content API v2 setup end');
 

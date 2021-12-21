@@ -1,3 +1,8 @@
+.kg-nft-card,
+.kg-nft-card * {
+    box-sizing: border-box;
+}
+
 .kg-nft-card {
     display: flex;
     flex-direction: column;
@@ -7,7 +12,7 @@
     margin-right: auto;
 }
 
-.kg-nft-card-container {
+.kg-nft-card a.kg-nft-card-container {
     position: static;
     display: flex;
     flex: auto;
@@ -28,12 +33,6 @@
     color: #222;
     background: #fff;
     border-radius: 5px;
-    transition: none;
-}
-
-.kg-nft-card:hover {
-    color: #333;
-    opacity: 1.0;
     transition: none;
 }
 
