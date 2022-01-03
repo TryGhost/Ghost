@@ -33,7 +33,7 @@ const SingleUseToken = ghostBookshelf.Model.extend({
                 } catch (err) {
                     logging.error(err);
                 }
-            }, 10000);
+            }, 10 * 60 * 1000);
         }
 
         return model;
