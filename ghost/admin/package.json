@@ -29,7 +29,7 @@
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.0.0",
     "@glimmer/component": "1.0.4",
-    "@html-next/vertical-collection": "2.0.0",
+    "@html-next/vertical-collection": "2.1.0",
     "@joeattardi/emoji-button": "4.6.2",
     "@nexes/nql-lang": "0.0.1",
     "@sentry/ember": "6.15.0",
