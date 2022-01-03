@@ -1,4 +1,3 @@
-import enableLabsFlag from '../../helpers/enable-labs-flag';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
@@ -12,8 +11,6 @@ describe('Acceptance: Settings - Design', function () {
     setupMirage(hooks);
 
     beforeEach(async function () {
-        enableLabsFlag(this.server, 'customThemeSettings');
-
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});
 

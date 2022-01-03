@@ -1,5 +1,4 @@
 import Mirage from 'ember-cli-mirage';
-import enableLabsFlag from '../helpers/enable-labs-flag';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {click, currentRouteName, fillIn, find, findAll, visit} from '@ember/test-helpers';
@@ -109,8 +108,6 @@ describe('Acceptance: Error Handling', function () {
         });
 
         it('handles ember-ajax HTML response', async function () {
-            enableLabsFlag(this.server, 'customThemeSettings');
-
             this.server.del('/themes/foo/', htmlErrorResponse);
 
             await visit('/settings/design/change-theme');

@@ -9,13 +9,13 @@
 
     <section class="view-container">
         {{#liquid-if this.showAdvanced}}
-            <div class="gh-themes-container-labs">
-                <GhThemeTableLabs @themes={{this.themes}} />
+            <div class="gh-themes-container">
+                <GhThemeTable @themes={{this.themes}} />
             </div>
         {{/liquid-if}}
 
-        <div class="gh-theme-directory-container-labs">
-            <div class="theme-directory-labs">
+        <div class="gh-theme-directory-container">
+            <div class="theme-directory">
                 {{#each this.themesList as |theme|}}
                     <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item td-item-labs" data-test-theme-link={{theme.name}}>
                         <div class="gh-theme-browser">
