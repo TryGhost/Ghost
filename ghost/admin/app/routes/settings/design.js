@@ -15,10 +15,6 @@ export default class SettingsDesignRoute extends AuthenticatedRoute {
         if (!this.session.user.isAdmin) {
             return this.transitionTo('site');
         }
-
-        if (!this.feature.customThemeSettings) {
-            return this.transitionTo('settings');
-        }
     }
 
     model() {
