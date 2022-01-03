@@ -4191,7 +4191,7 @@ broccoli-source@^1.1.0:
   resolved "https://registry.yarnpkg.com/broccoli-source/-/broccoli-source-1.1.0.tgz#54f0e82c8b73f46580cbbc4f578f0b32fca8f809"
   integrity sha1-VPDoLItz9GWAy7xPV48LMvyo+Ak=
 
-broccoli-source@^2.0.0, broccoli-source@^2.1.2:
+broccoli-source@^2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/broccoli-source/-/broccoli-source-2.1.2.tgz#e9ae834f143b607e9ec114ade66731500c38b90b"
   integrity sha512-1lLayO4wfS0c0Sj50VfHJXNWf94FYY0WUhxj0R77thbs6uWI7USiOWFqQV5dRmhAJnoKaGN4WyLGQbgjgiYFwQ==
@@ -7255,18 +7255,16 @@ ember-text-measurer@^0.6.0:
     ember-cli-babel "^7.19.0"
     ember-cli-htmlbars "^4.3.1"
 
-ember-tooltips@3.4.7:
-  version "3.4.7"
-  resolved "https://registry.yarnpkg.com/ember-tooltips/-/ember-tooltips-3.4.7.tgz#4ef0710e9cef0d83711b94ac4b2de894f088110f"
-  integrity sha512-tTcLi6gteB7N7gHo0LeMNN0k++lPpNNqf1aeho8dqs/0MV0LwUdf6GgzP6Urf92pvF50aw2lZcpd4FVRz5+XbQ==
+ember-tooltips@3.5.1:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/ember-tooltips/-/ember-tooltips-3.5.1.tgz#e7652ca8d677f83e421e9a33d9c7d84af24be8ad"
+  integrity sha512-kwRqm/FKEdO0V2tHMVROIGpTsgEdVcRy0QnzJ7eHBS1LZVL9+OZlxz5HOtSOOa+2bBvG1OyEVEDsLXt+yQmotQ==
   dependencies:
     broccoli-file-creator "^2.1.1"
-    broccoli-funnel "^2.0.2"
-    broccoli-merge-trees "^2.0.0"
-    broccoli-source "^2.0.0"
-    broccoli-string-replace "^0.1.2"
-    ember-cli-babel "^7.23.0"
-    ember-cli-htmlbars "^4.2.0"
+    broccoli-merge-trees "^4.2.0"
+    ember-auto-import "^1.11.3"
+    ember-cli-babel "^7.26.6"
+    ember-cli-htmlbars "^5.7.1"
     ember-in-element-polyfill "^1.0.1"
     popper.js "^1.12.5"
     resolve "^1.10.1"
