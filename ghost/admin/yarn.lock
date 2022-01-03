@@ -1645,17 +1645,17 @@
     "@glimmer/interfaces" "^0.42.2"
     "@glimmer/util" "^0.42.2"
 
-"@html-next/vertical-collection@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@html-next/vertical-collection/-/vertical-collection-2.0.0.tgz#469f30966cf665afcc24a80b59cd0725134b7f79"
-  integrity sha512-+RMxBz8tSSFDDA8Q8NBC5Eak50PVHsB73GL7bkPyAuNtdm324nMVrzqJ6TYVg5mTFbc02W261/9jhfbawQbczA==
+"@html-next/vertical-collection@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@html-next/vertical-collection/-/vertical-collection-2.1.0.tgz#9d655e2dc171ecaa7f5c4c70b3af1f97dd1f282b"
+  integrity sha512-0H1X0vLR9SuK7CX8euwRgAWtX73N26oUGDmZdkeAgmZ1JkU/xR24ae94PpzkqBDzlk0sMv7NPrdDGWnxnXcUvw==
   dependencies:
     babel6-plugin-strip-class-callcheck "^6.0.0"
     broccoli-funnel "^2.0.2"
     broccoli-merge-trees "^3.0.1"
     broccoli-rollup "^4.1.1"
     ember-cli-babel "^7.12.0"
-    ember-cli-htmlbars "^3.0.1"
+    ember-cli-htmlbars "^3.0.0"
     ember-cli-version-checker "^3.1.3"
     ember-compatibility-helpers "^1.2.1"
     ember-raf-scheduler "0.2.0"
@@ -6212,7 +6212,7 @@ ember-cli-htmlbars@^2.0.1, ember-cli-htmlbars@^2.0.3:
     json-stable-stringify "^1.0.0"
     strip-bom "^3.0.0"
 
-ember-cli-htmlbars@^3.0.0, ember-cli-htmlbars@^3.0.1:
+ember-cli-htmlbars@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-3.1.0.tgz#87806c2a0bca2ab52d4fb8af8e2215c1ca718a99"
   integrity sha512-cgvRJM73IT0aePUG7oQ/afB7vSRBV3N0wu9BrWhHX2zkR7A7cUBI7KC9VPk6tbctCXoM7BRGsCC4aIjF7yrfXA==
