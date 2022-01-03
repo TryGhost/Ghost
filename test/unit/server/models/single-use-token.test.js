@@ -34,7 +34,11 @@ describe('Unit: models/single-use-token', function () {
 
             clock.tick(10000);
 
-            should.ok(destroyStub.called, 'destroy was called after 10 seconds');
+            should.ok(!destroyStub.called, 'destroy was not called after 10 seconds');
+
+            clock.tick(10 * 60 * 1000 - 10000);
+
+            should.ok(destroyStub.called, 'destroy was not called after 10 seconds');
         });
     });
 });
