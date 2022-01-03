@@ -2,7 +2,6 @@ const _ = require('lodash');
 const hbs = require('../engine');
 const urlUtils = require('../../../../shared/url-utils');
 const customThemeSettingsCache = require('../../../../shared/custom-theme-settings-cache');
-const labs = require('../../../../shared/labs');
 const preview = require('../preview');
 
 function updateLocalTemplateOptions(req, res, next) {
@@ -17,12 +16,8 @@ function updateLocalTemplateOptions(req, res, next) {
     const previewData = preview.handle(req, Object.keys(customThemeSettingsCache.getAll()));
 
     // strip custom off of preview data so it doesn't get merged into @site
-    const customThemeSettingsPreviewData = previewData.custom;
+    const customData = previewData.custom;
     delete previewData.custom;
-    let customData = {};
-    if (labs.isSet('customThemeSettings')) {
-        customData = customThemeSettingsPreviewData;
-    }
 
     // update site data with any preview values from the request
     Object.assign(siteData, previewData);
