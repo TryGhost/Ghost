@@ -10319,17 +10319,19 @@ linkify-it@^3.0.1:
   dependencies:
     uc.micro "^1.0.1"
 
-liquid-fire@0.32.0:
-  version "0.32.0"
-  resolved "https://registry.yarnpkg.com/liquid-fire/-/liquid-fire-0.32.0.tgz#05702e793d1e3f58dcb0aabf297886bcc5bb7f26"
-  integrity sha512-9JooO/jva4sf4xUT+H5kPQ1CWT9FEKdhqr0ZGnS2saJH6L8ICp+toIlbKaAem9POuoXYbR8wEzyglh8uPuOIsw==
+liquid-fire@0.33.1:
+  version "0.33.1"
+  resolved "https://registry.yarnpkg.com/liquid-fire/-/liquid-fire-0.33.1.tgz#0b0cc8410eb403a27e3b87596cd8728a559db88b"
+  integrity sha512-flnCEEEZfl7+Q5o2QrpdMgxJKGMzkh1DwReLcr/FHKSJzI0aOC/MUQGhdMFURobkLkYkX7SZ5y1g0UyXjqPbPg==
   dependencies:
     "@embroider/macros" "^0.47.0"
     broccoli-funnel "^3.0.8"
     broccoli-merge-trees "^4.2.0"
     broccoli-stew "^3.0.0"
+    broccoli-string-replace "^0.1.2"
     ember-cli-babel "^7.26.6"
     ember-cli-htmlbars "^5.7.1"
+    ember-cli-version-checker "^5.1.2"
     match-media "^0.2.0"
     velocity-animate "^1.5.2"
 
