@@ -51,7 +51,7 @@ function getDescription(data, root, options = {}) {
                 || settingsCache.get('description')
                 || '';
         } else {
-            description = data.post.meta_description || '';
+            description = data.post.meta_description || data.post.custom_excerpt || '';
         }
     } else if (_.includes(context, 'page') && data.post) {
         // Page description dependent on legacy object formatting (https://github.com/TryGhost/Ghost/issues/10042)
@@ -63,7 +63,7 @@ function getDescription(data, root, options = {}) {
                 || settingsCache.get('description')
                 || '';
         } else {
-            description = data.post.meta_description || '';
+            description = data.post.meta_description || data.post.custom_excerpt || '';
         }
     } else if (_.includes(context, 'page') && data.page) {
         if (options.property) {
@@ -74,7 +74,7 @@ function getDescription(data, root, options = {}) {
                 || settingsCache.get('description')
                 || '';
         } else {
-            description = data.page.meta_description || '';
+            description = data.page.meta_description || data.page.custom_excerpt || '';
         }
     }
 

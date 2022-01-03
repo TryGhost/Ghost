@@ -68,6 +68,12 @@ describe('getMetaDescription', function () {
             should(
                 getMetaDescription({post}, {context: 'post'})
             ).equal(null);
+
+            post.custom_excerpt = 'Custom excerpt';
+
+            should(
+                getMetaDescription({post}, {context: 'post'})
+            ).equal('Custom excerpt');
         });
 
         it('has correct fallbacks for context: page', function () {
@@ -83,6 +89,12 @@ describe('getMetaDescription', function () {
             should(
                 getMetaDescription({page}, {context: 'page'})
             ).equal(null);
+
+            page.custom_excerpt = 'Custom excerpt';
+
+            should(
+                getMetaDescription({page}, {context: 'page'})
+            ).equal('Custom excerpt');
         });
 
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
