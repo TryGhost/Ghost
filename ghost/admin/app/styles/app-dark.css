@@ -537,19 +537,15 @@ input:focus,
     background-color: var(--black-90);
 }
 
-.td-cta-box {
-    background: #191b1f;
-}
-
 .td-item-empty {
     background: var(--whitegrey-l1);
 }
 
-.gh-themes-container-labs {
+.gh-themes-container {
     background: var(--whitegrey-l2);
 }
 
-.gh-themes-container-labs .apps-grid {
+.gh-themes-container .apps-grid {
     background: none;
 }
 

@@ -1,13 +1,25 @@
-import Component from '@ember/component';
-import {computed} from '@ember/object';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {get} from '@ember/object';
+import {inject as service} from '@ember/service';
 
-export default Component.extend({
+export default class GhThemeTableComponent extends Component {
+    @service ghostPaths;
+    @service modals;
+    @service themeManagement;
+    @service utils;
 
-    themes: null,
+    activateTaskInstance = null;
+    confirmDeleteModal = null;
 
-    sortedThemes: computed('themes.@each.active', function () {
-        let themes = this.themes.map((t) => {
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.confirmDeleteModal?.close?.();
+        this.activateTaskInstance?.cancel();
+    }
+
+    get sortedThemes() {
+        let themes = this.args.themes.map((t) => {
             let theme = {};
             let themePackage = get(t, 'package');
 
@@ -60,6 +72,28 @@ export default Component.extend({
             }
             return 0;
         });
-    }).readOnly()
+    }
 
-});
+    @action
+    downloadTheme(themeName, dropdown) {
+        dropdown?.actions.close();
+        this.utils.downloadFile(`${this.ghostPaths.apiRoot}/themes/${themeName}/download/`);
+    }
+
+    @action
+    activateTheme(theme, dropdown) {
+        dropdown?.actions.close();
+        this.activateTaskInstance = this.themeManagement.activateTask.perform(theme);
+    }
+
+    @action
+    deleteTheme(theme, dropdown) {
+        dropdown?.actions.close();
+
+        this.confirmDeleteModal = this.modals.open('modals/design/confirm-delete-theme', {
+            theme
+        }).finally(() => {
+            this.confirmDeleteModal = null;
+        });
+    }
+}
