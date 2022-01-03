@@ -1,5 +1,4 @@
 import hbs from 'htmlbars-inline-precompile';
-import sinon from 'sinon';
 import {click, find, findAll, render} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
