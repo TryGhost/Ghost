@@ -15,155 +15,119 @@ describe('Integration: Component: gh-theme-table', function () {
             {name: 'oscar-ghost-1.1.0', package: {name: 'Lanyon', version: '1.1.0'}},
             {name: 'foo'}
         ]);
-        this.set('actionHandler', sinon.spy());
 
-        await render(hbs`{{gh-theme-table
-            themes=themes
-            activateTheme=(action actionHandler)
-            downloadTheme=(action actionHandler)
-            deleteTheme=(action actionHandler)
-        }}`);
+        await render(hbs`<GhThemeTable @themes={{themes}} />`);
 
         expect(findAll('[data-test-themes-list]').length, 'themes list is present').to.equal(1);
         expect(findAll('[data-test-theme-id]').length, 'number of rows').to.equal(4);
 
         let packageNames = findAll('[data-test-theme-title]').map(name => name.textContent.trim());
 
-        expect(
-            packageNames,
-            'themes are ordered by label, casper has "default"'
-        ).to.deep.equal([
-            'Casper (default)',
-            'Daring',
-            'foo',
-            'Lanyon'
-        ]);
+        expect(packageNames[0]).to.match(/Casper \(default\)/);
+        expect(packageNames[1]).to.match(/Daring\s+Active/);
+        expect(packageNames[2]).to.match(/foo/);
+        expect(packageNames[3]).to.match(/Lanyon/);
 
         expect(
             find('[data-test-theme-active="true"]').querySelector('[data-test-theme-title]'),
             'active theme is highlighted'
-        ).to.have.trimmed.text('Daring');
+        ).to.contain.text('Daring');
 
         expect(
-            findAll('[data-test-theme-activate-button]').length,
+            findAll('[data-test-button="activate"]').length,
             'non-active themes have an activate link'
         ).to.equal(3);
 
         expect(
-            find('[data-test-theme-active="true"]').querySelector('[data-test-theme-activate-button]'),
+            find('[data-test-theme-active="true"]').querySelector('[data-test-button="activate"]'),
             'active theme doesn\'t have an activate link'
         ).to.not.exist;
+    });
 
-        expect(
-            findAll('[data-test-theme-download-button]').length,
-            'all themes have a download link'
-        ).to.equal(4);
+    it('has download button in actions dropdown for all themes', async function () {
+        const themes = [
+            {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
+            {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
+            {name: 'oscar-ghost-1.1.0', package: {name: 'Lanyon', version: '1.1.0'}},
+            {name: 'foo'}
+        ];
+        this.set('themes', themes);
 
-        expect(
-            find('[data-test-theme-id="foo"]').querySelector('[data-test-theme-delete-button]'),
-            'non-active, non-casper theme has delete link'
-        ).to.exist;
+        await render(hbs`<GhThemeTable @themes={{themes}} />`);
 
+        for (const theme of themes) {
+            await click(`[data-test-theme-id="${theme.name}"] [data-test-button="actions"]`);
+            expect(
+                find(`[data-test-actions-for="${theme.name}"] [data-test-button="download"]`)
+            ).to.exist;
+        }
+    });
+
+    it('has delete button for non-active, non-default, themes', async function () {
+        const themes = [
+            {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}},
+            {name: 'oscar-ghost-1.1.0', package: {name: 'Lanyon', version: '1.1.0'}},
+            {name: 'foo'}
+        ];
+        this.set('themes', themes);
+
+        await render(hbs`<GhThemeTable @themes={{themes}} />`);
+
+        for (const theme of themes) {
+            await click(`[data-test-theme-id="${theme.name}"] [data-test-button="actions"]`);
+            expect(
+                find(`[data-test-actions-for="${theme.name}"] [data-test-button="delete"]`)
+            ).to.exist;
+        }
+    });
+
+    it('does not show delete action for casper', async function () {
+        const themes = [
+            {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
+            {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
+            {name: 'oscar-ghost-1.1.0', package: {name: 'Lanyon', version: '1.1.0'}},
+            {name: 'foo'}
+        ];
+        this.set('themes', themes);
+
+        await render(hbs`<GhThemeTable @themes={{themes}} />`);
+
+        await click(`[data-test-theme-id="casper"] [data-test-button="actions"]`);
+        expect(find('[data-test-actions-for="casper"]')).to.exist;
         expect(
-            find('[data-test-theme-id="casper"]').querySelector('[data-test-theme-delete-button]'),
-            'casper doesn\'t have delete link'
+            find(`[data-test-actions-for="casper"] [data-test-button="delete"]`)
         ).to.not.exist;
+    });
 
+    it('does not show delete action for active theme', async function () {
+        const themes = [
+            {name: 'Daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
+            {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
+            {name: 'oscar-ghost-1.1.0', package: {name: 'Lanyon', version: '1.1.0'}},
+            {name: 'foo'}
+        ];
+        this.set('themes', themes);
+
+        await render(hbs`<GhThemeTable @themes={{themes}} />`);
+
+        await click(`[data-test-theme-id="Daring"] [data-test-button="actions"]`);
+        expect(find('[data-test-actions-for="Daring"]')).to.exist;
         expect(
-            find('[data-test-theme-active="true"]').querySelector('[data-test-theme-delete-button]'),
-            'active theme doesn\'t have delete link'
+            find(`[data-test-actions-for="Daring"] [data-test-button="delete"]`)
         ).to.not.exist;
-    });
-
-    it('delete link triggers passed in action', async function () {
-        let deleteAction = sinon.spy();
-        let actionHandler = sinon.spy();
-
-        this.set('themes', [
-            {name: 'Foo', active: true},
-            {name: 'Bar'}
-        ]);
-        this.set('deleteAction', deleteAction);
-        this.set('actionHandler', actionHandler);
-
-        await render(hbs`{{gh-theme-table
-            themes=themes
-            activateTheme=(action actionHandler)
-            downloadTheme=(action actionHandler)
-            deleteTheme=(action deleteAction)
-        }}`);
-
-        await click('[data-test-theme-id="Bar"] [data-test-theme-delete-button]');
-
-        expect(deleteAction.calledOnce).to.be.true;
-        expect(deleteAction.firstCall.args[0].name).to.equal('Bar');
-    });
-
-    it('download link triggers passed in action', async function () {
-        let downloadAction = sinon.spy();
-        let actionHandler = sinon.spy();
-
-        this.set('themes', [
-            {name: 'Foo', active: true},
-            {name: 'Bar'}
-        ]);
-        this.set('downloadAction', downloadAction);
-        this.set('actionHandler', actionHandler);
-
-        await render(hbs`{{gh-theme-table
-            themes=themes
-            activateTheme=(action actionHandler)
-            downloadTheme=(action downloadAction)
-            deleteTheme=(action actionHandler)
-        }}`);
-
-        await click('[data-test-theme-id="Foo"] [data-test-theme-download-button]');
-
-        expect(downloadAction.calledOnce).to.be.true;
-        expect(downloadAction.firstCall.args[0].name).to.equal('Foo');
-    });
-
-    it('activate link triggers passed in action', async function () {
-        let activateAction = sinon.spy();
-        let actionHandler = sinon.spy();
-
-        this.set('themes', [
-            {name: 'Foo', active: true},
-            {name: 'Bar'}
-        ]);
-        this.set('activateAction', activateAction);
-        this.set('actionHandler', actionHandler);
-
-        await render(hbs`{{gh-theme-table
-            themes=themes
-            activateTheme=(action activateAction)
-            downloadTheme=(action actionHandler)
-            deleteTheme=(action actionHandler)
-        }}`);
-
-        await click('[data-test-theme-id="Bar"] [data-test-theme-activate-button]');
-
-        expect(activateAction.calledOnce).to.be.true;
-        expect(activateAction.firstCall.args[0].name).to.equal('Bar');
     });
 
     it('displays folder names if there are duplicate package names', async function () {
         this.set('themes', [
-            {name: 'daring', package: {name: 'Daring', version: '0.1.4'}, active: true},
+            {name: 'daring', package: {name: 'Daring', version: '0.1.4'}},
             {name: 'daring-0.1.5', package: {name: 'Daring', version: '0.1.4'}},
             {name: 'casper', package: {name: 'Casper', version: '1.3.1'}},
             {name: 'another', package: {name: 'Casper', version: '1.3.1'}},
             {name: 'mine', package: {name: 'Casper', version: '1.3.1'}},
             {name: 'foo'}
         ]);
-        this.set('actionHandler', sinon.spy());
 
-        await render(hbs`{{gh-theme-table
-            themes=themes
-            activateTheme=(action actionHandler)
-            downloadTheme=(action actionHandler)
-            deleteTheme=(action actionHandler)
-        }}`);
+        await render(hbs`<GhThemeTable @themes={{themes}} />`);
 
         let packageNames = findAll('[data-test-theme-title]').map(name => name.textContent.trim());
 
