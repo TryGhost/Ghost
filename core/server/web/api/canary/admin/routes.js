@@ -303,8 +303,8 @@ module.exports = function apiRoutes() {
     router.del('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
 
     // ## Custom theme settings
-    router.get('/custom_theme_settings', mw.authAdminApi, labs.enabledMiddleware('customThemeSettings'), http(api.customThemeSettings.browse));
-    router.put('/custom_theme_settings', mw.authAdminApi, labs.enabledMiddleware('customThemeSettings'), http(api.customThemeSettings.edit));
+    router.get('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.browse));
+    router.put('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.edit));
 
     return router;
 };
