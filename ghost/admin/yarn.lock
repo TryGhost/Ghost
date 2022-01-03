@@ -1876,13 +1876,13 @@
   dependencies:
     color "^3.2.1"
 
-"@tryghost/errors@^0.2.17":
-  version "0.2.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
-  integrity sha512-Mj+bedWOwfooNA8fQdp6gIcRvWcKhJ/hOyGzu6OLFDLgEosFEeuFgXE6SsAWkf9+9NTYX30w88qGIWZqOhEAmQ==
+"@tryghost/errors@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.0.tgz#989f10434a17286e952b5a9434e50846ea4ad87c"
+  integrity sha512-80I7LmRgPQt380Bm/90hF8KPkkNqOFHF2T6oO+NXkLd+UTc1qLOfe6nZS17WD9glMmHrqv6IF8U1MjPMDa4VOQ==
   dependencies:
-    "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
+    uuid "^8.3.2"
 
 "@tryghost/helpers@1.1.54":
   version "1.1.54"
@@ -1890,14 +1890,6 @@
   integrity sha512-MuBfJcuvdwT4leZ0RgC4xxxBCwX/O1xl/D/rqinx9yMhcrwy6CmOQMsx0BcFMuihXktUzcql3KG34lRHLjEwZw==
   dependencies:
     lodash-es "^4.17.11"
-
-"@tryghost/ignition-errors@^0.1.0":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/ignition-errors/-/ignition-errors-0.1.8.tgz#6d4c4d4e02d32403ca1e574eaa91b3c0d138d6f6"
-  integrity sha512-4KYU+kDXZyP7tmzyHiUkfDy9RWxKAtA/6xTGdxYHurE5ZlT++cDDfdUtF0v3308GGUzKlBzRc3jmLjDYpngcBQ==
-  dependencies:
-    lodash "^4.17.21"
-    uuid "^8.3.2"
 
 "@tryghost/kg-clean-basic-html@2.2.6", "@tryghost/kg-clean-basic-html@^2.2.6":
   version "2.2.6"
@@ -1911,12 +1903,12 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^2.2.6"
 
-"@tryghost/limit-service@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.0.0.tgz#49426c4633d7541fed0a5cedf68115280cf9d1d4"
-  integrity sha512-x4F0z1yYqOf2sqNt5BrwfeXDCZIuwaSklWywkHB1J2CCsbp2EtfBEzX2Ov9qqR0P7Nuus6kLBpdbpS2Uy/oZng==
+"@tryghost/limit-service@1.0.8":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.0.8.tgz#8755efb0949574b51c67042b9de8ec866d6e3932"
+  integrity sha512-nEvQ6qEdjwOPWoBF1mf/YzjwxNRP8cmvcaw0tHXig3CoFs2b5AeBV3MJyBq2U/SWphpKPH3pZuVHE1dEZX+5Mg==
   dependencies:
-    "@tryghost/errors" "^0.2.17"
+    "@tryghost/errors" "^1.2.0"
     lodash "^4.17.21"
     luxon "^1.26.0"
 
