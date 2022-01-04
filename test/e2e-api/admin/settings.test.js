@@ -12,10 +12,7 @@ describe('Settings API', function () {
     let request;
 
     before(async function () {
-        await localUtils.startGhost({
-            redirectsFile: true,
-            copySettings: true
-        });
+        await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
     });
