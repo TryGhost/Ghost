@@ -252,7 +252,6 @@ module.exports = function apiRoutes() {
 
     // ## files
     router.post('/files/upload',
-        labs.enabledMiddleware('filesAPI'),
         mw.authAdminApi,
         apiMw.upload.single('file'),
         http(api.files.upload)
