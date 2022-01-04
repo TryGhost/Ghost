@@ -5,6 +5,7 @@ const fs = require('fs');
 const _ = require('lodash');
 const supertest = require('supertest');
 const nock = require('nock');
+const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
 const settingsCache = require('../../../core/shared/settings-cache');
@@ -25,9 +26,10 @@ describe('Themes API', function () {
     };
 
     before(async function () {
-        await localUtils.startGhost({
-            copyThemes: true
-        });
+        // NOTE: this flag should not be here! the URL service re-initialization should be fixed instead
+        //       The reason why this init doesn't work without "forceStart" is because during the "restartModeGhostStart"
+        //       the routing.routerManager is never called with "start". That's why a full boot is needed
+        await localUtils.startGhost();
         ownerRequest = supertest.agent(config.get('url'));
         await localUtils.doAuth(ownerRequest);
     });
