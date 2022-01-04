@@ -51,7 +51,6 @@ export default Service.extend({
     oauthLogin: feature('oauthLogin'),
     membersActivity: feature('membersActivity'),
     cardSettingsPanel: feature('cardSettingsPanel'),
-    membersAutoLogin: feature('membersAutoLogin'),
     urlCache: feature('urlCache'),
     filesAPI: feature('filesAPI'),
     fileCard: feature('fileCard'),
