@@ -175,6 +175,15 @@ const membersService = {
                 logging.error(err);
             });
         }
+
+        (async () => {
+            try {
+                const collection = await models.SingleUseToken.fetchAll();
+                await collection.invokeThen('destroy');
+            } catch (err) {
+                logging.error(err);
+            }
+        })();
     },
     contentGating: require('./content-gating'),
 
