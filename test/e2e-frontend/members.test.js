@@ -51,7 +51,9 @@ describe('Front-end members behaviour', function () {
 
             return originalSettingsCacheGetFn(key, options);
         });
-        await testUtils.startGhost();
+        await testUtils.startGhost({
+            copyThemes: true
+        });
         await testUtils.initFixtures('members');
         request = supertest.agent(configUtils.config.get('url'));
     });
