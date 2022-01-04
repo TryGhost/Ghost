@@ -444,7 +444,6 @@ a.gh-dashboard-container {
 
 .gh-dashboard-chart-box.small {
     position: relative;
-    /* width: 14vw; */
     min-width: 165px;
     height: 110px;
     padding-top: 0;
