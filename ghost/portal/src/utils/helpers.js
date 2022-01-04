@@ -502,3 +502,29 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
     }
     return null;
 }
+
+export const getOfferOffAmount = ({offer}) => {
+    if (offer.type === 'fixed') {
+        return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
+    } else if (offer.type === 'percent') {
+        return `${offer.amount}%`;
+    }
+    return '';
+};
+
+export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
+    const originalAmount = price.amount;
+    let updatedAmount;
+    if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
+        updatedAmount = ((originalAmount - offer.amount)) / 100;
+        updatedAmount = updatedAmount > 0 ? updatedAmount : 0;
+    } else if (offer.type === 'percent') {
+        updatedAmount = (originalAmount - ((originalAmount * offer.amount) / 100)) / 100;
+    } else {
+        updatedAmount = originalAmount / 100;
+    }
+    if (useFormatted) {
+        return Intl.NumberFormat('en', {currency: price?.currency, style: 'currency'}).format(updatedAmount);
+    }
+    return updatedAmount;
+};
