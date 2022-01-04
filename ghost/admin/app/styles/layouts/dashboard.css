@@ -413,6 +413,7 @@ a.gh-dashboard-container {
     flex-direction: column;
     align-items: flex-end;
     justify-content: flex-end;
+    width: 100%;
 }
 
 .gh-dashboard-chart.nodata {
@@ -436,14 +437,14 @@ a.gh-dashboard-container {
     display: flex;
     justify-content: stretch;
     height: 228px;
-    width: 35.5vw;
+    width: 100%;
     padding-top: 12px;
     margin-right: -10px;
 }
 
 .gh-dashboard-chart-box.small {
     position: relative;
-    width: 14vw;
+    /* width: 14vw; */
     min-width: 165px;
     height: 110px;
     padding-top: 0;
