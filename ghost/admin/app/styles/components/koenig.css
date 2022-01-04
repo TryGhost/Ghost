@@ -1785,14 +1785,13 @@ button.emoji-picker__category-button.active {
 
 .kg-product-card-title, .kg-product-card-title h4 {
     text-decoration: none;
-    color: #15171A;
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
     font-weight: 700 !important;
 }
 
 .kg-product-card-title ::after {
     font-weight: 700 !important;
-    font-size: 2rem !important;
+    font-size: 2.2rem !important;
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
     letter-spacing: .02rem;
     line-height: 1.4em;
