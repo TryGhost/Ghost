@@ -246,8 +246,7 @@ export const CARD_MENU = [
             desc: 'Add a product recommendation',
             matches: ['product'],
             type: 'card',
-            replaceArg: 'product',
-            isAvailable: 'feature.productCard'
+            replaceArg: 'product'
         },
         {
             label: 'Before/After',
