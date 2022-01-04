@@ -55,7 +55,6 @@ export default Service.extend({
     urlCache: feature('urlCache'),
     mediaAPI: feature('mediaAPI'),
     filesAPI: feature('filesAPI'),
-    accordionCard: feature('accordionCard'),
     fileCard: feature('fileCard'),
     audioCard: feature('audioCard'),
     productCard: feature('productCard'),
