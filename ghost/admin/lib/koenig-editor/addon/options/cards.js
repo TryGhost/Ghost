@@ -234,7 +234,6 @@ export const CARD_MENU = [
             matches: ['file', 'upload'],
             type: 'card',
             replaceArg: 'file',
-            isAvailable: 'feature.fileCard',
             payload: {
                 triggerBrowse: true
             }
