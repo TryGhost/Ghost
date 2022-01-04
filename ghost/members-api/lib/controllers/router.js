@@ -193,17 +193,15 @@ module.exports = class RouterController {
         let successUrl = req.body.successUrl || this._config.checkoutSuccessUrl;
         let cancelUrl = req.body.cancelUrl || this._config.checkoutCancelUrl;
 
-        if (this.labsService.isSet('membersAutoLogin')) {
-            if (!member && req.body.customerEmail && !req.body.successUrl) {
-                const memberExistsForCustomer = await this._memberRepository.get({email: req.body.customerEmail});
-                if (!memberExistsForCustomer) {
-                    successUrl = await this._magicLinkService.getMagicLink({
-                        tokenData: {
-                            email: req.body.customerEmail
-                        },
-                        type: 'signup'
-                    });
-                }
+        if (!member && req.body.customerEmail && !req.body.successUrl) {
+            const memberExistsForCustomer = await this._memberRepository.get({email: req.body.customerEmail});
+            if (!memberExistsForCustomer) {
+                successUrl = await this._magicLinkService.getMagicLink({
+                    tokenData: {
+                        email: req.body.customerEmail
+                    },
+                    type: 'signup'
+                });
             }
         }
 
