@@ -203,8 +203,7 @@ export const CARD_MENU = [
             desc: 'Add collapsible content',
             matches: ['toggle'],
             type: 'card',
-            replaceArg: 'toggle',
-            isAvailable: 'feature.accordionCard'
+            replaceArg: 'toggle'
         },
         {
             label: 'Video',
