@@ -58,7 +58,6 @@ export default Service.extend({
     fileCard: feature('fileCard'),
     audioCard: feature('audioCard'),
     beforeAfterCard: feature('beforeAfterCard'),
-    richTwitterNewsletters: feature('richTwitterNewsletters'),
     tweetGridCard: feature('tweetGridCard'),
     headerCard: feature('headerCard'),
 
