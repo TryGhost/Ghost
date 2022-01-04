@@ -476,6 +476,10 @@ const FrameStyles = `
         color: var(--grey6);
     }
 
+    .gh-portal-list-detail .old-price {
+        text-decoration: line-through;
+    }
+
     .gh-portal-right-arrow {
         line-height: 1;
         color: var(--grey8);

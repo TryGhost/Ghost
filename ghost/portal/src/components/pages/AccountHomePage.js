@@ -3,9 +3,10 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
+import {getMemberSubscription, getUpdatedOfferPrice, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
+import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
 import {useContext} from 'react';
 
 const React = require('react');
@@ -137,6 +138,25 @@ const UserHeader = () => {
     );
 };
 
+function getOfferLabel({offer, price, subscriptionStartDate}) {
+    let offerLabel = '';
+
+    if (offer) {
+        const discountDuration = offer.duration;
+        let durationLabel = '';
+        if (discountDuration === 'forever') {
+            durationLabel = `Forever`;
+        } else if (discountDuration === 'repeating') {
+            const durationInMonths = offer.duration_in_months || 0;
+            let offerStartDate = new Date(subscriptionStartDate);
+            let offerEndDate = new Date(offerStartDate.setMonth(offerStartDate.getMonth() + durationInMonths));
+            durationLabel = `Ends ${getDateString(offerEndDate)}`;
+        }
+        offerLabel = `${getUpdatedOfferPrice({offer, price, useFormatted: true})}/${price.interval} - ${durationLabel}`;
+    }
+    return offerLabel;
+}
+
 const PaidAccountActions = () => {
     const {member, site, onAction} = useContext(AppContext);
 
@@ -155,19 +175,42 @@ const PaidAccountActions = () => {
         }
     };
 
-    const PlanLabel = ({price, isComplimentary}) => {
+    const PlanLabel = ({price, isComplimentary, subscription}) => {
+        const {
+            offer,
+            start_date: startDate
+        } = subscription;
         let label = '';
         if (price) {
             const {amount = 0, currency, interval} = price;
             label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
         }
+        let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate});
         if (isComplimentary) {
             label = label ? `Complimentary (${label})` : `Complimentary`;
         }
+        let oldPriceClassName = '';
+        if (offerLabelStr) {
+            oldPriceClassName = 'old-price';
+        }
+        const OfferLabel = () => {
+            if (offerLabelStr) {
+                return (
+                    <p>
+                        <OfferTagIcon style={{width: '12px', height: '9px', marginLeft: '-10px'}}/>
+                        {offerLabelStr}
+                    </p>
+                );
+            }
+            return null;
+        };
         return (
-            <p>
-                {label}
-            </p>
+            <>
+                <p className={oldPriceClassName}>
+                    {label}
+                </p>
+                <OfferLabel />
+            </>
         );
     };
 
@@ -216,7 +259,6 @@ const PaidAccountActions = () => {
     const isComplimentary = isComplimentaryMember({member});
     if (subscription || isComplimentary) {
         const {
-            plan,
             price,
             default_payment_card_last4: defaultCardLast4
         } = subscription || {};
@@ -225,7 +267,7 @@ const PaidAccountActions = () => {
                 <section>
                     <div className='gh-portal-list-detail'>
                         <h3>Plan</h3>
-                        <PlanLabel plan={plan} price={price} isComplimentary={isComplimentary} />
+                        <PlanLabel price={price} isComplimentary={isComplimentary} subscription={subscription} />
                     </div>
                     <PlanUpdateButton isComplimentary={isComplimentary} />
                 </section>
