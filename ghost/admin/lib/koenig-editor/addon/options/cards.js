@@ -181,8 +181,7 @@ export const CARD_MENU = [
             desc: 'Info boxes that stand out',
             matches: ['callout'],
             type: 'card',
-            replaceArg: 'callout',
-            isAvailable: 'feature.calloutCard'
+            replaceArg: 'callout'
         },
         {
             label: 'GIF',
