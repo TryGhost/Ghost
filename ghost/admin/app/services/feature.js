@@ -52,7 +52,6 @@ export default Service.extend({
     membersActivity: feature('membersActivity'),
     cardSettingsPanel: feature('cardSettingsPanel'),
     urlCache: feature('urlCache'),
-    filesAPI: feature('filesAPI'),
     fileCard: feature('fileCard'),
     beforeAfterCard: feature('beforeAfterCard'),
     tweetGridCard: feature('tweetGridCard'),
