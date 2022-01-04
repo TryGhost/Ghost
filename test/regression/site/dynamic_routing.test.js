@@ -11,6 +11,7 @@ const configUtils = require('../../utils/configUtils');
 const cheerio = require('cheerio');
 const config = require('../../../core/shared/config');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
+const settingsCache = require('../../../core/shared/settings-cache');
 
 let request;
 
@@ -31,11 +32,26 @@ describe('Dynamic Routing', function () {
     }
 
     before(function () {
-        return testUtils.startGhost()
-            .then(function () {
-                sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
-                request = supertest.agent(config.get('url'));
-            });
+        // Default is always casper. We use the old compatible 1.4 casper theme for these tests. Available in the test content folder.
+        const originalSettingsCacheGetFn = settingsCache.get;
+        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+            if (key === 'active_theme') {
+                return 'casper-1.4';
+            }
+
+            return originalSettingsCacheGetFn(key, options);
+        });
+
+        return testUtils.startGhost({
+            frontend: true,
+            copyThemes: true,
+            copySettings: true,
+            redirectsFile: true,
+            server: true
+        }).then(function () {
+            sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
+            request = supertest.agent(config.get('url'));
+        });
     });
 
     after(function () {

@@ -45,10 +45,15 @@ describe('Frontend Routing', function () {
     });
 
     before(function () {
-        return testUtils.startGhost()
-            .then(function () {
-                request = supertest.agent(config.get('url'));
-            });
+        return testUtils.startGhost({
+            frontend: true,
+            copyThemes: true,
+            copySettings: true,
+            redirectsFile: true,
+            server: true
+        }).then(function () {
+            request = supertest.agent(config.get('url'));
+        });
     });
 
     describe('Test with Initial Fixtures', function () {
