@@ -407,6 +407,10 @@ figure blockquote p {
     text-decoration: underline;
 }
 
+a[data-flickr-embed] img {
+    height: auto;
+}
+
 .kg-bookmark-card {
     width: 100%;
     background: #ffffff;
@@ -1105,8 +1109,6 @@ ${ templateSettings.showBadge ? `
     height: 30px;
 }
 ` : ''}
-
-/* ----- ENDIF THE BROWSER ----- */
 
 </style>
 </head>
