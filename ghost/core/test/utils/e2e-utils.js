@@ -81,6 +81,9 @@ const prepareContentFolder = (options) => {
     if (options.copyThemes) {
         // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
         fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
+    } else if (options.frontend) {
+        // Just copy Casper
+        fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'casper'), path.join(contentFolderForTests, 'themes', 'casper'));
     }
 
     if (options.redirectsFile) {
@@ -99,7 +102,7 @@ const prepareContentFolder = (options) => {
 // - truncate database
 // - re-run default fixtures
 // - reload affected services
-const restartModeGhostStart = async ({frontend}) => {
+const restartModeGhostStart = async ({frontend, copyThemes, copySettings}) => {
     debug('Reload Mode');
 
     // TODO: figure out why we need this if we reset again later?
@@ -113,11 +116,14 @@ const restartModeGhostStart = async ({frontend}) => {
     await settingsService.init();
     debug('settings done');
 
-    if (frontend) {
-        // Load the frontend-related components
+    if (copySettings) {
         await routeSettingsService.init();
+    }
+    if (copyThemes || frontend) {
         await themeService.init();
-        debug('frontend done');
+    }
+    if (copyThemes) {
+        await themeService.loadInactiveThemes();
     }
 
     // Reload the URL service & wait for it to be ready again
@@ -195,16 +201,15 @@ const startGhost = async (options) => {
     options = _.merge({
         backend: true,
         frontend: true,
-        redirectsFile: true,
+        redirectsFile: false,
         redirectsFileExt: '.json',
         forceStart: false,
-        copyThemes: true,
-        copySettings: true,
+        copyThemes: false,
+        copySettings: false,
         contentFolder: path.join(os.tmpdir(), uuid.v4(), 'ghost-test'),
         subdir: false
     }, options);
 
-    // Ensure we have tmp content folders populated ready for testing
     // @TODO: tidy up the tmp folders after tests
     prepareContentFolder(options);
 

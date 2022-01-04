@@ -30,12 +30,15 @@ describe('Dynamic Routing', function () {
         };
     }
 
-    before(function () {
-        return testUtils.startGhost()
-            .then(function () {
-                sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
-                request = supertest.agent(config.get('url'));
-            });
+    before(async function () {
+        await testUtils.startGhost({
+            copyThemes: true,
+            copySettings: true,
+            redirectsFile: true
+        });
+
+        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
+        request = supertest.agent(config.get('url'));
     });
 
     after(function () {
