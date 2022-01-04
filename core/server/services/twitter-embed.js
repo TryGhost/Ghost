@@ -1,6 +1,5 @@
 const {extract} = require('oembed-parser');
 const logging = require('@tryghost/logging');
-const labs = require('../../shared/labs');
 
 /**
  * @typedef {import('./oembed').ICustomProvider} ICustomProvider
@@ -43,7 +42,7 @@ class TwitterOEmbedProvider {
         /** @type {object} */
         const oembedData = await extract(url.href);
 
-        if (this.dependencies.config.bearerToken && labs.isSet('richTwitterNewsletters')) {
+        if (this.dependencies.config.bearerToken) {
             const query = {
                 expansions: ['attachments.poll_ids', 'attachments.media_keys', 'author_id', 'entities.mentions.username', 'geo.place_id', 'in_reply_to_user_id', 'referenced_tweets.id', 'referenced_tweets.id.author_id'],
                 'media.fields': ['duration_ms', 'height', 'media_key', 'preview_image_url', 'type', 'url', 'width', 'public_metrics', 'alt_text'],
