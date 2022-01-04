@@ -53,7 +53,6 @@ export default Service.extend({
     cardSettingsPanel: feature('cardSettingsPanel'),
     membersAutoLogin: feature('membersAutoLogin'),
     urlCache: feature('urlCache'),
-    mediaAPI: feature('mediaAPI'),
     filesAPI: feature('filesAPI'),
     fileCard: feature('fileCard'),
     beforeAfterCard: feature('beforeAfterCard'),
