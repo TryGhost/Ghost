@@ -14,16 +14,6 @@ export default class ModalsEditorConfirmPublishComponent extends Component {
     @tracked memberCount = null;
     @tracked memberCountString = null;
 
-    get isPublishOnly() {
-        return this.args.data.sendEmailWhenPublished === 'none'
-            || this.args.data.post.displayName === 'page'
-            || this.args.data.post.email;
-    }
-
-    get isEmailOnly() {
-        return this.args.data.emailOnly;
-    }
-
     get isEmailOnlyWithNoMembers() {
         return this.isEmailOnly && this.memberCount === 0;
     }
@@ -38,6 +28,17 @@ export default class ModalsEditorConfirmPublishComponent extends Component {
         }
 
         return 'Publish and Send';
+    }
+
+    constructor() {
+        super(...arguments);
+
+        // set static up-front so it doesn't change when post is saved and email is created
+        this.isPublishOnly = this.args.data.sendEmailWhenPublished === 'none'
+            || this.args.data.post.displayName === 'page'
+            || this.args.data.post.email;
+
+        this.isEmailOnly = this.args.data.emailOnly;
     }
 
     @action
