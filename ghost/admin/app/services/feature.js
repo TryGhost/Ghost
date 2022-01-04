@@ -58,7 +58,6 @@ export default Service.extend({
     accordionCard: feature('accordionCard'),
     fileCard: feature('fileCard'),
     audioCard: feature('audioCard'),
-    videoCard: feature('videoCard'),
     productCard: feature('productCard'),
     beforeAfterCard: feature('beforeAfterCard'),
     richTwitterNewsletters: feature('richTwitterNewsletters'),

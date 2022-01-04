@@ -215,8 +215,7 @@ export const CARD_MENU = [
             replaceArg: 'video',
             payload: {
                 triggerBrowse: true
-            },
-            isAvailable: 'feature.videoCard'
+            }
         },
         {
             label: 'Audio',
