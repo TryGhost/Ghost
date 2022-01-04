@@ -260,8 +260,7 @@ export const CARD_MENU = [
             desc: 'Add a bold section header',
             matches: ['header'],
             type: 'card',
-            replaceArg: 'header',
-            isAvailable: 'feature.headerCard'
+            replaceArg: 'header'
         }]
     },
     {

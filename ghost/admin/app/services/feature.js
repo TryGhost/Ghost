@@ -54,7 +54,6 @@ export default Service.extend({
     urlCache: feature('urlCache'),
     beforeAfterCard: feature('beforeAfterCard'),
     tweetGridCard: feature('tweetGridCard'),
-    headerCard: feature('headerCard'),
 
     _user: null,
 
