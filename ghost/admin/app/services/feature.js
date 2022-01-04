@@ -57,7 +57,6 @@ export default Service.extend({
     filesAPI: feature('filesAPI'),
     fileCard: feature('fileCard'),
     audioCard: feature('audioCard'),
-    productCard: feature('productCard'),
     beforeAfterCard: feature('beforeAfterCard'),
     richTwitterNewsletters: feature('richTwitterNewsletters'),
     tweetGridCard: feature('tweetGridCard'),
