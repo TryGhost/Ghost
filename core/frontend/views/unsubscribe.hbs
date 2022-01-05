@@ -33,16 +33,21 @@
                             </a>
                         </nav>
                     </header>
-    
+
                     <div class="gh-flow-content-wrap">
                         <section class="gh-flow-content gh-flow-content-unsubscribe">
-                            <p>
-                                {{#if error}}
-                                    {{error}}
-                                {{else}}
-                                    {{#if member}}<span class="gh-flow-em">{{member.email}}</span> has been successfully unsubscribed.{{/if}}
+                            {{#if error}}
+                                <p>{{error}}</p>
+                            {{else}}
+                                {{#if member}}
+                                    <p>
+                                        <span class="gh-flow-em">{{member.email}}</span> has been successfully unsubscribed from emails.
+                                        <br>
+                                        Don't worry, this will not cancel your paid subscription to {{@site.title}}.
+                                    </p>
+                                    <p>Didn't mean to do this? Manage your account <a href="{{@site.url}}/#/portal/account">here</a>.</p>
                                 {{/if}}
-                            </p>
+                            {{/if}}
                         </section>
                     </div>
                 </div>
