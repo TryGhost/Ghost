@@ -180,10 +180,19 @@ describe('Acceptance: Members', function () {
             expect(find('[data-test-modal="delete-members"]')).to.exist;
             expect(find('[data-test-text="delete-count"]')).to.have.text('5 members');
 
+            // ensure export endpoint gets hit with correct query params when deleting
+            let exportQueryParams;
+            this.server.get('/members/upload', (schema, request) => {
+                exportQueryParams = request.queryParams;
+            });
+
             await click('[data-test-button="confirm"]');
+
+            expect(exportQueryParams).to.deep.equal({filter: 'label:[label-0]', limit: 'all'});
 
             expect(find('[data-test-text="deleted-count"]')).to.have.text('5 members');
             expect(find('[data-test-button="confirm"]')).to.not.exist;
+
             // members filter is reset
             // TODO: fix query params reset for empty strings
             expect(currentURL()).to.equal('/members?search=');

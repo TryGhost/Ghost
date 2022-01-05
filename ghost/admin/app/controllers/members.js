@@ -428,9 +428,9 @@ export default class MembersController extends Controller {
         // needs to fetch the file and trigger a download directly rather than
         // via an iframe. The iframe approach can't tell us when a download has
         // started/finished meaning we could end up deleting the data before exporting it
-        const exportUrl = ghostPaths().url.api('members/upload');
         const exportParams = new URLSearchParams(this.getApiQueryObject());
         exportParams.set('limit', 'all');
+        const exportUrl = `${ghostPaths().url.api('members/upload')}?${exportParams.toString()}`;
 
         yield fetch(exportUrl, {method: 'GET'})
             .then(res => res.blob())
