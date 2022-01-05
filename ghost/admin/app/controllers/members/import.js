@@ -11,7 +11,7 @@ export default class ImportController extends Controller {
     @action
     refreshMembers({label} = {}) {
         if (label) {
-            let queryParams = Object.assign(resetQueryParams('members.index'), {label: label.slug});
+            let queryParams = Object.assign(resetQueryParams('members.index'), {filter: `label:[${label.slug}]`});
             this.router.transitionTo({queryParams});
         }
         this.members.refreshData();
