@@ -194,8 +194,7 @@ describe('Acceptance: Members', function () {
             expect(find('[data-test-button="confirm"]')).to.not.exist;
 
             // members filter is reset
-            // TODO: fix query params reset for empty strings
-            expect(currentURL()).to.equal('/members?search=');
+            expect(currentURL()).to.equal('/members');
             expect(findAll('[data-test-member]').length).to.equal(6);
 
             await click('[data-test-button="close-modal"]');
