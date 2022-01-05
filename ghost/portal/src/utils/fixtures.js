@@ -53,7 +53,7 @@ function getOfferData({
     type = 'percent',
     cadence = 'month',
     amount = 50,
-    duration = 'once',
+    duration = 'repeating',
     durationInMonths = null,
     currencyRestriction = false,
     currency = null,
@@ -86,7 +86,7 @@ function getMemberData({
     email = 'jamie@example.com',
     firstname = 'Jamie',
     subscriptions = [],
-    paid = false,
+    paid = true,
     avatarImage: avatar_image = '',
     subscribed = true
 } = {}) {
@@ -131,7 +131,7 @@ export function getProductsData({numOfProducts = 3} = {}) {
             numOfBenefits: 3
         }),
         getProductData({
-            name: 'Friends of the browser',
+            name: 'Friends of the Blueprint',
             description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
             monthlyPrice: getPriceData({
                 interval: 'month',
@@ -162,7 +162,6 @@ function getProductData({
         monthlyPrice,
         yearlyPrice,
         benefits: getBenefits({numOfBenefits})
-
     };
 }
 
@@ -213,7 +212,7 @@ function getSubscriptionData({
     id = `sub_${objectId()}`,
     status = 'active',
     currency = 'USD',
-    interval = 'month',
+    interval = 'year',
     amount = (interval === 'month' ? 500 : 5000),
     nickname = (interval === 'month' ? 'Monthly' : 'Yearly'),
     cardLast4 = '4242',
@@ -236,6 +235,7 @@ function getSubscriptionData({
             interval,
             currency
         },
+        offer,
         status,
         start_date,
         default_payment_card_last4: cardLast4,
