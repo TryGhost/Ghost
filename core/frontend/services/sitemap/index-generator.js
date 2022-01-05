@@ -14,6 +14,7 @@ class SiteMapIndexGenerator {
     constructor(options) {
         options = options || {};
         this.types = options.types;
+        this.maxPerPage = options.maxPerPage;
     }
 
     getXml() {
@@ -30,16 +31,25 @@ class SiteMapIndexGenerator {
 
     generateSiteMapUrlElements() {
         return _.map(this.types, (resourceType) => {
-            const url = urlUtils.urlFor({relativeUrl: '/sitemap-' + resourceType.name + '.xml'}, true);
-            const lastModified = resourceType.lastModified;
+            // `|| 1` = even if there are no items we still have an empty sitemap file
+            const noOfPages = Math.ceil(Object.keys(resourceType.nodeLookup).length / this.maxPerPage) || 1;
+            const pages = [];
 
-            return {
-                sitemap: [
-                    {loc: url},
-                    {lastmod: moment(lastModified).toISOString()}
-                ]
-            };
-        });
+            for (let i = 0; i < noOfPages; i++) {
+                const page = i === 0 ? '' : `-${i + 1}`;
+                const url = urlUtils.urlFor({relativeUrl: '/sitemap-' + resourceType.name + page + '.xml'}, true);
+                const lastModified = resourceType.lastModified;
+
+                pages.push({
+                    sitemap: [
+                        {loc: url},
+                        {lastmod: moment(lastModified).toISOString()}
+                    ]
+                });
+            }
+
+            return pages;
+        }).flat();
     }
 }
 

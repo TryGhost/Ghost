@@ -11,11 +11,13 @@ class SiteMapManager {
     constructor(options) {
         options = options || {};
 
+        options.maxPerPage = options.maxPerPage || 50000;
+
         this.pages = options.pages || this.createPagesGenerator(options);
         this.posts = options.posts || this.createPostsGenerator(options);
         this.users = this.authors = options.authors || this.createUsersGenerator(options);
         this.tags = options.tags || this.createTagsGenerator(options);
-        this.index = options.index || this.createIndexGenerator();
+        this.index = options.index || this.createIndexGenerator(options);
 
         events.on('router.created', (router) => {
             if (router.name === 'StaticRoutesRouter') {
@@ -43,14 +45,15 @@ class SiteMapManager {
         });
     }
 
-    createIndexGenerator() {
+    createIndexGenerator(options) {
         return new IndexMapGenerator({
             types: {
                 pages: this.pages,
                 posts: this.posts,
                 authors: this.authors,
                 tags: this.tags
-            }
+            },
+            maxPerPage: options.maxPerPage
         });
     }
 
@@ -74,8 +77,8 @@ class SiteMapManager {
         return this.index.getXml();
     }
 
-    getSiteMapXml(type) {
-        return this[type].getXml();
+    getSiteMapXml(type, page) {
+        return this[type].getXml(page);
     }
 }
 

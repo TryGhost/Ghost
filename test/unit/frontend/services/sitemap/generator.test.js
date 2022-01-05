@@ -53,7 +53,7 @@ describe('Generators', function () {
     });
 
     it('max node setting results in the right number of nodes', function () {
-        generator = new PostGenerator({maxNodes: 5});
+        generator = new PostGenerator({maxPerPage: 5});
 
         for (let i = 0; i < 10; i++) {
             generator.addUrl(`http://my-ghost-blog.com/episode-${i}/`, testUtils.DataGenerator.forKnex.createPost({
@@ -70,12 +70,12 @@ describe('Generators', function () {
         Object.keys(generator.nodeLookup).should.be.Array().with.lengthOf(10);
 
         // But only 5 are output in the xml
-        generator.siteMapContent.match(/<loc>/g).should.be.Array().with.lengthOf(5);
+        generator.siteMapContent.get(1).match(/<loc>/g).should.be.Array().with.lengthOf(5);
     });
 
     it('default is 50k', function () {
         generator = new PostGenerator();
-        generator.maxNodes.should.eql(50000);
+        generator.maxPerPage.should.eql(50000);
     });
 
     describe('IndexGenerator', function () {
@@ -86,7 +86,8 @@ describe('Generators', function () {
                     pages: new PageGenerator(),
                     tags: new TagGenerator(),
                     authors: new UserGenerator()
-                }
+                },
+                maxPerPage: 5
             });
         });
 
@@ -98,6 +99,21 @@ describe('Generators', function () {
                 xml.should.match(/sitemap-posts.xml/);
                 xml.should.match(/sitemap-pages.xml/);
                 xml.should.match(/sitemap-authors.xml/);
+            });
+
+            it('creates multiple pages when there are too many posts', function () {
+                for (let i = 0; i < 10; i++) {
+                    generator.types.posts.addUrl(`http://my-ghost-blog.com/episode-${i}/`, testUtils.DataGenerator.forKnex.createPost({
+                        created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,
+                        updated_at: null,
+                        published_at: null,
+                        slug: `episode-${i}`
+                    }));
+                }
+                const xml = generator.getXml();
+
+                xml.should.match(/sitemap-posts.xml/);
+                xml.should.match(/sitemap-posts-2.xml/);
             });
         });
     });
@@ -126,9 +142,9 @@ describe('Generators', function () {
 
             it('get cached xml', function () {
                 sinon.spy(generator, 'generateXmlFromNodes');
-                generator.siteMapContent = 'something';
+                generator.siteMapContent.set(1, 'something');
                 generator.getXml().should.eql('something');
-                generator.siteMapContent = null;
+                generator.siteMapContent.clear();
                 generator.generateXmlFromNodes.called.should.eql(false);
             });
 
@@ -184,6 +200,32 @@ describe('Generators', function () {
                 idxFirst.should.be.below(idxSecond);
                 idxSecond.should.be.below(idxThird);
             });
+
+            it('creates multiple pages when there are too many posts', function () {
+                generator.maxPerPage = 5;
+                urlUtils.urlFor.withArgs('sitemap_xsl', true).returns('http://my-ghost-blog.com/sitemap.xsl');
+                for (let i = 0; i < 10; i++) {
+                    generator.addUrl(`http://my-ghost-blog.com/episode-${i}/`, testUtils.DataGenerator.forKnex.createPost({
+                        created_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 200,
+                        updated_at: null,
+                        published_at: null,
+                        slug: `episode-${i}`
+                    }));
+                }
+
+                const pages = [generator.getXml(), generator.getXml(2)];
+
+                for (let i = 0; i < 10; i++) {
+                    const pageIndex = Math.floor(i / 5);
+                    pages[pageIndex].should.containEql(`<loc>http://my-ghost-blog.com/episode-${i}/</loc>`);
+                }
+            });
+
+            it('shouldn\'t break with out of bounds pages', function () {
+                should.not.exist(generator.getXml(-1));
+                should.not.exist(generator.getXml(99999));
+                should.not.exist(generator.getXml(0));
+            });
         });
 
         describe('fn: removeUrl', function () {
@@ -224,12 +266,12 @@ describe('Generators', function () {
 
                 generator.getXml();
 
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/home/</loc>');
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/magic/</loc>');
-                generator.siteMapContent.should.containEql('<loc>http://my-ghost-blog.com/subscribe/</loc>');
+                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/home/</loc>');
+                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/magic/</loc>');
+                generator.siteMapContent.get(1).should.containEql('<loc>http://my-ghost-blog.com/subscribe/</loc>');
 
                 // <loc> should exist exactly one time
-                generator.siteMapContent.match(/<loc>/g).length.should.eql(3);
+                generator.siteMapContent.get(1).match(/<loc>/g).length.should.eql(3);
             });
         });
     });
