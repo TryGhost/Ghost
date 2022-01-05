@@ -272,7 +272,7 @@ function getTestSite() {
 export const testSite = getTestSite();
 
 export const site = getSiteData({
-    products: getProductsData({numOfProducts: 3})
+    products: getProductsData({numOfProducts: 1})
 });
 
 export const offer = getOfferData({
