@@ -17,12 +17,12 @@ class BaseSiteMapGenerator {
     constructor() {
         this.nodeLookup = {};
         this.nodeTimeLookup = {};
-        this.siteMapContent = null;
+        this.siteMapContent = new Map();
         this.lastModified = 0;
-        this.maxNodes = 50000;
+        this.maxPerPage = 50000;
     }
 
-    generateXmlFromNodes() {
+    generateXmlFromNodes(page) {
         // Get a mapping of node to timestamp
         let nodesToProcess = _.map(this.nodeLookup, (node, id) => {
             return {
@@ -33,20 +33,23 @@ class BaseSiteMapGenerator {
             };
         });
 
-        // Limit to 50k nodes - this is a quick fix to prevent errors in google console
-        if (this.maxNodes) {
-            nodesToProcess = nodesToProcess.slice(0, this.maxNodes);
-        }
-
         // Sort nodes by timestamp
         nodesToProcess = _.sortBy(nodesToProcess, 'ts');
 
+        // Get the page of nodes that was requested
+        nodesToProcess = nodesToProcess.slice((page - 1) * this.maxPerPage, page * this.maxPerPage);
+
+        // Do not generate empty sitemaps
+        if (nodesToProcess.length === 0) {
+            return null;
+        }
+
         // Grab just the nodes
-        nodesToProcess = _.map(nodesToProcess, 'node');
+        const nodes = _.map(nodesToProcess, 'node');
 
         const data = {
             // Concat the elements to the _attr declaration
-            urlset: [XMLNS_DECLS].concat(nodesToProcess)
+            urlset: [XMLNS_DECLS].concat(nodes)
         };
 
         // Generate full xml
@@ -67,7 +70,7 @@ class BaseSiteMapGenerator {
             this.updateLastModified(datum);
             this.updateLookups(datum, node);
             // force regeneration of xml
-            this.siteMapContent = null;
+            this.siteMapContent.clear();
         }
     }
 
@@ -75,7 +78,7 @@ class BaseSiteMapGenerator {
         this.removeFromLookups(datum);
 
         // force regeneration of xml
-        this.siteMapContent = null;
+        this.siteMapContent.clear();
         this.lastModified = Date.now();
     }
 
@@ -152,13 +155,13 @@ class BaseSiteMapGenerator {
         return !!imageUrl;
     }
 
-    getXml() {
-        if (this.siteMapContent) {
-            return this.siteMapContent;
+    getXml(page = 1) {
+        if (this.siteMapContent.has(page)) {
+            return this.siteMapContent.get(page);
         }
 
-        const content = this.generateXmlFromNodes();
-        this.siteMapContent = content;
+        const content = this.generateXmlFromNodes(page);
+        this.siteMapContent.set(page, content);
         return content;
     }
 
@@ -181,7 +184,7 @@ class BaseSiteMapGenerator {
     reset() {
         this.nodeLookup = {};
         this.nodeTimeLookup = {};
-        this.siteMapContent = null;
+        this.siteMapContent.clear();
     }
 }
 
