@@ -86,7 +86,7 @@ function getMemberData({
     email = 'jamie@example.com',
     firstname = 'Jamie',
     subscriptions = [],
-    paid = true,
+    paid = false,
     avatarImage: avatar_image = '',
     subscribed = true
 } = {}) {
