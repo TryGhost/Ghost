@@ -99,6 +99,25 @@ export const AccountHomePageStyles = `
         margin-right: 12px;
         border-radius: 2px;
     }
+
+    .gh-portal-account-discountcontainer {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .gh-portal-account-old-price {
+        text-decoration: line-through;
+        color: var(--grey9) !important;
+    }
+
+    .gh-portal-account-tagicon {
+        width: 16px;
+        height: 16px;
+        color: var(--brandcolor);
+        margin-right: 5px;
+        z-index: 999;
+    }
 `;
 
 const UserAvatar = ({avatar, brandColor}) => {
@@ -152,7 +171,7 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
             let offerEndDate = new Date(offerStartDate.setMonth(offerStartDate.getMonth() + durationInMonths));
             durationLabel = `Ends ${getDateString(offerEndDate)}`;
         }
-        offerLabel = `${getUpdatedOfferPrice({offer, price, useFormatted: true})}/${price.interval} - ${durationLabel}`;
+        offerLabel = `${getUpdatedOfferPrice({offer, price, useFormatted: true})}/${price.interval}${durationLabel ? `— ${durationLabel}` : ``}`;
     }
     return offerLabel;
 }
@@ -191,14 +210,14 @@ const PaidAccountActions = () => {
         }
         let oldPriceClassName = '';
         if (offerLabelStr) {
-            oldPriceClassName = 'old-price';
+            oldPriceClassName = 'gh-portal-account-old-price';
         }
         const OfferLabel = () => {
             if (offerLabelStr) {
                 return (
-                    <p>
-                        <OfferTagIcon style={{width: '12px', height: '9px', marginLeft: '-10px'}}/>
-                        {offerLabelStr}
+                    <p className="gh-portal-account-discountcontainer">
+                        <OfferTagIcon className="gh-portal-account-tagicon" />
+                        <span>{offerLabelStr}</span>
                     </p>
                 );
             }
