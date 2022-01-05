@@ -18,8 +18,8 @@ const React = require('react');
 const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
-    member: Fixtures.member.free,
-    page: 'offer',
+    member: Fixtures.member.paid,
+    page: 'accountHome',
     pageData: Fixtures.offer
 };
 
