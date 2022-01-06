@@ -204,7 +204,9 @@ export default Component.extend({
         if (event.lengthComputable) {
             run(() => {
                 let percentage = Math.round((event.loaded / event.total) * 100);
-                this.set('uploadPercentage', percentage);
+                if (!this.isDestroyed && !this.isDestroying) {
+                    this.set('uploadPercentage', percentage);
+                }
             });
         }
     },
