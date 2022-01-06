@@ -8,7 +8,8 @@
     "ember-drag-drop",
     "normalize.css",
     "validator",
-    "codemirror"
+    "codemirror",
+    "faker"
   ],
   "ignorePaths": ["lib/koenig-editor/package.json"],
   "packageRules": [
