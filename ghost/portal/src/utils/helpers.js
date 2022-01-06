@@ -528,3 +528,7 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
     }
     return updatedAmount;
 };
+
+export const isActiveOffer = ({offer}) => {
+    return offer?.status === 'active';
+};
