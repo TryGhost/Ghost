@@ -100,7 +100,7 @@
     "ember-one-way-select": "4.0.1",
     "ember-power-calendar-moment": "0.1.7",
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
-    "ember-power-select": "4.1.5",
+    "ember-power-select": "5.0.3",
     "ember-promise-modals": "TryGhost/ember-promise-modals#v2.0.0+ghost.3",
     "ember-resolver": "8.0.3",
     "ember-route-action-helper": "2.0.8",
@@ -152,6 +152,6 @@
     ]
   },
   "resolutions": {
-    "ember-basic-dropdown": "3.0.16"
+    "ember-basic-dropdown": "4.0.2"
   }
 }
