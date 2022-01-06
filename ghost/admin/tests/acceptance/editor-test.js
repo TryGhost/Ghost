@@ -332,8 +332,6 @@ describe('Acceptance: Editor', function () {
             // schedule post
             await click('[data-test-publishmenu-cancel]');
             await click('[data-test-publishmenu-trigger]');
-
-            let newFutureTime = moment.tz('Pacific/Kwajalein').add(10, 'minutes');
             await click('[data-test-publishmenu-scheduled-option]');
 
             expect(
@@ -341,6 +339,9 @@ describe('Acceptance: Editor', function () {
                 'draft post, schedule button text'
             ).to.equal('Schedule');
 
+            // get time in current timezone and select the current date
+            // will result in the default +5mins schedule time
+            let newFutureTime = moment.tz('Pacific/Kwajalein');
             await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', new Date(newFutureTime.format().replace(/\+.*$/, '')));
             await click('[data-test-publishmenu-save]');
             await click('[data-test-button="confirm-schedule"]');
