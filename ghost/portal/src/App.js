@@ -10,7 +10,7 @@ import * as Fixtures from './utils/fixtures';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductFromId, getQueryPrice, getSiteDomain, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const handleDataAttributes = require('./data-attributes');
 const React = require('react');
@@ -576,7 +576,7 @@ export default class App extends React.Component {
             try {
                 const offerData = await this.GhostApi.site.offer({offerId});
                 const offer = offerData?.offers[0];
-                if (offer) {
+                if (isActiveOffer({offer})) {
                     if (!portalButton) {
                         const product = getProductFromId({site, productId: offer.tier.id});
                         const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
