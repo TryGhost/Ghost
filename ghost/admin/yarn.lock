@@ -7101,13 +7101,15 @@ ember-router-generator@^2.0.0:
     "@babel/traverse" "^7.4.5"
     recast "^0.18.1"
 
-ember-simple-auth@4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-4.0.2.tgz#d0597fdbb47bf97efd90bdaa24f3d61c765cc34b"
-  integrity sha512-6DoNfesB54ToDMv89r7KFtIR1EFYWurAAlD5KRnnerhBbRH0ws3EK2g7O/8wVJoBuPOuvHZlEnJVCtzp+oauyg==
+ember-simple-auth@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-4.1.1.tgz#61e67af369d2654eba579e700de8a1e59d5fd172"
+  integrity sha512-OF6Fq8zEJvApnqO0n7ZHropgrKUYYSwOuXv8I0iP3EnIr7P4/1SohU+4xCWIDejU4EXkxv4HWupPYqcaSb+ywg==
   dependencies:
     base-64 "^0.1.0"
+    broccoli-file-creator "^2.1.1"
     broccoli-funnel "^1.2.0 || ^2.0.0"
+    broccoli-merge-trees "^4.0.0"
     ember-cli-babel "^7.20.5"
     ember-cli-is-package-missing "^1.0.0"
     ember-cookies "^0.5.0"
