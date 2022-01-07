@@ -313,9 +313,9 @@ ul.nostyle li {
     position: relative;
     overflow: scroll;
     max-width: calc(100% + 96px);
-    height: calc(100vh - 96px);
+    height: calc(100vh - 129px);
     margin: 0 -48px -81px;
-    padding: 0 48px 0 0;
+    padding: 0 48px;
 }
 
 .gh-list-scrolling table {
@@ -323,6 +323,13 @@ ul.nostyle li {
     border-collapse: inherit;
     margin: 0;
     border-bottom: none;
+}
+
+.gh-list-scrolling thead tr {
+    background: var(--main-bg-color);
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .gh-list-scrolling thead th {
@@ -333,8 +340,6 @@ ul.nostyle li {
     font-weight: 500;
     letter-spacing: 0.1px;
     color: var(--black);
-    background: var(--main-bg-color);
-    background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
     border-bottom: var(--whitegrey) 1px solid;
     padding: 10px 20px;
     text-transform: uppercase;
@@ -343,9 +348,19 @@ ul.nostyle li {
 
 .gh-list-scrolling thead th:first-child {
     left: 0;
-    z-index: 1;
+    z-index: 3;
     border-bottom: none;
-    padding: 0 60px 0 48px;
+    padding: 0 60px 0 0;
+    background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
+}
+
+.gh-list-scrolling thead th:first-child::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 100%;
+    background: green;
 }
 
 .gh-list-scrolling tbody .gh-list-data:first-child {
@@ -354,7 +369,7 @@ ul.nostyle li {
     border-bottom: none;
     background: var(--main-bg-color);
     background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
-    padding: 0 60px 0 48px;
+    padding: 0 60px 0 0;
 }
 
 .gh-list-scrolling thead th:first-child::before,
@@ -363,7 +378,7 @@ ul.nostyle li {
     content: "";
     bottom: 0;
     right: 0;
-    left: 48px;
+    left: 0;
     height: 1px;
     background: var(--whitegrey);
 }
@@ -382,4 +397,21 @@ ul.nostyle li {
 .gh-list-scrolling tbody .gh-list-data {
     border-top: none;
     border-bottom: var(--whitegrey) 1px solid;
+}
+
+@media (max-width: 800px) {
+    .gh-list-scrolling {
+        max-width: calc(100% + 8vw);
+        height: calc(100vh - 193px);
+        margin-left: -4vw;
+        margin-right: -4vw;
+        padding-left: 4vw;
+        padding-right: 4vw;
+    }
+}
+
+@media (min-width: 1450px) {
+    .gh-list-scrolling {
+        height: calc(100vh - 96px);
+    }
 }
