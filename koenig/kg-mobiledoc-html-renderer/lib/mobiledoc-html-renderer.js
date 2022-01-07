@@ -74,6 +74,19 @@ class DomModifier {
         node.setAttribute('id', id);
     }
 
+    wrapBlockquoteContentInP(node) {
+        if (node.firstChild && node.firstChild.tagName === 'P') {
+            return;
+        }
+
+        const p = this.options.dom.createElement('p');
+        while (node.firstChild) {
+            p.appendChild(node.firstChild);
+        }
+
+        node.appendChild(p);
+    }
+
     modifyChildren(node) {
         walkDom(node, this.modify.bind(this));
     }
@@ -82,6 +95,11 @@ class DomModifier {
         // add id attributes to H* tags
         if (node.nodeType === 1 && node.nodeName.match(/^h\d$/i)) {
             this.addHeadingId(node);
+        }
+
+        // wrap blockquote content in P tag for emails
+        if (this.options.target === 'email' && node.nodeType === 1 && node.nodeName === 'BLOCKQUOTE') {
+            this.wrapBlockquoteContentInP(node);
         }
     }
 }
@@ -132,7 +150,7 @@ class MobiledocHtmlRenderer {
 
         // Walk the DOM output and modify nodes as needed
         // eg. to add ID attributes to heading elements
-        const modifier = new DomModifier({ghostVersion});
+        const modifier = new DomModifier(Object.assign({}, cardOptions, {dom: this.options.dom}));
         modifier.modifyChildren(rendered.result);
 
         const output = serializer.serializeChildren(rendered.result);

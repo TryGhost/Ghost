@@ -268,5 +268,93 @@ describe('Mobiledoc HTML renderer', function () {
 
             output.should.equal('<blockquote class="kg-blockquote-alt">Test</blockquote>');
         });
+
+        it('leaves top-level text in blockquotes alone', function () {
+            const mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [1, 'blockquote', [
+                        [0, [], 0, 'Test']
+                    ]]
+                ]
+            };
+
+            const output = renderer.render(mobiledoc);
+
+            output.should.equal('<blockquote>Test</blockquote>');
+        });
+    });
+
+    describe('email behavior', function () {
+        let render;
+
+        before(function () {
+            const htmlCard = {
+                name: 'html',
+                type: 'dom',
+                render({env: {dom}, payload}) {
+                    return dom.createRawHTMLSection(payload);
+                }
+            };
+
+            const renderer = new Renderer({
+                cards: [htmlCard]
+            });
+
+            render = function (mobiledoc) {
+                return renderer.render(mobiledoc, {
+                    target: 'email'
+                });
+            };
+        });
+
+        it('wraps BLOCKQUOTE content in a P', function () {
+            // iOS Mail app ignores margins on BLOCKQUOTE elements so we use the
+            // P tag
+
+            const mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [1, 'blockquote', [
+                        [0, [], 0, 'Test']
+                    ]]
+                ]
+            };
+
+            const output = render(mobiledoc);
+
+            output.should.equal('<blockquote><p>Test</p></blockquote>');
+        });
+
+        it('ignores BLOCKQUOTEs in raw html sections', function () {
+            // DomModifier works by traversing the SimpleDom document which is
+            // much simpler than normal DOM. Our cards generally output raw html
+            // sections (notably: markdown, html, embed) which SimpleDom treats
+            // as blobs of text rather than actual DOM so won't be traversed.
+            //
+            // This is useful because we only really care about the basic
+            // rich-text blockquote rendering that has a known format. MD and embed
+            // card output is too free-form to effectively wrap content without issue
+
+            const mobiledoc = {
+                version: '0.3.1',
+                atoms: [],
+                cards: [['html', '<blockquote>Test</blockquote>']],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            };
+
+            const output = render(mobiledoc);
+
+            output.should.equal('<blockquote>Test</blockquote>');
+        });
     });
 });
