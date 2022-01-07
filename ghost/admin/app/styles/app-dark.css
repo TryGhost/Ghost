@@ -1042,7 +1042,7 @@ input:focus,
     right: -2px;
 }
 
-.gh-list-scrolling thead th {
+.gh-list-scrolling thead th:first-child {
     background: linear-gradient(90deg, rgba(21,23,25,1) 90%, rgba(21,23,25,0) 100%);
 }
 
