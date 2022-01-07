@@ -1061,3 +1061,8 @@ input:focus,
 .kg-header-card.kg-style-dark {
     background: #08090C;
 }
+
+kbd {
+    color: #394047;
+}
+
