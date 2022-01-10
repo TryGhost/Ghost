@@ -1635,7 +1635,18 @@
     lodash "^4.17.11"
     node-jose "^2.0.0"
 
-"@tryghost/members-csv@1.2.0", "@tryghost/members-csv@^1.2.0":
+"@tryghost/members-csv@1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.1.tgz#623b6aeb490dd705f711d67d6e45eb0d63c10a0e"
+  integrity sha512-+BS/1BmZ3iHj/8liUzJx8Tm6soHpdnWf9um+dat4qeP6dRGu5457YJY0K4UEy3BmSqSXzdhlPTYRUMU15QQUAw==
+  dependencies:
+    bluebird "^3.7.2"
+    fs-extra "^10.0.0"
+    lodash "^4.17.21"
+    papaparse "5.3.1"
+    pump "^3.0.0"
+
+"@tryghost/members-csv@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.0.tgz#c4e6a9dd4230012a8df6290910bc44324f386200"
   integrity sha512-TekhWo3Hw/AJ/EYcW/mGzODqC0xvtP/26rIsgqOl5V8RFGWGJQ8mGip6A2wzUShexYVN+uATrP7W+sn1pvfYhQ==
