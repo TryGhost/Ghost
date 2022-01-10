@@ -125,7 +125,6 @@ const processImport = async (options) => {
     return result;
 };
 
-
 events.on('services.stripe.reconfigured', reconfigureMembersAPI);
 
 const membersService = {
