@@ -7,20 +7,17 @@ module.exports = class MemberController {
      * @param {any} deps.StripePrice
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
-     * @param {boolean} deps.allowSelfSignup
      */
     constructor({
         memberRepository,
         StripePrice,
         tokenService,
-        sendEmailWithMagicLink,
-        allowSelfSignup
+        sendEmailWithMagicLink
     }) {
         this._memberRepository = memberRepository;
         this._StripePrice = StripePrice;
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
-        this._allowSelfSignup = allowSelfSignup;
     }
 
     async updateEmailAddress(req, res) {
