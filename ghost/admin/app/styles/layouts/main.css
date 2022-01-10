@@ -988,17 +988,17 @@
 
     .gh-mobile-nav-bar a.active {
         background: var(--black);
-        color: #fff;
+        color: var(--white);
     }
 
     .gh-mobile-nav-bar a.active svg {
-        fill: #fff;
+        fill: var(--white);
     }
 
     .gh-mobile-nav-bar a.active.gh-nav-main-users g,
     .gh-mobile-nav-bar a.active.gh-nav-main-users path {
         fill: transparent;
-        stroke: white;
+        stroke: var(--white);
     }
 
     .gh-mobile-nav-bar svg,
@@ -1008,7 +1008,11 @@
     }
 
     .gh-mobile-nav-bar svg g path {
-        stroke: var(--darkgrey);
+        stroke: var(--white);
+    }
+
+    .gh-mobile-nav-bar .gh-mobile-nav-bar-more svg path {
+        fill: var(--darkgrey);
     }
 
     /* non-authed and fullscreen pages shouldn't have the mobile bar */
