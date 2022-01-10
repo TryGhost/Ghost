@@ -25,7 +25,7 @@ function createApiInstance(config) {
         tokenConfig: config.getTokenConfig(),
         auth: {
             getSigninURL: config.getSigninURL.bind(config),
-            allowSelfSignup: config.getAllowSelfSignup(),
+            allowSelfSignup: config.getAllowSelfSignup.bind(config),
             tokenProvider: new SingleUseTokenProvider(models.SingleUseToken, MAGIC_LINK_TOKEN_VALIDITY)
         },
         mail: {
