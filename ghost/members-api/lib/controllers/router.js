@@ -11,7 +11,7 @@ module.exports = class RouterController {
      * @param {any} deps.productRepository
      * @param {any} deps.memberRepository
      * @param {any} deps.StripePrice
-     * @param {boolean} deps.allowSelfSignup
+     * @param {() => boolean} deps.allowSelfSignup
      * @param {any} deps.magicLinkService
      * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
      * @param {any} deps.tokenService
@@ -285,7 +285,7 @@ module.exports = class RouterController {
         }
 
         try {
-            if (!this._allowSelfSignup) {
+            if (!this._allowSelfSignup()) {
                 const member = await this._memberRepository.get({email});
                 if (member) {
                     const tokenData = {};
