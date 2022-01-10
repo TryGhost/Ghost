@@ -27,7 +27,7 @@ module.exports = function MembersAPI({
         publicKey
     },
     auth: {
-        allowSelfSignup = true,
+        allowSelfSignup = () => true,
         getSigninURL,
         tokenProvider
     },
@@ -167,8 +167,7 @@ module.exports = function MembersAPI({
         memberRepository,
         StripePrice,
         tokenService,
-        sendEmailWithMagicLink,
-        allowSelfSignup
+        sendEmailWithMagicLink
     });
 
     const paymentsService = new PaymentsService({
