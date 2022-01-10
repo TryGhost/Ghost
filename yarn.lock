@@ -1422,10 +1422,10 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
-"@tryghost/express-dynamic-redirects@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.2.tgz#a83d7fe612453ca9d1e018d57548b421b039e4a1"
-  integrity sha512-geqc3pfZNMSkF+NScjMGf+BJuMNV5c4yEvWK0S0Tml360qj1qu7SUmhcn0Fq8iguKGl9ww3UEDu5SCuHuNlnyg==
+"@tryghost/express-dynamic-redirects@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.3.tgz#92be9b222d7ed55c69826ac625aa66478bd0896e"
+  integrity sha512-/keaECc9ZPIMfDu8QyFtF4DsNNlClhm2ii/f0fGQkI3xvrCAUNA7IwVFSm5132DCt+bglinlbynOaPMG6EDOmw==
 
 "@tryghost/helpers@1.1.54":
   version "1.1.54"
