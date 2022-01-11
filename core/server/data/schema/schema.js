@@ -381,6 +381,7 @@ module.exports = {
         monthly_price_id: {type: 'string', maxlength: 24, nullable: true},
         yearly_price_id: {type: 'string', maxlength: 24, nullable: true},
         description: {type: 'string', maxlength: 191, nullable: true},
+        type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'paid', validations: {isIn: [['paid', 'free']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
