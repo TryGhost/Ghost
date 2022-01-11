@@ -674,10 +674,16 @@ input:focus,
 
 .gh-posts-list-item:hover,
 .ember-power-select-group .ember-power-select-option[aria-current=true],
-.gh-list-row:not(.header):not(.loading):hover .gh-list-cell,
-.gh-list-row:not(.header):not(.loading):hover .gh-list-data,
 .settings-tag .tag-edit-button.active,
 .gh-portal-site-frame-cover {
+    background: var(--whitegrey);
+}
+
+.gh-list-row:not(.loading):hover .gh-list-data:first-of-type {
+    background: linear-gradient(315deg, var(--whitegrey) 60%, var(--white) 100%);
+}
+
+.gh-list-row:not(.loading):hover .gh-list-data:not(:first-of-type) {
     background: var(--whitegrey);
 }
 
