@@ -16,7 +16,7 @@ const STRIPE_API_VERSION = '2020-08-27';
  */
 
 /**
- * @typedef {object} IStripeServiceConfig
+ * @typedef {object} IStripeAPIConfig
  * @prop {string} secretKey
  * @prop {string} publicKey
  * @prop {object} appInfo
@@ -27,12 +27,12 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {boolean} enablePromoCodes
  */
 
-module.exports = class StripeService {
+module.exports = class StripeAPI {
     /**
-     * StripeService
+     * StripeAPI
      *
      * @param {object} params
-     * @param {IStripeServiceConfig} params.config
+     * @param {IStripeAPIConfig} params.config
      */
     constructor({config}) {
         /** @type {Stripe} */
@@ -52,7 +52,7 @@ module.exports = class StripeService {
     }
 
     /**
-     * @param {IStripeServiceConfig} config
+     * @param {IStripeAPIConfig} config
      * @returns {void}
      */
     configure(config) {
