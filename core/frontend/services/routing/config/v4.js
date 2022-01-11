@@ -54,7 +54,7 @@ module.exports.TAXONOMIES = {
     },
     author: {
         filter: 'authors:\'%s\'',
-        editRedirect: '#/staff/:slug/',
+        editRedirect: '#/settings/staff/:slug/',
         resource: 'authors'
     }
 };
