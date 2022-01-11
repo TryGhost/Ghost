@@ -109,6 +109,7 @@ const getPortalProductPrices = async function () {
             monthlyPrice: product.monthlyPrice,
             yearlyPrice: product.yearlyPrice,
             benefits: product.benefits,
+            type: product.type,
             prices: productPrices
         };
     });
