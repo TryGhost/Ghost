@@ -1,139 +1,132 @@
 /* eslint-disable camelcase */
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import RSVP from 'rsvp';
-import {computed} from '@ember/object';
+import {action} from '@ember/object';
 import {isBlank, isEmpty} from '@ember/utils';
+import {pluralize} from 'ember-inflector';
+import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
-import {task, timeout, waitForProperty} from 'ember-concurrency';
+import {task} from 'ember-concurrency-decorators';
+import {timeout, waitForProperty} from 'ember-concurrency';
 
-export function computedGroup(category) {
-    return computed('content', 'currentSearch', function () {
-        if (!this.currentSearch || !this.content) {
-            return [];
+export default class GhSearchInputComponent extends Component {
+    @service ajax;
+    @service notifications;
+    @service router;
+    @service store;
+
+    content = [];
+    contentExpiresAt = false;
+    contentExpiry = 30000;
+
+    searchables = [{
+        name: 'Posts',
+        model: 'post',
+        fields: ['id', 'title'],
+        idField: 'id',
+        titleField: 'title'
+    }, {
+        name: 'Pages',
+        model: 'page',
+        fields: ['id', 'title'],
+        idField: 'id',
+        titleField: 'title'
+    }, {
+        name: 'Users',
+        model: 'user',
+        fields: ['slug', 'name'],
+        idField: 'slug',
+        titleField: 'name'
+    }, {
+        name: 'Tags',
+        model: 'tag',
+        fields: ['slug', 'name'],
+        idField: 'slug',
+        titleField: 'name'
+    }]
+
+    @action
+    openSelected(selected) {
+        if (!selected) {
+            return;
         }
 
-        return this.content.filter((item) => {
-            let search = this.currentSearch.toString().toLowerCase();
+        this.args.onSelected?.(selected);
 
-            return (item.category === category) && (item.title.toString().toLowerCase().indexOf(search) >= 0);
+        if (selected.searchable === 'Posts') {
+            let id = selected.id.replace('post.', '');
+            this.router.transitionTo('editor.edit', 'post', id);
+        }
+
+        if (selected.searchable === 'Pages') {
+            let id = selected.id.replace('page.', '');
+            this.router.transitionTo('editor.edit', 'page', id);
+        }
+
+        if (selected.searchable === 'Users') {
+            let id = selected.id.replace('user.', '');
+            this.router.transitionTo('settings.staff.user', id);
+        }
+
+        if (selected.searchable === 'Tags') {
+            let id = selected.id.replace('tag.', '');
+            this.router.transitionTo('tag', id);
+        }
+    }
+
+    @action
+    onClose(select, keyboardEvent) {
+        // refocus search input after dropdown is closed (eg, by pressing Escape)
+        run.later(() => {
+            keyboardEvent?.target.focus();
         });
-    });
-}
+    }
 
-export default Component.extend({
-    ajax: service(),
-    notifications: service(),
-    router: service(),
-    store: service(),
-
-    content: null,
-    contentExpiresAt: false,
-    contentExpiry: 30000,
-    currentSearch: '',
-    selection: null,
-
-    onSelected() {},
-
-    posts: computedGroup('Posts'),
-    pages: computedGroup('Pages'),
-    users: computedGroup('Users'),
-    tags: computedGroup('Tags'),
-
-    groupedContent: computed('posts', 'pages', 'users', 'tags', function () {
-        let groups = [];
-
-        if (!isEmpty(this.posts)) {
-            groups.pushObject({groupName: 'Posts', options: this.posts});
-        }
-
-        if (!isEmpty(this.pages)) {
-            groups.pushObject({groupName: 'Pages', options: this.pages});
-        }
-
-        if (!isEmpty(this.users)) {
-            groups.pushObject({groupName: 'Users', options: this.users});
-        }
-
-        if (!isEmpty(this.tags)) {
-            groups.pushObject({groupName: 'Tags', options: this.tags});
-        }
-
-        return groups;
-    }),
-
-    init() {
-        this._super(...arguments);
-        this.content = [];
-    },
-
-    didRender() {
-        this._super(...arguments);
-
-        // force the search box to be focused at all times. Fixes disappearing
-        // caret when pressing Escape
-        let input = this.element.querySelector('input');
-        if (input) {
-            input.focus();
-        }
-    },
-
-    actions: {
-        openSelected(selected) {
-            if (!selected) {
-                return;
-            }
-
-            this.onSelected(selected);
-
-            if (selected.category === 'Posts') {
-                let id = selected.id.replace('post.', '');
-                this.router.transitionTo('editor.edit', 'post', id);
-            }
-
-            if (selected.category === 'Pages') {
-                let id = selected.id.replace('page.', '');
-                this.router.transitionTo('editor.edit', 'page', id);
-            }
-
-            if (selected.category === 'Users') {
-                let id = selected.id.replace('user.', '');
-                this.router.transitionTo('settings.staff.user', id);
-            }
-
-            if (selected.category === 'Tags') {
-                let id = selected.id.replace('tag.', '');
-                this.router.transitionTo('tag', id);
-            }
-        },
-
-        search(term) {
-            return this.performSearch.perform(term);
-        }
-    },
-
-    performSearch: task(function* (term) {
+    @task({restartable: true})
+    *searchTask(term) {
         if (isBlank(term)) {
             return [];
         }
 
         // start loading immediately in the background
-        this.refreshContent.perform();
+        this.refreshContentTask.perform();
 
         // debounce searches to 200ms to avoid thrashing CPU
         yield timeout(200);
 
         // wait for any on-going refresh to finish
-        if (this.refreshContent.isRunning) {
-            yield waitForProperty(this, 'refreshContent.isIdle');
+        if (this.refreshContentTask.isRunning) {
+            yield waitForProperty(this, 'refreshContentTask.isIdle');
         }
 
-        // set dependent CP term and re-calculate CP
-        this.set('currentSearch', term);
-        return this.groupedContent;
-    }).restartable(),
+        const searchResult = this._searchContent(term);
 
-    refreshContent: task(function* () {
-        let promises = [];
+        return searchResult;
+    }
+
+    _searchContent(term) {
+        const normalizedTerm = term.toString().toLowerCase();
+        const results = [];
+
+        this.searchables.forEach((searchable) => {
+            const matchedContent = this.content.filter((item) => {
+                const normalizedTitle = item.title.toString().toLowerCase();
+                return (item.searchable === searchable.name) && (normalizedTitle.indexOf(normalizedTerm) >= 0);
+            });
+
+            if (!isEmpty(matchedContent)) {
+                results.push({
+                    groupName: searchable.name,
+                    options: matchedContent
+                });
+            }
+        });
+
+        return results;
+    }
+
+    @task({drop: true})
+    *refreshContentTask() {
         let now = new Date();
         let contentExpiresAt = this.contentExpiresAt;
 
@@ -141,88 +134,35 @@ export default Component.extend({
             return true;
         }
 
-        this.set('content', []);
-        promises.pushObject(this._loadPosts());
-        promises.pushObject(this._loadPages());
-        promises.pushObject(this._loadUsers());
-        promises.pushObject(this._loadTags());
+        const content = [];
+        const promises = this.searchables.map(searchable => this._loadSearchable(searchable, content));
 
         try {
             yield RSVP.all(promises);
+            this.content = content;
         } catch (error) {
             // eslint-disable-next-line
             console.error(error);
         }
 
         let contentExpiry = this.contentExpiry;
-        this.set('contentExpiresAt', new Date(now.getTime() + contentExpiry));
-    }).drop(),
+        this.contentExpiresAt = new Date(now.getTime() + contentExpiry);
+    }
 
-    _loadPosts() {
-        let store = this.store;
-        let postsUrl = `${store.adapterFor('post').urlForQuery({}, 'post')}/`;
-        let postsQuery = {fields: 'id,title,page', limit: 'all'};
-        let content = this.content;
+    _loadSearchable(searchable, content) {
+        let url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
+        let query = {fields: searchable.fields, limit: 'all'};
 
-        return this.ajax.request(postsUrl, {data: postsQuery}).then((posts) => {
-            content.pushObjects(posts.posts.map(post => ({
-                id: `post.${post.id}`,
-                title: post.title,
-                category: 'Posts'
-            })));
+        return this.ajax.request(url, {data: query}).then((response) => {
+            const items = response[pluralize(searchable.model)].map(item => ({
+                id: `${searchable.model}.${item[searchable.idField]}`,
+                title: item[searchable.titleField],
+                searchable: searchable.name
+            }));
+
+            content.push(...items);
         }).catch((error) => {
-            this.notifications.showAPIError(error, {key: 'search.loadPosts.error'});
-        });
-    },
-
-    _loadPages() {
-        let store = this.store;
-        let pagesUrl = `${store.adapterFor('page').urlForQuery({}, 'page')}/`;
-        let pagesQuery = {fields: 'id,title,page', limit: 'all'};
-        let content = this.content;
-
-        return this.ajax.request(pagesUrl, {data: pagesQuery}).then((pages) => {
-            content.pushObjects(pages.pages.map(page => ({
-                id: `page.${page.id}`,
-                title: page.title,
-                category: 'Pages'
-            })));
-        }).catch((error) => {
-            this.notifications.showAPIError(error, {key: 'search.loadPosts.error'});
-        });
-    },
-
-    _loadUsers() {
-        let store = this.store;
-        let usersUrl = `${store.adapterFor('user').urlForQuery({}, 'user')}/`;
-        let usersQuery = {fields: 'name,slug', limit: 'all'};
-        let content = this.content;
-
-        return this.ajax.request(usersUrl, {data: usersQuery}).then((users) => {
-            content.pushObjects(users.users.map(user => ({
-                id: `user.${user.slug}`,
-                title: user.name,
-                category: 'Users'
-            })));
-        }).catch((error) => {
-            this.notifications.showAPIError(error, {key: 'search.loadUsers.error'});
-        });
-    },
-
-    _loadTags() {
-        let store = this.store;
-        let tagsUrl = `${store.adapterFor('tag').urlForQuery({}, 'tag')}/`;
-        let tagsQuery = {fields: 'name,slug', limit: 'all'};
-        let content = this.content;
-
-        return this.ajax.request(tagsUrl, {data: tagsQuery}).then((tags) => {
-            content.pushObjects(tags.tags.map(tag => ({
-                id: `tag.${tag.slug}`,
-                title: tag.name,
-                category: 'Tags'
-            })));
-        }).catch((error) => {
-            this.notifications.showAPIError(error, {key: 'search.loadTags.error'});
+            this.notifications.showAPIError(error, {key: `search.load${searchable.name}.error`});
         });
     }
-});
+}
