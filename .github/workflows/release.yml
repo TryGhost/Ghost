@@ -27,4 +27,4 @@ jobs:
       - run: grunt release --skip-tests
       - run: npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
       - run: npm publish
-      - uses: tryghost/action-ghost-release@master
+      - uses: tryghost/action-ghost-release@main
