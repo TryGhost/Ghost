@@ -1667,15 +1667,7 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "0.5.23"
 
-"@tryghost/members-offers@0.10.3":
-  version "0.10.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.10.3.tgz#759cf2c0650b09309e9295f178aff17990d29d5c"
-  integrity sha512-W0lGfOfJkRrESxBEgkBW5XqQuhW/5Cj+QIzOb2b6nT8u3VCE4dX0VCkLWrc6HJq+Hpgv0potmGOLoj37xvFmEw==
-  dependencies:
-    "@nexes/mongo-utils" "^0.3.1"
-    "@tryghost/string" "^0.1.20"
-
-"@tryghost/members-offers@^0.10.4":
+"@tryghost/members-offers@0.10.4", "@tryghost/members-offers@^0.10.4":
   version "0.10.4"
   resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.10.4.tgz#60aba2e27b8e9beb38a6f3aae11a07bd37c769a8"
   integrity sha512-Xs4tG8tE4k4720AkFcwN0jBwgBNzxfR+V5flmzd/CCcNUrXCvVuUaQ62CODcYqYvER6siogNIR0EkJxr4e52lQ==
