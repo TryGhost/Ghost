@@ -5,15 +5,9 @@
             <div class="gh-nav-menu-details-sitetitle">{{this.config.blogTitle}}</div>
         </div>
         <div class="gh-nav-menu-search">
-            <button class="gh-nav-btn-search" {{action "toggleSearchModal"}} title="Search site (Ctrl/⌘ + K)"><span>{{svg-jar "search"}}</span></button>
+            <button class="gh-nav-btn-search" {{on "click" (action "openSearchModal")}} title="Search site (Ctrl/⌘ + K)"><span>{{svg-jar "search"}}</span></button>
         </div>
     </header>
-
-    {{#if this.showSearchModal}}
-        <GhFullscreenModal @modal="search"
-            @close={{action "toggleSearchModal"}}
-            @modifier="action wide" />
-    {{/if}}
 
     <section class="gh-nav-body">
         <div class="gh-nav-top">
