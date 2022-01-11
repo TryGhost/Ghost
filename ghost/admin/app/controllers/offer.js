@@ -347,7 +347,7 @@ export default class OffersController extends Controller {
     @action
     openConfirmArchiveModal() {
         if (!this.offer.isNew) {
-            this.modals.open('modals/archive-offer', {
+            this.modals.open('modals/offers/archive', {
                 offer: this.offer
             }, {
                 className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
@@ -358,7 +358,7 @@ export default class OffersController extends Controller {
     @action
     openConfirmUnarchiveModal() {
         if (!this.offer.isNew) {
-            this.modals.open('modals/unarchive-offer', {
+            this.modals.open('modals/offers/unarchive', {
                 offer: this.offer
             }, {
                 className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
