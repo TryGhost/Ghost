@@ -21,6 +21,6 @@
   "devDependencies": {
     "c8": "7.11.0",
     "mocha": "9.1.3",
-    "supertest": "6.1.6"
+    "supertest": "6.2.0"
   }
 }
