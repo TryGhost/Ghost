@@ -137,7 +137,8 @@ async function readPackages(packagePath) {
             return fs.stat(join(packagePath, packageName))
                 .then(function (stat) {
                     return stat.isDirectory();
-                });
+                })
+                .catch(() => false);
         })
         .map(function readPackageJson(packageName) {
             const absolutePath = join(packagePath, packageName);
