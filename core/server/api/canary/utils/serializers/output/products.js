@@ -73,6 +73,7 @@ function serializeProduct(product, options, apiType) {
         name: json.name,
         description: json.description,
         slug: json.slug,
+        type: json.type,
         created_at: json.created_at,
         updated_at: json.updated_at,
         stripe_prices: json.stripePrices ? json.stripePrices.map(price => serializeStripePrice(price, hideStripeData)) : null,
