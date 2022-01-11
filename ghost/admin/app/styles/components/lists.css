@@ -30,10 +30,6 @@ ul.nostyle li {
     display: table-row;
 }
 
-.gh-list-row:not(.header):not(.loading):hover {
-    background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
-}
-
 .gh-list-row:not(.header):first-of-type {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
@@ -106,6 +102,14 @@ ul.nostyle li {
 .gh-list-row:hover .gh-list-data.show-on-hover > *,
 .gh-list-row:hover .gh-list-cell.show-on-hover > * {
     opacity: 1;
+}
+
+.gh-list-row:not(.loading):hover .gh-list-data:first-of-type {
+    background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
+}
+
+.gh-list-row:not(.loading):hover .gh-list-data:not(:first-of-type) {
+    background: var(--whitegrey-l2);
 }
 
 .gh-list-data.align-right,
