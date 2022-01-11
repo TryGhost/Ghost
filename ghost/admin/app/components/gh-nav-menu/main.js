@@ -14,6 +14,7 @@ export default Component.extend(ShortcutsMixin, {
     customViews: service(),
     feature: service(),
     ghostPaths: service(),
+    modals: service(),
     navigation: service(),
     router: service(),
     session: service(),
@@ -29,7 +30,6 @@ export default Component.extend(ShortcutsMixin, {
     memberCountLoading: true,
     memberCount: 0,
 
-    showSearchModal: false,
     shortcuts: null,
 
     isIntegrationRoute: match('router.currentRouteName', /^settings\.integration/),
@@ -49,7 +49,7 @@ export default Component.extend(ShortcutsMixin, {
 
         let shortcuts = {};
 
-        shortcuts[`${ctrlOrCmd}+k`] = {action: 'toggleSearchModal'};
+        shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
         this.shortcuts = shortcuts;
     },
 
@@ -82,8 +82,8 @@ export default Component.extend(ShortcutsMixin, {
                 this.router.transitionTo('site');
             }
         },
-        toggleSearchModal() {
-            this.toggleProperty('showSearchModal');
+        openSearchModal() {
+            return this.modals.open('modals/search');
         },
         toggleBillingModal() {
             this.billing.openBillingWindow(this.router.currentURL);
