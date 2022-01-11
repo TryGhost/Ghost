@@ -15,6 +15,12 @@ const DEFAULT_COLUMNS = [
 ];
 
 const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
+    columns = columns.map((column) => {
+        if (column === 'subscribed') {
+            return 'subscribed_to_emails';
+        }
+        return column;
+    });
     const mappedMembers = members.map((member) => {
         if (member.error) {
             columns.push('error');
