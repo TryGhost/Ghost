@@ -1,12 +1,24 @@
 const registry = require('./registry');
-
 const path = require('path');
+const config = require('../../../shared/config');
+const settingsCache = require('../../../shared/settings-cache');
 
-// Initialise Ghost's own helpers
 // This is a weird place for this to live!
-const init = async () => {
+const init = () => {
+    // Initialize Ghost's own helpers
     const helperPath = path.join(__dirname, '../../', 'helpers');
-    return await registry.registerDir(helperPath);
+    registry.registerDir(helperPath);
+
+    // Initialize custom helpers in /content/helpers
+    const customHelperPath = config.getContentPath('helpers');
+    registry.registerDir(customHelperPath);
+    
+    // Initialize helpers of current theme (/content/themes/xy/helpers)
+    const themeName = settingsCache.get('active_theme');
+    if (themeName) {
+      const themeHelperPath = path.join(config.getContentPath('themes'), themeName, 'helpers');
+      registry.registerDir(themeHelperPath);
+    }
 };
 
 // Oh look! A framework for helpers :D
