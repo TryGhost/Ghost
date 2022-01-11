@@ -81,7 +81,7 @@
     "@tryghost/magic-link": "1.0.14",
     "@tryghost/members-api": "3.0.0",
     "@tryghost/members-csv": "1.2.1",
-    "@tryghost/members-importer": "0.3.5",
+    "@tryghost/members-importer": "0.3.6",
     "@tryghost/members-offers": "0.10.4",
     "@tryghost/members-ssr": "1.0.16",
     "@tryghost/metrics": "1.0.1",
