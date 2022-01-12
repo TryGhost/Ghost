@@ -1396,6 +1396,14 @@
     "@elastic/elasticsearch" "^7.15.0"
     "@tryghost/debug" "^0.1.9"
 
+"@tryghost/elasticsearch@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.1.tgz#2e258b92466b10bc24506348423953eca27ca459"
+  integrity sha512-dDkye1+5xA5v5UXiPsis/ppupAfTs6kLbRXyRfV9e/eEemvysPrUy5migWSdFj3K8JcZ397LZ9Kz6l6cuXfhQg==
+  dependencies:
+    "@elastic/elasticsearch" "^7.15.0"
+    "@tryghost/debug" "^0.1.10"
+
 "@tryghost/email-analytics-provider-mailgun@1.0.7":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.7.tgz#e8b0da0f9f137ad90b7eb8ee031be88a66811e06"
@@ -1558,15 +1566,15 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.0.0", "@tryghost/logging@2.0.1", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.0.tgz#587c579d703ef15fe468b8bb8efdd9cdfefb90ef"
-  integrity sha512-eWKtiHWDtVVf+xn+ecKb8mUepFDK1RXOhl1tFMF1b7eFASn5WIDLFSMH9Xl9gyCi6dnsXp5fAm2G3baZ77bPZg==
+"@tryghost/logging@2.0.1", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.1.tgz#208816fc20c7d1fbc19ce97555fced6c13d391e0"
+  integrity sha512-vE2zm/W3H13Rpp3t9F84p3GbdBaXxcSxNEMN48c1CEPfhRc+hU2KMB4X9PvAPKnyT9bbUF5wH8LKC+EwluJMsA==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch" "^1.0.0"
-    "@tryghost/pretty-stream" "^0.1.2"
-    "@tryghost/root-utils" "^0.3.7"
+    "@tryghost/elasticsearch" "^1.0.1"
+    "@tryghost/pretty-stream" "^0.1.3"
+    "@tryghost/root-utils" "^0.3.8"
     bunyan "^1.8.15"
     bunyan-loggly "^1.4.2"
     fs-extra "^10.0.0"
@@ -1787,6 +1795,15 @@
     lodash "^4.17.21"
     moment "^2.29.1"
     prettyjson "^1.2.1"
+
+"@tryghost/pretty-stream@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.3.tgz#024b4a2d9b7c3a3492f2343d749d9b60b68a5196"
+  integrity sha512-aDFVgopgvXozJ1o4FXzg/MLa6JorLXxIq43YPuxL4aR8hWTKUbf9NAYMpOU8fAE5Pgi0rKVKYhNhvAfk223WRA==
+  dependencies:
+    lodash "^4.17.21"
+    moment "^2.29.1"
+    prettyjson "1.2.5"
 
 "@tryghost/promise@0.1.13":
   version "0.1.13"
@@ -3363,7 +3380,7 @@ colorette@1.2.1:
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-1.2.1.tgz#4d0b921325c14faf92633086a536db6e89564b1b"
   integrity sha512-puCDz0CzydiSYOrnXpz/PKd69zRrribezjtE9yd4zvytoRc8+RY/KJPvtPFKZS3E3wP6neGyMe0vOTlHO5L3Pw==
 
-colors@^1.1.2:
+colors@1.4.0, colors@^1.1.2:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/colors/-/colors-1.4.0.tgz#c50491479d4c1bdaed2c9ced32cf7c7dc2360f78"
   integrity sha512-a+UqTh4kgZg/SlGvfbzDHpgRu7AAQOmmqRHJnxhRZICKFUT91brVhNNt58CMWU9PsBbv3PDCZUHbVxuDiH2mtA==
@@ -9630,6 +9647,14 @@ prettyjson@1.2.1, prettyjson@^1.2.1:
   integrity sha1-/P+rQdGcq0365eV15kJGYZsS0ok=
   dependencies:
     colors "^1.1.2"
+    minimist "^1.2.0"
+
+prettyjson@1.2.5:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/prettyjson/-/prettyjson-1.2.5.tgz#ef3cfffcc70505c032abc59785884b4027031835"
+  integrity sha512-rksPWtoZb2ZpT5OVgtmy0KHVM+Dca3iVwWY9ifwhcexfjebtgjg3wmrUt9PvJ59XIYBcknQeYHD8IAnVlh9lAw==
+  dependencies:
+    colors "1.4.0"
     minimist "^1.2.0"
 
 printj@~1.1.0:
