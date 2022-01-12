@@ -1337,12 +1337,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.3.tgz#42c88bbfe343d55595aa27b25665b87cb9cbaa23"
   integrity sha512-+Ob3QTLxxpV4VBNEG/6Veop5MLxKlpPkGtnuRO/0PNaxm77Xo6TdLYAqUL+SnHSYRySr3lkLZCZUa9e6HhECbg==
 
-"@tryghost/config@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/config/-/config-0.2.2.tgz#be6070156f47ff5097d73068de0025d96e0b13ac"
-  integrity sha512-71RqaF0f1j8u3NenF/MWDzRYnkY3jj0AsaO1W57hLOL8BGxaqv6uu4LgVmOSp5ZoOb/F1VmjF45An4pk8/cmNA==
+"@tryghost/config@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/config/-/config-0.2.1.tgz#49cac52281d9cc05fdb22033e5378989ed0923ce"
+  integrity sha512-VQVMjjgqEoDX3jtb1wsr/p8I0+lnt6Xo5WDVcuiHAQePBLIP79fZcnq7UkdexAjiotWW2OwbYwIxfFNxQAsdWA==
   dependencies:
-    "@tryghost/root-utils" "^0.3.8"
+    "@tryghost/root-utils" "^0.3.7"
     nconf "^0.11.3"
 
 "@tryghost/constants@1.0.0":
@@ -1359,14 +1359,6 @@
     "@tryghost/errors" "^0.2.14"
     "@tryghost/tpl" "^0.1.4"
     lodash "^4.17.21"
-
-"@tryghost/debug@0.1.10", "@tryghost/debug@^0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.10.tgz#26d67921c3edd562c7d2bee136d04faefa99bb3c"
-  integrity sha512-OihGnKm/lGVB5wNDyykev7IbufmtxTGmiDMAttaG4d5jz1eK9f/1VQ9Zq+lIs0sIG3EM6q9J1iQq0BCCGGRGfg==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.8"
-    debug "^4.3.1"
 
 "@tryghost/debug@0.1.9", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5", "@tryghost/debug@^0.1.8", "@tryghost/debug@^0.1.9":
   version "0.1.9"
@@ -1558,7 +1550,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.0.0", "@tryghost/logging@2.0.1", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
+"@tryghost/logging@2.0.0", "@tryghost/logging@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.0.tgz#587c579d703ef15fe468b8bb8efdd9cdfefb90ef"
   integrity sha512-eWKtiHWDtVVf+xn+ecKb8mUepFDK1RXOhl1tFMF1b7eFASn5WIDLFSMH9Xl9gyCi6dnsXp5fAm2G3baZ77bPZg==
@@ -1822,14 +1814,6 @@
     caller "^1.0.1"
     find-root "^1.1.0"
 
-"@tryghost/root-utils@^0.3.8":
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.8.tgz#41327ea11fb6882c74fea145692aeae7a28482de"
-  integrity sha512-/BSrsd3SAbVvRIkUhCT0NeAgl0+CELFoERrvghzl093ZO9R/P7BESvIXUOugGUviZfUUgJI52bcdq2xhW9APcw==
-  dependencies:
-    caller "^1.0.1"
-    find-root "^1.1.0"
-
 "@tryghost/security@0.2.13":
   version "0.2.13"
   resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.13.tgz#dcf190fbd5a7af6a604a12387d4ed430cc021d76"
@@ -1840,13 +1824,13 @@
     bluebird "^3.7.2"
     lodash "^4.17.21"
 
-"@tryghost/server@0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/server/-/server-0.1.4.tgz#5c09285a758fede7294ae349cc1201f3587094c9"
-  integrity sha512-h6zAdM8yxuCjDf4EsHskj6xI0j6gbHPf7ZAgPjAfHrsbOAwWVAWjBYRx94890+4aJU5b+Vja6QPNuTZDiGIW/w==
+"@tryghost/server@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/server/-/server-0.1.3.tgz#78b7fdbf8b9221ea3e0d33c70685253630eb03dc"
+  integrity sha512-6sj4cNcWQZLnINl7bRmhzJUVSD67pBqesp6xRSLghglHWRFeQawyj6RrEymjMJw510swe+llpbIltY6ppxjA5Q==
   dependencies:
-    "@tryghost/debug" "^0.1.10"
-    "@tryghost/logging" "^2.0.1"
+    "@tryghost/debug" "^0.1.9"
+    "@tryghost/logging" "^2.0.0"
 
 "@tryghost/session-service@0.1.36":
   version "0.1.36"
@@ -5835,18 +5819,18 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.21.0:
-  version "4.21.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.21.0.tgz#1df2a3ff886ed2a6f6407c51ab9d2a162d13464e"
-  integrity sha512-fNO+7IcwZ6uxwSgXsM7zLmum1QBlMOeB9D6X/pLy4YQB5/foz98VlsthPmq7sRTzz7CZd2hKdC5Cle6KA7eHPA==
+gscan@4.20.2:
+  version "4.20.2"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.20.2.tgz#2d281e2c198b6bb14089d14ebd8b27d9c202ad87"
+  integrity sha512-14VjJYMJ5UlcQYQ3VPhOfjUgakTQV6+Uj67+GXOMjLvOnyAM2g/o/dOiyeuEnXepbxDwDGLTQ1pPS4TL1VBA9w==
   dependencies:
     "@sentry/node" "6.16.1"
-    "@tryghost/config" "0.2.2"
-    "@tryghost/debug" "0.1.10"
+    "@tryghost/config" "0.2.1"
+    "@tryghost/debug" "0.1.9"
     "@tryghost/ignition-errors" "0.1.8"
-    "@tryghost/logging" "2.0.1"
+    "@tryghost/logging" "2.0.0"
     "@tryghost/pretty-cli" "1.2.22"
-    "@tryghost/server" "0.1.4"
+    "@tryghost/server" "0.1.3"
     "@tryghost/zip" "1.1.18"
     bluebird "3.7.2"
     chalk "4.1.2"
