@@ -105,9 +105,7 @@ export default Controller.extend({
 
     /* public properties -----------------------------------------------------*/
 
-    leaveEditorTransition: null,
     shouldFocusTitle: false,
-    showLeaveEditorModal: false,
     showReAuthenticateModal: false,
     showEmailPreviewModal: false,
     showPostPreviewModal: false,
@@ -120,8 +118,8 @@ export default Controller.extend({
 
     /* private properties ----------------------------------------------------*/
 
-    // set by setPost and _postSaved, used in hasDirtyAttributes
-    _previousTagNames: null,
+    _leaveConfirmed: false,
+    _previousTagNames: null, // set by setPost and _postSaved, used in hasDirtyAttributes
 
     /* computed properties ---------------------------------------------------*/
 
@@ -218,46 +216,6 @@ export default Controller.extend({
         cancelAutosave() {
             this._autosaveTask.cancelAll();
             this._timedSaveTask.cancelAll();
-        },
-
-        toggleLeaveEditorModal(transition) {
-            let leaveTransition = this.leaveEditorTransition;
-
-            // "cancel" was clicked in the "are you sure?" modal so we just
-            // reset the saved transition and remove the modal
-            if (!transition && this.showLeaveEditorModal) {
-                this.set('leaveEditorTransition', null);
-                this.set('showLeaveEditorModal', false);
-                return;
-            }
-
-            if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-                this.set('leaveEditorTransition', transition);
-
-                // if a save is running, wait for it to finish then transition
-                if (this.get('saveTasks.isRunning')) {
-                    return this.get('saveTasks.last').then(() => {
-                        transition.retry();
-                    });
-                }
-
-                // if an autosave is scheduled, cancel it, save then transition
-                if (this._autosaveRunning) {
-                    this.send('cancelAutosave');
-                    this.autosaveTask.cancelAll();
-
-                    return this.autosaveTask.perform().then(() => {
-                        transition.retry();
-                    });
-                }
-
-                // we genuinely have unsaved data, show the modal
-                if (this.post) {
-                    Object.assign(this._leaveModalReason, {status: this.post.status});
-                }
-                console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
-                this.set('showLeaveEditorModal', true);
-            }
         },
 
         // called by the "are you sure?" modal
@@ -825,14 +783,13 @@ export default Controller.extend({
     },
 
     // called by editor route's willTransition hook, fires for editor.new->edit,
-    // editor.edit->edit, or editor->any. Triggers `toggleLeaveEditorModal` action
-    // which will either finish autosave then retry transition or abort and show
-    // the "are you sure?" modal
-    willTransition(transition) {
+    // editor.edit->edit, or editor->any. Will either finish autosave then retry
+    // transition or abort and show the "are you sure want to leave?" modal
+    async willTransition(transition) {
         let post = this.post;
 
         // exit early and allow transition if we have no post, occurs if reset
-        // has already been called as in the `leaveEditor` action
+        // has already been called
         if (!post) {
             return;
         }
@@ -848,21 +805,49 @@ export default Controller.extend({
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
-        let fromNewToEdit = this.get('router.currentRouteName') === 'editor.new'
+        let fromNewToEdit = this.router.currentRouteName === 'editor.new'
             && transition.targetName === 'editor.edit'
             && transition.intent.contexts
             && transition.intent.contexts[0]
-            && transition.intent.contexts[0].id === post.get('id');
+            && transition.intent.contexts[0].id === post.id;
 
         let deletedWithoutChanges = state.isDeleted
             && (state.isSaving || !state.hasDirtyAttributes);
 
         // controller is dirty and we aren't in a new->edit or delete->index
         // transition so show our "are you sure you want to leave?" modal
-        if (!fromNewToEdit && !deletedWithoutChanges && hasDirtyAttributes) {
+        if (!this._leaveConfirmed && !fromNewToEdit && !deletedWithoutChanges && hasDirtyAttributes) {
             transition.abort();
-            this.send('toggleLeaveEditorModal', transition);
-            return;
+
+            // if a save is running, wait for it to finish then transition
+            if (this.saveTasks.isRunning) {
+                await this.saveTasks.last;
+                return transition.retry();
+            }
+
+            // if an autosave is scheduled, cancel it, save then transition
+            if (this._autosaveRunning) {
+                this.send('cancelAutosave');
+                this.autosaveTask.cancelAll();
+
+                await this.autosaveTask.perform();
+                return transition.retry();
+            }
+
+            // we genuinely have unsaved data, show the modal
+            if (this.post) {
+                Object.assign(this._leaveModalReason, {status: this.post.status});
+            }
+            console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
+
+            const reallyLeave = await this.modals.open('modals/editor/confirm-leave');
+
+            if (reallyLeave !== true) {
+                return;
+            } else {
+                this._leaveConfirmed = true;
+                transition.retry();
+            }
         }
 
         // the transition is now certain to complete so cleanup and reset if
@@ -894,12 +879,11 @@ export default Controller.extend({
         }
 
         this._previousTagNames = [];
+        this._leaveConfirmed = false;
 
         this.set('post', null);
         this.set('hasDirtyAttributes', false);
         this.set('shouldFocusTitle', false);
-        this.set('leaveEditorTransition', null);
-        this.set('showLeaveEditorModal', false);
         this.set('showPostPreviewModal', false);
         this.set('showSettingsMenu', false);
         this.set('wordCount', null);
