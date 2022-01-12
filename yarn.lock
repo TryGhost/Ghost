@@ -1368,7 +1368,7 @@
     "@tryghost/root-utils" "^0.3.8"
     debug "^4.3.1"
 
-"@tryghost/debug@0.1.9", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5", "@tryghost/debug@^0.1.8", "@tryghost/debug@^0.1.9":
+"@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5", "@tryghost/debug@^0.1.8", "@tryghost/debug@^0.1.9":
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.9.tgz#9cb4b5debca96ffb010b73811f01da6ca581935d"
   integrity sha512-//j7JykptEvKWuxNnE8FgjNrUqkZReVEonMvMZdP25JUqza/3gNhju6vcwsl9lZwGk4Lnn/NEGZil7Gg+Y76BQ==
