@@ -123,13 +123,6 @@
         {{/if}}
     </button>
 
-    {{#if this.showLeaveEditorModal}}
-        <GhFullscreenModal @modal="leave-editor"
-            @confirm={{action "leaveEditor"}}
-            @close={{action "toggleLeaveEditorModal"}}
-            @modifier="action wide" />
-    {{/if}}
-
     {{#if this.showReAuthenticateModal}}
         <GhFullscreenModal @modal="re-authenticate"
             @close={{action "toggleReAuthenticateModal"}}
