@@ -113,7 +113,9 @@ const getPortalProductPrices = async function () {
             prices: productPrices
         };
     });
-    const defaultProduct = products[0];
+    const defaultProduct = products.find((product) => {
+        return product.type === 'paid';
+    });
     const defaultPrices = defaultProduct ? defaultProduct.prices : [];
     let portalProducts = defaultProduct ? [defaultProduct] : [];
     if (labsService.isSet('multipleProducts')) {
