@@ -19,11 +19,6 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @typedef {object} IStripeAPIConfig
  * @prop {string} secretKey
  * @prop {string} publicKey
- * @prop {object} appInfo
- * @prop {string} appInfo.name
- * @prop {string} appInfo.version
- * @prop {string} appInfo.partner_id
- * @prop {string} appInfo.url
  * @prop {boolean} enablePromoCodes
  */
 
@@ -34,13 +29,10 @@ module.exports = class StripeAPI {
      * @param {object} params
      * @param {IStripeAPIConfig} params.config
      */
-    constructor({config}) {
+    constructor() {
         /** @type {Stripe} */
         this._stripe = null;
         this._configured = false;
-        if (config.secretKey) {
-            this.configure(config);
-        }
     }
 
     get configured() {
@@ -56,6 +48,11 @@ module.exports = class StripeAPI {
      * @returns {void}
      */
     configure(config) {
+        if (!config) {
+            this._stripe = null;
+            this._configured = false;
+            return;
+        }
         this._stripe = new Stripe(config.secretKey, {
             apiVersion: STRIPE_API_VERSION
         });
