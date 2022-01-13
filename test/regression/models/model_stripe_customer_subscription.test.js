@@ -26,7 +26,8 @@ describe('StripeCustomerSubscription Model', function run() {
 
             const product = await Product.add({
                 name: 'Ghost Product',
-                slug: 'ghost-product'
+                slug: 'ghost-product',
+                type: 'paid'
             }, context);
 
             await StripeProduct.add({

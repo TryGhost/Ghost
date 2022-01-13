@@ -30,7 +30,8 @@ describe('Member Model', function run() {
 
             const product = await Product.add({
                 name: 'Ghost Product',
-                slug: 'ghost-product'
+                slug: 'ghost-product',
+                type: 'paid'
             }, context);
 
             await StripeProduct.add({
@@ -188,7 +189,8 @@ describe('Member Model', function run() {
 
             const product = await Product.add({
                 name: 'Ghost Product',
-                slug: 'ghost-product'
+                slug: 'ghost-product',
+                type: 'paid'
             }, context);
 
             await StripeProduct.add({
@@ -271,14 +273,16 @@ describe('Member Model', function run() {
         it('Products can be created & added to members by the product array', async function () {
             const context = testUtils.context.admin;
             const product = await Product.add({
-                name: 'Product-Add-Test'
+                name: 'Product-Add-Test',
+                type: 'paid'
             });
             const member = await Member.add({
                 email: 'testing-products@test.member',
                 products: [{
                     id: product.id
                 }, {
-                    name: 'Product-Create-Test'
+                    name: 'Product-Create-Test',
+                    type: 'paid'
                 }]
             }, {
                 ...context,
@@ -311,7 +315,8 @@ describe('Member Model', function run() {
                 email: 'filter-test@test.member',
                 products: [{
                     name: 'VIP',
-                    slug: 'vip'
+                    slug: 'vip',
+                    type: 'paid'
                 }]
             }, context);
 
@@ -355,7 +360,8 @@ describe('Member Model', function run() {
                 email: 'name-filter-test@test.member',
                 products: [{
                     name: 'VIP',
-                    slug: 'vip'
+                    slug: 'vip',
+                    type: 'paid'
                 }]
             }, context);
 
@@ -378,7 +384,8 @@ describe('Member Model', function run() {
                 email: 'email-filter-test@test.member',
                 products: [{
                     name: 'VIP',
-                    slug: 'vip'
+                    slug: 'vip',
+                    type: 'paid'
                 }]
             }, context);
 
@@ -404,7 +411,8 @@ describe('Member Model', function run() {
 
             const product = await Product.add({
                 name: 'Ghost Product',
-                slug: 'ghost-product'
+                slug: 'ghost-product',
+                type: 'paid'
             }, context);
 
             await StripeProduct.add({

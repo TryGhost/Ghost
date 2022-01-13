@@ -28,7 +28,9 @@ function calculateLegacyPriceData(products) {
         };
     }
 
-    const defaultProduct = products[0] || {};
+    const defaultProduct = products.find((product) => {
+        return product.type === 'paid';
+    }) || {};
 
     const monthlyPrice = makePriceObject(defaultProduct.monthly_price || defaultPrice);
 

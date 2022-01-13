@@ -368,8 +368,15 @@ DataGenerator.Content = {
     products: [
         {
             id: ObjectId().toHexString(),
+            name: 'Free',
+            slug: 'free',
+            type: 'free'
+        },
+        {
+            id: ObjectId().toHexString(),
             name: 'Ghost Product',
-            slug: 'ghost-product'
+            slug: 'ghost-product',
+            type: 'paid'
         }
     ],
 

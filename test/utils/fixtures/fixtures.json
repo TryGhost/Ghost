@@ -5,7 +5,13 @@
             "entries": [
                 {
                     "name":             "Default Product",
-                    "slug":             "default-product"
+                    "slug":             "default-product",
+                    "type":             "paid"
+                },
+                {
+                    "name":             "Free",
+                    "slug":             "free",
+                    "type":             "free"
                 }
             ]
         },
