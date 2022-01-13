@@ -1,31 +1,45 @@
-import RSVP from 'rsvp';
 import Route from '@ember/routing/route';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default Route.extend({
-    limit: service(),
+export default class NewIntegrationRoute extends Route {
+    @service limit;
+    @service modals;
 
-    model() {
-        if (this.limit.limiter
-            && this.limit.limiter.isLimited('customIntegrations')) {
-            return RSVP.hash({
-                integration: this.store.createRecord('integration'),
-                hostLimitError: this.limit.limiter.errorIfWouldGoOverLimit('customIntegrations')
-                    .then(() => null)
-                    .catch((error) => {
-                        return error;
-                    })
-            });
-        } else {
-            return RSVP.hash({
-                integration: this.store.createRecord('integration'),
-                hostLimitError: null
-            });
+    modal = null;
+
+    async model() {
+        if (this.limit.limiter?.isLimited('customIntegrations')) {
+            try {
+                await this.limit.limiter.errorIfWouldGoOverLimit('customIntegrations');
+            } catch (error) {
+                this.modal = this.modals.open('modals/limits/custom-integration', {
+                    message: error.message
+                }, {
+                    beforeClose: this.beforeModalClose
+                });
+                return;
+            }
         }
-    },
+
+        this.modal = this.modals.open('modals/new-custom-integration', {}, {
+            beforeClose: this.beforeModalClose
+        });
+    }
 
     deactivate() {
-        this._super(...arguments);
-        this.controller.integration.rollbackAttributes();
+        // ensure we don't try to redirect on modal close if we're already transitioning away
+        this.isLeaving = true;
+        this.modal?.close();
+
+        this.modal = null;
+        this.isLeaving = false;
     }
-});
+
+    @action
+    beforeModalClose() {
+        if (!this.isLeaving) {
+            this.transitionTo('settings.integrations');
+        }
+    }
+}
