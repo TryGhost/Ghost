@@ -7,9 +7,6 @@ export default Controller.extend({
     settings: service(),
     session: service(),
 
-    queryParams: ['showBrandingModal'],
-
-    showBrandingModal: false,
     showLeaveSettingsModal: false,
 
     actions: {
@@ -24,10 +21,6 @@ export default Controller.extend({
         async leavePortalSettings() {
             this.settings.rollbackAttributes();
             this.set('showLeaveSettingsModal', false);
-        },
-
-        closeBrandingModal() {
-            this.set('showBrandingModal', false);
         }
     }
 

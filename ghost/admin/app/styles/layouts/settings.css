@@ -1142,22 +1142,6 @@ p.theme-validation-details {
 
 /* Branding
 /* ---------------------------------------------------- */
-.fullscreen-modal-branding-modal {
-    margin: 30px;
-    max-width: 100%;
-}
-
-.fullscreen-modal-branding-modal .modal-content {
-    position: relative;
-    overflow: auto;
-    height: 100%;
-    padding: 0;
-}
-
-.fullscreen-modal-branding-modal .modal-body {
-    margin: 0;
-    padding: 20px 24px;
-}
 
 .gh-branding-settings {
     display: flex;

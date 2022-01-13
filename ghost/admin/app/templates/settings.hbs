@@ -86,11 +86,6 @@
     </section>
 </section>
 
-{{#if this.showBrandingModal}}
-    <GhFullscreenModal @modal="branding"
-        @close={{action "closeBrandingModal"}}
-        @modifier="full-overlay branding-modal" />
-{{/if}}
 {{#if this.showLeaveSettingsModal}}
     <GhFullscreenModal @modal="leave-settings"
         @confirm={{action "leavePortalSettings"}}
