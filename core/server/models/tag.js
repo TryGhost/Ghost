@@ -100,6 +100,14 @@ Tag = ghostBookshelf.Model.extend({
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
+        // Support tag creation with `posts: [{..., tags: [{slug: 'new'}]}]`
+        // In that situation we have a slug but no name so validation will fail
+        // unless we set one automatically. Re-using slug for name matches our
+        // opposite name->slug behaviour.
+        if (!newTag.get('name') && newTag.get('slug')) {
+            this.set('name', newTag.get('slug'));
+        }
+
         // name: #later slug: hash-later
         if (/^#/.test(newTag.get('name'))) {
             this.set('visibility', 'internal');
