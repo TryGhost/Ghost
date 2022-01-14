@@ -1795,14 +1795,14 @@
   dependencies:
     bluebird "^3.7.2"
 
-"@tryghost/request@0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.10.tgz#1315ae6388d414b5350f3b76fedf911df8ec8647"
-  integrity sha512-dDqvRzP1FNylIjpsMjR7fTYdDiHUgMXIfv2xGKDrD5fzCOowYxFRGO2hBOcLe15P6Ps9CgbWZA3mPra7zN687g==
+"@tryghost/request@0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.11.tgz#dcccda3a8af8ee67539af375e38172c287558813"
+  integrity sha512-HlT3aXp9lOHXCrVkv0Mr8yHpWhqeTuuRbN6PDVl4FkJiZ9T8P7C0TTrp6XsBK+WPJHHNkt2SwGR02hlPfHGFDw==
   dependencies:
     "@tryghost/errors" "^1.0.0"
-    "@tryghost/validator" "^0.1.9"
-    "@tryghost/version" "^0.1.7"
+    "@tryghost/validator" "^0.1.10"
+    "@tryghost/version" "^0.1.8"
     got "9.6.0"
     lodash "^4.17.21"
 
@@ -1914,7 +1914,7 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/validator@0.1.9", "@tryghost/validator@^0.1.9":
+"@tryghost/validator@0.1.9":
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.9.tgz#d86b6a961520e43859117c15547bb3d78bcf5105"
   integrity sha512-UwUHKtzZ7He1wRgh+Ya30js1f+p6gQu0ak11NwyHzoFxVAjqkRySdV7tGEwj/6t+Qx9iPTv3LuriXEsMNC0Y0g==
@@ -1925,20 +1925,23 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/version@0.1.8":
+"@tryghost/validator@^0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.10.tgz#a70828a55de293f2958297aa2bd9987a70ef6a3f"
+  integrity sha512-cOI6aQV8buO+Oet1ybywR4ASakCCT0wsWJ5JmwGtULi8w1uEhRrAOeVk+GIjU+nZCCL8RhZRJqi0LErtrfUAiQ==
+  dependencies:
+    "@tryghost/errors" "^1.0.0"
+    "@tryghost/tpl" "^0.1.9"
+    lodash "^4.17.21"
+    moment-timezone "0.5.23"
+    validator "7.2.0"
+
+"@tryghost/version@0.1.8", "@tryghost/version@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.8.tgz#a571584ff3bdb53774d38cf7f163b6b69f853c25"
   integrity sha512-J1S6xg5G283oAGdyPAuv5n3B28l14AXScNZCexNR9o9CNwj0Omhl9Io0DWdfjdhxVeEJIK6xUuXNTxKGSD6EEQ==
   dependencies:
     "@tryghost/root-utils" "^0.3.8"
-    semver "^7.3.5"
-
-"@tryghost/version@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.7.tgz#0bd37246b0931fdce7e86307e441fb19e8c95811"
-  integrity sha512-SAQsocesa//ZOKeXJecRzidgNNjxa5eJYgA2J8ML/oqyI9OyNEQX1G3hiuqchaIJNMBVVN1/by+i+J8mN7A9bA==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.7"
     semver "^7.3.5"
 
 "@tryghost/vhost-middleware@1.0.19":
