@@ -125,7 +125,11 @@ module.exports = function setupSiteApp(options = {}) {
     siteApp.use(membersService.middleware.loadMemberSession);
 
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
-    siteApp.use('/members/.well-known', (req, res, next) => membersService.api.middleware.wellKnown(req, res, next));
+    siteApp.use(
+        '/members/.well-known',
+        shared.middleware.cacheControl('public', {maxAge: 60 * 60 * 24}),
+        (req, res, next) => membersService.api.middleware.wellKnown(req, res, next)
+    );
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal apps
