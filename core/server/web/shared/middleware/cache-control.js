@@ -8,6 +8,11 @@
 
 const isString = require('lodash/isString');
 
+/**
+ * @param {'public'|'private'} profile Use "private" if you do not want caching
+ * @param {object} [options]
+ * @param {number} [options.maxAge] The max-age in seconds to use when profile is "public"
+ */
 const cacheControl = (profile, options = {maxAge: 0}) => {
     const profiles = {
         public: `public, max-age=${options.maxAge}`,
@@ -20,6 +25,13 @@ const cacheControl = (profile, options = {maxAge: 0}) => {
         output = profiles[profile];
     }
 
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @param {() => void} next
+     *
+     * @returns {void}
+     */
     return function cacheControlHeaders(req, res, next) {
         if (output) {
             res.set({'Cache-Control': output});
