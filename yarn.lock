@@ -1388,14 +1388,6 @@
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
 
-"@tryghost/elasticsearch@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.0.tgz#287167c7dd130fa36eb25347a6e1297d12c2de05"
-  integrity sha512-iVPQoNzkHUGCc8opEGmqRewwBOtf4c3XqxFyf6Bdpr3RLIwdKoa35HMKbtz5GJUAQ14Q++zJcWCxiKSHUexW+w==
-  dependencies:
-    "@elastic/elasticsearch" "^7.15.0"
-    "@tryghost/debug" "^0.1.9"
-
 "@tryghost/elasticsearch@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.1.tgz#2e258b92466b10bc24506348423953eca27ca459"
@@ -1711,14 +1703,14 @@
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 
-"@tryghost/metrics@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.1.tgz#0d06848021f661409fbc557c41bb8c36122889f9"
-  integrity sha512-zXbo2kZxTfEBrU3n2xsPFwSPExDKnSmyCaIjwr07dK4BfI/A4yW4unzT791HN/y+j1+xa4XdZPdCAgIkTYPygw==
+"@tryghost/metrics@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.2.tgz#7ccb3d3892ded87583384e3897388e03c62d4c68"
+  integrity sha512-R4L37WbycVjQnh4p0T3TAAKcXv8a4LgVOeShxnrcIGpZvhuZ51xn6gf8berAvp5+b1kl+IaU9Ik6HpbR/fabMg==
   dependencies:
-    "@tryghost/elasticsearch" "^1.0.0"
-    "@tryghost/pretty-stream" "^0.1.2"
-    "@tryghost/root-utils" "^0.3.7"
+    "@tryghost/elasticsearch" "^1.0.1"
+    "@tryghost/pretty-stream" "^0.1.3"
+    "@tryghost/root-utils" "^0.3.8"
     json-stringify-safe "^5.0.1"
   optionalDependencies:
     promise.allsettled "^1.0.5"
@@ -1786,15 +1778,6 @@
   dependencies:
     chalk "^4.1.0"
     sywac "^1.3.0"
-
-"@tryghost/pretty-stream@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.2.tgz#30cb24c95ccb8f4af2c5b7095e77947ac7941198"
-  integrity sha512-zhnYf3MMuDPlwctliO45yfuuj0G3zYXX34ZorSHOAlCVcUVi3s5mkzMvdZ2ESExDyandyD7mqcI2SYGpB1zKKw==
-  dependencies:
-    lodash "^4.17.21"
-    moment "^2.29.1"
-    prettyjson "^1.2.1"
 
 "@tryghost/pretty-stream@^0.1.3":
   version "0.1.3"
@@ -9641,7 +9624,7 @@ pretty-format@^27.4.6:
     ansi-styles "^5.0.0"
     react-is "^17.0.1"
 
-prettyjson@1.2.1, prettyjson@^1.2.1:
+prettyjson@1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/prettyjson/-/prettyjson-1.2.1.tgz#fcffab41d19cab4dfae5e575e64246619b12d289"
   integrity sha1-/P+rQdGcq0365eV15kJGYZsS0ok=
