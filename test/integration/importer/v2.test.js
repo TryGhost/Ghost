@@ -372,11 +372,8 @@ describe('Importer', function () {
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({slug: 'post2'});
             exportData.data.posts[1].title = new Array(600).join('a');
 
-            exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({slug: 'tag1'});
-            exportData.data.tags[0].name = null;
-
-            exportData.data.tags[1] = testUtils.DataGenerator.forKnex.createTag({slug: 'tag2'});
-            exportData.data.tags[1].meta_title = new Array(305).join('a');
+            exportData.data.tags[0] = testUtils.DataGenerator.forKnex.createTag({slug: 'tag2'});
+            exportData.data.tags[0].meta_title = new Array(305).join('a');
 
             exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser();
             exportData.data.users[0].bio = new Array(300).join('a');
@@ -393,7 +390,7 @@ describe('Importer', function () {
                     (1).should.eql(0, 'Allowed import of duplicate data.');
                 })
                 .catch(function (response) {
-                    response.length.should.equal(7);
+                    response.length.should.equal(6);
 
                     // NOTE: a duplicated tag.slug is a warning
                     response[0].errorType.should.equal('ValidationError');
@@ -403,19 +400,16 @@ describe('Importer', function () {
                     response[1].message.should.eql('Validation (isEmail) failed for email');
 
                     response[2].errorType.should.equal('ValidationError');
-                    response[2].message.should.eql('Value in [tags.name] cannot be blank.');
+                    response[2].message.should.eql('Value in [tags.meta_title] exceeds maximum length of 300 characters.');
 
-                    response[3].errorType.should.equal('ValidationError');
-                    response[3].message.should.eql('Value in [tags.meta_title] exceeds maximum length of 300 characters.');
+                    response[3].message.should.eql('Value in [posts.title] cannot be blank.');
+                    response[3].errorType.should.eql('ValidationError');
 
-                    response[4].message.should.eql('Value in [posts.title] cannot be blank.');
-                    response[4].errorType.should.eql('ValidationError');
+                    response[4].errorType.should.equal('ValidationError');
+                    response[4].message.should.eql('Value in [posts.title] exceeds maximum length of 255 characters.');
 
                     response[5].errorType.should.equal('ValidationError');
-                    response[5].message.should.eql('Value in [posts.title] exceeds maximum length of 255 characters.');
-
-                    response[6].errorType.should.equal('ValidationError');
-                    response[6].message.should.eql('Value in [settings.key] cannot be blank.');
+                    response[5].message.should.eql('Value in [settings.key] cannot be blank.');
                 });
         });
 
