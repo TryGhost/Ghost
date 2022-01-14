@@ -298,6 +298,98 @@ describe('Posts API (v3)', function () {
                     res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
                 });
         });
+
+        it('can add with tags - array of strings with new names', function () {
+            return request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 1',
+                        tags: ['one', 'two']
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].title);
+                    res.body.posts[0].title.should.equal('Tags test 1');
+                    res.body.posts[0].tags.length.should.equal(2);
+                    res.body.posts[0].tags[0].slug.should.equal('one');
+                    res.body.posts[0].tags[1].slug.should.equal('two');
+                });
+        });
+
+        it('can add with tags - array of strings with existing names', function () {
+            return request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 2',
+                        tags: ['one', 'two']
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].title);
+                    res.body.posts[0].title.should.equal('Tags test 2');
+                    res.body.posts[0].tags.length.should.equal(2);
+                    res.body.posts[0].tags[0].slug.should.equal('one');
+                    res.body.posts[0].tags[1].slug.should.equal('two');
+                });
+        });
+
+        it('can add with tags - array of objects with existing slugs', function () {
+            return request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 3',
+                        tags: [{slug: 'one'}, {slug: 'two'}]
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].title);
+                    res.body.posts[0].title.should.equal('Tags test 3');
+                    res.body.posts[0].tags.length.should.equal(2);
+                    res.body.posts[0].tags[0].slug.should.equal('one');
+                    res.body.posts[0].tags[1].slug.should.equal('two');
+                });
+        });
+
+        it('can add with tags - array of objects with new slugs', function () {
+            return request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 4',
+                        tags: [{slug: 'three'}, {slug: 'four'}]
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201)
+                .then((res) => {
+                    should.exist(res.body.posts);
+                    should.exist(res.body.posts[0].title);
+                    res.body.posts[0].title.should.equal('Tags test 4');
+                    res.body.posts[0].tags.length.should.equal(2);
+                    res.body.posts[0].tags[0].slug.should.equal('three');
+                    res.body.posts[0].tags[1].slug.should.equal('four');
+                });
+        });
     });
 
     describe('Edit', function () {
