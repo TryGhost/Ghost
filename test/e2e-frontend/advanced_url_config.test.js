@@ -1,8 +1,10 @@
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const urlUtils = require('../utils/urlUtils');
+const settings = require('../../core/shared/settings-cache');
 
 let request;
 
@@ -29,6 +31,10 @@ describe('Advanced URL Configurations', function () {
         after(function () {
             configUtils.restore();
             urlUtils.restore();
+        });
+
+        afterEach(function () {
+            sinon.restore();
         });
 
         it('http://localhost should 404', async function () {
@@ -67,9 +73,20 @@ describe('Advanced URL Configurations', function () {
                 .expect(404);
         });
 
-        it('/blog/welcome/amp/ should 200', async function () {
+        it('/blog/welcome/amp/ should 200 if amp is enabled', async function () {
+            sinon.stub(settings, 'get').callsFake(function (key, ...rest) {
+                if (key === 'amp') {
+                    return true;
+                }
+                return settings.get.wrappedMethod.call(settings, key, ...rest);
+            });
             await request.get('/blog/welcome/amp/')
                 .expect(200);
+        });
+
+        it('/blog/welcome/amp/ should 301', async function () {
+            await request.get('/blog/welcome/amp/')
+                .expect(301);
         });
 
         it('/welcome/amp/ should 404', async function () {
