@@ -141,7 +141,7 @@
     "jsonwebtoken": "8.5.1",
     "juice": "8.0.0",
     "keypair": "1.0.4",
-    "knex": "0.21.21",
+    "knex": "0.95.15",
     "knex-migrator": "4.1.3",
     "lodash": "4.17.21",
     "luxon": "2.3.0",
