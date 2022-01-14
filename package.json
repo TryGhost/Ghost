@@ -84,7 +84,7 @@
     "@tryghost/members-importer": "0.3.7",
     "@tryghost/members-offers": "0.10.4",
     "@tryghost/members-ssr": "1.0.17",
-    "@tryghost/metrics": "1.0.1",
+    "@tryghost/metrics": "1.0.2",
     "@tryghost/minifier": "0.1.9",
     "@tryghost/mw-error-handler": "0.1.1",
     "@tryghost/mw-session-from-token": "0.1.26",
