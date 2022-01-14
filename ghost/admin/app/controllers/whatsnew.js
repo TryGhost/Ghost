@@ -1,17 +1,26 @@
 import Controller from '@ember/controller';
-import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-/* eslint-disable ghost/ember/alias-model-in-controller */
-export default Controller.extend({
-    config: service(),
-    upgradeStatus: service(),
-    whatsNew: service(),
+export default class WhatsNewController extends Controller {
+    @service config;
+    @service upgradeStatus;
+    @service whatsNew;
 
-    queryParams: ['entry'],
+    queryParams = ['entry'];
 
-    copyrightYear: computed(function () {
-        let date = new Date();
+    get copyrightYear() {
+        const date = new Date();
         return date.getFullYear();
-    })
-});
+    }
+
+    get showDatabaseWarning() {
+        const isProduction = !!this.config.get('environment').match?.(/production/i);
+        const isPro = !!this.config.get('hostSettings')?.siteId;
+
+        if (isProduction && !isPro) {
+            return true;
+        }
+
+        return false;
+    }
+}

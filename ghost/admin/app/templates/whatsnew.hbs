@@ -40,6 +40,7 @@
                 <div class="gh-about-logo">
                     {{svg-jar "ghost-logo-orb" alt="Ghost"}}
                 </div>
+
                 {{#if this.upgradeStatus.message}}
                     <section class="gh-upgrade-notification">
                         <p>
@@ -47,6 +48,7 @@
                         </p>
                     </section>
                 {{/if}}
+
                 <ul class="gh-env-list">
                     <li><strong>Version:</strong> {{this.config.version}}</li>
                     <li><strong>Environment:</strong> <span class="ttc">{{this.config.environment}}</span></li>
@@ -56,6 +58,15 @@
                     <li><strong>Developer experiments:</strong> <span class="gh-badge">Enabled</span></li>
                     {{/if}}
                 </ul>
+
+                {{#if this.showDatabaseWarning}}
+                    <section class="gh-upgrade-notification">
+                        <p>
+                            <strong>Warning:</strong> MySQL 8 will be the required database in the next major release of Ghost. Make sure your database is up to date to ensure forwards compatibility.
+                        </p>
+                    </section>
+                {{/if}}
+
                 <footer class="gh-copyright-info">
                     Copyright &copy; 2013 &ndash; {{this.copyrightYear}} Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE" target="_blank">MIT license</a>. <a href="https://ghost.org/" target="_blank">Ghost</a> is a registered trademark of <a href="https://ghost.org/trademark/" target="_blank">Ghost Foundation Ltd</a>.
                 </footer>
