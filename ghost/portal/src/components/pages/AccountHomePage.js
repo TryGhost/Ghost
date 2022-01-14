@@ -171,7 +171,7 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
             let offerEndDate = new Date(offerStartDate.setMonth(offerStartDate.getMonth() + durationInMonths));
             durationLabel = `Ends ${getDateString(offerEndDate)}`;
         }
-        offerLabel = `${getUpdatedOfferPrice({offer, price, useFormatted: true})}/${price.interval}${durationLabel ? `— ${durationLabel}` : ``}`;
+        offerLabel = `${getUpdatedOfferPrice({offer, price, useFormatted: true})}/${price.interval}${durationLabel ? ` — ${durationLabel}` : ``}`;
     }
     return offerLabel;
 }
