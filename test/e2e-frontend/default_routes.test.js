@@ -190,52 +190,63 @@ describe('Default Frontend routing', function () {
     });
 
     describe('AMP post', function () {
-        it('should respond with html for valid url', async function () {
-            await request.get('/welcome/amp/')
-                .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .expect(assertCorrectFrontendHeaders)
-                .expect((res) => {
-                    const $ = cheerio.load(res.text);
-
-                    $('.post-title').text().should.equal('Start here for a quick overview of everything you need to know');
-
-                    $('.content .post').length.should.equal(1);
-                    $('.powered').text().should.equal(' Published with Ghost');
-                    $('body.amp-template').length.should.equal(1);
-                    $('article.post').length.should.equal(1);
-
-                    $('style[amp-custom]').length.should.equal(1);
-
-                    // This asserts we should have some content (and not [object Promise] !)
-                    $('.post-content p').length.should.be.greaterThan(0);
-
-                    res.text.should.containEql(':root {--ghost-accent-color: #FF1A75;}');
-                    res.text.should.not.containEql('__GHOST_URL__');
+        describe('AMP Enabled', function () {
+            beforeEach(function () {
+                sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+                    if (key === 'amp' && !options) {
+                        return true;
+                    }
+                    return origCache.get(key, options);
                 });
-        });
+            });
+            it('should respond with html for valid url', async function () {
+                await request.get('/welcome/amp/')
+                    .expect('Content-Type', /html/)
+                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect(200)
+                    .expect(assertCorrectFrontendHeaders)
+                    .expect((res) => {
+                        const $ = cheerio.load(res.text);
 
-        it('should not work with date permalinks', async function () {
-            // get today's date
-            const date = moment().format('YYYY/MM/DD');
+                        $('.post-title').text().should.equal('Start here for a quick overview of everything you need to know');
 
-            await request.get('/' + date + '/welcome/amp/')
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(404)
-                .expect(/Page not found/)
-                .expect(assertCorrectFrontendHeaders);
+                        $('.content .post').length.should.equal(1);
+                        $('.powered').text().should.equal(' Published with Ghost');
+                        $('body.amp-template').length.should.equal(1);
+                        $('article.post').length.should.equal(1);
+
+                        $('style[amp-custom]').length.should.equal(1);
+
+                        // This asserts we should have some content (and not [object Promise] !)
+                        $('.post-content p').length.should.be.greaterThan(0);
+
+                        res.text.should.containEql(':root {--ghost-accent-color: #FF1A75;}');
+                        res.text.should.not.containEql('__GHOST_URL__');
+                    });
+            });
+
+            it('should not work with date permalinks', async function () {
+                // get today's date
+                const date = moment().format('YYYY/MM/DD');
+
+                await request.get('/' + date + '/welcome/amp/')
+                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect(404)
+                    .expect(/Page not found/)
+                    .expect(assertCorrectFrontendHeaders);
+            });
         });
 
         describe('AMP Disabled', function () {
-            it('/amp/ should redirect to regular post, including any query params', async function () {
+            beforeEach(function () {
                 sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
                     if (key === 'amp' && !options) {
                         return false;
                     }
                     return origCache.get(key, options);
                 });
-
+            });
+            it('/amp/ should redirect to regular post, including any query params', async function () {
                 await request.get('/welcome/amp/?q=a')
                     .expect('Location', '/welcome/?q=a')
                     .expect(301)

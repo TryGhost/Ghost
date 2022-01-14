@@ -35,7 +35,7 @@ describe('Settings API', function () {
         localUtils.API.checkResponse(jsonResponse, 'settings');
 
         JSON.parse(_.find(jsonResponse.settings, {key: 'unsplash'}).value).should.eql(true);
-        JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(true);
+        JSON.parse(_.find(jsonResponse.settings, {key: 'amp'}).value).should.eql(false);
         should.not.exist(_.find(jsonResponse.settings, {key: 'permalinks'}));
         should.not.exist(_.find(jsonResponse.settings, {key: 'ghost_head'}));
         should.not.exist(_.find(jsonResponse.settings, {key: 'ghost_foot'}));
