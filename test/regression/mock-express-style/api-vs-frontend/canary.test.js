@@ -66,20 +66,40 @@ describe('Integration - Web - Site canary', function () {
                     });
             });
 
-            it('serve amp', function () {
-                const req = {
-                    secure: true,
-                    method: 'GET',
-                    url: '/html-ipsum/amp/',
-                    host: 'example.com'
-                };
+            describe('AMP enabled', function () {
+                it('serve amp', function () {
+                    localUtils.defaultMocks(sinon, {amp: true});
+                    const req = {
+                        secure: true,
+                        method: 'GET',
+                        url: '/html-ipsum/amp/',
+                        host: 'example.com'
+                    };
 
-                return localUtils.mockExpress.invoke(app, req)
-                    .then(function (response) {
-                        response.statusCode.should.eql(200);
-                        response.template.should.match(/amp\.hbs/);
-                        response.body.should.match(/<h1>HTML Ipsum Presents<\/h1>/);
-                    });
+                    return localUtils.mockExpress.invoke(app, req)
+                        .then(function (response) {
+                            response.statusCode.should.eql(200);
+                            response.template.should.match(/amp\.hbs/);
+                            response.body.should.match(/<h1>HTML Ipsum Presents<\/h1>/);
+                        });
+                });
+            });
+
+            describe('AMP disabled', function () {
+                it('serve amp', function () {
+                    localUtils.defaultMocks(sinon, {amp: false});
+                    const req = {
+                        secure: true,
+                        method: 'GET',
+                        url: '/html-ipsum/amp/',
+                        host: 'example.com'
+                    };
+
+                    return localUtils.mockExpress.invoke(app, req)
+                        .then(function (response) {
+                            response.statusCode.should.eql(301);
+                        });
+                });
             });
 
             it('post not found', function () {
