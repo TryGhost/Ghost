@@ -1221,95 +1221,95 @@
     "@tryghost/errors" "^0.2.10"
     lodash "^4.17.11"
 
-"@tryghost/bookshelf-collision@^0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-collision/-/bookshelf-collision-0.1.8.tgz#20153c4a9cc2bb013e6a0a9c5ddd6baeef979d9a"
-  integrity sha512-wY4vuaeB9Q8vYNc+CMyl8Pum0uLGs4DzvtGRiEpE0g9BcFtt2c+A8n7GOEoEDeIHkO45ZP09DgACxKgEuCL08w==
+"@tryghost/bookshelf-collision@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-collision/-/bookshelf-collision-0.1.9.tgz#79b31ac9e954122515674628fbf535f4f4ab240b"
+  integrity sha512-X+jvZ86zuN+2uF2KaiG+35BVbeNLyHpV16L2bpPGqYjuNk6gy90zJrPPkDW/pfRmU7oB6jqQlpSvJ4vOak17vQ==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.21"
     moment-timezone "^0.5.33"
 
-"@tryghost/bookshelf-custom-query@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-custom-query/-/bookshelf-custom-query-0.1.7.tgz#29e859f8cdaaf7ceda00e74765d1184e28f4d3c0"
-  integrity sha512-DDq8LsG6+XBvSKLDm2WMqEOHgoH7bxq+J1IQTDnOd9f2Cerp8y0lmPZ9HxtsRgI0nMaOS3NC+yXzjT6Zg4Kpcg==
-
-"@tryghost/bookshelf-eager-load@^0.1.8":
+"@tryghost/bookshelf-custom-query@^0.1.8":
   version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-eager-load/-/bookshelf-eager-load-0.1.8.tgz#67d87f3a2016cda9212fccdb1e5a1b7f91d8809c"
-  integrity sha512-lsmtRx4sD5MtHbrwattJZvwyhaWaS8nkDLJDQ88ggpiXr1EsWBKApMbfhFh+tyGfX+XvFltNs2h/n63pUlRKWw==
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-custom-query/-/bookshelf-custom-query-0.1.8.tgz#ccdb8dc68c7dddea4d33371b599771621211cad9"
+  integrity sha512-4hebjAhp1daiZp8HEonGMsaVyjo3ceJSmrUaVEciyeMsWYqTfJxuKJUwOco09BAjo/aAZphJY+Iu7KzyIm3FEA==
+
+"@tryghost/bookshelf-eager-load@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-eager-load/-/bookshelf-eager-load-0.1.9.tgz#10b3a8390dac25c68cba26fa28c381049d5a2d6c"
+  integrity sha512-1anKrnxADAaOizEDSDq8vHISTtkK7e3PJF2nHaLMSt3ldRNsVfjJj0rLAymqVE3Me48DhXvp2PNBQBWnRxcM2w==
   dependencies:
-    "@tryghost/debug" "^0.1.9"
+    "@tryghost/debug" "^0.1.10"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-filter@^0.3.5":
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.3.5.tgz#0a2e9d0994970eb01d06d38ea3592072daa34ba8"
-  integrity sha512-J0n3Sh6fYMjy/tRUL7lnV86mU8hVhzwT+k6fKSaWhgltPPtaTuyjsdnH0AXq+VreRe8QDyY+jp+ENxAijHGrYQ==
+"@tryghost/bookshelf-filter@^0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-filter/-/bookshelf-filter-0.3.6.tgz#cdf7adca516de2763dae429ead6c8eafb92856f1"
+  integrity sha512-UtY1IHW9435v2juutUJqO8D3GgwXfA5/ESHJoRyBz3UrvSmlfEnQ3ZMCKMRLyteHA/F5rcn316WnWOvI70OkXw==
   dependencies:
     "@nexes/nql" "0.6.0"
-    "@tryghost/debug" "^0.1.9"
+    "@tryghost/debug" "^0.1.10"
     "@tryghost/errors" "^1.0.0"
-    "@tryghost/tpl" "^0.1.8"
+    "@tryghost/tpl" "^0.1.9"
 
-"@tryghost/bookshelf-has-posts@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-has-posts/-/bookshelf-has-posts-0.1.9.tgz#c7bc37b34d7debf156a42a13075b0243644fc224"
-  integrity sha512-cuFuhtQhQFhdpgtPqHfcWyNa1hYTGHOlIJcVNaTFUHqLJMFR2avAUij5jKeasxAOIq7aWy2I1gzba0lCQXivlw==
+"@tryghost/bookshelf-has-posts@^0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-has-posts/-/bookshelf-has-posts-0.1.10.tgz#fe2adb1174e98b3d94fe35f28091868724b8c20a"
+  integrity sha512-tyobBF920zZR5J+vSCI6o+VCzu9vIfJ/jJG2pq3OdEqqSbqZzX39AYxHN3wSfA2fBWKnHjIHpfakZ2ol/DRUuw==
   dependencies:
-    "@tryghost/debug" "^0.1.9"
+    "@tryghost/debug" "^0.1.10"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-include-count@^0.1.8":
+"@tryghost/bookshelf-include-count@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-include-count/-/bookshelf-include-count-0.1.9.tgz#461dc449f75a3e6b2d885e47b773250d4c43065c"
+  integrity sha512-mR+i1B7CVmcSO+73j+3T4wLYEqCvSgSrFc4QFMTH9SyKg+w3C7qu/xyniRQzPr067XMFNwdwp2jF4tF8zAHY3Q==
+  dependencies:
+    "@tryghost/debug" "^0.1.10"
+    lodash "^4.17.21"
+
+"@tryghost/bookshelf-order@^0.1.8":
   version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-include-count/-/bookshelf-include-count-0.1.8.tgz#2b4341df52196d08206b8a8c0e4fa11c10699687"
-  integrity sha512-PRSJXUMakRGuqDin9eJ6yFoC0Aifxq01t5kBX3mAM/+ZEiZdi1k1HiLKi9uO0m6pii3Z6grfDYShlfoMLGU8LQ==
-  dependencies:
-    "@tryghost/debug" "^0.1.9"
-    lodash "^4.17.21"
-
-"@tryghost/bookshelf-order@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-order/-/bookshelf-order-0.1.7.tgz#c8e563556b1c509340cadd5eaee9a9015890fb80"
-  integrity sha512-7RfGeIwAu5/TWbzLoQKDESsKf7aowe7dtpK7A4A2hgVOK29UXYo4+/DNLL3YywChFpNaV3NcGROb7D5Vhqoq4A==
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-order/-/bookshelf-order-0.1.8.tgz#fbbd154b58ef7f7655487685230a5e7eae32ed4e"
+  integrity sha512-if2e6ZbpLV7yQZ2G4JISBXn6bvWmCDYxeO0j2lgjLFJR7k94idr9MFFc/0ZV3/1XEqPmRpeNxOlpo1Yr8GV3iw==
   dependencies:
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-pagination@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-pagination/-/bookshelf-pagination-0.1.9.tgz#69c4a6f35594ae515ae93974fe964918075d2c8b"
-  integrity sha512-OSZlzuBkoaUOZo+ZsTNT06hePUgb3HA2MmCmBXWBaLG+cOXHPYPGcv3qVEhR2bQ2mXxMPhBqob5yDzuSyiyt8A==
+"@tryghost/bookshelf-pagination@^0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-pagination/-/bookshelf-pagination-0.1.10.tgz#8852bbd3bab93d01d11e893d7cc5e72348f9fdee"
+  integrity sha512-Q0fYcI/A7s82j46owb74TYh0tQkb1ZywckCv+Fz9OakH/itGMXItR4sE2ga81JQG3V0GBbjrjZIy5ipiBUvrRA==
   dependencies:
     "@tryghost/errors" "^1.0.0"
-    "@tryghost/tpl" "^0.1.8"
+    "@tryghost/tpl" "^0.1.9"
     lodash "^4.17.21"
 
-"@tryghost/bookshelf-plugins@0.3.5":
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.3.5.tgz#4e9544a19e4267d4d3149746daafc50a81dee127"
-  integrity sha512-UANLU6XjiLgCZ5zrYZ8ObzBbZzeM/qpphTG23VmhTqP/GJ9a4YWYJdJHUEQ8l5TJpBXiePy1xeFOZU2bNpRJAA==
+"@tryghost/bookshelf-plugins@0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-plugins/-/bookshelf-plugins-0.3.6.tgz#4508d8d9c7b7fda5f377bcd1a458dbba8a9783f2"
+  integrity sha512-QIO5/h9k28EDphKyb8oBFd1MuDM4ZBO6s/53y1Jt+9G8mSlBPKCnJKSANXSJKy1LFZir+tVBBD2jJX2GPZrK+A==
   dependencies:
-    "@tryghost/bookshelf-collision" "^0.1.8"
-    "@tryghost/bookshelf-custom-query" "^0.1.7"
-    "@tryghost/bookshelf-eager-load" "^0.1.8"
-    "@tryghost/bookshelf-filter" "^0.3.5"
-    "@tryghost/bookshelf-has-posts" "^0.1.9"
-    "@tryghost/bookshelf-include-count" "^0.1.8"
-    "@tryghost/bookshelf-order" "^0.1.7"
-    "@tryghost/bookshelf-pagination" "^0.1.9"
-    "@tryghost/bookshelf-search" "^0.1.7"
-    "@tryghost/bookshelf-transaction-events" "^0.1.7"
+    "@tryghost/bookshelf-collision" "^0.1.9"
+    "@tryghost/bookshelf-custom-query" "^0.1.8"
+    "@tryghost/bookshelf-eager-load" "^0.1.9"
+    "@tryghost/bookshelf-filter" "^0.3.6"
+    "@tryghost/bookshelf-has-posts" "^0.1.10"
+    "@tryghost/bookshelf-include-count" "^0.1.9"
+    "@tryghost/bookshelf-order" "^0.1.8"
+    "@tryghost/bookshelf-pagination" "^0.1.10"
+    "@tryghost/bookshelf-search" "^0.1.8"
+    "@tryghost/bookshelf-transaction-events" "^0.1.8"
 
-"@tryghost/bookshelf-search@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-search/-/bookshelf-search-0.1.7.tgz#e56ab39765028a1b31771f3580540740a957138c"
-  integrity sha512-W5VLNodUa4cYW8kIM2WRvu4t3mTHV+hKqQDBZ7QX5vxbxBamiufxRxRXKAY6woFjIzZH2PusVzpNUvUL5y/cQw==
+"@tryghost/bookshelf-search@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-search/-/bookshelf-search-0.1.8.tgz#3c62d2e4de3c61b99f9c31870efdf8af304ae59a"
+  integrity sha512-kW03fS9V7pe5xvtapNYbTEqZvI1Sph41/Sih81bID0023glBqNM6dPbWJbXwaC1gTJdfJQu7dXZW4OsVF1D9kw==
 
-"@tryghost/bookshelf-transaction-events@^0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-transaction-events/-/bookshelf-transaction-events-0.1.7.tgz#3833a01df655efb11894f228ddbc66b788fb6be6"
-  integrity sha512-j1hbi+NPaUFhHYAVCWJoUmmIrnD5iSR3UP4nvYnYwCAHQ0Xu4Rc3+kIpdcrnSvwIEJNtVxNCaSarJTK/D/a0JQ==
+"@tryghost/bookshelf-transaction-events@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-transaction-events/-/bookshelf-transaction-events-0.1.8.tgz#c2adb5cb047284bf990c5d5cd402487a8d099556"
+  integrity sha512-iqgZbhu6tjC485XC8sdT8E00w0/eEL0HTct73DohgWz5GpjVpSIumT+1GrK4sb8YyjDqrPbEiOzo9H/i0HZlGQ==
 
 "@tryghost/bootstrap-socket@0.2.15":
   version "0.2.15"
@@ -1879,6 +1879,13 @@
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.8.tgz#28acd930b11b71a23372f1855cb8b92282c20bdd"
   integrity sha512-0M02hZ3VNhlH9KeUXV75l3UUeNSRhmXUZfWn4vrosu8B3YCwIx+Q/cpWl5DiZ0QuIaVT7YwYDEHtFMgsKk0gXQ==
+  dependencies:
+    lodash.template "^4.5.0"
+
+"@tryghost/tpl@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.9.tgz#527ecccf85bc1be2cfc640b59c2d375edbecb046"
+  integrity sha512-61lxVDClFxRT4Qz1O7k/c4FBPW6BfsR+KBPbLBhzO0NzTwcj7C/Gmq9GVQ8xlD+WqhTJmq5cPKjAhnsfwXeaWA==
   dependencies:
     lodash.template "^4.5.0"
 
