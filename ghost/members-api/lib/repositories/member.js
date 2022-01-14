@@ -151,6 +151,8 @@ module.exports = class MemberRepository {
             source = 'system';
         } else if (context.user) {
             source = 'admin';
+        } else if (context.api_key) {
+            source = 'api';
         } else {
             source = 'member';
         }
@@ -266,6 +268,8 @@ module.exports = class MemberRepository {
                 source = 'system';
             } else if (context.user) {
                 source = 'admin';
+            } else if (context.api_key) {
+                source = 'api';
             } else {
                 source = 'member';
             }
