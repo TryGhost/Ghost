@@ -35,6 +35,10 @@ function getAssetUrl(path, hasMinFile) {
     // Add the path for the requested asset
     output = urlUtils.urlJoin(output, path);
 
+    // No hash for svg images with #iconname
+    if (path.match(/\.(svg#)/)) {
+        return output;
+    }
     // Ensure we have an assetHash
     // @TODO rework this!
     if (!config.get('assetHash')) {
