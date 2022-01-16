@@ -1,21 +1,11 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 
-export default AuthenticatedRoute.extend(ShortcutsRoute, {
+export default AuthenticatedRoute.extend({
     queryParams: {
         type: {
             refreshModel: true,
             replace: true
         }
-    },
-
-    shortcuts: null,
-
-    init() {
-        this._super(...arguments);
-        this.shortcuts = {
-            c: 'newTag'
-        };
     },
 
     // authors aren't allowed to manage tags
@@ -37,12 +27,6 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             return promise.then(() => tags);
         } else {
             return tags;
-        }
-    },
-
-    actions: {
-        newTag() {
-            this.transitionTo('tag.new');
         }
     },
 
