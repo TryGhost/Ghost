@@ -1,5 +1,5 @@
 {{#if this.post}}
-    <div class="flex flex-row">
+    <div class="flex flex-row" {{on-key "cmd+p" (action "openPostPreview")}}>
         <GhEditor
             @tagName="section"
             @class="gh-editor gh-view relative"
