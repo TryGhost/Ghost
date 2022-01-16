@@ -247,6 +247,16 @@ export default Controller.extend({
             this.toggleProperty('showEmailPreviewModal');
         },
 
+        openPostPreview(keyboardEvent) {
+            keyboardEvent?.preventDefault();
+
+            if (this.post.isDraft) {
+                this.send('openPostPreviewModal');
+            } else {
+                window.open(this.post.previewUrl, '_blank', 'noopener');
+            }
+        },
+
         openPostPreviewModal() {
             this.modals.open('modals/post-preview', {
                 post: this.post,
