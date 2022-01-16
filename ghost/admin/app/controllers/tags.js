@@ -1,8 +1,10 @@
 import Controller from '@ember/controller';
 import {alias, sort} from '@ember/object/computed';
 import {computed} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 export default Controller.extend({
+    router: service(),
 
     queryParams: ['type'],
     type: 'public',
@@ -24,6 +26,10 @@ export default Controller.extend({
     actions: {
         changeType(type) {
             this.set('type', type);
+        },
+
+        newTag() {
+            this.router.transitionTo('tag.new');
         }
     }
 });
