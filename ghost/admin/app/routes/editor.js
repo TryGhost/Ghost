@@ -1,22 +1,16 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
-import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-let generalShortcuts = {};
-generalShortcuts[`${ctrlOrCmd}+p`] = 'preview';
-
-export default AuthenticatedRoute.extend(ShortcutsRoute, {
+export default AuthenticatedRoute.extend({
     feature: service(),
     notifications: service(),
     userAgent: service(),
     ui: service(),
 
     classNames: ['editor'],
-    shortcuts: generalShortcuts,
 
     activate() {
         this._super(...arguments);
@@ -45,14 +39,6 @@ export default AuthenticatedRoute.extend(ShortcutsRoute, {
             this._blurAndScheduleAction(function () {
                 this.controller.send('save');
             });
-        },
-
-        preview() {
-            if (this.controller.post.isDraft) {
-                this.controller.send('openPostPreviewModal');
-            } else {
-                window.open(this.controller.post.previewUrl, '_blank', 'noopener');
-            }
         },
 
         authorizationFailed() {
