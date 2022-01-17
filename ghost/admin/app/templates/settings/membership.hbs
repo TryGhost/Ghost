@@ -89,10 +89,12 @@
                     <div class="gh-expandable-content">
                         {{#liquid-if this.freeOpen}}
                         <div class="gh-setting-content-extended">
+                            {{#if (feature "multipleProducts")}}
                                 <GhProductCard
                                     @product={{this.freeProduct}}
                                     @openEditProduct={{this.openEditProduct}}
                                 />
+                            {{/if}}
                             <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="free-welcome-page">
                                 <label for="freeWelcomePage">Welcome page</label>
                                 <GhUrlInput
