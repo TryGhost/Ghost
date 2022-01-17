@@ -5,7 +5,7 @@ import PlansSection, {SingleProductPlansSection} from '../common/PlansSection';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite, getAvailableProducts, hasMultipleProductsFeature} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite, getAvailableProducts, hasMultipleProductsFeature, freeHasBenefitsOrDescription} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -85,18 +85,6 @@ export const SignupPageStyles = `
         position: relative;
         padding-top: 24px;
         height: unset;
-    }
-
-    /* Needed to cover small horizontal line glitch by the scroll shadow */
-    footer.gh-portal-signup-footer::before {
-        position: absolute;
-        content: "";
-        top: -2px;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: #fff;
-        z-index: 9999;
     }
 
     .gh-portal-content.signup,
@@ -231,7 +219,7 @@ export const SignupPageStyles = `
 
     @media (min-width: 480px) and (max-width: 820px) {
         .gh-portal-powered.outside {
-            left: 50%; 
+            left: 50%;
             transform: translateX(-50%);
         }
 
@@ -563,7 +551,7 @@ class SignupPage extends React.Component {
 
         if (plansData.length <= 1 || isInviteOnlySite({site})) {
             if ((plansData.length === 1 && plansData[0].type === 'free') || isInviteOnlySite({site, pageQuery})) {
-                sectionClass = 'noplan';
+                sectionClass = freeHasBenefitsOrDescription({site}) ? 'singleplan' : 'noplan';
                 if (fields.length === 1) {
                     sectionClass = 'single-field';
                 }
