@@ -40,15 +40,21 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
-        DB: ['sqlite3', 'mysql']
+        env:
+          - DB: sqlite3
+            DB_CLIENT: sqlite3
+          - DB: mysql5
+            DB_CLIENT: mysql
+          - DB: mysql8
+            DB_CLIENT: mysql
     env:
-      database__client: ${{ matrix.DB }}
+      database__client: ${{ matrix.env.DB_CLIENT }}
       database__connection__filename: /dev/shm/ghost-test.db
       database__connection__host: 127.0.0.1
       database__connection__user: root
       database__connection__password: root
       database__connection__database: ghost_testing
-    name: Migrations - ${{ matrix.DB }}
+    name: Migrations - ${{ matrix.env.DB }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -63,12 +69,19 @@ jobs:
 
       - name: Shutdown MySQL
         run: sudo service mysql stop
-        if: matrix.DB == 'mysql'
+        if: matrix.env.DB == 'mysql5' || matrix.env.DB == 'mysql8'
 
-      - uses: mirromutth/mysql-action@v1.1
-        if: matrix.DB == 'mysql'
+      - uses: daniellockyer/mysql-action@main
+        if: matrix.env.DB == 'mysql5'
         with:
           mysql version: '5.7'
+          mysql database: 'ghost_testing'
+          mysql root password: 'root'
+
+      - uses: daniellockyer/mysql-action@main
+        if: matrix.env.DB == 'mysql8'
+        with:
+          mysql version: '8.0'
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
@@ -89,7 +102,9 @@ jobs:
         env:
           - DB: sqlite3
             NODE_ENV: testing
-          - DB: mysql
+          - DB: mysql5
+            NODE_ENV: testing-mysql
+          - DB: mysql8
             NODE_ENV: testing-mysql
     env:
       DB: ${{ matrix.env.DB }}
@@ -107,12 +122,19 @@ jobs:
 
       - name: Shutdown MySQL
         run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql'
+        if: matrix.env.DB == 'mysql5' || matrix.env.DB == 'mysql8'
 
-      - uses: mirromutth/mysql-action@v1.1
-        if: matrix.env.DB == 'mysql'
+      - uses: daniellockyer/mysql-action@main
+        if: matrix.env.DB == 'mysql5'
         with:
           mysql version: '5.7'
+          mysql database: 'ghost_testing'
+          mysql root password: 'root'
+
+      - uses: daniellockyer/mysql-action@main
+        if: matrix.env.DB == 'mysql8'
+        with:
+          mysql version: '8.0'
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
