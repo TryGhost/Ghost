@@ -133,6 +133,7 @@ class ProductRepository {
         }
 
         const productData = {
+            type: 'paid',
             name: data.name,
             description: data.description,
             benefits: data.benefits
@@ -266,19 +267,26 @@ class ProductRepository {
                 });
             });
         }
+        const productId = data.id || options.id;
 
-        const productData = {
+        const existingProduct = await this._Product.findOne({id: productId}, options);
+
+        let productData = {
             name: data.name,
             description: data.description,
             benefits: data.benefits
         };
 
+        if (existingProduct.get('type') === 'free') {
+            delete productData.name;
+        }
+
         let product = await this._Product.edit(productData, {
             ...options,
-            id: data.id || options.id
+            id: productId
         });
 
-        if (this._stripeAPIService.configured) {
+        if (this._stripeAPIService.configured && product.get('type') !== 'free') {
             await product.related('stripeProducts').fetch(options);
 
             if (!product.related('stripeProducts').first()) {

@@ -44,7 +44,8 @@ module.exports = class StripeMigrations {
         const products = productModels.toJSON();
         const {data} = await this._Product.findPage({
             ...options,
-            limit: 1
+            limit: 1,
+            filter: 'type:paid'
         });
         const defaultProduct = data[0] && data[0].toJSON();
 
@@ -142,7 +143,11 @@ module.exports = class StripeMigrations {
 
         if (!defaultStripeProduct) {
             logging.info('Could not find Stripe Product - creating one');
-            const productsPage = await this._Product.findPage({...options, limit: 1});
+            const productsPage = await this._Product.findPage({
+                ...options,
+                limit: 1,
+                filter: 'type:paid'
+            });
             const defaultProduct = productsPage.data[0];
             const stripeProduct = await this._stripeAPIService.createProduct({
                 name: defaultProduct.get('name')
@@ -417,7 +422,10 @@ module.exports = class StripeMigrations {
             });
         }
         logging.info('Migrating members_monthly_price_id setting to monthly_price_id column');
-        const productsPage = await this._Product.findPage({...options, limit: 1});
+        const productsPage = await this._Product.findPage({
+            ...options, limit: 1,
+            filter: 'type:paid'
+        });
         const defaultProduct = productsPage.data[0];
 
         if (defaultProduct.get('monthly_price_id')) {
@@ -438,7 +446,11 @@ module.exports = class StripeMigrations {
             });
         }
         logging.info('Migrating members_yearly_price_id setting to yearly_price_id column');
-        const productsPage = await this._Product.findPage({...options, limit: 1});
+        const productsPage = await this._Product.findPage({
+            ...options,
+            limit: 1,
+            filter: 'type:paid'
+        });
         const defaultProduct = productsPage.data[0];
 
         if (defaultProduct.get('yearly_price_id')) {

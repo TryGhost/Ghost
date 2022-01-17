@@ -125,6 +125,7 @@ module.exports = class MembersCSVImporter {
         const membersApi = await this._getMembersApi();
 
         const defaultProductPage = await membersApi.productRepository.list({
+            filter: 'type:paid',
             limit: 1
         });
 
