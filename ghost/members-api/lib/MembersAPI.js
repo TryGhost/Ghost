@@ -18,7 +18,6 @@ const ProductRepository = require('./repositories/product');
 const RouterController = require('./controllers/router');
 const MemberController = require('./controllers/member');
 const WellKnownController = require('./controllers/well-known');
-const StripeMigrations = require('./migrations');
 
 module.exports = function MembersAPI({
     tokenConfig: {
@@ -55,8 +54,7 @@ module.exports = function MembersAPI({
         OfferRedemption,
         StripeProduct,
         StripePrice,
-        Product,
-        Settings
+        Product
     },
     stripeAPIService,
     offersAPI,
@@ -72,15 +70,6 @@ module.exports = function MembersAPI({
 
     const memberAnalyticsService = MemberAnalyticsService.create(MemberAnalyticEvent);
     memberAnalyticsService.eventHandler.setupSubscribers();
-
-    const stripeMigrations = new StripeMigrations({
-        stripeAPIService,
-        StripeCustomerSubscription,
-        StripeProduct,
-        StripePrice,
-        Product,
-        Settings
-    });
 
     const productRepository = new ProductRepository({
         Product,
@@ -199,46 +188,6 @@ module.exports = function MembersAPI({
     const wellKnownController = new WellKnownController({
         tokenService
     });
-
-    async function disconnectStripe() {
-        if (stripeConfig && stripeConfig.webhook && stripeConfig.webhook.id) {
-            await stripeWebhookService.removeWebhook(stripeConfig.webhook.id);
-        }
-
-        await Product.forge().query().update({
-            monthly_price_id: null,
-            yearly_price_id: null
-        });
-        await StripePrice.forge().query().del();
-        await StripeProduct.forge().query().del();
-        await StripeCustomer.forge().query().del();
-        await Offer.forge().query().update({
-            stripe_coupon_id: null
-        });
-    }
-
-    const ready = stripeAPIService.configured ? Promise.all([
-        stripeMigrations.populateProductsAndPrices().then(() => {
-            return stripeMigrations.populateStripePricesFromStripePlansSetting(stripeConfig.plans);
-        }).then(() => {
-            return stripeMigrations.populateMembersMonthlyPriceIdSettings();
-        }).then(() => {
-            return stripeMigrations.populateMembersYearlyPriceIdSettings();
-        }).then(() => {
-            return stripeMigrations.populateDefaultProductMonthlyPriceId();
-        }).then(() => {
-            return stripeMigrations.populateDefaultProductYearlyPriceId();
-        }).then(() => {
-            return stripeMigrations.revertPortalPlansSetting();
-        }).then(() => {
-            return stripeMigrations.removeInvalidSubscriptions();
-        }),
-        stripeWebhookService.configure({
-            webhookSecret: process.env.WEBHOOK_SECRET,
-            webhookHandlerUrl: stripeConfig.webhookHandlerUrl,
-            webhook: stripeConfig.webhook || {}
-        })
-    ]) : Promise.resolve();
 
     async function hasActiveStripeSubscriptions() {
         const firstActiveSubscription = await StripeCustomerSubscription.findOne({
@@ -432,11 +381,7 @@ module.exports = function MembersAPI({
 
     const bus = new (require('events').EventEmitter)();
 
-    ready.then(() => {
-        bus.emit('ready');
-    }).catch((err) => {
-        bus.emit('error', err);
-    });
+    bus.emit('ready');
 
     return {
         middleware,
@@ -444,7 +389,6 @@ module.exports = function MembersAPI({
         getMemberIdentityToken,
         getMemberIdentityData,
         setMemberGeolocationFromIp,
-        disconnectStripe,
         getPublicConfig,
         bus,
         sendEmailWithMagicLink,
