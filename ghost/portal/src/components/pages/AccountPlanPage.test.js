@@ -1,5 +1,5 @@
 import React from 'react';
-import {generateAccountPlanFixture, getSiteData, getProductsData} from '../../utils/fixtures';
+import {generateAccountPlanFixture, getSiteData, getProductsData} from '../../utils/fixtures-generator';
 import {render, fireEvent} from '../../utils/test-utils';
 import AccountPlanPage from './AccountPlanPage';
 

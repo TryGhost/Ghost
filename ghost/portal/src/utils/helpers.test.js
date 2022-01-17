@@ -1,5 +1,5 @@
 import {getPriceIdFromPageQuery, isSameCurrency} from './helpers';
-import * as Fixtures from './fixtures';
+import * as Fixtures from './fixtures-generator';
 
 describe('Helpers - ', () => {
     test('can correctly fetch price id from page query ', () => {
