@@ -1,14 +1,11 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
+import AdminRoute from 'ghost-admin/routes/admin';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend(CurrentUserSettings, {
+export default AdminRoute.extend({
     settings: service(),
 
     beforeModel() {
         this._super(...arguments);
-        this.transitionAuthor(this.session.user);
-        this.transitionEditor(this.session.user);
 
         return this.settings.reload();
     },

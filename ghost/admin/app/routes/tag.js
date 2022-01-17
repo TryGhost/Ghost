@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend(CurrentUserSettings, {
+export default AuthenticatedRoute.extend({
     router: service(),
+    session: service(),
 
     _requiresBackgroundRefresh: true,
 
@@ -17,7 +17,10 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
 
     beforeModel() {
         this._super(...arguments);
-        this.transitionAuthor(this.session.user);
+
+        if (this.session.user.isAuthorOrContributor) {
+            return this.transitionTo('home');
+        }
     },
 
     model(params) {

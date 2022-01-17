@@ -22,14 +22,14 @@ describe('Acceptance: Settings - Code-Injection', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to staff page when authenticated as contributor', async function () {
+    it('redirects to home page when authenticated as contributor', async function () {
         let role = this.server.create('role', {name: 'Contributor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/code-injection');
 
-        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/site');
     });
 
     it('redirects to staff page when authenticated as author', async function () {
@@ -39,17 +39,17 @@ describe('Acceptance: Settings - Code-Injection', function () {
         await authenticateSession();
         await visit('/settings/code-injection');
 
-        expect(currentURL(), 'currentURL').to.equal('/settings/staff/test-user');
+        expect(currentURL(), 'currentURL').to.equal('/site');
     });
 
-    it('redirects to staff page when authenticated as editor', async function () {
+    it('redirects to home page when authenticated as editor', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
         await visit('/settings/code-injection');
 
-        expect(currentURL(), 'currentURL').to.equal('/settings/staff');
+        expect(currentURL(), 'currentURL').to.equal('/site');
     });
 
     describe('when logged in', function () {
