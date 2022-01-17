@@ -34,4 +34,36 @@ describe('Config API', function () {
         // full version
         res.body.config.version.should.match(/\d+\.\d+\.\d+/);
     });
+
+    describe('mailgunIsConfigured', function () {
+        it('is a boolean when it is configured', async function () {
+            // set any non-default keys so we can be sure they're exposed
+            configUtils.set('bulkEmail', {
+                mailgun: 'exists'
+            });
+
+            const res = await request
+                .get(localUtils.API.getApiQuery('config/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            should.equal(typeof res.body.config.mailgunIsConfigured, 'boolean');
+        });
+
+        it('is a boolean when it is not configured', async function () {
+            // set any non-default keys so we can be sure they're exposed
+            configUtils.set('bulkEmail', {});
+
+            const res = await request
+                .get(localUtils.API.getApiQuery('config/'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            should.equal(typeof res.body.config.mailgunIsConfigured, 'boolean');
+        });
+    });
 });
