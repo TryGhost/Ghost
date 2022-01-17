@@ -1,21 +1,21 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
-export default AuthenticatedRoute.extend({
-    queryParams: {
+export default class TagsRoute extends AuthenticatedRoute {
+    queryParams = {
         type: {
             refreshModel: true,
             replace: true
         }
-    },
+    };
 
     // authors aren't allowed to manage tags
     beforeModel() {
-        this._super(...arguments);
+        super.beforeModel(...arguments);
 
         if (this.session.user.isAuthorOrContributor) {
             return this.transitionTo('home');
         }
-    },
+    }
 
     // set model to a live array so all tags are shown and created/deleted tags
     // are automatically added/removed. Also load all tags in the background,
@@ -28,11 +28,11 @@ export default AuthenticatedRoute.extend({
         } else {
             return tags;
         }
-    },
+    }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Tags'
         };
     }
-});
+}

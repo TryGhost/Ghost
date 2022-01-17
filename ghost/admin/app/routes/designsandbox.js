@@ -1,13 +1,13 @@
 import Route from '@ember/routing/route';
 import {inject as service} from '@ember/service';
 
-export default Route.extend({
-    config: service(),
+export default class DesignsandboxRoute extends Route {
+    @service config;
 
     beforeModel() {
-        this._super(...arguments);
-        if (!this.get('config.enableDeveloperExperiments')) {
+        super.beforeModel(...arguments);
+        if (!this.config.get('enableDeveloperExperiments')) {
             return this.transitionTo('home');
         }
     }
-});
+}
