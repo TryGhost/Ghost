@@ -295,6 +295,12 @@
                                     </p>
                                 {{else}}
                                     <GhEventTimeline @events={{this.eventsData}}/>
+
+                                    {{#if (feature "membersActivityFeed")}}
+                                        <div class="gh-dashboard-top-members-footer">
+                                            <LinkTo @route="members-activity">See all activity {{svg-jar "arrow-right"}}</LinkTo>
+                                        </div>
+                                    {{/if}}
                                 {{/if}}
                             {{/if}}
                         </div>

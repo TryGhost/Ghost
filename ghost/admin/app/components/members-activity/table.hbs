@@ -1,0 +1,41 @@
+<section class="view-container">
+    {{#if this.activities}}
+        <div class="gh-list-scrolling">
+            <table class="gh-list">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Event</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <VerticalCollection
+                    @tagName="tbody"
+                    @items={{this.activities}}
+                    @key="id"
+                    @containerSelector=".gh-list-scrolling"
+                    @estimateHeight={{69}}
+                    @staticHeight={{true}}
+                    @bufferSize={{20}}
+                    as |activity|
+                >
+                    <MembersActivity::TableItem @activity={{activity}} />
+                </VerticalCollection>
+            </table>
+        </div>
+    {{else}}
+        <div class="no-posts-box">
+            <div class="no-posts">
+                {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
+                {{#if this.showingAll}}
+                    <h3>No member activity yet</h3>
+                {{else}}
+                    <h3>No activities match the current filter</h3>
+                    <LinkTo @route="members-activity" @query={{hash filter=null}} class="gh-btn gh-btn-lg">
+                        <span>Show all activity</span>
+                    </LinkTo>
+                {{/if}}
+            </div>
+        </div>
+    {{/if}}
+</section>

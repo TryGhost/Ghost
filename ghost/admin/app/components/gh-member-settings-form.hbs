@@ -349,7 +349,10 @@
                 {{/if}}
             </div>
 
-            <GhMemberActivityFeed @emailRecipients={{this.member.emailRecipients}} />
+            <GhMemberActivityFeed
+                @member={{this.member}}
+                @emailRecipients={{this.member.emailRecipients}}
+            />
         </div>
     </section>
 

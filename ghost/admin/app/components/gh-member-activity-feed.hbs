@@ -14,22 +14,26 @@
                         {{/each}}
                     {{/liquid-if}}
 
-                    {{#if (and this.remainingActivities (not this.isShowingAll))}}
-                        <button
-                            type="button"
-                            class="gh-btn gh-member-btn-expandfeed"
-                            data-test-button="view-all-activity"
-                            {{on "click" this.showAll}}
-                        >
-                            <span>View all activity</span>
-                        </button>
+                    {{#if (feature "membersActivityFeed")}}
+                        <LinkTo class="gh-btn gh-member-btn-expandfeed" @route="members-activity" @query={{hash filter=(concat "member:" @member.id)}}><span>View all activity</span></LinkTo>
+                    {{else}}
+                        {{#if (and this.remainingActivities (not this.isShowingAll))}}
+                            <button
+                                type="button"
+                                class="gh-btn gh-member-btn-expandfeed"
+                                data-test-button="view-all-activity"
+                                {{on "click" this.showAll}}
+                            >
+                                <span>View all activity</span>
+                            </button>
+                        {{/if}}
                     {{/if}}
                 {{else}}
                     <div class="gh-members-no-data gh-members-no-list">
                         <div class="lightgrey">{{svg-jar "no-data-list"}}</div>
                         <h4>Member activity</h4>
                         <p>
-                            All events related to this member will be shown here. 
+                            All events related to this member will be shown here.
                         </p>
                     </div>
                 {{/if}}
