@@ -37,11 +37,6 @@ module.exports = function (environment) {
             includeTimezone: 'all'
         },
 
-        emberKeyboard: {
-            disableInputsInitializer: true,
-            propagation: true
-        },
-
         '@sentry/ember': {
             disablePerformance: true,
             sentry: {}
