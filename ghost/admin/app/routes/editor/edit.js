@@ -1,9 +1,9 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {pluralize} from 'ember-inflector';
 
-export default AuthenticatedRoute.extend({
+export default class EditRoute extends AuthenticatedRoute {
     beforeModel(transition) {
-        this._super(...arguments);
+        super.beforeModel(...arguments);
 
         // if the transition is not new->edit, reset the post on the controller
         // so that the editor view is cleared before showing the loading state
@@ -12,7 +12,7 @@ export default AuthenticatedRoute.extend({
             editor.set('post', null);
             editor.reset();
         }
-    },
+    }
 
     model(params, transition) {
         // eslint-disable-next-line camelcase
@@ -29,13 +29,13 @@ export default AuthenticatedRoute.extend({
 
         return this.store.query(modelName, query)
             .then(records => records.get('firstObject'));
-    },
+    }
 
     // the API will return a post even if the logged in user doesn't have
     // permission to edit it (all posts are public) so we need to do our
     // own permissions check and redirect if necessary
     afterModel(post) {
-        this._super(...arguments);
+        super.afterModel(...arguments);
 
         const user = this.session.user;
         const returnRoute = pluralize(post.constructor.modelName);
@@ -48,14 +48,14 @@ export default AuthenticatedRoute.extend({
         if (user.isContributor && !post.isDraft) {
             return this.replaceWith(returnRoute);
         }
-    },
+    }
 
     serialize(model) {
         return {
             type: model.constructor.modelName,
             post_id: model.id
         };
-    },
+    }
 
     // there's no specific controller for this route, instead all editor
     // handling is done on the editor route/controler
@@ -63,4 +63,4 @@ export default AuthenticatedRoute.extend({
         let editor = this.controllerFor('editor');
         editor.setPost(post);
     }
-});
+}
