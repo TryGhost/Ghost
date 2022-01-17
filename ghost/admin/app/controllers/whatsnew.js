@@ -13,12 +13,19 @@ export default class WhatsNewController extends Controller {
         return date.getFullYear();
     }
 
-    get showDatabaseWarning() {
+    get databaseWarning() {
         const isProduction = !!this.config.get('environment').match?.(/production/i);
         const isPro = !!this.config.get('hostSettings')?.siteId;
+        const database = this.config.get('database');
 
-        if (isProduction && !isPro) {
-            return true;
+        // Show a warning if we're in production and not using MySQL 8
+        if (isProduction && !isPro && database !== 'mysql8') {
+            return 'MySQL 8 will be the required database in the next major release of Ghost.';
+        }
+
+        // Show a warning if we're in development and using MySQL 5
+        if (!isProduction && !isPro && database === 'mysql5') {
+            return 'MySQL 5 will no longer be supported in the next major release of Ghost.';
         }
 
         return false;
