@@ -1,8 +1,8 @@
-import Route from '@ember/routing/route';
+import AdminRoute from 'ghost-admin/routes/admin';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class NewIntegrationRoute extends Route {
+export default class NewIntegrationRoute extends AdminRoute {
     @service limit;
     @service modals;
 

@@ -1,7 +1,7 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import AdminRoute from 'ghost-admin/routes/admin';
 import {inject as service} from '@ember/service';
 
-export default class ProductsRoute extends AuthenticatedRoute {
+export default class ProductsRoute extends AdminRoute {
     @service store
 
     buildRouteInfoMetadata() {

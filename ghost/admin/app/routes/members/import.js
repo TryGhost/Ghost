@@ -1,3 +1,3 @@
-import Route from '@ember/routing/route';
+import AdminRoute from 'ghost-admin/routes/admin';
 
-export default class MembersImportRoute extends Route {}
+export default class MembersImportRoute extends AdminRoute {}

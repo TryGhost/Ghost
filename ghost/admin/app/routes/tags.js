@@ -1,8 +1,7 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 
-export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
+export default AuthenticatedRoute.extend(ShortcutsRoute, {
     queryParams: {
         type: {
             refreshModel: true,
@@ -23,7 +22,9 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, ShortcutsRoute, {
     beforeModel() {
         this._super(...arguments);
 
-        this.transitionAuthor(this.session.user);
+        if (this.session.user.isAuthorOrContributor) {
+            return this.transitionTo('home');
+        }
     },
 
     // set model to a live array so all tags are shown and created/deleted tags

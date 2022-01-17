@@ -1,8 +1,8 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import AdminRoute from 'ghost-admin/routes/admin';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class ProductRoute extends AuthenticatedRoute {
+export default class ProductRoute extends AdminRoute {
     @service store
     @service router;
 
@@ -20,13 +20,6 @@ export default class ProductRoute extends AuthenticatedRoute {
             return this.store.queryRecord('product', {id: params.product_id, include: 'stripe_prices'});
         } else {
             return this.store.createRecord('product');
-        }
-    }
-
-    beforeModel() {
-        super.beforeModel(...arguments);
-        if (!this.session.user.isAdmin) {
-            return this.transitionTo('home');
         }
     }
 

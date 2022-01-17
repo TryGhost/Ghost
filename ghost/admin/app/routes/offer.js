@@ -1,8 +1,8 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import AdminRoute from 'ghost-admin/routes/admin';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class OffersRoute extends AuthenticatedRoute {
+export default class OffersRoute extends AdminRoute {
     @service router;
 
     _requiresBackgroundRefresh = true;
@@ -12,13 +12,6 @@ export default class OffersRoute extends AuthenticatedRoute {
         this.router.on('routeWillChange', (transition) => {
             this.showUnsavedChangesModal(transition);
         });
-    }
-
-    beforeModel() {
-        super.beforeModel(...arguments);
-        if (!this.session.user.isAdmin) {
-            return this.transitionTo('home');
-        }
     }
 
     model(params) {

@@ -1,9 +1,9 @@
-import Route from '@ember/routing/route';
+import AdminRoute from 'ghost-admin/routes/admin';
 import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-export default class InstallThemeRoute extends Route {
+export default class InstallThemeRoute extends AdminRoute {
     @service modals;
     @service router;
 
