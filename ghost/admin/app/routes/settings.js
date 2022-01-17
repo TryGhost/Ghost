@@ -1,11 +1,11 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend({
-    session: service(),
+export default class SettingsRoute extends AuthenticatedRoute {
+    @service session;
 
     beforeModel() {
-        this._super(...arguments);
+        super.beforeModel(...arguments);
 
         const user = this.session.user;
 
@@ -13,4 +13,4 @@ export default AuthenticatedRoute.extend({
             return this.transitionTo('settings.staff.user', user);
         }
     }
-});
+}

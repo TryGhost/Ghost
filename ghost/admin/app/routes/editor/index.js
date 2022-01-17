@@ -1,8 +1,8 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
-export default AuthenticatedRoute.extend({
+export default class IndexRoute extends AuthenticatedRoute {
     beforeModel() {
-        this._super(...arguments);
+        super.beforeModel(...arguments);
         this.replaceWith('editor.new', 'post');
     }
-});
+}

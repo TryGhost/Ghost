@@ -14,24 +14,24 @@ const defaultModel = function defaultModel() {
     });
 };
 
-export default UnauthenticatedRoute.extend({
+export default class SigninRoute extends UnauthenticatedRoute {
     model() {
         return defaultModel();
-    },
+    }
 
     // the deactivate hook is called after a route has been exited.
     deactivate() {
         let controller = this.controllerFor('signin');
 
-        this._super(...arguments);
+        super.deactivate(...arguments);
 
         // clear the properties that hold the credentials when we're no longer on the signin screen
         controller.set('signin', defaultModel());
-    },
+    }
 
     buildRouteInfoMetadata() {
-        return Object.assign(this._super(), {
+        return Object.assign(super.buildRouteInfoMetadata(), {
             titleToken: 'Sign In'
         });
     }
-});
+}

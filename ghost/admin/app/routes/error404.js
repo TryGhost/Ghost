@@ -1,14 +1,14 @@
 import Route from '@ember/routing/route';
 
-export default Route.extend({
-    controllerName: 'error',
-    templateName: 'error',
+export default class Error404Route extends Route {
+    controllerName = 'error';
+    templateName = 'error';
 
     model() {
         return {
             status: 404
         };
-    },
+    }
 
     buildRouteInfoMetadata() {
         return {
@@ -16,4 +16,4 @@ export default Route.extend({
             mainClasses: ['gh-main-white']
         };
     }
-});
+}

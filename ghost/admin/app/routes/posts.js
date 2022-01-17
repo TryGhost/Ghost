@@ -1,27 +1,27 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend({
-    infinity: service(),
-    router: service(),
+export default class PostsRoute extends AuthenticatedRoute {
+    @service infinity;
+    @service router;
 
-    queryParams: {
+    queryParams = {
         type: {refreshModel: true},
         visibility: {refreshModel: true},
         access: {refreshModel: true},
         author: {refreshModel: true},
         tag: {refreshModel: true},
         order: {refreshModel: true}
-    },
+    };
 
-    modelName: 'post',
+    modelName = 'post';
+    perPage = 30;
 
-    perPage: 30,
-
-    init() {
-        this._super(...arguments);
+    constructor() {
+        super(...arguments);
 
         // if we're already on this route and we're transiting _to_ this route
         // then the filters are being changed and we shouldn't create a new
@@ -35,7 +35,7 @@ export default AuthenticatedRoute.extend({
                 }
             }
         });
-    },
+    }
 
     model(params) {
         const user = this.session.user;
@@ -76,11 +76,11 @@ export default AuthenticatedRoute.extend({
         let paginationSettings = assign({perPage, startingPage: 1}, paginationParams, queryParams);
 
         return this.infinity.model(this.modelName, paginationSettings);
-    },
+    }
 
     // trigger a background load of all tags, authors, and snipps for use in filter dropdowns and card menu
     setupController(controller) {
-        this._super(...arguments);
+        super.setupController(...arguments);
 
         if (!controller._hasLoadedTags) {
             this.store.query('tag', {limit: 'all'}).then(() => {
@@ -99,25 +99,24 @@ export default AuthenticatedRoute.extend({
                 controller._hasLoadedSnippets = true;
             });
         }
-    },
+    }
 
-    actions: {
-        queryParamsDidChange() {
-            // scroll back to the top
-            let contentList = document.querySelector('.content-list');
-            if (contentList) {
-                contentList.scrollTop = 0;
-            }
-
-            this._super(...arguments);
+    @action
+    queryParamsDidChange() {
+        // scroll back to the top
+        let contentList = document.querySelector('.content-list');
+        if (contentList) {
+            contentList.scrollTop = 0;
         }
-    },
+
+        super.actions.queryParamsDidChange.call(this, ...arguments);
+    }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Posts'
         };
-    },
+    }
 
     _getTypeFilters(type) {
         let status = '[draft,scheduled,published,sent]';
@@ -140,7 +139,7 @@ export default AuthenticatedRoute.extend({
         return {
             status
         };
-    },
+    }
 
     _filterString(filter) {
         return Object.keys(filter).map((key) => {
@@ -151,4 +150,4 @@ export default AuthenticatedRoute.extend({
             }
         }).compact().join('+');
     }
-});
+}

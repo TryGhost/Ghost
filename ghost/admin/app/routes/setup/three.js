@@ -1,10 +1,10 @@
 import Route from '@ember/routing/route';
 
-export default Route.extend({
+export default class ThreeRoute extends Route {
     beforeModel() {
-        this._super(...arguments);
+        super.beforeModel(...arguments);
         if (!this.controllerFor('setup.two').get('blogCreated')) {
             this.transitionTo('setup.two');
         }
     }
-});
+}

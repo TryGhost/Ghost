@@ -1,6 +1,6 @@
 import TagRoute from '../tag';
 
-export default TagRoute.extend({
-    controllerName: 'tag',
-    templateName: 'tag'
-});
+export default class NewRoute extends TagRoute {
+    controllerName = 'tag';
+    templateName = 'tag';
+}

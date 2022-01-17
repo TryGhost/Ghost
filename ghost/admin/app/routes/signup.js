@@ -1,3 +1,4 @@
+import {inject as service} from '@ember/service';
 // TODO: remove usage of Ember Data's private `Errors` class when refactoring validations
 // eslint-disable-next-line
 import DS from 'ember-data';
@@ -5,30 +6,32 @@ import EmberObject from '@ember/object';
 import RSVP from 'rsvp';
 import UnauthenticatedRoute from 'ghost-admin/routes/unauthenticated';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import {inject as service} from '@ember/service';
+import classic from 'ember-classic-decorator';
 
 const {Promise} = RSVP;
 const {Errors} = DS;
 
-export default UnauthenticatedRoute.extend({
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
-    ajax: service(),
-    config: service(),
+export default class SignupRoute extends UnauthenticatedRoute {
+    @service ghostPaths;
+    @service notifications;
+    @service session;
+    @service ajax;
+    @service config;
 
     beforeModel() {
-        if (this.get('session.isAuthenticated')) {
+        if (this.session.isAuthenticated) {
             this.notifications.showAlert('You need to sign out to register as a new user.', {type: 'warn', delayed: true, key: 'signup.create.already-authenticated'});
         }
 
-        this._super(...arguments);
-    },
+        super.beforeModel(...arguments);
+    }
 
     model(params) {
-        let SignupDetails = EmberObject.extend(ValidationEngine, {
-            validationType: 'signup'
-        });
+        @classic
+        class SignupDetails extends EmberObject.extend(ValidationEngine) {
+            validationType = 'signup';
+        }
+
         let signupDetails = SignupDetails.create();
         let re = /^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}|[A-Za-z0-9_-]{3})?$/;
         let email,
@@ -73,12 +76,12 @@ export default UnauthenticatedRoute.extend({
                 resolve(signupDetails);
             });
         });
-    },
+    }
 
     deactivate() {
-        this._super(...arguments);
+        super.deactivate(...arguments);
 
         // clear the properties that hold the sensitive data from the controller
         this.controllerFor('signup').get('signupDetails').setProperties({email: '', password: '', token: ''});
     }
-});
+}

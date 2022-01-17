@@ -1,12 +1,13 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default AdminRoute.extend({
-    notifications: service(),
-    settings: service(),
+export default class MembersEmailRoute extends AdminRoute {
+    @service notifications;
+    @service settings;
 
     beforeModel(transition) {
-        this._super(...arguments);
+        super.beforeModel(...arguments);
 
         if (transition.to.queryParams?.fromAddressUpdate === 'success') {
             this.notifications.showAlert(
@@ -19,25 +20,24 @@ export default AdminRoute.extend({
                 {type: 'success', key: 'members.settings.support-address.updated'}
             );
         }
-    },
+    }
 
     model() {
         return this.settings.reload();
-    },
+    }
 
     setupController(controller) {
         controller.resetEmailAddresses();
-    },
+    }
 
-    actions: {
-        willTransition(transition) {
-            return this.controller.leaveRoute(transition);
-        }
-    },
+    @action
+    willTransition(transition) {
+        return this.controller.leaveRoute(transition);
+    }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Settings - Members'
         };
     }
-});
+}
