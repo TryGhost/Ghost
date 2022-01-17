@@ -479,7 +479,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 100%;
+    flex: 1;
     --seek-before-width: 0%;
     --volume-before-width: 100%;
     --buffered-width: 0%;
@@ -551,6 +551,7 @@
 .gh-whats-new .kg-audio-seek-slider {
     flex-grow: 1;
     margin: 0 4px;
+    width: 100%;
 }
 
 @media (max-width: 640px) {
@@ -601,7 +602,10 @@
 }
 
 .gh-whats-new .kg-audio-volume-slider {
-    width: 80px;
+    flex-grow: 1;
+    width: 100%;
+    min-width: 50px;
+    max-width: 80px;
 }
 
 @media (max-width: 400px) {
@@ -1363,7 +1367,7 @@
     justify-content: center;
     align-items: center;
     background-image: linear-gradient(180deg,rgba(0,0,0,0.3) 0,transparent 70%,transparent 100%);
-    z-index: 999;
+    z-index: 99;
     transition: opacity .2s ease-in-out;
 }
 
@@ -1392,7 +1396,7 @@
     width: 100%;
     height: 80px;
     background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.5));
-    z-index: 999;
+    z-index: 99;
     transition: opacity .2s ease-in-out;
 
 }
@@ -1403,7 +1407,7 @@
     display: flex;
     align-items: center;
     width: 100%;
-    z-index: 9999;
+    z-index: 99;
     padding: 12px 16px;
 }
 
@@ -1923,7 +1927,7 @@
 .gh-whats-new .kg-header-card.kg-style-image h2.kg-header-card-header,
 .gh-whats-new .kg-header-card.kg-style-image h3.kg-header-card-subheader,
 .gh-whats-new .kg-header-card.kg-style-image a.kg-header-card-button {
-    z-index: 999;
+    z-index: 99;
 }
 
 .gh-whats-new .kg-header-card h2.kg-header-card-header a,
