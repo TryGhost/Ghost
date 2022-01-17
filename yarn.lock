@@ -1595,10 +1595,10 @@
     "@tryghost/domain-events" "^0.1.4"
     "@tryghost/member-events" "^0.3.2"
 
-"@tryghost/members-api@3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-3.0.1.tgz#b32b1e6da8936106d37a99f1bffe1b2895322a40"
-  integrity sha512-z24nZ1t409yxUAI8EUIYbYg1/oEiEJ3ReIW3uFIcJJ0qe+DlKDTMRyZZuELZkZDve0O2MqnkM3tqgDUzhaBC8Q==
+"@tryghost/members-api@3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-3.1.0.tgz#e87a0452dfe0242b16560a103e7a03230a108a2e"
+  integrity sha512-clUdblXWghXCYyYWzoKP55oj4dhkf+GuNuH2WQQ8bwVcUWnyIOWwFJOqkz7KGGToq7hyn0E80MUdwrKU1zYVAA==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/domain-events" "^0.1.4"
@@ -1633,10 +1633,10 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-importer@0.3.7":
-  version "0.3.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.3.7.tgz#711fce0559d44ccfe2a2733a5a2762ee7130243c"
-  integrity sha512-fnI7HcdQ11NSdia9GBJn1O2nFzmlqfeZs5BdB4O9TFU5dNW39Ekfm/nXxklH2cV7Y5U9YgpdX5RbSl7biNpM8Q==
+"@tryghost/members-importer@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.4.0.tgz#aadc6b443ae4e07f1fd10153f7ee55ed8e3d1621"
+  integrity sha512-ZjYf/0HIrhqoTJHywZagtzmx0Ox0VmqwNKVlgCndYoQBRYBbpn98d1ybdYZi6ci14y1BM81Az+z3/ERkJfuniQ==
   dependencies:
     "@tryghost/errors" "^0.2.13"
     "@tryghost/members-csv" "^1.2.2"
