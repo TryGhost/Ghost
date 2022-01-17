@@ -13,17 +13,19 @@
             <div class="gh-main-section-block span-2">
                 <h4 class="gh-main-section-header small bn">Basic</h4>
                 <div class="gh-main-section-content grey gh-product-priceform-block">
-                    <GhFormGroup @errors={{this.errors}} @property="name">
-                        <label for="name" class="fw6">Name</label>
-                        <GhTextInput
-                            @value={{readonly this.product.name}}
-                            @input={{action (mut this.product.name) value="target.value"}}
-                            @name="name"
-                            @placeholder="Bronze"
-                            @id="name"
-                            @class="gh-input" />
-                        <GhErrorMessage @errors={{this.errors}} @property="name" />
-                    </GhFormGroup>
+                    {{#if (not this.isFreeProduct)}}
+                        <GhFormGroup @errors={{this.errors}} @property="name">
+                            <label for="name" class="fw6">Name</label>
+                            <GhTextInput
+                                @value={{readonly this.product.name}}
+                                @input={{action (mut this.product.name) value="target.value"}}
+                                @name="name"
+                                @placeholder="Bronze"
+                                @id="name"
+                                @class="gh-input" />
+                            <GhErrorMessage @errors={{this.errors}} @property="name" />
+                        </GhFormGroup>
+                    {{/if}}
                     <GhFormGroup @errors={{this.errors}} @property="description">
                         <label for="description" class="fw6">Description</label>
                         <GhTextInput
@@ -35,57 +37,59 @@
                             @class="gh-input" />
                         <GhErrorMessage @errors={{this.errors}} @property="description" />
                     </GhFormGroup>
-                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
-                        <div class="gh-settings-members-pricelabelcont">
-                            <label for="monthlyPrice">Prices</label>
-                            <span>–</span>
-                            <div>
-                                <span class="gh-setting-members-currency gh-select">
-                                    <div class="gh-setting-members-currencylabel">
-                                        <span>{{this.currency}}</span>
-                                        {{svg-jar "arrow-down-small"}}
-                                    </div>
-                                    <OneWaySelect
-                                        @value={{this.selectedCurrency}}
-                                        id="currency"
-                                        name="currency"
-                                        @options={{readonly this.allCurrencies}}
-                                        @optionValuePath="value"
-                                        @optionLabelPath="label"
-                                        @update={{action "setCurrency"}}
-                                    />
-                                </span>
+                    {{#if (not this.isFreeProduct)}}
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
+                            <div class="gh-settings-members-pricelabelcont">
+                                <label for="monthlyPrice">Prices</label>
+                                <span>–</span>
+                                <div>
+                                    <span class="gh-setting-members-currency gh-select">
+                                        <div class="gh-setting-members-currencylabel">
+                                            <span>{{this.currency}}</span>
+                                            {{svg-jar "arrow-down-small"}}
+                                        </div>
+                                        <OneWaySelect
+                                            @value={{this.selectedCurrency}}
+                                            id="currency"
+                                            name="currency"
+                                            @options={{readonly this.allCurrencies}}
+                                            @optionValuePath="value"
+                                            @optionLabelPath="label"
+                                            @update={{action "setCurrency"}}
+                                        />
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="gh-setting-members-prices">
+                            <div class="gh-setting-members-prices">
 
-                            <div class="gh-input-group">
-                                <GhTextInput
-                                    @id="monthlyPrice"
-                                    @value={{readonly this.stripeMonthlyAmount}}
-                                    @type="number"
-                                    @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                                    @focus-out={{action "validateStripePlans"}}
-                                />
-                                <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
+                                <div class="gh-input-group">
+                                    <GhTextInput
+                                        @id="monthlyPrice"
+                                        @value={{readonly this.stripeMonthlyAmount}}
+                                        @type="number"
+                                        @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
+                                        @focus-out={{action "validateStripePlans"}}
+                                    />
+                                    <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
+                                </div>
+                                <div class="gh-input-group">
+                                    <GhTextInput
+                                        @id="yearlyPrice"
+                                        @value={{readonly this.stripeYearlyAmount}}
+                                        @type="number"
+                                        @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
+                                        @focus-out={{this.validateStripePlans}}
+                                        @placeholder=''
+                                        data-test-title-input={{true}}
+                                    />
+                                    <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
+                                </div>
                             </div>
-                            <div class="gh-input-group">
-                                <GhTextInput
-                                    @id="yearlyPrice"
-                                    @value={{readonly this.stripeYearlyAmount}}
-                                    @type="number"
-                                    @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                                    @focus-out={{this.validateStripePlans}}
-                                    @placeholder=''
-                                    data-test-title-input={{true}}
-                                />
-                                <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
-                            </div>
-                        </div>
-                        {{#if this.stripePlanError}}
-                            <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
-                        {{/if}}
-                    </GhFormGroup>
+                            {{#if this.stripePlanError}}
+                                <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
+                            {{/if}}
+                        </GhFormGroup>
+                    {{/if}}
                 </div>
 
                 <h4 class="gh-main-section-header small bn">Benefits</h4>
@@ -125,7 +129,7 @@
                     <h4 class="gh-main-section-header small bn">Tier Preview</h4>
                     <div class="gh-main-section-content" style="border-color: {{this.settings.accentColor}}">
                         <span class="checkmark" style="background-color: {{this.settings.accentColor}}"></span>
-                        
+
                         {{#if this.product.name}}
                             <h4>{{this.product.name}}</h4>
                         {{else}}
@@ -149,27 +153,32 @@
                                 <li>{{svg-jar "check-2"}} <span>Expert analysis</span></li>
                             </ul>
                         {{/if}}
-                        
                         <div class="price">
-                            
-                            {{#if this.stripeMonthlyAmount}}
-                                <span class="monthly-price">
-                                    <span class="currency">{{currency-symbol this.currency}}</span>
-                                    {{this.stripeMonthlyAmount}}
-                                    <span class="period">/month</span>
-                                </span>
-                            {{else}}
-                                <span class="monthly-price placeholder">
-                                    <span class="currency">{{currency-symbol this.currency}}</span>
-                                    0
-                                    <span class="period">/month</span>
-                                </span>
-                            {{/if}}
+                            {{#if (not this.isFreeProduct)}}
+                                {{#if this.stripeMonthlyAmount}}
+                                    <span class="monthly-price">
+                                        <span class="currency">{{currency-symbol this.currency}}</span>
+                                        {{format-number this.stripeMonthlyAmount}}
+                                        <span class="period">/month</span>
+                                    </span>
+                                {{else}}
+                                    <span class="monthly-price placeholder">
+                                        <span class="currency">{{currency-symbol this.currency}}</span>
+                                        0
+                                        <span class="period">/month</span>
+                                    </span>
+                                {{/if}}
 
-                            {{#if this.stripeYearlyAmount}}
-                                <span class="yearly-price">{{currency-symbol this.currency}}{{this.stripeYearlyAmount}}/year</span>
+                                {{#if this.stripeYearlyAmount}}
+                                    <span class="yearly-price">{{currency-symbol this.currency}}{{format-number this.stripeYearlyAmount}}/year</span>
+                                {{else}}
+                                    <span class="yearly-price placeholder">0<span class="currency">{{this.currency}}</span>/year</span>
+                                {{/if}}
                             {{else}}
-                                <span class="yearly-price placeholder">0<span class="currency">{{this.currency}}</span>/year</span>
+                            <span class="monthly-price">
+                                <span class="currency">{{currency-symbol this.currency}}</span>
+                                0
+                            </span>
                             {{/if}}
                         </div>
                     </div>

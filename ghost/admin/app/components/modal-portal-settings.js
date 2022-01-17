@@ -72,11 +72,12 @@ export default ModalComponent.extend({
         return (this.membersUtils.isStripeEnabled && allowedPlans.includes('yearly'));
     }),
     products: computed('model.products.[]', 'settings.portalProducts.[]', 'isPreloading', function () {
-        if (this.isPreloading || !this.model.products) {
+        const paidProducts = this.model.products?.filter(product => product.type === 'paid');
+        if (this.isPreloading || !paidProducts?.length) {
             return [];
         }
         const portalProducts = this.settings.get('portalProducts') || [];
-        const products = this.model.products.map((product) => {
+        const products = paidProducts.map((product) => {
             return {
                 id: product.id,
                 name: product.name,
