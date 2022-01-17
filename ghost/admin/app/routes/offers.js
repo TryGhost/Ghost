@@ -1,7 +1,7 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import AdminRoute from 'ghost-admin/routes/admin';
 import {inject as service} from '@ember/service';
 
-export default class offersRoute extends AuthenticatedRoute {
+export default class offersRoute extends AdminRoute {
     @service store;
     @service feature;
 
@@ -9,14 +9,9 @@ export default class offersRoute extends AuthenticatedRoute {
         type: {refreshModel: true}
     };
 
-    // redirect to posts screen if:
-    // - TODO: members is disabled?
-    // - logged in user isn't owner/admin
     beforeModel() {
         super.beforeModel(...arguments);
-        if (!this.session.user.isAdmin) {
-            return this.transitionTo('home');
-        }
+        // TODO: redirect if members is disabled?
     }
 
     model(params) {

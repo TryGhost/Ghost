@@ -1,8 +1,7 @@
-import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import CurrentUserSettings from 'ghost-admin/mixins/current-user-settings';
+import AdminRoute from 'ghost-admin/routes/admin';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend(CurrentUserSettings, {
+export default AdminRoute.extend({
     router: service(),
 
     init() {
@@ -14,12 +13,6 @@ export default AuthenticatedRoute.extend(CurrentUserSettings, {
                 this.controller.set('isApiKeyRegenerated', false);
             }
         });
-    },
-
-    beforeModel() {
-        this._super(...arguments);
-        this.transitionAuthor(this.session.user);
-        this.transitionEditor(this.session.user);
     },
 
     model(params, transition) {
