@@ -1,5 +1,3 @@
-// import calculateDiscount from './discount';
-
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
     const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
@@ -215,6 +213,11 @@ export function getAvailableProducts({site}) {
     });
 }
 
+export function getFreeProduct({site}) {
+    const {products = []} = site || {};
+    return products.find(product => product.type === 'free');
+}
+
 export function getAllProductsForSite({site}) {
     const {products = [], portal_plans: portalPlans = []} = site || {};
 
@@ -263,10 +266,27 @@ export function getSiteProducts({site}) {
     return products;
 }
 
-export function getFreeBenefits() {
-    return [{
-        name: 'Access to free articles'
-    }];
+export function getFreeProductBenefits({site}) {
+    const freeProduct = getFreeProduct({site});
+    return freeProduct?.benefits || [];
+}
+
+export function getFreeTierTitle({site}) {
+    return 'Free';
+}
+
+export function getFreeTierDescription({site}) {
+    const freeProduct = getFreeProduct({site});
+    return freeProduct?.description;
+}
+
+export function freeHasBenefitsOrDescription({site}) {
+    const freeProduct = getFreeProduct({site});
+
+    if (freeProduct?.description || freeProduct?.benefits?.length) {
+        return true;
+    }
+    return false;
 }
 
 export function getProductBenefits({product, site = null}) {
@@ -274,14 +294,6 @@ export function getProductBenefits({product, site = null}) {
         const productBenefits = product?.benefits || [];
         const monthlyBenefits = productBenefits;
         const yearlyBenefits = productBenefits;
-        // const availablePrices = getAvailablePrices({site, products: [product]});
-        // const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
-        // if (yearlyDiscount > 0 && availablePrices.length > 1) {
-        //     yearlyBenefits.push({
-        //         name: `${yearlyDiscount}% annual discount`,
-        //         className: `gh-portal-strong`
-        //     });
-        // }
         return {
             monthly: monthlyBenefits,
             yearly: yearlyBenefits
@@ -319,6 +331,9 @@ export function hasFreeProductPrice({site}) {
 }
 
 export function getProductFromPrice({site, priceId}) {
+    if (priceId === 'free') {
+        return getFreeProduct({site});
+    }
     const products = getAllProductsForSite({site});
     return products.find((product) => {
         return (product?.monthlyPrice?.id === priceId) || (product?.yearlyPrice?.id === priceId);
@@ -396,7 +411,7 @@ export function getSitePrices({site = {}, pageQuery = ''} = {}) {
             type: 'free',
             price: 0,
             amount: 0,
-            name: 'Free',
+            name: getFreeTierTitle({site}),
             ...freePriceCurrencyDetail
 
         });

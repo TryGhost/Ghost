@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled, getMemberActivePrice, getProductFromPrice} from '../../utils/helpers';
+import {getSiteProducts, getCurrencySymbol, getPriceString, getStripeAmount, isCookiesDisabled, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import ActionButton from './ActionButton';
 import calculateDiscount from '../../utils/discount';
@@ -204,7 +204,7 @@ export const ProductsSectionStyles = ({site}) => {
             width: 100%;
         }
 
-        .gh-portal-product-card:not(.free) .gh-portal-product-description {
+        .gh-portal-product-card .gh-portal-product-description {
             padding-bottom: 20px;
             margin-bottom: 16px;
         }
@@ -658,7 +658,8 @@ function FreeProductCard() {
     const {selectedProduct, selectedInterval, setSelectedProduct} = useContext(ProductsContext);
 
     const cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
-
+    const product = getFreeProduct({site});
+    const freeProductDescription = getFreeTierDescription({site});
     // Product cards are duplicated because their design is too different for mobile devices to handle it purely in CSS
     return (
         <>
@@ -671,8 +672,9 @@ function FreeProductCard() {
                     <Checkbox name='x' id='x' isChecked={selectedProduct === 'free'} onProductSelect={() => {
                         setSelectedProduct('free');
                     }} />
-                    <h4 className="gh-portal-product-name">Free</h4>
-                    <div className="gh-portal-product-description">Free preview of {(site.title)}</div>
+                    <h4 className="gh-portal-product-name">{getFreeTierTitle({site})}</h4>
+                    {freeProductDescription ? <div className="gh-portal-product-description">{freeProductDescription}</div> : ''}
+                    <ProductBenefitsContainer product={product} />
                 </div>
                 <div className="gh-portal-product-card-pricecontainer">
                     <div className="gh-portal-product-price">
@@ -691,13 +693,14 @@ function FreeProductCard() {
                 <Checkbox name='x' id='x' isChecked={selectedProduct === 'free'} onProductSelect={() => {
                     setSelectedProduct('free');
                 }} />
-                <h4 className="gh-portal-product-name">Free</h4>
+                <h4 className="gh-portal-product-name">{getFreeTierTitle({site})}</h4>
                 <div className="gh-portal-product-price">
                     <span className="currency-sign">$</span>
                     <span className="amount">0</span>
                     <span className="billing-period">/{selectedInterval}</span>
                 </div>
-                <div className="gh-portal-product-description">Free preview of {(site.title)}</div>
+                {freeProductDescription ? <div className="gh-portal-product-description">{freeProductDescription}</div> : ''}
+                <ProductBenefitsContainer product={product} />
             </div>
         </>
     );
