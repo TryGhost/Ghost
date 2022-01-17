@@ -564,7 +564,10 @@ module.exports = class MemberRepository {
             ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, options);
             // Use first Ghost product as default product in case of missing link
             if (!ghostProduct) {
-                let {data: pageData} = await this._productRepository.list({limit: 1});
+                let {data: pageData} = await this._productRepository.list({
+                    limit: 1,
+                    filter: 'type:paid'
+                });
                 ghostProduct = (pageData && pageData[0]) || null;
             }
 
@@ -950,7 +953,12 @@ module.exports = class MemberRepository {
             return this.isActiveSubscriptionStatus(subscription.get('status'));
         });
 
-        const productPage = await this._productRepository.list({limit: 1, withRelated: ['stripePrices'], ...options});
+        const productPage = await this._productRepository.list({
+            limit: 1,
+            withRelated: ['stripePrices'],
+            filter: 'type:paid',
+            ...options
+        });
 
         const defaultProduct = productPage && productPage.data && productPage.data[0] && productPage.data[0].toJSON();
 
