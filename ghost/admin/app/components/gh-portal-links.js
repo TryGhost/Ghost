@@ -57,7 +57,7 @@ export default Component.extend({
         }
     },
     fetchProducts: task(function* () {
-        const products = yield this.store.query('product', {include: 'monthly_price,yearly_price'}) || [];
+        const products = yield this.store.query('product', {filter: 'type:paid', include: 'monthly_price,yearly_price'}) || [];
         this.set('products', products);
         if (products.length > 0) {
             this.set('selectedProduct', {

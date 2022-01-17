@@ -81,7 +81,7 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Free</h4>
+                            <h4 class="gh-expandable-title">Default</h4>
                             <p class="gh-expandable-description">Free member sign up settings</p>
                         </div>
                         <button type="button" class="gh-btn" {{on "click" (toggle "freeOpen" this)}} data-test-toggle-pub-info><span>{{if this.freeOpen "Close" "Expand"}}</span></button>
@@ -89,6 +89,10 @@
                     <div class="gh-expandable-content">
                         {{#liquid-if this.freeOpen}}
                         <div class="gh-setting-content-extended">
+                                <GhProductCard
+                                    @product={{this.freeProduct}}
+                                    @openEditProduct={{this.openEditProduct}}
+                                />
                             <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="free-welcome-page">
                                 <label for="freeWelcomePage">Welcome page</label>
                                 <GhUrlInput
@@ -143,7 +147,7 @@
                             {{else}}
                                 {{#if (feature "multipleProducts")}}
                                     <GhMembershipProductsAlpha
-                                        @products={{this.products}}
+                                        @products={{this.paidProducts}}
                                         @confirmProductSave={{this.confirmProductSave}}
                                     />
                                 {{else}}
@@ -258,5 +262,15 @@
             @modal="stripe-connect"
             @close={{this.closeStripeConnect}}
             @modifier="action wide stripe-connect" />
+    {{/if}}
+    {{#if this.showProductModal}}
+        <GhFullscreenModal
+            @modal="product"
+            @model={{hash
+                product=this.productModel
+            }}
+            @confirm={{this.confirmProductSave}}
+            @close={{this.closeProductModal}}
+            @modifier="edit-product action wide" />
     {{/if}}
 </section>

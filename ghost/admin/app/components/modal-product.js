@@ -34,6 +34,10 @@ export default class ModalProductPrice extends ModalBase {
 
     confirm() {}
 
+    get isFreeProduct() {
+        return this.product.type === 'free';
+    }
+
     get allCurrencies() {
         return getCurrencyOptions();
     }
@@ -104,24 +108,26 @@ export default class ModalProductPrice extends ModalBase {
             yield this.send('addBenefit', this.newBenefit);
         }
 
-        const monthlyAmount = this.stripeMonthlyAmount * 100;
-        const yearlyAmount = this.stripeYearlyAmount * 100;
-        this.product.set('monthlyPrice', {
-            nickname: 'Monthly',
-            amount: monthlyAmount,
-            active: true,
-            currency: this.currency,
-            interval: 'month',
-            type: 'recurring'
-        });
-        this.product.set('yearlyPrice', {
-            nickname: 'Yearly',
-            amount: yearlyAmount,
-            active: true,
-            currency: this.currency,
-            interval: 'year',
-            type: 'recurring'
-        });
+        if (!this.isFreeProduct) {
+            const monthlyAmount = this.stripeMonthlyAmount * 100;
+            const yearlyAmount = this.stripeYearlyAmount * 100;
+            this.product.set('monthlyPrice', {
+                nickname: 'Monthly',
+                amount: monthlyAmount,
+                active: true,
+                currency: this.currency,
+                interval: 'month',
+                type: 'recurring'
+            });
+            this.product.set('yearlyPrice', {
+                nickname: 'Yearly',
+                amount: yearlyAmount,
+                active: true,
+                currency: this.currency,
+                interval: 'year',
+                type: 'recurring'
+            });
+        }
         this.product.set('benefits', this.benefits);
         yield this.product.save();
 

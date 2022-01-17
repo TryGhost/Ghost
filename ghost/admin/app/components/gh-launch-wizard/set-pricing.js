@@ -173,8 +173,9 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             this.stripeMonthlyAmount = storedData.monthlyAmount;
             this.stripeYearlyAmount = storedData.yearlyAmount;
         } else {
-            const products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
+            const products = yield this.store.query('product', {filter: 'type:paid', include: 'monthly_price,yearly_price'});
             this.product = products.firstObject;
+
             let portalPlans = this.settings.get('portalPlans') || [];
 
             this.isMonthlyChecked = portalPlans.includes('monthly');
