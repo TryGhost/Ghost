@@ -1,12 +1,13 @@
+import {formatNumber} from './format-number';
 import {helper} from '@ember/component/helper';
 
 export function ghPriceAmount(amount) {
     if (amount) {
         let price = amount / 100;
         if (price % 1 === 0) {
-            return price;
+            return formatNumber(price);
         } else {
-            return (Math.round(price * 100) / 100).toFixed(2);
+            return formatNumber(Math.round(price * 100) / 100).toFixed(2);
         }
     }
     return 0;

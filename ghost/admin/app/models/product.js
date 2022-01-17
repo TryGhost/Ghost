@@ -7,6 +7,7 @@ export default Model.extend(ValidationEngine, {
     name: attr('string'),
     description: attr('string'),
     slug: attr('string'),
+    type: attr('string', {defaultValue: 'paid'}),
     monthlyPrice: attr('stripe-price'),
     yearlyPrice: attr('stripe-price'),
     benefits: attr('product-benefits')

@@ -54,7 +54,9 @@ export default class DashboardController extends Controller {
     }
 
     async loadMRRStats() {
-        const products = await this.store.query('product', {include: 'monthly_price,yearly_price', limit: 'all'});
+        const products = await this.store.query('product', {
+            filter: 'type:paid', include: 'monthly_price,yearly_price', limit: 'all'
+        });
         const defaultProduct = products?.firstObject;
 
         this.mrrStatsLoading = true;

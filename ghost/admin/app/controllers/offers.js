@@ -70,7 +70,9 @@ export default class MembersController extends Controller {
 
     @task({restartable: true})
     *fetchOffersTask() {
-        this.products = yield this.store.query('product', {include: 'monthly_price,yearly_price'});
+        this.products = yield this.store.query('product', {
+            filter: 'type:paid', include: 'monthly_price,yearly_price'
+        });
         this.offers = yield this.store.query('offer', {limit: 'all'});
         return this.offers;
     }
