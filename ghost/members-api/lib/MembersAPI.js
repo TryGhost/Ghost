@@ -2,13 +2,11 @@ const {Router} = require('express');
 const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 
 const MemberAnalyticsService = require('@tryghost/member-analytics-service');
 const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
 const PaymentsService = require('@tryghost/members-payments');
 
-const StripeWebhookService = require('./services/stripe-webhook');
 const TokenService = require('./services/token');
 const GeolocationSerice = require('./services/geolocation');
 const MemberBREADService = require('./services/member-bread');
@@ -38,7 +36,6 @@ module.exports = function MembersAPI({
         getSubject
     },
     models: {
-        StripeWebhook,
         StripeCustomer,
         StripeCustomerSubscription,
         Member,
@@ -117,28 +114,6 @@ module.exports = function MembersAPI({
         },
         labsService,
         stripeService: stripeAPIService
-    });
-
-    const stripeWebhookService = new StripeWebhookService({
-        StripeWebhook,
-        stripeAPIService,
-        productRepository,
-        memberRepository,
-        eventRepository,
-        /**
-         * @param {string} email
-         */
-        async sendSignupEmail(email) {
-            const requestedType = 'signup-paid';
-            await sendEmailWithMagicLink({
-                email,
-                requestedType,
-                options: {
-                    forceEmailType: true
-                },
-                tokenData: {}
-            });
-        }
     });
 
     const geolocationService = new GeolocationSerice();
@@ -334,43 +309,11 @@ module.exports = function MembersAPI({
             body.json(),
             (req, res) => memberController.updateSubscription(req, res)
         ),
-        handleStripeWebhook: Router(),
         wellKnown: Router()
             .get('/jwks.json',
                 (req, res) => wellKnownController.getPublicKeys(req, res)
             )
     };
-
-    middleware.handleStripeWebhook.use(body.raw({type: 'application/json'}), async function (req, res) {
-        if (!stripeAPIService.configured) {
-            logging.error(`Stripe not configured, not handling webhook`);
-            res.writeHead(400);
-            return res.end();
-        }
-
-        if (!req.body || !req.headers['stripe-signature']) {
-            res.writeHead(400);
-            return res.end();
-        }
-        let event;
-        try {
-            event = stripeWebhookService.parseWebhook(req.body, req.headers['stripe-signature']);
-        } catch (err) {
-            logging.error(err);
-            res.writeHead(401);
-            return res.end();
-        }
-        logging.info(`Handling webhook ${event.type}`);
-        try {
-            await stripeWebhookService.handleWebhook(event);
-            res.writeHead(200);
-            res.end();
-        } catch (err) {
-            logging.error(`Error handling webhook ${event.type}`, err);
-            res.writeHead(err.statusCode || 500);
-            res.end();
-        }
-    });
 
     const getPublicConfig = function () {
         return Promise.resolve({

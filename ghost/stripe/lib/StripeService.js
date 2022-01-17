@@ -1,9 +1,11 @@
 const WebhookManager = require('./WebhookManager');
 const StripeAPI = require('./StripeAPI');
 const StripeMigrations = require('./Migrations');
+const WebhookController = require('./WebhookController');
 
 module.exports = class StripeService {
     constructor({
+        membersService,
         StripeWebhook,
         models
     }) {
@@ -16,11 +18,35 @@ module.exports = class StripeService {
             models,
             api
         });
+        const webhookController = new WebhookController({
+            webhookManager,
+            api,
+            get memberRepository(){
+                return membersService.api.members;
+            },
+            get productRepository() {
+                return membersService.api.productRepository;
+            },
+            get eventRepository() {
+                return membersService.api.events;
+            },
+            sendSignupEmail(email){
+                return membersService.sendMagicLink({
+                    email,
+                    requestedType: 'paid-signup',
+                    options: {
+                        forceEmailType: true
+                    },
+                    tokenData: {}
+                });
+            }
+        });
 
         this.models = models;
         this.api = api;
         this.webhookManager = webhookManager;
         this.migrations = migrations;
+        this.webhookController = webhookController;
     }
 
     async connect() {
@@ -47,13 +73,10 @@ module.exports = class StripeService {
             enablePromoCodes: config.enablePromoCodes
         });
 
-        console.log('finna setup webhooks');
-        console.log(config.webhookSecret, config.webhookHandlerUrl);
         await this.webhookManager.configure({
             webhookSecret: config.webhookSecret,
             webhookHandlerUrl: config.webhookHandlerUrl
         });
         await this.webhookManager.start();
-        console.log('webhooks done');
     }
 };

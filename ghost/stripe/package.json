@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "^0.1.4",
-    "@tryghost/errors": "^0.2.13",
+    "@tryghost/errors": "1.2.0",
     "leaky-bucket": "^2.2.0",
     "stripe": "^8.174.0"
   }
