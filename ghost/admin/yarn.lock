@@ -6123,7 +6123,7 @@ ember-cli-htmlbars-inline-precompile@^2.1.0:
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@6.0.1, ember-cli-htmlbars@^6.0.0:
+ember-cli-htmlbars@6.0.1, ember-cli-htmlbars@^6.0.0, ember-cli-htmlbars@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-6.0.1.tgz#5487831d477e61682bc867fd138808269e5d2152"
   integrity sha512-IDsl9uty+MXtMfp/BUTEc/Q36EmlHYj8ZdPekcoRa8hmdsigHnK4iokfaB7dJFktlf6luruei+imv7JrJrBQPQ==
@@ -6821,14 +6821,13 @@ ember-inflector@^3.0.1:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-keyboard@6.0.4:
-  version "6.0.4"
-  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-6.0.4.tgz#396e1be4c815b2972e2a6973dcc45acbc6701e4a"
-  integrity sha512-Mkg5TG6KBTtxjOUBdyLADajyj/mJo3ua2mSHw20UtG2MxKxMyO+Bs4tttMlEmmrR3XMrQ9qVBLkq2dIuuQku3w==
+ember-keyboard@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-7.0.0.tgz#97b0675650c11333d440161752abb71630dbdd5d"
+  integrity sha512-NuFZqIU1SahX0dFWqBJ8rD30cQF92RbuVPwbHTYU0SJFhVltYen6G66b3u2PkshK/WpdGHDL8XS+hZvpsoP2DA==
   dependencies:
     ember-cli-babel "^7.26.6"
-    ember-cli-htmlbars "^5.7.1"
-    ember-compatibility-helpers "^1.2.4"
+    ember-cli-htmlbars "^6.0.1"
     ember-modifier "^2.1.2 || ^3.0.0"
     ember-modifier-manager-polyfill "^1.2.0"
 
