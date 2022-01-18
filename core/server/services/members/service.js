@@ -5,7 +5,6 @@ const db = require('../../data/db');
 const MembersConfigProvider = require('./config');
 const MembersCSVImporter = require('@tryghost/members-importer');
 const MembersStats = require('./stats/members-stats');
-const createMembersApiInstance = require('./api');
 const createMembersSettingsInstance = require('./settings');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
@@ -16,7 +15,6 @@ const models = require('../../models');
 const _ = require('lodash');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
-const stripeService = require('../stripe');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -25,9 +23,6 @@ const messages = {
     emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
     emailVerificationEmailMessage: `Email verification needed for site: {siteUrl}, just imported: {importedNumber} members.`
 };
-
-// Bind to settings.edited to update systems based on settings changes, similar to the bridge and models/base/listeners
-const events = require('../../lib/common/events');
 
 const ghostMailer = new GhostMailer();
 
@@ -39,16 +34,6 @@ const membersConfig = new MembersConfigProvider({
 
 let membersApi;
 let membersSettings;
-
-function reconfigureMembersAPI() {
-    const reconfiguredMembersAPI = createMembersApiInstance(membersConfig);
-    reconfiguredMembersAPI.bus.on('ready', function () {
-        membersApi = reconfiguredMembersAPI;
-    });
-    reconfiguredMembersAPI.bus.on('error', function (err) {
-        logging.error(err);
-    });
-}
 
 /**
  * @description Calculates threshold based on following formula
@@ -125,18 +110,14 @@ const processImport = async (options) => {
     return result;
 };
 
-events.on('services.stripe.reconfigured', reconfigureMembersAPI);
-
-const membersService = {
+module.exports = {
     async init() {
+        const stripeService = require('../stripe');
+        const createMembersApiInstance = require('./api');
         const env = config.get('env');
 
+        // @TODO Move to stripe service
         if (env !== 'production') {
-            if (!process.env.WEBHOOK_SECRET && stripeService.api.configured) {
-                process.env.WEBHOOK_SECRET = 'DEFAULT_WEBHOOK_SECRET';
-                logging.warn(tpl(messages.remoteWebhooksInDevelopment));
-            }
-
             if (stripeService.api.configured && stripeService.api.mode === 'live') {
                 throw new errors.IncorrectUsageError({
                     message: tpl(messages.noLiveKeysInDevelopment)
@@ -166,6 +147,8 @@ const membersService = {
                 logging.error(err);
             }
         })();
+
+        await stripeService.migrations.execute();
     },
     contentGating: require('./content-gating'),
 
@@ -187,7 +170,7 @@ const membersService = {
         cookieKeys: [settingsCache.get('theme_session_secret')],
         cookieName: 'ghost-members-ssr',
         cookieCacheName: 'ghost-members-ssr-cache',
-        getMembersApi: () => membersService.api
+        getMembersApi: () => module.exports.api
     }),
 
     stripeConnect: require('./stripe-connect'),
@@ -199,7 +182,6 @@ const membersService = {
         settingsCache: settingsCache,
         isSQLite: config.get('database:client') === 'sqlite3'
     })
-};
 
-module.exports = membersService;
+};
 module.exports.middleware = require('./middleware');
