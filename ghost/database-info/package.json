@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/database-info",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/database-info",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -23,6 +23,5 @@
     "mocha": "9.1.4",
     "should": "13.2.3",
     "sinon": "12.0.1"
-  },
-  "dependencies": {}
+  }
 }
