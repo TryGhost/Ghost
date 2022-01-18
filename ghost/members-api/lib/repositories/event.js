@@ -111,6 +111,7 @@ module.exports = class EventRepository {
     }
 
     async getEmailDelieveredEvents(options = {}) {
+        options.withRelated = ['member'];
         options.filter = 'delivered_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
@@ -134,6 +135,7 @@ module.exports = class EventRepository {
     }
 
     async getEmailOpenedEvents(options = {}) {
+        options.withRelated = ['member'];
         options.filter = 'opened_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
@@ -157,6 +159,7 @@ module.exports = class EventRepository {
     }
 
     async getEmailFailedEvents(options = {}) {
+        options.withRelated = ['member'];
         options.filter = 'failed_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
