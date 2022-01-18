@@ -410,11 +410,6 @@ p.gh-members-list-email {
         padding-bottom: 16px;
     }
 
-    .gh-members-list-open-rate-mobile::after {
-        content: " open rate • ";
-        white-space: pre;
-    }
-
     .gh-members-list-geolocation {
         display: inline-block;
         width: auto;
