@@ -58,6 +58,9 @@ async function initDatabase({config}) {
     const DatabaseStateManager = require('./server/data/db/state-manager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
     await dbStateManager.makeReady();
+
+    const databaseInfo = require('./server/data/db/info');
+    await databaseInfo.init();
 }
 
 /**
