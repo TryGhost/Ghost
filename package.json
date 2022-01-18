@@ -105,7 +105,7 @@
     "@tryghost/validator": "0.1.10",
     "@tryghost/version": "0.1.8",
     "@tryghost/vhost-middleware": "1.0.19",
-    "@tryghost/zip": "1.1.18",
+    "@tryghost/zip": "1.1.19",
     "amperize": "0.6.1",
     "analytics-node": "6.0.0",
     "bluebird": "3.7.2",
