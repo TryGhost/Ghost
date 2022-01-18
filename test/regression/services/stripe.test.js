@@ -14,7 +14,7 @@ describe('Stripe Service', function () {
         this.clock.restore();
     });
 
-    it('Emits a "services.stripe.reconfigured" event when it is reconfigured', async function () {
+    it('Does not emit a "services.stripe.reconfigured" event when it is reconfigured', async function () {
         const eventsStub = new events.EventEmitter();
         const configureApiStub = sinon.spy();
 
@@ -33,6 +33,6 @@ describe('Stripe Service', function () {
 
         this.clock.tick(600);
 
-        sinon.assert.callOrder(configureApiStub, emitReconfiguredEventSpy);
+        sinon.assert.notCalled(emitReconfiguredEventSpy);
     });
 });
