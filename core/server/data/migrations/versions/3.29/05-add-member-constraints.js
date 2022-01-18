@@ -6,7 +6,7 @@ module.exports = {
     },
 
     async up({transacting: knex}) {
-        if (knex.client.config.client !== 'mysql') {
+        if (knex.client.config.client !== 'mysql2') {
             return logging.warn('Skipping member tables index creation - database is not MySQL');
         }
 
@@ -91,7 +91,7 @@ module.exports = {
     },
 
     async down({transacting: knex}) {
-        if (knex.client.config.client !== 'mysql') {
+        if (knex.client.config.client !== 'mysql2') {
             return logging.warn('Skipping member tables index removal - database is not MySQL');
         }
 

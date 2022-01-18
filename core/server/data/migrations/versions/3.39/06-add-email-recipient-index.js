@@ -42,7 +42,7 @@ module.exports = createNonTransactionalMigration(
 
         logging.info('Dropping composite index on email_recipients for [email_id, member_email]');
 
-        if (knex.client.config.client === 'mysql') {
+        if (knex.client.config.client === 'mysql2') {
             await knex.schema.table('email_recipients', (table) => {
                 table.dropForeign('email_id');
                 table.dropIndex(['email_id', 'member_email']);

@@ -6,7 +6,7 @@ module.exports = {
     },
 
     async up({transacting: knex}) {
-        if (knex.client.config.client !== 'mysql') {
+        if (knex.client.config.client !== 'mysql2') {
             logging.warn('Skipping cleanup of orphaned customers - database is not MySQL');
             return;
         }

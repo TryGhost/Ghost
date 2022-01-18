@@ -32,8 +32,8 @@ function configure(dbConfig) {
         process.env.BTHREADS_BACKEND = 'child_process';
     }
 
-    if (client === 'mysql') {
-        dbConfig.connection.timezone = 'UTC';
+    if (client === 'mysql2') {
+        dbConfig.connection.timezone = '+00:00';
         dbConfig.connection.charset = 'utf8mb4';
 
         // NOTE: disabled so that worker processes can use the db without

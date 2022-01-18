@@ -369,7 +369,7 @@ function getColumns(table, transaction) {
 function checkTables(transaction) {
     const client = (transaction || db.knex).client.config.client;
 
-    if (client === 'mysql') {
+    if (client === 'mysql2') {
         return clients[client].checkPostTable();
     }
 }
