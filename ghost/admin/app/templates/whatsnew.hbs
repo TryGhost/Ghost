@@ -59,10 +59,10 @@
                     {{/if}}
                 </ul>
 
-                {{#if this.databaseWarning}}
+                {{#if this.showDatabaseWarning}}
                     <section class="gh-upgrade-notification">
                         <p>
-                            <strong>Warning:</strong> {{this.databaseWarning}} Make sure your database is up to date to ensure forwards compatibility.
+                            <strong>Warning:</strong> MySQL 8 will be the required database in the next major release of Ghost. Make sure your database is up to date to ensure forwards compatibility.
                         </p>
                     </section>
                 {{/if}}
