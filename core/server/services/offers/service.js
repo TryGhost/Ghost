@@ -1,8 +1,6 @@
 const DynamicRedirectManager = require('@tryghost/express-dynamic-redirects');
 const OffersModule = require('@tryghost/members-offers');
 
-const stripeService = require('../stripe');
-
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
@@ -19,8 +17,7 @@ module.exports = {
         const offersModule = OffersModule.create({
             OfferModel: models.Offer,
             OfferRedemptionModel: models.OfferRedemption,
-            redirectManager: redirectManager,
-            stripeAPIService: stripeService.api
+            redirectManager: redirectManager
         });
 
         this.api = offersModule.api;

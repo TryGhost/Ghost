@@ -237,6 +237,5 @@ module.exports = {
     getOfferData,
     updateMemberData,
     getMemberSiteData,
-    deleteSession,
-    stripeWebhooks: (req, res, next) => membersService.api.middleware.handleStripeWebhook(req, res, next)
+    deleteSession
 };

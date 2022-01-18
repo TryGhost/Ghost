@@ -1600,10 +1600,10 @@
     "@tryghost/domain-events" "^0.1.4"
     "@tryghost/member-events" "^0.3.2"
 
-"@tryghost/members-api@3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-3.1.0.tgz#e87a0452dfe0242b16560a103e7a03230a108a2e"
-  integrity sha512-clUdblXWghXCYyYWzoKP55oj4dhkf+GuNuH2WQQ8bwVcUWnyIOWwFJOqkz7KGGToq7hyn0E80MUdwrKU1zYVAA==
+"@tryghost/members-api@4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.0.1.tgz#d272537874b4372df8dd1fc126bc7d0a768c3949"
+  integrity sha512-/wpozXUw2xJLIbG/GcZF62jkGY3oGjxuy1ORGmkH4Vuy/1+NV68Fxz99VnqfKPCNU/q63g7BMTG9iR63IM4sUQ==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/domain-events" "^0.1.4"
@@ -1614,7 +1614,7 @@
     "@tryghost/member-events" "^0.3.2"
     "@tryghost/members-analytics-ingress" "^0.1.6"
     "@tryghost/members-payments" "^0.1.6"
-    "@tryghost/members-stripe-service" "^0.5.2"
+    "@tryghost/members-stripe-service" "^0.6.1"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
@@ -1677,13 +1677,13 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.5.2.tgz#fd1e9ebc6cd561f928bd97d48b3f27c747e36412"
-  integrity sha512-zyfYTFfYrZ3dfx84twPwNqiyOJR2sC29YAKXCFW/TVvclYlnp3Z5sfewpmKprt1SDH8e45JSir3zC/2gjE/txQ==
+"@tryghost/members-stripe-service@0.6.1", "@tryghost/members-stripe-service@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.6.1.tgz#21785b52ae396386526855d2cae5bd121a13d36b"
+  integrity sha512-SboHA+ZmY/lvsdcvUB2WRzHCWr0wg81/8nPoaiO+S52Uiib3kHxAabfMXaTAkhdD1anLEJIbXTdv4O6KORK5LA==
   dependencies:
     "@tryghost/debug" "^0.1.4"
-    "@tryghost/errors" "^0.2.13"
+    "@tryghost/errors" "1.2.0"
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 

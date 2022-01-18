@@ -6,6 +6,7 @@ const tpl = require('@tryghost/tpl');
 const {BadRequestError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings');
 const membersService = require('../../services/members');
+const stripeService = require('../../services/stripe');
 
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
 
@@ -132,7 +133,7 @@ module.exports = {
                 });
             }
 
-            await membersService.api.disconnectStripe();
+            await stripeService.disconnect();
 
             return models.Settings.edit([{
                 key: 'stripe_connect_publishable_key',
