@@ -1595,10 +1595,10 @@
     "@tryghost/domain-events" "^0.1.4"
     "@tryghost/member-events" "^0.3.2"
 
-"@tryghost/members-api@4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.0.0.tgz#4587a76fdad4c9bb4d5dec29ff233dcaf7fe913a"
-  integrity sha512-rmKFoZ2ZALUlY3UcuQSKClMkEdGoGEB5ANkZ52eRCo564zHeKQWcCceZHo7MAfJeh9eLIH8tjlAiroeIZEoQJg==
+"@tryghost/members-api@4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.0.1.tgz#d272537874b4372df8dd1fc126bc7d0a768c3949"
+  integrity sha512-/wpozXUw2xJLIbG/GcZF62jkGY3oGjxuy1ORGmkH4Vuy/1+NV68Fxz99VnqfKPCNU/q63g7BMTG9iR63IM4sUQ==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/domain-events" "^0.1.4"
@@ -1609,7 +1609,7 @@
     "@tryghost/member-events" "^0.3.2"
     "@tryghost/members-analytics-ingress" "^0.1.6"
     "@tryghost/members-payments" "^0.1.6"
-    "@tryghost/members-stripe-service" "^0.6.0"
+    "@tryghost/members-stripe-service" "^0.6.1"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
@@ -1672,10 +1672,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.6.0", "@tryghost/members-stripe-service@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.6.0.tgz#8eb316b3c608ed86efd8e7259ef9048ae08a36d5"
-  integrity sha512-2M1xGNjtMCQK+b74t43iVlvPnOhPJKR8A29yW+7ZFaF76v1cc7zYje3QBTknih4YiP3bkWheW6wk71jdj8H3CQ==
+"@tryghost/members-stripe-service@0.6.1", "@tryghost/members-stripe-service@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.6.1.tgz#21785b52ae396386526855d2cae5bd121a13d36b"
+  integrity sha512-SboHA+ZmY/lvsdcvUB2WRzHCWr0wg81/8nPoaiO+S52Uiib3kHxAabfMXaTAkhdD1anLEJIbXTdv4O6KORK5LA==
   dependencies:
     "@tryghost/debug" "^0.1.4"
     "@tryghost/errors" "1.2.0"
