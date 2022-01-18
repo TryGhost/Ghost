@@ -1840,12 +1840,12 @@
     "@tryghost/debug" "^0.1.10"
     "@tryghost/logging" "^2.0.1"
 
-"@tryghost/session-service@0.1.36":
-  version "0.1.36"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.36.tgz#3c858b9c692b944485be4ca7b1f4c773bdb0ce87"
-  integrity sha512-A8Bn+eEOmww2FSKSbHxGeYXnkyaXdsN2UFuO2YsmJETGuQqN7E5O+PJA6MHl8HUNW0vtUPVILyzp25RJfxwb/w==
+"@tryghost/session-service@0.1.37":
+  version "0.1.37"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.37.tgz#11ec96c3efdf32a5d3e40123226ee032d8d3c2a6"
+  integrity sha512-RNVNPcCWhtH/HmSPv6+kXMPKTGFgXo+UlQUMjaFk7vy8RCP+yO3ZMzgx8o1B7vzrlyNZdCt0b6p9HIUsSwpqbw==
   dependencies:
-    "@tryghost/errors" "^1.2.0"
+    "@tryghost/errors" "^1.2.1"
 
 "@tryghost/settings-path-manager@0.1.2":
   version "0.1.2"
