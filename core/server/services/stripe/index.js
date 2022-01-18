@@ -21,7 +21,6 @@ const debouncedConfigureApi = _.debounce(() => {
     configureApi();
 }, 600);
 
-
 module.exports = new StripeService({
     membersService,
     models: _.pick(models, ['Product', 'StripePrice', 'StripeCustomerSubscription', 'StripeProduct', 'MemberStripeCustomer', 'Offer', 'Settings']),

@@ -42,7 +42,7 @@ let membersSettings;
  * @returns {Promise<number>}
  */
 const fetchImportThreshold = async () => {
-    const membersTotal = await membersService.stats.getTotalMembers();
+    const membersTotal = await module.exports.stats.getTotalMembers();
     const configThreshold = _.get(config.get('hostSettings'), 'emailVerification.importThreshold');
     const volumeThreshold = (configThreshold === undefined) ? Infinity : configThreshold;
     const threshold = Math.max(membersTotal, volumeThreshold);
@@ -53,7 +53,7 @@ const fetchImportThreshold = async () => {
 const membersImporter = new MembersCSVImporter({
     storagePath: config.getContentPath('data'),
     getTimezone: () => settingsCache.get('timezone'),
-    getMembersApi: () => membersService.api,
+    getMembersApi: () => module.exports.api,
     sendEmail: ghostMailer.send.bind(ghostMailer),
     isSet: labsService.isSet.bind(labsService),
     addJob: jobsService.addJob.bind(jobsService),
