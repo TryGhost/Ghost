@@ -35,21 +35,6 @@ export default class MembersStatsService extends Service {
         return this._fetchTask.perform();
     }
 
-    fetchTimeline(options = {}) {
-        let staleData = this._lastFetchedTimeline && (new Date() - this._lastFetchedTimeline) > ONE_MINUTE;
-        let differentLimit = this._lastFetchedTimelineLimit && this._lastFetchedTimelineLimit !== options.limit;
-
-        if (this._fetchTimelineTask.isRunning) {
-            return this._fetchTask.last;
-        }
-
-        if (this.events && !this._forceRefresh && !staleData && !differentLimit) {
-            return Promise.resolve(this.events);
-        }
-
-        return this._fetchTimelineTask.perform(options.limit);
-    }
-
     fetchCounts() {
         let staleData = this._lastFetchedCounts && (new Date() - this._lastFetchedCounts) > ONE_MINUTE;
 
@@ -234,15 +219,5 @@ export default class MembersStatsService extends Service {
         let stats = yield this.ajax.request(statsUrl, {data: {days}});
         this.stats = stats;
         return stats;
-    }
-
-    @task
-    *_fetchTimelineTask(limit) {
-        this._lastFetchedTimeline = new Date();
-        this._lastFetchedTimelineLimit = limit;
-        let eventsUrl = this.ghostPaths.url.api('members/events');
-        let events = yield this.ajax.request(eventsUrl, {data: {limit}});
-        this.events = events;
-        return events;
     }
 }

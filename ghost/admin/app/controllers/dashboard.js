@@ -7,6 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class DashboardController extends Controller {
     @service feature;
     @service session;
+    @service membersActivity;
     @service membersStats;
     @service store;
     @service settings;
@@ -162,7 +163,7 @@ export default class DashboardController extends Controller {
 
     loadEvents() {
         this.eventsLoading = true;
-        this.membersStats.fetchTimeline({limit: 5}).then(({events}) => {
+        this.membersActivity.fetchTimeline({limit: 5}).then(({events}) => {
             this.eventsData = events;
             this.eventsLoading = false;
         }, (error) => {
