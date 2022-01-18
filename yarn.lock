@@ -1360,6 +1360,11 @@
     "@tryghost/tpl" "^0.1.4"
     lodash "^4.17.21"
 
+"@tryghost/database-info@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.1.0.tgz#881e47e802fc2ae321d8c42d17a2a1cb8e4da143"
+  integrity sha512-3Nwo6pGR8yXrhSky2Uikz8oEKJsBLuaG68rcwIsMB6kFoWR3q7uAMWPvw3jIzVNnkZE1FQPb36w4z1t/v7dujw==
+
 "@tryghost/debug@0.1.10", "@tryghost/debug@^0.1.10":
   version "0.1.10"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.10.tgz#26d67921c3edd562c7d2bee136d04faefa99bb3c"
