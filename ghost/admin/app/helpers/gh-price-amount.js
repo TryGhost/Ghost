@@ -7,7 +7,7 @@ export function ghPriceAmount(amount) {
         if (price % 1 === 0) {
             return formatNumber(price);
         } else {
-            return formatNumber(Math.round(price * 100) / 100).toFixed(2);
+            return formatNumber(Math.round(price * 100) / 100);
         }
     }
     return 0;
