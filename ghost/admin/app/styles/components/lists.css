@@ -330,14 +330,13 @@ ul.nostyle li {
 }
 
 .gh-list-scrolling thead tr {
+    position: sticky;
     background: var(--main-bg-color);
-    top: 0;
     z-index: 2;
+    top: 0;
 }
 
 .gh-list-scrolling thead th {
-    position: sticky;
-    top: 0;
     vertical-align: middle;
     font-size: 1.1rem;
     font-weight: 500;
@@ -351,6 +350,7 @@ ul.nostyle li {
 }
 
 .gh-list-scrolling thead th:first-child {
+    position: sticky;
     left: 0;
     z-index: 3;
     border-bottom: none;

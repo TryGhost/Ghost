@@ -26,7 +26,7 @@
         {{#if (feature "emailAnalytics")}}
             <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{if (not @member.name) "gh-members-list-open-rate-noname"}}">
                 {{#if (not (is-empty @member.emailOpenRate))}}
-                    <span class="gh-members-list-open-rate-mobile">{{@member.emailOpenRate}}%</span>
+                    <span>{{@member.emailOpenRate}}%</span>
                 {{else}}
                     <span class="midlightgrey">N/A</span>
                 {{/if}}
