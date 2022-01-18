@@ -88,7 +88,7 @@
     "@tryghost/members-stripe-service": "0.6.2",
     "@tryghost/metrics": "1.0.2",
     "@tryghost/minifier": "0.1.9",
-    "@tryghost/mw-error-handler": "0.1.1",
+    "@tryghost/mw-error-handler": "0.1.2",
     "@tryghost/mw-session-from-token": "0.1.26",
     "@tryghost/nodemailer": "0.3.9",
     "@tryghost/package-json": "1.0.14",
