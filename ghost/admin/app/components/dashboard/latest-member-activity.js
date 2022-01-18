@@ -15,8 +15,6 @@ export default class DashboardLatestMemberActivityComponent extends Component {
         const isOwner = this.session.user?.isOwnerOnly;
         const hasCompletedLaunchWizard = this.settings.get('editorIsLaunchComplete');
 
-        console.log(this.session.user, {isOwner, hasCompletedLaunchWizard});
-
         if (isOwner && !hasCompletedLaunchWizard) {
             return false;
         }
