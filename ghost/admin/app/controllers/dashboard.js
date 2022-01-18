@@ -13,10 +13,6 @@ export default class DashboardController extends Controller {
     @service settings;
     @service whatsNew;
 
-    @tracked eventsData = null;
-    @tracked eventsError = null;
-    @tracked eventsLoading = false;
-
     @tracked mrrStatsData = null;
     @tracked mrrStatsError = null;
     @tracked mrrStatsLoading = false;
@@ -48,7 +44,6 @@ export default class DashboardController extends Controller {
     }
 
     initialise() {
-        this.loadEvents();
         this.loadTopMembers();
         this.loadCharts();
         this.loadWhatsNew();
@@ -159,17 +154,6 @@ export default class DashboardController extends Controller {
         this.loadMRRStats();
         this.loadMemberCountStats();
         this.loadNewsletterOpenRates();
-    }
-
-    loadEvents() {
-        this.eventsLoading = true;
-        this.membersActivity.fetchTimeline({limit: 5}).then(({events}) => {
-            this.eventsData = events;
-            this.eventsLoading = false;
-        }, (error) => {
-            this.eventsError = error;
-            this.eventsLoading = false;
-        });
     }
 
     loadNewsletterOpenRates() {
