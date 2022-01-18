@@ -1,16 +1,20 @@
 module.exports = class EventRepository {
     constructor({
+        EmailRecipient,
         MemberSubscribeEvent,
         MemberPaymentEvent,
         MemberStatusEvent,
         MemberLoginEvent,
-        MemberPaidSubscriptionEvent
+        MemberPaidSubscriptionEvent,
+        labsService
     }) {
         this._MemberSubscribeEvent = MemberSubscribeEvent;
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberPaymentEvent = MemberPaymentEvent;
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberLoginEvent = MemberLoginEvent;
+        this._EmailRecipient = EmailRecipient;
+        this._labsService = labsService;
     }
 
     async registerPayment(data) {
@@ -106,6 +110,75 @@ module.exports = class EventRepository {
         };
     }
 
+    async getEmailDelieveredEvents(options = {}) {
+        options.filter = 'delivered_at:-null';
+        const {data: models, meta} = await this._EmailRecipient.findPage(
+            options
+        );
+
+        const data = models.map((data) => {
+            return {
+                type: 'email_delivered_event',
+                data: {
+                    member_id: data.get('member_id'),
+                    created_at: data.get('delivered_at'),
+                    email_id: data.get('email_id')
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getEmailOpenedEvents(options = {}) {
+        options.filter = 'opened_at:-null';
+        const {data: models, meta} = await this._EmailRecipient.findPage(
+            options
+        );
+
+        const data = models.map((data) => {
+            return {
+                type: 'email_opened_event',
+                data: {
+                    member_id: data.member_id,
+                    created_at: data.opened_at,
+                    email_id: data.email_id
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getEmailFailedEvents(options = {}) {
+        options.filter = 'failed_at:-null';
+        const {data: models, meta} = await this._EmailRecipient.findPage(
+            options
+        );
+
+        const data = models.map((data) => {
+            return {
+                type: 'email_failed_event',
+                data: {
+                    member_id: data.member_id,
+                    created_at: data.failed_at,
+                    email_id: data.email_id
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
     async getEventTimeline(options = {}) {
         if (!options.limit) {
             options.limit = 10;
@@ -113,12 +186,18 @@ module.exports = class EventRepository {
 
         options.order = 'created_at desc';
 
-        const allEventPages = await Promise.all([
+        const pages = [
             this.getNewsletterSubscriptionEvents(options),
             this.getSubscriptionEvents(options),
             this.getLoginEvents(options),
             this.getSignupEvents(options)
-        ]);
+        ];
+        if (this._labsService.isSet('membersActivityFeed') && this._EmailRecipient) {
+            pages.push(this.getEmailDelieveredEvents(options));
+            pages.push(this.getEmailOpenedEvents(options));
+            pages.push(this.getEmailFailedEvents(options));
+        }
+        const allEventPages = await Promise.all(pages);
 
         const allEvents = allEventPages.reduce((allEvents, page) => allEvents.concat(page.data), []);
 
