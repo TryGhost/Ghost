@@ -331,7 +331,6 @@ ul.nostyle li {
 
 .gh-list-scrolling thead tr {
     background: var(--main-bg-color);
-    position: sticky;
     top: 0;
     z-index: 2;
 }
@@ -348,6 +347,7 @@ ul.nostyle li {
     padding: 10px 20px;
     text-transform: uppercase;
     white-space: nowrap;
+    background: var(--main-bg-color);
 }
 
 .gh-list-scrolling thead th:first-child {
