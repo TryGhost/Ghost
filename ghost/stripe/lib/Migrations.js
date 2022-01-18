@@ -19,6 +19,10 @@ module.exports = class StripeMigrations {
     }
 
     async execute() {
+        if (!this.api._configured) {
+            logging.info('Stripe not configured - skipping migrations');
+            return;
+        }
         await this.populateProductsAndPrices();
         await this.populateStripePricesFromStripePlansSetting();
         await this.populateMembersMonthlyPriceIdSettings();
