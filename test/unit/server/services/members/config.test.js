@@ -72,7 +72,7 @@ describe('Members - config', function () {
         configUtils.restore();
     });
 
-    it('Includes the subdirectory in the webhookHandlerUrl', function () {
+    it('Does not export webhookHandlerUrl', function () {
         configUtils.set({
             stripeDirect: false,
             url: 'http://site.com/subdir'
@@ -90,6 +90,6 @@ describe('Members - config', function () {
 
         const paymentConfig = membersConfig.getStripePaymentConfig();
 
-        should.equal(paymentConfig.webhookHandlerUrl, 'http://site.com/subdir/members/webhooks/stripe/');
+        should.not.exist(paymentConfig.webhookHandlerUrl);
     });
 });

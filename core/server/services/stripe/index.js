@@ -1,45 +1,53 @@
 const _ = require('lodash');
-const StripeAPIService = require('@tryghost/members-stripe-service');
-
+const StripeService = require('@tryghost/members-stripe-service');
+const membersService = require('../members');
 const config = require('../../../shared/config');
 const settings = require('../../../shared/settings-cache');
+const urlUtils = require('../../../shared/url-utils');
 const events = require('../../lib/common/events');
-
+const models = require('../../models');
 const {getConfig} = require('./config');
 
-const api = new StripeAPIService({
-    config: {}
-});
-
-const stripeKeySettings = [
-    'stripe_publishable_key',
-    'stripe_secret_key',
-    'stripe_connect_publishable_key',
-    'stripe_connect_secret_key'
-];
-
 function configureApi() {
-    const cfg = getConfig(settings, config);
+    const cfg = getConfig(settings, config, urlUtils);
     if (cfg) {
-        api.configure(cfg);
+        module.exports.configure(cfg);
+        return true;
     }
+    return false;
 }
 
 const debouncedConfigureApi = _.debounce(() => {
     configureApi();
-    events.emit('services.stripe.reconfigured');
 }, 600);
 
-module.exports = {
-    async init() {
-        configureApi();
-        events.on('settings.edited', function (model) {
-            if (!stripeKeySettings.includes(model.get('key'))) {
-                return;
-            }
-            debouncedConfigureApi();
-        });
-    },
+module.exports = new StripeService({
+    membersService,
+    models: _.pick(models, ['Product', 'StripePrice', 'StripeCustomerSubscription', 'StripeProduct', 'MemberStripeCustomer', 'Offer', 'Settings']),
+    StripeWebhook: {
+        async get() {
+            return {
+                webhook_id: settings.get('members_stripe_webhook_id'),
+                secret: settings.get('members_stripe_webhook_secret')
+            };
+        },
+        async save(data) {
+            await models.Settings.edit([{
+                key: 'members_stripe_webhook_id',
+                value: data.webhook_id
+            }, {
+                key: 'members_stripe_webhook_secret',
+                value: data.secret
+            }]);
+        }
+    }
+});
 
-    api
+module.exports.init = async function init() {
+    configureApi();
+    events.on('settings.edited', function (model) {
+        if (['stripe_publishable_key', 'stripe_secret_key', 'stripe_connect_publishable_key', 'stripe_connect_secret_key'].includes(model.get('key'))) {
+            debouncedConfigureApi();
+        }
+    });
 };

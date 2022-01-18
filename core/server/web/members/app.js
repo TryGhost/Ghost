@@ -6,6 +6,7 @@ const express = require('../../../shared/express');
 const urlUtils = require('../../../shared/url-utils');
 const sentry = require('../../../shared/sentry');
 const membersService = require('../../services/members');
+const stripeService = require('../../services/stripe');
 const middleware = membersService.middleware;
 const shared = require('../shared');
 const labs = require('../../../shared/labs');
@@ -28,7 +29,7 @@ module.exports = function setupMembersApp() {
     // Routing
 
     // Webhooks
-    membersApp.post('/webhooks/stripe', middleware.stripeWebhooks);
+    membersApp.post('/webhooks/stripe', bodyParser.raw({type: 'application/json'}), stripeService.webhookController.handle.bind(stripeService.webhookController));
 
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
     // We don't want to add global bodyParser middleware as that interfers with stripe webhook requests on - `/webhooks`.
