@@ -4,6 +4,7 @@ const api = require('./api');
 const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
 const jobsService = require('./services/jobs');
+const databaseInfo = require('./data/db/info');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
@@ -44,7 +45,7 @@ module.exports = async () => {
         config: {
             mail: config.get('mail'),
             env: config.get('env'),
-            databaseType: config.get('database').client,
+            databaseType: databaseInfo.getEngine(),
             checkEndpoint: config.get('updateCheck:url'),
             isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
             notificationGroups: config.get('notificationGroups'),
