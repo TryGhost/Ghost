@@ -1435,6 +1435,14 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
+"@tryghost/errors@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.1.tgz#1f2e618ec3a0617a6b9c5ac540a202fb46e32559"
+  integrity sha512-Ui8iU/ky2HC9+WqOFKDSJyZv0WonrklPugKgWR4QKJ4wIeMXd+uJMqpHLXcN8uMiPVw5Lj9yl8mHq5rjw5dgIQ==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
 "@tryghost/express-dynamic-redirects@0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.3.tgz#92be9b222d7ed55c69826ac625aa66478bd0896e"
@@ -1832,12 +1840,12 @@
     "@tryghost/debug" "^0.1.10"
     "@tryghost/logging" "^2.0.1"
 
-"@tryghost/session-service@0.1.36":
-  version "0.1.36"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.36.tgz#3c858b9c692b944485be4ca7b1f4c773bdb0ce87"
-  integrity sha512-A8Bn+eEOmww2FSKSbHxGeYXnkyaXdsN2UFuO2YsmJETGuQqN7E5O+PJA6MHl8HUNW0vtUPVILyzp25RJfxwb/w==
+"@tryghost/session-service@0.1.37":
+  version "0.1.37"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.37.tgz#11ec96c3efdf32a5d3e40123226ee032d8d3c2a6"
+  integrity sha512-RNVNPcCWhtH/HmSPv6+kXMPKTGFgXo+UlQUMjaFk7vy8RCP+yO3ZMzgx8o1B7vzrlyNZdCt0b6p9HIUsSwpqbw==
   dependencies:
-    "@tryghost/errors" "^1.2.0"
+    "@tryghost/errors" "^1.2.1"
 
 "@tryghost/settings-path-manager@0.1.2":
   version "0.1.2"
