@@ -156,6 +156,13 @@
     }
 }
 
+.gh-modal-invite-user {
+    margin: -32px -32px 0;
+    padding: 32px 32px 0;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
 .invite-new-user .modal-content {
     width: 100%;
     max-width: 600px;
@@ -197,11 +204,6 @@
 
 .gh-roles-container .gh-radio:first-child {
     padding-top: 20px;
-    border-top: 1px solid var(--list-color-divider);
-}
-
-.gh-roles-container .gh-radio:last-child {
-    margin: 0;
 }
 
 .gh-roles-container .gh-radio svg {
