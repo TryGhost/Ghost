@@ -111,7 +111,7 @@ module.exports = class EventRepository {
     }
 
     async getEmailDelieveredEvents(options = {}) {
-        options.withRelated = ['member'];
+        options.withRelated = ['member', 'email'];
         options.filter = 'delivered_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
@@ -123,8 +123,8 @@ module.exports = class EventRepository {
                 data: {
                     member_id: data.get('member_id'),
                     created_at: data.get('delivered_at'),
-                    email_id: data.get('email_id'),
-                    member: data.related('member').toJSON()
+                    member: data.related('member').toJSON(),
+                    email: data.related('email').toJSON()
                 }
             };
         });
@@ -136,7 +136,7 @@ module.exports = class EventRepository {
     }
 
     async getEmailOpenedEvents(options = {}) {
-        options.withRelated = ['member'];
+        options.withRelated = ['member', 'email'];
         options.filter = 'opened_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
@@ -148,8 +148,8 @@ module.exports = class EventRepository {
                 data: {
                     member_id: data.get('member_id'),
                     created_at: data.get('opened_at'),
-                    email_id: data.get('email_id'),
-                    member: data.related('member').toJSON()
+                    member: data.related('member').toJSON(),
+                    email: data.related('email').toJSON()
                 }
             };
         });
@@ -161,7 +161,7 @@ module.exports = class EventRepository {
     }
 
     async getEmailFailedEvents(options = {}) {
-        options.withRelated = ['member'];
+        options.withRelated = ['member', 'email'];
         options.filter = 'failed_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
@@ -173,8 +173,8 @@ module.exports = class EventRepository {
                 data: {
                     member_id: data.get('member_id'),
                     created_at: data.get('failed_at'),
-                    email_id: data.get('email_id'),
-                    member: data.related('member').toJSON()
+                    member: data.related('member').toJSON(),
+                    email: data.related('email').toJSON()
                 }
             };
         });
