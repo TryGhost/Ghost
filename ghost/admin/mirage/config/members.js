@@ -1,7 +1,7 @@
 import faker from 'faker';
 import moment from 'moment';
 import {Response} from 'ember-cli-mirage';
-import {extractFilterParam, paginateModelCollection, paginatedResponse} from '../utils';
+import {extractFilterParam, paginateModelCollection} from '../utils';
 import {isEmpty} from '@ember/utils';
 
 export function mockMembersStats(server) {
