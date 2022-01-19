@@ -1,8 +1,8 @@
 import Component from '@glimmer/component';
 import flattenGroupedOptions from 'ghost-admin/utils/flatten-grouped-options';
 import {Promise} from 'rsvp';
-import {TrackedSet} from 'tracked-built-ins';
 import {action} from '@ember/object';
+import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
@@ -15,10 +15,7 @@ export default class GhMembersRecipientSelect extends Component {
     @service store;
     @service feature;
 
-    baseFilters = new TrackedSet();
-    specificFilters = new TrackedSet();
-
-    @tracked isSpecificChecked = false;
+    @tracked forceSpecificChecked = false;
     @tracked specificOptions = [];
     @tracked freeMemberCount;
     @tracked paidMemberCount;
@@ -28,24 +25,12 @@ export default class GhMembersRecipientSelect extends Component {
 
         this.fetchSpecificOptionsTask.perform();
         this.fetchMemberCountsTask.perform();
-
-        this.baseFilters.clear();
-        this.specificFilters.clear();
-
-        (this.args.filter || '').split(',').forEach((filter) => {
-            if (filter?.trim()) {
-                if (BASE_FILTERS.includes(filter)) {
-                    this.baseFilters.add(filter);
-                } else {
-                    this.isSpecificChecked = true;
-                    this.specificFilters.add(filter);
-                }
-            }
-        });
     }
 
-    get isPaidAvailable() {
-        return this.membersUtils.isStripeEnabled;
+    get baseFilters() {
+        const filterItems = (this.args.filter || '').split(',');
+        const filterItemsArray = filterItems.filter(item => BASE_FILTERS.includes(item?.trim()));
+        return new Set(filterItemsArray);
     }
 
     get isFreeChecked() {
@@ -54,6 +39,20 @@ export default class GhMembersRecipientSelect extends Component {
 
     get isPaidChecked() {
         return this.baseFilters.has('status:-free');
+    }
+
+    get isPaidAvailable() {
+        return this.membersUtils.isStripeEnabled;
+    }
+
+    get specificFilters() {
+        const filterItems = (this.args.filter || '').split(',');
+        const filterItemsArray = filterItems.reject(item => isBlank(item) || BASE_FILTERS.includes(item?.trim()));
+        return new Set(filterItemsArray);
+    }
+
+    get isSpecificChecked() {
+        return this.forceSpecificChecked || this.specificFilters.size > 0;
     }
 
     get selectedSpecificOptions() {
@@ -75,26 +74,17 @@ export default class GhMembersRecipientSelect extends Component {
         return '';
     }
 
-    get filterString() {
-        const selectedFilters = !this.isSpecificChecked ?
-            new Set([...this.baseFilters.values()]) :
-            new Set([...this.baseFilters.values(), ...this.specificFilters.values()]);
-
-        if (!this.isPaidAvailable) {
-            selectedFilters.delete('status:-free');
-        }
-
-        return Array.from(selectedFilters).join(',') || null;
-    }
-
     @action
     toggleFilter(filter, event) {
         event?.preventDefault();
         if (this.args.disabled) {
             return;
         }
-        this.baseFilters.has(filter) ? this.baseFilters.delete(filter) : this.baseFilters.add(filter);
-        this.args.onChange?.(this.filterString);
+
+        const newBaseFilters = this.baseFilters;
+        newBaseFilters.has(filter) ? newBaseFilters.delete(filter) : newBaseFilters.add(filter);
+
+        this.updateFilter({newBaseFilters});
     }
 
     @action
@@ -103,8 +93,24 @@ export default class GhMembersRecipientSelect extends Component {
         if (this.args.disabled) {
             return;
         }
-        this.isSpecificChecked = !this.isSpecificChecked;
-        this.args.onChange?.(this.filterString);
+
+        this.forceSpecificChecked = false;
+
+        // on->off, store current filter for re-use when toggled back on
+        if (this.isSpecificChecked) {
+            this._previousSpecificFilters = this.specificFilters;
+            this.updateFilter({newSpecificFilters: new Set()});
+            return;
+        }
+
+        // off->on, re-use stored filter
+        if (this._previousSpecificFilters) {
+            this.updateFilter({newSpecificFilters: this._previousSpecificFilters});
+            return;
+        }
+
+        // off->on, display the filter selection even though the actual filter is empty
+        this.forceSpecificChecked = true;
     }
 
     @action
@@ -112,12 +118,24 @@ export default class GhMembersRecipientSelect extends Component {
         if (this.args.disabled) {
             return;
         }
-        this.specificFilters.clear();
-        selectedOptions.forEach(o => this.specificFilters.add(o.segment));
 
-        if (this.isSpecificChecked) {
-            this.args.onChange?.(this.filterString);
+        const newSpecificFilters = new Set(selectedOptions.map(o => o.segment));
+        this.updateFilter({newSpecificFilters});
+    }
+
+    updateFilter({newBaseFilters, newSpecificFilters}) {
+        const selectedFilters = new Set([
+            ...(newBaseFilters || this.baseFilters),
+            ...(newSpecificFilters || this.specificFilters)
+        ]);
+
+        if (!this.isPaidAvailable) {
+            selectedFilters.delete('status:-free');
         }
+
+        const newFilter = Array.from(selectedFilters).join(',') || null;
+
+        this.args.onChange?.(newFilter);
     }
 
     @task
