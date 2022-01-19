@@ -25,12 +25,11 @@ module.exports = function (...attrs) {
     // ensure that date is undefined, not null, as that can cause errors
     date = date === null ? undefined : date;
 
-    const timezone = options.data.site.timezone;
-    const locale = options.data.site.locale;
-
     const {
         format = 'll',
-        timeago
+        timeago,
+        timezone = options.data.site.timezone,
+        locale = options.data.site.locale
     } = options.hash;
 
     const timeNow = moment().tz(timezone);
