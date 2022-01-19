@@ -173,6 +173,7 @@ function createApiInstance(config) {
             stripe: config.getStripePaymentConfig()
         },
         models: {
+            EmailRecipient: models.EmailRecipient,
             StripeCustomer: models.MemberStripeCustomer,
             StripeCustomerSubscription: models.StripeCustomerSubscription,
             Member: models.Member,
