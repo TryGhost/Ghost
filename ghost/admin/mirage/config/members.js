@@ -1,7 +1,7 @@
 import faker from 'faker';
 import moment from 'moment';
 import {Response} from 'ember-cli-mirage';
-import {extractFilterParam, paginateModelCollection} from '../utils';
+import {extractFilterParam, paginateModelCollection, paginatedResponse} from '../utils';
 import {isEmpty} from '@ember/utils';
 
 export function mockMembersStats(server) {
@@ -152,6 +152,18 @@ export default function mockMembers(server) {
             filename: `members.${moment().format('YYYY-MM-DD')}.csv`,
             'Content-Type': 'text/csv'
         }, '');
+    });
+
+    server.get('/members/events/', function ({memberActivityEvents}, {queryParams}) {
+        let {limit} = queryParams;
+
+        limit = +limit || 15;
+
+        let collection = memberActivityEvents.all().sort((a, b) => {
+            return (new Date(a.createdAt)) - (new Date(b.createdAt));
+        }).slice(0, limit);
+
+        return collection;
     });
 
     mockMembersStats(server);
