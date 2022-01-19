@@ -32,11 +32,8 @@
                 <li class="gh-nav-list-new relative">
                     <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
                     <LinkTo @route="editor.new" @model="post" @classNames="gh-secondary-action gh-nav-new-post" @alt="New post" @title="New post" data-test-nav="new-story"><span>{{svg-jar "add-stroke"}}</span></LinkTo>
-                    {{#if this.customViews.forPosts}}
-                        <button type="button" class="gh-nav-button-expand {{if this.navigation.settings.expanded.posts "expanded"}}" {{on "click" (fn this.navigation.toggleExpansion "posts")}} aria-label="{{if this.navigation.settings.expanded.posts "Collapse custom post types" "Expand custom post types"}}">
-                            {{svg-jar (if this.navigation.settings.expanded.posts "arrow-down-stroke" "arrow-right-stroke")}}
-                        </button>
-                        {{#liquid-if this.navigation.settings.expanded.posts}}
+                    {{#if this.session.user.isAuthorOrContributor}}
+                        {{#if this.customViews.forPosts}}
                             <ul class="gh-nav-view-list">
                                 {{#each this.customViews.forPosts as |view|}}
                                     <li>
@@ -51,7 +48,29 @@
                                     </li>
                                 {{/each}}
                             </ul>
-                        {{/liquid-if}}
+                        {{/if}}
+                    {{else}}
+                        {{#if this.customViews.forPosts}}
+                            <button type="button" class="gh-nav-button-expand {{if this.navigation.settings.expanded.posts "expanded"}}" {{on "click" (fn this.navigation.toggleExpansion "posts")}} aria-label="{{if this.navigation.settings.expanded.posts "Collapse custom post types" "Expand custom post types"}}">
+                                {{svg-jar (if this.navigation.settings.expanded.posts "arrow-down-stroke" "arrow-right-stroke")}}
+                            </button>
+                            {{#liquid-if this.navigation.settings.expanded.posts}}
+                                <ul class="gh-nav-view-list">
+                                    {{#each this.customViews.forPosts as |view|}}
+                                        <li>
+                                            <LinkTo @route="posts" @query={{reset-query-params "posts" view.filter}} data-test-nav-custom="{{view.route}}-{{view.name}}" title="{{view.name}}">
+                                                <span class="gh-nav-viewname">{{view.name}}</span>
+                                                <span class="flex items-center svg-{{view.color}}">
+                                                    {{#unless view.icon}}
+                                                        <span class="absolute circle"></span>
+                                                    {{/unless}}
+                                                </span>
+                                            </LinkTo>
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            {{/liquid-if}}
+                        {{/if}}
                     {{/if}}
                 </li>
                 <li>
