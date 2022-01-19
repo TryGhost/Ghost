@@ -123,7 +123,8 @@ module.exports = class EventRepository {
                 data: {
                     member_id: data.get('member_id'),
                     created_at: data.get('delivered_at'),
-                    email_id: data.get('email_id')
+                    email_id: data.get('email_id'),
+                    member: data.related('member').toJSON()
                 }
             };
         });
@@ -145,9 +146,10 @@ module.exports = class EventRepository {
             return {
                 type: 'email_opened_event',
                 data: {
-                    member_id: data.member_id,
-                    created_at: data.opened_at,
-                    email_id: data.email_id
+                    member_id: data.get('member_id'),
+                    created_at: data.get('opened_at'),
+                    email_id: data.get('email_id'),
+                    member: data.related('member').toJSON()
                 }
             };
         });
@@ -169,9 +171,10 @@ module.exports = class EventRepository {
             return {
                 type: 'email_failed_event',
                 data: {
-                    member_id: data.member_id,
-                    created_at: data.failed_at,
-                    email_id: data.email_id
+                    member_id: data.get('member_id'),
+                    created_at: data.get('failed_at'),
+                    email_id: data.get('email_id'),
+                    member: data.related('member').toJSON()
                 }
             };
         });
