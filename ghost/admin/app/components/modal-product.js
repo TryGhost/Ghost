@@ -42,6 +42,17 @@ export default class ModalProductPrice extends ModalBase {
         return getCurrencyOptions();
     }
 
+    get productCurrency() {
+        if (this.isFreeProduct) {
+            const firstPaidProduct = this.model.products?.find((product) => {
+                return product.type === 'paid';
+            });
+            return firstPaidProduct?.monthlyPrice?.currency || 'usd';
+        } else {
+            return this.product?.monthlyPrice?.currency;
+        }
+    }
+
     get selectedCurrency() {
         return CURRENCIES.findBy('value', this.currency);
     }
@@ -53,11 +64,11 @@ export default class ModalProductPrice extends ModalBase {
         const yearlyPrice = this.product.get('yearlyPrice');
         if (monthlyPrice) {
             this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
-            this.currency = monthlyPrice.currency;
         }
         if (yearlyPrice) {
             this.stripeYearlyAmount = (yearlyPrice.amount / 100);
         }
+        this.currency = this.productCurrency;
         this.benefits = this.product.get('benefits') || emberA([]);
         this.newBenefit = ProductBenefitItem.create({
             isNew: true,
