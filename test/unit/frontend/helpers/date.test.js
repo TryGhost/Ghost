@@ -168,4 +168,34 @@ describe('{{date}} helper', function () {
         should.exist(rendered);
         String(rendered).should.equal('a few seconds ago');
     });
+
+    it('allows user to override the site\'s locale and timezone', function () {
+        const context = {
+            hash: {
+                format: 'ddd, DD MMM YYYY HH:mm:ss ZZ' // RFC 822
+            },
+            data: {
+                site: {
+                    timezone: 'Asia/Tokyo',
+                    locale: 'ja-jp'
+                }
+            }
+        };
+
+        // Using the site locale by default, none specified in hash
+        const published_at = '2013-12-31T23:58:58.593+02:00';
+        String(date.call({published_at}, context)).should.equal('水, 01 1月 2014 06:58:58 +0900');
+        
+        // Overriding the site locale and timezone in hash
+        context.hash.timezone = 'Europe/Paris';
+        context.hash.locale = 'fr-fr';
+        String(date.call({published_at}, context)).should.equal('mar., 31 déc. 2013 22:58:58 +0100');
+        
+        context.hash.timezone = 'Europe/Moscow';
+        context.hash.locale = 'ru-ru';
+        String(date.call({published_at}, context)).should.equal('ср, 01 янв. 2014 01:58:58 +0400');
+        
+        context.hash.locale = 'en-us';
+        String(date.call({published_at}, context)).should.equal('Wed, 01 Jan 2014 01:58:58 +0400');
+    });
 });
