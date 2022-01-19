@@ -17,6 +17,17 @@ export default class extends Component {
         return this.args.product;
     }
 
+    get productCurrency() {
+        if (this.isFreeProduct) {
+            const firstPaidProduct = this.args.products.find((product) => {
+                return product.type === 'paid';
+            });
+            return firstPaidProduct?.monthlyPrice?.currency || 'usd';
+        } else {
+            return this.product?.monthlyPrice?.currency;
+        }
+    }
+
     get isPaidProduct() {
         return this.product.type === 'paid';
     }

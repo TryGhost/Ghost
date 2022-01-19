@@ -41,7 +41,7 @@
                                 @value={{readonly this.product.description}}
                                 @input={{action (mut this.product.description) value="target.value"}}
                                 @name="description"
-                                @placeholder="Free preview of content"
+                                @placeholder="Free preview of {{this.settings.title}}"
                                 @id="description"
                                 @class="gh-input" />
                         {{/if}}
@@ -125,6 +125,7 @@
                                 {{/each}}
                             </SortableObjects>
                             <GhBenefitItem
+                                @isFreeProduct={{this.isFreeProduct}}
                                 @benefitItem={{this.newBenefit}}
                                 @addItem={{action "addBenefit"}}
                                 @deleteItem={{action "deleteBenefit"}}
@@ -156,7 +157,7 @@
                             {{#if (not this.isFreeProduct)}}
                                 <p class="placeholder">Full access to premium content</p>
                             {{else}}
-                                <p class="placeholder">Free preview of content</p>
+                                <p class="placeholder">Free preview of {{this.settings.title}}</p>
                             {{/if}}
                         {{/if}}
 
