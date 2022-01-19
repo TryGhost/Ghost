@@ -1,15 +1,30 @@
 import Component from '@glimmer/component';
 import moment from 'moment';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
-import {tracked} from '@glimmer/tracking';
 
 export default class EventTimeline extends Component {
-    @tracked
-    parsedEvents = null;
+    get parsedEvents() {
+        if (!this.args.events) {
+            return [];
+        }
 
-    constructor(...args) {
-        super(...args);
-        this.parseEvents(this.args.events);
+        return this.args.events.map((event) => {
+            let subject = event.data.member.name || event.data.member.email;
+            let icon = this.getIcon(event);
+            let action = this.getAction(event);
+            let object = this.getObject(event);
+            let info = this.getInfo(event);
+            let timestamp = moment(event.data.created_at).fromNow();
+            return {
+                member_id: event.data.member_id,
+                icon,
+                subject,
+                action,
+                object,
+                info,
+                timestamp
+            };
+        });
     }
 
     getIcon(event) {
@@ -73,25 +88,5 @@ export default class EventTimeline extends Component {
             return `(MRR ${sign}${symbol}${Math.abs(mrrDelta)})`;
         }
         return;
-    }
-
-    parseEvents(events) {
-        this.parsedEvents = events.map((event) => {
-            let subject = event.data.member.name || event.data.member.email;
-            let icon = this.getIcon(event);
-            let action = this.getAction(event);
-            let object = this.getObject(event);
-            let info = this.getInfo(event);
-            let timestamp = moment(event.data.created_at).fromNow();
-            return {
-                member_id: event.data.member_id,
-                icon,
-                subject,
-                action,
-                object,
-                info,
-                timestamp
-            };
-        });
     }
 }
