@@ -67,6 +67,9 @@ export default class ModalProductPrice extends ModalBase {
 
     get title() {
         if (this.isExistingProduct) {
+            if (this.isFreeProduct) {
+                return `Edit free membership`;
+            }
             return `Edit tier`;
         }
         return 'New tier';
