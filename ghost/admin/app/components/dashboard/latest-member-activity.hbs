@@ -11,7 +11,31 @@
                         <code>{{this.eventsError.message}}</code>
                     </p>
                 {{else}}
-                    <GhEventTimeline @events={{this.eventsData}}/>
+                    <GhMemberActivityEventParser @events={{this.eventsData}} as |parsedEvents|>
+                        <div class="gh-event-timeline">
+                            {{#if parsedEvents}}
+                                <ul class="gh-dashboard-activity-feed">
+                                    {{#each parsedEvents as |event|}}
+                                        <li data-test-dashboard-member-activity-item>
+                                            <LinkTo class="member-details" @route="member" @model="{{event.member_id}}">
+                                                <div class="activity">
+                                                    <div>
+                                                        <span class="member">{{event.subject}}</span> {{event.action}} {{event.object}} <span class="highlight">{{event.info}}</span>
+                                                    </div>
+                                                </div>
+                                            </LinkTo>
+                                            <span class="time">{{event.timestamp}}</span>
+                                        </li>
+                                    {{/each}}
+                                </ul>
+                            {{else}}
+                                <div class="gh-no-data-list" data-test-no-member-activities>
+                                    {{svg-jar "no-data-list"}}
+                                    <span>No member activity available.</span>
+                                </div>
+                            {{/if}}
+                        </div>
+                    </GhMemberActivityEventParser>
 
                     {{#if (feature "membersActivityFeed")}}
                         <div class="gh-dashboard-top-members-footer">
