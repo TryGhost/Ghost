@@ -134,6 +134,7 @@ class ProductRepository {
 
         const productData = {
             type: 'paid',
+            active: true,
             name: data.name,
             description: data.description,
             benefits: data.benefits
@@ -277,8 +278,13 @@ class ProductRepository {
             benefits: data.benefits
         };
 
+        if (Reflect.has(data, 'active')) {
+            productData.active = data.active;
+        }
+
         if (existingProduct.get('type') === 'free') {
             delete productData.name;
+            delete productData.active;
         }
 
         let product = await this._Product.edit(productData, {
