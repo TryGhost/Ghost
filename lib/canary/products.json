@@ -17,6 +17,9 @@
           "type": ["string", "null"],
           "maxLength": 191
         },
+        "active": {
+          "type": "boolean"
+        },
         "updated_at": {
           "strip": true
         },
