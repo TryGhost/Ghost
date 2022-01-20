@@ -1706,7 +1706,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.27.tgz#17a53d23a984d817064f5e2a1988589f7662cbba"
   integrity sha512-HWNuOw0AjPl1urF1vsjCKdcuBGFMp1S1aSQEj7t2l8CFs7VduMjcgVfONvGy6JJB3VOUfw5MtLkaAIfnoFgKnA==
 
-"@tryghost/string@0.1.21", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
+"@tryghost/string@0.1.22":
+  version "0.1.22"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.22.tgz#50a78c5eb1a79c88ccaa7b7012a3c0e5885baf03"
+  integrity sha512-GnlEUPMj2eLFoJcRe7bI4UG6yjcdCuh1vazbsuQfA3pBf4rVSIiqE0/oY4UKNVZATVc8EpXsEfAqdHYQGPysvw==
+  dependencies:
+    unidecode "^0.1.8"
+
+"@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.21"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.21.tgz#16d70b4767a472902d5bacc67c3b46642637bff5"
   integrity sha512-CaLVbq5PvayB63pv+pMyPv6QnTc/glp04tra+wtKPViEMz/hr4P05b0810UQyHvEeIQMd8c2yUthwo0SXOpCkQ==
