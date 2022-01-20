@@ -73,6 +73,7 @@ function serializeProduct(product, options, apiType) {
         name: json.name,
         description: json.description,
         slug: json.slug,
+        active: json.active,
         type: json.type,
         created_at: json.created_at,
         updated_at: json.updated_at,
@@ -161,6 +162,8 @@ function createSerializer(debugString, serialize) {
  * @prop {string} name
  * @prop {string} slug
  * @prop {string} description
+ * @prop {boolean} active
+ * @prop {string} type
  * @prop {Date} created_at
  * @prop {Date} updated_at
  * @prop {StripePrice[]} [stripe_prices]
