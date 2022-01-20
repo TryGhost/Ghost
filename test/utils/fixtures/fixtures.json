@@ -6,12 +6,14 @@
                 {
                     "name":             "Default Product",
                     "slug":             "default-product",
-                    "type":             "paid"
+                    "type":             "paid",
+                    "active":           true
                 },
                 {
                     "name":             "Free",
                     "slug":             "free",
-                    "type":             "free"
+                    "type":             "free",
+                    "active":           true
                 }
             ]
         },
