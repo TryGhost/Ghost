@@ -75,8 +75,9 @@ module.exports = function (Bookshelf) {
         fixBools: function fixBools(attrs) {
             const self = this;
             _.each(attrs, function each(value, key) {
-                if (Object.prototype.hasOwnProperty.call(schema.tables[self.tableName], key)
-                && schema.tables[self.tableName][key].type === 'bool') {
+                const tableDef = schema.tables[self.tableName];
+                const columnDef = tableDef ? tableDef[key] : null;
+                if (columnDef && (columnDef.type === 'bool' || columnDef.type === 'boolean')) {
                     attrs[key] = value ? true : false;
                 }
             });
