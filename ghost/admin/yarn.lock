@@ -6862,10 +6862,10 @@ ember-inflector@^3.0.1:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-keyboard@7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-7.0.0.tgz#97b0675650c11333d440161752abb71630dbdd5d"
-  integrity sha512-NuFZqIU1SahX0dFWqBJ8rD30cQF92RbuVPwbHTYU0SJFhVltYen6G66b3u2PkshK/WpdGHDL8XS+hZvpsoP2DA==
+ember-keyboard@7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-7.0.1.tgz#6cf336efd4ea6cb69ec93d20fb0b819bd7241a9d"
+  integrity sha512-MKK9/3yzn30ekmFAQO7z+okCQa7Z5wCSI5m7lR3EL2dMIeRd/9eeLhbQNCU00Slx+GjwsGyCEWPqIQmekFJxpQ==
   dependencies:
     ember-cli-babel "^7.26.6"
     ember-cli-htmlbars "^6.0.1"
