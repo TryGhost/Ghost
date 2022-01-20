@@ -119,7 +119,7 @@ module.exports = class WebhookManager {
      *
      * @returns {Promise<Webhook>}
      */
-    async setupWebhook(id, secret, opts) {
+    async setupWebhook(id, secret, opts = {}) {
         if (!id || !secret || opts.forceCreate) {
             if (id && !opts.skipDelete) {
                 try {
