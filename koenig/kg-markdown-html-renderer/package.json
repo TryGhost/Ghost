@@ -25,7 +25,7 @@
     "c8": "7.11.0",
     "mocha": "9.1.4",
     "should": "13.2.3",
-    "sinon": "11.1.2"
+    "sinon": "12.0.1"
   },
   "dependencies": {
     "markdown-it": "^12.2.0",
