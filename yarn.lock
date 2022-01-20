@@ -1480,12 +1480,12 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/image-transform@1.0.26":
-  version "1.0.26"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.26.tgz#dda9da16fa1061ca51139a71a449a4d07116923f"
-  integrity sha512-Capmj+cOxwaiGPo4xwlqFQmqVy2MYPi+DA591ZF13HofiMt293nQeJOLe5Vz+zPioob234PBpQqUHMiXdR8oOg==
+"@tryghost/image-transform@1.0.27":
+  version "1.0.27"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.27.tgz#1ce25542bba7198081620cbf1d349d063a2e87ee"
+  integrity sha512-ZfUnvgBB2ddEMF/5xztbJJJEMP59426BEPquwjO27g4I0RlEycj7qlATd5zJm5q7Xim/YAjRy7IigWj6CGJkSA==
   dependencies:
-    "@tryghost/errors" "^1.2.0"
+    "@tryghost/errors" "^1.2.1"
     bluebird "^3.7.2"
     fs-extra "^9.1.0"
   optionalDependencies:
