@@ -1285,10 +1285,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.3.tgz#92be9b222d7ed55c69826ac625aa66478bd0896e"
   integrity sha512-/keaECc9ZPIMfDu8QyFtF4DsNNlClhm2ii/f0fGQkI3xvrCAUNA7IwVFSm5132DCt+bglinlbynOaPMG6EDOmw==
 
-"@tryghost/helpers@1.1.54":
-  version "1.1.54"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.54.tgz#ace79f846df2a7a61b6a62f558e8985377f5acfd"
-  integrity sha512-MuBfJcuvdwT4leZ0RgC4xxxBCwX/O1xl/D/rqinx9yMhcrwy6CmOQMsx0BcFMuihXktUzcql3KG34lRHLjEwZw==
+"@tryghost/helpers@1.1.55":
+  version "1.1.55"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.55.tgz#edf763d9eca65337ea6a8a760c555f162faf1d25"
+  integrity sha512-8m9dufERFZDxSCJgnHJmAenjlamZAdg9nBtIBBtkHi11iNnOt/ZcS+DdU3xMKDmCqzfUT6Pl3UcJtmKOaeNlkQ==
   dependencies:
     lodash-es "^4.17.11"
 
