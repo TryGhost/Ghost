@@ -9,9 +9,11 @@ describe('Integration: Component: gh-image-uploader-with-preview', function () {
     setupRenderingTest();
 
     it('renders image if provided', async function () {
+        let remove = sinon.spy();
+        this.set('remove', remove);
         this.set('image', 'http://example.com/test.png');
 
-        await render(hbs`{{gh-image-uploader-with-preview image=image}}`);
+        await render(hbs`{{gh-image-uploader-with-preview image=image remove=(action remove)}}`);
 
         expect(findAll('.gh-image-uploader.-with-image').length).to.equal(1);
         expect(find('img').getAttribute('src')).to.equal('http://example.com/test.png');

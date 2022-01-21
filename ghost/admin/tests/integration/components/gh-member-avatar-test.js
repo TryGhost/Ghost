@@ -9,7 +9,11 @@ describe('Integration: Component: gh-member-avatar', function () {
 
     it('renders', async function () {
         this.set('member', {
-            name: 'Homer Simpson'
+            get(key) {
+                if (key === 'name') {
+                    return 'Homer Simpson';
+                }
+            }
         });
 
         await render(hbs`<GhMemberAvatar @member={{member}} />`);
