@@ -8,7 +8,7 @@
 function addFilter(options, filter) {
     return {
         ...options,
-        filter: `(${options.filter})+(${filter})`
+        filter: options.filter ? `(${options.filter})+(${filter})` : filter
     };
 }
 
