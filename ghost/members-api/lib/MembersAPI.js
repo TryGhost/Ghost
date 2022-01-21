@@ -132,6 +132,7 @@ module.exports = function MembersAPI({
 
     const memberController = new MemberController({
         memberRepository,
+        productRepository,
         StripePrice,
         tokenService,
         sendEmailWithMagicLink

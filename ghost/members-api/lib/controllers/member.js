@@ -4,17 +4,20 @@ module.exports = class MemberController {
     /**
      * @param {object} deps
      * @param {any} deps.memberRepository
+     * @param {any} deps.productRepository
      * @param {any} deps.StripePrice
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
      */
     constructor({
         memberRepository,
+        productRepository,
         StripePrice,
         tokenService,
         sendEmailWithMagicLink
     }) {
         this._memberRepository = memberRepository;
+        this._productRepository = productRepository;
         this._StripePrice = StripePrice;
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
@@ -112,6 +115,13 @@ module.exports = class MemberController {
                 }
 
                 const priceId = price.get('stripe_price_id');
+                const product = await this._productRepository.get({stripe_price_id: priceId});
+
+                if (product.get('active') !== true) {
+                    res.writeHead(403);
+                    return res.end('Tier is archived.');
+                }
+
                 await this._memberRepository.updateSubscription({
                     email,
                     subscription: {
