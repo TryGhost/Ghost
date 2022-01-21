@@ -12,7 +12,8 @@ const messages = {
     existingSubscriptions: 'Cannot modify Products for a Member with active Subscriptions',
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
-    bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true'
+    bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
+    tierArchived: 'Cannot use archived Tiers'
 };
 
 /**
@@ -120,6 +121,15 @@ module.exports = class MemberRepository {
 
         if (memberData.products && memberData.products.length > 1) {
             throw new errors.BadRequestError(tpl(messages.moreThanOneProduct));
+        }
+
+        if (memberData.products) {
+            for (const productData of memberData.products) {
+                const product = await this._productRepository.get(productData);
+                if (product.get('active') !== true) {
+                    throw new errors.BadRequestError(tpl(messages.tierArchived));
+                }
+            }
         }
 
         const memberStatusData = {
@@ -236,6 +246,13 @@ module.exports = class MemberRepository {
                 } else {
                     // CASE: We are not changing any products - leave the status alone
                 }
+            }
+        }
+
+        for (const productId of productsToAdd) {
+            const product = await this._productRepository.get({id: productId}, sharedOptions);
+            if (product.get('active') !== true) {
+                throw new errors.BadRequestError(tpl(messages.tierArchived));
             }
         }
 
