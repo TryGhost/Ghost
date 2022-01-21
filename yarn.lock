@@ -1454,10 +1454,10 @@
     "@tryghost/domain-events" "^0.1.5"
     "@tryghost/member-events" "^0.3.3"
 
-"@tryghost/members-api@4.4.0":
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.4.0.tgz#3047a423cd3b0ba18bc07f230f5d6b60142089bc"
-  integrity sha512-u8WKIGyU2Qy6mTUsUoEuh8KZthJfQNEJ6Q1tKea8drAabuc2i3d3wwbQMuve1ROUufptZ7f/eRv7fMgxwZKSyw==
+"@tryghost/members-api@4.4.1":
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.4.1.tgz#f2b60e88d145bec81007ff35209c2d80a243fb31"
+  integrity sha512-GTz8f/riTbpxGy3270kcDloLcLuSoFbtXwpCB8ugQ4Biw9RqiM6rHFYoh2BU25DoI0Z4i1z7eWOw+G3VZ2L79w==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/domain-events" "^0.1.5"
