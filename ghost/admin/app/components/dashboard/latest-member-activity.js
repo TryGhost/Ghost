@@ -3,6 +3,8 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class DashboardLatestMemberActivityComponent extends Component {
+    @service dataCache;
+    @service feature;
     @service membersActivity;
     @service session;
     @service settings;
@@ -31,10 +33,25 @@ export default class DashboardLatestMemberActivityComponent extends Component {
     }
 
     async loadEvents() {
+        const limit = 5;
+        const filter = this.feature.membersActivity ?
+            'type:-[email_delivered_event,email_opened_event,email_failed_event]' :
+            '';
+
+        const dataKey = `dashboard-member-activity::${JSON.stringify({limit, filter})}`;
+
+        if (this.dataCache.get(dataKey)) {
+            this.eventsData = this.dataCache.get(dataKey);
+            return;
+        }
+
         try {
             this.eventsLoading = true;
-            const {events} = await this.membersActivity.fetchTimeline({limit: 5});
+            const {events} = await this.membersActivity.fetchTask.perform({limit, filter});
             this.eventsData = events;
+
+            const ONE_MINUTE = 1 * 60 * 1000;
+            this.dataCache.set(dataKey, events, ONE_MINUTE);
         } catch (error) {
             this.eventsError = error;
         } finally {
