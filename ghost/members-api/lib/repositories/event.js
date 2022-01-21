@@ -1,3 +1,17 @@
+/**
+ * Adds a filter to `options`. Returns a copy of options to avoid this
+ * action to affect other event getters.
+ * @param {Object} options The framework `options` object.
+ * @param {string} filter The NQL filter to add to the `options` filter.
+ * @returns {Object} A copy of options with the filter
+ */
+function addFilter(options, filter) {
+    return {
+        ...options,
+        filter: `(${options.filter})+(${filter})`
+    };
+}
+
 module.exports = class EventRepository {
     constructor({
         EmailRecipient,
@@ -93,8 +107,8 @@ module.exports = class EventRepository {
     }
 
     async getSignupEvents(options = {}) {
+        options = addFilter(options, 'from_status:null');
         options.withRelated = ['member'];
-        options.filter = 'from_status:null';
         const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
 
         const data = models.map((data) => {
@@ -111,8 +125,8 @@ module.exports = class EventRepository {
     }
 
     async getEmailDelieveredEvents(options = {}) {
+        options = addFilter(options, 'delivered_at:-null');
         options.withRelated = ['member', 'email'];
-        options.filter = 'delivered_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
         );
@@ -136,8 +150,8 @@ module.exports = class EventRepository {
     }
 
     async getEmailOpenedEvents(options = {}) {
+        options = addFilter(options, 'opened_at:-null');
         options.withRelated = ['member', 'email'];
-        options.filter = 'opened_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
         );
@@ -161,8 +175,8 @@ module.exports = class EventRepository {
     }
 
     async getEmailFailedEvents(options = {}) {
+        options = addFilter(options, 'failed_at:-null');
         options.withRelated = ['member', 'email'];
-        options.filter = 'failed_at:-null';
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
         );
