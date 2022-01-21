@@ -13,7 +13,7 @@ const getInstance = (options) => {
         getSiteUrl: config.getSiteUrl,
         getAdminUrl: config.getAdminUrl,
         apiVersions: options.apiVersions,
-        defaultApiVersion: 'v3',
+        defaultApiVersion: 'canary',
         slugs: options.slugs,
         redirectCacheMaxAge: options.redirectCacheMaxAge,
         baseApiPath: '/ghost/api'
@@ -46,7 +46,7 @@ const stubUrlUtils = (options, sandbox) => {
 const stubUrlUtilsFromConfig = () => {
     const options = {
         apiVersions: config.get('api:versions'),
-        defaultApiVersion: 'v3',
+        defaultApiVersion: 'canary',
         slugs: config.get('slugs').protected,
         redirectCacheMaxAge: config.get('caching:301:maxAge'),
         baseApiPath: '/ghost/api'
