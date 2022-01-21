@@ -1,7 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
-const api = require('../../../../../../core/server/api');
+const API_VERSION = 'canary';
+const api = require('../../../../../../core/server/api')[API_VERSION];
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
@@ -33,7 +34,7 @@ describe('Unit - services/routing/controllers/static', function () {
         formatResponseStub.entries = sinon.stub();
 
         tagsReadStub = sinon.stub().resolves();
-        sinon.stub(api.v2, 'tagsPublic').get(() => {
+        sinon.stub(api, 'tagsPublic').get(() => {
             return {
                 read: tagsReadStub
             };
@@ -74,7 +75,7 @@ describe('Unit - services/routing/controllers/static', function () {
             render: sinon.spy(),
             redirect: sinon.spy(),
             locals: {
-                apiVersion: 'v2'
+                apiVersion: API_VERSION
             }
         };
     });

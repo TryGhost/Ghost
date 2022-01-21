@@ -287,7 +287,7 @@ describe('{{ghost_head}} helper', function () {
         sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
         sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
         sinon.stub(themeEngine, 'getActive').returns({
-            engine: () => 'v2'
+            engine: () => 'canary'
         });
 
         sinon.stub(settingsCache, 'get');
