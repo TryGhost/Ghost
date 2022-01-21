@@ -164,7 +164,7 @@ describe('DB API (canary)', function () {
             .expect(200);
     });
 
-    it('Can import a JSON database exported from Ghost v2', async function () {
+    it('Can import a JSON database exported from Ghost 2.x', async function () {
         await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
@@ -211,7 +211,7 @@ describe('DB API (canary)', function () {
         usersResponse.body.users.should.have.length(3);
     });
 
-    it('Can import a JSON database exported from Ghost 3.0', async function () {
+    it('Can import a JSON database exported from Ghost 3.x', async function () {
         await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
@@ -258,7 +258,7 @@ describe('DB API (canary)', function () {
         usersResponse.body.users.should.have.length(3);
     });
 
-    it('Can import a JSON database exported from Ghost 4.0', async function () {
+    it('Can import a JSON database exported from Ghost 4.x', async function () {
         await request.delete(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')

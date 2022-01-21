@@ -1,7 +1,7 @@
 const should = require('should');
 const shared = require('../../../../../../core/server/api/shared');
 
-describe('Unit: v2/utils/serializers/input/all', function () {
+describe('Unit: utils/serializers/input/all', function () {
     describe('all', function () {
         it('transforms into model readable format', function () {
             const apiConfig = {};
