@@ -497,7 +497,8 @@ module.exports = {
 
     activityFeed: {
         options: [
-            'limit'
+            'limit',
+            'filter'
         ],
         permissions: {
             method: 'browse'
