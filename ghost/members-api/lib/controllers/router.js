@@ -175,6 +175,13 @@ module.exports = class RouterController {
 
         const priceId = price.get('stripe_price_id');
 
+        const product = await this._productRepository.get({stripe_price_id: priceId});
+
+        if (product.get('active') !== true) {
+            res.writeHead(403);
+            return res.end('Tier is archived.');
+        }
+
         let email;
         try {
             if (!identity) {
