@@ -68,7 +68,7 @@ export default class ModalProductPrice extends ModalBase {
         if (yearlyPrice) {
             this.stripeYearlyAmount = (yearlyPrice.amount / 100);
         }
-        this.currency = this.productCurrency;
+        this.currency = this.productCurrency || 'usd';
         this.benefits = this.product.get('benefits') || emberA([]);
         this.newBenefit = ProductBenefitItem.create({
             isNew: true,
