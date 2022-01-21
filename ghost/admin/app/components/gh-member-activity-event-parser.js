@@ -15,6 +15,7 @@ export default class EventTimeline extends Component {
             let object = this.getObject(event);
             let info = this.getInfo(event);
             let timestamp = moment(event.data.created_at).fromNow();
+
             return {
                 member_id: event.data.member_id,
                 icon,
@@ -63,6 +64,18 @@ export default class EventTimeline extends Component {
 
             return 'changed';
         }
+
+        if (event.type === 'email_opened_event') {
+            return 'opened';
+        }
+
+        if (event.type === 'email_delivered_event') {
+            return 'received';
+        }
+
+        if (event.type === 'email_failed_event') {
+            return 'failed to receive';
+        }
     }
 
     getObject(event) {
@@ -72,6 +85,10 @@ export default class EventTimeline extends Component {
 
         if (event.type === 'subscription_event') {
             return 'their subscription';
+        }
+
+        if (event.type.match?.(/^email_/)) {
+            return 'an email';
         }
 
         return '';
