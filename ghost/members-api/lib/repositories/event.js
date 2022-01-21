@@ -1,16 +1,4 @@
-/**
- * Adds a filter to `options`. Returns a copy of options to avoid this
- * action to affect other event getters.
- * @param {Object} options The framework `options` object.
- * @param {string} filter The NQL filter to add to the `options` filter.
- * @returns {Object} A copy of options with the filter
- */
-function addFilter(options, filter) {
-    return {
-        ...options,
-        filter: options.filter ? `(${options.filter})+(${filter})` : filter
-    };
-}
+const nql = require('@nexes/nql');
 
 module.exports = class EventRepository {
     constructor({
@@ -39,7 +27,11 @@ module.exports = class EventRepository {
     }
 
     async getNewsletterSubscriptionEvents(options = {}) {
-        options.withRelated = ['member'];
+        options = {
+            ...options,
+            withRelated: ['member'],
+            filter: ''
+        };
         const {data: models, meta} = await this._MemberSubscribeEvent.findPage(options);
 
         const data = models.map((data) => {
@@ -56,7 +48,11 @@ module.exports = class EventRepository {
     }
 
     async getSubscriptionEvents(options = {}) {
-        options.withRelated = ['member'];
+        options = {
+            ...options,
+            withRelated: ['member'],
+            filter: ''
+        };
         const {data: models, meta} = await this._MemberPaidSubscriptionEvent.findPage(options);
 
         const data = models.map((data) => {
@@ -73,7 +69,11 @@ module.exports = class EventRepository {
     }
 
     async getPaymentEvents(options = {}) {
-        options.withRelated = ['member'];
+        options = {
+            ...options,
+            withRelated: ['member'],
+            filter: ''
+        };
         const {data: models, meta} = await this._MemberPaymentEvent.findPage(options);
 
         const data = models.map((data) => {
@@ -90,7 +90,11 @@ module.exports = class EventRepository {
     }
 
     async getLoginEvents(options = {}) {
-        options.withRelated = ['member'];
+        options = {
+            ...options,
+            withRelated: ['member'],
+            filter: ''
+        };
         const {data: models, meta} = await this._MemberLoginEvent.findPage(options);
 
         const data = models.map((data) => {
@@ -107,8 +111,11 @@ module.exports = class EventRepository {
     }
 
     async getSignupEvents(options = {}) {
-        options = addFilter(options, 'from_status:null');
-        options.withRelated = ['member'];
+        options = {
+            ...options,
+            withRelated: ['member'],
+            filter: 'from_status:null'
+        };
         const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
 
         const data = models.map((data) => {
@@ -125,8 +132,11 @@ module.exports = class EventRepository {
     }
 
     async getEmailDelieveredEvents(options = {}) {
-        options = addFilter(options, 'delivered_at:-null');
-        options.withRelated = ['member', 'email'];
+        options = {
+            ...options,
+            withRelated: ['member', 'email'],
+            filter: 'delivered_at:-null'
+        };
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
         );
@@ -150,8 +160,11 @@ module.exports = class EventRepository {
     }
 
     async getEmailOpenedEvents(options = {}) {
-        options = addFilter(options, 'opened_at:-null');
-        options.withRelated = ['member', 'email'];
+        options = {
+            ...options,
+            withRelated: ['member', 'email'],
+            filter: 'opened_at:-null'
+        };
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
         );
@@ -175,8 +188,11 @@ module.exports = class EventRepository {
     }
 
     async getEmailFailedEvents(options = {}) {
-        options = addFilter(options, 'failed_at:-null');
-        options.withRelated = ['member', 'email'];
+        options = {
+            ...options,
+            withRelated: ['member', 'email'],
+            filter: 'failed_at:-null'
+        };
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
         );
@@ -224,6 +240,10 @@ module.exports = class EventRepository {
         return allEvents.sort((a, b) => {
             return new Date(b.data.created_at) - new Date(a.data.created_at);
         }).reduce((memo, event, i) => {
+            if (options.filter && !nql(options.filter).queryJSON(event)) {
+                // Filter out event
+                return memo;
+            }
             if (event.type === 'newsletter_event' && event.data.subscribed) {
                 const previousEvent = allEvents[i - 1];
                 const nextEvent = allEvents[i + 1];
