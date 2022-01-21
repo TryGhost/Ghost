@@ -1,5 +1,4 @@
-import Service from '@ember/service';
-import {inject as service} from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 export default class MembersActivityService extends Service {
     @service ajax;

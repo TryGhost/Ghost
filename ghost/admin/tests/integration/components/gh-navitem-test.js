@@ -53,7 +53,7 @@ describe('Integration: Component: gh-navitem', function () {
 
         let deleteActionCallCount = 0;
         this.set('deleteItem', (navItem) => {
-            expect(navItem).to.equal(this.get('navItem'));
+            expect(navItem).to.equal(this.navItem);
             deleteActionCallCount += 1;
         });
 
@@ -109,7 +109,7 @@ describe('Integration: Component: gh-navitem', function () {
 
     it('displays inline errors', async function () {
         this.set('navItem', NavItem.create({label: '', url: ''}));
-        this.get('navItem').validate();
+        this.navItem.validate();
 
         await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl}}`);
         let item = find('.gh-blognav-item');

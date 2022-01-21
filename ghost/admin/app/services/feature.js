@@ -2,8 +2,7 @@ import $ from 'jquery';
 import Ember from 'ember';
 import EmberError from '@ember/error';
 import Service, {inject as service} from '@ember/service';
-import {computed} from '@ember/object';
-import {set} from '@ember/object';
+import {computed, set} from '@ember/object';
 
 export function feature(name, options = {}) {
     let {user, onChange} = options;

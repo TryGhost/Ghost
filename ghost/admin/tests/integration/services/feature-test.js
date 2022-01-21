@@ -2,10 +2,10 @@ import EmberError from '@ember/error';
 import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Pretender from 'pretender';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
+import {settled} from '@ember/test-helpers';
 import {setupTest} from 'ember-mocha';
 
 function stubSettings(server, labs, validSave = true) {
@@ -226,7 +226,7 @@ describe('Integration: Service: feature', function () {
                 service.set('testFlag', true);
             });
 
-            return wait().then(() => {
+            return settled().then(() => {
                 expect(server.handlers[1].numberOfCalls).to.equal(1);
                 expect(service.get('testFlag')).to.be.true;
             });
@@ -251,7 +251,7 @@ describe('Integration: Service: feature', function () {
                 service.set('testUserFlag', true);
             });
 
-            return wait().then(() => {
+            return settled().then(() => {
                 expect(server.handlers[3].numberOfCalls).to.equal(1);
                 expect(service.get('testUserFlag')).to.be.true;
             });
@@ -277,7 +277,7 @@ describe('Integration: Service: feature', function () {
                 service.set('testFlag', true);
             });
 
-            return wait().then(() => {
+            return settled().then(() => {
                 expect(
                     server.handlers[1].numberOfCalls,
                     'PUT call is made'
@@ -311,7 +311,7 @@ describe('Integration: Service: feature', function () {
                 service.set('testUserFlag', true);
             });
 
-            return wait().then(() => {
+            return settled().then(() => {
                 expect(
                     server.handlers[3].numberOfCalls,
                     'PUT call is made'
@@ -348,7 +348,7 @@ describe('Integration: Service: feature', function () {
                 }, EmberError, 'threw validation error');
             });
 
-            return wait().then(() => {
+            return settled().then(() => {
                 // ensure validation is happening before the API is hit
                 expect(server.handlers[1].numberOfCalls).to.equal(0);
                 expect(service.get('testFlag')).to.be.false;

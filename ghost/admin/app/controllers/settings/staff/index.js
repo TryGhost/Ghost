@@ -1,7 +1,7 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import RSVP from 'rsvp';
-import {alias, sort} from '@ember/object/computed';
+import {alias, filterBy, sort} from '@ember/object/computed';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -28,7 +28,7 @@ export default Controller.extend({
     sortedActiveUsers: sort('activeUsers', 'userOrder'),
     sortedSuspendedUsers: sort('suspendedUsers', 'userOrder'),
 
-    filteredInvites: computed.filterBy('invites', 'isNew', false),
+    filteredInvites: filterBy('invites', 'isNew', false),
 
     invites: computed(function () {
         return this.store.peekAll('invite');

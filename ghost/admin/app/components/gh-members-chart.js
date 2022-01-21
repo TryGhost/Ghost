@@ -1,8 +1,7 @@
 /* global Chart */
 import Component from '@ember/component';
 import moment from 'moment';
-import {action} from '@ember/object';
-import {computed, get} from '@ember/object';
+import {action, computed, get} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -299,7 +298,7 @@ export default Component.extend({
         };
 
         if (this.chartType === 'mrr' || this.chartType === 'all-members') {
-            const chartData = this.get('chartData').datasets[0].data;
+            const chartData = this.chartData.datasets[0].data;
             let allZeros = true;
             for (let i = 0; i < chartData.length; i++) {
                 const element = chartData[i];

@@ -40,7 +40,7 @@ export default Model.extend(ValidationEngine, {
     },
 
     fetchSigninUrl: task(function* () {
-        let url = this.get('ghostPaths.url').api('members', this.get('id'), 'signin_urls');
+        let url = this.get('ghostPaths.url').api('members', this.id, 'signin_urls');
 
         let response = yield this.ajax.request(url);
 

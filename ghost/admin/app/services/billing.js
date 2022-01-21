@@ -1,5 +1,4 @@
-import Service from '@ember/service';
-import {inject as service} from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 
 export default Service.extend({
     router: service(),
@@ -27,8 +26,8 @@ export default Service.extend({
     },
 
     handleRouteChangeInIframe(destinationRoute) {
-        if (this.get('billingWindowOpen')) {
-            let billingRoute = this.get('billingRouteRoot');
+        if (this.billingWindowOpen) {
+            let billingRoute = this.billingRouteRoot;
 
             if (destinationRoute !== '/') {
                 billingRoute += destinationRoute;
@@ -46,8 +45,8 @@ export default Service.extend({
 
         let url = this.config.get('hostSettings.billing.url');
 
-        if (window.location.hash && window.location.hash.includes(this.get('billingRouteRoot'))) {
-            let destinationRoute = window.location.hash.replace(this.get('billingRouteRoot'), '');
+        if (window.location.hash && window.location.hash.includes(this.billingRouteRoot)) {
+            let destinationRoute = window.location.hash.replace(this.billingRouteRoot, '');
 
             if (destinationRoute) {
                 url += destinationRoute;
@@ -58,7 +57,7 @@ export default Service.extend({
     },
 
     async getOwnerUser() {
-        if (!this.get('ownerUser')) {
+        if (!this.ownerUser) {
             // Try to receive the owner user from the store
             let user = this.store.peekAll('user').findBy('isOwnerOnly', true);
 
@@ -69,19 +68,19 @@ export default Service.extend({
             }
             this.set('ownerUser', user);
         }
-        return this.get('ownerUser');
+        return this.ownerUser;
     },
 
     // Sends a route update to a child route in the BMA, because we can't control
     // navigating to it otherwise
     sendRouteUpdate() {
-        const action = this.get('action');
+        const action = this.action;
 
         if (action) {
             if (action === 'checkout') {
                 this.getBillingIframe().contentWindow.postMessage({
                     query: 'routeUpdate',
-                    response: this.get('checkoutRoute')
+                    response: this.checkoutRoute
                 }, '*');
             }
 
@@ -93,7 +92,7 @@ export default Service.extend({
     // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
     // for example: by entering "/pro" route in the URL or using history navigation (back and forward)
     toggleProWindow(value) {
-        if (this.get('billingWindowOpen') && value && !this.get('action')) {
+        if (this.billingWindowOpen && value && !this.action) {
             // don't attempt to open again
             return;
         }
@@ -111,7 +110,7 @@ export default Service.extend({
         // initiate getting owner user in the background
         this.getOwnerUser();
 
-        if (this.get('billingWindowOpen')) {
+        if (this.billingWindowOpen) {
             // don't attempt to open again
             return;
         }

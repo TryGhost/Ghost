@@ -1,9 +1,8 @@
 import Component from '@ember/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import validator from 'validator';
-import {action} from '@ember/object';
+import {action, computed} from '@ember/object';
 import {alias, not, oneWay, or} from '@ember/object/computed';
-import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -78,7 +77,7 @@ export default Component.extend({
                 this.set('sendTestEmailError', 'Please enter a valid email');
                 return false;
             }
-            if (!this.get('mailgunIsEnabled')) {
+            if (!this.mailgunIsEnabled) {
                 this.set('sendTestEmailError', 'Please verify your email settings');
                 return false;
             }
