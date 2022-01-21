@@ -22,7 +22,7 @@ module.exports = {
                 clientExtensions: config.get('clientExtensions') || {},
                 enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
                 stripeDirect: config.get('stripeDirect'),
-                mailgunIsConfigured: config.get('bulkEmail') && config.get('bulkEmail').mailgun,
+                mailgunIsConfigured: !!(config.get('bulkEmail') && config.get('bulkEmail').mailgun),
                 emailAnalytics: config.get('emailAnalytics'),
                 forceUpgrade: config.get('host_settings:forceUpgrade') || false
             };
