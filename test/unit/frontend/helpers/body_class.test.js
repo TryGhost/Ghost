@@ -133,25 +133,7 @@ describe('{{body_class}} helper', function () {
             rendered.string.should.equal('post-template tag-foo tag-bar');
         });
 
-        it('v2: a static page', function () {
-            const rendered = callBodyClassWithContext(
-                ['page'],
-                {relativeUrl: '/about', page: {page: true, slug: 'about'}}
-            );
-
-            rendered.string.should.equal('page-template page-about');
-        });
-
-        it('canary: a static page', function () {
-            const rendered = callBodyClassWithContext(
-                ['page'],
-                {relativeUrl: '/about', page: {page: true, slug: 'about'}}
-            );
-
-            rendered.string.should.equal('page-template page-about');
-        });
-
-        it('v3: a static page', function () {
+        it('a static page', function () {
             const rendered = callBodyClassWithContext(
                 ['page'],
                 {relativeUrl: '/about', page: {page: true, slug: 'about'}}
