@@ -1,7 +1,6 @@
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import fetch from 'fetch';
 import validator from 'validator';
-import {inject as service} from '@ember/service';
 
 export default class FrontendService extends Service {
     @service settings;

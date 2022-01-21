@@ -1,5 +1,5 @@
 import Component from '@ember/component';
-import {computed} from '@ember/object';
+import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Component.extend({
@@ -11,7 +11,7 @@ export default Component.extend({
 
     subscription: null,
 
-    showUpgradeButton: computed.reads('billing.subscription.isActiveTrial'),
+    showUpgradeButton: reads('billing.subscription.isActiveTrial'),
 
     actions: {
         openBilling() {

@@ -1,9 +1,8 @@
 import EmberObject, {action} from '@ember/object';
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {isArray} from '@ember/array';
 import {observes} from '@ember-decorators/object';
-import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 

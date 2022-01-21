@@ -1,6 +1,5 @@
-import Controller from '@ember/controller';
+import Controller, {inject as controller} from '@ember/controller';
 import {action} from '@ember/object';
-import {inject as controller} from '@ember/controller';
 import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 

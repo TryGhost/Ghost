@@ -1,6 +1,7 @@
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import {computed} from '@ember/object';
+import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Controller.extend({
@@ -14,7 +15,7 @@ export default Controller.extend({
     settings: service(),
     ui: service(),
 
-    showBilling: computed.reads('config.hostSettings.billing.enabled'),
+    showBilling: reads('config.hostSettings.billing.enabled'),
     showNavMenu: computed('router.currentRouteName', 'session.{isAuthenticated,user}', 'ui.isFullScreen', function () {
         let {router, session, ui} = this;
 

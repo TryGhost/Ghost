@@ -1,5 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
-import {computed} from '@ember/object';
+import {and} from '@ember/object/computed';
 import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -11,7 +11,7 @@ export default ModalComponent.extend({
     showDeleteLabelModal: false,
 
     confirm() {},
-    label: computed.and('model', 'model.label'),
+    label: and('model', 'model.label'),
 
     willDestroyElement() {
         this._super(...arguments);

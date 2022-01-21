@@ -1,9 +1,8 @@
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import fetch from 'fetch';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {isEmpty} from '@ember/utils';
-import {inject as service} from '@ember/service';
 import {task, taskGroup} from 'ember-concurrency-decorators';
 import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';

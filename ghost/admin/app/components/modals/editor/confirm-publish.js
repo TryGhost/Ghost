@@ -68,8 +68,8 @@ export default class ModalsEditorConfirmPublishComponent extends Component {
 
         const filter = `subscribed:true+(${sendEmailWhenPublished})`;
 
-        this.memberCount = sendEmailWhenPublished ? yield this.membersCountCache.count(filter) : 0;
-        this.memberCountString = sendEmailWhenPublished ? yield this.membersCountCache.countString(filter) : '0 members';
+        this.memberCount = sendEmailWhenPublished ? (yield this.membersCountCache.count(filter)) : 0;
+        this.memberCountString = sendEmailWhenPublished ? (yield this.membersCountCache.countString(filter)) : '0 members';
     }
 
     @task

@@ -1,20 +1,17 @@
-import Controller from '@ember/controller';
+import Controller, {inject as controller} from '@ember/controller';
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
-import {action, computed} from '@ember/object';
+import {action, computed, get} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
-import {inject as controller} from '@ember/controller';
-import {get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
-import {isHostLimitError, isServerUnreachableError} from 'ghost-admin/services/ajax';
+import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
-import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 

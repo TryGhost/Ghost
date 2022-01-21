@@ -1,10 +1,8 @@
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import fetch from 'fetch';
 import moment from 'moment';
-import {action} from '@ember/object';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
-import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default Service.extend({

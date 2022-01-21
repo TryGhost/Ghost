@@ -4,8 +4,7 @@ import {
     darkenToContrastThreshold,
     lightenToContrastThreshold
 } from '@tryghost/color-utils';
-import {action} from '@ember/object';
-import {get} from '@ember/object';
+import {action, get} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {tracked} from '@glimmer/tracking';
 

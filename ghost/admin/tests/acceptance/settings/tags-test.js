@@ -1,9 +1,8 @@
-import wait from 'ember-test-helpers/wait';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'ember-cli-mirage';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {blur, click, currentRouteName, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, settled} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
@@ -95,9 +94,6 @@ describe.skip('Acceptance: Tags', function () {
 
             await visit('/tags');
 
-            // second wait is needed for the vertical-collection to settle
-            await wait();
-
             // it redirects to first tag
             // expect(currentURL(), 'currentURL').to.equal(`/tags/${tag1.slug}`);
 
@@ -125,7 +121,6 @@ describe.skip('Acceptance: Tags', function () {
             await visit(`/tags/${tag1.slug}`);
 
             // second wait is needed for the tag details to settle
-            await wait();
 
             // it shows selected tag form
             // expect(find('.tag-settings-pane h4').textContent, 'settings pane title')
@@ -154,7 +149,7 @@ describe.skip('Acceptance: Tags', function () {
                 keyup(38);
             });
 
-            await wait();
+            await settled();
 
             // it navigates to previous tag
             expect(currentURL(), 'url after keyboard up arrow').to.equal(`/tags/${tag1.slug}`);
@@ -169,7 +164,7 @@ describe.skip('Acceptance: Tags', function () {
                 keyup(40);
             });
 
-            await wait();
+            await settled();
 
             // it navigates to previous tag
             expect(currentURL(), 'url after keyboard down arrow').to.equal(`/tags/${tag2.slug}`);
@@ -255,9 +250,6 @@ describe.skip('Acceptance: Tags', function () {
 
             await visit('/tags/tag-1');
 
-            // second wait is needed for the vertical-collection to settle
-            await wait();
-
             expect(currentURL(), 'URL after direct load').to.equal('/tags/tag-1');
 
             // it loads all other tags
@@ -278,9 +270,6 @@ describe.skip('Acceptance: Tags', function () {
 
             await visit('tags/');
 
-            // second wait is needed for the vertical-collection to settle
-            await wait();
-
             expect(currentURL()).to.equal('/tags/hash-internal-tag');
 
             expect(findAll('.settings-tags .settings-tag').length, 'tag list count')
@@ -299,9 +288,6 @@ describe.skip('Acceptance: Tags', function () {
             this.server.createList('tag', 2);
 
             await visit('/tags/tag-1');
-
-            // second wait is needed for the vertical-collection to settle
-            await wait();
 
             expect(currentURL(), 'URL after direct load').to.equal('/tags/tag-1');
 
@@ -332,9 +318,6 @@ describe.skip('Acceptance: Tags', function () {
             this.server.create('tag', {name: 'A - First', slug: 'first'});
 
             await visit('tags');
-
-            // second wait is needed for the vertical-collection to settle
-            await wait();
 
             let tags = findAll('[data-test-tag]');
 

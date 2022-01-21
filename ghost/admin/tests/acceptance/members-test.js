@@ -1,8 +1,7 @@
 import moment from 'moment';
-import wait from 'ember-test-helpers/wait';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, settled} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -48,8 +47,7 @@ describe('Acceptance: Members', function () {
 
             await visit('/members');
 
-            // second wait is needed for the vertical-collection to settle
-            await wait();
+            await settled();
 
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
@@ -68,7 +66,7 @@ describe('Acceptance: Members', function () {
             await visit(`/members/${member1.id}`);
 
             // // second wait is needed for the member details to settle
-            await wait();
+            await settled();
 
             // it shows selected member form
             expect(find('[data-test-input="member-name"]').value, 'loads correct member into form')
@@ -89,8 +87,6 @@ describe('Acceptance: Members', function () {
 
             await click('[data-test-link="members-back"]');
 
-            await wait();
-
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
         });
@@ -100,8 +96,7 @@ describe('Acceptance: Members', function () {
 
             await visit('/members');
 
-            // second wait is needed for the vertical-collection to settle
-            await wait();
+            await settled();
 
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
@@ -136,8 +131,6 @@ describe('Acceptance: Members', function () {
             await blur('[data-test-input="member-email"]');
 
             await click('[data-test-button="save"]');
-
-            await wait();
 
             expect(find('[data-test-input="member-name"]').value, 'name has been preserved')
                 .to.equal('New Name');

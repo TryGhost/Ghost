@@ -13,7 +13,7 @@ describe('Integration: Component: gh-trim-focus-input', function () {
 
         await blur('input');
 
-        expect(this.get('text')).to.equal('some random stuff');
+        expect(this.text).to.equal('some random stuff');
     });
 
     it('trims value on focusOut before calling custom focus-out', async function () {
@@ -31,7 +31,7 @@ describe('Integration: Component: gh-trim-focus-input', function () {
 
         await blur('input');
 
-        expect(this.get('text')).to.equal('some random stuff');
+        expect(this.text).to.equal('some random stuff');
     });
 
     it('does not have the autofocus attribute if not set to focus', async function () {

@@ -1,8 +1,7 @@
 import Controller from '@ember/controller';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
 import {alias} from '@ember/object/computed';
-import {computed} from '@ember/object';
-import {get} from '@ember/object';
+import {computed, get} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const TYPES = [{
@@ -81,32 +80,32 @@ export default Controller.extend({
     postsInfinityModel: alias('model'),
 
     showingAll: computed('type', 'author', 'tag', function () {
-        let {type, author, tag, visibility} = this.getProperties(['type', 'visibility', 'author', 'tag']);
+        let {type, author, tag, visibility} = this;
 
         return !type && !visibility && !author && !tag;
     }),
 
     selectedType: computed('type', function () {
-        let types = this.get('availableTypes');
-        return types.findBy('value', this.get('type')) || {value: '!unknown'};
+        let types = this.availableTypes;
+        return types.findBy('value', this.type) || {value: '!unknown'};
     }),
 
     selectedVisibility: computed('visibility', function () {
-        let visibilities = this.get('availableVisibilities');
-        return visibilities.findBy('value', this.get('visibility')) || {value: '!unknown'};
+        let visibilities = this.availableVisibilities;
+        return visibilities.findBy('value', this.visibility) || {value: '!unknown'};
     }),
 
     selectedOrder: computed('order', function () {
-        let orders = this.get('availableOrders');
-        return orders.findBy('value', this.get('order')) || {value: '!unknown'};
+        let orders = this.availableOrders;
+        return orders.findBy('value', this.order) || {value: '!unknown'};
     }),
 
     _availableTags: computed(function () {
-        return this.get('store').peekAll('tag');
+        return this.store.peekAll('tag');
     }),
 
     availableTags: computed('_availableTags.[]', function () {
-        let tags = this.get('_availableTags')
+        let tags = this._availableTags
             .filter(tag => tag.get('id') !== null)
             .sort((tagA, tagB) => tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true}));
         let options = tags.toArray();
@@ -116,18 +115,18 @@ export default Controller.extend({
     }),
 
     selectedTag: computed('tag', '_availableTags.[]', function () {
-        let tag = this.get('tag');
-        let tags = this.get('availableTags');
+        let tag = this.tag;
+        let tags = this.availableTags;
 
         return tags.findBy('slug', tag) || {slug: '!unknown'};
     }),
 
     _availableAuthors: computed(function () {
-        return this.get('store').peekAll('user');
+        return this.store.peekAll('user');
     }),
 
     availableAuthors: computed('_availableAuthors.[]', function () {
-        let authors = this.get('_availableAuthors');
+        let authors = this._availableAuthors;
         let options = authors.toArray();
 
         options.unshiftObject({name: 'All authors', slug: null});
@@ -136,8 +135,8 @@ export default Controller.extend({
     }),
 
     selectedAuthor: computed('author', 'availableAuthors.[]', function () {
-        let author = this.get('author');
-        let authors = this.get('availableAuthors');
+        let author = this.author;
+        let authors = this.availableAuthors;
 
         return authors.findBy('slug', author) || {slug: '!unknown'};
     }),

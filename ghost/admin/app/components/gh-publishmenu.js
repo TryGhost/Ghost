@@ -1,9 +1,8 @@
 import Component from '@ember/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
-import {bind} from '@ember/runloop';
+import {bind, schedule} from '@ember/runloop';
 import {computed} from '@ember/object';
 import {or, reads} from '@ember/object/computed';
-import {schedule} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
@@ -305,7 +304,7 @@ export default Component.extend({
     },
 
     setDefaultSendEmailWhenPublished() {
-        if (this.get('isSendingEmailLimited')) {
+        if (this.isSendingEmailLimited) {
             this.set('sendEmailWhenPublished', false);
         } else if (this.postStatus === 'draft' && this.canSendEmail) {
             // Set default newsletter recipients

@@ -1,8 +1,7 @@
 import Component from '@ember/component';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import {and, equal, match, or} from '@ember/object/computed';
-import {computed} from '@ember/object';
+import {and, equal, match, or, reads} from '@ember/object/computed';
 import {getOwner} from '@ember/application';
 import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
@@ -41,8 +40,8 @@ export default Component.extend(ShortcutsMixin, {
     showTagsNavigation: or('session.user.isAdmin', 'session.user.isEditor'),
     showMenuExtension: and('config.clientExtensions.menu', 'session.user.isOwnerOnly'),
     showScriptExtension: and('config.clientExtensions.script', 'session.user.isOwnerOnly'),
-    showBilling: computed.reads('config.hostSettings.billing.enabled'),
-    isStripeConnected: computed.reads('settings.stripeConnectAccountId'),
+    showBilling: reads('config.hostSettings.billing.enabled'),
+    isStripeConnected: reads('settings.stripeConnectAccountId'),
 
     init() {
         this._super(...arguments);

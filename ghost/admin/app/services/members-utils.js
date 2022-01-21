@@ -1,5 +1,5 @@
-import Service from '@ember/service';
-import {inject as service} from '@ember/service';
+import Service, {inject as service} from '@ember/service';
+
 export default class MembersUtilsService extends Service {
     @service config;
     @service settings;

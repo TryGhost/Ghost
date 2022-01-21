@@ -17,7 +17,7 @@ export default ModalComponent.extend({
 
     deleteMembersTask: task(function* () {
         try {
-            this.set('response', yield this.confirm());
+            this.set('response', (yield this.confirm()));
             this.set('confirmed', true);
         } catch (e) {
             if (e.payload?.errors) {

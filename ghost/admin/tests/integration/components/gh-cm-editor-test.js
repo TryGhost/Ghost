@@ -21,7 +21,7 @@ describe('Integration: Component: gh-cm-editor', function () {
 
         await settled();
 
-        expect(this.get('text'), 'text value after CM editor change')
+        expect(this.text, 'text value after CM editor change')
             .to.equal('Testing');
     });
 

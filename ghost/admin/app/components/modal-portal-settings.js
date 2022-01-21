@@ -88,7 +88,7 @@ export default ModalComponent.extend({
     }),
 
     showPortalTiers: computed('products', 'feature.multipleProducts', function () {
-        return this.get('products')?.length > 1 && this.feature.get('multipleProducts');
+        return this.products?.length > 1 && this.feature.get('multipleProducts');
     }),
 
     init() {
@@ -206,11 +206,11 @@ export default ModalComponent.extend({
         },
 
         validateFreeSignupRedirect() {
-            return this._validateSignupRedirect(this.get('freeSignupRedirect'), 'membersFreeSignupRedirect');
+            return this._validateSignupRedirect(this.freeSignupRedirect, 'membersFreeSignupRedirect');
         },
 
         validatePaidSignupRedirect() {
-            return this._validateSignupRedirect(this.get('paidSignupRedirect'), 'membersPaidSignupRedirect');
+            return this._validateSignupRedirect(this.paidSignupRedirect, 'membersPaidSignupRedirect');
         }
     },
 

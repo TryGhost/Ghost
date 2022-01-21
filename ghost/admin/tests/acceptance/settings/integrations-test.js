@@ -1,6 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent} from '@ember/test-helpers';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -329,7 +329,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             ).to.be.empty;
 
             await fillIn('[data-test-input="name"]', '');
-            await triggerEvent('[data-test-input="name"]', 'blur');
+            await await blur('[data-test-input="name"]');
 
             expect(
                 find('[data-test-error="name"]').textContent,
@@ -344,7 +344,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             ).to.equal('Integration 1');
 
             await fillIn('[data-test-input="name"]', 'Test Integration');
-            await triggerEvent('[data-test-input="name"]', 'blur');
+            await await blur('[data-test-input="name"]');
 
             expect(
                 find('[data-test-error="name"]').textContent.trim(),
@@ -352,7 +352,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             ).to.be.empty;
 
             await fillIn('[data-test-input="description"]', 'Description for Test Integration');
-            await triggerEvent('[data-test-input="description"]', 'blur');
+            await await blur('[data-test-input="description"]');
             await click('[data-test-button="save"]');
 
             // changes are reflected in the integrations list
@@ -469,7 +469,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
 
             await visit('/settings/integrations/1');
             await click('[data-test-input="description"]');
-            await triggerEvent('[data-test-input="description"]', 'blur');
+            await await blur('[data-test-input="description"]');
             await click('[data-test-link="integrations-back"]');
 
             expect(
