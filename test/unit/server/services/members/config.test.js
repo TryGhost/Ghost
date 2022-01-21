@@ -47,13 +47,13 @@ function createUrlUtilsMock() {
         getSiteUrl: configUtils.config.getSiteUrl,
         getAdminUrl: configUtils.config.getAdminUrl,
         apiVersions: {
-            all: ['v3'],
-            v3: {
-                admin: 'v3/admin',
-                content: 'v3/content'
+            all: ['canary'],
+            canary: {
+                admin: 'canary/admin',
+                content: 'canary/content'
             }
         },
-        defaultApiVersion: 'v3',
+        defaultApiVersion: 'canary',
         slugs: ['ghost', 'rss', 'amp'],
         redirectCacheMaxAge: 31536000,
         baseApiPath: '/ghost/api'
