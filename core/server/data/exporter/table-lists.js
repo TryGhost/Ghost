@@ -10,6 +10,7 @@ const BACKUP_TABLES = [
     'members',
     'members_labels',
     'members_products',
+    'posts_products',
     'members_stripe_customers',
     'members_stripe_customers_subscriptions',
     'migrations',
