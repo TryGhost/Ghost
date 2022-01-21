@@ -1,7 +1,6 @@
 import Component from '@ember/component';
 import Ember from 'ember';
-import {action} from '@ember/object';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {or} from '@ember/object/computed';
 import {run} from '@ember/runloop';

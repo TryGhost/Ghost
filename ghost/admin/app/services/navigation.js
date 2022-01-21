@@ -1,8 +1,6 @@
-import Service from '@ember/service';
-import {action} from '@ember/object';
+import Service, {inject as service} from '@ember/service';
+import {action, set} from '@ember/object';
 import {observes} from '@ember-decorators/object';
-import {inject as service} from '@ember/service';
-import {set} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_SETTINGS = {

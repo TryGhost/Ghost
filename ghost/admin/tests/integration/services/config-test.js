@@ -1,8 +1,8 @@
 import Pretender from 'pretender';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {settled} from '@ember/test-helpers';
 import {setupTest} from 'ember-mocha';
 
 describe('Integration: Service: config', function () {
@@ -63,7 +63,7 @@ describe('Integration: Service: config', function () {
             ).to.equal('http://localhost:2368');
         });
 
-        wait().then(() => {
+        settled().then(() => {
             stubBlogUrl('http://localhost:2368');
 
             service.fetch().then(() => {

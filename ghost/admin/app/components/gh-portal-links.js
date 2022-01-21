@@ -24,7 +24,7 @@ export default Component.extend({
         return this.isLink ? 'Link' : 'Data attribute';
     }),
     selectedProductIdPath: computed('selectedProduct', function () {
-        const selectedProduct = this.get('selectedProduct');
+        const selectedProduct = this.selectedProduct;
         if (selectedProduct) {
             return `/${selectedProduct.name}`;
         }
@@ -32,8 +32,8 @@ export default Component.extend({
     }),
 
     productOptions: computed('products.[]', function () {
-        if (this.get('products')) {
-            return this.get('products').map((product) => {
+        if (this.products) {
+            return this.products.map((product) => {
                 return {
                     label: product.name,
                     name: product.id

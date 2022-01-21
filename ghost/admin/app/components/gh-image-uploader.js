@@ -6,12 +6,10 @@ import {
     isUnsupportedMediaTypeError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
-import {computed} from '@ember/object';
-import {get} from '@ember/object';
+import {computed, get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {isArray} from '@ember/array';
 import {isBlank} from '@ember/utils';
-import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
@@ -304,7 +302,7 @@ export default Component.extend({
         let extensions = this.extensions;
         let [, extension] = (/(?:\.([^.]+))?$/).exec(file.name);
 
-        if (!isEmberArray(extensions)) {
+        if (!isArray(extensions)) {
             extensions = extensions.split(',');
         }
 

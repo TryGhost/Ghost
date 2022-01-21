@@ -1,8 +1,7 @@
 import moment from 'moment';
-import wait from 'ember-test-helpers/wait';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, settled} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -48,8 +47,7 @@ describe('Acceptance: Offers', function () {
 
             await visit('/offers');
 
-            // second wait is needed for the vertical-collection to settle
-            await wait();
+            await settled();
 
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/offers');
@@ -68,7 +66,7 @@ describe('Acceptance: Offers', function () {
             await visit(`/offers/${offer1.id}`);
 
             // second wait is needed for the offer details to settle
-            await wait();
+            await settled();
 
             // it shows selected offer form
             expect(find('[data-test-input="offer-name"]').value, 'loads correct offer into form')
@@ -85,8 +83,6 @@ describe('Acceptance: Offers', function () {
             await timeout(100);
 
             await click('[data-test-link="offers-back"]');
-
-            await wait();
 
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/offers');

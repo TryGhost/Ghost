@@ -115,7 +115,7 @@ export default Component.extend({
             if (event) {
                 event.preventDefault();
             }
-            this.set('settings.emailTrackOpens', !this.get('emailTrackOpens'));
+            this.set('settings.emailTrackOpens', !this.emailTrackOpens);
         },
 
         setReplyAddress(event) {

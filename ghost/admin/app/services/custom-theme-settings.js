@@ -1,7 +1,6 @@
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
-import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 

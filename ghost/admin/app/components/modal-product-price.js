@@ -37,11 +37,11 @@ export default class ModalProductPrice extends ModalBase {
         this.allCurrencies = [
             {
                 groupName: '—',
-                options: this.get('topCurrencies')
+                options: this.topCurrencies
             },
             {
                 groupName: '—',
-                options: this.get('currencies')
+                options: this.currencies
             }
         ];
         this.currencyVal = this.price.currency || 'usd';

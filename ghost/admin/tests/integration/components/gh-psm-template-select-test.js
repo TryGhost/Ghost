@@ -1,6 +1,5 @@
 import hbs from 'htmlbars-inline-precompile';
 import mockThemes from '../../../mirage/config/themes';
-import wait from 'ember-test-helpers/wait';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {find, render} from '@ember/test-helpers';
@@ -66,7 +65,6 @@ describe('Integration: Component: gh-psm-template-select', function () {
         });
 
         await render(hbs`{{gh-psm-template-select post=post}}`);
-        await wait();
 
         expect(find('select').disabled, 'select is disabled').to.be.true;
         expect(find('p')).to.contain.text('post-one.hbs');
@@ -81,7 +79,6 @@ describe('Integration: Component: gh-psm-template-select', function () {
         });
 
         await render(hbs`{{gh-psm-template-select post=post}}`);
-        await wait();
 
         expect(find('select').disabled, 'select is disabled').to.be.true;
         expect(find('p')).to.contain.text('page-about.hbs');

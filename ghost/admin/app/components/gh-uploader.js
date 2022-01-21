@@ -1,5 +1,5 @@
 import Component from '@ember/component';
-import EmberObject from '@ember/object';
+import EmberObject, {get} from '@ember/object';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {
     ICON_EXTENSIONS,
@@ -8,7 +8,6 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {all, task} from 'ember-concurrency';
-import {get} from '@ember/object';
 import {isArray} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
