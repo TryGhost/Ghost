@@ -1701,10 +1701,10 @@
     date-fns "^2.24.0"
     tpl "^0.3.0"
 
-"@tryghost/social-urls@0.1.27":
-  version "0.1.27"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.27.tgz#17a53d23a984d817064f5e2a1988589f7662cbba"
-  integrity sha512-HWNuOw0AjPl1urF1vsjCKdcuBGFMp1S1aSQEj7t2l8CFs7VduMjcgVfONvGy6JJB3VOUfw5MtLkaAIfnoFgKnA==
+"@tryghost/social-urls@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.28.tgz#d6cc1e3664c0b827c6713b8a488fa1a129f3c894"
+  integrity sha512-fnWQyyb/ed6PZw82nOjrRF3hnllDA1dRFJKcpRk19i0wa4J5oD/pNVSeddCYK9nntmU1uKbb0H8MBW5HXDNKWg==
 
 "@tryghost/string@0.1.22":
   version "0.1.22"
