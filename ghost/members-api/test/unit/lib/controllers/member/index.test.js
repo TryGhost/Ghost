@@ -3,7 +3,7 @@ const MemberController = require('../../../../../lib/controllers/member');
 
 describe('MemberController', function () {
     describe('updateSubscription', function () {
-        it('Updates a subscriptions plan via the member repository', async function () {
+        it('Updates a subscriptions plan via the member repository if the Tier is active', async function () {
             const tokenService = {
                 decodeToken: sinon.fake.resolves({sub: 'fake@email.com'})
             };
@@ -27,8 +27,69 @@ describe('MemberController', function () {
                 })
             };
 
+            const productRepository = {
+                get: sinon.fake.resolves({
+                    get() {
+                        return true;
+                    }
+                })
+            };
+
             const controller = new MemberController({
                 memberRepository,
+                productRepository,
+                StripePrice,
+                tokenService
+            });
+
+            const req = {
+                body: {
+                    identity: 'token',
+                    priceId: 'plan_name'
+                },
+                params: {
+                    id: 'subscription_id'
+                }
+            };
+            const res = {
+                writeHead() {},
+                end() {}
+            };
+
+            await controller.updateSubscription(req, res);
+
+            memberRepository.updateSubscription.verify();
+        });
+
+        it('Does not a subscriptions plan via the member repository if the Tier is not active', async function () {
+            const tokenService = {
+                decodeToken: sinon.fake.resolves({sub: 'fake@email.com'})
+            };
+            const StripePrice = {
+                findOne: sinon.fake.returns({
+                    id: 'plan_id',
+                    stripe_price_id: 'stripe_price_id',
+                    get: () => {
+                        return 'stripe_price_id';
+                    }
+                })
+            };
+
+            const memberRepository = {
+                updateSubscription: sinon.mock('updateSubscription').never()
+            };
+
+            const productRepository = {
+                get: sinon.fake.resolves({
+                    get() {
+                        return false;
+                    }
+                })
+            };
+
+            const controller = new MemberController({
+                memberRepository,
+                productRepository,
                 StripePrice,
                 tokenService
             });
