@@ -1,0 +1,11 @@
+<tr>
+    <div class="gh-list-data">
+        <LinkTo @route="member" @model={{@event.data.member.id}}>
+            <strong>{{@event.data.member.name}}</strong>
+            <br>
+            {{@event.data.member.email}}
+        </LinkTo>
+    </div>
+    <div class="gh-list-data">{{@event.type}}</div>
+    <div class="gh-list-data">{{moment-format @event.data.created_at "D MMM YYYY HH:MM"}}</div>
+</tr>
