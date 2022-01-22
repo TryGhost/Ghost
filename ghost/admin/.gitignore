@@ -51,7 +51,9 @@ Session.vim
 .vscode/*
 
 # misc
-./env*
+/.env*
+/.pnp*
+/.eslintcache
 /connect.lock
 /coverage/
 /libpeerconnection.log
