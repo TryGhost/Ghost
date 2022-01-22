@@ -28,6 +28,7 @@
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.0.3",
+    "@ember/test-helpers": "^2.1.4",
     "@glimmer/component": "1.0.4",
     "@html-next/vertical-collection": "2.1.0",
     "@joeattardi/emoji-button": "4.6.2",
@@ -60,7 +61,7 @@
     "ember-assign-helper": "0.4.0",
     "ember-auto-import": "1.12.1",
     "ember-classic-decorator": "2.0.1",
-    "ember-cli": "3.23.0",
+    "ember-cli": "3.24.0",
     "ember-cli-app-version": "5.0.0",
     "ember-cli-babel": "7.26.11",
     "ember-cli-chart": "3.7.2",
@@ -82,7 +83,7 @@
     "ember-concurrency": "2.2.0",
     "ember-concurrency-decorators": "2.0.3",
     "ember-css-transitions": "2.1.1",
-    "ember-data": "3.23.0",
+    "ember-data": "3.24.0",
     "ember-decorators": "6.1.1",
     "ember-drag-drop": "0.4.8",
     "ember-ella-sparse": "0.16.0",
@@ -106,7 +107,7 @@
     "ember-route-action-helper": "2.0.8",
     "ember-simple-auth": "4.1.1",
     "ember-sinon": "5.0.0",
-    "ember-source": "3.23.1",
+    "ember-source": "3.24.0",
     "ember-svg-jar": "2.3.4",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.5.1",
@@ -153,5 +154,8 @@
   },
   "resolutions": {
     "ember-basic-dropdown": "3.0.16"
+  },
+  "ember": {
+    "edition": "octane"
   }
 }
