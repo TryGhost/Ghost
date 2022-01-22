@@ -52,7 +52,8 @@ export default Route.extend(ShortcutsRoute, {
         this.ui.initBodyDragHandlers();
     },
 
-    beforeModel() {
+    async beforeModel() {
+        await this.session.setup();
         return this.prepareApp();
     },
 
