@@ -13,6 +13,7 @@ export default class MembersEventsFetcher extends Resource {
     @tracked data = new TrackedArray([]);
     @tracked isLoading = false;
     @tracked isError = false;
+    @tracked errorMessage = null;
     @tracked hasReachedEnd = false;
 
     cursor = null;
@@ -21,6 +22,7 @@ export default class MembersEventsFetcher extends Resource {
         return {
             isLoading: this.isLoading,
             isError: this.isError,
+            errorMessage: this.errorMessage,
             data: this.data,
             loadNextPage: this.loadNextPage,
             hasReachedEnd: this.hasReachedEnd
@@ -81,7 +83,12 @@ export default class MembersEventsFetcher extends Resource {
             this.data.push(...events);
         } catch (e) {
             this.isError = true;
-            // TODO: expose error message
+
+            const errorMessage = e.payload?.errors?.[0]?.message;
+            if (errorMessage) {
+                this.errorMessage = errorMessage;
+            }
+
             // TODO: log to Sentry
             console.error(e); // eslint-disable-line
         } finally {
