@@ -21,6 +21,7 @@ export default Component.extend({
 
     classNames: 'gh-publishmenu',
     displayState: 'draft',
+    saveType: 'publish',
     post: null,
     postStatus: 'draft',
     distributionAction: 'publish_send',
@@ -191,6 +192,15 @@ export default Component.extend({
     didReceiveAttrs() {
         this._super(...arguments);
 
+        const updateSaveTypeForPostStatus = (status) => {
+            if (status === 'draft' || status === 'published') {
+                this.set('saveType', 'publish');
+            }
+            if (status === 'scheduled') {
+                this.set('saveType', 'schedule');
+            }
+        };
+
         // update the displayState based on the post status but only after a
         // save has finished to avoid swapping the menu prematurely and triggering
         // calls to `setSaveType` due to the component re-rendering
@@ -201,9 +211,11 @@ export default Component.extend({
             if (this.get('saveTask.isRunning')) {
                 this.get('saveTask.last').then(() => {
                     this.set('displayState', postStatus);
+                    updateSaveTypeForPostStatus(postStatus);
                 });
             } else {
                 this.set('displayState', postStatus);
+                updateSaveTypeForPostStatus(postStatus);
             }
         }
 

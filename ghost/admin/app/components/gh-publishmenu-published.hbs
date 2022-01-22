@@ -1,4 +1,4 @@
-<div {{did-insert (fn @setSaveType "publish")}} data-test-publishmenu-published="true" ...attributes>
+<div data-test-publishmenu-published="true" ...attributes>
     <header class="gh-publishmenu-heading">Update {{@post.displayName}} status</header>
     <section class="gh-publishmenu-content gh-publishmenu-section">
         <div class="gh-publishmenu-radio {{if (eq @saveType "draft") "active"}}" {{on "click" (fn @setSaveType "draft")}}>

@@ -31,36 +31,15 @@ export default class GhPublishMenuDraftComponent extends Component {
     constructor() {
         super(...arguments);
         this.args.post.set('publishedAtBlogTZ', this.args.post.publishedAtUTC);
+
+        this._updateDatesForSaveType(this.args.saveType);
     }
 
     @action
     setSaveType(type) {
         if (this.args.saveType !== type) {
-            let hasDateError = !isEmpty(this.args.post.errors.errorsFor('publishedAtBlogDate'));
-            let hasTimeError = !isEmpty(this.args.post.errors.errorsFor('publishedAtBlogTime'));
-            let minDate = this._getMinDate();
-
-            this._minDate = minDate;
+            this._updateDatesForSaveType(type);
             this.args.setSaveType(type);
-
-            // when publish: switch to now to avoid validation errors
-            // when schedule: switch to last valid or new minimum scheduled date
-            if (type === 'publish') {
-                if (!hasDateError && !hasTimeError) {
-                    this._publishedAtBlogTZ = this.args.post.publishedAtBlogTZ;
-                } else {
-                    this._publishedAtBlogTZ = this.args.post.publishedAtUTC;
-                }
-
-                this.args.post.set('publishedAtBlogTZ', this.args.post.publishedAtUTC);
-            } else {
-                if (!this._publishedAtBlogTZ || moment(this._publishedAtBlogTZ).isBefore(minDate)) {
-                    this.args.post.set('publishedAtBlogTZ', minDate);
-                } else {
-                    this.args.post.set('publishedAtBlogTZ', this._publishedAtBlogTZ);
-                }
-            }
-
             this.args.post.validate();
         }
     }
@@ -94,6 +73,32 @@ export default class GhPublishMenuDraftComponent extends Component {
         if (user.isAdmin) {
             const result = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
             this.totalMemberCount = result.meta.pagination.total;
+        }
+    }
+
+    _updateDatesForSaveType(type) {
+        let hasDateError = !isEmpty(this.args.post.errors.errorsFor('publishedAtBlogDate'));
+        let hasTimeError = !isEmpty(this.args.post.errors.errorsFor('publishedAtBlogTime'));
+
+        let minDate = this._getMinDate();
+        this._minDate = minDate;
+
+        // when publish: switch to now to avoid validation errors
+        // when schedule: switch to last valid or new minimum scheduled date
+        if (type === 'publish') {
+            if (!hasDateError && !hasTimeError) {
+                this._publishedAtBlogTZ = this.args.post.publishedAtBlogTZ;
+            } else {
+                this._publishedAtBlogTZ = this.args.post.publishedAtUTC;
+            }
+
+            this.args.post.set('publishedAtBlogTZ', this.args.post.publishedAtUTC);
+        } else {
+            if (!this._publishedAtBlogTZ || moment(this._publishedAtBlogTZ).isBefore(minDate)) {
+                this.args.post.set('publishedAtBlogTZ', minDate);
+            } else {
+                this.args.post.set('publishedAtBlogTZ', this._publishedAtBlogTZ);
+            }
         }
     }
 
