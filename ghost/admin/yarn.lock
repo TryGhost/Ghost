@@ -6759,6 +6759,14 @@ ember-cookies@^0.5.0:
     ember-cli-babel "^7.1.0"
     ember-getowner-polyfill "^1.1.0 || ^2.0.0"
 
+ember-could-get-used-to-this@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/ember-could-get-used-to-this/-/ember-could-get-used-to-this-1.0.1.tgz#5b2dde7f6cd39432236522fd969b0d95a629b86b"
+  integrity sha512-+BXc8NbJJ/DoUXZk4e3qeRvADw9ThMEW7jm+Nz+QX9jRY/5QYodnFeUEfsC4Sw3Ti2m1+RzI2Lyq0QWpgOqFYg==
+  dependencies:
+    ember-cli-babel "^7.22.1"
+    ember-cli-htmlbars "^4.2.0"
+
 ember-css-transitions@2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-2.1.1.tgz#616069b8adef0175ec310cf504587587e8789f65"

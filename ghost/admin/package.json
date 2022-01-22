@@ -82,6 +82,7 @@
     "ember-composable-helpers": "5.0.0",
     "ember-concurrency": "2.2.0",
     "ember-concurrency-decorators": "2.0.3",
+    "ember-could-get-used-to-this": "1.0.1",
     "ember-css-transitions": "2.1.1",
     "ember-data": "3.24.0",
     "ember-decorators": "6.1.1",

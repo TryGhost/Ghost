@@ -3,7 +3,27 @@
         <h2 class="gh-canvas-title" data-test-screen-title>Members Activity</h2>
     </GhCanvasHeader>
 
-    <MembersActivity::Table @filter={{this.filter}} />
+    <div class="view-container">
+        {{#let (members-event-fetcher filter=this.filter pageSize=50) as |eventsFetcher|}}
+            <div class="gh-list-scrolling">
+                {{#if eventsFetcher.data}}
+                    <MembersActivity::Table @events={{eventsFetcher.data}} />
+
+                    {{#unless (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd)}}
+                        <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
+                    {{/unless}}
+                {{else unless eventsFetcher.isLoading}}
+                    <MembersActivity::NoEvents @filter={{this.filter}} />
+                {{/if}}
+
+                {{#if eventsFetcher.isLoading}}
+                    <div class="h30 flex flex-column items-center justify-center">
+                        <div class="gh-loading-spinner"></div>
+                    </div>
+                {{/if}}
+            </div>
+        {{/let}}
+    </div>
 </section>
 
 {{outlet}}
