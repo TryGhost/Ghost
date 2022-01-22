@@ -7,7 +7,6 @@ import {tracked} from '@glimmer/tracking';
 export default class DashboardController extends Controller {
     @service feature;
     @service session;
-    @service membersActivity;
     @service membersStats;
     @service store;
     @service settings;
