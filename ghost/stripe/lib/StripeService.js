@@ -31,7 +31,7 @@ module.exports = class StripeService {
                 return membersService.api.events;
             },
             sendSignupEmail(email){
-                return membersService.sendMagicLink({
+                return membersService.api.sendMagicLink({
                     email,
                     requestedType: 'paid-signup',
                     options: {
