@@ -262,28 +262,24 @@ describe('api/canary/content/posts', function () {
         before (function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'free-to-see',
-                visibility: 'public',
-                published_at: moment().add(15, 'seconds').toDate() // here to ensure sorting is not modified
+                visibility: 'public'
             });
 
             membersPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-not-be-seen',
-                visibility: 'members',
-                published_at: moment().add(45, 'seconds').toDate() // here to ensure sorting is not modified
+                visibility: 'members'
             });
 
             paidPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-be-paid-for',
-                visibility: 'paid',
-                published_at: moment().add(30, 'seconds').toDate() // here to ensure sorting is not modified
+                visibility: 'paid'
             });
 
             membersPostWithPaywallCard = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-have-a-taste',
                 visibility: 'members',
                 mobiledoc: '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}',
-                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
-                published_at: moment().add(5, 'seconds').toDate()
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>'
             });
 
             return testUtils.fixtures.insertPosts([
@@ -407,24 +403,32 @@ describe('api/canary/content/posts', function () {
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
                     _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 
-                    // Default order 'published_at desc' check
-                    jsonResponse.posts[0].slug.should.eql('thou-shalt-not-be-seen');
-                    jsonResponse.posts[1].slug.should.eql('thou-shalt-be-paid-for');
-                    jsonResponse.posts[2].slug.should.eql('free-to-see');
-                    jsonResponse.posts[3].slug.should.eql('thou-shalt-have-a-taste');
-                    jsonResponse.posts[8].slug.should.eql('sell');
+                    const membersOnlySlugs = [
+                        'thou-shalt-not-be-seen',
+                        'thou-shalt-be-paid-for'
+                    ];
 
-                    jsonResponse.posts[0].html.should.eql('');
-                    jsonResponse.posts[1].html.should.eql('');
-                    jsonResponse.posts[2].html.should.not.eql('');
-                    jsonResponse.posts[3].html.should.not.eql('');
-                    jsonResponse.posts[8].html.should.not.eql('');
+                    const freeToSeeSlugs = [
+                        'free-to-see',
+                        'thou-shalt-have-a-taste',
+                        'sell'
+                    ];
 
-                    jsonResponse.posts[0].excerpt.should.eql('');
-                    jsonResponse.posts[1].excerpt.should.eql('');
-                    jsonResponse.posts[2].excerpt.should.not.eql('');
-                    jsonResponse.posts[3].excerpt.should.not.eql('');
-                    jsonResponse.posts[8].excerpt.should.not.eql('');
+                    let seen = 0;
+
+                    jsonResponse.posts.forEach((post) => {
+                        if (membersOnlySlugs.indexOf(post.slug) > -1) {
+                            post.html.should.eql('');
+                            post.excerpt.should.eql('');
+                            seen += 1;
+                        } else if (freeToSeeSlugs.indexOf(post.slug) > -1) {
+                            post.html.should.not.eql('');
+                            post.excerpt.should.not.eql('');
+                            seen += 1;
+                        }
+                    });
+
+                    seen.should.eql(membersOnlySlugs.length + freeToSeeSlugs.length);
 
                     // check meta response for this test
                     jsonResponse.meta.pagination.page.should.eql(1);
