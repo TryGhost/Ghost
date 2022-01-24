@@ -85,9 +85,9 @@
                     {{#if (feature "membersActivityFeed")}}
                         <li>
                             {{#if (eq this.router.currentRouteName "members-activity")}}
-                                <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-nav="members-activity">{{svg-jar "members"}} Members activity</LinkTo>
+                                <LinkTo @route="members-activity" @current-when="members-activity" @query={{reset-query-params "members-activity"}} data-test-nav="members-activity">{{svg-jar "members"}} Members activity</LinkTo>
                             {{else}}
-                                <LinkTo @route="members-activity" data-test-nav="members-activity">{{svg-jar "members"}} Members activity</LinkTo>
+                                <LinkTo @route="members-activity" @current-when="members-activity" data-test-nav="members-activity">{{svg-jar "members"}} Members activity</LinkTo>
                             {{/if}}
                         </li>
                     {{/if}}
