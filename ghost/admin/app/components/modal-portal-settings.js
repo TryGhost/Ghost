@@ -72,7 +72,7 @@ export default ModalComponent.extend({
         return (this.membersUtils.isStripeEnabled && allowedPlans.includes('yearly'));
     }),
     products: computed('model.products.[]', 'settings.portalProducts.[]', 'isPreloading', function () {
-        const paidProducts = this.model.products?.filter(product => product.type === 'paid');
+        const paidProducts = this.model.products?.filter(product => product.type === 'paid' && product.active === true);
         if (this.isPreloading || !paidProducts?.length) {
             return [];
         }
