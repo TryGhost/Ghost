@@ -33,7 +33,6 @@ describe('Integration - Web - Site canary', function () {
         });
 
         beforeEach(function () {
-            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('canary');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
             const postsAPI = require('../../../core/server/api/canary/posts-public');
             postSpy = sinon.spy(postsAPI.browse, 'query');
