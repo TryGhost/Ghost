@@ -46,7 +46,7 @@ describe('Front-end members behaviour', function () {
             }
 
             if (key === 'active_theme') {
-                return 'price-data-test-theme';
+                return 'members-test-theme';
             }
 
             return originalSettingsCacheGetFn(key, options);

@@ -70,7 +70,7 @@ describe('Themes API', function () {
         jsonResponse.themes[3].active.should.be.false();
 
         localUtils.API.checkResponse(jsonResponse.themes[4], 'theme');
-        jsonResponse.themes[4].name.should.eql('price-data-test-theme');
+        jsonResponse.themes[4].name.should.eql('members-test-theme');
         jsonResponse.themes[4].package.should.be.an.Object().with.properties('name', 'version');
         jsonResponse.themes[4].active.should.be.false();
 
@@ -149,7 +149,7 @@ describe('Themes API', function () {
             'casper',
             'casper-1.4',
             'locale-theme',
-            'price-data-test-theme',
+            'members-test-theme',
             'test-theme',
             'test-theme-channels',
             'valid'
@@ -182,7 +182,7 @@ describe('Themes API', function () {
             'casper.zip',
             'invalid.zip',
             'locale-theme',
-            'price-data-test-theme',
+            'members-test-theme',
             'test-theme',
             'test-theme-channels',
             'valid.zip',
