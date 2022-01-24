@@ -2,7 +2,7 @@
 // as it is a getter and may change during runtime.
 const membersService = require('../../services/members');
 
-const allowedIncludes = ['stripe_prices', 'monthly_price', 'yearly_price'];
+const allowedIncludes = ['stripe_prices', 'monthly_price', 'yearly_price', 'benefits'];
 
 module.exports = {
     docName: 'products',

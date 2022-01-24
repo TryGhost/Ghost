@@ -48,7 +48,7 @@ function calculateLegacyPriceData(products) {
 async function getProductAndPricesData() {
     try {
         const page = await api.canary.productsPublic.browse({
-            include: ['monthly_price', 'yearly_price'],
+            include: ['monthly_price', 'yearly_price', 'benefits'],
             limit: 'all',
             filter: 'active:true'
         });
