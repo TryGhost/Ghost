@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const nql = require('@nexes/nql');
 
 module.exports = class EventRepository {
@@ -215,6 +216,63 @@ module.exports = class EventRepository {
         };
     }
 
+    /**
+     * Extract a subset of NQL.
+     * There are only a few properties allowed.
+     * Parenthesis are forbidden.
+     * Only ANDs are supported when combining properties.
+     */
+    getNQLSubset(filter) {
+        if (!filter) {
+            return {};
+        }
+
+        const lex = nql(filter).lex();
+
+        const allowedFilters = ['type','data.created_at','data.member_id'];
+        const properties = lex
+            .filter(x => x.token === 'PROP')
+            .map(x => x.matched.slice(0, -1));
+        if (properties.some(prop => !allowedFilters.includes(prop))) {
+            throw new errors.IncorrectUsageError({
+                message: 'The only allowed filters are `type`, `data.created_at` and `data.member_id`'
+            });
+        }
+
+        if (lex.find(x => x.token === 'LPAREN')) {
+            throw new errors.IncorrectUsageError({
+                message: 'The filter can\'t contain parenthesis.'
+            });
+        }
+
+        const jsonFilter = nql(filter).toJSON();
+        const keys = Object.keys(jsonFilter);
+
+        if (keys.length === 1 && keys[0] === '$or') {
+            throw new errors.IncorrectUsageError({
+                message: 'The top level-filters can only combined with ANDs (+) and not ORs (,).'
+            });
+        }
+
+        // The filter is validated, it only contains one level of filters concatenated with `+`
+        const filters = filter.split('+');
+
+        /** @type {Object.<string, string>} */
+        let result = {};
+
+        for (const f of filters) {
+            // dirty way to parse a property, but it works according to https://github.com/NexesJS/NQL-Lang/blob/0e12d799a3a9c4d8651444e9284ce16c19cbc4f0/src/nql.l#L18
+            const key = f.split(':')[0];
+            if (!result[key]) {
+                result[key] = f;
+            } else {
+                result[key] += '+' + f;
+            }
+        }
+
+        return result;
+    }
+
     async getEventTimeline(options = {}) {
         if (!options.limit) {
             options.limit = 10;
@@ -240,10 +298,6 @@ module.exports = class EventRepository {
         return allEvents.sort((a, b) => {
             return new Date(b.data.created_at) - new Date(a.data.created_at);
         }).reduce((memo, event, i) => {
-            if (options.filter && !nql(options.filter).queryJSON(event)) {
-                // Filter out event
-                return memo;
-            }
             if (event.type === 'newsletter_event' && event.data.subscribed) {
                 const previousEvent = allEvents[i - 1];
                 const nextEvent = allEvents[i + 1];
