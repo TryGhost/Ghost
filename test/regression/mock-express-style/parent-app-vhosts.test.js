@@ -137,7 +137,6 @@ describe('Integration - Web - vhosts', function () {
 
             app = await localUtils.initGhost({backend: true});
 
-            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('canary');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
         });
 
@@ -289,7 +288,6 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('admin:url', 'https://admin.example.com');
             configUtils.set('admin:redirects', false);
 
-            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('canary');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
             app = await localUtils.initGhost({backend: true});
@@ -329,7 +327,6 @@ describe('Integration - Web - vhosts', function () {
             configUtils.set('url', 'http://example.com');
             configUtils.set('admin:url', 'https://example.com');
 
-            sinon.stub(themeEngine.getActive(), 'engine').withArgs('ghost-api').returns('canary');
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
 
             app = await localUtils.initGhost({backend: true});
