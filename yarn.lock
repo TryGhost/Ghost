@@ -1480,16 +1480,7 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
-"@tryghost/magic-link@1.0.17":
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.17.tgz#149fc93ba63a0ea89b22b90b01a3bcc28a71e636"
-  integrity sha512-stsUKEyTygacONVW5f9uqjIUVYLiJi9AbTmLb9sgNj4sVKgcFw7wMokoKQe2ezsQdwjQx8cvpTZhyKL5Qo3BaQ==
-  dependencies:
-    bluebird "^3.5.5"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.15"
-
-"@tryghost/magic-link@^1.0.17":
+"@tryghost/magic-link@1.0.17", "@tryghost/magic-link@^1.0.17":
   version "1.0.17"
   resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.17.tgz#149fc93ba63a0ea89b22b90b01a3bcc28a71e636"
   integrity sha512-stsUKEyTygacONVW5f9uqjIUVYLiJi9AbTmLb9sgNj4sVKgcFw7wMokoKQe2ezsQdwjQx8cvpTZhyKL5Qo3BaQ==
@@ -1550,7 +1541,7 @@
     lodash "^4.17.11"
     node-jose "^2.0.0"
 
-"@tryghost/members-csv@1.2.3", "@tryghost/members-csv@^1.2.3":
+"@tryghost/members-csv@^1.2.3":
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.3.tgz#a8db3cfa4d1281e04cfc48b22eebdc1eeb06355d"
   integrity sha512-a4kJB0HR653D3MxYypwXqITDyifWWYw+vnKor9IJObpJpDXspvJBr5EbIDsrEbwTIj4mYGFK4IP2LIGX+AO1bQ==
