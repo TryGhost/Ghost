@@ -28,7 +28,7 @@
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.0.3",
-    "@ember/test-helpers": "^2.1.4",
+    "@ember/test-helpers": "2.6.0",
     "@glimmer/component": "1.0.4",
     "@html-next/vertical-collection": "2.1.0",
     "@joeattardi/emoji-button": "4.6.2",
