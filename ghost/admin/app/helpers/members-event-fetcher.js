@@ -31,7 +31,7 @@ export default class MembersEventsFetcher extends Resource {
 
     async setup() {
         this.cursor = moment.utc().format('YYYY-MM-DD HH:mm:ss');
-        let filter = `created_at:<='${this.cursor}'`;
+        let filter = `created_at:<'${this.cursor}'`;
 
         if (this.args.named.filter) {
             filter += `+${this.args.named.filter}`;
@@ -58,7 +58,7 @@ export default class MembersEventsFetcher extends Resource {
         }
 
         this.cursor = cursor;
-        let filter = `created_at:<='${this.cursor}'`;
+        let filter = `created_at:<'${this.cursor}'`;
 
         if (this.args.named.filter) {
             filter += `+${this.args.named.filter}`;
