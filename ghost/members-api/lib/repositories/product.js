@@ -24,17 +24,20 @@ class ProductRepository {
     /**
      * @param {object} deps
      * @param {any} deps.Product
+     * @param {any} deps.Settings
      * @param {any} deps.StripeProduct
      * @param {any} deps.StripePrice
      * @param {import('@tryghost/members-api/lib/services/stripe-api')} deps.stripeAPIService
      */
     constructor({
         Product,
+        Settings,
         StripeProduct,
         StripePrice,
         stripeAPIService
     }) {
         this._Product = Product;
+        this._Settings = Settings;
         this._StripeProduct = StripeProduct;
         this._StripePrice = StripePrice;
         this._stripeAPIService = stripeAPIService;
@@ -259,6 +262,29 @@ class ProductRepository {
         if (existingProduct.get('type') === 'free') {
             delete productData.name;
             delete productData.active;
+        }
+
+        if (existingProduct.get('active') === true && productData.active === false) {
+            const portalProductsSetting = await this._Settings.findOne({
+                key: 'portal_products'
+            }, options);
+
+            let portalProducts;
+            try {
+                portalProducts = JSON.parse(portalProductsSetting.get('value'));
+            } catch (err) {
+                portalProducts = [];
+            }
+
+            const updatedProducts = portalProducts.filter(product => product !== productId);
+
+            await this._Settings.edit({
+                key: 'portal_products',
+                value: JSON.stringify(updatedProducts)
+            }, {
+                ...options,
+                id: portalProductsSetting
+            });
         }
 
         let product = await this._Product.edit(productData, {
