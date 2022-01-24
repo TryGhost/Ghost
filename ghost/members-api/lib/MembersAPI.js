@@ -52,7 +52,8 @@ module.exports = function MembersAPI({
         OfferRedemption,
         StripeProduct,
         StripePrice,
-        Product
+        Product,
+        Settings
     },
     stripeAPIService,
     offersAPI,
@@ -71,6 +72,7 @@ module.exports = function MembersAPI({
 
     const productRepository = new ProductRepository({
         Product,
+        Settings,
         StripeProduct,
         StripePrice,
         stripeAPIService
