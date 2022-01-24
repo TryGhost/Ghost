@@ -3,7 +3,7 @@
     "description": "A fake theme for testing locales.",
     "version": "1.0.0",
     "engines": {
-        "ghost-api": "v4"
+        "ghost-api": "canary"
     },
     "license": "MIT",
     "config": {
