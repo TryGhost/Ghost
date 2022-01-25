@@ -78,7 +78,7 @@ module.exports = {
                 name: {required: true}
             }
         },
-        permissions: false,
+        permissions: true,
         async query(frame) {
             const model = await membersService.api.productRepository.create(
                 frame.data,
@@ -101,7 +101,7 @@ module.exports = {
                 }
             }
         },
-        permissions: false,
+        permissions: true,
         async query(frame) {
             const model = await membersService.api.productRepository.update(
                 frame.data,
