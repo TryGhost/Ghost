@@ -1,8 +1,8 @@
 import Component from '@ember/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import validator from 'validator';
-import {action, computed} from '@ember/object';
 import {alias, not, oneWay, or} from '@ember/object/computed';
+import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -23,7 +23,6 @@ export default Component.extend({
     savePostTask: null,
 
     close() {},
-    toggleEmailPreviewModal() {},
 
     emailSubject: or('emailSubjectScratch', 'post.title'),
     emailSubjectScratch: alias('post.emailSubjectScratch'),
@@ -64,10 +63,6 @@ export default Component.extend({
             return false;
         }
     },
-
-    toggleEmailPreview: action(function () {
-        this.toggleEmailPreviewModal();
-    }),
 
     sendTestEmail: task(function* () {
         try {

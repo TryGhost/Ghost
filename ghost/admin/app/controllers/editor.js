@@ -104,7 +104,6 @@ export default Controller.extend({
 
     shouldFocusTitle: false,
     showReAuthenticateModal: false,
-    showEmailPreviewModal: false,
     showPostPreviewModal: false,
     showUpgradeModal: false,
     showDeleteSnippetModal: false,
@@ -238,10 +237,6 @@ export default Controller.extend({
                     className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
                 });
             }
-        },
-
-        toggleEmailPreviewModal() {
-            this.toggleProperty('showEmailPreviewModal');
         },
 
         openPostPreview(keyboardEvent) {
