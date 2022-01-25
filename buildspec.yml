@@ -14,6 +14,6 @@ phases:
       - mvn package
 artifacts:
   files:
-    - target/Ghost-1
+    - target/Ghost
     - appspec.yml
   discard-paths: yes
