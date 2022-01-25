@@ -141,12 +141,12 @@ describe('Integration - Web - Site canary', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
-
                         response.statusCode.should.eql(200);
                         response.template.should.eql('author');
 
-                        $('.author-bio').length.should.equal(1);
+                        const bodyClasses = response.body.match(/<body[^>]*class="([^"]*?)">/)[1].split(' ');
+                        bodyClasses.should.containEql('author-template');
+                        bodyClasses.should.containEql('author-joe-bloggs');
                     });
             });
 
@@ -235,7 +235,7 @@ describe('Integration - Web - Site canary', function () {
                 const req = {
                     secure: true,
                     method: 'GET',
-                    url: '/assets/css/screen.css',
+                    url: '/assets/built/screen.css',
                     host: 'example.com'
                 };
 
