@@ -1,7 +1,7 @@
 <a href="" role="button" {{on "click" this.openPreview}} ...attributes>
-    {{#if (has-block)}}
-        {{yield}}
+    {{~#if (has-block)~}}
+        {{~yield~}}
     {{else}}
-        {{@email.subject}}
+        {{~or @data.subject @data.email.subject~}}
     {{/if}}
 </a>
