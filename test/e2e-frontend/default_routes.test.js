@@ -307,7 +307,7 @@ describe('Default Frontend routing', function () {
 
     describe('Static assets', function () {
         it('should retrieve theme assets', async function () {
-            await request.get('/assets/css/screen.css')
+            await request.get('/assets/built/screen.css')
                 .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
