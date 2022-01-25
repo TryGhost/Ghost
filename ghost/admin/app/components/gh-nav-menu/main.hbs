@@ -82,16 +82,6 @@
                         {{/if}}
                     </li>
 
-                    {{#if (feature "membersActivityFeed")}}
-                        <li>
-                            {{#if (eq this.router.currentRouteName "members-activity")}}
-                                <LinkTo @route="members-activity" @current-when="members-activity" @query={{reset-query-params "members-activity"}} data-test-nav="members-activity">{{svg-jar "members"}} Members activity</LinkTo>
-                            {{else}}
-                                <LinkTo @route="members-activity" @current-when="members-activity" data-test-nav="members-activity">{{svg-jar "members"}} Members activity</LinkTo>
-                            {{/if}}
-                        </li>
-                    {{/if}}
-
                     {{#if this.isStripeConnected}}
                     <li>
                         <LinkTo @route="offers" @alt="Offers">{{svg-jar "percentage"}}Offers</LinkTo>
