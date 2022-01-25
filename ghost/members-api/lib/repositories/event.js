@@ -43,10 +43,10 @@ module.exports = class EventRepository {
 
         const {data: models, meta} = await this._MemberSubscribeEvent.findPage(options);
 
-        const data = models.map((data) => {
+        const data = models.map((model) => {
             return {
                 type: 'newsletter_event',
-                data: data.toJSON(options)
+                data: model.toJSON(options)
             };
         });
 
@@ -72,10 +72,10 @@ module.exports = class EventRepository {
 
         const {data: models, meta} = await this._MemberPaidSubscriptionEvent.findPage(options);
 
-        const data = models.map((data) => {
+        const data = models.map((model) => {
             return {
                 type: 'subscription_event',
-                data: data.toJSON(options)
+                data: model.toJSON(options)
             };
         });
 
@@ -101,10 +101,10 @@ module.exports = class EventRepository {
 
         const {data: models, meta} = await this._MemberPaymentEvent.findPage(options);
 
-        const data = models.map((data) => {
+        const data = models.map((model) => {
             return {
                 type: 'payment_event',
-                data: data.toJSON(options)
+                data: model.toJSON(options)
             };
         });
 
@@ -130,10 +130,10 @@ module.exports = class EventRepository {
 
         const {data: models, meta} = await this._MemberLoginEvent.findPage(options);
 
-        const data = models.map((data) => {
+        const data = models.map((model) => {
             return {
                 type: 'login_event',
-                data: data.toJSON(options)
+                data: model.toJSON(options)
             };
         });
 
@@ -159,10 +159,10 @@ module.exports = class EventRepository {
 
         const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
 
-        const data = models.map((data) => {
+        const data = models.map((model) => {
             return {
                 type: 'signup_event',
-                data: data.toJSON(options)
+                data: model.toJSON(options)
             };
         });
 
@@ -190,14 +190,14 @@ module.exports = class EventRepository {
             options
         );
 
-        const data = models.map((data) => {
+        const data = models.map((model) => {
             return {
                 type: 'email_delivered_event',
                 data: {
-                    member_id: data.get('member_id'),
-                    created_at: data.get('delivered_at'),
-                    member: data.related('member').toJSON(),
-                    email: data.related('email').toJSON()
+                    member_id: model.get('member_id'),
+                    created_at: model.get('delivered_at'),
+                    member: model.related('member').toJSON(),
+                    email: model.related('email').toJSON()
                 }
             };
         });
@@ -226,14 +226,14 @@ module.exports = class EventRepository {
             options
         );
 
-        const data = models.map((data) => {
+        const data = models.map((model) => {
             return {
                 type: 'email_opened_event',
                 data: {
-                    member_id: data.get('member_id'),
-                    created_at: data.get('opened_at'),
-                    member: data.related('member').toJSON(),
-                    email: data.related('email').toJSON()
+                    member_id: model.get('member_id'),
+                    created_at: model.get('opened_at'),
+                    member: model.related('member').toJSON(),
+                    email: model.related('email').toJSON()
                 }
             };
         });
@@ -262,14 +262,14 @@ module.exports = class EventRepository {
             options
         );
 
-        const data = models.map((data) => {
+        const data = models.map((model) => {
             return {
                 type: 'email_failed_event',
                 data: {
-                    member_id: data.get('member_id'),
-                    created_at: data.get('failed_at'),
-                    member: data.related('member').toJSON(),
-                    email: data.related('email').toJSON()
+                    member_id: model.get('member_id'),
+                    created_at: model.get('failed_at'),
+                    member: model.related('member').toJSON(),
+                    email: model.related('email').toJSON()
                 }
             };
         });
@@ -408,16 +408,16 @@ module.exports = class EventRepository {
 
         const resultsJSON = results.toJSON();
 
-        const cumulativeResults = resultsJSON.reduce((cumulativeResults, result, index) => {
+        const cumulativeResults = resultsJSON.reduce((accumulator, result, index) => {
             if (index === 0) {
                 return [{
                     date: result.date,
                     subscribed: result.subscribed_delta
                 }];
             }
-            return cumulativeResults.concat([{
+            return accumulator.concat([{
                 date: result.date,
-                subscribed: result.subscribed_delta + cumulativeResults[index - 1].subscribed
+                subscribed: result.subscribed_delta + accumulator[index - 1].subscribed
             }]);
         }, []);
 
@@ -431,10 +431,10 @@ module.exports = class EventRepository {
 
         const resultsJSON = results.toJSON();
 
-        const cumulativeResults = resultsJSON.reduce((cumulativeResults, result) => {
-            if (!cumulativeResults[result.currency]) {
+        const cumulativeResults = resultsJSON.reduce((accumulator, result) => {
+            if (!accumulator[result.currency]) {
                 return {
-                    ...cumulativeResults,
+                    ...accumulator,
                     [result.currency]: [{
                         date: result.date,
                         mrr: result.mrr_delta,
@@ -443,10 +443,10 @@ module.exports = class EventRepository {
                 };
             }
             return {
-                ...cumulativeResults,
-                [result.currency]: cumulativeResults[result.currency].concat([{
+                ...accumulator,
+                [result.currency]: accumulator[result.currency].concat([{
                     date: result.date,
-                    mrr: result.mrr_delta + cumulativeResults[result.currency].slice(-1)[0].mrr,
+                    mrr: result.mrr_delta + accumulator[result.currency].slice(-1)[0].mrr,
                     currency: result.currency
                 }])
             };
@@ -462,10 +462,10 @@ module.exports = class EventRepository {
 
         const resultsJSON = results.toJSON();
 
-        const cumulativeResults = resultsJSON.reduce((cumulativeResults, result) => {
-            if (!cumulativeResults[result.currency]) {
+        const cumulativeResults = resultsJSON.reduce((accumulator, result) => {
+            if (!accumulator[result.currency]) {
                 return {
-                    ...cumulativeResults,
+                    ...accumulator,
                     [result.currency]: [{
                         date: result.date,
                         volume: result.volume_delta,
@@ -474,10 +474,10 @@ module.exports = class EventRepository {
                 };
             }
             return {
-                ...cumulativeResults,
-                [result.currency]: cumulativeResults[result.currency].concat([{
+                ...accumulator,
+                [result.currency]: accumulator[result.currency].concat([{
                     date: result.date,
-                    volume: result.volume_delta + cumulativeResults[result.currency].slice(-1)[0].volume,
+                    volume: result.volume_delta + accumulator[result.currency].slice(-1)[0].volume,
                     currency: result.currency
                 }])
             };
@@ -493,7 +493,7 @@ module.exports = class EventRepository {
 
         const resultsJSON = results.toJSON();
 
-        const cumulativeResults = resultsJSON.reduce((cumulativeResults, result, index) => {
+        const cumulativeResults = resultsJSON.reduce((accumulator, result, index) => {
             if (index === 0) {
                 return [{
                     date: result.date,
@@ -502,11 +502,11 @@ module.exports = class EventRepository {
                     free: result.free_delta
                 }];
             }
-            return cumulativeResults.concat([{
+            return accumulator.concat([{
                 date: result.date,
-                paid: result.paid_delta + cumulativeResults[index - 1].paid,
-                comped: result.comped_delta + cumulativeResults[index - 1].comped,
-                free: result.free_delta + cumulativeResults[index - 1].free
+                paid: result.paid_delta + accumulator[index - 1].paid,
+                comped: result.comped_delta + accumulator[index - 1].comped,
+                free: result.free_delta + accumulator[index - 1].free
             }]);
         }, []);
 
