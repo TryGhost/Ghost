@@ -10,6 +10,11 @@
         <div class="gh-list-data">
             {{event.action}}
             {{event.object}}
+
+            {{#if event.email}}
+                "<GhEmailPreviewLink @data={{event.email}} />"
+            {{/if}}
+
             <span class="highlight">{{event.info}}</span>
         </div>
         <div class="gh-list-data">{{moment-format event.timestamp "D MMM YYYY HH:MM"}}</div>
