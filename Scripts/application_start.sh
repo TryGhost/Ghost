@@ -1,5 +1,5 @@
 #!/bin/bash
-sudo chmod -R 777 /home/ec2-user/Ghost-1-app
+sudo chmod -R 777 /home/ec2-user/Ghost-app
 #navigate into our working directory where we have all our github files
 cd /home/ec2-user/Ghost-app
 
