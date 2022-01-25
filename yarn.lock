@@ -1646,10 +1646,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.27.tgz#325e01252b52d9bdcab810e739f3803b103cc590"
   integrity sha512-+3al2q0lOR+xtAuhuaqPRrdhgO4OFeqFRoe+rvL8OjBI6Y5QLj6S7rr6XYcmAexWLIqRsCAKJbjgVZwo4PK/Nw==
 
-"@tryghost/nodemailer@0.3.9":
-  version "0.3.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.9.tgz#e999d316b72b095d4e545e1a8d981f14236667cf"
-  integrity sha512-bl7On9MqqFA31JUlgsS41i/ncZaCQ78Jhkd0E1qK6r+6NtzC2YbAbRdlX2ttqGuGwC4fFH3A6yAqXMs30dtmiw==
+"@tryghost/nodemailer@0.3.10":
+  version "0.3.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.10.tgz#655a53f3de385aca1d119190c2168c70cc7217ed"
+  integrity sha512-kx5AicFSMpMWzfX1bpCL1xGFDOKEWIq02flgG9XpV3EMj4A2X5PqslITAH1sUX4PLzX9wx2fwxxjiXnCcqMsHg==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
     "@aws-sdk/credential-provider-node" "^3.31.0"
