@@ -47,7 +47,6 @@ class MemberActivity {
 }
 
 export default class MemberActivityFeedComponent extends Component {
-    @tracked emailPreview;
     @tracked isShowingAll = false;
 
     get activities() {
@@ -58,22 +57,19 @@ export default class MemberActivityFeedComponent extends Component {
                 activities.push(new MemberActivity({
                     event: 'opened',
                     email: emailRecipient.email,
-                    timestamp: emailRecipient.openedAtUTC,
-                    action: this.openEmailPreview.bind(this, emailRecipient.email)
+                    timestamp: emailRecipient.openedAtUTC
                 }));
             } else if (emailRecipient.failedAtUTC) {
                 activities.push(new MemberActivity({
                     event: 'failed',
                     email: emailRecipient.email,
-                    timestamp: emailRecipient.failedAtUTC,
-                    action: this.openEmailPreview.bind(this, emailRecipient.email)
+                    timestamp: emailRecipient.failedAtUTC
                 }));
             } else if (emailRecipient.processedAtUTC) {
                 activities.push(new MemberActivity({
                     event: 'sent',
                     email: emailRecipient.email,
-                    timestamp: emailRecipient.processedAtUTC,
-                    action: this.openEmailPreview.bind(this, emailRecipient.email)
+                    timestamp: emailRecipient.processedAtUTC
                 }));
             }
         });
@@ -94,15 +90,5 @@ export default class MemberActivityFeedComponent extends Component {
     @action
     showAll() {
         this.isShowingAll = true;
-    }
-
-    @action
-    openEmailPreview(email) {
-        this.emailPreview = email;
-    }
-
-    @action
-    closeEmailPreview() {
-        this.emailPreview = null;
     }
 }

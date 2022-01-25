@@ -107,7 +107,6 @@
         {{#if this.showSettingsMenu}}
             <GhPostSettingsMenu
                 @post={{this.post}}
-                @toggleEmailPreviewModal={{action "toggleEmailPreviewModal"}}
                 @deletePost={{action "openDeletePostModal"}}
                 @updateSlugTask={{this.updateSlugTask}}
                 @savePostTask={{this.savePostTask}}
@@ -127,13 +126,6 @@
         <GhFullscreenModal @modal="re-authenticate"
             @close={{action "toggleReAuthenticateModal"}}
             @modifier="action wide" />
-    {{/if}}
-
-    {{#if this.showEmailPreviewModal}}
-        <GhFullscreenModal @modal="post-email-preview"
-            @model={{this.post}}
-            @close={{action "toggleEmailPreviewModal"}}
-            @modifier="full-overlay email-preview" />
     {{/if}}
 
     {{#if this.showUpgradeModal}}
