@@ -34,9 +34,7 @@
                 {{/if}}
 
                 {{#if eventsFetcher.isLoading}}
-                    <div class="h30 flex flex-column items-center justify-center">
-                        <div class="gh-loading-spinner"></div>
-                    </div>
+                    <div class="relative h30"><GhLoadingSpinner /></div>
                 {{/if}}
             </div>
         {{/let}}
