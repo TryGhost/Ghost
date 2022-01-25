@@ -1,12 +1,14 @@
 {{#let (parse-member-event @event) as |event|}}
     <tr>
-        <div class="gh-list-data">
-            <LinkTo @route="member" @model={{event.memberId}}>
-                <strong>{{event.member.name}}</strong>
-                <br>
-                {{event.member.email}}
-            </LinkTo>
-        </div>
+        {{#unless @hideMemberColumn}}
+            <div class="gh-list-data">
+                <LinkTo @route="member" @model={{event.memberId}}>
+                    <strong>{{event.member.name}}</strong>
+                    <br>
+                    {{event.member.email}}
+                </LinkTo>
+            </div>
+        {{/unless}}
         <div class="gh-list-data">
             {{event.action}}
             {{event.object}}

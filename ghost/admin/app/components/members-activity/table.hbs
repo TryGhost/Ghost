@@ -1,14 +1,14 @@
 <table class="gh-list">
     <thead>
         <tr>
-            <th>Member</th>
+            {{#unless @hideMemberColumn}}<th>Member</th>{{/unless}}
             <th>Event</th>
             <th>Time</th>
         </tr>
     </thead>
     <tbody>
         {{#each @events as |event|}}
-            <MembersActivity::TableRow @event={{event}} />
+            <MembersActivity::TableRow @hideMemberColumn={{@hideMemberColumn}} @event={{event}} />
         {{/each}}
     </tbody>
 </table>

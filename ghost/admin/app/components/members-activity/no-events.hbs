@@ -3,7 +3,7 @@
         {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
         {{#if @filter}}
             <h3>No activities match the current filter</h3>
-            <LinkTo @route="members-activity" @query={{hash filter=null}} class="gh-btn gh-btn-lg">
+            <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} class="gh-btn gh-btn-lg">
                 <span>Show all activity</span>
             </LinkTo>
         {{else}}
