@@ -13,10 +13,14 @@
     </GhCanvasHeader>
 
     <div class="view-container">
+        {{#if this.memberRecord}}
+            <GhMemberDetails @member={{this.memberRecord}} />
+        {{/if}}
+
         {{#let (members-event-fetcher filter=this.filter pageSize=50) as |eventsFetcher|}}
             <div class="gh-list-scrolling">
                 {{#if eventsFetcher.data}}
-                    <MembersActivity::Table @events={{eventsFetcher.data}} />
+                    <MembersActivity::Table @hideMemberColumn={{if this.member true}} @events={{eventsFetcher.data}} />
 
                     {{#unless (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd)}}
                         <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />

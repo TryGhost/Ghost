@@ -5,6 +5,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class MembersActivityController extends Controller {
     @service router;
+    @service store;
 
     queryParams = ['excludedEvents', 'member'];
 
@@ -18,6 +19,16 @@ export default class MembersActivityController extends Controller {
         filterParts.push(this._getMemberFilter());
 
         return filterParts.filter(p => !!p).join('+');
+    }
+
+    get memberRecord() {
+        if (!this.member) {
+            return null;
+        }
+
+        // TODO: {reload: true} here shouldn't be needed but without it
+        // the template renders nothing if the record is already in the store
+        return this.store.findRecord('member', this.member, {reload: true});
     }
 
     @action
