@@ -183,7 +183,7 @@
     "@ethanresnick/chai-jest-snapshot": "3.0.0",
     "@lodder/grunt-postcss": "3.1.1",
     "c8": "7.11.0",
-    "chai": "4.3.4",
+    "chai": "4.3.5",
     "coffeescript": "2.6.1",
     "cssnano": "5.0.16",
     "eslint": "7.32.0",
