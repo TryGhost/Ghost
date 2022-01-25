@@ -32,7 +32,9 @@
                 </table>
             </div>
             <div class="pa5 pt3 pb3">
-                <p class="ma0 pa0"><button {{on "click" this.toggleEmailPreview}} class="green">View sent email</button></p>
+                <p class="ma0 pa0">
+                    <GhEmailPreviewLink class="green" @data={{this.post}}>View sent email</GhEmailPreviewLink>
+                </p>
             </div>
         </div>
     {{else if (or this.retryEmail.isRunning this.post.email.isFailure)}}
@@ -78,7 +80,7 @@
                 </table>
             </div>
             <div class="pa5 pt3 pb3 flex justify-between items center">
-                <button {{on "click" this.toggleEmailPreview}} class="blue">View email</button>
+                <GhEmailPreviewLink class="blue" @data={{this.post}}>View email</GhEmailPreviewLink>
                 <GhTaskButton @buttonText="Retry send" @runningText="Sending..." @task={{this.retryEmail}} @class="gh-btn gh-btn-icon" data-test-button="retry-email" />
             </div>
         </div>
@@ -111,11 +113,11 @@
             <div class="form-group">
                 <div class="flex">
                     <label class="nowrap flex-auto">Test email</label>
-                    <button type="button" class="gh-btn gh-btn-link settings-menu-email-button" {{on "click" this.toggleEmailPreview}} data-test-button="toggle-email-preview">
+                    <GhEmailPreviewLink class="gh-btn gh-btn-link settings-menu-email-button" @data={{this.post}} data-test-button="toggle-email-preview">
                         <span class="green">
                             Preview in browser
                         </span>
-                    </button>
+                    </GhEmailPreviewLink>
                 </div>
 
                 <div class="{{if this.mailgunError "disabled"}}">

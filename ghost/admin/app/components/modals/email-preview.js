@@ -1,8 +1,8 @@
-import ModalComponent from 'ghost-admin/components/modal-base';
+import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {alias} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 const INJECTED_CSS = `
 html::-webkit-scrollbar {
@@ -15,28 +15,25 @@ html {
 }
 `;
 
-export default ModalComponent.extend({
-    ghostPaths: service(),
-    ajax: service(),
-    settings: service(),
-    config: service(),
+export default class EmailPreviewModal extends Component {
+    @service ajax;
+    @service config;
+    @service ghostPaths;
+    @service settings;
 
-    type: 'desktop',
-    html: '',
-    subject: '',
+    @tracked tab = 'desktop';
+    @tracked subject = null;
 
-    post: alias('model'),
+    // cached to avoid re-fetching when changing tabs
+    html = null;
 
-    actions: {
-        changeType(type) {
-            this.set('type', type);
-        },
+    @action
+    changeTab(tab) {
+        this.tab = tab;
+    }
 
-        // noop - we don't want the enter key to do anything here
-        confirm() {}
-    },
-
-    renderEmailPreview: action(async function renderEmailPreview(iframe) {
+    @action
+    async renderEmailPreview(iframe) {
         await this._fetchEmailData();
         // avoid timing issues when _fetchEmailData didn't perform any async ops
         await timeout(100);
@@ -46,26 +43,26 @@ export default ModalComponent.extend({
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
         }
-    }),
+    }
 
     async _fetchEmailData() {
         let {html, subject} = this;
 
         if (html && subject) {
-            return {html, subject};
+            return;
         }
 
-        // model is an email
-        if (this.model.html && this.model.subject) {
-            html = this.model.html;
-            subject = this.model.subject;
-        // model is a post with an existing email
-        } else if (this.post.email) {
-            html = this.post.email.html;
-            subject = this.post.email.subject;
-        // model is a post, fetch email preview
+        // data is an email object
+        if (this.args.data.html && this.args.data.subject) {
+            html = this.args.data.html;
+            subject = this.args.data.subject;
+        // data is an object with an email property
+        } else if (this.args.data.email) {
+            html = this.args.data.email.html;
+            subject = this.args.data.email.subject;
+        // data is a post? try fetching email preview
         } else {
-            let url = this.get('ghostPaths.url').api('/email_preview/posts', this.post.id);
+            let url = this.ghostPaths.url.api('/email_preview/posts', this.args.data.id);
             let response = await this.ajax.request(url);
             let [emailPreview] = response.email_previews;
             html = emailPreview.html;
@@ -82,6 +79,7 @@ export default ModalComponent.extend({
         const doctype = new XMLSerializer().serializeToString(htmlDoc.doctype);
         html = doctype + htmlDoc.documentElement.outerHTML;
 
-        this.setProperties({html, subject});
+        this.html = html;
+        this.subject = subject;
     }
-});
+}

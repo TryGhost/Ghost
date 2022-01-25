@@ -11,6 +11,9 @@ export default class ModalsService extends EPMModalsService {
     }
 
     MODAL_OPTIONS = {
+        'modals/email-preview': {
+            className: 'fullscreen-modal-full-overlay fullscreen-modal-email-preview'
+        },
         'modals/design/upload-theme': {
             beforeClose: () => {
                 if (this.themeManagement.isUploading) {

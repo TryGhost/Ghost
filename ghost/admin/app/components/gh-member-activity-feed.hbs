@@ -41,10 +41,3 @@
         </div>
     </div>
 </div>
-
-{{#if this.emailPreview}}
-    <GhFullscreenModal @modal="post-email-preview"
-        @model={{this.emailPreview}}
-        @close={{this.closeEmailPreview}}
-        @modifier="full-overlay email-preview" />
-{{/if}}
