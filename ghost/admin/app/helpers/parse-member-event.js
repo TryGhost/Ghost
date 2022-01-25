@@ -1,0 +1,105 @@
+import moment from 'moment';
+import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
+
+export default function parseMemberEvent(event) {
+    let subject = event.data.member.name || event.data.member.email;
+    let icon = getIcon(event);
+    let action = getAction(event);
+    let object = getObject(event);
+    let info = getInfo(event);
+    let timestamp = moment(event.data.created_at);
+
+    return {
+        memberId: event.data.member_id,
+        member: event.data.member,
+        emailId: event.data.email_id,
+        email: event.data.email,
+        icon,
+        subject,
+        action,
+        object,
+        info,
+        timestamp
+    };
+}
+
+/* internal helper functions */
+
+function getIcon(event) {
+    return event.type;
+}
+
+function getAction(event) {
+    if (event.type === 'signup_event') {
+        return 'signed up';
+    }
+
+    if (event.type === 'login_event') {
+        return 'logged in';
+    }
+
+    if (event.type === 'payment_event') {
+        return 'made a payment';
+    }
+
+    if (event.type === 'newsletter_event') {
+        if (event.data.subscribed) {
+            return 'subscribed to';
+        } else {
+            return 'unsubscribed from';
+        }
+    }
+
+    if (event.type === 'subscription_event') {
+        if (event.data.from_plan === null) {
+            return 'started';
+        }
+
+        if (event.data.to_plan === null) {
+            return 'cancelled';
+        }
+
+        return 'changed';
+    }
+
+    if (event.type === 'email_opened_event') {
+        return 'opened';
+    }
+
+    if (event.type === 'email_delivered_event') {
+        return 'received';
+    }
+
+    if (event.type === 'email_failed_event') {
+        return 'failed to receive';
+    }
+}
+
+function getObject(event) {
+    if (event.type === 'newsletter_event') {
+        return 'emails';
+    }
+
+    if (event.type === 'subscription_event') {
+        return 'their subscription';
+    }
+
+    if (event.type.match?.(/^email_/)) {
+        return 'an email';
+    }
+
+    return '';
+}
+
+function getInfo(event) {
+    if (event.type === 'subscription_event') {
+        let mrrDelta = getNonDecimal(event.data.mrr_delta, event.data.currency);
+        if (mrrDelta === 0) {
+            return;
+        }
+        let sign = mrrDelta > 0 ? '+' : '-';
+        let symbol = getSymbol(event.data.currency);
+        return `(MRR ${sign}${symbol}${Math.abs(mrrDelta)})`;
+    }
+    return;
+}
