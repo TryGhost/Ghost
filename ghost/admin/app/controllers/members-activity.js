@@ -15,7 +15,7 @@ export default class MembersActivityController extends Controller {
             new Set() :
             new Set(['email_opened_event', 'email_delivered_event', 'email_failed_event']);
 
-        (this.excludedEvents || '').split(',').forEach(event => excludedEvents.add(event));
+        (this.excludedEvents || '').split(',').forEach(event => event && excludedEvents.add(event));
 
         if (excludedEvents.size > 0) {
             return `type:-[${Array.from(excludedEvents).join(',')}]`;
