@@ -23,7 +23,8 @@ export const DEFAULT_QUERY_PARAMS = {
         order: null
     },
     'members-activity': {
-        excludedEvents: null
+        excludedEvents: null,
+        member: null
     }
 };
 
