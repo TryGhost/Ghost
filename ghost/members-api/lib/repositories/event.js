@@ -372,6 +372,10 @@ module.exports = class EventRepository {
         return allEvents.sort((a, b) => {
             return new Date(b.data.created_at) - new Date(a.data.created_at);
         }).reduce((memo, event, i) => {
+            if (this._labsService.isSet('membersActivityFeed')) {
+                //disable the event filtering
+                return memo.concat(event);
+            }
             if (event.type === 'newsletter_event' && event.data.subscribed) {
                 const previousEvent = allEvents[i - 1];
                 const nextEvent = allEvents[i + 1];
