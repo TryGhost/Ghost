@@ -1,5 +1,6 @@
 const should = require('should');
 const EventRepository = require('../../../../lib/repositories/event');
+const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 
 describe('EventRepository', function () {
@@ -73,6 +74,120 @@ describe('EventRepository', function () {
                 'data.member_id': 'data.member_id:123',
                 type: 'type:-email_delivered_event+type:-[email_opened_event,email_failed_event]'
             });
+        });
+    });
+
+    describe('getNewsletterSubscriptionEvents', function () {
+        let eventRepository;
+        let fake;
+
+        before(function () {
+            fake = sinon.fake.returns({data: [{toJSON: () => {}}]});
+            eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: {
+                    findPage: fake
+                },
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null
+            });
+        });
+
+        afterEach(function () {
+            fake.resetHistory();
+        });
+
+        it('works when setting no filters', async function () {
+            await eventRepository.getNewsletterSubscriptionEvents({
+                filter: 'no used'
+            }, {
+                type: 'unused'
+            });
+            fake.calledOnceWithExactly({
+                withRelated: ['member'],
+                filter: ''
+            }).should.be.eql(true);
+        });
+
+        it('works when setting a created_at filter', async function () {
+            await eventRepository.getNewsletterSubscriptionEvents({}, {
+                'data.created_at': 'data.created_at:123'
+            });
+            fake.calledOnceWithExactly({
+                withRelated: ['member'],
+                filter: 'created_at:123'
+            }).should.be.eql(true);
+        });
+
+        it('works when setting a combination of filters', async function () {
+            await eventRepository.getNewsletterSubscriptionEvents({}, {
+                'data.created_at': 'data.created_at:123+data.created_at:<99999',
+                'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
+            });
+            fake.calledOnceWithExactly({
+                withRelated: ['member'],
+                filter: 'created_at:123+created_at:<99999+member_id:-[3,4,5]+member_id:-[1,2,3]'
+            }).should.be.eql(true);
+        });
+    });
+
+    describe('getEmailFailedEvents', function () {
+        let eventRepository;
+        let fake;
+
+        before(function () {
+            fake = sinon.fake.returns({data: [{get: () => {}, related: () => ({toJSON: () => {}})}]});
+            eventRepository = new EventRepository({
+                EmailRecipient: {
+                    findPage: fake
+                },
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null
+            });
+        });
+
+        afterEach(function () {
+            fake.resetHistory();
+        });
+
+        it('works when setting no filters', async function () {
+            await eventRepository.getEmailFailedEvents({
+                filter: 'no used'
+            }, {
+                type: 'unused'
+            });
+            fake.calledOnceWithExactly({
+                withRelated: ['member', 'email'],
+                filter: 'failed_at:-null'
+            }).should.be.eql(true);
+        });
+
+        it('works when setting a created_at filter', async function () {
+            await eventRepository.getEmailFailedEvents({}, {
+                'data.created_at': 'data.created_at:123'
+            });
+            fake.calledOnceWithExactly({
+                withRelated: ['member', 'email'],
+                filter: 'failed_at:-null+failed_at:123'
+            }).should.be.eql(true);
+        });
+
+        it('works when setting a combination of filters', async function () {
+            await eventRepository.getEmailFailedEvents({}, {
+                'data.created_at': 'data.created_at:123+data.created_at:<99999',
+                'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
+            });
+            fake.calledOnceWithExactly({
+                withRelated: ['member', 'email'],
+                filter: 'failed_at:-null+failed_at:123+failed_at:<99999+member_id:-[3,4,5]+member_id:-[1,2,3]'
+            }).should.be.eql(true);
         });
     });
 });
