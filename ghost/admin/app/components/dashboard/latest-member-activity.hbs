@@ -1,6 +1,10 @@
 {{#if this.shouldDisplay}}
-    <div class="gh-dashboard-box grey activity-feed" data-test-dashboard-member-activity>
-        <h4 class="gh-dashboard-header">Activity feed</h4>
+    <div class="gh-dashboard-box activity" data-test-dashboard-member-activity>
+        <h4 class="gh-dashboard-header-container">
+            <h4 class="gh-dashboard-header">
+                Member activity
+            </h4>
+        </h4>
         <div class="content">
             {{#let (members-event-fetcher filter=(if (feature "membersActivityFeed") "type:-[email_delivered_event,email_opened_event,email_failed_event]") pageSize=5) as |eventsFetcher|}}
                 {{#if eventsFetcher.isLoading}}
@@ -19,21 +23,26 @@
                 {{#unless (or eventsFetcher.isLoading eventsFetcher.isError)}}
                     <div class="gh-event-timeline">
                         {{#if eventsFetcher.data}}
-                            <ul class="gh-dashboard-activity-feed">
+                            <ul class="gh-dashboard-activity-list">
                                 {{#each eventsFetcher.data as |event|}}
                                     {{#let (parse-member-event event) as |parsedEvent|}}
-                                        <li data-test-dashboard-member-activity-item>
+                                        <li class="gh-dashboard-activity-item" data-test-dashboard-member-activity-item>
                                             <LinkTo class="member-details" @route="member" @model="{{parsedEvent.memberId}}">
-                                                <div class="activity">
-                                                    <div>
-                                                        <span class="member">{{parsedEvent.subject}}</span>
-                                                        {{parsedEvent.action}}
-                                                        {{parsedEvent.object}}
-                                                        <span class="highlight">{{parsedEvent.info}}</span>
+                                                <div class="gh-dashboard-activity-container">
+                                                    {{svg-jar parsedEvent.icon}}
+                                                    <div class="gh-dashboard-activity-detail">
+                                                        <div class="gh-dashboard-activity-name">
+                                                            {{parsedEvent.subject}}
+                                                        </div>
+                                                        <div class="gh-dashboard-activity-event">
+                                                            {{parsedEvent.action}}
+                                                            {{parsedEvent.object}}
+                                                            <span class="highlight">{{parsedEvent.info}}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </LinkTo>
-                                            <span class="time">{{moment-from-now parsedEvent.timestamp}}</span>
+                                            <span class="gh-dashboard-activity-time">{{moment-from-now parsedEvent.timestamp}}</span>
                                         </li>
                                     {{/let}}
                                 {{/each}}
@@ -47,8 +56,8 @@
                     </div>
 
                     {{#if (feature "membersActivityFeed")}}
-                        <div class="gh-dashboard-top-members-footer">
-                            <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity {{svg-jar "arrow-right"}}</LinkTo>
+                        <div class="footer">
+                            <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity →</LinkTo>
                         </div>
                     {{/if}}
                 {{/unless}}
