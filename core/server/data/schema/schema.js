@@ -379,6 +379,7 @@ module.exports = {
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         active: {type: 'boolean', nullable: false, defaultTo: true},
+        welcome_page_url: {type: 'string', maxlength: 2000, nullable: true},
         monthly_price_id: {type: 'string', maxlength: 24, nullable: true},
         yearly_price_id: {type: 'string', maxlength: 24, nullable: true},
         description: {type: 'string', maxlength: 191, nullable: true},
