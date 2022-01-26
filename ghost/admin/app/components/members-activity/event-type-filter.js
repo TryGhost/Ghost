@@ -2,14 +2,14 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 
 const ALL_EVENT_TYPES = [
-    {event: 'signup_event', name: 'Signups'},
-    {event: 'login_event', name: 'Logins'},
-    {event: 'subscription_event', name: 'Paid subscription changes'},
-    {event: 'payment_event', name: 'Payments'},
-    {event: 'newsletter_event', name: 'Email subscription changes'},
-    {event: 'email_delivered_event', name: 'Email deliveries', memberOnly: true},
-    {event: 'email_opened_event', name: 'Email opens', memberOnly: true},
-    {event: 'email_failed_event', name: 'Email failures', memberOnly: true}
+    {event: 'signup_event', icon: 'event-filter-signup', name: 'Signups'},
+    {event: 'login_event', icon: 'event-filter-login', name: 'Logins'},
+    {event: 'subscription_event', icon: 'event-filter-payment', name: 'Paid subscriptions'},
+    {event: 'payment_event', icon: 'event-filter-payment', name: 'Payments'},
+    {event: 'newsletter_event', icon: 'event-filter-newsletter', name: 'Email subscriptions'},
+    {event: 'email_opened_event', icon: 'event-filter-email-opened', name: 'Email opens', memberOnly: true},
+    {event: 'email_delivered_event', icon: 'event-filter-email-delivered', name: 'Email deliveries', memberOnly: true},
+    {event: 'email_failed_event', icon: 'event-filter-email-failed', name: 'Email failures', memberOnly: true}
 ];
 
 export default class MembersActivityEventTypeFilter extends Component {
@@ -26,6 +26,7 @@ export default class MembersActivityEventTypeFilter extends Component {
 
         return this.availableEventTypes.map(type => ({
             event: type.event,
+            icon: type.icon,
             name: type.name,
             isSelected: !excludedEvents.includes(type.event)
         }));
