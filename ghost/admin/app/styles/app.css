@@ -58,6 +58,7 @@
 @import "layouts/whatsnew.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
+@import "layouts/member-activity.css";
 @import "layouts/error.css";
 @import "layouts/apps.css";
 @import "layouts/packages.css";

@@ -1,9 +1,14 @@
-<section class="gh-canvas">
+<section class="gh-canvas gh-members-activity {{if this.memberRecord "gh-members-activity-single"}}">
     <GhCanvasHeader class="gh-canvas-header break tablet members-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             <LinkTo @route="members" data-test-link="members-back">Members</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
-            Activity
+            {{#if this.memberRecord}}
+                <LinkTo @route="members-activity" data-test-link="members-activity-back">Activity</LinkTo>
+                <span>{{svg-jar "arrow-right"}}</span>
+            {{else}}
+                Activity
+            {{/if}}
         </h2>
 
         <div class="view-actions">
