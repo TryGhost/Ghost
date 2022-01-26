@@ -302,10 +302,14 @@
                 {{/if}}
             </div>
 
-            <GhMemberActivityFeed
-                @member={{this.member}}
-                @emailRecipients={{this.member.emailRecipients}}
-            />
+            {{#if (feature "membersActivityFeed")}}
+                <Member::ActivityFeed @member={{this.member}} />
+            {{else}}
+                <GhMemberActivityFeed
+                    @member={{this.member}}
+                    @emailRecipients={{this.member.emailRecipients}}
+                />
+            {{/if}}
         </div>
     </section>
 
