@@ -40,7 +40,12 @@ function checkPostAccess(post, member) {
         return PERMIT_ACCESS;
     }
 
-    const visibility = post.visibility === 'paid' ? 'status:-free' : post.visibility;
+    let visibility = post.visibility === 'paid' ? 'status:-free' : post.visibility;
+    if (visibility === 'tiers') {
+        visibility = post.tiers.map((product) => {
+            return `product:${product.slug}`;
+        }).join(',');
+    }
 
     if (visibility && member.status && nql(visibility, {expansions: MEMBER_NQL_EXPANSIONS}).queryJSON(member)) {
         return PERMIT_ACCESS;
