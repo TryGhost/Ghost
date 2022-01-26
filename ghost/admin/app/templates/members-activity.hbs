@@ -4,7 +4,7 @@
             <LinkTo @route="members" data-test-link="members-back">Members</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
             {{#if this.memberRecord}}
-                <LinkTo @route="members-activity" data-test-link="members-activity-back">Activity</LinkTo>
+                <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back">Activity</LinkTo>
                 <span>{{svg-jar "arrow-right"}}</span>
             {{else}}
                 Activity

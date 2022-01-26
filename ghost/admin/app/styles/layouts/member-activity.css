@@ -1,19 +1,31 @@
-.gh-members-activity-single .members-header {
-    height: 88px;
-}
-
 .gh-members-activity .gh-member-detail-overview {
     padding: 0 0 32px;
 }
 
+.gh-members-activity .gh-list-scrolling thead th:last-child {
+    width: 25%;
+}
+
 .gh-members-activity-single .gh-list-scrolling {
-    height: calc(100vh - 200px);
+    height: calc(100vh - 208px);
 }
 
 .gh-list-data-event {
     display: flex;
     justify-content: flex-start;
     align-items: center;
+}
+
+.gh-members-activity-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 1.5rem 0;
+}
+
+.gh-members-activity-detail {
+    display: flex;
+    flex-direction: column;
 }
 
 .gh-members-activity-description {
@@ -26,13 +38,27 @@
 }
 
 .gh-members-activity-icon {
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-    margin: 0 0.5rem 0 0;
+    width: 24px;
+    height: 24px;
+    margin: 0 1rem 1rem 0;
+}
+
+.gh-members-activity-single .gh-members-activity-icon {
+    margin-bottom: 0;
 }
 
 .gh-members-activity-icon svg {
-    width: 16px;
-    height: 16px;
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 1450px) {
+    .gh-members-activity .gh-canvas-header.break.tablet .gh-canvas-header-content {
+        height: 95px;
+        border-bottom: 0;
+        align-items: center;
+    }
+    .gh-members-activity .gh-canvas-header.break.tablet .gh-canvas-title {
+        margin-top: -3px;
+    }
 }
