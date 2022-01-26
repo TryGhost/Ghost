@@ -27,7 +27,7 @@ const buildApiOptions = function buildApiOptions(options, post) {
         /**
          * @deprecated: single authors was superceded by multiple authors in Ghost 1.22.0
          */
-        include: 'author,authors,tags',
+        include: 'author,authors,tags,tiers',
         order: 'published_at ' + order,
         limit: 1,
         // This line deliberately uses double quotes because GQL cannot handle either double quotes

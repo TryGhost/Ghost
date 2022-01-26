@@ -6,7 +6,6 @@
 const {labs} = require('../services/proxy');
 const {SafeString} = require('../services/rendering');
 
-const nql = require('@nexes/nql');
 const isString = require('lodash/isString');
 
 function products(options = {}) {
@@ -29,11 +28,8 @@ function products(options = {}) {
         accessProductsList = productsList;
     }
 
-    if (this.visibility === 'filter') {
-        const nqlFilter = nql(this.visibility_filter);
-        accessProductsList = productsList.filter((product) => {
-            return nqlFilter.queryJSON({product: product.slug});
-        });
+    if (this.visibility === 'tiers') {
+        accessProductsList = this.tiers;
     }
 
     if (accessProductsList.length > 0) {
