@@ -16,7 +16,7 @@ const validateVisibility = async function (frame) {
     const visibility = frame.data.pages[0].visibility;
     const visibilityFilter = frame.data.pages[0].visibility_filter;
     if (visibility) {
-        if (!['public', 'members', 'paid'].includes(visibility)) {
+        if (!['public', 'members', 'paid', 'tiers'].includes(visibility)) {
             // check filter is valid
             try {
                 await models.Member.findPage({filter: visibilityFilter, limit: 1});
