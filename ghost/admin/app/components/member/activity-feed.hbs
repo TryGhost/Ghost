@@ -10,18 +10,30 @@
                         {{#each eventsFetcher.data as |rawEvent|}}
                             {{#let (parse-member-event rawEvent) as |event|}}
                                 <div class="gh-member-feed-row">
-                                    <span class="gh-member-feed-activity midgrey" data-tooltip={{capitalize (concat event.action " " event.object)}}>{{svg-jar event.icon class=event.iconClass}}</span>
-                                    {{#if event.email}}
-                                        <GhEmailPreviewLink @data={{event.email}} class="gh-member-feed-title" />
-                                    {{else}}
-                                        <span class="gh-member-feed-title">{{event.action}} {{event.object}}</span>
-                                    {{/if}}
-                                    <span class="gh-member-feed-date">{{moment-format event.timestamp "D MMM YYYY"}}</span>
+                                    <div class="gh-member-feed-container">
+                                        <div class="gh-member-feed-icon">
+                                            {{svg-jar event.icon class=event.iconClass}}
+                                        </div>
+                                        <div class="gh-member-feed-detail">
+                                            <div class="gh-member-feed-event">
+                                                {{#if event.email}}
+                                                    <GhEmailPreviewLink @data={{event.email}} class="gh-member-feed-title" />
+                                                {{else}}
+                                                    <span class="gh-member-feed-title">{{event.action}} {{event.object}}</span>
+                                                {{/if}}
+                                            </div>
+                                            <div class="gh-member-feed-time">
+                                                {{moment-from-now event.timestamp}}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             {{/let}}
                         {{/each}}
 
-                        <LinkTo class="gh-btn gh-member-btn-expandfeed" @route="members-activity" @query={{hash excludedEvents=null member=@member.id}}><span>View all activity</span></LinkTo>
+                        <div class="gh-member-feed-footer">
+                            <LinkTo @route="members-activity" @query={{hash excludedEvents=null member=@member.id}}>See all activity →</LinkTo>
+                        </div>
                     {{else}}
                         <div class="gh-members-no-data gh-members-no-list">
                             <div class="lightgrey">{{svg-jar "no-data-list"}}</div>

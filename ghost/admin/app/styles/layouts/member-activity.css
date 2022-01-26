@@ -20,7 +20,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 1.5rem 0;
+    padding: 1.25rem 0;
 }
 
 .gh-members-activity-detail {
@@ -31,10 +31,17 @@
 .gh-members-activity-description {
     display: inline-block;
     text-transform: lowercase;
+    color: var(--middarkgrey);
 }
 
 .gh-members-activity-description:first-letter {
     text-transform: uppercase;
+}
+
+.gh-members-activity-single .gh-members-activity-description {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--black);
 }
 
 .gh-members-activity-icon {
@@ -50,6 +57,18 @@
 .gh-members-activity-icon svg {
     width: 100%;
     height: 100%;
+}
+
+.gh-members-activity-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--black);
+}
+
+.gh-members-activity-event {
+    font-weight: 400;
+    font-size: 13px;
+    color:  var(--middarkgrey);
 }
 
 @media (max-width: 1450px) {

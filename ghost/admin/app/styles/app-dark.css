@@ -961,7 +961,9 @@ input:focus,
 }
 
 /* Members activity */
-.gh-members-activity-icon svg path {
+.gh-members-activity-icon svg path,
+.gh-dashboard-activity-container svg path,
+.gh-member-feed-icon svg path {
     stroke: #fff;
 }
 
