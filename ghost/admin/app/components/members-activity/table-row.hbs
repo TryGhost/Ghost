@@ -1,25 +1,27 @@
 {{#let (parse-member-event @event) as |event|}}
-    <tr>
-        {{#unless @hideMemberColumn}}
-            <div class="gh-list-data">
-                <LinkTo @route="member" @model={{event.memberId}}>
-                    <strong>{{event.member.name}}</strong>
-                    <br>
-                    {{event.member.email}}
-                </LinkTo>
-            </div>
-        {{/unless}}
+    <tr>   
         <div class="gh-list-data">
-            <div class="gh-list-data-event">
-                <span class="gh-members-activity-icon">{{svg-jar event.icon}}</span>
-                <span class="gh-members-activity-description">
-                    {{event.action}}
-                    {{event.object}}
-                </span>
-                {{#if event.email}}
-                    "<GhEmailPreviewLink @data={{event.email}} />"
-                {{/if}}
-                <span class="highlight">{{event.info}}</span>
+            <div class="gh-members-activity-container">
+                <div class="gh-members-activity-icon">{{svg-jar event.icon}}</div>
+                <div class="gh-members-activity-detail">
+                    {{#unless @hideMemberColumn}}
+                        <div class="gh-members-activity-name">
+                            <LinkTo @route="member" @model={{event.memberId}}>
+                                <strong>{{event.member.name}}{{#unless event.member.name}}{{event.member.email}}{{/unless}}</strong>
+                            </LinkTo>
+                        </div>
+                    {{/unless}}
+                    <div class="gh-members-activity-event">
+                        <span class="gh-members-activity-description">
+                            {{event.action}}
+                            {{event.object}}
+                        </span>
+                        {{#if event.email}}
+                            "<GhEmailPreviewLink @data={{event.email}} />"
+                        {{/if}}
+                        <span class="highlight">{{event.info}}</span>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="gh-list-data">{{moment-format event.timestamp "D MMM YYYY HH:MM"}}</div>
