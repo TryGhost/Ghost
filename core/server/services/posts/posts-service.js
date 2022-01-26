@@ -1,8 +1,10 @@
+const nql = require('@nexes/nql');
 const {BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    invalidEmailRecipientFilter: 'Invalid filter in email_recipient_filter param.'
+    invalidEmailRecipientFilter: 'Invalid filter in email_recipient_filter param.',
+    invalidVisibilityFilter: 'Invalid visibility filter.'
 };
 
 class PostsService {
@@ -76,6 +78,28 @@ class PostsService {
         }
 
         return model;
+    }
+
+    async getProductsFromVisibilityFilter(visibilityFilter) {
+        try {
+            const allProducts = await this.models.Product.findAll();
+            const visibilityFilterJson = nql(visibilityFilter).toJSON();
+            const productsData = (visibilityFilterJson.product ? [visibilityFilterJson] : visibilityFilterJson.$or) || [];
+            const tiers = productsData
+                .map((data) => {
+                    return allProducts.find((p) => {
+                        return p.get('slug') === data.product;
+                    });
+                }).filter(p => !!p).map((d) => {
+                    return d.toJSON();
+                });
+            return tiers;
+        } catch (err) {
+            return Promise.reject(new BadRequestError({
+                message: tpl(messages.invalidVisibilityFilter),
+                context: err.message
+            }));
+        }
     }
 
     /**
