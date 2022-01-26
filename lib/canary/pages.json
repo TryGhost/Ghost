@@ -55,6 +55,9 @@
         "visibility_filter": {
           "type": ["string", "null"]
         },
+        "tiers": {
+          "$ref": "#/definitions/page-products"
+        },
         "meta_title": {
           "type": ["string", "null"],
           "maxLength": 300
@@ -166,6 +169,40 @@
         "frontmatter": {
           "strip": true
         }
+      }
+    },
+    "page-products": {
+      "description": "Products of the post",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              },
+              "slug": {
+                "type": ["string", "null"],
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] },
+              { "required": ["slug"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
       }
     },
     "page-authors": {
