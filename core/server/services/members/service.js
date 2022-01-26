@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const MembersSSR = require('@tryghost/members-ssr');
@@ -14,7 +15,7 @@ const config = require('../../../shared/config');
 const models = require('../../models');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
-const VerificationTrigger = require('./verification/verification-trigger');
+const VerificationTrigger = require('@tryghost/verification-trigger');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -38,14 +39,9 @@ const membersStats = new MembersStats({
     isSQLite: config.get('database:client') === 'sqlite3'
 });
 
-const verificationTrigger = new VerificationTrigger({
-    settingsCache,
-    urlUtils,
-    ghostMailer
-});
-
 let membersApi;
 let membersSettings;
+let verificationTrigger;
 
 const membersImporter = new MembersCSVImporter({
     storagePath: config.getContentPath('data'),
@@ -55,18 +51,16 @@ const membersImporter = new MembersCSVImporter({
     isSet: labsService.isSet.bind(labsService),
     addJob: jobsService.addJob.bind(jobsService),
     knex: db.knex,
-    urlFor: urlUtils.urlFor.bind(urlUtils),
-    verificationTrigger: verificationTrigger
+    urlFor: urlUtils.urlFor.bind(urlUtils)
 });
 
 const processImport = async (options) => {
     const result = await membersImporter.process(options);
-    const freezeTriggered = result.meta.freeze;
     const importSize = result.meta.originalImportSize;
-    delete result.meta.freeze;
     delete result.meta.originalImportSize;
 
-    if (freezeTriggered) {
+    const importThreshold = await verificationTrigger.getImportThreshold();
+    if (importThreshold > importSize) {
         await verificationTrigger.startVerificationProcess({
             amountImported: importSize,
             throwOnTrigger: true
@@ -104,6 +98,32 @@ module.exports = {
                 logging.error(err);
             });
         }
+
+        verificationTrigger = new VerificationTrigger({
+            configThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+            isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
+            isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
+            sendVerificationEmail: ({subject, message, amountImported}) => {
+                const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
+                const fromAddress = config.get('user_email');
+    
+                if (escalationAddress) {
+                    this._ghostMailer.send({
+                        subject,
+                        html: tpl(message, {
+                            amountImported,
+                            siteUrl: this._urlUtils.getSiteUrl()
+                        }),
+                        forceTextContent: true,
+                        from: fromAddress,
+                        to: escalationAddress
+                    });
+                }
+            },
+            membersStats,
+            Settings: models.Settings,
+            eventRepository: membersApi.events
+        });
 
         (async () => {
             try {
