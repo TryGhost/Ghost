@@ -75,6 +75,7 @@ function serializeProduct(product, options, apiType) {
         slug: json.slug,
         active: json.active,
         type: json.type,
+        welcome_page_url: json.welcome_page_url,
         created_at: json.created_at,
         updated_at: json.updated_at,
         stripe_prices: json.stripePrices ? json.stripePrices.map(price => serializeStripePrice(price, hideStripeData)) : null,
@@ -164,6 +165,7 @@ function createSerializer(debugString, serialize) {
  * @prop {string} description
  * @prop {boolean} active
  * @prop {string} type
+ * @prop {string} welcome_page_url
  * @prop {Date} created_at
  * @prop {Date} updated_at
  * @prop {StripePrice[]} [stripe_prices]
