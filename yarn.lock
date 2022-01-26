@@ -1531,10 +1531,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.6.4":
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.6.4.tgz#8946e1eb8becaccb0c1dc3a7d26a6931802d2023"
-  integrity sha512-twxt5r/yqSGFO48cV6RtMyTngd+HvBBr97/Psbjy5TnyYZo6D1AXetocHscOMqbWkpu3CSTBZgJx0VqywKLYKQ==
+"@tryghost/members-stripe-service@0.6.5":
+  version "0.6.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.6.5.tgz#68e6bc4d3f5e4ee61468f5fc43eb77650543bf63"
+  integrity sha512-cTFcacy/Rst+ao4oRIszCMUw8oI8hKo1u3xxbjXjchDQUfVAUxxfnDoHcULH1d4mXc+LdftD2iKYNav/BATC5Q==
   dependencies:
     "@tryghost/debug" "^0.1.4"
     "@tryghost/errors" "1.2.0"
