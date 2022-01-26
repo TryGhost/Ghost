@@ -890,13 +890,13 @@ describe('Acceptance: Staff', function () {
             return await authenticateSession();
         });
 
-        it('can access the staff page', async function () {
+        it('is redirected to user profile page', async function () {
             this.server.create('user', {roles: [adminRole]});
             this.server.create('invite', {role: authorRole});
 
             await visit('/settings/staff');
 
-            expect(currentRouteName()).to.equal('settings.staff.index');
+            expect(currentRouteName()).to.equal('settings.staff.user');
             expect(findAll('.gh-alert').length).to.equal(0);
         });
     });
