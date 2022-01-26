@@ -18,7 +18,7 @@ module.exports = function emailPostController(req, res, next) {
 
     const params = {
         uuid: req.params.uuid,
-        include: 'authors,tags',
+        include: 'authors,tags,tiers',
         context: {
             member: res.locals.member
         }
