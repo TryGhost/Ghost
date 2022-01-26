@@ -19,7 +19,7 @@ describe('Unit: canary/utils/serializers/output/posts', function () {
         sinon.restore();
     });
 
-    it('calls the mapper', function () {
+    it('calls the mapper', async function () {
         const apiConfig = {};
         const frame = {
             options: {
@@ -38,7 +38,7 @@ describe('Unit: canary/utils/serializers/output/posts', function () {
             meta: {}
         };
 
-        serializers.output.posts.all(ctrlResponse, apiConfig, frame);
+        await serializers.output.posts.all(ctrlResponse, apiConfig, frame);
 
         mapper.mapPost.callCount.should.equal(2);
         mapper.mapPost.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
