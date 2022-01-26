@@ -69,11 +69,12 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta'],
+    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta', 'tiers'],
 
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
         tags: 'tags',
+        tiers: 'products',
         authors: 'users',
         posts_meta: 'posts_meta'
     },
@@ -87,6 +88,17 @@ Post = ghostBookshelf.Model.extend({
             targetTableName: 'emails',
             foreignKey: 'post_id'
         }
+    },
+
+    tiers() {
+        return this.belongsToMany('Product', 'posts_products', 'post_id', 'product_id')
+            .withPivot('sort_order')
+            .query('orderBy', 'sort_order', 'ASC')
+            .query((qb) => {
+                // avoids bookshelf adding a `DISTINCT` to the query
+                // we know the result set will already be unique and DISTINCT hurts query performance
+                qb.columns('products.*');
+            });
     },
 
     parse() {
@@ -171,7 +183,7 @@ Post = ghostBookshelf.Model.extend({
 
         // transform visibility NQL queries to special-case values where necessary
         // ensures checks against special-case values such as `{{#has visibility="paid"}}` continue working
-        if (attrs.visibility && !['public', 'members', 'paid'].includes(attrs.visibility)) {
+        if (attrs.visibility && !['public', 'members', 'paid', 'tiers'].includes(attrs.visibility)) {
             if (attrs.visibility === 'status:-free') {
                 attrs.visibility = 'paid';
             } else {
