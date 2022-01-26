@@ -677,7 +677,7 @@
     ms "^2.1.3"
     secure-json-parse "^2.4.0"
 
-"@elastic/elasticsearch@^7.10.0", "@elastic/elasticsearch@^7.15.0":
+"@elastic/elasticsearch@^7.10.0":
   version "7.16.0"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.16.0.tgz#c1c64b6f0343c0f5ca6893fb77ceecd763455024"
   integrity sha512-lMY2MFZZFG3om7QNHninxZZOXYx3NdIUwEISZxqaI9dXPoL3DNhU31keqjvx1gN6T74lGXAzrRNP4ag8CJ/VXw==
@@ -1316,14 +1316,6 @@
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
 
-"@tryghost/elasticsearch@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.1.tgz#2e258b92466b10bc24506348423953eca27ca459"
-  integrity sha512-dDkye1+5xA5v5UXiPsis/ppupAfTs6kLbRXyRfV9e/eEemvysPrUy5migWSdFj3K8JcZ397LZ9Kz6l6cuXfhQg==
-  dependencies:
-    "@elastic/elasticsearch" "^7.15.0"
-    "@tryghost/debug" "^0.1.10"
-
 "@tryghost/elasticsearch@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.2.tgz#ec9caadacf1f7b4b6196b86a4719aee8286e88f8"
@@ -1490,15 +1482,15 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.0.1", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.1.tgz#208816fc20c7d1fbc19ce97555fced6c13d391e0"
-  integrity sha512-vE2zm/W3H13Rpp3t9F84p3GbdBaXxcSxNEMN48c1CEPfhRc+hU2KMB4X9PvAPKnyT9bbUF5wH8LKC+EwluJMsA==
+"@tryghost/logging@2.0.1", "@tryghost/logging@2.0.2", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.2.tgz#4cd253473f50d8fe75b814d2b981291db1b64d70"
+  integrity sha512-O4oHfJk4F3kVrdOd9zJJNqtAozkozUVgU+fLyrNFjAXvGksVBajZo5LfhTSkoby9msJyeVMqst38fv9725kZ0w==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch" "^1.0.1"
-    "@tryghost/pretty-stream" "^0.1.3"
-    "@tryghost/root-utils" "^0.3.8"
+    "@tryghost/elasticsearch" "^1.0.2"
+    "@tryghost/pretty-stream" "^0.1.4"
+    "@tryghost/root-utils" "^0.3.9"
     bunyan "^1.8.15"
     bunyan-loggly "^1.4.2"
     fs-extra "^10.0.0"
@@ -1702,15 +1694,6 @@
   dependencies:
     chalk "^4.1.0"
     sywac "^1.3.0"
-
-"@tryghost/pretty-stream@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.3.tgz#024b4a2d9b7c3a3492f2343d749d9b60b68a5196"
-  integrity sha512-aDFVgopgvXozJ1o4FXzg/MLa6JorLXxIq43YPuxL4aR8hWTKUbf9NAYMpOU8fAE5Pgi0rKVKYhNhvAfk223WRA==
-  dependencies:
-    lodash "^4.17.21"
-    moment "^2.29.1"
-    prettyjson "1.2.5"
 
 "@tryghost/pretty-stream@^0.1.4":
   version "0.1.4"
