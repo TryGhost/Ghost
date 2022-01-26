@@ -26,7 +26,53 @@ export default function parseMemberEvent(event) {
 /* internal helper functions */
 
 function getIcon(event) {
-    return event.type;
+    let icon;
+
+    if (event.type === 'signup_event') {
+        icon = 'signed-up';
+    }
+
+    if (event.type === 'login_event') {
+        icon = 'logged-in';
+    }
+
+    if (event.type === 'payment_event') {
+        icon = 'made-a-payment';
+    }
+
+    if (event.type === 'newsletter_event') {
+        if (event.data.subscribed) {
+            icon = 'subscribed-to-email';
+        } else {
+            icon = 'unsubscribed-from-email';
+        }
+    }
+
+    if (event.type === 'subscription_event') {
+        if (event.data.from_plan === null) {
+            icon = 'started-subscription';
+        }
+
+        if (event.data.to_plan === null) {
+            icon = 'canceled-subscription';
+        }
+
+        icon = 'changed';
+    }
+
+    if (event.type === 'email_opened_event') {
+        icon = 'opened-email';
+    }
+
+    if (event.type === 'email_delivered_event') {
+        icon = 'received-email';
+    }
+
+    if (event.type === 'email_failed_event') {
+        icon = 'email-delivery-failed';
+    }
+
+    return 'event-' + icon;
 }
 
 function getAction(event) {

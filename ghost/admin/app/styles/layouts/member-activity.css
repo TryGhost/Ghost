@@ -1,0 +1,38 @@
+.gh-members-activity-single .members-header {
+    height: 88px;
+}
+
+.gh-members-activity .gh-member-detail-overview {
+    padding: 0 0 32px;
+}
+
+.gh-members-activity-single .gh-list-scrolling {
+    height: calc(100vh - 200px);
+}
+
+.gh-list-data-event {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.gh-members-activity-description {
+    display: inline-block;
+    text-transform: lowercase;
+}
+
+.gh-members-activity-description:first-letter {
+    text-transform: uppercase;
+}
+
+.gh-members-activity-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin: 0 0.5rem 0 0;
+}
+
+.gh-members-activity-icon svg {
+    width: 16px;
+    height: 16px;
+}
