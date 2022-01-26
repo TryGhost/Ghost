@@ -198,7 +198,8 @@
     background-position: top right;
 }
 
-.gh-dashboard-box .content a {
+.gh-dashboard-box .content a,
+.gh-dashboard-box .footer a {
     color: var(--green);
 }
 
@@ -206,7 +207,8 @@
     color: var(--black);
 }
 
-.gh-dashboard-box .content a:hover {
+.gh-dashboard-box .content a:hover,
+.gh-dashboard-box .footer a:hover {
     color: var(--green-d2);
 }
 
@@ -656,66 +658,91 @@ a.gh-dashboard-container {
 }
 
 /* Activity feed */
-.gh-dashboard-area.activity-feed {
+.gh-dashboard-area.activity {
     grid-column: 3 / 4;
     grid-row: 3 / 4;
     padding: 0;
     margin: 0;
 }
 
-.gh-dashboard-box.activity-feed .gh-dashboard-header {
-    border-bottom: 1px solid var(--whitegrey-d2);
-    padding-bottom: 14px;
-}
-
-.gh-dashboard-activity-feed {
+.gh-dashboard-activity-list {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     list-style: none;
     padding: 0;
-    margin: 4px 0 0;
+    margin: 0;
     width: 100%;
 }
 
-.gh-dashboard-activity-feed li {
+.gh-dashboard-activity-item {
     display: flex;
     align-items: baseline;
     flex-grow: 1;
     width: 100%;
     justify-content: space-between;
-    margin: 8px 0;
-    padding: 0;
+    margin: 0 0 14px;
+    padding: 0 0 14px;
+    color: var(--darkgrey);
+    border-bottom: 1px solid var(--whitegrey);
 }
 
-.gh-dashboard-activity-feed .activity {
+.gh-dashboard-box.activity .gh-dashboard-header-container {
+    margin: 0 0 12px;
+}
+
+.gh-dashboard-activity-container {
     display: flex;
-    align-items: baseline;
-    margin-right: 32px;
-    color: var(--midgrey);
-    line-height: 1.5em;
-    font-size: 1.3rem;
+    flex-direction: row;
+    align-items: center;
 }
 
-.gh-dashboard-activity-feed .member {
-    font-weight: 500;
-    color: var(--black);
-    font-size: 1.4rem;
+.gh-dashboard-activity-detail {
+    display: flex;
+    flex-direction: column;
 }
 
-.gh-dashboard-activity-feed .activity svg {
-    width: 12px;
-    height: 12px;
-    margin-right: 8px;
-    margin-top: 1px;
+.gh-dashboard-activity-container svg {
+    width: 24px;
+    height: 24px;
+    margin: 0 1rem 1rem 0;
 }
 
-.gh-dashboard-activity-feed .time {
+.gh-dashboard-activity-event {
+    display: inline-block;
+    text-transform: lowercase;
+}
+
+.gh-dashboard-activity-event:first-letter {
+    text-transform: uppercase;
+}
+
+.gh-dashboard-activity-time {
     white-space: nowrap;
     margin-left: 12px;
     color: var(--midgrey);
     font-size: 1.3rem;
 }
+
+.gh-dashboard-box.activity .footer {
+    margin-bottom: -12px;
+}
+
+.gh-dashboard-box.activity a .gh-dashboard-activity-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--black);
+    margin: 0 0 1px;
+}
+
+.gh-dashboard-box.activity a .gh-dashboard-activity-event {
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--middarkgrey);
+}
+
+
+/* No data list */
 
 .gh-no-data-list {
     display: flex;

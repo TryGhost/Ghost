@@ -7,7 +7,7 @@
                     {{#unless @hideMemberColumn}}
                         <div class="gh-members-activity-name">
                             <LinkTo @route="member" @model={{event.memberId}}>
-                                <strong>{{event.member.name}}{{#unless event.member.name}}{{event.member.email}}{{/unless}}</strong>
+                                {{event.member.name}}{{#unless event.member.name}}{{event.member.email}}{{/unless}}
                             </LinkTo>
                         </div>
                     {{/unless}}
