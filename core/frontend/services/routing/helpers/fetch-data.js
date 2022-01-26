@@ -19,7 +19,7 @@ const queryDefaults = {
  */
 const defaultQueryOptions = {
     options: {
-        include: 'authors,tags'
+        include: 'authors,tags,tiers'
     }
 };
 
