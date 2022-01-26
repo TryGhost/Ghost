@@ -58,6 +58,7 @@
 @import "layouts/whatsnew.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
+@import "layouts/member-activity.css";
 @import "layouts/error.css";
 @import "layouts/apps.css";
 @import "layouts/packages.css";
@@ -957,6 +958,11 @@ input:focus,
 
 .members-list .gh-list-header {
     background: var(--dark-main-bg-color);
+}
+
+/* Members activity */
+.gh-members-activity-icon svg path {
+    stroke: #fff;
 }
 
 /* Portal */

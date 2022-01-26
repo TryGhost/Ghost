@@ -10,14 +10,17 @@
             </div>
         {{/unless}}
         <div class="gh-list-data">
-            {{event.action}}
-            {{event.object}}
-
-            {{#if event.email}}
-                "<GhEmailPreviewLink @data={{event.email}} />"
-            {{/if}}
-
-            <span class="highlight">{{event.info}}</span>
+            <div class="gh-list-data-event">
+                <span class="gh-members-activity-icon">{{svg-jar event.icon}}</span>
+                <span class="gh-members-activity-description">
+                    {{event.action}}
+                    {{event.object}}
+                </span>
+                {{#if event.email}}
+                    "<GhEmailPreviewLink @data={{event.email}} />"
+                {{/if}}
+                <span class="highlight">{{event.info}}</span>
+            </div>
         </div>
         <div class="gh-list-data">{{moment-format event.timestamp "D MMM YYYY HH:MM"}}</div>
     </tr>
