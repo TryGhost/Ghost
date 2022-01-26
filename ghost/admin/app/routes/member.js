@@ -3,6 +3,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class MembersRoute extends AdminRoute {
+    @service feature;
     @service router;
 
     _requiresBackgroundRefresh = true;
@@ -18,7 +19,11 @@ export default class MembersRoute extends AdminRoute {
         this._requiresBackgroundRefresh = false;
 
         if (params.member_id) {
-            return this.store.queryRecord('member', {id: params.member_id, include: 'email_recipients,products'});
+            if (this.feature.membersActivityFeed) {
+                return this.store.queryRecord('member', {id: params.member_id, include: 'products'});
+            } else {
+                return this.store.queryRecord('member', {id: params.member_id, include: 'email_recipients,products'});
+            }
         } else {
             return this.store.createRecord('member');
         }
