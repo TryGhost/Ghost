@@ -79,7 +79,7 @@ describe('Unit - services/routing/controllers/preview', function () {
         previewStub.withArgs({
             uuid: req.params.uuid,
             status: 'all',
-            include: 'authors,tags'
+            include: 'authors,tags,tiers'
         }).resolves(apiResponse);
 
         sinon.stub(api, 'preview').get(() => {

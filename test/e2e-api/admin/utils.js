@@ -70,7 +70,8 @@ const expectedProperties = {
         'meta_description',
         'email_subject',
         'frontmatter',
-        'email_only'
+        'email_only',
+        'tiers'
     ],
 
     page: [
@@ -108,7 +109,8 @@ const expectedProperties = {
         'twitter_description',
         'meta_title',
         'meta_description',
-        'frontmatter'
+        'frontmatter',
+        'tiers'
     ],
 
     user: _(schema.users)

@@ -65,7 +65,7 @@ describe('{{prev_post}} helper', function () {
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
                     browsePostsStub.calledOnce.should.be.true();
-                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
 
                     done();
                 })
@@ -260,7 +260,7 @@ describe('{{prev_post}} helper', function () {
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
                     browsePostsStub.calledOnce.should.be.true();
-                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
                     browsePostsStub.firstCall.args[0].filter.should.match(/\+primary_tag:test/);
 
                     done();
@@ -292,7 +292,7 @@ describe('{{prev_post}} helper', function () {
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
                     browsePostsStub.calledOnce.should.be.true();
-                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
                     browsePostsStub.firstCall.args[0].filter.should.match(/\+primary_author:hans/);
 
                     done();
@@ -324,7 +324,7 @@ describe('{{prev_post}} helper', function () {
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
                     browsePostsStub.calledOnce.should.be.true();
-                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
                     browsePostsStub.firstCall.args[0].filter.should.match(/\+author:author-name/);
 
                     done();
@@ -355,7 +355,7 @@ describe('{{prev_post}} helper', function () {
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
                     browsePostsStub.calledOnce.should.be.true();
-                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
                     browsePostsStub.firstCall.args[0].filter.should.not.match(/\+author:/);
 
                     done();
@@ -387,7 +387,7 @@ describe('{{prev_post}} helper', function () {
                     fn.firstCall.args[0].should.have.properties('slug', 'title');
                     fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
                     browsePostsStub.calledOnce.should.be.true();
-                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags');
+                    browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
                     browsePostsStub.firstCall.args[0].filter.should.not.match(/\+magic/);
 
                     done();

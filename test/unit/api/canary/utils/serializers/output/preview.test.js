@@ -19,7 +19,7 @@ describe('Unit: canary/utils/serializers/output/preview', function () {
         sinon.restore();
     });
 
-    it('calls the mapper', function () {
+    it('calls the mapper', async function () {
         const apiConfig = {};
         const frame = {
             options: {
@@ -35,7 +35,7 @@ describe('Unit: canary/utils/serializers/output/preview', function () {
             type: 'page'
         }));
 
-        serializers.output.preview.all(ctrlResponse, apiConfig, frame);
+        await serializers.output.preview.all(ctrlResponse, apiConfig, frame);
 
         mapper.mapPost.callCount.should.equal(1);
         mapper.mapPost.getCall(0).args.should.eql([ctrlResponse, frame]);

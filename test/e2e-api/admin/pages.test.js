@@ -116,9 +116,20 @@ describe('Pages API', function () {
             .set('Origin', config.get('url'))
             .expect(200);
 
+        const resProducts = await request
+            .get(localUtils.API.getApiQuery(`products/`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const products = resProducts.body.products;
         page.updated_at = res.body.pages[0].updated_at;
-        page.visibility = 'filter';
-        page.visibility_filter = 'product:default-product';
+        page.visibility = 'tiers';
+        const paidTiers = products.filter((p) => {
+            return p.type === 'paid';
+        }).map((product) => {
+            return product;
+        });
+        page.tiers = paidTiers;
 
         const res2 = await request.put(localUtils.API.getApiQuery('pages/' + testUtils.DataGenerator.Content.posts[5].id))
             .set('Origin', config.get('url'))
@@ -128,7 +139,8 @@ describe('Pages API', function () {
             .expect(200);
 
         should.exist(res2.headers['x-cache-invalidate']);
-        localUtils.API.checkResponse(res2.body.pages[0], 'page', ['visibility_filter']);
+        localUtils.API.checkResponse(res2.body.pages[0], 'page');
+        res2.body.pages[0].tiers.length.should.eql(paidTiers.length);
 
         const model = await models.Post.findOne({
             id: res2.body.pages[0].id

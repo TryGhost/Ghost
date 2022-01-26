@@ -94,7 +94,7 @@ describe('Posts API', function () {
             jsonResponse.posts[0],
             'post',
             null,
-            ['authors', 'primary_author', 'email']
+            ['authors', 'primary_author', 'email', 'tiers']
         );
 
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -179,7 +179,7 @@ describe('Posts API', function () {
 
     it('Can include relations for a single post', async function () {
         const res = await request
-            .get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags,email'))
+            .get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/?include=authors,tags,email,tiers'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

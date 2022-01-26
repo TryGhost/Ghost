@@ -30,7 +30,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
             postsReadStub = sinon.stub();
             pagesReadStub = sinon.stub();
 
-            pagesReadStub//.withArgs({slug: pages[0].slug, include: 'author,authors,tags'})
+            pagesReadStub//.withArgs({slug: pages[0].slug, include: 'author,authors,tags,tiers'})
                 .resolves({
                     pages: pages
                 });
@@ -81,7 +81,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
             postsReadStub = sinon.stub();
             pagesReadStub = sinon.stub();
 
-            postsReadStub//.withArgs({slug: posts[0].slug, include: 'author,authors,tags'})
+            postsReadStub//.withArgs({slug: posts[0].slug, include: 'author,authors,tags,tiers'})
                 .resolves({
                     posts: posts
                 });

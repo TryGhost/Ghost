@@ -113,7 +113,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             result.data.featured.length.should.eql(posts.length);
 
             browsePostsStub.calledTwice.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags');
+            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
             browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
             browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
             done();
@@ -145,7 +145,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             result.data.featured.length.should.eql(posts.length);
 
             browsePostsStub.calledTwice.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags');
+            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
             browsePostsStub.firstCall.args[0].should.have.property('page', 2);
             browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
             browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
