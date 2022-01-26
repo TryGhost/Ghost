@@ -2,7 +2,7 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service');
-const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles'];
+const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
 
 const messages = {

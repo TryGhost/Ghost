@@ -38,7 +38,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles'];
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers'];
 }
 
 function setDefaultOrder(frame) {
@@ -100,13 +100,6 @@ const forceStatusFilter = (frame) => {
     } else if (!frame.options.filter.match(/status:/)) {
         frame.options.filter = `(${frame.options.filter})+status:[draft,published,scheduled]`;
     }
-};
-
-const transformPageVisibilityFilters = (frame) => {
-    if (frame.data.pages[0].visibility === 'filter' && frame.data.pages[0].visibility_filter) {
-        frame.data.pages[0].visibility = frame.data.pages[0].visibility_filter;
-    }
-    delete frame.data.pages[0].visibility_filter;
 };
 
 module.exports = {
@@ -187,7 +180,6 @@ module.exports = {
             });
         }
 
-        transformPageVisibilityFilters(frame);
         handlePostsMeta(frame);
         defaultFormat(frame);
         defaultRelations(frame);

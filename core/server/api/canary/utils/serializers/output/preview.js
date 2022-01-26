@@ -1,9 +1,10 @@
 const mapper = require('./utils/mapper');
 
 module.exports = {
-    all(model, apiConfig, frame) {
+    async all(model, apiConfig, frame) {
+        const data = await mapper.mapPost(model, frame);
         frame.response = {
-            preview: [mapper.mapPost(model, frame)]
+            preview: [data]
         };
         frame.response.preview[0].page = model.get('type') === 'page';
     }

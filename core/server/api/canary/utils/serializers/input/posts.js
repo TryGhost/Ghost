@@ -38,7 +38,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email'];
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers'];
 }
 
 function setDefaultOrder(frame) {
@@ -109,13 +109,6 @@ const transformLegacyEmailRecipientFilters = (frame) => {
     if (frame.options.email_recipient_filter === 'paid') {
         frame.options.email_recipient_filter = 'status:-free';
     }
-};
-
-const transformPostVisibilityFilters = (frame) => {
-    if (frame.data.posts[0].visibility === 'filter' && frame.data.posts[0].visibility_filter) {
-        frame.data.posts[0].visibility = frame.data.posts[0].visibility_filter;
-    }
-    delete frame.data.posts[0].visibility_filter;
 };
 
 module.exports = {
@@ -212,7 +205,6 @@ module.exports = {
             });
         }
 
-        transformPostVisibilityFilters(frame);
         transformLegacyEmailRecipientFilters(frame);
         handlePostsMeta(frame);
         defaultFormat(frame);
