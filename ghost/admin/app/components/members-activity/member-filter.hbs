@@ -13,6 +13,7 @@
         @onChange={{@onChange}}
         @triggerComponent="gh-input-with-select/trigger"
         @placeholder="Search members"
+        @extra={{hash showSearchMessage=false}}
         as |member|
     >
         <strong>{{member.name}}</strong><br>
