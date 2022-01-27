@@ -6,21 +6,16 @@
         </span>
     </div>
 {{else}}
-    <div class="gh-contentfilter-menu {{if @selected "gh-contentfilter-selected"}}">
-        <PowerSelect
-            @searchEnabled={{true}}
-            @search={{perform this.searchMembersTask}}
-            @selected={{@selected}}
-            @onChange={{@onChange}}
-            @matchTriggerWidth={{false}}
-            @triggerComponent="members-activity/member-filter-trigger"
-            @triggerClass="ember-power-select-trigger-reset"
-            @dropdownClass="gh-contentfilter-menu-dropdown"
-            @horizontalPosition="right"
-            as |member|
-        >
-            <strong>{{member.name}}</strong><br>
-            {{member.email}}
-        </PowerSelect>
-    </div>
+    <PowerSelect
+        @searchEnabled={{false}}
+        @search={{perform this.searchMembersTask}}
+        @selected={{@selected}}
+        @onChange={{@onChange}}
+        @triggerComponent="gh-input-with-select/trigger"
+        @placeholder="Search members"
+        as |member|
+    >
+        <strong>{{member.name}}</strong><br>
+        {{member.email}}
+    </PowerSelect>
 {{/if}}
