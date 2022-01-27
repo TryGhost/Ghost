@@ -12,7 +12,7 @@
             <div class="view-actions-top-row">
                 <MembersActivity::EventTypeFilter
                     @excludedEvents={{this.excludedEvents}}
-                    @hideMemberOnlyEvents={{not this.member}}
+                    @hiddenEvents={{this.hiddenEvents}}
                     @onChange={{this.changeExcludedEvents}} />
 
                 <MembersActivity::MemberFilter
@@ -29,7 +29,7 @@
                     <GhMemberDetails @member={{this.memberRecord}} />
                 </LinkTo>
             {{/if}}
-            {{#let (members-event-fetcher filter=this.filter pageSize=50) as |eventsFetcher|}}
+            {{#let (members-event-fetcher filter=(members-event-filter excludedEvents=this.fullExcludedEvents member=this.member) pageSize=50) as |eventsFetcher|}}
                 {{#if eventsFetcher.data}}
                     <MembersActivity::Table @hideMemberColumn={{if this.member true}} @events={{eventsFetcher.data}} />
 
