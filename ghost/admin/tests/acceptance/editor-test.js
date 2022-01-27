@@ -210,8 +210,6 @@ describe('Acceptance: Editor', function () {
 
             // Publish the post and re-open publish menu
             await click('[data-test-publishmenu-save]');
-            await click('[data-test-button="confirm-publish"]');
-            await click('[data-test-publishmenu-trigger]');
 
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
@@ -344,8 +342,6 @@ describe('Acceptance: Editor', function () {
             let newFutureTime = moment.tz('Pacific/Kwajalein');
             await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', new Date(newFutureTime.format().replace(/\+.*$/, '')));
             await click('[data-test-publishmenu-save]');
-            await click('[data-test-button="confirm-schedule"]');
-            await click('[data-test-publishmenu-trigger]');
 
             expect(
                 find('[data-test-publishmenu-save]').textContent.trim(),
@@ -456,7 +452,6 @@ describe('Acceptance: Editor', function () {
             await blur('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]');
 
             await click('[data-test-publishmenu-save]');
-            await click('[data-test-button="confirm-schedule"]');
 
             expect(
                 findAll('.gh-alert').length,
@@ -481,7 +476,6 @@ describe('Acceptance: Editor', function () {
             await fillIn('[data-test-editor-title-input]', Array(260).join('a'));
             await click('[data-test-publishmenu-trigger]');
             await click('[data-test-publishmenu-save]');
-            await click('[data-test-button="confirm-publish"]');
 
             expect(
                 findAll('.gh-alert').length,

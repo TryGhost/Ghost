@@ -99,7 +99,9 @@
                     <thead>
                         <tr>
                             <th>{{this.listHeader}}</th>
-                            <th>Open rate</th>
+                            {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
+                                <th>Open rate</th>
+                            {{/if}}
                             <th>Location</th>
                             <th>Created</th>
                             {{#each this.filterColumnLabels as |filterColumn|}}
@@ -108,7 +110,7 @@
                         </tr>
                     </thead>
                     <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-list-scrolling" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
-                        <GhMembersListItemLabs
+                        <GhMembersListItem @newsletterEnabled={{not-eq this.settings.editorDefaultEmailRecipients "disabled"}}
                             @member={{member}}
                             @filterColumns={{this.filterColumns}}
                             data-test-member={{member.id}}

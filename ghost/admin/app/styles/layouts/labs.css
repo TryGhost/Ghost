@@ -74,25 +74,6 @@
     color: var(--darkgrey);
 }
 
-.gh-labs-members-defaultemaildd {
-    padding-right: 216px;
-}
-
-.gh-labs-mailgun-region {
-    width: 140px !important;
-    margin-right: 12px;
-}
-
-.gh-labs-mailgun-region .ember-power-select-trigger {
-    white-space: nowrap;
-}
-
-.gh-labs-mailgun-region .ember-power-select-trigger svg {
-    margin-left: 23px;
-    width: 10px;
-    height: 6px;
-}
-
 .gh-labs-sso-settings svg {
     position: relative;
     bottom: 1px;

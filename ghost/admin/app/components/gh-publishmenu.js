@@ -223,7 +223,9 @@ export default Component.extend({
         this.setDefaultSendEmailWhenPublished();
         this.checkIsSendingEmailLimitedTask.perform();
 
-        if (this.post.isPage) {
+        const defaultEmailRecipients = this.get('defaultEmailRecipients');
+
+        if (this.post.isPage || !defaultEmailRecipients) {
             this.set('distributionAction', 'publish');
         }
     },
@@ -372,8 +374,13 @@ export default Component.extend({
             return false;
         }
 
-        // always opens publish confirmation if post will be published/scheduled
-        if (post.status === 'draft' && (saveType === 'publish' || saveType === 'schedule')) {
+        const isPublishOnly = this.distributionAction === 'publish'
+            || this.sendEmailWhenPublished === 'none'
+            || this.post.displayName === 'page'
+            || this.post.email;
+
+        // open publish confirmation if post will be published/scheduled and emailed
+        if (!isPublishOnly && post.status === 'draft' && (saveType === 'publish' || saveType === 'schedule')) {
             if (options.dropdown) {
                 this._skipDropdownCloseCleanup = true;
                 options.dropdown.actions.close();
@@ -480,7 +487,11 @@ export default Component.extend({
     },
 
     _cleanup() {
-        this.set('distributionAction', 'publish_send');
+        if (this.post.isPage || !this.defaultEmailRecipients) {
+            this.set('distributionAction', 'publish');
+        } else {
+            this.set('distributionAction', 'publish_send');
+        }
 
         // when closing the menu we reset the publishedAtBlogTZ date so that the
         // unsaved changes made to the scheduled date aren't reflected in the PSM

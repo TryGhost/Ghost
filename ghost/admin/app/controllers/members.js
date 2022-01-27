@@ -34,6 +34,7 @@ export default class MembersController extends Controller {
     @service router;
     @service store;
     @service utils;
+    @service settings;
 
     queryParams = [
         'label',

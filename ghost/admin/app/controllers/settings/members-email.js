@@ -9,7 +9,7 @@ export default class MembersEmailController extends Controller {
     @service session;
     @service settings;
 
-    queryParams = ['emailRecipientsOpen', 'showEmailDesignSettings']
+    queryParams = ['showEmailDesignSettings']
 
     // from/supportAddress are set here so that they can be reset to saved values on save
     // to avoid it looking like they've been saved when they have a separate update process
@@ -17,7 +17,6 @@ export default class MembersEmailController extends Controller {
     @tracked supportAddress = '';
 
     @tracked showEmailDesignSettings = false;
-    @tracked emailRecipientsOpen = false;
     @tracked showLeaveSettingsModal = false;
 
     @action
@@ -28,11 +27,6 @@ export default class MembersEmailController extends Controller {
     @action
     toggleEmailDesignSettings() {
         this.showEmailDesignSettings = !this.showEmailDesignSettings;
-    }
-
-    @action
-    toggleEmailRecipientsOpen() {
-        this.emailRecipientsOpen = !this.emailRecipientsOpen;
     }
 
     leaveRoute(transition) {
