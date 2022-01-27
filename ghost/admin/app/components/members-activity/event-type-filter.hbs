@@ -12,9 +12,14 @@
             {{#each this.eventTypes as |type idx|}}
                 <li class="ember-power-select-option {{if type.isSelected "selected"}}">
                     <label for="type-{{idx}}">
-                        <input type="checkbox" checked={{type.isSelected}} id="type-{{idx}}" name="eventTypes" {{on "input" (fn this.toggleEventType type.event)}}>
-                        {{svg-jar type.icon}}
-                        {{type.name}}
+                        <span>
+                            <input type="checkbox" checked={{type.isSelected}} id="type-{{idx}}" name="eventTypes" {{on "input" (fn this.toggleEventType type.event)}}>
+                            {{svg-jar type.icon class="gh-member-activity-actions-icon"}}
+                            {{type.name}}
+                        </span>
+                        {{#if type.isSelected}}
+                            {{svg-jar "selected" class="gh-member-activity-actions-tick"}}
+                        {{/if}}
                     </label>
                 </li>
             {{/each}}
