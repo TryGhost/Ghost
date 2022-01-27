@@ -446,8 +446,8 @@ class SignupPage extends React.Component {
     }
 
     renderProducts() {
-        const {site} = this.context;
-        const products = getSiteProducts({site});
+        const {site, pageQuery} = this.context;
+        const products = getSiteProducts({site, pageQuery});
         return (
             <>
                 <ProductsSection

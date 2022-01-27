@@ -256,8 +256,12 @@ export function hasBenefits({prices, site}) {
     });
 }
 
-export function getSiteProducts({site}) {
+export function getSiteProducts({site, pageQuery}) {
     const products = getAvailableProducts({site});
+    const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+    if (showOnlyFree) {
+        return [];
+    }
     if (hasFreeProductPrice({site}) && products.length > 0) {
         products.unshift({
             id: 'free'
