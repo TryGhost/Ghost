@@ -139,7 +139,8 @@ class ProductRepository {
             active: true,
             name: data.name,
             description: data.description,
-            benefits: data.benefits
+            benefits: data.benefits,
+            welcome_page_url: data.welcome_page_url
         };
 
         const product = await this._Product.add(productData, options);
