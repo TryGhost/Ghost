@@ -808,6 +808,12 @@ textarea.gh-member-details-textarea {
     padding-top: 16px;
 }
 
+.gh-member-feed-row a {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--blackgrey);
+}
+
 
 /* Import modal
 /* ---------------------------------------------------------- */

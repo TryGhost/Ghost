@@ -1,6 +1,6 @@
 .gh-members-activity .gh-member-detail-overview {
     padding: 32px 0;
-    border-top: 1px solid #ebeef0;
+    border-top: 1px solid var(--whitegrey);
 }
 
 .gh-members-activity .gh-list-scrolling thead th:last-child {
@@ -12,18 +12,14 @@
     padding-bottom: 12px;
 }
 
+.gh-members-activity .gh-list h3 {
+    margin-bottom: 4px;
+}
+
 .gh-list-data-event {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-}
-
-.gh-members-activity-avatar {
-    width: 36px;
-    height: 36px;
-    background: hsl(316, 75%, 55%);
-    border-radius: 36px;
-    margin: 0 1rem 0 0;
 }
 
 .gh-members-activity-container {
@@ -88,7 +84,7 @@
 }
 
 .gh-member-activity-actions-menu {
-    top: calc(100% + 12px);
+    top: calc(100% + 16px);
     left: auto;
     right: 10px;
     padding: 2rem;
@@ -102,13 +98,24 @@
     margin-bottom: 0.75rem;
 }
 
+.gh-member-activity-actions-menu {
+    cursor: default;
+}
+
 .gh-member-activity-actions-menu .ember-power-select-option {
     padding: 4px 0;
-    min-width: 240px;
 }
 
 .gh-member-activity-actions-menu .ember-power-select-option label {
     padding: 0.75rem 2rem 0.75rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--midlightgrey);
+    cursor: pointer;
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option label span {
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -119,19 +126,26 @@
     width: 0;
 }
 
-.gh-member-activity-actions-menu.dropdown-menu svg {
-    margin-right: 1.5rem;
-    height: 24px;
-    width: 24px;
+.gh-member-activity-actions-menu.dropdown-menu .gh-member-activity-actions-icon {
+    margin-right: 1.25rem;
+    height: 20px;
+    width: 20px;
     line-height: 1em;
     fill: none;
 }
 
-.gh-member-activity-actions-menu .ember-power-select-option.selected label {
-    font-weight: 600;
-    color: var(--black);
+.gh-member-activity-actions-menu.dropdown-menu .ember-power-select-option.selected .gh-member-activity-actions-icon path {
+    stroke: var(--middarkgrey);
 }
 
-.gh-member-activity-actions-menu.dropdown-menu .ember-power-select-option.selected svg path {
-    stroke: var(--darkgrey);
+.gh-member-activity-actions-menu .ember-power-select-option.selected label {
+    font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-member-activity-actions-menu.dropdown-menu .gh-member-activity-actions-tick {
+    color: var(--green);
+    margin-right: -8px;
+    height: 16px;
+    width: 16px;
 }
