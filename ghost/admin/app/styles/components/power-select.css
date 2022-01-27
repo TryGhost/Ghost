@@ -179,6 +179,20 @@
     color: var(--darkgrey);
 }
 
+/* Reset - Useful for custom trigger components */
+.ember-power-select-trigger-reset {
+    padding: 0;
+    border: none;
+    border-radius: unset;
+    line-height: 0;
+    min-height: fit-content;
+}
+.ember-power-select-trigger-reset:focus,
+.ember-power-select-trigger-reset--active {
+    border: none;
+}
+
+
 /*
     HACK: ember-power-select has no separate class for the loading message
     Issue: https://github.com/cibernox/ember-power-select/issues/479

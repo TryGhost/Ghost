@@ -44,6 +44,6 @@ export default class MembersActivityEventTypeFilter extends Component {
 
         const excludeString = Array.from(excludedEvents).join(',');
 
-        this.args.updateExcludedEvents(excludeString || null);
+        this.args.onChange(excludeString || null);
     }
 }

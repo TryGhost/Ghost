@@ -32,8 +32,13 @@ export default class MembersActivityController extends Controller {
     }
 
     @action
-    updateExcludedEvents(newList) {
+    changeExcludedEvents(newList) {
         this.router.transitionTo({queryParams: {excludedEvents: newList}});
+    }
+
+    @action
+    changeMember(member) {
+        this.router.transitionTo({queryParams: {member: member?.id}});
     }
 
     _getTypeFilter() {
