@@ -252,7 +252,8 @@ class ProductRepository {
         let productData = {
             name: data.name,
             description: data.description,
-            benefits: data.benefits
+            benefits: data.benefits,
+            welcome_page_url: data.welcome_page_url
         };
 
         if (Reflect.has(data, 'active')) {
