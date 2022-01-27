@@ -14,6 +14,8 @@ export default ModalComponent.extend({
     store: service(),
     session: service(),
     feature: service(),
+    ghostPaths: service(),
+    ajax: service(),
 
     page: 'signup',
     iconExtensions: null,
@@ -29,6 +31,14 @@ export default ModalComponent.extend({
     backgroundStyle: computed('settings.accentColor', function () {
         let color = this.settings.get('accentColor') || '#ffffff';
         return htmlSafe(`background-color: ${color}`);
+    }),
+
+    disableUpdateSupportAddressButton: computed('supportAddress', function () {
+        const savedSupportAddress = this.get('settings.membersSupportAddress') || '';
+        if (!savedSupportAddress.includes('@') && this.config.emailDomain) {
+            return !this.supportAddress || (this.supportAddress === `${savedSupportAddress}@${this.config.emailDomain}`);
+        }
+        return !this.supportAddress || (this.supportAddress === savedSupportAddress);
     }),
 
     showModalLinkOrAttribute: computed('isShowModalLink', function () {
@@ -99,6 +109,8 @@ export default ModalComponent.extend({
             {name: 'text-only', label: 'Text only'}
         ];
         this.iconExtensions = ICON_EXTENSIONS;
+
+        this.set('supportAddress', this.parseEmailAddress(this.settings.get('membersSupportAddress')));
     },
 
     didInsertElement() {
@@ -153,6 +165,7 @@ export default ModalComponent.extend({
         setButtonStyle(buttonStyle) {
             this.settings.set('portalButtonStyle', buttonStyle.name);
         },
+
         setSignupButtonText(event) {
             this.settings.set('portalButtonSignupText', event.target.value);
         },
@@ -211,7 +224,20 @@ export default ModalComponent.extend({
 
         validatePaidSignupRedirect() {
             return this._validateSignupRedirect(this.paidSignupRedirect, 'membersPaidSignupRedirect');
+        },
+
+        setSupportAddress(supportAddress) {
+            this.set('supportAddress', supportAddress);
         }
+    },
+
+    parseEmailAddress(address) {
+        const emailAddress = address || 'noreply';
+        // Adds default domain as site domain
+        if (emailAddress.indexOf('@') < 0 && this.config.emailDomain) {
+            return `${emailAddress}@${this.config.emailDomain}`;
+        }
+        return emailAddress;
     },
 
     updateAllowedPlan(plan, isChecked) {
@@ -298,5 +324,22 @@ export default ModalComponent.extend({
         }
         yield this.settings.save();
         this.closeModal();
+    }).drop(),
+
+    updateSupportAddress: task(function* () {
+        let url = this.get('ghostPaths.url').api('/settings/members/email');
+        try {
+            const response = yield this.ajax.post(url, {
+                data: {
+                    email: this.supportAddress,
+                    type: 'supportAddressUpdate'
+                }
+            });
+            // this.toggleProperty('showSupportAddressConfirmation');
+            return response;
+        } catch (e) {
+            // Failed to send email, retry
+            return false;
+        }
     }).drop()
 });

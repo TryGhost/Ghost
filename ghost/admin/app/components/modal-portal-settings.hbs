@@ -7,7 +7,7 @@
             <h2 class="gh-portal-settings-title">Portal settings</h2>
             <div class="gh-portal-form-wrapper">
                 <fieldset class="gh-portal-settings-form">
-                    <div class="gh-portal-setting-section {{if (not-eq this.settings.membersSignupAccess "all") "disabled-overlay"}}" onclick={{action "switchToSignupPage"}}>
+                    <div class="gh-portal-setting-section {{if (not-eq this.settings.membersSignupAccess "all") "disabled-overlay"}}" onclick={{action "switchPreviewPage" "signup"}}>
                         <h3 class="gh-portal-setting-sectionheading">Signup options</h3>
                         <GhFormGroup @classNames="gh-members-subscribed-checkbox gh-portal-setting-first pb5 mb0">
                             <div class="flex justify-between items-center">
@@ -83,7 +83,7 @@
                                         </div>
                                     {{/each}}
                                 {{/if}}
-                                <div class="mb3 {{if (feature "multipleProducts") "mt5" ""}}">
+                                <div class="mb3 {{if (and (feature "multipleProducts") this.showPortalTiers) "mt5" ""}}">
                                     <h4 class="gh-portal-setting-title">Prices available at signup</h4>
                                 </div>
                                 {{#unless this.showPortalTiers}}
@@ -158,7 +158,7 @@
                         </div>
                         {{/if}}
                     </div>
-                    <div class="gh-portal-setting-section" onclick={{action "switchToSignupPage"}}>
+                    <div class="gh-portal-setting-section" onclick={{action "switchPreviewPage" "signup"}}>
                         <h3 class="gh-portal-setting-sectionheading">Look & feel</h3>
                         <GhFormGroup @classNames="gh-members-subscribed-checkbox gh-portal-setting-first mb0 b--whitegrey">
                             <div class="flex justify-between items-center">
@@ -271,6 +271,29 @@
                             </GhFormGroup>
                             {{/if}}
                         {{/if}}
+                    </div>
+
+                    <div class="gh-portal-setting-section" onclick={{action "switchPreviewPage" "accountHome"}}>
+                        <h3 class="gh-portal-setting-sectionheading">Account page settings</h3>
+                        <GhFormGroup @classNames="space-l mt5">
+                            <h4 class="gh-portal-setting-title">Support email address</h4>
+                            <div class="mt2">
+                                <GhTextInput
+                                    @value={{readonly this.supportAddress}}
+                                    @input={{action "setSupportAddress" value="target.value"}}
+                                />
+                                <GhTaskButton
+                                    @buttonText="Update support address"
+                                    @runningText="Sending..."
+                                    @successText="Confirmation email sent"
+                                    @disabled={{this.disableUpdateSupportAddressButton}}
+                                    @task={{this.updateSupportAddress}}
+                                    @class="gh-btn gh-btn-green gh-btn-icon gh-btn-textfield-group gh-portal-emailupdate-button"
+                                    data-test-button="update-support-address"
+                                />
+                            </div>
+                            <p>How members can reach you for help with their account (public)</p>
+                        </GhFormGroup>
                     </div>
                 </fieldset>
             </div>

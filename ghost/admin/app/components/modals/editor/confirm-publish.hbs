@@ -27,6 +27,11 @@
                             as an email newsletter with <strong>0 members</strong> selected.
                             Choose a segment of your audience and try again!
                         </p>
+                    {{else if (eq this.memberCount 0)}}
+                        <p>
+                            Your post will be published {{if @data.isScheduled "at the scheduled time" "immediately"}}
+                            and won't be sent as an email. Sound good?
+                        </p>
                     {{else}}
                         <p>
                             Your post will be delivered to <strong>{{this.memberCountString}}</strong>

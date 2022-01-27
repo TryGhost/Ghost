@@ -17,6 +17,8 @@ export default class extends Component {
     store
     @service
     feature
+    @service
+    settings
 
     constructor(...args) {
         super(...args);

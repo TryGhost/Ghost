@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 
-export default class GhMembersListItemColumnLabs extends Component {
+export default class GhMembersListItemColumn extends Component {
     constructor(...args) {
         super(...args);
     }

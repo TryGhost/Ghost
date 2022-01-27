@@ -204,11 +204,11 @@
 
 .ember-power-select-multiple-option {
     margin: 2px;
-    padding: 2px 6px;
+    padding: 2px 6px 3px;
     border-radius: 3px;
     font-size: 0.93em;
     font-weight: 500;
-    border: 1px solid var(--whitegrey-d1);
+    border: 1px solid transparent;
     color: var(--darkgrey);
     background: var(--whitegrey-d1);
 }
@@ -307,20 +307,12 @@
     color: var(--white);
 }
 
+.token-segment-status-free svg path,
+.token-segment-status-paid svg path,
 .token-segment-product svg path {
     stroke: var(--white);
     fill: var(--white);
-}
-
-/* Inside settings / Mailgun region */
-/* TODO: make these general styles? */
-
-.gh-labs-mailgun-region .ember-power-select-trigger {
-    padding: 6px 12px;
-}
-.gh-labs-mailgun-region .ember-power-select-selected-item {
-    margin-left: 0;
-}
+}   
 
 /* Inline input */
 .ember-power-select-inline {
