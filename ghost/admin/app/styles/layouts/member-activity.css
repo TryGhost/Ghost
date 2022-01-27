@@ -1,19 +1,29 @@
 .gh-members-activity .gh-member-detail-overview {
-    padding: 0 0 32px;
+    padding: 32px 0;
+    border-top: 1px solid #ebeef0;
 }
 
 .gh-members-activity .gh-list-scrolling thead th:last-child {
     width: 25%;
 }
 
-.gh-members-activity-single .gh-list-scrolling {
-    height: calc(100vh - 208px);
+.gh-members-activity:not(.gh-members-activity-single) .gh-list-data {
+    padding-top: 12px;
+    padding-bottom: 12px;
 }
 
 .gh-list-data-event {
     display: flex;
     justify-content: flex-start;
     align-items: center;
+}
+
+.gh-members-activity-avatar {
+    width: 36px;
+    height: 36px;
+    background: hsl(316, 75%, 55%);
+    border-radius: 36px;
+    margin: 0 1rem 0 0;
 }
 
 .gh-members-activity-container {
@@ -32,22 +42,17 @@
     display: inline-block;
     text-transform: lowercase;
     color: var(--middarkgrey);
+    font-weight: 500;
 }
 
 .gh-members-activity-description:first-letter {
     text-transform: uppercase;
 }
 
-.gh-members-activity-single .gh-members-activity-description {
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--black);
-}
-
 .gh-members-activity-icon {
     width: 24px;
     height: 24px;
-    margin: 0 1rem 1rem 0;
+    margin: 0 0.75rem 0 0;
 }
 
 .gh-members-activity-single .gh-members-activity-icon {
