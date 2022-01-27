@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
-const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {SubscriptionCreatedEvent, MemberSubscribeEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid');
 
 const messages = {
@@ -183,6 +183,11 @@ module.exports = class MemberRepository {
                 source,
                 ...eventData
             }, options);
+
+            DomainEvents.dispatch(MemberSubscribeEvent.create({
+                memberId: member.id,
+                source: source
+            }, memberData.created_at));
         }
 
         return member;
@@ -295,6 +300,11 @@ module.exports = class MemberRepository {
                 subscribed: member.get('subscribed'),
                 source
             }, sharedOptions);
+
+            DomainEvents.dispatch(MemberSubscribeEvent.create({
+                memberId: member.id,
+                source: source
+            }, member.updated_at));
         }
 
         if (member.attributes.email !== member._previousAttributes.email) {

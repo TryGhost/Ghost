@@ -1,0 +1,116 @@
+const errors = require('@tryghost/errors');
+const DomainEvents = require('@tryghost/domain-events');
+const {MemberSubscribeEvent} = require('@tryghost/member-events');
+
+const messages = {
+    emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
+    emailVerificationEmailSubject: `Email needs verification`,
+    emailVerificationEmailMessage: `Email verification needed for site: {siteUrl}, just imported: {importedNumber} members.`
+};
+
+class VerificationTrigger {
+    /**
+     * 
+     * @param {object} deps
+     * @param {number} deps.configThreshold Threshold for triggering verification as defined in config
+     * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
+     * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
+     * @param {(content: {subject: string, message: string, amountImported: number}) => {}} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
+     * @param {any} deps.membersStats MemberStats service
+     * @param {any} deps.Settings Ghost Settings model
+     * @param {any} deps.eventRepository For querying events
+     */
+    constructor({
+        configThreshold,
+        isVerified,
+        isVerificationRequired,
+        sendVerificationEmail,
+        membersStats,
+        Settings,
+        eventRepository
+    }) {
+        this._configThreshold = configThreshold;
+        this._isVerified = isVerified;
+        this._isVerificationRequired = isVerificationRequired;
+        this._sendVerificationEmail = sendVerificationEmail;
+        this._membersStats = membersStats;
+        this._Settings = Settings;
+        this._eventRepository = eventRepository;
+
+        DomainEvents.subscribe(MemberSubscribeEvent, async (event) => {
+            if (event.data.source === 'api' && isFinite(this._configThreshold)) {
+                const createdAt = new Date();
+                createdAt.setDate(createdAt.getDate() - 30);
+                const events = await this._eventRepository.getNewsletterSubscriptionEvents({
+                    // Date in last 30 days, source is API
+                    filter: `source:api+created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
+                });
+
+                if (events.meta.pagination.total > this._configThreshold) {
+                    await this.startVerificationProcess({
+                        amountImported: events.meta.pagination.total,
+                        throwOnTrigger: false
+                    });
+                }
+            }
+        });
+    }
+
+    async getImportThreshold() {
+        const volumeThreshold = this._configThreshold;
+        if (isFinite(volumeThreshold)) {
+            const membersTotal = await this._membersStats.getTotalMembers();
+            return Math.max(membersTotal, volumeThreshold);
+        } else {
+            return volumeThreshold;
+        }
+    }
+
+    /** @typedef IVerificationResult
+     * @property {boolean} needsVerification Whether the verification workflow was triggered
+     */
+
+    /**
+     * 
+     * @param {object} config
+     * @param {number} config.amountImported Amount of members which were imported
+     * @param {boolean} config.throwOnTrigger Whether to throw if verification is needed
+     * @returns {Promise<IVerificationResult>} Object containing property "needsVerification" - true when triggered 
+     */
+    async startVerificationProcess({
+        amountImported,
+        throwOnTrigger
+    }) {
+        if (!this._isVerified()) {
+            // Only trigger flag change and escalation email the first time
+            if (!this._isVerificationRequired()) {
+                await this._Settings.edit([{
+                    key: 'email_verification_required',
+                    value: true
+                }], {context: {internal: true}});
+
+                this._sendVerificationEmail({
+                    message: messages.emailVerificationEmailMessage,
+                    subject: messages.emailVerificationEmailSubject,
+                    amountImported
+                });
+
+                if (throwOnTrigger) {
+                    throw new errors.ValidationError({
+                        message: messages.emailVerificationNeeded
+                    });
+                }
+
+                return {
+                    needsVerification: true
+                };
+            }
+        }
+
+        return {
+            needsVerification: false
+        };
+    }
+}
+
+module.exports = VerificationTrigger;
