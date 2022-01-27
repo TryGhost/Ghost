@@ -1,19 +1,18 @@
 version: 0.2
-
 phases:
-  install:
-    runtime-versions: nodejs: 10
-      java: corretto8
+  pre_build:
+    commands:
+      - echo Installing source NPM dependencies...
+      - npm install
   build:
     commands:
       - echo Build started on `date`
-      - mvn test 
+      - echo Compiling the Node.js code
+      - echo Running unit tests
+      - npm test
   post_build:
     commands:
       - echo Build completed on `date`
-      - mvn package
 artifacts:
   files:
-    - target/Ghost
-    - appspec.yml
-  discard-paths: yes
+    - '**/*'
