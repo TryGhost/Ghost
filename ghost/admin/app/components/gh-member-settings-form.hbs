@@ -43,21 +43,23 @@
                             {{gh-count-down-characters this.scratchMember.note 500}}</p>
                     </GhFormGroup>
 
-                    <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h4 class="gh-setting-title m">Subscribed to newsletter</h4>
-                                <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
+                    {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
+                        <GhFormGroup @classNames="gh-members-subscribed-checkbox mb0">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="gh-setting-title m">Subscribed to newsletter</h4>
+                                    <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
+                                </div>
+                                <div class="for-switch">
+                                    <label class="switch" for="subscribed-checkbox">
+                                        <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
+                                            @name="subscribed" data-test-checkbox="member-subscribed" />
+                                        <span class="input-toggle-component"></span>
+                                    </label>
+                                </div>
                             </div>
-                            <div class="for-switch">
-                                <label class="switch" for="subscribed-checkbox">
-                                    <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
-                                        @name="subscribed" data-test-checkbox="member-subscribed" />
-                                    <span class="input-toggle-component"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </GhFormGroup>
+                        </GhFormGroup>
+                    {{/if}}
                 </div>
             </div>
 
