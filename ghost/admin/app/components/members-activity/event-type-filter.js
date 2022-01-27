@@ -4,7 +4,7 @@ import {action} from '@ember/object';
 const ALL_EVENT_TYPES = [
     {event: 'signup_event', icon: 'event-filter-signup', name: 'Signups'},
     {event: 'login_event', icon: 'event-filter-login', name: 'Logins'},
-    {event: 'subscription_event', icon: 'event-filter-payment', name: 'Paid subscriptions'},
+    {event: 'subscription_event', icon: 'event-filter-subscription', name: 'Paid subscriptions'},
     {event: 'payment_event', icon: 'event-filter-payment', name: 'Payments'},
     {event: 'newsletter_event', icon: 'event-filter-newsletter', name: 'Email subscriptions'},
     {event: 'email_opened_event', icon: 'event-filter-email-opened', name: 'Email opens', memberOnly: true},
