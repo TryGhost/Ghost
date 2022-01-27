@@ -94,6 +94,12 @@ export default class GhMembersRecipientSelect extends Component {
             return;
         }
 
+        // on->off, forced with an empty filter
+        if (this.forceSpecificChecked && this.specificFilters.size === 0) {
+            this.forceSpecificChecked = false;
+            return;
+        }
+
         this.forceSpecificChecked = false;
 
         // on->off, store current filter for re-use when toggled back on

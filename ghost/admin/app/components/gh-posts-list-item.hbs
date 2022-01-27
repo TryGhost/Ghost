@@ -21,34 +21,36 @@
         </p>
     </LinkTo>
 
-    {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
-        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
-            <div class="flex fw4">
-                {{#if (or @post.email @post.willEmail)}}
-                    {{#if (eq @post.email.status "submitted")}}
-                        <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
-                            <span class="darkgrey fw5 gh-content-email-stats">{{@post.email.emailCount}}</span>
-                            <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
-                        </span>
-                    {{/if}}
-                {{/if}}
-            </div>
-        </LinkTo>
-
-        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
-            {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
-                <div class="flex">
-                    <span class="darkgrey fw5 gh-content-email-stats">
-                        {{#if this.isHovered}}
-                            {{@post.email.openedCount}}
-                        {{else}}
-                            {{@post.email.openRate}}%&nbsp;
+    {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
+        {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
+                <div class="flex fw4">
+                    {{#if (or @post.email @post.willEmail)}}
+                        {{#if (eq @post.email.status "submitted")}}
+                            <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
+                                <span class="darkgrey fw5 gh-content-email-stats">{{@post.email.emailCount}}</span>
+                                <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
+                            </span>
                         {{/if}}
-                    </span>
-                    <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
+                    {{/if}}
                 </div>
-            {{/if}}
-        </LinkTo>
+            </LinkTo>
+
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
+                {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
+                    <div class="flex">
+                        <span class="darkgrey fw5 gh-content-email-stats">
+                            {{#if this.isHovered}}
+                                {{@post.email.openedCount}}
+                            {{else}}
+                                {{@post.email.openRate}}%&nbsp;
+                            {{/if}}
+                        </span>
+                        <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
+                    </div>
+                {{/if}}
+            </LinkTo>
+        {{/if}}
     {{/if}}
 
     <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status">

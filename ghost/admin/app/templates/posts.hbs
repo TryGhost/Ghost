@@ -31,9 +31,11 @@
             {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
                     <div class="gh-list-header gh-posts-title-header">Title</div>
-                    {{#if this.feature.emailAnalytics}}
-                        <div class="gh-list-header gh-posts-sends-header">Sends</div>
-                        <div class="gh-list-header gh-posts-opens-header">Opens</div>
+                    {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
+                        {{#if this.feature.emailAnalytics}}
+                            <div class="gh-list-header gh-posts-sends-header">Sends</div>
+                            <div class="gh-list-header gh-posts-opens-header">Opens</div>
+                        {{/if}}
                     {{/if}}
                     <div class="gh-list-header gh-posts-status-header">Status</div>
                 </li>

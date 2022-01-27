@@ -589,3 +589,15 @@
 .gh-portal-setting-section.redirects p {
     margin-top: 4px;
 }
+
+.gh-portal-emailupdate-button {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.gh-portal-emailupdate-button[disabled],
+.gh-portal-emailupdate-button[disabled]:hover {
+    background: var(--whitegrey-d2) !important;
+    color: var(--darkgrey) !important;
+    cursor: auto;
+}

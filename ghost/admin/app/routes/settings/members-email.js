@@ -14,11 +14,6 @@ export default class MembersEmailRoute extends AdminRoute {
                 `Newsletter email address has been updated`,
                 {type: 'success', key: 'members.settings.from-address.updated'}
             );
-        } else if (transition.to.queryParams?.supportAddressUpdate === 'success') {
-            this.notifications.showAlert(
-                `Support email address has been updated`,
-                {type: 'success', key: 'members.settings.support-address.updated'}
-            );
         }
     }
 
