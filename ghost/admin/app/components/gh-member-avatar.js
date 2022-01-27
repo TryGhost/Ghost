@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import {get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 
 const stringToHslColor = function (str, saturation, lightness) {
@@ -15,8 +16,8 @@ export default class GhMemberAvatarComponent extends Component {
     get memberName() {
         let {member} = this.args;
 
-        // can be a proxy in a sparse array so .get is required
-        return member.get('name') || member.get('email') || 'NM';
+        // can be given a proxy object from a sparse array so get is required
+        return get(member, 'name') || get(member, 'email') || 'NM';
     }
 
     get backgroundStyle() {
