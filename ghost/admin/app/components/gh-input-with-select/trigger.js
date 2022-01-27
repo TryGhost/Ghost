@@ -83,7 +83,7 @@ export default class GhSearchInputTrigger extends Component {
             }
         }
 
-        if (this.args.extra.value && this.args.select.searchText === this.args.extra.value) {
+        if (this.args.extra?.value && this.args.select.searchText === this.args.extra.value) {
             this.args.select.actions.search('');
             this.close();
         }
