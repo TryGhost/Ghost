@@ -22,8 +22,8 @@ export default class SettingsDefaultEmailRecipientsComponent extends Component {
             icon: 'members-paid',
             icon_color: 'pink'
         }, {
-            name: 'Specific tier(s)',
-            description: 'Only people who have a subscription to a selected tier',
+            name: 'Specific people',
+            description: 'Only people with any of the selected tiers or labels',
             value: 'segment',
             icon: 'members-segment',
             icon_color: 'yellow'

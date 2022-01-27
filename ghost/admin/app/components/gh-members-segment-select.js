@@ -73,27 +73,6 @@ export default class GhMembersSegmentSelect extends Component {
             });
         }
 
-        // fetch all labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
-        // TODO: add `include: 'count.members` to query once API is fixed
-        const labels = yield this.store.query('label', {limit: 'all'});
-
-        if (labels.length > 0 && !this.args.hideLabels) {
-            const labelsGroup = {
-                groupName: 'Labels',
-                options: []
-            };
-
-            labels.forEach((label) => {
-                labelsGroup.options.push({
-                    name: label.name,
-                    segment: `label:${label.slug}`,
-                    count: label.count?.members,
-                    class: 'segment-label'
-                });
-            });
-
-            options.push(labelsGroup);
-        }
         if (this.feature.get('multipleProducts')) {
             // fetch all products w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
             // TODO: add `include: 'count.members` to query once API supports
@@ -119,6 +98,28 @@ export default class GhMembersSegmentSelect extends Component {
                     this.args.onChange?.(productsGroup.options[0].segment);
                 }
             }
+        }
+
+        // fetch all labels w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
+        // TODO: add `include: 'count.members` to query once API is fixed
+        const labels = yield this.store.query('label', {limit: 'all'});
+
+        if (labels.length > 0 && !this.args.hideLabels) {
+            const labelsGroup = {
+                groupName: 'Labels',
+                options: []
+            };
+
+            labels.forEach((label) => {
+                labelsGroup.options.push({
+                    name: label.name,
+                    segment: `label:${label.slug}`,
+                    count: label.count?.members,
+                    class: 'segment-label'
+                });
+            });
+
+            options.push(labelsGroup);
         }
 
         this._options = options;
