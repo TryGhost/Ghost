@@ -69,6 +69,10 @@ export default class GhSearchInputTrigger extends Component {
         }
 
         this.args.onFocus?.(...arguments);
+
+        if (this.args.extra.showSearchMessage === false && this.args.select.results.length === 0) {
+            this.close();
+        }
     }
 
     @action
