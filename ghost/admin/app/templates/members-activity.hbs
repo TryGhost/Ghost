@@ -13,7 +13,11 @@
                 <MembersActivity::EventTypeFilter
                     @excludedEvents={{this.excludedEvents}}
                     @hideMemberOnlyEvents={{not this.member}}
-                    @updateExcludedEvents={{this.updateExcludedEvents}} />
+                    @onChange={{this.changeExcludedEvents}} />
+
+                <MembersActivity::MemberFilter
+                    @selected={{this.memberRecord}}
+                    @onChange={{this.changeMember}} />
             </div>
         </div>
     </GhCanvasHeader>

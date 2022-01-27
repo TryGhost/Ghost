@@ -1,0 +1,26 @@
+{{#if @selected}}
+    <div class="gh-btn" {{on "click" (fn @onChange null)}}>
+        <span class="gh-btn-label-green">
+            {{@selected.name}}
+            &times;
+        </span>
+    </div>
+{{else}}
+    <div class="gh-contentfilter-menu {{if @selected "gh-contentfilter-selected"}}">
+        <PowerSelect
+            @searchEnabled={{true}}
+            @search={{perform this.searchMembersTask}}
+            @selected={{@selected}}
+            @onChange={{@onChange}}
+            @matchTriggerWidth={{false}}
+            @triggerComponent="members-activity/member-filter-trigger"
+            @triggerClass="ember-power-select-trigger-reset"
+            @dropdownClass="gh-contentfilter-menu-dropdown"
+            @horizontalPosition="right"
+            as |member|
+        >
+            <strong>{{member.name}}</strong><br>
+            {{member.email}}
+        </PowerSelect>
+    </div>
+{{/if}}
