@@ -69,8 +69,7 @@ describe('Importer', function () {
                 isSet: sinon.stub(),
                 addJob: sinon.stub(),
                 knex: knexStub,
-                urlFor: sinon.stub(),
-                fetchThreshold: async () => 2
+                urlFor: sinon.stub()
             });
 
             const result = await importer.process({
@@ -92,85 +91,6 @@ describe('Importer', function () {
 
             should.exist(result.meta.stats.invalid);
             should.equal(result.meta.import_label, null);
-
-            // freeze not triggered if the import is not over the threshold
-            should.exist(result.meta.freeze);
-            result.meta.freeze.should.be.false();
-
-            should.exist(result.meta.originalImportSize);
-            result.meta.originalImportSize.should.equal(2);
-
-            fsWriteSpy.calledOnce.should.be.true();
-        });
-
-        it('should trigger a freeze when over the freeze threshold', async function () {
-            const defaultProduct = {
-                id: 'default_product_id'
-            };
-
-            const membersApi = {
-                productRepository: {
-                    list: async () => {
-                        return {
-                            data: [defaultProduct]
-                        };
-                    }
-                },
-                members: {
-                    get: async () => {
-                        return null;
-                    },
-                    create: async (row) => {
-                        return row;
-                    }
-                }
-            };
-
-            const knexStub = {
-                transaction: sinon.stub().resolves({
-                    rollback: () => {},
-                    commit: () => {}
-                })
-            };
-
-            const LabelModelStub = {
-                findOne: sinon.stub().resolves(null)
-            };
-
-            const importer = new MembersCSVImporter({
-                storagePath: csvPath,
-                getTimezone: sinon.stub().returns('UTC'),
-                getMembersApi: () => membersApi,
-                sendEmail: sinon.stub(),
-                isSet: sinon.stub(),
-                addJob: sinon.stub(),
-                knex: knexStub,
-                urlFor: sinon.stub(),
-                fetchThreshold: async () => 1
-            });
-
-            const result = await importer.process({
-                pathToCSV: `${csvPath}/single-column-with-header.csv`,
-                headerMapping: {},
-                importLabel: {
-                    name: 'test import'
-                },
-                user: {
-                    email: 'test@example.com'
-                },
-                LabelModel: LabelModelStub
-            });
-
-            should.exist(result.meta);
-            should.exist(result.meta.stats);
-            should.exist(result.meta.stats.imported);
-            result.meta.stats.imported.should.equal(2);
-
-            should.exist(result.meta.stats.invalid);
-            should.equal(result.meta.import_label, null);
-
-            should.exist(result.meta.freeze);
-            result.meta.freeze.should.be.true();
 
             should.exist(result.meta.originalImportSize);
             result.meta.originalImportSize.should.equal(2);
