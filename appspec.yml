@@ -2,8 +2,8 @@ appspec.yml
 version: o.o
 os: linux
 files:
- - Sources: /
-   destination: home/ec2-user/Ghost
+  - source: ./Ghost
+    destination: /tmp
 hooks:
  ApplicationStop:
   - location: scripts/application_stop.sh
