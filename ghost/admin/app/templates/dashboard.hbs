@@ -231,56 +231,6 @@
 
         <section class="gh-dashboard-area members-activity">
             {{#if this.showMembersData}}
-                {{#if this.topMembersData}}
-                    <div class="gh-dashboard-box grey top-members">
-                        <div class="gh-dashboard-header-container">
-                            <h4 class="gh-dashboard-header">Top members</h4>
-                            {{#if this.topMembersDataHasOpenRates}}
-                            <h4 class="gh-dashboard-header secondary">Open rate</h4>
-                            {{else}}
-                            <h4 class="gh-dashboard-header secondary">Member since</h4>
-                            {{/if}}
-                        </div>
-                        <div class="gh-dashboard-list">
-                            {{#if this.topMembersLoading}}
-                                Loading...
-                            {{else}}
-                                {{#if this.topMembersError}}
-                                    <p class="tc">
-                                        There was an error loading member events.
-                                        <code class="hidden">{{this.events.error.message}}</code>
-                                    </p>
-                                {{else}}
-                                <ul class="gh-dashboard-top-members">
-                                    {{#each this.topMembersData as |member|}}
-                                        <li class="gh-dashboard-top-member">
-                                            <LinkTo class="member-details" @route="member" @model="{{member.id}}">
-                                                <GhMemberAvatar @member={{member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
-                                                {{#if member.name}}
-                                                    <span class="name">{{member.name}}</span>
-                                                {{else}}
-                                                    <span class="email">{{member.email}}</span>
-                                                {{/if}}
-                                            </LinkTo>
-                                            {{#if member.emailOpenRate}}
-                                                <span class="open-rate">{{member.emailOpenRate}}%</span>
-                                            {{else}}
-                                                <span class="open-rate">
-                                                    {{moment-format member.createdAtUTC "D MMM YYYY"}}
-                                                </span>
-                                            {{/if}}
-                                        </li>
-                                    {{/each}}
-                                </ul>
-                                {{/if}}
-                            {{/if}}
-                            <div class="gh-dashboard-top-members-footer">
-                                <LinkTo @route="members">See all members {{svg-jar "arrow-right"}}</LinkTo>
-                            </div>
-                        </div>
-                    </div>
-                {{/if}}
-
                 <Dashboard::LatestMemberActivity />
             {{/if}}
 

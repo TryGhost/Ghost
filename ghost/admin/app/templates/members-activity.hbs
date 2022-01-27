@@ -2,9 +2,11 @@
     <GhCanvasHeader class="gh-canvas-header break tablet members-header">
         <h2 class="gh-canvas-title" data-test-screen-title>
             {{#if this.memberRecord}}
-                <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back">Members activity</LinkTo>
+                <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back">Activity</LinkTo>
+                <span>{{svg-jar "arrow-right"}}</span>
+                <span class="truncate">{{this.memberRecord.name}}</span>
             {{else}}
-                Members activity
+                <span>Activity</span>
             {{/if}}
         </h2>
 
@@ -23,12 +25,13 @@
     </GhCanvasHeader>
 
     <div class="view-container">
-        {{#if this.memberRecord}}
-            <GhMemberDetails @member={{this.memberRecord}} />
-        {{/if}}
-
-        {{#let (members-event-fetcher filter=this.filter pageSize=50) as |eventsFetcher|}}
-            <div class="gh-list-scrolling">
+        <div class="gh-list-scrolling">
+            {{#if this.memberRecord}}
+                <LinkTo @route="member" @model={{this.memberRecord}}>
+                    <GhMemberDetails @member={{this.memberRecord}} />
+                </LinkTo>
+            {{/if}}
+            {{#let (members-event-fetcher filter=this.filter pageSize=50) as |eventsFetcher|}}
                 {{#if eventsFetcher.data}}
                     <MembersActivity::Table @hideMemberColumn={{if this.member true}} @events={{eventsFetcher.data}} />
 
@@ -42,8 +45,8 @@
                 {{#if eventsFetcher.isLoading}}
                     <div class="relative h30"><GhLoadingSpinner /></div>
                 {{/if}}
-            </div>
-        {{/let}}
+            {{/let}}
+        </div>
     </div>
 </section>
 
