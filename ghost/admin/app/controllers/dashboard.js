@@ -184,6 +184,10 @@ export default class DashboardController extends Controller {
     }
 
     loadTopMembers() {
+        if (this.feature.membersActivityFeed) {
+            return;
+        }
+
         this.topMembersLoading = true;
         let query = {
             filter: 'email_open_rate:-null',

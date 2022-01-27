@@ -6,7 +6,7 @@
             </h4>
         </h4>
         <div class="content">
-            {{#let (members-event-fetcher filter=(if (feature "membersActivityFeed") "type:-[email_delivered_event,email_opened_event,email_failed_event]") pageSize=5) as |eventsFetcher|}}
+            {{#let (members-event-fetcher filter=(if (feature "membersActivityFeed") "type:-[email_delivered_event,email_opened_event,email_failed_event]") pageSize=(if (feature "membersActivityFeed") 10 5)) as |eventsFetcher|}}
                 {{#if eventsFetcher.isLoading}}
                     Loading...
                 {{/if}}

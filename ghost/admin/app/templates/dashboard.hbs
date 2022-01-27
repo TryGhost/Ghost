@@ -231,6 +231,7 @@
 
         <section class="gh-dashboard-area members-activity">
             {{#if this.showMembersData}}
+                {{#unless (feature "membersActivityFeed")}}
                 {{#if this.topMembersData}}
                     <div class="gh-dashboard-box grey top-members">
                         <div class="gh-dashboard-header-container">
@@ -280,6 +281,7 @@
                         </div>
                     </div>
                 {{/if}}
+                {{/unless}}
 
                 <Dashboard::LatestMemberActivity />
             {{/if}}
