@@ -103,7 +103,13 @@ function createSettingsInstance(config) {
 
     const getAdminRedirectLink = ({type}) => {
         const adminUrl = urlUtils.urlFor('admin', true);
-        return urlUtils.urlJoin(adminUrl, `#/settings/members-email/?${type}=success`);
+        if (type === 'fromAddressUpdate') {
+            return urlUtils.urlJoin(adminUrl, `#/settings/members-email/?${type}=success`);
+        } else if (type === 'supportAddressUpdate') {
+            return urlUtils.urlJoin(adminUrl, `#/settings/members/?${type}=success`);
+        } else {
+            return urlUtils.urlJoin(adminUrl, `#/site/`);
+        }
     };
 
     return {
