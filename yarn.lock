@@ -1570,10 +1570,10 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-importer@0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.4.1.tgz#e5c64ac94f03b922c9bb4067eeb21945373637c8"
-  integrity sha512-8vpei+dHRRosS1UpkyPDI/3100kFMdEidxH8hDFEZbyQjphGmQdeKpi04yJUQFGeANKBNljiifOuZ9vJdJcd9g==
+"@tryghost/members-importer@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.5.0.tgz#262b542bd597853b091b819adcd8a13c7bd2dc0a"
+  integrity sha512-WNLexqKyqJ6yyBSoZWhtacJwWEoG6PlPxaCwjAk2pifPfWuT+T1uVk+tm7ETmQzBLxf0HKpcdpN4j4w9J0A0Ew==
   dependencies:
     "@tryghost/errors" "^0.2.13"
     "@tryghost/members-csv" "^1.2.3"
