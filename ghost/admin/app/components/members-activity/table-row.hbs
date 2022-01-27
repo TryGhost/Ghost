@@ -1,26 +1,36 @@
 {{#let (parse-member-event @event) as |event|}}
-    <tr>   
+    <tr>  
+        {{#unless @hideMemberColumn}}
+            <div class="gh-list-data">
+                <LinkTo @route="members-activity" @query={{hash member=event.member.id}}>
+                    <div class="flex items-center">
+                        <div class="gh-members-activity-avatar">
+                            <!-- TODO: <GhMemberAvatar /> goes here -->
+                        </div>
+                        <div>
+                            <h3 class="gh-members-activity-name">
+                                {{event.member.name}}
+                            </h3>
+                            <div class="gh-members-activity-email">
+                                {{event.member.email}}
+                            </div>
+                        </div>
+                    </div>
+                </LinkTo>
+            </div>
+        {{/unless}}
         <div class="gh-list-data">
             <div class="gh-members-activity-container">
                 <div class="gh-members-activity-icon">{{svg-jar event.icon}}</div>
-                <div class="gh-members-activity-detail">
-                    {{#unless @hideMemberColumn}}
-                        <div class="gh-members-activity-name">
-                            <LinkTo @route="member" @model={{event.memberId}}>
-                                {{event.member.name}}{{#unless event.member.name}}{{event.member.email}}{{/unless}}
-                            </LinkTo>
-                        </div>
-                    {{/unless}}
-                    <div class="gh-members-activity-event">
-                        <span class="gh-members-activity-description">
-                            {{event.action}}
-                            {{event.object}}
-                        </span>
-                        {{#if event.email}}
-                            "<GhEmailPreviewLink @data={{event.email}} />"
-                        {{/if}}
-                        <span class="highlight">{{event.info}}</span>
-                    </div>
+                <div class="gh-members-activity-event">
+                    <span class="gh-members-activity-description">
+                        {{event.action}}
+                        {{event.object}}
+                    </span>
+                    {{#if event.email}}
+                        "<GhEmailPreviewLink @data={{event.email}} />"
+                    {{/if}}
+                    <span class="highlight">{{event.info}}</span>
                 </div>
             </div>
         </div>

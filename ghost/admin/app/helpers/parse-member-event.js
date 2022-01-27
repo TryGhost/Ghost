@@ -57,7 +57,7 @@ function getIcon(event) {
             icon = 'canceled-subscription';
         }
 
-        icon = 'changed';
+        icon = 'started-subscription';
     }
 
     if (event.type === 'email_opened_event') {

@@ -681,8 +681,8 @@ a.gh-dashboard-container {
     flex-grow: 1;
     width: 100%;
     justify-content: space-between;
-    margin: 0 0 14px;
-    padding: 0 0 14px;
+    margin: 0 0 12px;
+    padding: 0 0 12px;
     color: var(--darkgrey);
     border-bottom: 1px solid var(--whitegrey);
 }
@@ -729,10 +729,10 @@ a.gh-dashboard-container {
 }
 
 .gh-dashboard-box.activity a .gh-dashboard-activity-name {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 14px;
     color: var(--black);
-    margin: 0 0 1px;
+    margin: 0 0 2px;
 }
 
 .gh-dashboard-box.activity a .gh-dashboard-activity-event {
