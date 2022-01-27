@@ -137,10 +137,16 @@
                 <h4 class="gh-main-section-header small bn">Advanced</h4>
                 <div class="gh-main-section-content grey gh-product-priceform-block">
                     <GhFormGroup>
-                        <label for="" class="fw6">Welcome page</label>
-                        <GhTextInput
-                            @class="gh-input" />
-                            <p>Redirect to this URL after signup for premium membership</p>
+                        <label for="welcomePage" class="fw6">Welcome page</label>
+                        <GhUrlInput
+                            @id="welcomePage"
+                            @value={{readonly this.model.product.welcomePageURL}}
+                            @baseUrl={{readonly this.siteUrl}}
+                            @setResult={{this.setWelcomePageURL}}
+                            @validateUrl={{this.validateWelcomePageURL}}
+                            @placeholder={{readonly this.siteUrl}}
+                        />
+                        <p>Redirect to this URL after signup for premium membership</p>
                     </GhFormGroup>
                 </div>
             </div>

@@ -8,6 +8,7 @@ export default Model.extend(ValidationEngine, {
     description: attr('string'),
     active: attr('boolean'),
     slug: attr('string'),
+    welcomePageURL: attr('string'),
     type: attr('string', {defaultValue: 'paid'}),
     monthlyPrice: attr('stripe-price'),
     yearlyPrice: attr('stripe-price'),

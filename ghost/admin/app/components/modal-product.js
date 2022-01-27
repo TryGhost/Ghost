@@ -21,6 +21,7 @@ const CURRENCIES = currencies.map((currency) => {
 @classic
 export default class ModalProductPrice extends ModalBase {
     @service settings;
+    @service config;
     @tracked model;
     @tracked product;
     @tracked periodVal;
@@ -31,6 +32,7 @@ export default class ModalProductPrice extends ModalBase {
     @tracked stripePlanError = '';
     @tracked benefits = emberA([]);
     @tracked newBenefit = null;
+    @tracked welcomePageURL
 
     confirm() {}
 
@@ -76,6 +78,31 @@ export default class ModalProductPrice extends ModalBase {
         });
     }
 
+    @action
+    validateWelcomePageURL() {
+        const siteUrl = this.siteUrl;
+
+        if (this.welcomePageURL === undefined) {
+            // Not initialised
+            return;
+        }
+
+        if (this.welcomePageURL.href.startsWith(siteUrl)) {
+            const path = this.welcomePageURL.href.replace(siteUrl, '');
+            this.model.product.welcomePageURL = path;
+        } else {
+            this.model.product.welcomePageURL = this.welcomePageURL.href;
+        }
+    }
+
+    get siteUrl() {
+        return this.config.get('blogUrl');
+    }
+
+    get welcomePageURL() {
+        return this.model.product.welcomePageURL;
+    }
+
     get title() {
         if (this.isExistingProduct) {
             if (this.isFreeProduct) {
@@ -100,6 +127,10 @@ export default class ModalProductPrice extends ModalBase {
     setCurrency(event) {
         const newCurrency = event.value;
         this.currency = newCurrency;
+    }
+    @action
+    setWelcomePageURL(url) {
+        this.welcomePageURL = url;
     }
 
     reset() {
