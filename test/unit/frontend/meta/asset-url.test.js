@@ -34,9 +34,9 @@ describe('getAssetUrl', function () {
         testUrl.should.equal('/public/myfile.js?v=' + config.get('assetHash'));
     });
 
-    it('should return no hash when svg#', function () {
+    it('should return hash before #', function () {
         const testUrl = getAssetUrl('myfile.svg#arrow-up');
-        testUrl.should.equal('/assets/myfile.svg#arrow-up');
+        testUrl.should.equal(`/assets/myfile.svg?v=${config.get('assetHash')}#arrow-up`);
     });
 
     describe('favicon', function () {

@@ -35,19 +35,26 @@ function getAssetUrl(path, hasMinFile) {
     // Add the path for the requested asset
     output = urlUtils.urlJoin(output, path);
 
-    // No hash for svg images with #iconname
-    if (path.match(/\.(svg#)/)) {
-        return output;
-    }
     // Ensure we have an assetHash
     // @TODO rework this!
     if (!config.get('assetHash')) {
         config.set('assetHash', (crypto.createHash('md5').update(Date.now().toString()).digest('hex')).substring(0, 10));
     }
 
+    // if url has # make sure the hash is at th right place
+    let anchor;
+    if (path.match('#')) {
+        const index = output.indexOf('#');
+        anchor = output.substring(index);
+        output = output.slice(0, index);
+    }
+
     // Finally add the asset hash to the output URL
     output += '?v=' + config.get('assetHash');
 
+    if (anchor) {
+        output += anchor;
+    }
     return output;
 }
 
