@@ -95,23 +95,24 @@
                                     @products={{this.products}}
                                     @openEditProduct={{this.openEditProduct}}
                                 />
+                            {{else}}
+                                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="free-welcome-page">
+                                    <label for="freeWelcomePage">Welcome page</label>
+                                    <GhUrlInput
+                                        @id="freeWelcomePage"
+                                        @value={{readonly this.settings.membersFreeSignupRedirect}}
+                                        @baseUrl={{readonly this.siteUrl}}
+                                        @setResult={{this.setFreeSignupRedirect}}
+                                        @validateUrl={{this.validateFreeSignupRedirect}}
+                                        @placeholder={{readonly this.siteUrl}}
+                                    />
+                                    <GhErrorMessage
+                                        @errors={{settings.errors}}
+                                        @property="membersFreeSignupRedirect"
+                                    />
+                                    <p>Redirect to this URL after signup for a free membership</p>
+                                </GhFormGroup>
                             {{/if}}
-                            <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="free-welcome-page">
-                                <label for="freeWelcomePage">Welcome page</label>
-                                <GhUrlInput
-                                    @id="freeWelcomePage"
-                                    @value={{readonly this.settings.membersFreeSignupRedirect}}
-                                    @baseUrl={{readonly this.siteUrl}}
-                                    @setResult={{this.setFreeSignupRedirect}}
-                                    @validateUrl={{this.validateFreeSignupRedirect}}
-                                    @placeholder={{readonly this.siteUrl}}
-                                />
-                                <GhErrorMessage
-                                    @errors={{settings.errors}}
-                                    @property="membersFreeSignupRedirect"
-                                />
-                                <p>Redirect to this URL after signup for a free membership</p>
-                            </GhFormGroup>
                         </div>
                         {{/liquid-if}}
                     </div>
@@ -205,23 +206,23 @@
                                             <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                                         {{/if}}
                                     </GhFormGroup>
+                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="paid-welcome-page">
+                                        <label for="paidWelcomePage">Welcome page</label>
+                                        <GhUrlInput
+                                            @value={{readonly this.settings.membersPaidSignupRedirect}}
+                                            @baseUrl={{readonly this.siteUrl}}
+                                            @setResult={{this.setPaidSignupRedirect}}
+                                            @validateUrl={{this.validatePaidSignupRedirect}}
+                                            @placeholder={{readonly this.siteUrl}}
+                                        />
+                                        <GhErrorMessage
+                                            @errors={{settings.errors}}
+                                            @property="membersPaidSignupRedirect"
+                                        />
+                                        <p>Redirect to this URL after signup for premium membership</p>
+                                    </GhFormGroup>
 
                                 {{/if}}
-                                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="paid-welcome-page">
-                                    <label for="paidWelcomePage">Welcome page</label>
-                                    <GhUrlInput
-                                        @value={{readonly this.settings.membersPaidSignupRedirect}}
-                                        @baseUrl={{readonly this.siteUrl}}
-                                        @setResult={{this.setPaidSignupRedirect}}
-                                        @validateUrl={{this.validatePaidSignupRedirect}}
-                                        @placeholder={{readonly this.siteUrl}}
-                                    />
-                                    <GhErrorMessage
-                                        @errors={{settings.errors}}
-                                        @property="membersPaidSignupRedirect"
-                                    />
-                                    <p>Redirect to this URL after signup for premium membership</p>
-                                </GhFormGroup>
                             {{/if}}
                         </div>
                         {{/liquid-if}}
