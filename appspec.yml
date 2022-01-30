@@ -1,4 +1,3 @@
-appspec.yml
 version: o.o
 os: linux
 files:
