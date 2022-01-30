@@ -1,8 +1,8 @@
 version: 0.0
 os: linux 
 files:
-  - source: ./Ghost
-    destination: /tmp
+  - source: /
+    destination: /home/ec2-user/Ghost
 hooks:
   BeforeInstall:
     - location: scripts/before_install.sh
