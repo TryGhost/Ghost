@@ -16,6 +16,7 @@ const models = require('../../models');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
 const VerificationTrigger = require('@tryghost/verification-trigger');
+const events = require('../../lib/common/events');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -75,6 +76,32 @@ module.exports = {
         const stripeService = require('../stripe');
         const createMembersApiInstance = require('./api');
         const env = config.get('env');
+
+        events.on('settings.edited', async function (settingModel) {
+            if (labsService.isSet('multipleProducts')) {
+                return;
+            }
+
+            const key = settingModel.get('key');
+            const value = settingModel.get('value');
+
+            if (key === 'members_free_signup_redirect') {
+                try {
+                    await models.Product.forge().query().update('welcome_page_url', value).where('type', 'free');
+                } catch (err) {
+                    logging.error(err);
+                }
+                return;
+            }
+            if (key === 'members_paid_signup_redirect') {
+                try {
+                    await models.Product.forge().query().update('welcome_page_url', value).where('type', 'paid');
+                } catch (err) {
+                    logging.error(err);
+                }
+                return;
+            }
+        });
 
         // @TODO Move to stripe service
         if (env !== 'production') {
