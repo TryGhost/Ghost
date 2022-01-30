@@ -17,6 +17,10 @@
           "type": ["string", "null"],
           "maxLength": 191
         },
+        "welcome_page_url": {
+          "type": ["string", "null"],
+          "maxLength": 2000
+        },
         "active": {
           "type": "boolean"
         },
