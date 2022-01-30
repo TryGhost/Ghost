@@ -1,18 +1,22 @@
-version: o.o
-os: linux
+version: 0.0
+os: linux 
 files:
   - source: ./Ghost
     destination: /tmp
 hooks:
- ApplicationStop:
-  - location: scripts/application_stop.sh
-    timeout: 300
-    runas: ec2-user
-Beforeinstall:
- - location: scripts/before_install.sh
-   timeout: 300
-   runas: ec2-user
-AplicationStart:
- - location: scripts/application_start.sh
-   timeout: 300
-   runas: ec2-user
+  BeforeInstall:
+    - location: scripts/before_install.sh
+      timeout: 300
+      runas: ec2-user
+  AfterInstall:
+    - location: scripts/after_install.sh
+      timeout: 300
+      runas: ec2-user
+  ApplicationStart:
+    - location: scripts/application_start.sh
+      timeout: 300
+      runas: ec2-user
+  ApplicationStop:
+    - location: scripts/application_stop.sh
+      timeout: 300
+      runas: ec2-user
