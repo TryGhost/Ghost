@@ -2,7 +2,7 @@
 
 # Install node.js
 sudo yum install python 3
-sudo yum-config-manager --add-repo https://github.com/OlufM/Ghost.git
+sudo yum-config-manager --disable github.com_OlufM_Ghost.git
 sudo yum update
 sudo yum install nodejs -y
 
