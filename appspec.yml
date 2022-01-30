@@ -5,18 +5,18 @@ files:
      destination: /home/ec2-user/Ghost
 hooks:
   BeforeInstall:
-    - location: scripts/before_install.sh
+    - location: Scripts/before_install.sh
       timeout: 300
       runas: ec2-user
   AfterInstall:
-    - location: scripts/after_install.sh
+    - location: Scripts/after_install.sh
       timeout: 300
       runas: ec2-user
   ApplicationStart:
-    - location: scripts/application_start.sh
+    - location: Scripts/application_start.sh
       timeout: 300
       runas: ec2-user
   ApplicationStop:
-    - location: scripts/application_stop.sh
+    - location: Scripts/application_stop.sh
       timeout: 300
       runas: ec2-user
