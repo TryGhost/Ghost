@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Install node.js
-sudo yum-get install python-software-properties -y
-sudo yum-add-repository ppa:Olufm/Ghost/node.js -y
-sudo yum-get update
-sudo yum-get install nodejs -y
+sudo yum install python-software-properties -y
+yum-config-manager --add-repo https://github.com/OlufM/Ghost.git
+sudo yum update
+sudo yum install nodejs -y
 
 # Install nodemon
 # sudo npm install nodemon -g
