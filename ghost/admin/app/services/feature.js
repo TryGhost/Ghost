@@ -44,8 +44,14 @@ export default Service.extend({
     notifications: service(),
     lazyLoader: service(),
 
+    // features
     emailAnalytics: feature('emailAnalytics'),
+
+    // user-specific flags
     nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
+    dashboardHideGettingStarted: feature('dashboardHideGettingStarted', {user: true}),
+
+    // labs flags
     multipleProducts: feature('multipleProducts'),
     oauthLogin: feature('oauthLogin'),
     membersActivity: feature('membersActivity'),

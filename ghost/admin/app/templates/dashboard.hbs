@@ -7,7 +7,7 @@
 
     <div class="view-container gh-dashboard">
 
-        {{#if (and this.session.user.isAdmin (feature "improvedOnboarding"))}}
+        {{#if (and this.session.user.isAdmin (not (feature "dashboardHideGettingStarted")) (feature "improvedOnboarding"))}}
             <section class="gh-dashboard-area lw-banner">
                 <div class="gh-lw-banner" style="background-image:url(assets/img/launch-wizard-bg.png);">
                     <h1>Not sure where to start? We got you.</h1>
@@ -31,7 +31,7 @@
                             @name="getting-started-dismiss"
                             @classNames="gh-dashboard-dismiss-dropdown dropdown-menu dropdown-triangle-top-right"
                         >
-                            <button class="gh-btn" {{on "click" (optional noop)}}><span>Dismiss</span></button>
+                            <button class="gh-btn" {{on "click" (toggle-feature "dashboardHideGettingStarted")}}><span>Dismiss</span></button>
                         </GhDropdown>
                     </div>
                 </div>
