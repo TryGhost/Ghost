@@ -179,7 +179,7 @@ export const CARD_MENU = [
             label: 'Callout',
             icon: 'koenig/kg-card-type-callout',
             desc: 'Info boxes that stand out',
-            matches: ['callout'],
+            matches: ['callout', 'infobox'],
             type: 'card',
             replaceArg: 'callout'
         },
