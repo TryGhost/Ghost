@@ -1,7 +1,4 @@
 <div class="gh-main-content-card gh-product-card">
-    <button class="gh-product-card-editbutton gh-btn gh-btn-text gh-btn-link green" {{action "openEditProduct" this.product}}>
-        <span>Edit</span>
-    </button>
     <div class="gh-product-card-block title-block">
         <h3 class="gh-product-card-name">
             {{this.product.name}}
@@ -54,4 +51,35 @@
             </div>
         </div>
     {{/if}}
+    <div class="gh-product-card-editbutton-container">
+        <span class="dropdown">
+            <GhDropdownButton
+                @dropdownName="tiers-actions-menu-{{this.product.name}}"
+                @classNames="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-editbutton icon-only"
+                @title="Tiers Actions"
+                data-test-button="tiers-actions"
+            >
+                <span>
+                    {{svg-jar "dotdotdot"}}
+                    <span class="hidden">Actions</span>
+                </span>
+            </GhDropdownButton>
+            {{#if (eq this.product.type "paid" )}}
+                <GhDropdown
+                    @name="tiers-actions-menu-{{this.product.name}}"
+                    @tagName="ul"
+                    @classNames="gh-tier-actions-menu dropdown-menu dropdown-triangle-top-right"
+                >
+                    <li>
+                        <button class="mr2" {{action "openEditProduct" this.product}}>
+                            <span>Edit</span>
+                        </button>
+                    </li>
+                    <li>
+                        <Settings::Members::ArchiveTier @product={{this.product}} />
+                    </li>
+                </GhDropdown>
+            {{/if}}
+        </span>
+    </div>
 </div>

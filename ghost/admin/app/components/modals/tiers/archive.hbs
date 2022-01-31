@@ -1,21 +1,22 @@
 
-<div class="modal-content" {{on-key "Enter" (perform this.unarchiveOfferTask)}}>
+<div class="modal-content" {{on-key "Enter" (perform this.archiveTierTask)}}>
     <header class="modal-header">
-        <h1>Reactivate offer</h1>
+        <h1>Archive tier</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
         <p>
-            Reactivating <strong>{{@data.offer.name}}</strong> will allow new members to subscribe to this tier. Existing members will remain unchanged.
+            Members will no longer be able to subscribe to <strong>{{@data.product.name}}</strong> and it will be removed from the list of available tiers in portal. Existing members on this tier will remain unchanged.
         </p>
     </div>
 
     <div class="modal-footer">
         <button type="button" class="gh-btn" {{on "click" @close}}><span>Cancel</span></button>
         <GhTaskButton
-            @buttonText="Reactivate"
-            @task={{this.unarchiveOfferTask}}
+            @buttonText="Archive"
+            @successText="Archived"
+            @task={{this.archiveTierTask}}
             @class="gh-btn gh-btn-black gh-btn-icon"
         />
     </div>

@@ -1,0 +1,17 @@
+{{#if this.product.active}}
+    {{#if (not this.product.isNew)}}
+        <button
+            type="button"
+            {{on "click" this.handleArchiveTier}}
+        >
+            <span>Archive</span>
+        </button>
+    {{/if}}
+{{else}}
+    <button
+        type="button"
+        {{on "click" this.handleUnarchiveTier}}
+    >
+        <span>Reactivate</span>
+    </button>
+{{/if}}

@@ -11,6 +11,11 @@
     }
 }
 
+.gh-contentfilter-menu-trigger-tiers {
+    margin-right: 0 !important;
+    background: transparent !important;
+}
+
 .gh-product-cards {
     margin: 0 0 24px;
 }
@@ -28,10 +33,25 @@
     }
 }
 
-.gh-product-card-editbutton {
+.gh-product-card-editbutton-container {
     position: absolute;
     right: 24px;
-    top: 16px;
+    top: 24px;
+    margin-right: 0;
+}
+
+.gh-product-card-editbutton {
+    margin-right: 0;
+}
+
+.gh-product-card-editbutton.gh-btn span {
+    height: 24px;
+}
+
+.gh-tier-actions-menu {
+    top: calc(100% + 6px);
+    left: auto;
+    right: 0;
 }
 
 .gh-product-card-block {
