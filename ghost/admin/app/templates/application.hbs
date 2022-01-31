@@ -24,14 +24,6 @@
         <GhMobileNavBar />
     </div>
 
-    {{#if this.customViews.showFormModal}}
-        <GhFullscreenModal
-            @modal="custom-view-form"
-            @close={{this.customViews.toggleFormModal}}
-            @modifier="action narrow"
-        />
-    {{/if}}
-
     {{#if this.settings.accentColor}}
         <style>
             :root {
