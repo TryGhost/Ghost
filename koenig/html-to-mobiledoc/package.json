@@ -18,7 +18,7 @@
     "c8": "7.11.0",
     "mocha": "9.2.0",
     "should": "13.2.3",
-    "sinon": "12.0.1"
+    "sinon": "13.0.0"
   },
   "dependencies": {
     "@tryghost/kg-parser-plugins": "^2.11.3",
