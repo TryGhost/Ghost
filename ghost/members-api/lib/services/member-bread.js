@@ -63,6 +63,7 @@ module.exports = class MemberBREADService {
                 }
                 member.subscriptions.push({
                     id: '',
+                    tier: product,
                     customer: {
                         id: '',
                         name: member.name,
@@ -95,6 +96,12 @@ module.exports = class MemberBREADService {
                         }
                     }
                 });
+            }
+        }
+
+        for (const subscription of member.subscriptions) {
+            if (!subscription.tier) {
+                subscription.tier = member.products.find(product => product.id === subscription.price.product.product_id);
             }
         }
     }
