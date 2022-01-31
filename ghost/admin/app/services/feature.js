@@ -54,6 +54,7 @@ export default Service.extend({
     beforeAfterCard: feature('beforeAfterCard'),
     tweetGridCard: feature('tweetGridCard'),
     membersActivityFeed: feature('membersActivityFeed'),
+    improvedOnboarding: feature('improvedOnboarding'),
 
     _user: null,
 
