@@ -24,7 +24,7 @@ const createItemMatcher = (query) => {
 
         // standard exact matching for items with a matches array
         if (isArray(item.matches)) {
-            return card ? item.matches.any(match => match.indexOf(card) === 0) : true;
+            return card ? item.matches.any(match => match.indexOf(card.toLowerCase()) === 0) : true;
         }
 
         // custom per-item matching, eg. snippets match any part of their title
