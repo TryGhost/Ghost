@@ -11,6 +11,9 @@ export default class ModalsService extends EPMModalsService {
     }
 
     MODAL_OPTIONS = {
+        'modals/custom-view-form': {
+            className: 'fullscreen-modal-action fullscreen-modal-narrow'
+        },
         'modals/email-preview': {
             className: 'fullscreen-modal-full-overlay fullscreen-modal-email-preview'
         },

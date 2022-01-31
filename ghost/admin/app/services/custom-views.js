@@ -102,12 +102,12 @@ let isViewEqual = function (viewA, viewB) {
 };
 
 export default class CustomViewsService extends Service {
+    @service modals;
     @service router;
     @service session;
     @service settings;
 
     @tracked viewList = [];
-    @tracked showFormModal = false;
 
     constructor() {
         super(...arguments);
@@ -142,11 +142,6 @@ export default class CustomViewsService extends Service {
         }));
 
         this.viewList = viewList;
-    }
-
-    @action
-    toggleFormModal() {
-        this.showFormModal = !this.showFormModal;
     }
 
     @task
@@ -229,8 +224,13 @@ export default class CustomViewsService extends Service {
         });
     }
 
+    @action
     editView() {
-        return CustomView.create(this.activeView || this.newView());
+        const customView = CustomView.create(this.activeView || this.newView());
+
+        return this.modals.open('modals/custom-view-form', {
+            customView
+        });
     }
 
     async _saveViewSettings() {
