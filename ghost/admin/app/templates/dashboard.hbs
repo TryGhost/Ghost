@@ -7,7 +7,38 @@
 
     <div class="view-container gh-dashboard">
 
-        {{#if (and this.session.user.isOwnerOnly (not this.settings.editorIsLaunchComplete))}}
+        {{#if (and this.session.user.isAdmin (feature "improvedOnboarding"))}}
+            <section class="gh-dashboard-area lw-banner">
+                <div class="gh-lw-banner" style="background-image:url(assets/img/launch-wizard-bg.png);">
+                    <h1>Not sure where to start? We got you.</h1>
+                    <p>
+                        Dive into our tutorials and guides for people who are new to Ghost and setting
+                        up a brand new publication. Find out how to customize your site, publish your
+                        first post, send email newsletters and setup vour memberships.
+                    </p>
+                    <a class="gh-btn gh-btn-green" href="https://ghost.org/resources/building/" target="_blank" rel="noopener noreferrer"><span>View resources</span></a>
+
+                    <div class="gh-dashboard-dismiss">
+                        <GhDropdownButton
+                            @dropdownName="getting-started-dismiss"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-dashboard-dismissbutton dark"
+                        >
+                            <span>
+                                {{svg-jar "dotdotdot"}}
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="getting-started-dismiss"
+                            @classNames="gh-dashboard-dismiss-dropdown dropdown-menu dropdown-triangle-top-right"
+                        >
+                            <button class="gh-btn" {{on "click" (optional noop)}}><span>Dismiss</span></button>
+                        </GhDropdown>
+                    </div>
+                </div>
+            </section>
+        {{/if}}
+
+        {{#if (and this.session.user.isOwnerOnly (not this.settings.editorIsLaunchComplete) (not (feature "improvedOnboarding")))}}
             <section class="gh-dashboard-area lw-banner">
                 <div class="gh-lw-banner" style="background-image:url(assets/img/launch-wizard-bg.png);">
                     <h1>Select your publication style</h1>
