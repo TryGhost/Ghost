@@ -71,14 +71,14 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql5' || matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: daniellockyer/mysql-action@add-pause
         if: matrix.env.DB == 'mysql5'
         with:
           mysql version: '5.7'
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: daniellockyer/mysql-action@add-pause
         if: matrix.env.DB == 'mysql8'
         with:
           mysql version: '8.0'
@@ -124,14 +124,14 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql5' || matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: daniellockyer/mysql-action@add-pause
         if: matrix.env.DB == 'mysql5'
         with:
           mysql version: '5.7'
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: daniellockyer/mysql-action@add-pause
         if: matrix.env.DB == 'mysql8'
         with:
           mysql version: '8.0'
