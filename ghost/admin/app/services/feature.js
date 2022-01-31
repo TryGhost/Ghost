@@ -49,7 +49,6 @@ export default Service.extend({
     multipleProducts: feature('multipleProducts'),
     oauthLogin: feature('oauthLogin'),
     membersActivity: feature('membersActivity'),
-    cardSettingsPanel: feature('cardSettingsPanel'),
     urlCache: feature('urlCache'),
     beforeAfterCard: feature('beforeAfterCard'),
     tweetGridCard: feature('tweetGridCard'),
