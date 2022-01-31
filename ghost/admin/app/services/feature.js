@@ -54,6 +54,7 @@ export default Service.extend({
     beforeAfterCard: feature('beforeAfterCard'),
     tweetGridCard: feature('tweetGridCard'),
     membersActivityFeed: feature('membersActivityFeed'),
+    tierWelcomePages: feature('tierWelcomePages'),
 
     _user: null,
 
