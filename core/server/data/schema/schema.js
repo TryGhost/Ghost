@@ -424,6 +424,12 @@ module.exports = {
         product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id', cascadeDelete: true},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
+    posts_products: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
+        product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id', cascadeDelete: true},
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
+    },
     members_payment_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
