@@ -96,7 +96,7 @@
                     class="gh-contentfilter-menu-trigger gh-contentfilter-button gh-btn-save-view"
                     title="Edit current view..."
                     data-test-button="edit-view"
-                    {{on "click" this.customViews.toggleFormModal}}
+                    {{on "click" this.customViews.editView}}
                 >
                     {{svg-jar "edit-view"}}
                 </button>
@@ -106,7 +106,7 @@
                     class="gh-contentfilter-menu-trigger gh-contentfilter-button gh-btn-save-view"
                     title="Save as view..."
                     data-test-button="add-view"
-                    {{on "click" this.customViews.toggleFormModal}}
+                    {{on "click" this.customViews.editView}}
                 >
                     {{svg-jar "add-view"}}
                 </button>
