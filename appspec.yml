@@ -1,7 +1,7 @@
 version: 0.0
 os: linux 
 files:
-   - source: /OlufM/Ghost
+   - source: /
      destination: /home/ec2-user/Ghost
 hooks:
   BeforeInstall:
