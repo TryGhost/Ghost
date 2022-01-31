@@ -31,7 +31,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'tweetGridCard',
-    'membersActivityFeed'
+    'membersActivityFeed',
+    'improvedOnboarding'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
