@@ -1,12 +1,12 @@
-# Payment Service
+# Stripe Service
 
 ## Install
 
-`npm install @tryghost/payment-service --save`
+`npm install @tryghost/members-stripe-service --save`
 
 or
 
-`yarn add @tryghost/payment-service`
+`yarn add @tryghost/members-stripe-service`
 
 
 ## Usage
@@ -20,15 +20,7 @@ Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
 2. Run `yarn` to install top-level dependencies.
 
-
-## Run
-
-- `yarn dev`
-
-
 ## Test
 
 - `yarn lint` run just eslint
 - `yarn test` run lint and tests
-
-
