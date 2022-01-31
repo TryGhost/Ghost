@@ -55,6 +55,7 @@
 }
 
 .epm-modal-container {
+    z-index: 10000;
     display: flex;
     justify-content: center;
     overflow: auto;

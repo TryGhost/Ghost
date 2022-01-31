@@ -1,15 +1,43 @@
-<label>Tiers</label>
-<div class="gh-product-cards">
-{{#each this.products as |product productIdx|}}
-    <GhProductCard
-        @product={{product}}
-        @openEditProduct={{this.openEditProduct}}
-    />
-{{/each}}
-
-<div class="gh-product-cards-footer">
-    <button class="gh-btn gh-btn-link gh-btn-text gh-btn-icon gh-btn-add-product green" {{action "openNewProduct" product}}><span>{{svg-jar "add-stroke" class="stroke-green"}}Add tier</span></button>
+<div class="flex justify-between items-center">
+    <label>Tiers</label>
+    <div>
+        <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
+            <PowerSelect
+                @selected={{this.selectedType}}
+                @options={{this.availableTypes}}
+                @searchEnabled={{false}}
+                @onChange={{this.onTypeChange}}
+                @triggerComponent="gh-power-select/trigger"
+                @triggerClass="gh-contentfilter-menu-trigger gh-contentfilter-menu-trigger-tiers"
+                @dropdownClass="gh-contentfilter-menu-dropdown"
+                @matchTriggerWidth={{false}}
+                as |type|
+            >
+                {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
+            </PowerSelect>
+        </div>
+    </div>
 </div>
+<div class="gh-product-cards">
+    {{#if this.isEmptyList}}
+    <div class="flex justify-center items-center gh-main-content-card">
+        <p style="color:#7c8b9a" class="mb0 pa8">You have no {{this.selectedType.value}} tiers.</p>
+    </div>
+    {{/if}}
+
+    {{#each this.products as |product productIdx|}}
+        <GhProductCard
+            @product={{product}}
+            @openEditProduct={{this.openEditProduct}}
+        />
+    {{/each}}
+    {{#if (eq this.type "active" )}}
+        <div class="gh-product-cards-footer">
+            <button class="gh-btn gh-btn-link gh-btn-text gh-btn-icon gh-btn-add-product green" {{action "openNewProduct" product}}>
+                <span>{{svg-jar "add-stroke" class="stroke-green"}}Add tier</span>
+            </button>
+        </div>
+    {{/if}}
 </div>
 
 {{#if this.showProductModal}}
