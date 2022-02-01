@@ -3,6 +3,7 @@ import {Response} from 'ember-cli-mirage';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -343,6 +344,27 @@ describe('Acceptance: Setup', function () {
             // it displays failure alert
             expect(findAll('.gh-alert-red').length, 'number of failure alerts')
                 .to.equal(1);
+        });
+    });
+
+    describe('?firstStart=true', function () {
+        beforeEach(async function () {
+            enableLabsFlag(this.server, 'improvedOnboarding');
+
+            let role = this.server.create('role', {name: 'Owner'});
+            this.server.create('user', {roles: [role], slug: 'owner'});
+
+            await authenticateSession();
+        });
+
+        it('opens modal', async function () {
+            await visit('/?firstStart=true');
+            expect(find('[data-test-modal="get-started"]')).to.exist;
+        });
+
+        it('clears query param', async function () {
+            await visit('/?firstStart=true');
+            expect(currentURL()).to.equal('/dashboard');
         });
     });
 });
