@@ -42,7 +42,7 @@
     "@tryghost/members-csv": "1.2.2",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
     "@tryghost/string": "0.1.22",
-    "@tryghost/timezone-data": "0.2.53",
+    "@tryghost/timezone-data": "0.2.55",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",
     "blueimp-md5": "2.19.0",
