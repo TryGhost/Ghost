@@ -61,7 +61,7 @@ const processImport = async (options) => {
     delete result.meta.originalImportSize;
 
     const importThreshold = await verificationTrigger.getImportThreshold();
-    if (importThreshold > importSize) {
+    if (importSize > importThreshold) {
         await verificationTrigger.startVerificationProcess({
             amountImported: importSize,
             throwOnTrigger: true
