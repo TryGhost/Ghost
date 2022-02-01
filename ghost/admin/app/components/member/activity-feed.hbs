@@ -19,7 +19,7 @@
                                                 {{#if event.email}}
                                                     <GhEmailPreviewLink @data={{event.email}} class="gh-member-feed-title" />
                                                 {{else}}
-                                                    <span class="gh-member-feed-title">{{event.action}} {{event.object}}</span>
+                                                    {{event.action}} {{event.object}}
                                                 {{/if}}
                                             </div>
                                             <div class="gh-member-feed-time">
