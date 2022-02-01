@@ -138,8 +138,8 @@ module.exports = {
                     ghostMailer.send({
                         subject,
                         html: tpl(message, {
-                            amountImported,
-                            siteUrl: this._urlUtils.getSiteUrl()
+                            importedNumber: amountImported,
+                            siteUrl: urlUtils.getSiteUrl()
                         }),
                         forceTextContent: true,
                         from: fromAddress,
