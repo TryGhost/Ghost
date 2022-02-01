@@ -593,7 +593,8 @@ module.exports = class MemberRepository {
             if (!ghostProduct) {
                 let {data: pageData} = await this._productRepository.list({
                     limit: 1,
-                    filter: 'type:paid'
+                    filter: 'type:paid',
+                    ...options
                 });
                 ghostProduct = (pageData && pageData[0]) || null;
             }
@@ -966,7 +967,16 @@ module.exports = class MemberRepository {
         }, options);
     }
 
-    async setComplimentarySubscription(data, options) {
+    async setComplimentarySubscription(data, options = {}) {
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.setComplimentarySubscription(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'create Complimentary Subscription'}));
         }
