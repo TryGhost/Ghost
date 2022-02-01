@@ -143,11 +143,11 @@ export default Component.extend({
         },
 
         async setVisibility(segment) {
-            this.post.set('visibilityFilter', segment);
+            this.post.set('tiers', segment);
             try {
                 await this.post.validate({property: 'visibility'});
-                await this.post.validate({property: 'visibilityFilter'});
-                if (this.post.get('isDraft') && this.post.changedAttributes().visibilityFilter) {
+                await this.post.validate({property: 'tiers'});
+                if (this.post.get('isDraft') && this.post.changedAttributes().tiers) {
                     await this.savePostTask.perform();
                 }
             } catch (e) {

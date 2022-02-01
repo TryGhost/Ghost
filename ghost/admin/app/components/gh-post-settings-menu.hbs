@@ -80,17 +80,15 @@
                             <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
                         </GhFormGroup>
 
-                        {{#if (eq this.post.visibility "filter")}}
-                            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibilityFilter" @class="nt3">
-                                <GhMembersSegmentSelect
-                                    @hideLabels={{true}}
+                        {{#if (eq this.post.visibility "tiers")}}
+                            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" @class="nt3">
+                                <GhPostSettingsMenu::VisibilitySegmentSelect
                                     @segment={{this.post.visibilitySegment}}
                                     @onChange={{action "setVisibility"}}
                                     @renderInPlace={{true}}
-                                    @hideDefaultSegments={{true}}
                                     @hideOptionsWhenAllSelected={{true}}
                                 />
-                                <GhErrorMessage @errors={{this.post.errors}} @property="visibilityFilter" data-test-error="visibilityFilter" />
+                                <GhErrorMessage @errors={{this.post.errors}} @property="tiers" data-test-error="tiers" />
                             </GhFormGroup>
                         {{/if}}
                     {{else}}

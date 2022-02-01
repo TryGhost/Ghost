@@ -12,6 +12,21 @@ export default PostSerializer.extend({
         delete json.email_id;
         delete json.email;
 
+        if (json.visibility === null) {
+            delete json.visibility;
+            delete json.visibility_filter;
+            delete json.tiers;
+        }
+
+        if (json.visibility === 'tiers') {
+            delete json.visibility_filter;
+        }
+
+        if (json.visibility === 'tiers' && !json.tiers?.length) {
+            delete json.visibility;
+            delete json.tiers;
+        }
+
         return json;
     }
 });
