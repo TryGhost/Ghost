@@ -1,21 +1,24 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
+import {action} from '@ember/object';
+import {classNameBindings, tagName} from '@ember-decorators/component';
 import {schedule} from '@ember/runloop';
 
-export default Component.extend({
-    active: false,
-    classNameBindings: ['active'],
-    linkClasses: null,
-    tagName: 'li',
+@classic
+@classNameBindings('active')
+@tagName('li')
+export default class GhActivatingListItem extends Component {
+    active = false;
+    linkClasses = null;
 
-    actions: {
-        setActive(value) {
-            schedule('afterRender', this, function () {
-                this.set('active', value);
-            });
-        }
-    },
+    @action
+    setActive(value) {
+        schedule('afterRender', this, function () {
+            this.set('active', value);
+        });
+    }
 
     click() {
         this.element.querySelector('a').blur();
     }
-});
+}

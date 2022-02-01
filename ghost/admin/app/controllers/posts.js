@@ -1,7 +1,8 @@
 import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 import {DEFAULT_QUERY_PARAMS} from 'ghost-admin/helpers/reset-query-params';
+import {action, computed, get} from '@ember/object';
 import {alias} from '@ember/object/computed';
-import {computed, get} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const TYPES = [{
@@ -46,25 +47,32 @@ const ORDERS = [{
     value: 'updated_at desc'
 }];
 
-export default Controller.extend({
-    feature: service(),
-    session: service(),
-    store: service(),
-    settings: service (),
+@classic
+export default class PostsController extends Controller {
+    @service
+    feature;
+
+    @service
+    session;
+
+    @service
+    store;
+
+    @service
+    settings;
 
     // default values for these are set in `init` and defined in `helpers/reset-query-params`
-    queryParams: ['type', 'access', 'author', 'tag', 'order'],
+    queryParams = ['type', 'access', 'author', 'tag', 'order'];
 
-    _hasLoadedTags: false,
-    _hasLoadedAuthors: false,
-    _hasLoadedSnippets: false,
-
-    availableTypes: null,
-    availableVisibilities: null,
-    availableOrders: null,
+    _hasLoadedTags = false;
+    _hasLoadedAuthors = false;
+    _hasLoadedSnippets = false;
+    availableTypes = null;
+    availableVisibilities = null;
+    availableOrders = null;
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.availableTypes = TYPES;
         this.availableOrders = ORDERS;
         this.availableVisibilities = VISIBILITIES;
@@ -76,36 +84,43 @@ export default Controller.extend({
                 value: 'email.open_rate desc'
             });
         }
-    },
+    }
 
-    postsInfinityModel: alias('model'),
+    @alias('model')
+    postsInfinityModel;
 
-    showingAll: computed('type', 'author', 'tag', function () {
+    @computed('type', 'author', 'tag')
+    get showingAll() {
         let {type, author, tag, visibility} = this;
 
         return !type && !visibility && !author && !tag;
-    }),
+    }
 
-    selectedType: computed('type', function () {
+    @computed('type')
+    get selectedType() {
         let types = this.availableTypes;
         return types.findBy('value', this.type) || {value: '!unknown'};
-    }),
+    }
 
-    selectedVisibility: computed('visibility', function () {
+    @computed('visibility')
+    get selectedVisibility() {
         let visibilities = this.availableVisibilities;
         return visibilities.findBy('value', this.visibility) || {value: '!unknown'};
-    }),
+    }
 
-    selectedOrder: computed('order', function () {
+    @computed('order')
+    get selectedOrder() {
         let orders = this.availableOrders;
         return orders.findBy('value', this.order) || {value: '!unknown'};
-    }),
+    }
 
-    _availableTags: computed(function () {
+    @computed
+    get _availableTags() {
         return this.store.peekAll('tag');
-    }),
+    }
 
-    availableTags: computed('_availableTags.[]', function () {
+    @computed('_availableTags.[]')
+    get availableTags() {
         let tags = this._availableTags
             .filter(tag => tag.get('id') !== null)
             .sort((tagA, tagB) => tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true}));
@@ -113,62 +128,71 @@ export default Controller.extend({
         options.unshiftObject({name: 'All tags', slug: null});
 
         return options;
-    }),
+    }
 
-    selectedTag: computed('tag', '_availableTags.[]', function () {
+    @computed('tag', '_availableTags.[]')
+    get selectedTag() {
         let tag = this.tag;
         let tags = this.availableTags;
 
         return tags.findBy('slug', tag) || {slug: '!unknown'};
-    }),
+    }
 
-    _availableAuthors: computed(function () {
+    @computed
+    get _availableAuthors() {
         return this.store.peekAll('user');
-    }),
+    }
 
-    availableAuthors: computed('_availableAuthors.[]', function () {
+    @computed('_availableAuthors.[]')
+    get availableAuthors() {
         let authors = this._availableAuthors;
         let options = authors.toArray();
 
         options.unshiftObject({name: 'All authors', slug: null});
 
         return options;
-    }),
+    }
 
-    selectedAuthor: computed('author', 'availableAuthors.[]', function () {
+    @computed('author', 'availableAuthors.[]')
+    get selectedAuthor() {
         let author = this.author;
         let authors = this.availableAuthors;
 
         return authors.findBy('slug', author) || {slug: '!unknown'};
-    }),
-
-    snippets: computed(function () {
-        return this.store.peekAll('snippet');
-    }),
-
-    actions: {
-        changeType(type) {
-            this.set('type', get(type, 'value'));
-        },
-
-        changeVisibility(visibility) {
-            this.set('visibility', get(visibility, 'value'));
-        },
-
-        changeAuthor(author) {
-            this.set('author', get(author, 'slug'));
-        },
-
-        changeTag(tag) {
-            this.set('tag', get(tag, 'slug'));
-        },
-
-        changeOrder(order) {
-            this.set('order', get(order, 'value'));
-        },
-
-        openEditor(post) {
-            this.transitionToRoute('editor.edit', 'post', post.get('id'));
-        }
     }
-});
+
+    @computed
+    get snippets() {
+        return this.store.peekAll('snippet');
+    }
+
+    @action
+    changeType(type) {
+        this.set('type', get(type, 'value'));
+    }
+
+    @action
+    changeVisibility(visibility) {
+        this.set('visibility', get(visibility, 'value'));
+    }
+
+    @action
+    changeAuthor(author) {
+        this.set('author', get(author, 'slug'));
+    }
+
+    @action
+    changeTag(tag) {
+        this.set('tag', get(tag, 'slug'));
+    }
+
+    @action
+    changeOrder(order) {
+        this.set('order', get(order, 'value'));
+    }
+
+    @action
+    openEditor(post) {
+        this.transitionToRoute('editor.edit', 'post', post.get('id'));
+    }
+}

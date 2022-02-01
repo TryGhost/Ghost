@@ -1,39 +1,49 @@
-/* eslint-disable ghost/ember/alias-model-in-controller */
-import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
+/* eslint-disable ghost/ember/alias-model-in-controller */
+import Controller from '@ember/controller';
 import {task} from 'ember-concurrency';
 
-export default Controller.extend({
-    settings: service(),
-    store: service(),
-    config: service(),
+@classic
+export default class IntegrationsController extends Controller {
+    @service
+    settings;
 
-    _allIntegrations: null,
+    @service
+    store;
+
+    @service
+    config;
+
+    _allIntegrations = null;
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this._allIntegrations = this.store.peekAll('integration');
-    },
+    }
 
-    zapierDisabled: computed('config.hostSettings.limits', function () {
+    @computed('config.hostSettings.limits')
+    get zapierDisabled() {
         return this.config.get('hostSettings.limits.customIntegrations.disabled');
-    }),
+    }
 
     // filter over the live query so that the list is automatically updated
     // as integrations are added/removed
-    integrations: computed('_allIntegrations.@each.{isNew,type}', function () {
+    @computed('_allIntegrations.@each.{isNew,type}')
+    get integrations() {
         return this._allIntegrations.reject((integration) => {
             return integration.isNew || integration.type !== 'custom';
         });
-    }),
+    }
 
     // use ember-concurrency so that we can use the derived state to show
     // a spinner only in the integrations list and avoid delaying the whole
     // screen display
-    fetchIntegrations: task(function* () {
+    @task(function* () {
         return yield this.store.findAll('integration');
-    }),
+    })
+    fetchIntegrations;
 
     // used by individual integration routes' `model` hooks
     integrationModelHook(prop, value, route, transition) {
@@ -54,4 +64,4 @@ export default Controller.extend({
             return integration;
         });
     }
-});
+}

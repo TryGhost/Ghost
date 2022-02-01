@@ -1,33 +1,37 @@
 import Component from '@ember/component';
 import DropdownMixin from 'ghost-admin/mixins/dropdown-mixin';
+import classic from 'ember-classic-decorator';
+import {classNameBindings, classNames} from '@ember-decorators/component';
 import {computed} from '@ember/object';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-export default Component.extend(DropdownMixin, {
-    dropdown: service(),
+@classic
+@classNames('dropdown')
+@classNameBindings('fadeIn:fade-in-scale:fade-out', 'isOpen:open:closed')
+export default class GhDropdown extends Component.extend(DropdownMixin) {
+    @service
+    dropdown;
 
-    classNames: 'dropdown',
-    classNameBindings: ['fadeIn:fade-in-scale:fade-out', 'isOpen:open:closed'],
-
-    name: null,
-    closeOnClick: false,
+    name = null;
+    closeOnClick = false;
 
     // Helps track the user re-opening the menu while it's fading out.
-    closing: false,
+    closing = false;
 
     // Helps track whether the dropdown is open or closes, or in a transition to either
-    isOpen: false,
+    isOpen = false;
 
-    onClose() {},
+    onClose() {}
 
     // Managed the toggle between the fade-in and fade-out classes
-    fadeIn: computed('isOpen', 'closing', function () {
+    @computed('isOpen', 'closing')
+    get fadeIn() {
         return this.isOpen && !this.closing;
-    }),
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
 
         let dropdownService = this.dropdown;
         dropdownService.on('close', this, this.close);
@@ -42,30 +46,30 @@ export default Component.extend(DropdownMixin, {
         });
 
         this.element.addEventListener('animationend', this._animationEndHandler);
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
 
         let dropdownService = this.dropdown;
         dropdownService.off('close', this, this.close);
         dropdownService.off('toggle', this, this.toggle);
 
         this.element.removeEventListener('animationend', this._animationEndHandler);
-    },
+    }
 
     open() {
         this.set('isOpen', true);
         this.set('closing', false);
         this.set('button.isOpen', true);
-    },
+    }
 
     close() {
         this.set('closing', true);
         if (this.button) {
             this.set('button.isOpen', false);
         }
-    },
+    }
 
     // Called by the dropdown service when any dropdown button is clicked.
     toggle(options) {
@@ -84,13 +88,11 @@ export default Component.extend(DropdownMixin, {
         } else if (isOpen) {
             this.close();
         }
-    },
+    }
 
-    click(event) {
-        this._super(event);
-
+    click() {
         if (this.closeOnClick) {
             return this.close();
         }
     }
-});
+}
