@@ -159,34 +159,42 @@ describe('EventRepository', function () {
 
         it('works when setting no filters', async function () {
             await eventRepository.getEmailFailedEvents({
-                filter: 'no used'
+                filter: 'no used',
+                order: 'created_at desc'
             }, {
                 type: 'unused'
             });
             fake.calledOnceWithExactly({
                 withRelated: ['member', 'email'],
-                filter: 'failed_at:-null'
+                filter: 'failed_at:-null',
+                order: 'failed_at desc'
             }).should.be.eql(true);
         });
 
         it('works when setting a created_at filter', async function () {
-            await eventRepository.getEmailFailedEvents({}, {
+            await eventRepository.getEmailDeliveredEvents({
+                order: 'created_at desc'
+            }, {
                 'data.created_at': 'data.created_at:123'
             });
             fake.calledOnceWithExactly({
                 withRelated: ['member', 'email'],
-                filter: 'failed_at:-null+failed_at:123'
+                filter: 'delivered_at:-null+delivered_at:123',
+                order: 'delivered_at desc'
             }).should.be.eql(true);
         });
 
         it('works when setting a combination of filters', async function () {
-            await eventRepository.getEmailFailedEvents({}, {
+            await eventRepository.getEmailOpenedEvents({
+                order: 'created_at desc'
+            }, {
                 'data.created_at': 'data.created_at:123+data.created_at:<99999',
                 'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
             });
             fake.calledOnceWithExactly({
                 withRelated: ['member', 'email'],
-                filter: 'failed_at:-null+failed_at:123+failed_at:<99999+member_id:-[3,4,5]+member_id:-[1,2,3]'
+                filter: 'opened_at:-null+opened_at:123+opened_at:<99999+member_id:-[3,4,5]+member_id:-[1,2,3]',
+                order: 'opened_at desc'
             }).should.be.eql(true);
         });
     });
