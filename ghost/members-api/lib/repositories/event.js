@@ -349,6 +349,7 @@ module.exports = class EventRepository {
             {type: 'newsletter_event', action: 'getNewsletterSubscriptionEvents'},
             {type: 'subscription_event', action: 'getSubscriptionEvents'},
             {type: 'login_event', action: 'getLoginEvents'},
+            {type: 'payment_event', action: 'getPaymentEvents'},
             {type: 'signup_event', action: 'getSignupEvents'}
         ];
         if (this._labsService.isSet('membersActivityFeed') && this._EmailRecipient) {
