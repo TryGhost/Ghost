@@ -95,7 +95,8 @@
                                     @products={{this.products}}
                                     @openEditProduct={{this.openEditProduct}}
                                 />
-                            {{else}}
+                            {{/if}}
+                            {{#if (or (not (feature "tierWelcomePages")) (not (feature "multipleProducts")))}}
                                 <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="free-welcome-page">
                                     <label for="freeWelcomePage">Welcome page</label>
                                     <GhUrlInput
@@ -206,6 +207,8 @@
                                             <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                                         {{/if}}
                                     </GhFormGroup>
+                                {{/if}}
+                                {{#if (or (not (feature "tierWelcomePages")) (not (feature "multipleProducts")))}}
                                     <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="paid-welcome-page">
                                         <label for="paidWelcomePage">Welcome page</label>
                                         <GhUrlInput
@@ -221,7 +224,6 @@
                                         />
                                         <p>Redirect to this URL after signup for premium membership</p>
                                     </GhFormGroup>
-
                                 {{/if}}
                             {{/if}}
                         </div>
