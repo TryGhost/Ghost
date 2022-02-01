@@ -135,7 +135,7 @@ module.exports = {
                 const fromAddress = config.get('user_email');
     
                 if (escalationAddress) {
-                    this._ghostMailer.send({
+                    ghostMailer.send({
                         subject,
                         html: tpl(message, {
                             amountImported,
