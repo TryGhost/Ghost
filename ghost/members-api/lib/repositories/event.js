@@ -172,7 +172,7 @@ module.exports = class EventRepository {
         };
     }
 
-    async getEmailDelieveredEvents(options = {}, filters = {}) {
+    async getEmailDeliveredEvents(options = {}, filters = {}) {
         options = {
             ...options,
             withRelated: ['member', 'email'],
@@ -185,6 +185,7 @@ module.exports = class EventRepository {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
         }
         options.filter = options.filter.join('+');
+        options.order = options.order.replace(/created_at/g, 'delivered_at');
 
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
@@ -221,6 +222,7 @@ module.exports = class EventRepository {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
         }
         options.filter = options.filter.join('+');
+        options.order = options.order.replace(/created_at/g, 'opened_at');
 
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
@@ -257,6 +259,7 @@ module.exports = class EventRepository {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
         }
         options.filter = options.filter.join('+');
+        options.order = options.order.replace(/created_at/g, 'failed_at');
 
         const {data: models, meta} = await this._EmailRecipient.findPage(
             options
@@ -342,6 +345,8 @@ module.exports = class EventRepository {
             options.limit = 10;
         }
 
+        // Changing this order might need a change in the query functions
+        // because of the different underlying models.
         options.order = 'created_at desc';
 
         // Create a list of all events that can be queried
