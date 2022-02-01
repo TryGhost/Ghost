@@ -7,6 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class GhNavMenuComponent extends Component {
     @service settings;
     @service ui;
+    @service session;
 
     @tracked firstRender = true;
 

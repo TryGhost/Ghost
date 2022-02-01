@@ -58,6 +58,7 @@
 .contributor-save-button {
     position: relative;
     z-index: 1000;
+    margin-right: 6px;
 }
 
 .post-settings {
@@ -609,7 +610,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     height: 33px;
     display: flex;
     align-items: center;
-    padding: 5px 12px 6px;
+    padding: 0 12px;
     font-size: 1.35rem;
     font-weight: 400;
     color: var(--midgrey-l2);
@@ -622,7 +623,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background: var(--white);
     font-size: 1.35rem;
     font-weight: 500;
-    color: var(--green-d1);
+    color: var(--green-d1) !important;
     margin-right: 8px;
     outline: none;
     border: none;

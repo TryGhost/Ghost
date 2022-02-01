@@ -180,6 +180,21 @@
     padding-left: 10px;
 }
 
+.gh-post-list-external {
+    width: 13px;
+    height: 13px;
+    margin-left: 6px;
+    opacity: 0;
+}
+
+.gh-post-list-external path {
+    fill: var(--midgrey);
+}
+
+.gh-list-row:hover .gh-post-list-external {
+    opacity: 1;
+}
+
 .gh-post-list-featured {
     padding: 15px 0px 20px 10px;
     width: 1px;
@@ -195,6 +210,8 @@
 }
 
 .gh-content-entry-title {
+    display: flex;
+    align-items: center;
     margin: 0 0 3px 0;
     font-size: 1.6rem !important;
     font-weight: 600;

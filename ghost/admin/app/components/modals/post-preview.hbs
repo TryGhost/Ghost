@@ -19,13 +19,15 @@
                 </div>
             </div>
 
-            <GhPublishmenu
-                @post={{@data.post}}
-                @postStatus={{@data.post.status}}
-                @saveTask={{@data.saveTask}}
-                @setSaveType={{@data.setEditorSaveType}}
-                @memberCount={{@data.memberCount}}
-                @uiContext="preview" />
+            {{#if (not this.session.user.isContributor)}}
+                <GhPublishmenu
+                    @post={{@data.post}}
+                    @postStatus={{@data.post.status}}
+                    @saveTask={{@data.saveTask}}
+                    @setSaveType={{@data.setEditorSaveType}}
+                    @memberCount={{@data.memberCount}}
+                    @uiContext="preview" />
+            {{/if}}
         </header>
 
         {{#if this.saveFirstTask.isRunning}}

@@ -1,6 +1,6 @@
 <div class="gh-nav-bottom">
     <div class="flex items-center justify-between">
-        <div>
+        <div class="pe-all">
             <GhBasicDropdown @horizontalPosition="left" @verticalPosition="above" @calculatePosition={{this.userDropdownPosition}} as |dropdown|>
                 <dropdown.Trigger class="outline-0 pointer">
                     <div class="flex-auto flex items-center">
@@ -11,7 +11,7 @@
                     </div>
                 </dropdown.Trigger>
 
-                <dropdown.Content class="gh-nav-menu-dropdown">
+                <dropdown.Content class="gh-nav-menu-dropdown {{if this.session.user.isContributor "gh-nav-menu-dropdown-contributor"}}">
                     <ul class="dropdown-menu dropdown-triangle-top" role="menu">
                         <li role="presentation">
                             <div class="gh-account-menu-header">
@@ -23,54 +23,63 @@
                             </div>
                         </li>
                         <li class="divider" role="separator"></li>
-                        <li role="presentation">
-                            <LinkTo @route="whatsnew" @query={{hash entry=null}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="whatsnew">
-                                What's new?
-                                {{#if this.whatsNew.hasNew}}
-                                    <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
-                                {{/if}}
-                            </LinkTo>
-                        </li>
+                        
+                        {{#if this.session.user.isContributor}}
+                            <li role="presentation">
+                                <LinkTo @route="posts" @query={{hash entry=null}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="posts">
+                                    Posts
+                                </LinkTo>
+                            </li>
+                            <li role="presentation">
+                                <a href="{{this.config.blogUrl}}/" class="dropdown-item" role="menuitem" tabindex="-1" title="Open site in new tab" target="_blank">View site</a>
+                            </li>
+                            <li class="divider" role="separator"></li>
+                        {{else}}
+                            <li role="presentation">
+                                <LinkTo @route="whatsnew" @query={{hash entry=null}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="whatsnew">
+                                    What's new?
+                                    {{#if this.whatsNew.hasNew}}
+                                        <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
+                                    {{/if}}
+                                </LinkTo>
+                            </li>
+                        {{/if}}
+
                         <li role="presentation">
                             <LinkTo @route="settings.staff.user" @model={{this.session.user.slug}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="user-profile">
                                 Your profile
                             </LinkTo>
                         </li>
-                        <li class="divider" role="separator"></li>
-                        <li role="presentation">
-                            <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/docs/" target="_blank">
-                                Support center
-                            </a>
-                        </li>
-                        {{!-- <li role="presentation">
-                            <a class="dropdown-item" role="menuitem" tabindex="-1" target="_blank"
-                                href="https://twitter.com/intent/tweet?text=%40Ghost+Hi%21+Can+you+help+me+with+&related=Ghost"
-                                onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;"
-                            >
-                                Tweet @Ghost!
-                            </a>
-                        </li> --}}
-                        <li role="presentation">
-                            <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help/topic/setting-up/" target="_blank">
-                                How to use Ghost
-                            </a>
-                        </li>
+                        
+                        {{#unless this.session.user.isContributor}}
+                            <li class="divider" role="separator"></li>
+                            <li role="presentation">
+                                <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/docs/" target="_blank">
+                                    Support center
+                                </a>
+                            </li>
+                            <li role="presentation">
+                                <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help/topic/setting-up/" target="_blank">
+                                    How to use Ghost
+                                </a>
+                            </li>
 
-                        {{#if this.showDropdownExtension}}
-                            {{#each this.config.clientExtensions.dropdown.items as |menuItem| }}
-                                {{#if menuItem.divider}}
-                                    <li class="divider" role="separator"></li>
-                                {{else}}
-                                    <li role="presentation">
-                                        <a href="{{menuItem.href}}" target="_blank" class="dropdown-item {{menuItem.classes}}" role="menuitem" tabindex="-1">
-                                            {{menuItem.text}}
-                                        </a>
-                                    </li>
-                                {{/if}}
-                            {{/each}}
-                        {{/if}}
-
+                            {{#if this.showDropdownExtension}}
+                                {{#each this.config.clientExtensions.dropdown.items as |menuItem| }}
+                                    {{#if menuItem.divider}}
+                                        <li class="divider" role="separator"></li>
+                                    {{else}}
+                                        <li role="presentation">
+                                            <a href="{{menuItem.href}}" target="_blank" class="dropdown-item {{menuItem.classes}}" role="menuitem" tabindex="-1">
+                                                {{menuItem.text}}
+                                            </a>
+                                        </li>
+                                    {{/if}}
+                                {{/each}}
+                            {{/if}}
                         <li class="divider" role="separator"></li>
+                        {{/unless}}
+
                         <li role="presentation">
                             <LinkTo @route="signout" @classNames="dropdown-item user-menu-signout" @role="menuitem" @tabindex="-1">
                                 Sign out
@@ -80,7 +89,7 @@
                 </dropdown.Content>
             </GhBasicDropdown>
         </div>
-        <div class="flex items-center">
+        <div class="flex items-center pe-all">
             {{#if (gh-user-can-admin this.session.user)}}
                 <LinkTo class="gh-nav-bottom-tabicon" @route="settings" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
             {{/if}}

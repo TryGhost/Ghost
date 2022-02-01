@@ -58,7 +58,7 @@ export default class PostsRoute extends AuthenticatedRoute {
         } else if (user.isContributor) {
             // Contributors can only view their own draft posts
             filterParams.authors = user.slug;
-            filterParams.status = 'draft';
+            // filterParams.status = 'draft';
         } else if (params.author) {
             filterParams.authors = params.author;
         }
