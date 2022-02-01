@@ -1394,6 +1394,7 @@
 
 /* Canvas */
 .gh-canvas-title {
+    z-index: 1;
     display: flex;
     align-items: center;
     overflow: hidden;
