@@ -12,10 +12,6 @@ export default class DashboardController extends Controller {
     @service settings;
     @service whatsNew;
 
-    queryParams = ['firstStart'];
-
-    @tracked firstStart = false;
-
     @tracked mrrStatsData = null;
     @tracked mrrStatsError = null;
     @tracked mrrStatsLoading = false;
