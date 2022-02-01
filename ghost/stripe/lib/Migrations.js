@@ -31,6 +31,7 @@ module.exports = class StripeMigrations {
         await this.populateDefaultProductYearlyPriceId();
         await this.revertPortalPlansSetting();
         await this.removeInvalidSubscriptions();
+        await this.setDefaultProductName();
     }
 
     async populateProductsAndPrices(options) {
@@ -541,6 +542,34 @@ module.exports = class StripeMigrations {
             }
         } else {
             logging.info(`No invalid subscriptions, skipping migration`);
+        }
+    }
+
+    async setDefaultProductName(options) {
+        if (!options) {
+            return this.models.Product.transaction((transacting) => {
+                return this.setDefaultProductName({transacting});
+            });
+        }
+
+        const {data} = await this.models.Product.findPage({
+            ...options,
+            limit: 1,
+            filter: 'type:paid'
+        });
+
+        const defaultProduct = data[0] && data[0].toJSON();
+
+        if (defaultProduct && defaultProduct.name === 'Default Product') {
+            const siteTitle = await this.models.Settings.findOne({key: 'title'}, options);
+            if (siteTitle) {
+                await this.models.Product.edit({
+                    name: siteTitle.get('value')
+                }, {
+                    ...options,
+                    id: defaultProduct.id
+                });
+            }
         }
     }
 };
