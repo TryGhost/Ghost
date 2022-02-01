@@ -74,9 +74,9 @@ export default BaseValidator.create({
         }
     },
 
-    visibilityFilter(model) {
-        if (isBlank(model.visibilityFilter) && !isBlank(model.visibility) && model.visibility === 'filter' && !model.isNew) {
-            model.errors.add('visibilityFilter', 'Please select at least one tier');
+    tiers(model) {
+        if (model.visibility === 'tiers' && !model.isNew && isEmpty(model.tiers)) {
+            model.errors.add('tiers', 'Please select at least one tier');
             this.invalidate();
         }
     },

@@ -25,7 +25,7 @@ export default Component.extend({
         this.availableVisibilities = [...VISIBILITIES];
         if (this.feature.get('multipleProducts')) {
             this.availableVisibilities.push(
-                {label: 'Specific tier(s)', name: 'filter'}
+                {label: 'Specific tier(s)', name: 'tiers'}
             );
         }
     },
@@ -33,8 +33,8 @@ export default Component.extend({
     actions: {
         updateVisibility(newVisibility) {
             this.post.set('visibility', newVisibility);
-            if (newVisibility !== 'filter') {
-                this.post.set('visibilityFilter', null);
+            if (newVisibility !== 'tiers') {
+                this.post.set('tiers', []);
             }
         }
     }

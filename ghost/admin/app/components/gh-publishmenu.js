@@ -179,8 +179,8 @@ export default Component.extend({
                 return 'status:-free';
             }
 
-            if (this.post.visibility === 'filter') {
-                return this.post.visibilityFilter;
+            if (this.post.visibility === 'tiers') {
+                return this.post.visibilitySegment;
             }
 
             return this.post.visibility;
