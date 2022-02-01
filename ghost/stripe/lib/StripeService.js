@@ -33,7 +33,7 @@ module.exports = class StripeService {
             sendSignupEmail(email){
                 return membersService.api.sendEmailWithMagicLink({
                     email,
-                    requestedType: 'paid-signup',
+                    requestedType: 'signup-paid',
                     options: {
                         forceEmailType: true
                     },
