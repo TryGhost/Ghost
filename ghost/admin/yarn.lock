@@ -2015,10 +2015,10 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/helpers@1.1.54":
-  version "1.1.54"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.54.tgz#ace79f846df2a7a61b6a62f558e8985377f5acfd"
-  integrity sha512-MuBfJcuvdwT4leZ0RgC4xxxBCwX/O1xl/D/rqinx9yMhcrwy6CmOQMsx0BcFMuihXktUzcql3KG34lRHLjEwZw==
+"@tryghost/helpers@1.1.56":
+  version "1.1.56"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.56.tgz#9599dd0d9a435077ee1053bf5c1877ff7c043040"
+  integrity sha512-hFK0jHt2zIWHdnG2B2igAQqh4c9vmlRaEGTYu2FXBO9sgxG4T3bkiuI9/fYt79sN3NoTXuB967+v4I+3Y6qEow==
   dependencies:
     lodash-es "^4.17.11"
 
