@@ -1,4 +1,4 @@
-<nav class="gh-nav {{if this.ui.contextualNavMenu "gh-nav-contextual"}}" {{did-insert this.updateFirstRender}} ...attributes>
+<nav class="gh-nav {{if this.ui.contextualNavMenu "gh-nav-contextual"}} {{if this.session.user.isContributor "gh-nav-contributor"}}" {{did-insert this.updateFirstRender}} ...attributes>
     {{#if this.ui.contextualNavMenu}}
         {{component (concat "gh-nav-menu/" ui.contextualNavMenu)}}
     {{else}}

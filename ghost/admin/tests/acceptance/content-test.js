@@ -246,40 +246,14 @@ describe('Acceptance: Content', function () {
     });
 
     describe('as contributor', function () {
-        let contributor, contributorPost;
-
         beforeEach(async function () {
-            let contributorRole = this.server.create('role', {name: 'Contributor'});
-            contributor = this.server.create('user', {roles: [contributorRole]});
             let adminRole = this.server.create('role', {name: 'Administrator'});
             let admin = this.server.create('user', {roles: [adminRole]});
 
             // Create posts
-            contributorPost = this.server.create('post', {authors: [contributor], status: 'draft', title: 'Contributor Post Draft'});
-            this.server.create('post', {authors: [contributor], status: 'published', title: 'Contributor Published Post'});
             this.server.create('post', {authors: [admin], status: 'scheduled', title: 'Admin Post'});
 
             return await authenticateSession();
-        });
-
-        it('only fetches the contributor\'s draft posts', async function () {
-            await visit('/posts');
-
-            // Ensure the type, tag, and author selectors don't exist
-            expect(find('[data-test-type-select]'), 'type selector').to.not.exist;
-            expect(find('[data-test-tag-select]'), 'tag selector').to.not.exist;
-            expect(find('[data-test-author-select]'), 'author selector').to.not.exist;
-
-            // Trigger a sort request
-            await selectChoose('[data-test-order-select]', 'Oldest');
-
-            // API request includes author filter
-            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-            expect(lastRequest.queryParams.filter).to.have.string(`authors:${contributor.slug}`);
-
-            // only contributor's post is shown
-            expect(findAll('[data-test-post-id]').length, 'post count').to.equal(1);
-            expect(find(`[data-test-post-id="${contributorPost.id}"]`), 'author post').to.exist;
         });
     });
 });

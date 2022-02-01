@@ -107,6 +107,15 @@
     overflow: hidden;
 }
 
+.gh-nav-contributor {
+    position: absolute;
+    bottom: 0;
+    border-right: none;
+    background: unset;
+    width: 100%;
+    pointer-events: none;
+}
+
 .gh-nav-menu {
     flex-shrink: 0;
     display: flex;
@@ -122,6 +131,10 @@
     box-shadow: var(--box-shadow-m);
     min-width: 290px;
     padding: 6px 0;
+}
+
+.gh-nav-menu-dropdown-contributor .dropdown-menu {
+    top: -272px;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu>li>a,
@@ -708,11 +721,27 @@
 .gh-nav-bottom .ember-basic-dropdown-trigger {
     padding: 4px 8px 4px 4px;
     margin: -4px -8px -4px -4px;
+    border-radius: 999px;
+    background: var(--main-bg-color);
 }
 
 .gh-nav-bottom .ember-basic-dropdown-trigger:hover {
     background: var(--whitegrey);
-    border-radius: 999px;
+}
+
+.gh-nav-contributor .gh-nav-bottom .ember-basic-dropdown-trigger {
+    padding: 8px 12px 8px 8px;
+    margin: -4px 0px -4px 0px;
+    /* background: var(--main-bg-color); */
+    /* box-shadow:
+        0px -1px 10px rgba(0, 0, 0, 0.08),
+        0px 2.8px 2.2px rgba(0, 0, 0, 0.014),
+        0px 6.7px 5.3px rgba(0, 0, 0, 0.02),
+        0px 12.5px 10px rgba(0, 0, 0, 0.025),
+        0px 22.3px 17.9px rgba(0, 0, 0, 0.03),
+        0px 41.8px 33.4px rgba(0, 0, 0, 0.036),
+        0px 100px 80px rgba(0, 0, 0, 0.05)
+    ; */
 }
 
 .gh-nav-bottom-tabicon {
@@ -861,7 +890,7 @@
     }
 
     /* Hide the nav */
-    .gh-nav {
+    .gh-nav:not(.gh-nav-contributor) {
         position: absolute;
         top: 0;
         left: 0;
@@ -871,6 +900,7 @@
         transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
         transform: translate3d(-260px, 0px, 0px);
     }
+    
     .mobile-menu-expanded .gh-nav {
         transform: translate3d(0,0,0);
     }
@@ -892,7 +922,7 @@
         padding: 24px 15px 24px 16px;
     }
 
-    .gh-nav {
+    .gh-nav:not(.gh-nav-contributor) {
         width: 80vw;
         transform: translate3d(-80vw, 0px, 0px);
     }
@@ -940,7 +970,7 @@
         padding-bottom: 55px;
     }
 
-    .gh-nav-body {
+    .gh-nav:not(.gh-nav-contributor) .gh-nav-body {
         padding-bottom: 64px;
     }
 
