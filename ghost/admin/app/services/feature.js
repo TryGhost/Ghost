@@ -60,6 +60,7 @@ export default Service.extend({
     tweetGridCard: feature('tweetGridCard'),
     membersActivityFeed: feature('membersActivityFeed'),
     improvedOnboarding: feature('improvedOnboarding'),
+    tierWelcomePages: feature('tierWelcomePages'),
 
     _user: null,
 
