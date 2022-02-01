@@ -12,6 +12,10 @@ const stripeService = require('../../../core/server/services/stripe');
 describe('Members API', function () {
     let request;
 
+    beforeEach(function () {
+        sinon.stub(labs, 'isSet').withArgs('multipleProducts').returns(false);
+    });
+
     afterEach(function () {
         stripeService.api._configured = false;
         sinon.restore();
@@ -21,7 +25,6 @@ describe('Members API', function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'members', 'members:emails');
-        sinon.stub(labs, 'isSet').withArgs('multipleProducts').returns(false);
     });
 
     it('Can browse', async function () {
