@@ -762,6 +762,58 @@ textarea.gh-member-details-textarea {
     padding: 1rem 0;
 }
 
+.gh-member-feed {
+    margin: -12px 0 -8px;
+}
+
+.gh-member-feed-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 0;
+}
+
+.gh-member-feed-activity {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.gh-member-feed-activity svg {
+    width: 16px;
+    margin-right: 1rem;
+}
+
+.gh-member-feed-title {
+    display: table-cell;
+    padding: 10px 0;
+    line-height: 1.4em;
+    vertical-align: middle;
+    color: var(--darkgrey);
+    text-align: left;
+    font-weight: 500;
+}
+
+.gh-member-feed-title:hover {
+    color: var(--black);
+}
+
+.gh-member-feed-date {
+    margin-left: auto;
+    padding: 10px 0 10px 16px;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.gh-member-feed-row:hover .gh-member-feed-date {
+    color: var(--darkgrey);
+}
+
+.gh-member-btn-expandfeed {
+    margin: 8px 0;
+}
+
 .gh-member-feed-row:first-child .gh-member-feed-container {
     padding-top: 0;
 }
