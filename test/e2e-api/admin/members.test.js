@@ -7,7 +7,6 @@ const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const labs = require('../../../core/shared/labs');
 const Papa = require('papaparse');
-const stripeService = require('../../../core/server/services/stripe');
 
 describe('Members API', function () {
     let request;
@@ -17,7 +16,6 @@ describe('Members API', function () {
     });
 
     afterEach(function () {
-        stripeService.api._configured = false;
         sinon.restore();
     });
 
@@ -190,6 +188,7 @@ describe('Members API', function () {
     });
 
     it('Can add complimentary subscription', async function () {
+        const stripeService = require('../../../core/server/services/stripe');
         stripeService.api._configured = true;
         const fakePrice = {
             id: 'price_1',
@@ -275,6 +274,7 @@ describe('Members API', function () {
 
         should.equal(member.status, 'comped');
         should.equal(member.subscriptions.length, 1);
+        stripeService.api._configured = false;
     });
 
     it('Can edit by id', async function () {
