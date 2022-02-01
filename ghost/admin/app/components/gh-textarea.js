@@ -8,8 +8,7 @@ import {inject as service} from '@ember/service';
 @classic
 @classNames('gh-input')
 export default class GhTextarea extends TextArea.extend(TextInputMixin) {
-    @service
-    resizeDetector;
+    @service resizeDetector;
 
     autoExpand = false;
 

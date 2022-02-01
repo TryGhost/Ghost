@@ -18,8 +18,7 @@ import Component from '@ember/component';
 @classic
 @classNames('content-cover')
 export default class GhContentCover extends Component {
-    @service
-    ui;
+    @service ui;
 
     click() {
         this.ui.closeMenus();

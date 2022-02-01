@@ -7,11 +7,8 @@ import {task} from 'ember-concurrency';
 
 @classic
 export default class CodeInjectionController extends Controller {
-    @service
-    notifications;
-
-    @service
-    settings;
+    @service notifications;
+    @service settings;
 
     @action
     save() {

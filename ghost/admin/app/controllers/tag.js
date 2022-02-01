@@ -11,11 +11,8 @@ const SCRATCH_PROPS = ['name', 'slug', 'description', 'metaTitle', 'metaDescript
 
 @classic
 export default class TagController extends Controller {
-    @service
-    notifications;
-
-    @service
-    router;
+    @service notifications;
+    @service router;
 
     showDeleteTagModal = false;
 

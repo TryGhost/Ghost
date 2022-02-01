@@ -9,8 +9,7 @@ import {task} from 'ember-concurrency';
 @classic
 @tagName('')
 export default class GhPsmTemplateSelect extends Component {
-    @service
-    store;
+    @service store;
 
     post = null;
 

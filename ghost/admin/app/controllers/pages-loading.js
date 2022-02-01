@@ -9,6 +9,5 @@ export default class PagesLoadingController extends PostsLoadingController {
     @controller('pages')
     postsController;
 
-    @service
-    ui;
+    @service ui;
 }

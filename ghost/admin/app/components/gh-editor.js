@@ -15,11 +15,8 @@ import {inject as service} from '@ember/service';
     'isPreview:gh-editor-preview'
 )
 export default class GhEditor extends Component {
-    @service
-    feature;
-
-    @service
-    ui;
+    @service feature;
+    @service ui;
 
     // Internal attributes
     droppedFiles = null;

@@ -7,6 +7,5 @@ import {inject as service} from '@ember/service';
 @tagName('nav')
 @classNames('gh-mobile-nav-bar')
 export default class GhMobileNavBar extends Component {
-    @service
-    ui;
+    @service ui;
 }

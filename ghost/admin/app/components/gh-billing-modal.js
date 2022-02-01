@@ -5,8 +5,7 @@ import {inject as service} from '@ember/service';
 
 @classic
 export default class GhBillingModal extends Component {
-    @service
-    billing;
+    @service billing;
 
     @computed('billingWindowOpen')
     get visibilityClass() {

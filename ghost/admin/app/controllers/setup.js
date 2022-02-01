@@ -7,11 +7,8 @@ import Controller from '@ember/controller';
 
 @classic
 export default class SetupController extends Controller {
-    @service
-    ghostPaths;
-
-    @service
-    router;
+    @service ghostPaths;
+    @service router;
 
     @match('router.currentRouteName', /^setup\.(two|three)$/)
     showBackLink;

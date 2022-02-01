@@ -6,8 +6,7 @@ import {inject as service} from '@ember/service';
 
 @classic
 export default class TagsController extends Controller {
-    @service
-    router;
+    @service router;
 
     queryParams = ['type'];
     type = 'public';

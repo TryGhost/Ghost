@@ -6,6 +6,5 @@ import {tagName} from '@ember-decorators/component';
 @classic
 @tagName('')
 export default class GhBlogUrl extends Component {
-    @service
-    config;
+    @service config;
 }

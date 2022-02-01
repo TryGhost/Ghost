@@ -6,20 +6,11 @@ import {inject as service} from '@ember/service';
 
 @classic
 export default class GhBillingUpdateButton extends Component {
-    @service
-    router;
-
-    @service
-    config;
-
-    @service
-    ghostPaths;
-
-    @service
-    ajax;
-
-    @service
-    billing;
+    @service router;
+    @service config;
+    @service ghostPaths;
+    @service ajax;
+    @service billing;
 
     subscription = null;
 

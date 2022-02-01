@@ -21,14 +21,9 @@ import {inject as service} from '@ember/service';
     '_isSplitScreen:gh-markdown-editor-side-by-side'
 )
 export default class GhMarkdownEditor extends Component.extend(ShortcutsMixin) {
-    @service
-    config;
-
-    @service
-    notifications;
-
-    @service
-    settings;
+    @service config;
+    @service notifications;
+    @service settings;
 
     // Public attributes
     autofocus = false;

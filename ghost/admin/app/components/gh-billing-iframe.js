@@ -5,20 +5,11 @@ import {inject as service} from '@ember/service';
 
 @classic
 export default class GhBillingIframe extends Component {
-    @service
-    billing;
-
-    @service
-    config;
-
-    @service
-    ghostPaths;
-
-    @service
-    ajax;
-
-    @service
-    notifications;
+    @service billing;
+    @service config;
+    @service ghostPaths;
+    @service ajax;
+    @service notifications;
 
     isOwner = null;
     fetchingSubscription = false;

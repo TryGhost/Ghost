@@ -8,8 +8,7 @@ import {tagName} from '@ember-decorators/component';
 @classic
 @tagName('')
 export default class GhPsmTagsInput extends Component {
-    @service
-    store;
+    @service store;
 
     // public attrs
     post = null;
