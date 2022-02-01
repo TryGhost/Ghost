@@ -11,6 +11,10 @@ const Papa = require('papaparse');
 describe('Members API', function () {
     let request;
 
+    beforeEach(function () {
+        sinon.stub(labs, 'isSet').withArgs('multipleProducts').returns(false);
+    });
+
     afterEach(function () {
         sinon.restore();
     });
@@ -19,7 +23,6 @@ describe('Members API', function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'members', 'members:emails');
-        sinon.stub(labs, 'isSet').withArgs('members').returns(true);
     });
 
     it('Can browse', async function () {
@@ -182,6 +185,96 @@ describe('Members API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(422);
+    });
+
+    it('Can add complimentary subscription', async function () {
+        const stripeService = require('../../../core/server/services/stripe');
+        stripeService.api._configured = true;
+        const fakePrice = {
+            id: 'price_1',
+            product: '',
+            active: true,
+            nickname: 'Complimentary',
+            unit_amount: 0,
+            currency: 'USD',
+            type: 'recurring',
+            recurring: {
+                interval: 'year'
+            }
+        };
+        const fakeSubscription = {
+            id: 'sub_1',
+            customer: 'cus_1',
+            status: 'active',
+            cancel_at_period_end: false,
+            metadata: {},
+            current_period_end: Date.now() / 1000,
+            start_date: Date.now() / 1000,
+            plan: fakePrice,
+            items: {
+                data: [{
+                    price: fakePrice
+                }]
+            }
+        };
+        sinon.stub(stripeService.api, 'createCustomer').callsFake(async function (data) {
+            return {
+                id: 'cus_1',
+                email: data.email
+            };
+        });
+        sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
+        sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
+        sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+        const initialMember = {
+            name: 'Name',
+            email: 'compedtest@test.com',
+            subscribed: true
+        };
+
+        const compedPayload = {
+            comped: true
+        };
+
+        const res = await request
+            .post(localUtils.API.getApiQuery(`members/`))
+            .send({members: [initialMember]})
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.members);
+        jsonResponse.members.should.have.length(1);
+
+        should.exist(res.headers.location);
+        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('members/')}${res.body.members[0].id}/`);
+
+        const newMember = jsonResponse.members[0];
+
+        const res2 = await request
+            .put(localUtils.API.getApiQuery(`members/${newMember.id}/`))
+            .send({members: [compedPayload]})
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        should.not.exist(res2.headers['x-cache-invalidate']);
+
+        const jsonResponse2 = res2.body;
+
+        should.exist(jsonResponse2);
+        should.exist(jsonResponse2.members);
+        jsonResponse2.members.should.have.length(1);
+        localUtils.API.checkResponse(jsonResponse2.members[0], 'member', ['subscriptions', 'products']);
+
+        const member = jsonResponse2.members[0];
+
+        should.equal(member.status, 'comped');
+        should.equal(member.subscriptions.length, 1);
+        stripeService.api._configured = false;
     });
 
     it('Can edit by id', async function () {
@@ -392,7 +485,8 @@ describe('Members API', function () {
         // 2 from above posts, 2 from above import
         data[data.length - 1].free.should.equal(4);
         data[data.length - 1].paid.should.equal(0);
-        data[data.length - 1].comped.should.equal(0);
+        // 1 from the comped test
+        data[data.length - 1].comped.should.equal(1);
     });
 
     it('Can import CSV and bulk destroy via auto-added label', function () {
