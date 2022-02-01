@@ -1,7 +1,7 @@
 {{#if @selected}}
     <div class="gh-btn" {{on "click" (fn @onChange null)}}>
         <span class="gh-btn-label-green">
-            {{@selected.name}}
+            {{or @selected.name @selected.email}}
             &times;
         </span>
     </div>
