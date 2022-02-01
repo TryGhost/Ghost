@@ -1151,7 +1151,7 @@ ${ templateSettings.showBadge ? `
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                 ${ templateSettings.showHeaderIcon && site.iconUrl ? `
                                                 <tr>
-                                                    <td class="site-icon"><a href="${site.url}"><img src="${site.iconUrl}" border="0"></a></td>
+                                                    <td class="site-icon"><a href="${site.url}"><img src="${site.iconUrl}" alt="${site.title}" border="0"></a></td>
                                                 </tr>
                                                 ` : ``}
                                                 ${ templateSettings.showHeaderTitle ? `
