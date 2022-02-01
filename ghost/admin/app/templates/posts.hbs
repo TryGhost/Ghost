@@ -1,6 +1,6 @@
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header break tablet post-header">
-        <GhCustomViewTitle @title="Posts" @query={{reset-query-params "posts"}} />
+        <GhCustomViewTitle @title={{if this.session.user.isContributor (concat this.config.blogTitle " posts") "Posts"}} @query={{reset-query-params "posts"}} />
 
         <section class="view-actions">
             <GhContentfilter
@@ -31,7 +31,7 @@
             {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
                     <div class="gh-list-header gh-posts-title-header">Title</div>
-                    {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
+                    {{#if (and (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
                         {{#if this.feature.emailAnalytics}}
                             <div class="gh-list-header gh-posts-sends-header">Sends</div>
                             <div class="gh-list-header gh-posts-opens-header">Opens</div>

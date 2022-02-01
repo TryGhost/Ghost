@@ -21,7 +21,9 @@
 
         <GhContentCover />
 
-        <GhMobileNavBar />
+        {{#if (not this.session.user.isContributor)}}
+            <GhMobileNavBar />
+        {{/if}}
     </div>
 
     {{#if this.settings.accentColor}}

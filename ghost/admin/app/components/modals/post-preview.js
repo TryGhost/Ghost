@@ -7,6 +7,7 @@ import {tracked} from '@glimmer/tracking';
 export default class ModalPostPreviewComponent extends Component {
     @tracked tab = 'browser';
     @service settings;
+    @service session;
 
     constructor() {
         super(...arguments);

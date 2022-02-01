@@ -54,6 +54,9 @@ export default class PostsController extends Controller {
     @service store;
     @service settings;
 
+    @service
+    config;
+
     // default values for these are set in `init` and defined in `helpers/reset-query-params`
     queryParams = ['type', 'access', 'author', 'tag', 'order'];
 
