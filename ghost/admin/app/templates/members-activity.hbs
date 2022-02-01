@@ -4,7 +4,7 @@
             <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back">Activity</LinkTo>
             {{#if this.memberRecord}}
                 <span>{{svg-jar "arrow-right"}}</span>
-                <span class="truncate">{{this.memberRecord.name}}</span>
+                <span class="truncate">{{or this.memberRecord.name this.memberRecord.email}}</span>
             {{/if}}
         </h2>
 
