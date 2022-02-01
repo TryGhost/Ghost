@@ -9,14 +9,9 @@ import {task, timeout} from 'ember-concurrency';
 @classic
 @tagName('')
 export default class GhPortalLinks extends Component {
-    @service
-    config;
-
-    @service
-    store;
-
-    @service
-    settings;
+    @service config;
+    @service store;
+    @service settings;
 
     isLink = true;
     prices = null;

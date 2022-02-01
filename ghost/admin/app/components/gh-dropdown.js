@@ -10,8 +10,7 @@ import {inject as service} from '@ember/service';
 @classNames('dropdown')
 @classNameBindings('fadeIn:fade-in-scale:fade-out', 'isOpen:open:closed')
 export default class GhDropdown extends Component.extend(DropdownMixin) {
-    @service
-    dropdown;
+    @service dropdown;
 
     name = null;
     closeOnClick = false;

@@ -6,20 +6,11 @@ import {inject as service} from '@ember/service';
 
 @classic
 export default class Footer extends Component {
-    @service
-    config;
-
-    @service
-    session;
-
-    @service
-    router;
-
-    @service
-    whatsNew;
-
-    @service
-    feature;
+    @service config;
+    @service session;
+    @service router;
+    @service whatsNew;
+    @service feature;
 
     @and('config.clientExtensions.dropdown', 'session.user.isOwnerOnly')
     showDropdownExtension;

@@ -9,11 +9,8 @@ import {task} from 'ember-concurrency';
 
 @classic
 export default class IndexController extends Controller {
-    @service
-    session;
-
-    @service
-    store;
+    @service session;
+    @service store;
 
     showInviteUserModal = false;
     showResetAllPasswordsModal = false;

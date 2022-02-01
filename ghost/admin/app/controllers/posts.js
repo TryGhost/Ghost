@@ -49,17 +49,10 @@ const ORDERS = [{
 
 @classic
 export default class PostsController extends Controller {
-    @service
-    feature;
-
-    @service
-    session;
-
-    @service
-    store;
-
-    @service
-    settings;
+    @service feature;
+    @service session;
+    @service store;
+    @service settings;
 
     // default values for these are set in `init` and defined in `helpers/reset-query-params`
     queryParams = ['type', 'access', 'author', 'tag', 'order'];

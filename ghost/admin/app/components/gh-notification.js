@@ -10,8 +10,7 @@ import {inject as service} from '@ember/service';
 @classNames('gh-notification', 'gh-notification-passive')
 @classNameBindings('typeClass')
 export default class GhNotification extends Component {
-    @service
-    notifications;
+    @service notifications;
 
     message = null;
 

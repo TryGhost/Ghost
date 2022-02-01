@@ -12,8 +12,7 @@ const DATE_FORMAT = 'YYYY-MM-DD';
 @classic
 @tagName('')
 export default class GhDateTimePicker extends Component {
-    @service
-    settings;
+    @service settings;
 
     date = '';
     dateFormat = DATE_FORMAT;

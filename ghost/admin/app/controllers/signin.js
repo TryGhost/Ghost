@@ -18,23 +18,12 @@ export default class SigninController extends Controller.extend(ValidationEngine
     @controller
     application;
 
-    @service
-    ajax;
-
-    @service
-    config;
-
-    @service
-    ghostPaths;
-
-    @service
-    notifications;
-
-    @service
-    session;
-
-    @service
-    settings;
+    @service ajax;
+    @service config;
+    @service ghostPaths;
+    @service notifications;
+    @service session;
+    @service settings;
 
     submitting = false;
     loggingIn = false;

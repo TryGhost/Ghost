@@ -12,8 +12,7 @@ import {task} from 'ember-concurrency';
 @classic
 @classNameBindings('isFocused:focus')
 class CmEditorComponent extends Component {
-    @service
-    lazyLoader;
+    @service lazyLoader;
 
     textareaClass = '';
     isFocused = false;

@@ -7,6 +7,5 @@ import {inject as service} from '@ember/service';
 @tagName('h2')
 @classNames('view-title')
 export default class GhViewTitle extends Component {
-    @service
-    ui;
+    @service ui;
 }

@@ -11,8 +11,7 @@ Example usage:
 @classic
 @classNames('ghost-url-preview')
 export default class GhUrlPreview extends Component {
-    @service
-    config;
+    @service config;
 
     prefix = null;
     slug = null;

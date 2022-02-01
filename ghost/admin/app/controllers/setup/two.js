@@ -14,20 +14,11 @@ export default class TwoController extends Controller.extend(ValidationEngine) {
     @controller
     application;
 
-    @service
-    ajax;
-
-    @service
-    config;
-
-    @service
-    ghostPaths;
-
-    @service
-    notifications;
-
-    @service
-    session;
+    @service ajax;
+    @service config;
+    @service ghostPaths;
+    @service notifications;
+    @service session;
 
     // ValidationEngine settings
     validationType = 'setup';

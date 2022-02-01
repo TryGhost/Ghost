@@ -10,35 +10,16 @@ import {tagName} from '@ember-decorators/component';
 @classic
 @tagName('')
 export default class GhPostSettingsMenu extends Component {
-    @service
-    feature;
-
-    @service
-    store;
-
-    @service
-    config;
-
-    @service
-    ajax;
-
-    @service
-    ghostPaths;
-
-    @service
-    notifications;
-
-    @service
-    slugGenerator;
-
-    @service
-    session;
-
-    @service
-    settings;
-
-    @service
-    ui;
+    @service feature;
+    @service store;
+    @service config;
+    @service ajax;
+    @service ghostPaths;
+    @service notifications;
+    @service slugGenerator;
+    @service session;
+    @service settings;
+    @service ui;
 
     post = null;
     isViewingSubview = false;

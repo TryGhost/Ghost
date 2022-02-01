@@ -21,26 +21,13 @@ function randomPassword() {
 
 @classic
 export default class GeneralController extends Controller {
-    @service
-    config;
-
-    @service
-    ghostPaths;
-
-    @service
-    notifications;
-
-    @service
-    session;
-
-    @service
-    settings;
-
-    @service
-    frontend;
-
-    @service
-    ui;
+    @service config;
+    @service ghostPaths;
+    @service notifications;
+    @service session;
+    @service settings;
+    @service frontend;
+    @service ui;
 
     availableTimezones = null;
     imageExtensions = IMAGE_EXTENSIONS;

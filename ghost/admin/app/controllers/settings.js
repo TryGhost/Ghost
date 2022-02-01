@@ -6,11 +6,8 @@ import Controller from '@ember/controller';
 
 @classic
 export default class SettingsController extends Controller {
-    @service
-    settings;
-
-    @service
-    session;
+    @service settings;
+    @service session;
 
     showLeaveSettingsModal = false;
 

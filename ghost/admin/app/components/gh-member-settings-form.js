@@ -7,18 +7,12 @@ import {task} from 'ember-concurrency-decorators';
 import {tracked} from '@glimmer/tracking';
 
 export default class extends Component {
-    @service
-    membersUtils
-    @service
-    ghostPaths
-    @service
-    ajax
-    @service
-    store
-    @service
-    feature
-    @service
-    settings
+    @service membersUtils
+    @service ghostPaths
+    @service ajax
+    @service store
+    @service feature
+    @service settings
 
     constructor(...args) {
         super(...args);

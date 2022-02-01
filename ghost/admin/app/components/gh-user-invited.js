@@ -9,11 +9,8 @@ import {tagName} from '@ember-decorators/component';
 @classic
 @tagName('')
 export default class GhUserInvited extends Component {
-    @service
-    notifications;
-
-    @service
-    store;
+    @service notifications;
+    @service store;
 
     invite = null;
     isSending = false;

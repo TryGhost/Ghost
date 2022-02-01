@@ -7,29 +7,14 @@ import Controller from '@ember/controller';
 
 @classic
 export default class ApplicationController extends Controller {
-    @service
-    billing;
-
-    @service
-    config;
-
-    @service
-    dropdown;
-
-    @service
-    feature;
-
-    @service
-    router;
-
-    @service
-    session;
-
-    @service
-    settings;
-
-    @service
-    ui;
+    @service billing;
+    @service config;
+    @service dropdown;
+    @service feature;
+    @service router;
+    @service session;
+    @service settings;
+    @service ui;
 
     @reads('config.hostSettings.billing.enabled')
     showBilling;

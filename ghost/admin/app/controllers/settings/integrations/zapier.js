@@ -10,8 +10,7 @@ import {task, timeout} from 'ember-concurrency';
 
 @classic
 export default class ZapierController extends Controller {
-    @service
-    ghostPaths;
+    @service ghostPaths;
 
     selectedApiKey = null;
     isApiKeyRegenerated = false;

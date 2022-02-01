@@ -13,44 +13,19 @@ import {task} from 'ember-concurrency';
 @classic
 @tagName('')
 export default class Main extends Component.extend(ShortcutsMixin) {
-    @service
-    billing;
-
-    @service
-    config;
-
-    @service
-    customViews;
-
-    @service
-    feature;
-
-    @service
-    ghostPaths;
-
-    @service
-    modals;
-
-    @service
-    navigation;
-
-    @service
-    router;
-
-    @service
-    session;
-
-    @service
-    ui;
-
-    @service
-    whatsNew;
-
-    @service
-    membersStats;
-
-    @service
-    settings;
+    @service billing;
+    @service config;
+    @service customViews;
+    @service feature;
+    @service ghostPaths;
+    @service modals;
+    @service navigation;
+    @service router;
+    @service session;
+    @service ui;
+    @service whatsNew;
+    @service membersStats;
+    @service settings;
 
     iconStyle = '';
     iconClass = '';

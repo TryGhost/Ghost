@@ -9,17 +9,10 @@ const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v
 
 @classic
 export default class MembersEmail extends Component {
-    @service
-    config;
-
-    @service
-    ghostPaths;
-
-    @service
-    ajax;
-
-    @service
-    settings;
+    @service config;
+    @service ghostPaths;
+    @service ajax;
+    @service settings;
 
     replyAddresses = null;
     recipientsSelectValue = null;

@@ -10,8 +10,7 @@ import {task} from 'ember-concurrency';
 
 @classic
 export default class GhSimplemde extends TextArea {
-    @service
-    lazyLoader;
+    @service lazyLoader;
 
     // Public attributes
     autofocus = false;

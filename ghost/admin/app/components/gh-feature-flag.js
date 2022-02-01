@@ -10,8 +10,7 @@ import {inject as service} from '@ember/service';
 @classNames('switch')
 @attributeBindings('for', 'disabled')
 class FeatureFlagComponent extends Component {
-    @service
-    feature;
+    @service feature;
 
     @computed('_disabled')
     get disabled() {

@@ -9,8 +9,7 @@ import {inject as service} from '@ember/service';
 @classNames('gh-alert')
 @tagName('article')
 export default class GhAlert extends Component {
-    @service
-    notifications;
+    @service notifications;
 
     @computed('message.type')
     get typeClass() {

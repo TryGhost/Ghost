@@ -13,23 +13,12 @@ const RETRY_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 @classic
 export default class Email extends Component {
-    @service
-    ajax;
-
-    @service
-    ghostPaths;
-
-    @service
-    notifications;
-
-    @service
-    session;
-
-    @service
-    settings;
-
-    @service
-    config;
+    @service ajax;
+    @service ghostPaths;
+    @service notifications;
+    @service session;
+    @service settings;
+    @service config;
 
     post = null;
     sendTestEmailError = '';
