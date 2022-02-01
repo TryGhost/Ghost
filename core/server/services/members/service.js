@@ -111,7 +111,7 @@ module.exports = {
                     ghostMailer.send({
                         subject,
                         html: tpl(message, {
-                            amountImported,
+                            importedNumber: amountImported,
                             siteUrl: urlUtils.getSiteUrl()
                         }),
                         forceTextContent: true,
