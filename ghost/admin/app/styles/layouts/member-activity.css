@@ -3,6 +3,10 @@
     border-top: 1px solid var(--whitegrey);
 }
 
+.gh-members-activity .gh-list-scrolling {
+    height: calc(100vh - 96px);
+}
+
 .gh-members-activity .gh-list-scrolling thead th:last-child {
     width: 25%;
 }
