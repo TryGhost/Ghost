@@ -1551,10 +1551,10 @@
     "@tryghost/domain-events" "^0.1.6"
     "@tryghost/member-events" "^0.3.4"
 
-"@tryghost/members-api@4.8.9":
-  version "4.8.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.8.9.tgz#f7a44e937501ee909c09d7ee5ddd2e55501f5f98"
-  integrity sha512-OtIRTEAGAbu6luzA1J5ugXAFQDoZ78jIm0IHjPSPFXt10SqihkmFY2vXc3+bofSBl7O/XXD6dqxz1ZG+GWwdAQ==
+"@tryghost/members-api@4.8.10":
+  version "4.8.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.8.10.tgz#ad1c6a0b09936879b0d9ccfba46e4f275bb573c1"
+  integrity sha512-3KgasTzWVYHCnZbMHFQxAbBquREq1nMq73v9fpD0vLKnjoumQlNMA0hf44pjqsF+lucUA8RkBR2miULKUkPhWA==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
@@ -1630,6 +1630,26 @@
     lodash "^4.17.11"
 
 "@tryghost/members-stripe-service@0.7.0", "@tryghost/members-stripe-service@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.7.0.tgz#3e75d3fa554740ce639a4feda769a5563ae71ccf"
+  integrity sha512-jBf56kG6vgBwTkA3wC2yIFblDPJ1J9D2iL3FUeyA1EOo6u5SYJixJu9y2xnAVD12rujzzuOx2A4vABTAPrcEfw==
+  dependencies:
+    "@tryghost/debug" "^0.1.4"
+    "@tryghost/errors" "1.2.0"
+    leaky-bucket "^2.2.0"
+    stripe "^8.174.0"
+
+"@tryghost/members-stripe-service@^0.6.7":
+  version "0.6.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.6.7.tgz#44ad067c5b245a9475e673476998a51d59cc5480"
+  integrity sha512-SRTEl1HyRHodBduoxQtaUTFGTUhgS+Rm3UGuZVHVDVivHS2Am23CtUEMn45Bhrx7MvBP0m06tIqo5t4EeAPb3g==
+  dependencies:
+    "@tryghost/debug" "^0.1.4"
+    "@tryghost/errors" "1.2.0"
+    leaky-bucket "^2.2.0"
+    stripe "^8.174.0"
+
+"@tryghost/members-stripe-service@^0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.7.0.tgz#3e75d3fa554740ce639a4feda769a5563ae71ccf"
   integrity sha512-jBf56kG6vgBwTkA3wC2yIFblDPJ1J9D2iL3FUeyA1EOo6u5SYJixJu9y2xnAVD12rujzzuOx2A4vABTAPrcEfw==
