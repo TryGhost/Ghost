@@ -112,7 +112,7 @@ module.exports = {
                         subject,
                         html: tpl(message, {
                             amountImported,
-                            siteUrl: this._urlUtils.getSiteUrl()
+                            siteUrl: urlUtils.getSiteUrl()
                         }),
                         forceTextContent: true,
                         from: fromAddress,
