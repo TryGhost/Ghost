@@ -2,7 +2,7 @@
     <PowerDatepicker
         @selected={{this._date}}
         @center={{this._date}}
-        @onSelect={{action "setDate" value="date"}}
+        @onSelect={{action "setDateInternal" value="date"}}
         @renderInPlace={{true}}
         @disabled={{this.disabled}} as |dp|
     >
@@ -30,8 +30,8 @@
             type="text"
             value={{this._time}}
             disabled={{this.disabled}}
-            oninput={{action (mut this._time) value="target.value"}}
-            onblur={{action "setTime" this._time}}
+            {{on "change" this.updateTimeValue}}
+            {{on "blur" (fn this.setTimeInternal this._time)}}
             {{did-insert this.registerTimeInput}}
             data-test-date-time-picker-time-input
         >

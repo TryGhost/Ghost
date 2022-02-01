@@ -1,67 +1,78 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
+import {action} from '@ember/object';
+import {classNameBindings} from '@ember-decorators/component';
 import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    feature: service(),
+@classic
+@classNameBindings(
+    'isDraggedOver:-drag-over',
+    'isFullScreen:gh-editor-fullscreen',
+    'isPreview:gh-editor-preview'
+)
+export default class GhEditor extends Component {
+    @service
+    feature;
 
-    ui: service(),
-
-    classNameBindings: [
-        'isDraggedOver:-drag-over',
-        'isFullScreen:gh-editor-fullscreen',
-        'isPreview:gh-editor-preview'
-    ],
+    @service
+    ui;
 
     // Internal attributes
-    droppedFiles: null,
-    headerHeight: 0,
-    imageExtensions: IMAGE_EXTENSIONS,
-    imageMimeTypes: IMAGE_MIME_TYPES,
-    isDraggedOver: false,
-    isFullScreen: false,
-    isSplitScreen: false,
-    uploadedImageUrls: null,
+    droppedFiles = null;
+
+    headerHeight = 0;
+    imageExtensions = IMAGE_EXTENSIONS;
+    imageMimeTypes = IMAGE_MIME_TYPES;
+    isDraggedOver = false;
+    isFullScreen = false;
+    isSplitScreen = false;
+    uploadedImageUrls = null;
 
     // Private
-    _dragCounter: 0,
-    _onResizeHandler: null,
-    _viewActionsWidth: 190,
+    _dragCounter = 0;
 
-    actions: {
-        toggleFullScreen(isFullScreen) {
-            this.set('isFullScreen', isFullScreen);
-            this.ui.set('isFullScreen', isFullScreen);
-        },
+    _onResizeHandler = null;
+    _viewActionsWidth = 190;
 
-        togglePreview(isPreview) {
-            this.set('isPreview', isPreview);
-        },
+    @action
+    toggleFullScreen(isFullScreen) {
+        this.set('isFullScreen', isFullScreen);
+        this.ui.set('isFullScreen', isFullScreen);
+    }
 
-        toggleSplitScreen(isSplitScreen) {
-            this.set('isSplitScreen', isSplitScreen);
-        },
+    @action
+    togglePreview(isPreview) {
+        this.set('isPreview', isPreview);
+    }
 
-        uploadImages(fileList, resetInput) {
-            // convert FileList to an array so that resetting the input doesn't
-            // clear the file references before upload actions can be triggered
-            let files = Array.from(fileList);
-            this.set('droppedFiles', files);
-            resetInput();
-        },
+    @action
+    toggleSplitScreen(isSplitScreen) {
+        this.set('isSplitScreen', isSplitScreen);
+    }
 
-        uploadComplete(uploads) {
-            this.set('uploadedImageUrls', uploads.mapBy('url'));
-            this.set('droppedFiles', null);
-        },
+    @action
+    uploadImages(fileList, resetInput) {
+        // convert FileList to an array so that resetting the input doesn't
+        // clear the file references before upload actions can be triggered
+        let files = Array.from(fileList);
+        this.set('droppedFiles', files);
+        resetInput();
+    }
 
-        uploadCancelled() {
-            this.set('droppedFiles', null);
-        }
-    },
+    @action
+    uploadComplete(uploads) {
+        this.set('uploadedImageUrls', uploads.mapBy('url'));
+        this.set('droppedFiles', null);
+    }
+
+    @action
+    uploadCancelled() {
+        this.set('droppedFiles', null);
+    }
 
     _setHeaderHeight() {
         if (this.headerClass && this._editorTitleElement) {
@@ -70,7 +81,7 @@ export default Component.extend({
         }
 
         this.set('headerHeight', 0);
-    },
+    }
 
     // dragOver is needed so that drop works
     dragOver(event) {
@@ -87,7 +98,7 @@ export default Component.extend({
 
         event.preventDefault();
         event.stopPropagation();
-    },
+    }
 
     // dragEnter is needed so that the drag class is correctly removed
     dragEnter(event) {
@@ -103,7 +114,7 @@ export default Component.extend({
         this._dragCounter += 1;
 
         this.set('isDraggedOver', true);
-    },
+    }
 
     dragLeave(event) {
         event.preventDefault();
@@ -113,7 +124,7 @@ export default Component.extend({
         if (this._dragCounter === 0) {
             this.set('isDraggedOver', false);
         }
-    },
+    }
 
     drop(event) {
         event.preventDefault();
@@ -126,4 +137,4 @@ export default Component.extend({
             this.set('droppedFiles', event.dataTransfer.files);
         }
     }
-});
+}

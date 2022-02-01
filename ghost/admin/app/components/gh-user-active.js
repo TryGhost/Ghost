@@ -1,15 +1,18 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import moment from 'moment';
 import {computed} from '@ember/object';
+import {tagName} from '@ember-decorators/component';
 
-export default Component.extend({
-    tagName: '',
+@classic
+@tagName('')
+export default class GhUserActive extends Component {
+    user = null;
 
-    user: null,
-
-    lastLoginUTC: computed('user.lastLoginUTC', function () {
+    @computed('user.lastLoginUTC')
+    get lastLoginUTC() {
         let lastLoginUTC = this.get('user.lastLoginUTC');
 
         return lastLoginUTC ? moment(lastLoginUTC).fromNow() : '(Never)';
-    })
-});
+    }
+}

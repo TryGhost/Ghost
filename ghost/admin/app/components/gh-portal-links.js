@@ -1,37 +1,51 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tagName} from '@ember-decorators/component';
 import {task, timeout} from 'ember-concurrency';
 
-export default Component.extend({
-    config: service(),
-    store: service(),
-    settings: service(),
-    tagName: '',
-    isLink: true,
-    prices: null,
-    copiedPrice: null,
-    copiedSignupInterval: null,
-    selectedProduct: null,
-    products: null,
+@classic
+@tagName('')
+export default class GhPortalLinks extends Component {
+    @service
+    config;
 
-    toggleValue: computed('isLink', function () {
+    @service
+    store;
+
+    @service
+    settings;
+
+    isLink = true;
+    prices = null;
+    copiedPrice = null;
+    copiedSignupInterval = null;
+    selectedProduct = null;
+    products = null;
+
+    @computed('isLink')
+    get toggleValue() {
         return this.isLink ? 'Data attributes' : 'Links';
-    }),
+    }
 
-    sectionHeaderLabel: computed('isLink', function () {
+    @computed('isLink')
+    get sectionHeaderLabel() {
         return this.isLink ? 'Link' : 'Data attribute';
-    }),
-    selectedProductIdPath: computed('selectedProduct', function () {
+    }
+
+    @computed('selectedProduct')
+    get selectedProductIdPath() {
         const selectedProduct = this.selectedProduct;
         if (selectedProduct) {
             return `/${selectedProduct.name}`;
         }
         return '';
-    }),
+    }
 
-    productOptions: computed('products.[]', function () {
+    @computed('products.[]')
+    get productOptions() {
         if (this.products) {
             return this.products.map((product) => {
                 return {
@@ -41,22 +55,24 @@ export default Component.extend({
             });
         }
         return [];
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.siteUrl = this.config.get('blogUrl');
-    },
+    }
 
-    actions: {
-        toggleShowLinks() {
-            this.toggleProperty('isLink');
-        },
-        setSelectedProduct(product) {
-            this.set('selectedProduct', product);
-        }
-    },
-    fetchProducts: task(function* () {
+    @action
+    toggleShowLinks() {
+        this.toggleProperty('isLink');
+    }
+
+    @action
+    setSelectedProduct(product) {
+        this.set('selectedProduct', product);
+    }
+
+    @task(function* () {
         const products = yield this.store.query('product', {filter: 'type:paid', include: 'monthly_price,yearly_price'}) || [];
         this.set('products', products);
         if (products.length > 0) {
@@ -65,8 +81,10 @@ export default Component.extend({
                 label: products.firstObject.name
             });
         }
-    }),
-    copyStaticLink: task(function* (id) {
+    })
+    fetchProducts;
+
+    @task(function* (id) {
         this.set('copiedPrice', id);
         let data = '';
         if (this.isLink) {
@@ -76,8 +94,10 @@ export default Component.extend({
         }
         copyTextToClipboard(data);
         yield timeout(this.isTesting ? 50 : 3000);
-    }),
-    copyProductSignupLink: task(function* (interval) {
+    })
+    copyStaticLink;
+
+    @task(function* (interval) {
         this.set('copiedSignupInterval', interval);
         let data = '';
         if (this.isLink) {
@@ -88,4 +108,5 @@ export default Component.extend({
         copyTextToClipboard(data);
         yield timeout(this.isTesting ? 50 : 3000);
     })
-});
+    copyProductSignupLink;
+}

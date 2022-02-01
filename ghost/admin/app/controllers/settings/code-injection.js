@@ -1,59 +1,65 @@
+import classic from 'ember-classic-decorator';
+import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
-import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-export default Controller.extend({
-    notifications: service(),
-    settings: service(),
+@classic
+export default class CodeInjectionController extends Controller {
+    @service
+    notifications;
 
-    actions: {
-        save() {
-            this.saveTask.perform();
-        },
+    @service
+    settings;
 
-        toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.leaveSettingsTransition;
+    @action
+    save() {
+        this.saveTask.perform();
+    }
 
-            if (!transition && this.showLeaveSettingsModal) {
-                this.set('leaveSettingsTransition', null);
-                this.set('showLeaveSettingsModal', false);
-                return;
-            }
+    @action
+    toggleLeaveSettingsModal(transition) {
+        let leaveTransition = this.leaveSettingsTransition;
 
-            if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-                this.set('leaveSettingsTransition', transition);
-
-                // if a save is running, wait for it to finish then transition
-                if (this.saveTask.isRunning) {
-                    return this.saveTask.last.then(() => {
-                        transition.retry();
-                    });
-                }
-
-                // we genuinely have unsaved data, show the modal
-                this.set('showLeaveSettingsModal', true);
-            }
-        },
-
-        leaveSettings() {
-            let transition = this.leaveSettingsTransition;
-            let settings = this.settings;
-
-            if (!transition) {
-                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
-                return;
-            }
-
-            // roll back changes on settings props
-            settings.rollbackAttributes();
-
-            return transition.retry();
+        if (!transition && this.showLeaveSettingsModal) {
+            this.set('leaveSettingsTransition', null);
+            this.set('showLeaveSettingsModal', false);
+            return;
         }
 
-    },
+        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
+            this.set('leaveSettingsTransition', transition);
 
-    saveTask: task(function* () {
+            // if a save is running, wait for it to finish then transition
+            if (this.saveTask.isRunning) {
+                return this.saveTask.last.then(() => {
+                    transition.retry();
+                });
+            }
+
+            // we genuinely have unsaved data, show the modal
+            this.set('showLeaveSettingsModal', true);
+        }
+    }
+
+    @action
+    leaveSettings() {
+        let transition = this.leaveSettingsTransition;
+        let settings = this.settings;
+
+        if (!transition) {
+            this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
+            return;
+        }
+
+        // roll back changes on settings props
+        settings.rollbackAttributes();
+
+        return transition.retry();
+    }
+
+    @task(function* () {
         let notifications = this.notifications;
 
         try {
@@ -63,4 +69,5 @@ export default Controller.extend({
             throw error;
         }
     })
-});
+    saveTask;
+}

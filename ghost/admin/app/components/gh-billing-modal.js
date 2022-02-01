@@ -1,11 +1,15 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    billing: service(),
+@classic
+export default class GhBillingModal extends Component {
+    @service
+    billing;
 
-    visibilityClass: computed('billingWindowOpen', function () {
+    @computed('billingWindowOpen')
+    get visibilityClass() {
         return this.billingWindowOpen ? 'gh-billing' : 'gh-billing closed';
-    })
-});
+    }
+}

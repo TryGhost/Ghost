@@ -1,9 +1,12 @@
 import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 import {alias} from '@ember/object/computed';
 
-export default Controller.extend({
-    queryParams: ['action'],
-    action: null,
+@classic
+export default class BillingController extends Controller {
+    queryParams = ['action'];
+    action = null;
 
-    guid: alias('model')
-});
+    @alias('model')
+    guid;
+}

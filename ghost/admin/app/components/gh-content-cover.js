@@ -1,3 +1,6 @@
+import classic from 'ember-classic-decorator';
+import {classNames} from '@ember-decorators/component';
+import {inject as service} from '@ember/service';
 /*
 
 Implements a div for covering the page content
@@ -11,14 +14,14 @@ Example:
 **/
 
 import Component from '@ember/component';
-import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    ui: service(),
-
-    classNames: ['content-cover'],
+@classic
+@classNames('content-cover')
+export default class GhContentCover extends Component {
+    @service
+    ui;
 
     click() {
         this.ui.closeMenus();
     }
-});
+}

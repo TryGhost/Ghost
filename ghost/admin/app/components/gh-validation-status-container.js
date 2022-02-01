@@ -1,5 +1,7 @@
 import Component from '@ember/component';
 import ValidationStateMixin from 'ghost-admin/mixins/validation-state';
+import classic from 'ember-classic-decorator';
+import {classNameBindings} from '@ember-decorators/component';
 import {computed} from '@ember/object';
 
 /**
@@ -9,10 +11,11 @@ import {computed} from '@ember/object';
  * @param  {DS.Errors} errors   The DS.Errors object
  * @param  {string} property    Name of the property
  */
-export default Component.extend(ValidationStateMixin, {
-    classNameBindings: ['errorClass'],
-
-    errorClass: computed('property', 'hasError', 'hasValidated.[]', function () {
+@classic
+@classNameBindings('errorClass')
+export default class GhValidationStatusContainer extends Component.extend(ValidationStateMixin) {
+    @computed('property', 'hasError', 'hasValidated.[]')
+    get errorClass() {
         let hasValidated = this.hasValidated;
         let property = this.property;
 
@@ -21,5 +24,5 @@ export default Component.extend(ValidationStateMixin, {
         } else {
             return '';
         }
-    })
-});
+    }
+}

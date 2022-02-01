@@ -1,7 +1,10 @@
 import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 import {inject as service} from '@ember/service';
 
 /* eslint-disable ghost/ember/alias-model-in-controller */
-export default Controller.extend({
-    ui: service()
-});
+@classic
+export default class EditLoadingController extends Controller {
+    @service
+    ui;
+}

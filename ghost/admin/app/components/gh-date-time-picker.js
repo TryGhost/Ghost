@@ -1,52 +1,60 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import moment from 'moment';
 import {action, computed} from '@ember/object';
 import {isBlank, isEmpty} from '@ember/utils';
 import {or, reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
+import {tagName} from '@ember-decorators/component';
 
 const DATE_FORMAT = 'YYYY-MM-DD';
 
-export default Component.extend({
-    settings: service(),
+@classic
+@tagName('')
+export default class GhDateTimePicker extends Component {
+    @service
+    settings;
 
-    tagName: '',
-
-    date: '',
-    dateFormat: DATE_FORMAT,
-    time: '',
-    errors: null,
-    dateErrorProperty: null,
-    timeErrorProperty: null,
-    isActive: true,
-
-    _time: '',
-    _previousTime: '',
-    _minDate: null,
-    _maxDate: null,
-    _scratchDate: null,
-    _scratchDateError: null,
+    date = '';
+    dateFormat = DATE_FORMAT;
+    time = '';
+    errors = null;
+    dateErrorProperty = null;
+    timeErrorProperty = null;
+    isActive = true;
+    _time = '';
+    _previousTime = '';
+    _minDate = null;
+    _maxDate = null;
+    _scratchDate = null;
+    _scratchDateError = null;
 
     // actions
-    setTypedDateError() {},
+    setTypedDateError() {}
 
-    blogTimezone: reads('settings.timezone'),
-    hasError: or('dateError', 'timeError'),
+    @reads('settings.timezone')
+    blogTimezone;
 
-    dateValue: computed('_date', '_scratchDate', function () {
+    @or('dateError', 'timeError')
+    hasError;
+
+    @computed('_date', '_scratchDate')
+    get dateValue() {
         if (this._scratchDate !== null) {
             return this._scratchDate;
         } else {
             return moment(this._date).format(DATE_FORMAT);
         }
-    }),
+    }
 
-    timezone: computed('blogTimezone', function () {
+    @computed('blogTimezone')
+    get timezone() {
         let blogTimezone = this.blogTimezone;
         return moment.utc().tz(blogTimezone).format('z');
-    }),
+    }
 
-    dateError: computed('errors.[]', 'dateErrorProperty', '_scratchDateError', function () {
+    @computed('errors.[]', 'dateErrorProperty', '_scratchDateError')
+    get dateError() {
         if (this._scratchDateError) {
             return this._scratchDateError;
         }
@@ -59,9 +67,10 @@ export default Component.extend({
         }
 
         return '';
-    }),
+    }
 
-    timeError: computed('errors.[]', 'timeErrorProperty', function () {
+    @computed('errors.[]', 'timeErrorProperty')
+    get timeError() {
         let errors = this.errors;
         let property = this.timeErrorProperty;
 
@@ -70,10 +79,10 @@ export default Component.extend({
         }
 
         return '';
-    }),
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         let date = this.date;
         let time = this.time;
@@ -123,53 +132,61 @@ export default Component.extend({
         } else {
             this.set('_maxDate', null);
         }
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         this.setTypedDateError(null);
-    },
+    }
 
-    actions: {
-        // if date or time is set and the other property is blank set that too
-        // so that we don't get "can't be blank" errors
-        setDate(date) {
-            if (date !== this._date) {
-                this.setDate(date);
+    // if date or time is set and the other property is blank set that too
+    // so that we don't get "can't be blank" errors
+    @action
+    setDateInternal(date) {
+        if (date !== this._date) {
+            this.setDate(date);
 
-                if (isBlank(this.time)) {
-                    this.setTime(this._time);
-                }
-            }
-        },
-
-        setTime(time) {
-            if (time.match(/^\d:\d\d$/)) {
-                time = `0${time}`;
-            }
-
-            if (time !== this._previousTime) {
-                this.setTime(time);
-                this.set('_previousTime', time);
-
-                if (isBlank(this.date)) {
-                    this.setDate(this._date);
-                }
+            if (isBlank(this.time)) {
+                this.setTime(this._time);
             }
         }
-    },
+    }
 
-    registerTimeInput: action(function (elem) {
+    @action
+    setTimeInternal(time) {
+        if (time.match(/^\d:\d\d$/)) {
+            time = `0${time}`;
+        }
+
+        if (time !== this._previousTime) {
+            this.setTime(time);
+            this.set('_previousTime', time);
+
+            if (isBlank(this.date)) {
+                this.setDate(this._date);
+            }
+        }
+    }
+
+    @action
+    updateTimeValue(event) {
+        this.set('_time', event.target.value);
+    }
+
+    @action
+    registerTimeInput(elem) {
         this._timeInputElem = elem;
-    }),
+    }
 
-    onDateInput: action(function (datepicker, event) {
+    @action
+    onDateInput(datepicker, event) {
         let skipFocus = true;
         datepicker.actions.close(event, skipFocus);
         this.set('_scratchDate', event.target.value);
-    }),
+    }
 
-    onDateBlur: action(function (event) {
+    @action
+    onDateBlur(event) {
         // make sure we're not doing anything just because the calendar dropdown
         // is opened and clicked
         if (event.target.value === moment(this._date).format('YYYY-MM-DD')) {
@@ -182,9 +199,10 @@ export default Component.extend({
         } else {
             this._setDate(event.target.value);
         }
-    }),
+    }
 
-    onDateKeydown: action(function (datepicker, event) {
+    @action
+    onDateKeydown(datepicker, event) {
         if (event.key === 'Escape') {
             this._resetScratchDate();
         }
@@ -222,14 +240,14 @@ export default Component.extend({
                 event.preventDefault();
             }
         }
-    }),
+    }
 
     // internal methods
 
     _resetScratchDate() {
         this.set('_scratchDate', null);
         this._setScratchDateError(null);
-    },
+    }
 
     _setDate(dateStr) {
         if (!dateStr.match(/^\d\d\d\d-\d\d-\d\d$/)) {
@@ -243,13 +261,13 @@ export default Component.extend({
             return false;
         }
 
-        this.send('setDate', date.toDate());
+        this.setDateInternal(date.toDate());
         this._resetScratchDate();
         return true;
-    },
+    }
 
     _setScratchDateError(error) {
         this.set('_scratchDateError', error);
         this.setTypedDateError(error);
     }
-});
+}

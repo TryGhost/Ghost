@@ -1,27 +1,32 @@
+import classic from 'ember-classic-decorator';
+import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
-import {inject as service} from '@ember/service';
 
-export default Controller.extend({
+@classic
+export default class SettingsController extends Controller {
+    @service
+    settings;
 
-    settings: service(),
-    session: service(),
+    @service
+    session;
 
-    showLeaveSettingsModal: false,
+    showLeaveSettingsModal = false;
 
-    actions: {
-        openStripeSettings() {
-            this.set('membersStripeOpen', true);
-        },
-
-        closeLeaveSettingsModal() {
-            this.set('showLeaveSettingsModal', false);
-        },
-
-        async leavePortalSettings() {
-            this.settings.rollbackAttributes();
-            this.set('showLeaveSettingsModal', false);
-        }
+    @action
+    openStripeSettings() {
+        this.set('membersStripeOpen', true);
     }
 
-});
+    @action
+    closeLeaveSettingsModal() {
+        this.set('showLeaveSettingsModal', false);
+    }
+
+    @action
+    async leavePortalSettings() {
+        this.settings.rollbackAttributes();
+        this.set('showLeaveSettingsModal', false);
+    }
+}
