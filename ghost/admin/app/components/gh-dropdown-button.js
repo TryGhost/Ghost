@@ -24,6 +24,8 @@ export default class GhDropdownButton extends Component.extend(DropdownMixin) {
 
     // Notify dropdown service this dropdown should be toggled
     click() {
+        super.click(...arguments);
+
         this.dropdown.toggleDropdown(this.dropdownName, this);
 
         if (this.tagName === 'a') {
