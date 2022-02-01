@@ -644,7 +644,6 @@ export default Controller.extend({
             yield post.save(options);
         } catch (error) {
             this.post.set('emailOnly', previousEmailOnlyValue);
-
             if (isServerUnreachableError(error)) {
                 const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
                 this._showErrorAlert(prevStatus, newStatus, error);

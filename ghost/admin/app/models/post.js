@@ -92,7 +92,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     emailSubject: attr('string'),
     html: attr('string'),
     visibility: attr('string'),
-    visibilityFilter: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
     mobiledoc: attr('json-string', {defaultValue: () => JSON.parse(JSON.stringify(BLANK_DOC))}),
@@ -145,7 +144,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     ogTitleScratch: boundOneWay('ogTitle'),
     twitterDescriptionScratch: boundOneWay('twitterDescription'),
     twitterTitleScratch: boundOneWay('twitterTitle'),
-
+    tiers: attr('member-product'),
     emailSubjectScratch: boundOneWay('emailSubject'),
 
     isPublished: equal('status', 'published'),
@@ -180,7 +179,7 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.visibility === 'public' ? true : false;
     }),
 
-    visibilitySegment: computed('visibility', 'visibilityFilter', 'isPublic', function () {
+    visibilitySegment: computed('visibility', 'isPublic', 'tiers', function () {
         if (this.isPublic) {
             return this.settings.get('defaultContentVisibility') === 'paid' ? 'status:-free' : 'status:free,status:-free';
         } else {
@@ -190,8 +189,11 @@ export default Model.extend(Comparable, ValidationEngine, {
             if (this.visibility === 'paid') {
                 return 'status:-free';
             }
-            if (this.visibility === 'filter') {
-                return this.visibilityFilter;
+            if (this.visibility === 'tiers' && this.tiers) {
+                let filter = this.tiers.map((tier) => {
+                    return `product:${tier.slug}`;
+                }).join(',');
+                return filter;
             }
             return this.visibility;
         }
