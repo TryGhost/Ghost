@@ -64,7 +64,6 @@
                     <span class="hidden">Actions</span>
                 </span>
             </GhDropdownButton>
-            {{#if (eq this.product.type "paid" )}}
                 <GhDropdown
                     @name="tiers-actions-menu-{{this.product.name}}"
                     @tagName="ul"
@@ -75,11 +74,12 @@
                             <span>Edit</span>
                         </button>
                     </li>
-                    <li>
-                        <Settings::Members::ArchiveTier @product={{this.product}} />
-                    </li>
+                    {{#if (eq this.product.type "paid" )}}
+                        <li>
+                            <Settings::Members::ArchiveTier @product={{this.product}} />
+                        </li>
+                    {{/if}}
                 </GhDropdown>
-            {{/if}}
         </span>
     </div>
 </div>
