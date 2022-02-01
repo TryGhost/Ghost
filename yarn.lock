@@ -1551,10 +1551,10 @@
     "@tryghost/domain-events" "^0.1.6"
     "@tryghost/member-events" "^0.3.4"
 
-"@tryghost/members-api@4.8.4":
-  version "4.8.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.8.4.tgz#4d05ec3ea5e602f8a381e7e620549672bf5539c4"
-  integrity sha512-N8WaMv3t5RkITYOJbpk7T8ImkAJfwSFOcIhFFeamDsKLGK3njsUjxvkWl7/q73wmMBJFpJv6rUy7bIccW8tEgQ==
+"@tryghost/members-api@4.8.5":
+  version "4.8.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.8.5.tgz#cd5696f80aacf99fe695f325e3c32a62a70f4ed0"
+  integrity sha512-+I/KZX7WGbK2dlRZGYrvs6mkt0U7vJI8Em+fWTr5Wd1hCkoJ90U/meaR4yPldc1XDZ+Dxl4R4B/4Wh/I8OdGiw==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
@@ -1566,7 +1566,7 @@
     "@tryghost/member-events" "^0.3.4"
     "@tryghost/members-analytics-ingress" "^0.1.9"
     "@tryghost/members-payments" "^0.1.8"
-    "@tryghost/members-stripe-service" "^0.6.5"
+    "@tryghost/members-stripe-service" "^0.6.6"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
@@ -1629,10 +1629,20 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.6.5", "@tryghost/members-stripe-service@^0.6.5":
+"@tryghost/members-stripe-service@0.6.5":
   version "0.6.5"
   resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.6.5.tgz#68e6bc4d3f5e4ee61468f5fc43eb77650543bf63"
   integrity sha512-cTFcacy/Rst+ao4oRIszCMUw8oI8hKo1u3xxbjXjchDQUfVAUxxfnDoHcULH1d4mXc+LdftD2iKYNav/BATC5Q==
+  dependencies:
+    "@tryghost/debug" "^0.1.4"
+    "@tryghost/errors" "1.2.0"
+    leaky-bucket "^2.2.0"
+    stripe "^8.174.0"
+
+"@tryghost/members-stripe-service@^0.6.6":
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.6.6.tgz#dafbd97fd02ed0abc194af07baa23dd43aab1b7c"
+  integrity sha512-HX3Rw9D3yZVELWf9+/zNZM7q9LqmkNBmSkI4GuCZ7jKEIkIIezM48/w0cCCJJUyiJyruuRU4sdO9oZaDxUfQZg==
   dependencies:
     "@tryghost/debug" "^0.1.4"
     "@tryghost/errors" "1.2.0"
