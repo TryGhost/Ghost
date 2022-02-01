@@ -19,7 +19,9 @@ const {Errors} = DS;
 
 export default Controller.extend({
     two: controller('setup/two'),
+
     notifications: service(),
+    router: service(),
     session: service(),
 
     users: '',
@@ -125,7 +127,7 @@ export default Controller.extend({
 
         skipInvite() {
             this.session.loadServerNotifications();
-            this.transitionToRoute('home');
+            this.router.transitionTo('home', {queryParams: {firstStart: 'true'}});
         }
     },
 
@@ -157,7 +159,7 @@ export default Controller.extend({
     _transitionAfterSubmission() {
         if (!this._hasTransitioned) {
             this._hasTransitioned = true;
-            this.transitionToRoute('home');
+            this.router.transitionTo('home', {queryParams: {firstStart: 'true'}});
         }
     },
 

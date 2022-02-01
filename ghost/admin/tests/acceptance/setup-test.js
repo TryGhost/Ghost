@@ -13,6 +13,10 @@ describe('Acceptance: Setup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    beforeEach(function () {
+        enableLabsFlag(this.server, 'improvedOnboarding');
+    });
+
     it('redirects if already authenticated', async function () {
         let role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
@@ -132,6 +136,9 @@ describe('Acceptance: Setup', function () {
             // it displays success alert
             expect(findAll('.gh-alert-green').length, 'number of success alerts')
                 .to.equal(1);
+
+            // it opens get-started modal
+            expect(find('[data-test-modal="get-started"]')).to.exist;
         });
 
         it('handles validation errors in step 2', async function () {
@@ -344,13 +351,14 @@ describe('Acceptance: Setup', function () {
             // it displays failure alert
             expect(findAll('.gh-alert-red').length, 'number of failure alerts')
                 .to.equal(1);
+
+            // it opens get-started modal
+            expect(find('[data-test-modal="get-started"]')).to.exist;
         });
     });
 
     describe('?firstStart=true', function () {
         beforeEach(async function () {
-            enableLabsFlag(this.server, 'improvedOnboarding');
-
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role], slug: 'owner'});
 
