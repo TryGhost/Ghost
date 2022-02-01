@@ -11,13 +11,13 @@ import {task} from 'ember-concurrency';
 
 @classic
 export default class TwoController extends Controller.extend(ValidationEngine) {
-    @controller
-    application;
+    @controller application;
 
     @service ajax;
     @service config;
     @service ghostPaths;
     @service notifications;
+    @service router;
     @service session;
 
     // ValidationEngine settings
@@ -185,12 +185,12 @@ export default class TwoController extends Controller.extend(ValidationEngine) {
     _afterAuthentication(result) {
         if (this.profileImage) {
             return this._sendImage(result.users[0])
-                .then(() => (this.transitionToRoute('setup.three')))
+                .then(() => (this.router.transitionTo('setup.three')))
                 .catch((resp) => {
                     this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
                 });
         } else {
-            return this.transitionToRoute('setup.three');
+            return this.router.transitionTo('setup.three');
         }
     }
 }
