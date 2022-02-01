@@ -37,29 +37,14 @@ const YAML_MIME_TYPE = [
 
 @classic
 export default class LabsController extends Controller {
-    @service
-    ajax;
-
-    @service
-    config;
-
-    @service
-    feature;
-
-    @service
-    ghostPaths;
-
-    @service
-    notifications;
-
-    @service
-    session;
-
-    @service
-    settings;
-
-    @service
-    utils;
+    @service ajax;
+    @service config;
+    @service feature;
+    @service ghostPaths;
+    @service notifications;
+    @service session;
+    @service settings;
+    @service utils;
 
     importErrors = null;
     importSuccessful = false;

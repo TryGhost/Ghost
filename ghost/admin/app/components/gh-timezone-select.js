@@ -9,8 +9,7 @@ import {inject as service} from '@ember/service';
 @classic
 @classNames('form-group', 'for-select')
 export default class GhTimezoneSelect extends Component {
-    @service
-    clock;
+    @service clock;
 
     timezone = null;
     availableTimezones = null;

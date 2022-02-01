@@ -14,11 +14,8 @@ import {task, timeout} from 'ember-concurrency';
 
 @classic
 export default class IntegrationController extends Controller {
-    @service
-    config;
-
-    @service
-    ghostPaths;
+    @service config;
+    @service ghostPaths;
 
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;

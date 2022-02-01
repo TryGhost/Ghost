@@ -10,17 +10,10 @@ import {task} from 'ember-concurrency';
 
 @classic
 export default class SlackController extends Controller {
-    @service
-    ghostPaths;
-
-    @service
-    ajax;
-
-    @service
-    notifications;
-
-    @service
-    settings;
+    @service ghostPaths;
+    @service ajax;
+    @service notifications;
+    @service settings;
 
     leaveSettingsTransition = null;
     slackArray = null;

@@ -7,14 +7,9 @@ import {task} from 'ember-concurrency';
 
 @classic
 export default class IntegrationsController extends Controller {
-    @service
-    settings;
-
-    @service
-    store;
-
-    @service
-    config;
+    @service settings;
+    @service store;
+    @service config;
 
     _allIntegrations = null;
 

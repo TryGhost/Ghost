@@ -9,8 +9,7 @@ import {inject as service} from '@ember/service';
 @tagName('button')
 @attributeBindings('href', 'role', 'type')
 export default class GhDropdownButton extends Component.extend(DropdownMixin) {
-    @service
-    dropdown;
+    @service dropdown;
 
     role = 'button';
 

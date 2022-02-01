@@ -11,11 +11,8 @@ const VISIBILITIES = [
 
 @classic
 export default class GhPsmVisibilityInput extends Component {
-    @service
-    settings;
-
-    @service
-    feature;
+    @service settings;
+    @service feature;
 
     // public attrs
     post = null;

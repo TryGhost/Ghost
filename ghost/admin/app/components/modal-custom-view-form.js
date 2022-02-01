@@ -7,11 +7,8 @@ import {task, timeout} from 'ember-concurrency';
 
 @classic
 export default class ModalCustomViewForm extends ModalComponent {
-    @service
-    customViews;
-
-    @service
-    router;
+    @service customViews;
+    @service router;
 
     delayedModelColor = '';
 

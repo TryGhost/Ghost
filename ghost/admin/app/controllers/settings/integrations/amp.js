@@ -7,11 +7,8 @@ import {task} from 'ember-concurrency';
 
 @classic
 export default class AmpController extends Controller {
-    @service
-    notifications;
-
-    @service
-    settings;
+    @service notifications;
+    @service settings;
 
     leaveSettingsTransition = null;
 
