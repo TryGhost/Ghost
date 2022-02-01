@@ -315,7 +315,7 @@ ul.nostyle li {
 /* Horizontally scrolling list */
 .gh-list-scrolling {
     position: relative;
-    overflow: scroll;
+    overflow: auto;
     max-width: calc(100% + 96px);
     height: calc(100vh - 129px);
     margin: 0 -48px -81px;
