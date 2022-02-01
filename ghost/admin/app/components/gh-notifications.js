@@ -1,12 +1,16 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import {alias} from '@ember/object/computed';
+import {classNames, tagName} from '@ember-decorators/component';
 import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    notifications: service(),
+@classic
+@tagName('aside')
+@classNames('gh-notifications')
+export default class GhNotifications extends Component {
+    @service
+    notifications;
 
-    tagName: 'aside',
-    classNames: 'gh-notifications',
-
-    messages: alias('notifications.notifications')
-});
+    @alias('notifications.notifications')
+    messages;
+}

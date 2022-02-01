@@ -1,4 +1,5 @@
 import GhostTextInput from 'ghost-admin/components/gh-text-input';
+import classic from 'ember-classic-decorator';
 
 /**
  * This doesn't override the OneWayInput component because
@@ -6,14 +7,14 @@ import GhostTextInput from 'ghost-admin/components/gh-text-input';
  * parts from both the OneWayInput component and Ember's default
  * input component
  */
-const TrimFocusInputComponent = GhostTextInput.extend({
-
-    shouldFocus: true,
+@classic
+class TrimFocusInputComponent extends GhostTextInput {
+    shouldFocus = true;
 
     focusOut(event) {
         this._trimInput(event.target.value, event);
-        this._super(...arguments);
-    },
+        super.focusOut(...arguments);
+    }
 
     _trimInput(value, event) {
         if (value && typeof value.trim === 'function') {
@@ -28,6 +29,6 @@ const TrimFocusInputComponent = GhostTextInput.extend({
             inputMethod(event);
         }
     }
-});
+}
 
 export default TrimFocusInputComponent;

@@ -1,5 +1,7 @@
 import TextField from '@ember/component/text-field';
+import classic from 'ember-classic-decorator';
 import validator from 'validator';
+import {classNames} from '@ember-decorators/component';
 import {computed} from '@ember/object';
 import {run} from '@ember/runloop';
 
@@ -23,23 +25,25 @@ let isRelative = function (url) {
     return !url.match(/\s/) && !validator.isURL(url) && !url.match(/^(\/\/|#|[a-zA-Z0-9-]+:)/);
 };
 
-export default TextField.extend({
-    classNames: 'gh-input',
-
+@classic
+@classNames('gh-input')
+export default class GhNavitemUrlInput extends TextField {
     // Allowed actions
-    update() {},
-    clearErrors() {},
+    update() {}
 
-    isBaseUrl: computed('baseUrl', 'value', function () {
+    clearErrors() {}
+
+    @computed('baseUrl', 'value')
+    get isBaseUrl() {
         return this.baseUrl === this.value;
-    }),
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
         // value coming is likely to be relative but we always want to show
         // absolute urls in the input fields
         this.set('value', this._makeAbsoluteUrl(this.url));
-    },
+    }
 
     focusIn(event) {
         this.set('hasFocus', true);
@@ -52,7 +56,7 @@ export default TextField.extend({
                 el.setSelectionRange(length, length);
             }, event.target);
         }
-    },
+    }
 
     keyDown(event) {
         // delete the "placeholder" value all at once
@@ -66,7 +70,7 @@ export default TextField.extend({
         if (event.keyCode === 83 && event.metaKey) {
             this.notifyUrlChanged();
         }
-    },
+    }
 
     keyPress(event) {
         this.clearErrors();
@@ -77,13 +81,13 @@ export default TextField.extend({
         }
 
         return true;
-    },
+    }
 
     focusOut() {
         this.set('hasFocus', false);
 
         this.notifyUrlChanged();
-    },
+    }
 
     notifyUrlChanged() {
         let url = this.value.trim();
@@ -155,7 +159,7 @@ export default TextField.extend({
             url = this.update(url);
             this.set('value', this._makeAbsoluteUrl(url));
         }
-    },
+    }
 
     _makeAbsoluteUrl(url) {
         if (isRelative(url)) {
@@ -163,4 +167,4 @@ export default TextField.extend({
         }
         return url;
     }
-});
+}

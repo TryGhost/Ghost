@@ -1,4 +1,6 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
+import {classNames} from '@ember-decorators/component';
 import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
@@ -6,14 +8,17 @@ import {inject as service} from '@ember/service';
 Example usage:
 {{gh-url-preview prefix="tag" slug=theSlugValue tagName="p" classNames="description"}}
 */
-export default Component.extend({
-    config: service(),
+@classic
+@classNames('ghost-url-preview')
+export default class GhUrlPreview extends Component {
+    @service
+    config;
 
-    classNames: 'ghost-url-preview',
-    prefix: null,
-    slug: null,
+    prefix = null;
+    slug = null;
 
-    url: computed('slug', function () {
+    @computed('slug')
+    get url() {
         // Get the blog URL and strip the scheme
         let blogUrl = this.get('config.blogUrl');
         // Remove `http[s]://`
@@ -27,5 +32,5 @@ export default Component.extend({
         let theUrl = `${noSchemeBlogUrl}/${prefix}${slug}`;
 
         return theUrl;
-    })
-});
+    }
+}

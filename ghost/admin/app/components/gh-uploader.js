@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import EmberObject, {get} from '@ember/object';
+import classic from 'ember-classic-decorator';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {
     ICON_EXTENSIONS,
@@ -31,21 +32,22 @@ const MAX_SIMULTANEOUS_UPLOADS = 2;
  * @property {string} url - url relative to Ghost root,eg "/content/images/2017/05/my-image.png"
  */
 
-const UploadTracker = EmberObject.extend({
-    file: null,
-    total: 0,
-    loaded: 0,
+@classic
+class UploadTracker extends EmberObject {
+    file = null;
+    total = 0;
+    loaded = 0;
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.total = this.file && this.file.size || 0;
-    },
+    }
 
     update({loaded, total}) {
         this.total = total;
         this.loaded = loaded;
     }
-});
+}
 
 export default Component.extend({
     ajax: service(),

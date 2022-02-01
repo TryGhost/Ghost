@@ -1,51 +1,57 @@
+import classic from 'ember-classic-decorator';
+import {computed} from '@ember/object';
+import {inject as service} from '@ember/service';
 /* global SimpleMDE */
 import TextArea from '@ember/component/text-area';
 import config from 'ghost-admin/config/environment';
 import {assign} from '@ember/polyfills';
-import {computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
-import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-export default TextArea.extend({
-    lazyLoader: service(),
+@classic
+export default class GhSimplemde extends TextArea {
+    @service
+    lazyLoader;
 
     // Public attributes
-    autofocus: false,
-    options: null,
-    value: null,
-    placeholder: '',
+    autofocus = false;
+
+    options = null;
+    value = null;
+    placeholder = '';
 
     // Private
-    _editor: null,
+    _editor = null;
 
     // Closure actions
-    onChange() {},
-    onEditorInit() {},
-    onEditorDestroy() {},
+    onChange() {}
+
+    onEditorInit() {}
+    onEditorDestroy() {}
 
     // default SimpleMDE options, see docs for available config:
     // https://github.com/sparksuite/simplemde-markdown-editor#configuration
-    defaultOptions: computed(function () {
+    @computed
+    get defaultOptions() {
         return {
             autofocus: this.autofocus,
             indentWithTabs: false,
             placeholder: this.placeholder,
             tabSize: 4
         };
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         if (isEmpty(this.options)) {
             this.set('options', {});
         }
-    },
+    }
 
     // update the editor when the value property changes from the outside
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         if (isEmpty(this._editor)) {
             return;
@@ -58,21 +64,21 @@ export default TextArea.extend({
             this._editor.value(this.value);
             this._editor.codemirror.getDoc().setCursor(cursor);
         }
-    },
+    }
 
     // instantiate the editor with the contents of value
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         this.initSimpleMDE.perform();
-    },
+    }
 
     willDestroyElement() {
         this._editor.toTextArea();
         delete this._editor;
-        this._super(...arguments);
-    },
+        super.willDestroyElement(...arguments);
+    }
 
-    initSimpleMDE: task(function* () {
+    @task(function* () {
         yield this.lazyLoader.loadScript('simplemde', 'assets/simplemde/simplemde.js');
 
         let editorOptions = assign(
@@ -112,4 +118,5 @@ export default TextArea.extend({
 
         this.onEditorInit(this._editor);
     })
-});
+    initSimpleMDE;
+}

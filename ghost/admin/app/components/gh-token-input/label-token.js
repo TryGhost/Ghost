@@ -1,10 +1,10 @@
 import DraggableObject from 'ember-drag-drop/components/draggable-object';
+import classic from 'ember-classic-decorator';
+import {attributeBindings, classNames} from '@ember-decorators/component';
 
-export default DraggableObject.extend({
-
-    attributeBindings: ['title'],
-    classNames: ['label-token'],
-
-    title: 'Label'
-
-});
+@classic
+@attributeBindings('title')
+@classNames('label-token')
+export default class LabelToken extends DraggableObject {
+    title = 'Label';
+}

@@ -1,6 +1,9 @@
 import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 import {alias} from '@ember/object/computed';
 
-export default Controller.extend({
-    guid: alias('model')
-});
+@classic
+export default class SiteController extends Controller {
+    @alias('model')
+    guid;
+}

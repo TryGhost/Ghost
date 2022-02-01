@@ -1,18 +1,22 @@
 import Component from '@ember/component';
-import {computed} from '@ember/object';
+import classic from 'ember-classic-decorator';
+import {action, computed} from '@ember/object';
+import {classNameBindings, classNames, tagName} from '@ember-decorators/component';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    notifications: service(),
+@classic
+@tagName('article')
+@classNames('gh-notification', 'gh-notification-passive')
+@classNameBindings('typeClass')
+export default class GhNotification extends Component {
+    @service
+    notifications;
 
-    tagName: 'article',
-    classNames: ['gh-notification', 'gh-notification-passive'],
-    classNameBindings: ['typeClass'],
+    message = null;
 
-    message: null,
-
-    typeClass: computed('message.type', function () {
+    @computed('message.type')
+    get typeClass() {
         let type = this.get('message.type');
         let classes = '';
         let typeMapping;
@@ -27,10 +31,10 @@ export default Component.extend({
         }
 
         return classes;
-    }),
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
 
         this._animationEndHandler = run.bind(this, function () {
             if (event.animationName === 'fade-out') {
@@ -39,16 +43,15 @@ export default Component.extend({
         });
 
         this.element.addEventListener('animationend', this._animationEndHandler);
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         this.element.removeEventListener('animationend', this._animationEndHandler);
-    },
-
-    actions: {
-        closeNotification() {
-            this.notifications.closeNotification(this.message);
-        }
     }
-});
+
+    @action
+    closeNotification() {
+        this.notifications.closeNotification(this.message);
+    }
+}

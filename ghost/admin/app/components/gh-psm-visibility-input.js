@@ -1,5 +1,6 @@
 import Component from '@ember/component';
-import {computed} from '@ember/object';
+import classic from 'ember-classic-decorator';
+import {action, computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const VISIBILITIES = [
@@ -8,34 +9,37 @@ const VISIBILITIES = [
     {label: 'Paid-members only', name: 'paid'}
 ];
 
-export default Component.extend({
+@classic
+export default class GhPsmVisibilityInput extends Component {
+    @service
+    settings;
 
-    settings: service(),
-    feature: service(),
+    @service
+    feature;
 
     // public attrs
-    post: null,
+    post = null;
 
-    selectedVisibility: computed('post.visibility', function () {
+    @computed('post.visibility')
+    get selectedVisibility() {
         return this.get('post.visibility') || this.settings.get('defaultContentVisibility');
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.availableVisibilities = [...VISIBILITIES];
         if (this.feature.get('multipleProducts')) {
             this.availableVisibilities.push(
                 {label: 'Specific tier(s)', name: 'tiers'}
             );
         }
-    },
+    }
 
-    actions: {
-        updateVisibility(newVisibility) {
-            this.post.set('visibility', newVisibility);
-            if (newVisibility !== 'tiers') {
-                this.post.set('tiers', []);
-            }
+    @action
+    updateVisibility(newVisibility) {
+        this.post.set('visibility', newVisibility);
+        if (newVisibility !== 'tiers') {
+            this.post.set('tiers', []);
         }
     }
-});
+}

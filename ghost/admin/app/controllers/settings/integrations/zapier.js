@@ -1,65 +1,74 @@
+import classic from 'ember-classic-decorator';
+import {action, computed} from '@ember/object';
+import {alias} from '@ember/object/computed';
+import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
-import {alias} from '@ember/object/computed';
-import {computed} from '@ember/object';
-import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
-export default Controller.extend({
-    ghostPaths: service(),
+@classic
+export default class ZapierController extends Controller {
+    @service
+    ghostPaths;
 
-    selectedApiKey: null,
-    isApiKeyRegenerated: false,
+    selectedApiKey = null;
+    isApiKeyRegenerated = false;
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         if (this.isTesting === undefined) {
             this.isTesting = config.environment === 'test';
         }
-    },
+    }
 
-    integration: alias('model'),
+    @alias('model')
+    integration;
 
-    apiUrl: computed(function () {
+    @computed
+    get apiUrl() {
         let origin = window.location.origin;
         let subdir = this.ghostPaths.subdir;
         let url = this.ghostPaths.url.join(origin, subdir);
 
         return url.replace(/\/$/, '');
-    }),
+    }
 
-    regeneratedKeyType: computed('isApiKeyRegenerated', 'selectedApiKey', function () {
+    @computed('isApiKeyRegenerated', 'selectedApiKey')
+    get regeneratedKeyType() {
         if (this.isApiKeyRegenerated) {
             return this.get('selectedApiKey.type');
         }
         return null;
-    }),
+    }
 
-    actions: {
-        confirmRegenerateKeyModal(apiKey) {
-            this.set('showRegenerateKeyModal', true);
-            this.set('isApiKeyRegenerated', false);
-            this.set('selectedApiKey', apiKey);
-        },
+    @action
+    confirmRegenerateKeyModal(apiKey) {
+        this.set('showRegenerateKeyModal', true);
+        this.set('isApiKeyRegenerated', false);
+        this.set('selectedApiKey', apiKey);
+    }
 
-        cancelRegenerateKeyModal() {
-            this.set('showRegenerateKeyModal', false);
-        },
+    @action
+    cancelRegenerateKeyModal() {
+        this.set('showRegenerateKeyModal', false);
+    }
 
-        regenerateKey() {
-            this.set('isApiKeyRegenerated', true);
-        }
-    },
+    @action
+    regenerateKey() {
+        this.set('isApiKeyRegenerated', true);
+    }
 
-    copyAdminKey: task(function* () {
+    @task(function* () {
         copyTextToClipboard(this.integration.adminKey.secret);
         yield timeout(this.isTesting ? 50 : 3000);
-    }),
+    })
+    copyAdminKey;
 
-    copyApiUrl: task(function* () {
+    @task(function* () {
         copyTextToClipboard(this.apiUrl);
         yield timeout(this.isTesting ? 50 : 3000);
     })
-});
+    copyApiUrl;
+}

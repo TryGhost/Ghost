@@ -1,44 +1,52 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
+import {attributeBindings, classNames, tagName} from '@ember-decorators/component';
 import {computed, defineProperty} from '@ember/object';
 import {readOnly} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
-const FeatureFlagComponent = Component.extend({
-    feature: service(),
+@classic
+@tagName('label')
+@classNames('switch')
+@attributeBindings('for', 'disabled')
+class FeatureFlagComponent extends Component {
+    @service
+    feature;
 
-    tagName: 'label',
-    classNames: 'switch',
-    attributeBindings: ['for', 'disabled'],
-    disabled: computed('_disabled', function () {
+    @computed('_disabled')
+    get disabled() {
         if (this._disabled) {
             return true;
         }
         return false;
-    }),
-    value: computed('_flagValue', {
-        get() {
-            return this._flagValue;
-        },
-        set(key, value) {
-            return this.set(`feature.${this.flag}`, value);
-        }
-    }),
+    }
 
-    for: computed('flag', function () {
+    @computed('_flagValue')
+    get value() {
+        return this._flagValue;
+    }
+
+    set value(value) {
+        this.set(`feature.${this.flag}`, value);
+    }
+
+    @computed('flag')
+    get for() {
         return `labs-${this.flag}`;
-    }),
+    }
 
-    name: computed('flag', function () {
+    @computed('flag')
+    get name() {
         return `labs[${this.flag}]`;
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         defineProperty(this, '_flagValue', readOnly(`feature.${this.flag}`), function () {
             return this.get(`feature.${this.flag}`);
         });
     }
-});
+}
 
 export default FeatureFlagComponent;

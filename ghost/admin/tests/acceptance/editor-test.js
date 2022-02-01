@@ -140,7 +140,8 @@ describe('Acceptance: Editor', function () {
             // should error, if the publish time is in the future
             // NOTE: date must be selected first, changing the time first will save
             // with the new time
-            await datepickerSelect('[data-test-date-time-picker-datepicker]', moment.tz('Etc/UTC').toDate());
+            await fillIn('[data-test-date-time-picker-datepicker] input', moment.tz('Etc/UTC').add(1, 'day').format('YYYY-MM-DD'));
+            await blur('[data-test-date-time-picker-datepicker] input');
             await fillIn('[data-test-date-time-picker-time-input]', futureTime.format('HH:mm'));
             await blur('[data-test-date-time-picker-time-input]');
 

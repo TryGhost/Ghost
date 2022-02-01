@@ -1,18 +1,25 @@
-/* eslint-disable ghost/ember/alias-model-in-controller */
-import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 import {computed} from '@ember/object';
 import {match} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
+/* eslint-disable ghost/ember/alias-model-in-controller */
+import Controller from '@ember/controller';
 
-export default Controller.extend({
-    ghostPaths: service(),
-    router: service(),
+@classic
+export default class SetupController extends Controller {
+    @service
+    ghostPaths;
 
-    showBackLink: match('router.currentRouteName', /^setup\.(two|three)$/),
+    @service
+    router;
 
-    backRoute: computed('router.currentRouteName', function () {
+    @match('router.currentRouteName', /^setup\.(two|three)$/)
+    showBackLink;
+
+    @computed('router.currentRouteName')
+    get backRoute() {
         let currentRoute = this.router.currentRouteName;
 
         return currentRoute === 'setup.two' ? 'setup.one' : 'setup.two';
-    })
-});
+    }
+}

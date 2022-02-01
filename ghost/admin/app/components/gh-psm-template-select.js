@@ -1,25 +1,28 @@
 import Component from '@ember/component';
-import {computed} from '@ember/object';
+import classic from 'ember-classic-decorator';
+import {action, computed} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
+import {tagName} from '@ember-decorators/component';
 import {task} from 'ember-concurrency';
 
-export default Component.extend({
+@classic
+@tagName('')
+export default class GhPsmTemplateSelect extends Component {
+    @service
+    store;
 
-    store: service(),
-
-    // public attributes
-    tagName: '',
-    post: null,
+    post = null;
 
     // internal properties
-    activeTheme: null,
+    activeTheme = null;
 
     // closure actions
-    onTemplateSelect() {},
+    onTemplateSelect() {}
 
     // computed properties
-    customTemplates: computed('activeTheme.customTemplates.[]', function () {
+    @computed('activeTheme.customTemplates.[]')
+    get customTemplates() {
         let templates = this.get('activeTheme.customTemplates') || [];
         let defaultTemplate = {
             filename: '',
@@ -27,9 +30,10 @@ export default Component.extend({
         };
 
         return isEmpty(templates) ? templates : [defaultTemplate, ...templates.sortBy('name')];
-    }),
+    }
 
-    matchedSlugTemplate: computed('post.{page,slug}', 'activeTheme.slugTemplates.[]', function () {
+    @computed('post.{page,slug}', 'activeTheme.slugTemplates.[]')
+    get matchedSlugTemplate() {
         let slug = this.get('post.slug');
         let type = this.post.constructor.modelName;
 
@@ -38,29 +42,29 @@ export default Component.extend({
         });
 
         return matchedTemplate;
-    }),
+    }
 
-    selectedTemplate: computed('post.customTemplate', 'customTemplates.[]', function () {
+    @computed('post.customTemplate', 'customTemplates.[]')
+    get selectedTemplate() {
         let templates = this.customTemplates;
         let filename = this.get('post.customTemplate');
 
         return templates.findBy('filename', filename);
-    }),
+    }
 
     // hooks
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         this.loadActiveTheme.perform();
-    },
+    }
 
-    actions: {
-        selectTemplate(template) {
-            this.onTemplateSelect(template.filename);
-        }
-    },
+    @action
+    selectTemplate(template) {
+        this.onTemplateSelect(template.filename);
+    }
 
     // tasks
-    loadActiveTheme: task(function* () {
+    @task(function* () {
         let store = this.store;
         let themes = yield store.peekAll('theme');
 
@@ -72,4 +76,5 @@ export default Component.extend({
 
         this.set('activeTheme', activeTheme);
     })
-});
+    loadActiveTheme;
+}

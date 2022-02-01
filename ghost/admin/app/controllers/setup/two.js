@@ -1,54 +1,69 @@
+import classic from 'ember-classic-decorator';
+import {inject as service} from '@ember/service';
 /* eslint-disable camelcase, ghost/ember/alias-model-in-controller */
 import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import {get} from '@ember/object';
+import {action, get} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {isInvalidError} from 'ember-ajax/errors';
 import {isVersionMismatchError} from 'ghost-admin/services/ajax';
-import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-export default Controller.extend(ValidationEngine, {
-    application: controller(),
-    ajax: service(),
-    config: service(),
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
+@classic
+export default class TwoController extends Controller.extend(ValidationEngine) {
+    @controller
+    application;
+
+    @service
+    ajax;
+
+    @service
+    config;
+
+    @service
+    ghostPaths;
+
+    @service
+    notifications;
+
+    @service
+    session;
 
     // ValidationEngine settings
-    validationType: 'setup',
+    validationType = 'setup';
 
-    blogCreated: false,
-    blogTitle: null,
-    email: '',
-    flowErrors: '',
-    profileImage: null,
-    name: null,
-    password: null,
+    blogCreated = false;
+    blogTitle = null;
+    email = '';
+    flowErrors = '';
+    profileImage = null;
+    name = null;
+    password = null;
 
-    actions: {
-        setup() {
-            this.setup.perform();
-        },
+    @action
+    setup() {
+        this.setup.perform();
+    }
 
-        preValidate(model) {
-            // Only triggers validation if a value has been entered, preventing empty errors on focusOut
-            if (this.get(model)) {
-                return this.validate({property: model});
-            }
-        },
-
-        setImage(image) {
-            this.set('profileImage', image);
+    @action
+    preValidate(model) {
+        // Only triggers validation if a value has been entered, preventing empty errors on focusOut
+        if (this.get(model)) {
+            return this.validate({property: model});
         }
-    },
+    }
 
-    setup: task(function* () {
+    @action
+    setImage(image) {
+        this.set('profileImage', image);
+    }
+
+    @task(function* () {
         return yield this._passwordSetup();
-    }),
+    })
+    setup;
 
-    authenticate: task(function* (authStrategy, authentication) {
+    @task(function* (authStrategy, authentication) {
         // we don't want to redirect after sign-in during setup
         this.session.skipAuthSuccessHandler = true;
 
@@ -75,7 +90,8 @@ export default Controller.extend(ValidationEngine, {
                 this.notifications.showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
             }
         }
-    }),
+    })
+    authenticate;
 
     /**
      * Uploads the given data image, then sends the changed user image property to the server
@@ -107,7 +123,7 @@ export default Controller.extend(ValidationEngine, {
                 }
             });
         });
-    },
+    }
 
     _passwordSetup() {
         let setupProperties = ['blogTitle', 'name', 'email', 'password'];
@@ -154,7 +170,7 @@ export default Controller.extend(ValidationEngine, {
         }).catch(() => {
             this.set('flowErrors', 'Please fill out the form to setup your blog.');
         });
-    },
+    }
 
     _handleSaveError(resp) {
         if (isInvalidError(resp)) {
@@ -163,7 +179,7 @@ export default Controller.extend(ValidationEngine, {
         } else {
             this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
         }
-    },
+    }
 
     _handleAuthenticationError(error) {
         if (error && error.payload && error.payload.errors) {
@@ -173,7 +189,7 @@ export default Controller.extend(ValidationEngine, {
             // Connection errors don't return proper status message, only req.body
             this.notifications.showAlert('There was a problem on the server.', {type: 'error', key: 'setup.authenticate.failed'});
         }
-    },
+    }
 
     _afterAuthentication(result) {
         if (this.profileImage) {
@@ -186,4 +202,4 @@ export default Controller.extend(ValidationEngine, {
             return this.transitionToRoute('setup.three');
         }
     }
-});
+}
