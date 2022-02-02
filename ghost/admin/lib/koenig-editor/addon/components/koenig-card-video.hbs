@@ -40,7 +40,7 @@
                 </div>
                 {{#unless (or uploader.isUploading uploader.errors)}}
                     <div class="image-overlay">
-                        <button class="kg-large-play-icon">{{svg-jar "play"}}</button>
+                        <button class="kg-large-play-icon" type="button">{{svg-jar "play"}}</button>
                     </div>
                 {{/unless}}
                 {{#if this.isDraggedOver}}
@@ -67,7 +67,7 @@
                     {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{else if (not this.previewThumbnailSrc @payload.src)}}
-                        <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" {{on "click" this.triggerVideoFileDialog}}>
+                        <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" type="button" {{on "click" this.triggerVideoFileDialog}}>
                             {{svg-jar "film-camera" class="kg-placeholder-video"}}
                             <span class="mt4 kg-upload-placeholder-text">Click to select a video</span>
                         </button>
@@ -76,14 +76,14 @@
             {{else}}
                 <div class="kg-player-container">
                     <div class="kg-player {{if (eq @payload.cardWidth "full") "kg-player-full"}}">
-                        <button class="kg-player-play-icon">{{svg-jar "play"}}</button>
+                        <button class="kg-player-play-icon" type="button">{{svg-jar "play"}}</button>
                         <span class="kg-player-current-time">0:00</span>
                         <div class="kg-player-time">
                             /<span class="kg-player-duration">{{this.totalDuration}}</span>
                         </div>
                         <input type="range" class="kg-player-seek-slider" max="100" value="0">
-                        <button class="kg-player-playback-rate">1&#215;</button>
-                        <button class="kg-player-unmute-icon">{{svg-jar "unmute"}}</button>
+                        <button class="kg-player-playback-rate" type="button">1&#215;</button>
+                        <button class="kg-player-unmute-icon" type="button">{{svg-jar "unmute"}}</button>
                         <input type="range" class="kg-player-volume-slider" max="100" value="70">
                     </div>
                 </div>
@@ -109,7 +109,7 @@
             <div class="kg-settings-panel-control-label">Video width</div>
             <div class="kg-settings-panel-control-input">
                 <div class="gh-btn-group icons">
-                    <button type="button" title="Regular" class="gh-btn gh-btn-icon {{if (not @payload.cardWidth) "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" null)}}><span>{{svg-jar "koenig/kg-img-regular" class="fill-darkgrey"}}</span></button>
+                    <button type="button" title="Regular" class="gh-btn gh-btn-icon {{unless @payload.cardWidth "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" null)}}><span>{{svg-jar "koenig/kg-img-regular" class="fill-darkgrey"}}</span></button>
                     <button type="button" title="Wide" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "wide") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "wide")}}><span>{{svg-jar "koenig/kg-img-wide" class="fill-darkgrey"}}</span></button>
                     <button type="button" title="Full" class="gh-btn gh-btn-icon {{if (eq @payload.cardWidth "full") "gh-btn-group-selected"}}" {{on "click" (fn this.updatePayloadAttr "cardWidth" "full")}}><span>{{svg-jar "koenig/kg-img-full" class="fill-darkgrey"}}</span></button>
                 </div>
@@ -153,7 +153,7 @@
                                         <img class="kg-thumbnail-xl" src={{@payload.customThumbnailSrc}} {{on "click" uploader.triggerFileDialog}}>
                                         <div class="image-overlay">
                                             <div class="flex flex-row-reverse">
-                                                <button class="bg-white-90 br3 pe-auto" {{on "click" this.deleteCustomThumbnail}}>
+                                                <button class="bg-white-90 br3 pe-auto" type="button" {{on "click" this.deleteCustomThumbnail}}>
                                                     {{svg-jar "koenig/kg-trash" class="kg-replace-icon fill-darkgrey"}}
                                                 </button>
                                             </div>

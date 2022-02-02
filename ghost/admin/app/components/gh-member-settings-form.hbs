@@ -52,8 +52,8 @@
                                 </div>
                                 <div class="for-switch">
                                     <label class="switch" for="subscribed-checkbox">
-                                        <Input @checked={{this.member.subscribed}} @type="checkbox" @id="subscribed-checkbox"
-                                            @name="subscribed" data-test-checkbox="member-subscribed" />
+                                        <Input @checked={{this.member.subscribed}} @type="checkbox" id="subscribed-checkbox"
+                                            name="subscribed" data-test-checkbox="member-subscribed" />
                                         <span class="input-toggle-component"></span>
                                     </label>
                                 </div>
@@ -163,7 +163,7 @@
                                             </GhDropdownButton>
                                             <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
                                                 <li>
-                                                    <button {{action "removeComplimentary" product.id}}>
+                                                    <button type="button" {{action "removeComplimentary" product.id}}>
                                                         <span class="red">Remove complimentary subscription</span>
                                                     </button>
                                                 </li>
@@ -180,23 +180,23 @@
                                             </GhDropdownButton>
                                             <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
                                                 <li>
-                                                    <a href="https://dashboard.stripe.com/customers/{{sub.customer.id}}" target="_blank" rel="noopener">
+                                                    <a href="https://dashboard.stripe.com/customers/{{sub.customer.id}}" target="_blank" rel="noopener noreferrer">
                                                         View Stripe customer
                                                     </a>
                                                 </li>
                                                 <li class="divider"></li>
                                                 <li>
-                                                    <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener">
+                                                    <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener noreferrer">
                                                         View Stripe subscription
                                                     </a>
                                                 </li>
                                                 <li>
                                                 {{#if sub.cancel_at_period_end}}
-                                                    <button {{action "continueSubscription" sub.id}}>
+                                                    <button type="button" {{action "continueSubscription" sub.id}}>
                                                         <span>Continue subscription</span>
                                                     </button>
                                                 {{else}}
-                                                    <button {{action "cancelSubscription" sub.id}}>
+                                                    <button type="button" {{action "cancelSubscription" sub.id}}>
                                                         <span class="red">Cancel subscription</span>
                                                     </button>
                                                 {{/if}}
@@ -234,7 +234,7 @@
                                     </GhDropdownButton>
                                     <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
                                         <li>
-                                            <button {{action "removeComplimentary" product.id}}>
+                                            <button type="button" {{action "removeComplimentary" product.id}}>
                                                 <span class="red">Remove complimentary subscription</span>
                                             </button>
                                         </li>

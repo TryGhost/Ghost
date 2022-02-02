@@ -9,7 +9,7 @@
     </div>
 
     <div class="modal-footer">
-        <button {{on "click" (fn @close false)}} class="gh-btn" data-test-button="cancel"><span>Stay</span></button>
+        <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Stay</span></button>
         <GhTaskButton
             @buttonText="Delete"
             @successText="Deleted"

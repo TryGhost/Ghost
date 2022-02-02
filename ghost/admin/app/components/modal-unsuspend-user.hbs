@@ -8,6 +8,6 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
     <GhTaskButton @buttonText="Un-suspend" @successText="Suspended" @task={{this.unsuspendUser}} @class="gh-btn gh-btn-red gh-btn-icon" data-test-modal-confirm="true" />
 </div>

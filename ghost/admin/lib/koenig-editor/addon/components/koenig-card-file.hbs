@@ -25,7 +25,7 @@
     {{#if @payload.src}}
         <div class="kg-upload-container {{if (and (not @isEditing) (or (not @payload.fileTitle) (not @payload.fileCaption))) "medium"}} {{if (and (not @isEditing) (and (not @payload.fileTitle) (not @payload.fileCaption))) "small"}}">
             <div class="kg-media-container light">
-                <button class="kg-upload-button">
+                <button class="kg-upload-button" type="button">
                     {{svg-jar "file-upload" class="kg-file-icon"}}
                 </button>
             </div>
@@ -53,9 +53,9 @@
                 </div>
             </div>
         </div>
-        {{#if (not @isEditing)}}
+        {{#unless @isEditing}}
             <div class="koenig-card-click-overlay"></div>
-        {{/if}}
+        {{/unless}}
     {{else}}
         <div class="kg-upload-container kg-upload-container-empty">
             <GhUploader

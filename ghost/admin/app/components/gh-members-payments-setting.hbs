@@ -20,7 +20,7 @@
                             @input={{action "setStripeDirectSecretKey"}}
                             @class="mt1 password"
                         />
-                        <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8">
+                        <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8" rel="noopener noreferrer">
                             Find your Stripe API keys here &raquo;
                         </a>
                     </div>
@@ -33,7 +33,7 @@
                         </div>
                         <p class="f8 mt2 mb0">
                             Stripe is our exclusive direct payments partner.<br />
-                            Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank"  rel="noopener" class="gh-members-stripe-link">sign up here</a>.
+                            Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" class="gh-members-stripe-link">sign up here</a>.
                         </p>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
                 {{svg-jar "check-circle-stroke" class="check-circle"}}
                 <h1>You are connected to Stripe</h1>
                 <div class="gh-stripe-connected-info">
-                    <p>Connected to <a href="https://dashboard.stripe.com/{{this.stripeConnectAccountId}}" target="_blank">{{this.stripeConnectAccountName}}</a></p>
+                    <p>Connected to <a href="https://dashboard.stripe.com/{{this.stripeConnectAccountId}}" target="_blank" rel="noopener noreferrer">{{this.stripeConnectAccountName}}</a></p>
                     {{#unless this.stripeConnectLivemode}}
                         <div class="gh-members-connect-testmodelabel">Test mode</div>
                     {{/unless}}
@@ -75,7 +75,7 @@
                 <div class="w-100 w-50-l">
                     <label class="fw6 f8">Generate secure key</label>
                     <div class="flex items-center mb4 justify-between gh-members-connectbutton-container mt2">
-                        <a href="{{if this.stripeConnectTestMode this.testStripeConnectAuthUrl this.liveStripeConnectAuthUrl}}" class="stripe-connect" target="_blank"><span>Connect with Stripe</span></a>
+                        <a href="{{if this.stripeConnectTestMode this.testStripeConnectAuthUrl this.liveStripeConnectAuthUrl}}" class="stripe-connect" target="_blank" rel="noopener noreferrer"><span>Connect with Stripe</span></a>
                         <div class="ml2 flex items-center flex-nowrap">
                             <span class="mr2 f8 midgrey nowrap {{if this.stripeConnectTestMode "gh-members-connect-testmodeon"}}">{{if this.stripeConnectTestMode "Using" "Use"}} test mode</span>
                             <div class="for-switch small">
@@ -103,7 +103,7 @@
                         </div>
                         <p class="f8 mt2 mb0">
                             Stripe is our exclusive direct payments partner.<br />
-                            Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank"  rel="noopener" class="gh-members-stripe-link">sign up here</a>.
+                            Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" class="gh-members-stripe-link">sign up here</a>.
                         </p>
                     </div>
                 </div>

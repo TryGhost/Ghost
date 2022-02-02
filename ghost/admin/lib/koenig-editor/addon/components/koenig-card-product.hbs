@@ -40,7 +40,7 @@
                         {{#unless this.koenigDragDropHandler.isDragging}}
                             <div class="bg-image-overlay-top child pe-none {{image.overlayClasses}}">
                                 <div class="flex flex-row-reverse">
-                                    <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; right: 20px; font-size: 1.2rem;" {{action "resetSrcs"}}><span>{{svg-jar "koenig/kg-trash"}}</span></button>
+                                    <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; right: 20px; font-size: 1.2rem;" type="button" {{action "resetSrcs"}}><span>{{svg-jar "koenig/kg-trash"}}</span></button>
                                 </div>
                             </div>
                         {{/unless}}
@@ -55,7 +55,7 @@
                     {{/if}}
 
                     {{#if (or uploader.errors uploader.isUploading (not @payload.productImageSrc))}}
-                        <div class="relative miw-100 h-100 flex items-center {{if (not this.previewSrc @payload.productImageSrc) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+                        <div class="relative miw-100 h-100 flex items-center {{if this.previewSrc "absolute absolute--fill bg-white-50" "kg-media-placeholder ba b--whitegrey"}}">
                             {{#if uploader.errors}}
                                 <span class="db absolute top-0 right-0 left-0 pl2 pr2 bg-red white sans-serif f7">
                                     {{uploader.errors.firstObject.message}}
@@ -69,7 +69,7 @@
                             {{else if uploader.isUploading}}
                                 {{uploader.progressBar}}
                             {{else if (not this.previewSrc @payload.productImageSrc)}}
-                                <button class="w-100 h-100 sans-serif fw4 f7 middarkgrey kg-image-button" onclick={{action "triggerFileDialog"}}>
+                                <button class="w-100 h-100 sans-serif fw4 f7 middarkgrey kg-image-button" onclick={{action "triggerFileDialog"}} type="button">
                                     <div class="flex flex-column items-center">
                                         {{svg-jar this.placeholder class="kg-placeholder-image"}}
                                         <span class="mt4 midgrey">Click to select an image</span>
@@ -97,19 +97,19 @@
                     />
                     {{#if @payload.productRatingEnabled}}
                     <div class="kg-product-card-rating-edit icons" style="line-height: auto;">
-                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="1" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
+                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="1" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="2" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
+                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="2" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="3" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
+                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="3" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="4" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
+                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="4" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="5" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}}>
+                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="5" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
                     </div>

@@ -14,8 +14,7 @@
             {{#if this.session.user.isAdmin}}
                 {{#unless this.member.isNew}}
                     <button
-                        class="gh-btn gh-btn-white gh-btn-icon mr2"
-                        {{on "click" this.toggleImpersonateMemberModal}}>
+                        class="gh-btn gh-btn-white gh-btn-icon mr2" type="button" {{on "click" this.toggleImpersonateMemberModal}}>
                         <span>Impersonate</span>
                     </button>
                 {{/unless}}

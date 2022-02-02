@@ -246,7 +246,7 @@
         <div class="gh-main-section">
             <div class="gh-main-section-block gh-offer-archive-container">
                 {{#if (eq this.offer.status "active")}}
-                    {{#if (not this.offer.isNew)}}
+                    {{#unless this.offer.isNew}}
                         <button
                             type="button"
                             class="gh-btn gh-btn-black gh-btn-icon"
@@ -257,7 +257,7 @@
                         <p>
                             <span>Archiving an offer ensures it is no longer available for use. Don’t worry, existing members remain unchanged and the offer can be reactivated anytime.</span>
                         </p>
-                    {{/if}}
+                    {{/unless}}
                 {{else}}
                     <button
                         type="button"

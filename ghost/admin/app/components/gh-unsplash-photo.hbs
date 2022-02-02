@@ -3,15 +3,15 @@
         <img src={{this.imageUrl}} alt={{this.photo.description}} width={{this.width}} height={{this.height}} data-test-unsplash-photo-image />
         <div class="gh-unsplash-photo-overlay">
             <div class="gh-unsplash-photo-header">
-                <a class="gh-unsplash-button-likes gh-unsplash-button" href="{{this.photo.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">{{svg-jar "unsplash-heart"}}{{this.photo.likes}}</a>
+                <a class="gh-unsplash-button-likes gh-unsplash-button" href="{{this.photo.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank" rel="noopener noreferrer">{{svg-jar "unsplash-heart"}}{{this.photo.likes}}</a>
                 <a class="gh-unsplash-button-download gh-unsplash-button" href="{{this.photo.links.download}}/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit&force=true">{{svg-jar "download"}}</a>
             </div>
             <div class="gh-unsplash-photo-footer">
                 <div class="gh-unsplash-photo-author">
-                    <a class="gh-unsplash-photo-author-img" href="{{this.photo.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
+                    <a class="gh-unsplash-photo-author-img" href="{{this.photo.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank" rel="noopener noreferrer">
                         <img src="{{this.photo.user.profile_image.medium}}" />
                     </a>
-                    <a class="gh-unsplash-photo-author-name" href="{{this.photo.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank">
+                    <a class="gh-unsplash-photo-author-name" href="{{this.photo.user.links.html}}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank" rel="noopener noreferrer">
                         {{this.photo.user.name}}
                     </a>
                 </div>

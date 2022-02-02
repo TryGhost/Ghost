@@ -7,7 +7,7 @@
                 <div class="gh-nav-menu-details-sitetitle">{{this.config.blogTitle}}</div>
             </div>
             <div class="gh-nav-menu-search">
-                <button class="gh-nav-btn-search" {{on "click" (action "openSearchModal")}} title="Search site (Ctrl/⌘ + K)"><span>{{svg-jar "search"}}</span></button>
+                <button class="gh-nav-btn-search" title="Search site (Ctrl/⌘ + K)" type="button" {{on "click" (action "openSearchModal")}}><span>{{svg-jar "search"}}</span></button>
             </div>
         </header>
     {{/unless}}
@@ -19,7 +19,7 @@
                 <ul class="gh-nav-list gh-nav-main">
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
-                        <LinkTo @route="dashboard" @alt="Dashboard" @title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
+                        <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
                     </li>
                     {{/if}}
                     <li class="relative">
@@ -28,7 +28,7 @@
                                 {{svg-jar "view-site"}} View site
                             </LinkTo>
                         </span>
-                        <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank">
+                        <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank" rel="noopener noreferrer">
                             <span>{{svg-jar "external"}}</span>
                         </a>
                     </li>
@@ -36,7 +36,7 @@
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">
                         <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
-                        <LinkTo @route="editor.new" @model="post" @classNames="gh-secondary-action gh-nav-new-post" @alt="New post" @title="New post" data-test-nav="new-story"><span>{{svg-jar "add-stroke"}}</span></LinkTo>
+                        <LinkTo @route="editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "add-stroke"}}</span></LinkTo>
                         {{#if this.session.user.isAuthorOrContributor}}
                             {{#if this.customViews.forPosts}}
                                 <ul class="gh-nav-view-list">
@@ -81,7 +81,7 @@
                     <li>
                         {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
                         {{#if (eq this.router.currentRouteName "pages")}}
-                            <LinkTo @route="pages" @query={{reset-query-params "pages"}} @classNames="active" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
+                            <LinkTo @route="pages" @query={{reset-query-params "pages"}} class="active" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
                         {{else}}
                             <LinkTo @route="pages" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
                         {{/if}}
@@ -136,7 +136,7 @@
                         {{/if}}
                         {{#each this.config.clientExtensions.menu.items as |menuItem| }}
                             <li>
-                                <a href="{{menuItem.href}}" target="_blank">{{svg-jar menuItem.icon}}{{menuItem.text}}</a>
+                                <a href="{{menuItem.href}}" target="_blank" rel="noopener noreferrer">{{svg-jar menuItem.icon}}{{menuItem.text}}</a>
                             </li>
                         {{/each}}
                     </ul>

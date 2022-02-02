@@ -13,7 +13,7 @@
     </div>
 
     <div class="modal-footer">
-        <button {{on "click" (fn @close false)}} class="gh-btn" data-test-stay-button><span>Stay</span></button>
-        <button {{on "click" (fn @close true)}} class="gh-btn gh-btn-red" data-test-leave-button><span>Leave</span></button>
+        <button class="gh-btn" data-test-stay-button type="button" {{on "click" (fn @close false)}}><span>Stay</span></button>
+        <button class="gh-btn gh-btn-red" data-test-leave-button type="button" {{on "click" (fn @close true)}}><span>Leave</span></button>
     </div>
 </div>

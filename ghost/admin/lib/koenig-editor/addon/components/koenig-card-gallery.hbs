@@ -47,7 +47,7 @@
                                     {{#unless this.koenigDragDropHandler.isDragging}}
                                         <div class="bg-image-overlay-top child pe-none {{image.overlayClasses}}">
                                             <div class="flex flex-row-reverse">
-                                                <button class="bg-white-90 pl3 pr3 br3 pe-auto" {{action "deleteImage" image}}>
+                                                <button class="bg-white-90 pl3 pr3 br3 pe-auto" type="button" {{action "deleteImage" image}}>
                                                     {{svg-jar "koenig/kg-trash" class="koenig-gallery-trash-icon"}}
                                                 </button>
                                             </div>
@@ -69,7 +69,7 @@
                     {{else if uploader.isUploading}}
                         {{uploader.progressBar}}
                     {{else if (is-empty this.imageRows)}}
-                        <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa8 pt6 pb6 kg-image-button" onclick={{action "triggerFileDialog"}}>
+                        <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa8 pt6 pb6 kg-image-button" onclick={{action "triggerFileDialog"}} type="button">
                             {{svg-jar "gallery-placeholder" class="kg-placeholder-gallery nudge-bottom--10"}}
                             <span class="mt2 midgrey">Click to select up to 9 images</span>
                         </button>
@@ -87,7 +87,7 @@
                 <div class="absolute absolute--fill flex items-center bg-black-60">
                     <span class="db center sans-serif fw7 f7 pl2 pr2 bg-red white">
                         {{this.errorMessage}}.
-                        <button onclick={{action "clearErrorMessage"}} style="text-decoration: underline !important">
+                        <button onclick={{action "clearErrorMessage"}} style="text-decoration: underline !important" type="button">
                             Dismiss
                         </button>
                     </span>
