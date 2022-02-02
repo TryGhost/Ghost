@@ -1,4 +1,5 @@
 import BaseAdapter from 'ghost-admin/adapters/base';
+import classic from 'ember-classic-decorator';
 import {get} from '@ember/object';
 import {isNone} from '@ember/utils';
 import {underscore} from '@ember/string';
@@ -13,14 +14,15 @@ import {underscore} from '@ember/string';
 // If a model has an embedded hasMany relation, the related type will be included:
 // roles: DS.hasMany('role', { embedded: 'always' }) => ?include=roles
 
-export default BaseAdapter.extend({
+@classic
+export default class EmbeddedRelationAdapter extends BaseAdapter {
     find(store, type, id, snapshot) {
         return this.ajax(this.buildIncludeURL(store, type.modelName, id, snapshot, 'find'), 'GET');
-    },
+    }
 
     findRecord(store, type, id, snapshot) {
         return this.ajax(this.buildIncludeURL(store, type.modelName, id, snapshot, 'findRecord'), 'GET');
-    },
+    }
 
     findAll(store, type, sinceToken) {
         let query, url;
@@ -32,19 +34,19 @@ export default BaseAdapter.extend({
         url = this.buildIncludeURL(store, type.modelName, null, null, 'findAll');
 
         return this.ajax(url, 'GET', {data: query});
-    },
+    }
 
     query(store, type, query) {
-        return this._super(store, type, this.buildQuery(store, type.modelName, query));
-    },
+        return super.query(store, type, this.buildQuery(store, type.modelName, query));
+    }
 
     queryRecord(store, type, query) {
-        return this._super(store, type, this.buildQuery(store, type.modelName, query));
-    },
+        return super.queryRecord(store, type, this.buildQuery(store, type.modelName, query));
+    }
 
     createRecord(store, type, snapshot) {
         return this.saveRecord(store, type, snapshot, {method: 'POST'}, 'createRecord');
-    },
+    }
 
     updateRecord(store, type, snapshot) {
         let options = {
@@ -53,7 +55,7 @@ export default BaseAdapter.extend({
         };
 
         return this.saveRecord(store, type, snapshot, options, 'updateRecord');
-    },
+    }
 
     saveRecord(store, type, snapshot, options, requestType) {
         let _options = options || {};
@@ -61,7 +63,7 @@ export default BaseAdapter.extend({
         let payload = this.preparePayload(store, type, snapshot);
 
         return this.ajax(url, _options.method, payload);
-    },
+    }
 
     preparePayload(store, type, snapshot) {
         let serializer = store.serializerFor(type.modelName);
@@ -70,7 +72,7 @@ export default BaseAdapter.extend({
         serializer.serializeIntoHash(payload, type, snapshot);
 
         return {data: payload};
-    },
+    }
 
     buildIncludeURL(store, modelName, id, snapshot, requestType, query) {
         let includes = this.getEmbeddedRelations(store, modelName);
@@ -82,7 +84,7 @@ export default BaseAdapter.extend({
         }
 
         return parsedUrl.toString();
-    },
+    }
 
     buildQuery(store, modelName, options) {
         let deDupe = {};
@@ -112,7 +114,7 @@ export default BaseAdapter.extend({
         }
 
         return query;
-    },
+    }
 
     getEmbeddedRelations(store, modelName) {
         let model = store.modelFor(modelName);
@@ -140,4 +142,4 @@ export default BaseAdapter.extend({
 
         return ret;
     }
-});
+}

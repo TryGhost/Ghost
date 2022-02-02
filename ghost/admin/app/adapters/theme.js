@@ -1,7 +1,8 @@
 import ApplicationAdapter from './application';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationAdapter.extend({
-
+@classic
+export default class Theme extends ApplicationAdapter {
     activate(model) {
         let url = `${this.buildURL('theme', model.get('id'))}activate/`;
 
@@ -10,5 +11,4 @@ export default ApplicationAdapter.extend({
             return model;
         });
     }
-
-});
+}

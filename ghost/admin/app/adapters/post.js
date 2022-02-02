@@ -1,6 +1,8 @@
 import ApplicationAdapter from 'ghost-admin/adapters/application';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationAdapter.extend({
+@classic
+export default class Post extends ApplicationAdapter {
     // posts and pages now include everything by default
     buildIncludeURL(store, modelName, id, snapshot, requestType, query) {
         let url = this.buildURL(modelName, id, snapshot, requestType, query);
@@ -17,9 +19,9 @@ export default ApplicationAdapter.extend({
         }
 
         return parsedUrl.toString();
-    },
+    }
 
     buildQuery(store, modelName, options) {
         return options;
     }
-});
+}

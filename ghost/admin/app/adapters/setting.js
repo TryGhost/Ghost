@@ -1,6 +1,8 @@
 import ApplicationAdapter from 'ghost-admin/adapters/application';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationAdapter.extend({
+@classic
+export default class Setting extends ApplicationAdapter {
     updateRecord(store, type, record) {
         let data = {};
         let serializer = store.serializerFor(type.modelName);
@@ -16,4 +18,4 @@ export default ApplicationAdapter.extend({
         // pass in an id.
         return this.ajax(this.buildURL(type.modelName), 'PUT', {data});
     }
-});
+}

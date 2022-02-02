@@ -1,6 +1,8 @@
 import ApplicationAdapter from 'ghost-admin/adapters/application';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationAdapter.extend({
+@classic
+export default class Offer extends ApplicationAdapter {
     queryRecord(store, type, query) {
         if (query && query.id) {
             let {id} = query;
@@ -9,13 +11,13 @@ export default ApplicationAdapter.extend({
             return this.ajax(url, 'GET', {data: query});
         }
 
-        return this._super(...arguments);
-    },
+        return super.queryRecord(...arguments);
+    }
 
     urlForDeleteRecord() {
-        let url = this._super(...arguments);
+        let url = super.urlForDeleteRecord(...arguments);
         let parsedUrl = new URL(url);
 
         return parsedUrl.toString();
     }
-});
+}

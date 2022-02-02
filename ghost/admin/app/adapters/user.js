@@ -1,14 +1,22 @@
 import ApplicationAdapter from 'ghost-admin/adapters/application';
-import SlugUrl from 'ghost-admin/mixins/slug-url';
+import SlugUrl from 'ghost-admin/utils/slug-url';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationAdapter.extend(SlugUrl, {
+@classic
+export default class User extends ApplicationAdapter {
+    buildURL(_modelName, _id, _snapshot, _requestType, query) {
+        let url = super.buildURL(...arguments);
+
+        return SlugUrl(url, query);
+    }
+
     queryRecord(store, type, query) {
         if (!query || query.id !== 'me') {
-            return this._super(...arguments);
+            return super.queryRecord(...arguments);
         }
 
         let url = this.buildURL(type.modelName, 'me', null, 'findRecord');
 
         return this.ajax(url, 'GET', {data: {include: 'roles'}});
     }
-});
+}
