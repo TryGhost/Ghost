@@ -1,9 +1,7 @@
 import StripePrice from 'ghost-admin/models/stripe-price';
 import Transform from '@ember-data/serializer/transform';
-import classic from 'ember-classic-decorator';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
-@classic
 export default class StripePriceTransform extends Transform {
     deserialize(serialized) {
         if (serialized === null || serialized === undefined) {
