@@ -57,7 +57,7 @@
                                                 data-test-slack-url-input={{true}}
                                             />
                                             {{#unless this.slackSettings.errors.url}}
-                                                <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank">here</a>, and grab the URL.</p>
+                                                <p>Set up a new incoming webhook <a href="https://my.slack.com/apps/new/A0F7XDUAZ-incoming-webhooks" target="_blank" rel="noopener noreferrer">here</a>, and grab the URL.</p>
                                             {{else}}
                                                 <GhErrorMessage @errors={{this.slackSettings.errors}} @property="url" data-test-error="slack-url" />
                                             {{/unless}}

@@ -19,7 +19,8 @@
     "start": "ember serve",
     "build": "ember build",
     "test": "ember exam --split 2 --parallel",
-    "lint:js": "eslint ."
+    "lint:js": "eslint .",
+    "lint:hbs": "ember-template-lint ."
   },
   "engines": {
     "node": "^12.22.1 || ^14.17.0 || ^16.13.0"
@@ -110,6 +111,7 @@
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",
     "ember-svg-jar": "2.3.4",
+    "ember-template-lint": "^4.0.0",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.5.1",
     "ember-truth-helpers": "3.0.0",

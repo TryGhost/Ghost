@@ -15,7 +15,7 @@
             <div class="flex items-center">
                 <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
                 <div class="w-80">
-                    <h3 class="ma0 pa0 gh-members-list-name {{if (not @member.name) "gh-members-name-noname"}}">{{or @member.name @member.email}}</h3>
+                    <h3 class="ma0 pa0 gh-members-list-name {{unless @member.name "gh-members-name-noname"}}">{{or @member.name @member.email}}</h3>
                     {{#if @member.name}}
                         <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{@member.email}}</p>
                     {{/if}}
@@ -25,7 +25,7 @@
 
         {{#if @newsletterEnabled}}
             {{#if (feature "emailAnalytics")}}
-                <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{if (not @member.name) "gh-members-list-open-rate-noname"}}">
+                <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}">
                     {{#if (not (is-empty @member.emailOpenRate))}}
                         <span>{{@member.emailOpenRate}}%</span>
                     {{else}}
@@ -35,7 +35,7 @@
             {{/if}}
         {{/if}}
 
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{if (not @member.name) "gh-members-geolocation-noname"}}">
+        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}">
             {{#if (and @member.geolocation @member.geolocation.country)}}
                 {{#if (and (eq @member.geolocation.country_code "US") @member.geolocation.region)}}
                     {{@member.geolocation.region}}, US

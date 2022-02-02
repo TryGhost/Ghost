@@ -8,7 +8,7 @@
             <GhNavMenu />
         {{/if}}
 
-        <main class="gh-main {{this.ui.mainClass}}" role="main">
+        <main class="gh-main {{this.ui.mainClass}}">
             {{outlet}}
 
             {{#if this.showBilling}}
@@ -21,9 +21,9 @@
 
         <GhContentCover />
 
-        {{#if (not this.session.user.isContributor)}}
+        {{#unless this.session.user.isContributor}}
             <GhMobileNavBar />
-        {{/if}}
+        {{/unless}}
     </div>
 
     {{#if this.settings.accentColor}}

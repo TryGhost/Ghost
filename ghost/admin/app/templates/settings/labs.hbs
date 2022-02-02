@@ -88,7 +88,7 @@
                         <div>
                             <h4 class="gh-expandable-title">Tiers</h4>
                             <p class="gh-expandable-description">
-                                Add additional tiers to your paid memberships (e.g. Bronze, Silver, Gold). <a href="http://ghost.org/help/tiers" target="_blank">Learn more here</a>
+                                Add additional tiers to your paid memberships (e.g. Bronze, Silver, Gold). <a href="http://ghost.org/help/tiers" target="_blank" rel="noopener noreferrer">Learn more here</a>
                             </p>
                         </div>
                         {{#if (feature "multipleProducts")}}
@@ -111,7 +111,7 @@
                     <div class="gh-expandable-header">
                         <div>
                             <h4 class="gh-expandable-title">Redirects</h4>
-                            <p class="gh-expandable-description">Configure redirects for old or moved content, more info in <a href="https://ghost.org/docs/tutorials/implementing-redirects/" target="_blank">the docs</a></p>
+                            <p class="gh-expandable-description">Configure redirects for old or moved content, more info in <a href="https://ghost.org/docs/tutorials/implementing-redirects/" target="_blank" rel="noopener noreferrer">the docs</a></p>
                         </div>
                         <div class="gh-setting-action flex flex-column items-end">
                             {{#if uploader.isUploading}}
@@ -210,7 +210,7 @@
                             <h4 class="gh-expandable-title">Google OAuth for staff users</h4>
                             <p class="gh-expandable-description">
                                 Allow people to sign into Ghost Admin using Google SSO,
-                                <a href="https://ghost.org/docs/tutorials/setting-up-oauth/" target="_blank" rel="noopener">docs here</a>
+                                <a href="https://ghost.org/docs/tutorials/setting-up-oauth/" target="_blank" rel="noopener noreferrer">docs here</a>
                             </p>
                         </div>
                         <div class="for-switch">
@@ -220,7 +220,7 @@
                     <div class="gh-expandable-content">
                         {{#if this.feature.oauthLogin}}
                             <div class="gh-setting-content-extended gh-labs-sso-settings pt2 pb4">
-                                <a href="https://console.developers.google.com/" target="_blank" rel="noopener" class="gh-btn gh-btn-white mb4"><span>{{svg-jar "google-favicon"}}Configure Google OAuth</span></a>
+                                <a href="https://console.developers.google.com/" target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-white mb4"><span>{{svg-jar "google-favicon"}}Configure Google OAuth</span></a>
                                 <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
                                     <div class="form-group">
                                         <label for="aouth-client-id">Google OAuth Client ID</label>

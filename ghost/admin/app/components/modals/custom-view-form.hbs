@@ -3,7 +3,7 @@
         <h1>{{if @data.customView.isNew "New view" "Edit view"}}</h1>
     </header>
     {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-    <button class="close" href title="Close" {{on "click" @close}} {{on "mousedown" (optional this.noop)}}>
+    <button class="close" href title="Close" type="button" {{on "click" @close}} {{on "mousedown" (optional this.noop)}}>
         {{svg-jar "close"}}
     </button>
 
@@ -50,24 +50,19 @@
     <div class="modal-footer">
         {{#if @data.customView.isNew}}
             <button
-                class="gh-btn"
-                {{on "click" @close}}
+                class="gh-btn" data-test-button="cancel-custom-view-form" type="button" {{on "click" @close}}
                 {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
                 {{on "mousedown" (optional this.noop)}}
-                data-test-button="cancel-custom-view-form"
             >
                 <span>Cancel</span>
             </button>
         {{else}}
             <button
-                class="gh-btn gh-btn-red gh-btn-icon"
-                {{on "click" (perform this.deleteTask)}}
+                class="gh-btn gh-btn-red gh-btn-icon" data-test-button="delete-custom-view" type="button" {{on "click" (perform this.deleteTask)}}
                 {{on "mousedown" (optional this.noop)}}
-                data-test-button="delete-custom-view"
             >
                 <span>{{svg-jar "trash"}} Delete</span>
-            </button
-            >
+            </button>
         {{/if}}
 
         <GhTaskButton

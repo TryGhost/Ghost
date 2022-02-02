@@ -91,7 +91,7 @@
                                 <img class="kg-thumbnail-xl" src={{@payload.backgroundImageSrc}} {{on "click" uploader.triggerFileDialog}}>
                                 <div class="image-overlay">
                                     <div class="flex flex-row-reverse">
-                                        <button class="bg-white-90 br3 pe-auto" {{on "click" this.deleteBackgroundImage}}>
+                                        <button class="bg-white-90 br3 pe-auto" type="button" {{on "click" this.deleteBackgroundImage}}>
                                             {{svg-jar "koenig/kg-trash" class="kg-replace-icon fill-darkgrey"}}
                                         </button>
                                     </div>

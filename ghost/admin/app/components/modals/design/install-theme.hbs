@@ -85,7 +85,7 @@
 
         <div class="modal-footer">
             <div class="flex items-center justify-between">
-                <button {{on "click" (fn @close false)}} class="gh-btn" data-test-button="cancel">
+                <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}>
                     <span>{{if (or this.installSuccess this.installFailure) "Close" "Cancel"}}</span>
                 </button>
 

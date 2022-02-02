@@ -3,7 +3,7 @@
         <h1>New custom integration</h1>
     </header>
     {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-    <button class="close" href title="Close" {{on "click" @close}}>
+    <button class="close" href title="Close" type="button" {{on "click" @close}}>
         {{svg-jar "close"}}
     </button>
 
@@ -33,7 +33,7 @@
     </div>
 
     <div class="modal-footer">
-        <button class="gh-btn" {{on "click" @close}} data-test-button="cancel-new-integration">
+        <button class="gh-btn" data-test-button="cancel-new-integration" type="button" {{on "click" @close}}>
             <span>Cancel</span>
         </button>
 

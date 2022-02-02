@@ -1,12 +1,12 @@
 {{#if this.product.active}}
-    {{#if (not this.product.isNew)}}
+    {{#unless this.product.isNew}}
         <button
             type="button"
             {{on "click" this.handleArchiveTier}}
         >
             <span>Archive</span>
         </button>
-    {{/if}}
+    {{/unless}}
 {{else}}
     <button
         type="button"

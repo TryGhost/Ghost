@@ -2,7 +2,7 @@
     <div class="flex flex-column h-100">
         <header class="modal-header gh-post-preview-header gh-post-preview-header-border" data-test-modal="preview-email">
             <div>
-                <button class="gh-editor-back-button" title="Close" {{on "click" @close}}>
+                <button class="gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
                     <span>{{svg-jar "arrow-left"}} Back</span>
                 </button>
             </div>
@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            {{#if (not this.session.user.isContributor)}}
+            {{#unless this.session.user.isContributor}}
                 <GhPublishmenu
                     @post={{@data.post}}
                     @postStatus={{@data.post.status}}
@@ -27,7 +27,7 @@
                     @setSaveType={{@data.setEditorSaveType}}
                     @memberCount={{@data.memberCount}}
                     @uiContext="preview" />
-            {{/if}}
+            {{/unless}}
         </header>
 
         {{#if this.saveFirstTask.isRunning}}

@@ -26,17 +26,17 @@
                         
                         {{#if this.session.user.isContributor}}
                             <li role="presentation">
-                                <LinkTo @route="posts" @query={{hash entry=null}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="posts">
+                                <LinkTo @route="posts" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="posts">
                                     Posts
                                 </LinkTo>
                             </li>
                             <li role="presentation">
-                                <a href="{{this.config.blogUrl}}/" class="dropdown-item" role="menuitem" tabindex="-1" title="Open site in new tab" target="_blank">View site</a>
+                                <a href="{{this.config.blogUrl}}/" class="dropdown-item" role="menuitem" tabindex="-1" title="Open site in new tab" target="_blank" rel="noopener noreferrer">View site</a>
                             </li>
                             <li class="divider" role="separator"></li>
                         {{else}}
                             <li role="presentation">
-                                <LinkTo @route="whatsnew" @query={{hash entry=null}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="whatsnew">
+                                <LinkTo @route="whatsnew" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="whatsnew">
                                     What's new?
                                     {{#if this.whatsNew.hasNew}}
                                         <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
@@ -46,7 +46,7 @@
                         {{/if}}
 
                         <li role="presentation">
-                            <LinkTo @route="settings.staff.user" @model={{this.session.user.slug}} @classNames="dropdown-item" @role="menuitem" @tabindex="-1" data-test-nav="user-profile">
+                            <LinkTo @route="settings.staff.user" @model={{this.session.user.slug}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="user-profile">
                                 Your profile
                             </LinkTo>
                         </li>
@@ -54,12 +54,12 @@
                         {{#unless this.session.user.isContributor}}
                             <li class="divider" role="separator"></li>
                             <li role="presentation">
-                                <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/docs/" target="_blank">
+                                <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/docs/" target="_blank" rel="noopener noreferrer">
                                     Support center
                                 </a>
                             </li>
                             <li role="presentation">
-                                <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help/topic/setting-up/" target="_blank">
+                                <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help/topic/setting-up/" target="_blank" rel="noopener noreferrer">
                                     How to use Ghost
                                 </a>
                             </li>
@@ -70,7 +70,7 @@
                                         <li class="divider" role="separator"></li>
                                     {{else}}
                                         <li role="presentation">
-                                            <a href="{{menuItem.href}}" target="_blank" class="dropdown-item {{menuItem.classes}}" role="menuitem" tabindex="-1">
+                                            <a href="{{menuItem.href}}" target="_blank" class="dropdown-item {{menuItem.classes}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
                                                 {{menuItem.text}}
                                             </a>
                                         </li>
@@ -81,7 +81,7 @@
                         {{/unless}}
 
                         <li role="presentation">
-                            <LinkTo @route="signout" @classNames="dropdown-item user-menu-signout" @role="menuitem" @tabindex="-1">
+                            <LinkTo @route="signout" class="dropdown-item user-menu-signout" @role="menuitem" tabindex="-1">
                                 Sign out
                             </LinkTo>
                         </li>
