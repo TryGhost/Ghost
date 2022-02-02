@@ -1,11 +1,16 @@
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
+import classic from 'ember-classic-decorator';
 
 const {resolve} = RSVP;
 
-export default Service.extend({
-    ghostPaths: service(),
-    ajax: service(),
+@classic
+export default class SlugGeneratorService extends Service {
+    @service
+    ghostPaths;
+
+    @service
+    ajax;
 
     generateSlug(slugType, textToSlugify) {
         let url;
@@ -23,4 +28,4 @@ export default Service.extend({
             return slug;
         });
     }
-});
+}

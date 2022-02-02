@@ -1,17 +1,24 @@
 import Service, {inject as service} from '@ember/service';
+import classic from 'ember-classic-decorator';
 import validator from 'validator';
 import {isEmpty} from '@ember/utils';
 
-export default Service.extend({
-    ajax: service(),
-    membersUtils: service(),
-    ghostPaths: service(),
+@classic
+export default class MemberImportValidatorService extends Service {
+    @service
+    ajax;
+
+    @service
+    membersUtils;
+
+    @service
+    ghostPaths;
 
     check(data) {
         let sampledData = this._sampleData(data);
         let mapping = this._detectDataTypes(sampledData);
         return mapping;
-    },
+    }
 
     /**
      * Method implements foollowing sampling logic:
@@ -62,7 +69,7 @@ export default Service.extend({
         }
 
         return validatedSet;
-    },
+    }
 
     /**
      * Detects supported data types and auto-detects following two needed for validation:
@@ -117,4 +124,4 @@ export default Service.extend({
 
         return mapping;
     }
-});
+}

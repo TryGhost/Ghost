@@ -1,4 +1,5 @@
 import AjaxService from 'ember-ajax/services/ajax';
+import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import moment from 'moment';
 import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
@@ -160,29 +161,33 @@ export function isAcceptedResponse(errorOrStatus) {
     return false;
 }
 
-let ajaxService = AjaxService.extend({
-    config: service(),
-    session: service(),
+@classic
+class ajaxService extends AjaxService {
+    @service
+    config;
+
+    @service
+    session;
 
     // flag to tell our ESA authenticator not to try an invalidate DELETE request
     // because it's been triggered by this service's 401 handling which means the
     // DELETE would fail and get stuck in an infinite loop
     // TODO: find a more elegant way to handle this
-    skipSessionDeletion: false,
+    skipSessionDeletion = false;
 
     get headers() {
         return {
             'X-Ghost-Version': config.APP.version,
             'App-Pragma': 'no-cache'
         };
-    },
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         if (this.isTesting === undefined) {
             this.isTesting = config.environment === 'test';
         }
-    },
+    }
 
     async _makeRequest(hash) {
         // ember-ajax recognises `application/vnd.api+json` as a JSON-API request
@@ -220,7 +225,7 @@ let ajaxService = AjaxService.extend({
             return data;
         };
 
-        const makeRequest = this._super.bind(this);
+        const makeRequest = super._makeRequest.bind(this);
 
         while (retryingMs <= maxRetryingMs && !success) {
             try {
@@ -253,7 +258,7 @@ let ajaxService = AjaxService.extend({
                 }
             }
         }
-    },
+    }
 
     handleResponse(status, headers, payload, request) {
         if (this.isVersionMismatchError(status, headers, payload)) {
@@ -291,8 +296,8 @@ let ajaxService = AjaxService.extend({
             this.session.invalidate();
         }
 
-        return this._super(...arguments);
-    },
+        return super.handleResponse(...arguments);
+    }
 
     normalizeErrorResponse(status, headers, payload) {
         if (payload && typeof payload === 'object') {
@@ -313,45 +318,45 @@ let ajaxService = AjaxService.extend({
             }
         }
 
-        return this._super(status, headers, payload);
-    },
+        return super.normalizeErrorResponse(status, headers, payload);
+    }
 
     isVersionMismatchError(status, headers, payload) {
         return isVersionMismatchError(status, payload);
-    },
+    }
 
     isServerUnreachableError(status) {
         return isServerUnreachableError(status);
-    },
+    }
 
     isRequestEntityTooLargeError(status) {
         return isRequestEntityTooLargeError(status);
-    },
+    }
 
     isUnsupportedMediaTypeError(status) {
         return isUnsupportedMediaTypeError(status);
-    },
+    }
 
     isMaintenanceError(status, headers, payload) {
         return isMaintenanceError(status, payload);
-    },
+    }
 
     isThemeValidationError(status, headers, payload) {
         return isThemeValidationError(status, payload);
-    },
+    }
 
     isHostLimitError(status, headers, payload) {
         return isHostLimitError(status, payload);
-    },
+    }
 
     isEmailError(status, headers, payload) {
         return isEmailError(status, payload);
-    },
+    }
 
     isAcceptedResponse(status) {
         return isAcceptedResponse(status);
     }
-});
+}
 
 // we need to reopen so that internal methods use the correct contentType
 ajaxService.reopen({

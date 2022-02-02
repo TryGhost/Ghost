@@ -1,5 +1,6 @@
 import Evented from '@ember/object/evented';
 import Service from '@ember/service';
+import classic from 'ember-classic-decorator';
 import {run} from '@ember/runloop';
 
 const MEDIA_QUERIES = {
@@ -9,18 +10,19 @@ const MEDIA_QUERIES = {
     maxWidth1000: '(max-width: 1000px)'
 };
 
-export default Service.extend(Evented, {
+@classic
+export default class MediaQueriesService extends Service.extend(Evented) {
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this._handlers = [];
         this.loadQueries(MEDIA_QUERIES);
-    },
+    }
 
     loadQueries(queries) {
         Object.keys(queries).forEach((key) => {
             this.loadQuery(key, queries[key]);
         });
-    },
+    }
 
     loadQuery(key, queryString) {
         let query = window.matchMedia(queryString);
@@ -37,13 +39,12 @@ export default Service.extend(Evented, {
         });
         query.addListener(handler);
         this._handlers.push([query, handler]);
-    },
+    }
 
     willDestroy() {
         this._handlers.forEach(([query, handler]) => {
             query.removeListener(handler);
         });
-        this._super(...arguments);
+        super.willDestroy(...arguments);
     }
-
-});
+}
