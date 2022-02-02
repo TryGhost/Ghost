@@ -76,7 +76,10 @@
                     </li>
                     {{#if (eq this.product.type "paid" )}}
                         <li>
-                            <Settings::Members::ArchiveTier @product={{this.product}} />
+                            <Settings::Members::ArchiveTier
+                                @product={{this.product}}
+                                @onUnarchive={{@onUnarchive}}
+                            />
                         </li>
                     {{/if}}
                 </GhDropdown>
