@@ -1868,10 +1868,10 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/verification-trigger@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.1.0.tgz#7d1baf19c26e09c51f8921ad1e7fce20d562b286"
-  integrity sha512-k+nFYrQqn9gQbI9N7aaIKo5+/ot7l6IzsgJ64BqN+X4/25g01x2zAHbKk4fwTcMQ9sOFstUqBPAr4thZgHIHUg==
+"@tryghost/verification-trigger@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.1.1.tgz#40c58124aebba895fe608c306f7c1a900db538fb"
+  integrity sha512-NtOexknELPDeYvxHNy1/e2cN9re6/G0nUUen+799At4A1F0vdYiCeaoWcVY3lRGRj5veGKaFblR7cD/j30lYIg==
   dependencies:
     "@tryghost/domain-events" "^0.1.6"
     "@tryghost/member-events" "^0.3.4"
