@@ -7401,7 +7401,7 @@ ember-svg-jar@2.3.4:
     mkdirp "^0.5.1"
     path-posix "^1.0.0"
 
-ember-template-lint@^4.0.0:
+ember-template-lint@4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.0.0.tgz#9fad1adedd0e2bfc2c507810421afbf4621273b1"
   integrity sha512-5pEpr5TZbTB+TejoePmAPoRbdPW4HxkYmhbgvQOZwALmbFA62/ZvxEGfV+ZyGPSxCQXMXxZyx0ZUHqr2WtlM3w==
