@@ -1793,3 +1793,29 @@ section.gh-ds h2 {
     padding-bottom: 12px;
     border-bottom: 1px solid var(--whitegrey);
 }
+
+
+/* Get started modal
+/* ---------------------------------------------------- */
+
+.gh-get-started-welcome {
+    padding-top: 1rem;
+}
+
+.gh-get-started-welcome svg {
+    width: 48px;
+    height: 48px;
+}
+
+.gh-get-started-extras svg {
+    width: 40px;
+    height: 40px;
+}
+
+.gh-get-started-extras p:last-of-type {
+    margin-bottom: 0.75rem;
+}
+
+.gh-get-started-extras .br {
+    border-color: var(--whitegrey);
+}
