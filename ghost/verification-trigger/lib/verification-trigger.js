@@ -1,6 +1,4 @@
 const errors = require('@tryghost/errors');
-const DomainEvents = require('@tryghost/domain-events');
-const {MemberSubscribeEvent} = require('@tryghost/member-events');
 
 const messages = {
     emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
@@ -36,24 +34,6 @@ class VerificationTrigger {
         this._membersStats = membersStats;
         this._Settings = Settings;
         this._eventRepository = eventRepository;
-
-        DomainEvents.subscribe(MemberSubscribeEvent, async (event) => {
-            if (event.data.source === 'api' && isFinite(this._configThreshold)) {
-                const createdAt = new Date();
-                createdAt.setDate(createdAt.getDate() - 30);
-                const events = await this._eventRepository.getNewsletterSubscriptionEvents({
-                    // Date in last 30 days, source is API
-                    filter: `source:api+created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
-                });
-
-                if (events.meta.pagination.total > this._configThreshold) {
-                    await this.startVerificationProcess({
-                        amountImported: events.meta.pagination.total,
-                        throwOnTrigger: false
-                    });
-                }
-            }
-        });
     }
 
     async getImportThreshold() {
