@@ -18,7 +18,6 @@ export default class ArchiveTierModalComponent extends Component {
 
         try {
             yield product.save();
-
             return product;
         } catch (error) {
             if (error) {
