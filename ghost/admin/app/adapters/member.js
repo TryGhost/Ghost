@@ -1,6 +1,8 @@
 import ApplicationAdapter from 'ghost-admin/adapters/application';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationAdapter.extend({
+@classic
+export default class Member extends ApplicationAdapter {
     queryRecord(store, type, query) {
         if (query && query.id) {
             let {id} = query;
@@ -9,11 +11,11 @@ export default ApplicationAdapter.extend({
             return this.ajax(url, 'GET', {data: query});
         }
 
-        return this._super(...arguments);
-    },
+        return super.queryRecord(...arguments);
+    }
 
     urlForDeleteRecord(id, modelName, snapshot) {
-        let url = this._super(...arguments);
+        let url = super.urlForDeleteRecord(...arguments);
         let parsedUrl = new URL(url);
 
         if (snapshot && snapshot.adapterOptions && snapshot.adapterOptions.cancel) {
@@ -22,4 +24,4 @@ export default ApplicationAdapter.extend({
 
         return parsedUrl.toString();
     }
-});
+}
