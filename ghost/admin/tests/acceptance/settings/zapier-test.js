@@ -28,7 +28,7 @@ describe('Acceptance: Settings - Integrations - Zapier', function () {
         await authenticateSession();
         await visit('/settings/integrations/zapier');
 
-        expect(currentURL(), 'currentURL').to.equal('/site');
+        expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
     it('redirects to home page when authenticated as author', async function () {

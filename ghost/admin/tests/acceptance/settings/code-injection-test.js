@@ -29,7 +29,7 @@ describe('Acceptance: Settings - Code-Injection', function () {
         await authenticateSession();
         await visit('/settings/code-injection');
 
-        expect(currentURL(), 'currentURL').to.equal('/site');
+        expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
     it('redirects to staff page when authenticated as author', async function () {

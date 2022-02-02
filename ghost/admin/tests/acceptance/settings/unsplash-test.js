@@ -29,7 +29,7 @@ describe('Acceptance: Settings - Integrations - Unsplash', function () {
         await authenticateSession();
         await visit('/settings/integrations/unsplash');
 
-        expect(currentURL(), 'currentURL').to.equal('/site');
+        expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
     it('redirects to home page when authenticated as author', async function () {
