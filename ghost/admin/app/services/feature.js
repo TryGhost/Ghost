@@ -2,6 +2,7 @@ import $ from 'jquery';
 import Ember from 'ember';
 import EmberError from '@ember/error';
 import Service, {inject as service} from '@ember/service';
+import classic from 'ember-classic-decorator';
 import {computed, set} from '@ember/object';
 
 export function feature(name, options = {}) {
@@ -36,35 +37,69 @@ export function feature(name, options = {}) {
     }));
 }
 
-export default Service.extend({
-    store: service(),
-    config: service(),
-    session: service(),
-    settings: service(),
-    notifications: service(),
-    lazyLoader: service(),
+@classic
+export default class FeatureService extends Service {
+    @service
+    store;
+
+    @service
+    config;
+
+    @service
+    session;
+
+    @service
+    settings;
+
+    @service
+    notifications;
+
+    @service
+    lazyLoader;
 
     // features
-    emailAnalytics: feature('emailAnalytics'),
+    @feature('emailAnalytics')
+    emailAnalytics;
 
     // user-specific flags
-    nightShift: feature('nightShift', {user: true, onChange: '_setAdminTheme'}),
-    dashboardHideGettingStarted: feature('dashboardHideGettingStarted', {user: true}),
+    @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
+    nightShift;
+
+    @feature('dashboardHideGettingStarted', {user: true})
+    dashboardHideGettingStarted;
 
     // labs flags
-    multipleProducts: feature('multipleProducts'),
-    oauthLogin: feature('oauthLogin'),
-    membersActivity: feature('membersActivity'),
-    urlCache: feature('urlCache'),
-    beforeAfterCard: feature('beforeAfterCard'),
-    tweetGridCard: feature('tweetGridCard'),
-    membersActivityFeed: feature('membersActivityFeed'),
-    improvedOnboarding: feature('improvedOnboarding'),
-    tierWelcomePages: feature('tierWelcomePages'),
+    @feature('multipleProducts')
+    multipleProducts;
 
-    _user: null,
+    @feature('oauthLogin')
+    oauthLogin;
 
-    labs: computed('settings.labs', function () {
+    @feature('membersActivity')
+    membersActivity;
+
+    @feature('urlCache')
+    urlCache;
+
+    @feature('beforeAfterCard')
+    beforeAfterCard;
+
+    @feature('tweetGridCard')
+    tweetGridCard;
+
+    @feature('membersActivityFeed')
+    membersActivityFeed;
+
+    @feature('improvedOnboarding')
+    improvedOnboarding;
+
+    @feature('tierWelcomePages')
+    tierWelcomePages;
+
+    _user = null;
+
+    @computed('settings.labs')
+    get labs() {
         let labs = this.get('settings.labs');
 
         try {
@@ -72,9 +107,10 @@ export default Service.extend({
         } catch (e) {
             return {};
         }
-    }),
+    }
 
-    accessibility: computed('_user.accessibility', function () {
+    @computed('_user.accessibility')
+    get accessibility() {
         let accessibility = this.get('_user.accessibility');
 
         try {
@@ -82,14 +118,14 @@ export default Service.extend({
         } catch (e) {
             return {};
         }
-    }),
+    }
 
     fetch() {
         return this.settings.fetch().then(() => {
             this.set('_user', this.session.user);
             return this._setAdminTheme().then(() => true);
         });
-    },
+    }
 
     update(key, value, options = {}) {
         let serviceProperty = options.user ? 'accessibility' : 'labs';
@@ -126,7 +162,7 @@ export default Service.extend({
 
             return this.get(`${serviceProperty}.${key}`);
         });
-    },
+    }
 
     _setAdminTheme(enabled) {
         let nightShift = enabled;
@@ -142,4 +178,4 @@ export default Service.extend({
             $('link[title=dark]').prop('disabled', true);
         });
     }
-});
+}
