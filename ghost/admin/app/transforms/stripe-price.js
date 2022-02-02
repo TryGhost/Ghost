@@ -1,8 +1,10 @@
 import StripePrice from 'ghost-admin/models/stripe-price';
 import Transform from '@ember-data/serializer/transform';
+import classic from 'ember-classic-decorator';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
-export default Transform.extend({
+@classic
+export default class StripePriceTransform extends Transform {
     deserialize(serialized) {
         if (serialized === null || serialized === undefined) {
             return null;
@@ -13,7 +15,7 @@ export default Transform.extend({
         } else {
             return StripePrice.create(serialized);
         }
-    },
+    }
 
     serialize(deserialized) {
         if (isEmberArray(deserialized)) {
@@ -24,4 +26,4 @@ export default Transform.extend({
             return deserialized || null;
         }
     }
-});
+}

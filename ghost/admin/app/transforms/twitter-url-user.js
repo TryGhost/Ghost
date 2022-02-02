@@ -1,6 +1,8 @@
 import Transform from '@ember-data/serializer/transform';
+import classic from 'ember-classic-decorator';
 
-export default Transform.extend({
+@classic
+export default class TwitterUrlUser extends Transform {
     deserialize(serialized) {
         if (serialized) {
             let [, user] = serialized.match(/@?([^/]*)/) || [];
@@ -8,7 +10,7 @@ export default Transform.extend({
             return `https://twitter.com/${user}`;
         }
         return serialized;
-    },
+    }
 
     serialize(deserialized) {
         if (deserialized) {
@@ -18,4 +20,4 @@ export default Transform.extend({
         }
         return deserialized;
     }
-});
+}

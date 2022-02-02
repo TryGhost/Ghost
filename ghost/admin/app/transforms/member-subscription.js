@@ -1,8 +1,10 @@
 import MemberSubscription from 'ghost-admin/models/member-subscription';
 import Transform from '@ember-data/serializer/transform';
+import classic from 'ember-classic-decorator';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
-export default Transform.extend({
+@classic
+export default class MemberSubscriptionTransform extends Transform {
     deserialize(serialized) {
         let subscriptions, subscriptionArray;
 
@@ -11,7 +13,7 @@ export default Transform.extend({
         subscriptions = subscriptionArray.map(itemDetails => MemberSubscription.create(itemDetails));
 
         return emberA(subscriptions);
-    },
+    }
 
     serialize(deserialized) {
         let subscriptionArray;
@@ -26,4 +28,4 @@ export default Transform.extend({
 
         return subscriptionArray;
     }
-});
+}
