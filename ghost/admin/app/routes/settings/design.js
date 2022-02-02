@@ -8,6 +8,7 @@ export default class SettingsDesignRoute extends AdminRoute {
     @service settings;
     @service themeManagement;
     @service ui;
+    @service session;
 
     model() {
         // background refresh of preview
@@ -20,6 +21,16 @@ export default class SettingsDesignRoute extends AdminRoute {
             this.settings.reload(),
             this.customThemeSettings.load()
         ]);
+    }
+
+    beforeModel() {
+        super.beforeModel(...arguments);
+
+        const user = this.session.user;
+
+        if (!user.isAdmin) {
+            return this.transitionTo('settings.staff.user', user);
+        }
     }
 
     activate() {
