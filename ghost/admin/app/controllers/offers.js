@@ -31,7 +31,11 @@ export default class MembersController extends Controller {
 
     get filteredOffers() {
         return this.offers.filter((offer) => {
-            return offer.status === this.type;
+            const product = this.products.find((p) => {
+                return p.id === offer.tier.id;
+            });
+            const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
+            return offer.status === this.type && !!price;
         }).map((offer) => {
             const product = this.products.find((p) => {
                 return p.id === offer.tier.id;
