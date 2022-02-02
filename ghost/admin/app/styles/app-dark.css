@@ -814,16 +814,6 @@ input:focus,
     background: var(--dark-main-bg-color) !important;
 }
 
-.gh-publishmenu-button {
-    color: var(--black);
-    background: var(--green-d1);
-}
-
-.gh-publishmenu-button:hover {
-    color: #fff;
-    background: var(--green) !important;
-}
-
 .gh-editor-feature-image-add-button {
     color: var(--midgrey);
 }
