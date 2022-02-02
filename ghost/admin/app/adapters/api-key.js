@@ -1,10 +1,11 @@
 import ApplicationAdapter from './application';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationAdapter.extend({
-
+@classic
+export default class ApiKey extends ApplicationAdapter {
     queryRecord(store, type, query) {
         if (!query || query.id !== 'me') {
-            return this._super(...arguments);
+            return super.queryRecord(...arguments);
         }
 
         let url = `${this.buildURL('users', 'me')}token/`;
@@ -12,5 +13,4 @@ export default ApplicationAdapter.extend({
             return data;
         });
     }
-
-});
+}
