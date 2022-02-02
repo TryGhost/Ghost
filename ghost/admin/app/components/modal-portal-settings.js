@@ -98,7 +98,18 @@ export default ModalComponent.extend({
     }),
 
     showPortalTiers: computed('products', 'feature.multipleProducts', function () {
-        return this.products?.length > 1 && this.feature.get('multipleProducts');
+        if (this.feature.get('multipleProducts')) {
+            return true;
+        }
+        return false;
+    }),
+
+    showPortalPrices: computed('products', 'feature.multipleProducts', function () {
+        if (!this.feature.get('multipleProducts')) {
+            return true;
+        }
+        const portalProducts = this.settings.get('portalProducts') || [];
+        return !!portalProducts?.length;
     }),
 
     init() {
