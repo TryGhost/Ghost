@@ -4,8 +4,8 @@ import {inject as service} from '@ember/service';
 
 // Ghost already uses a cookie to store it's session so we don't need to keep
 // track of any other peristent login state separately in Ember Simple Auth
-export default EphemeralStore.extend({
-    session: service(),
+export default class ApplicationStore extends EphemeralStore {
+    @service session;
 
     // when loading the app we want ESA to try fetching the currently logged
     // in user. This will succeed/fail depending on whether we have a valid
@@ -22,4 +22,4 @@ export default EphemeralStore.extend({
             return RSVP.reject();
         });
     }
-});
+}
