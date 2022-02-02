@@ -83,7 +83,7 @@
                                         </div>
                                     {{/each}}
                                 {{/if}}
-                                {{#if showPortalPrices}}
+                                {{#if this.showPortalPrices}}
                                     <div class="mb3 {{if (and (feature "multipleProducts") this.showPortalTiers) "mt5" ""}}">
                                         <h4 class="gh-portal-setting-title">Prices available at signup</h4>
                                     </div>
@@ -111,7 +111,7 @@
                                         </label>
                                     </div>
                                 {{/unless}}
-                                {{#if showPortalPrices}}
+                                {{#if this.showPortalPrices}}
                                     <div class="form-group mb0 for-checkbox">
                                         <label
                                             class="checkbox"
@@ -205,7 +205,7 @@
                                         {{svg-jar "arrow-down-small"}}
                                     </span>
                                 </GhFormGroup>
-                                {{#if showIconSetting}}
+                                {{#if this.showIconSetting}}
                                     <GhFormGroup @classNames="space-l">
                                         <h4 class="gh-portal-setting-title">Icon</h4>
                                         <GhUploader
@@ -261,7 +261,7 @@
                                     </GhFormGroup>
                                 {{/if}}
                             </div>
-                            {{#if showButtonTextSetting}}
+                            {{#if this.showButtonTextSetting}}
                             <GhFormGroup @classNames="space-l">
                                 <h4 class="gh-portal-setting-title">Signup button text</h4>
 

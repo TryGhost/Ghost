@@ -15,7 +15,7 @@
         </tr>
     </thead>
     <tbody>
-        {{#each currentlyDisplayedData as |row|}}
+        {{#each this.currentlyDisplayedData as |row|}}
             <tr>
                 <td class="middarkgrey table-cell-field"><span>{{row.key}}</span></td>
                 <td class="middarkgrey table-cell-data {{unless row.value "empty-cell"}}"><span>{{row.value}}</span></td>

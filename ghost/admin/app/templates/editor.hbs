@@ -132,8 +132,8 @@
         <GhFullscreenModal
             @modal="upgrade-host-limit"
             @model={{hash
-                message=hostLimitError.context
-                details=hostLimitError.details
+                message=this.hostLimitError.context
+                details=this.hostLimitError.details
             }}
             @close={{action "closeUpgradeModal"}}
             @modifier="action wide"
