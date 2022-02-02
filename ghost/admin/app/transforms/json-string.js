@@ -1,11 +1,14 @@
 import Transform from '@ember-data/serializer/transform';
+import classic from 'ember-classic-decorator';
 
-export default Transform.extend({
+@classic
+export default class JsonString extends Transform {
     deserialize(serialized) {
         let _serialized = serialized === '' ? null : serialized;
         return JSON.parse(_serialized);
-    },
+    }
+
     serialize(deserialized) {
         return deserialized ? JSON.stringify(deserialized) : null;
     }
-});
+}

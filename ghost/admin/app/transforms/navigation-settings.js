@@ -1,8 +1,10 @@
 import NavigationItem from 'ghost-admin/models/navigation-item';
 import Transform from '@ember-data/serializer/transform';
+import classic from 'ember-classic-decorator';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
-export default Transform.extend({
+@classic
+export default class NavigationSettings extends Transform {
     deserialize(serialized, options) {
         let navItems, settingsArray;
 
@@ -18,7 +20,7 @@ export default Transform.extend({
         });
 
         return emberA(navItems);
-    },
+    }
 
     serialize(deserialized) {
         let settingsArray;
@@ -36,4 +38,4 @@ export default Transform.extend({
 
         return JSON.stringify(settingsArray);
     }
-});
+}

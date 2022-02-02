@@ -1,13 +1,15 @@
 import Transform from '@ember-data/serializer/transform';
+import classic from 'ember-classic-decorator';
 import moment from 'moment';
 
-export default Transform.extend({
+@classic
+export default class MomentDate extends Transform {
     deserialize(serialized) {
         if (serialized) {
             return moment(serialized);
         }
         return serialized;
-    },
+    }
 
     serialize(deserialized) {
         if (deserialized) {
@@ -15,4 +17,4 @@ export default Transform.extend({
         }
         return deserialized;
     }
-});
+}

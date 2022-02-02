@@ -1,11 +1,13 @@
 import Transform from '@ember-data/serializer/transform';
+import classic from 'ember-classic-decorator';
 
-export default Transform.extend({
+@classic
+export default class Raw extends Transform {
     deserialize(serialized) {
         return serialized;
-    },
+    }
 
     serialize(deserialized) {
         return deserialized;
     }
-});
+}
