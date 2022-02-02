@@ -1,27 +1,29 @@
 import RESTSerializer from '@ember-data/serializer/rest';
+import classic from 'ember-classic-decorator';
 import {camelize, decamelize, underscore} from '@ember/string';
 import {pluralize} from 'ember-inflector';
 
-export default RESTSerializer.extend({
+@classic
+export default class Application extends RESTSerializer {
     // hacky method for getting access to meta data for single-resource responses
     // https://github.com/emberjs/data/pull/4077#issuecomment-200780097
     // TODO: review once the record links and meta RFC lands
     // https://github.com/emberjs/rfcs/blob/master/text/0332-ember-data-record-links-and-meta.md
     extractMeta(store, typeClass) {
-        let meta = this._super(...arguments);
+        let meta = super.extractMeta(...arguments);
         typeClass.___meta = meta;
         return meta;
-    },
+    }
 
-    serialize(/*snapshot, options*/) {
-        let json = this._super(...arguments);
+    serialize() {
+        let json = super.serialize(...arguments);
 
         // don't send attributes that are updated automatically on the server
         delete json.created_by;
         delete json.updated_by;
 
         return json;
-    },
+    }
 
     serializeIntoHash(hash, type, record, options) {
         // Our API expects an id on the posted object
@@ -33,11 +35,11 @@ export default RESTSerializer.extend({
         let data = this.serialize(record, options);
 
         hash[root] = [data];
-    },
+    }
 
     keyForAttribute(attr) {
         return decamelize(attr);
-    },
+    }
 
     keyForRelationship(key, typeClass, method) {
         let transform = method === 'serialize' ? underscore : camelize;
@@ -49,4 +51,4 @@ export default RESTSerializer.extend({
 
         return transform(key);
     }
-});
+}
