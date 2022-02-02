@@ -3,16 +3,16 @@ import ApplicationSerializer from 'ghost-admin/serializers/application';
 import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
 import {pluralize} from 'ember-inflector';
 
-export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
+export default class PostSerializer extends ApplicationSerializer.extend(EmbeddedRecordsMixin) {
     // settings for the EmbeddedRecordsMixin.
-    attrs: {
+    attrs = {
         authors: {embedded: 'always'},
         tags: {embedded: 'always'},
         publishedAtUTC: {key: 'published_at'},
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'},
         email: {embedded: 'always'}
-    },
+    }
 
     normalizeSingleResponse(store, primaryModelClass, payload) {
         let root = this.keyForAttribute(primaryModelClass.modelName);
@@ -23,15 +23,15 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
             delete payload[pluralizedRoot];
         }
 
-        return this._super(...arguments);
-    },
+        return super.normalizeSingleResponse(...arguments);
+    }
 
     normalizeArrayResponse() {
-        return this._super(...arguments);
-    },
+        return super.normalizeArrayResponse(...arguments);
+    }
 
     serialize(/*snapshot, options*/) {
-        let json = this._super(...arguments);
+        let json = super.serialize(...arguments);
 
         // Inserted locally as a convenience.
         delete json.author_id;
@@ -60,4 +60,4 @@ export default ApplicationSerializer.extend(EmbeddedRecordsMixin, {
 
         return json;
     }
-});
+}
