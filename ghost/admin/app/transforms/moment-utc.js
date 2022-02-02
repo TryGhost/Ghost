@@ -1,8 +1,6 @@
 import Transform from '@ember-data/serializer/transform';
-import classic from 'ember-classic-decorator';
 import moment from 'moment';
 
-@classic
 export default class MomentUtc extends Transform {
     deserialize(serialized) {
         if (serialized) {

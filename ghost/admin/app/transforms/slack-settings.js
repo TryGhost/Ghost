@@ -1,11 +1,9 @@
-import classic from 'ember-classic-decorator';
 /* eslint-disable camelcase */
 import SlackObject from 'ghost-admin/models/slack-integration';
 import Transform from '@ember-data/serializer/transform';
 import {isArray as isEmberArray} from '@ember/array';
 import {isEmpty} from '@ember/utils';
 
-@classic
 export default class SlackSettings extends Transform {
     deserialize(serialized) {
         let settingsArray;
