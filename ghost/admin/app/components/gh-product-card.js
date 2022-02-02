@@ -18,6 +18,10 @@ export default class extends Component {
         return this.args.product;
     }
 
+    get showArchiveOption() {
+        return this.product.type === 'paid' && !!this.product.monthlyPrice;
+    }
+
     get productCurrency() {
         if (this.isFreeProduct) {
             const firstPaidProduct = this.args.products.find((product) => {

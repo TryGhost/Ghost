@@ -74,7 +74,7 @@
                             <span>Edit</span>
                         </button>
                     </li>
-                    {{#if (eq this.product.type "paid" )}}
+                    {{#if this.showArchiveOption}}
                         <li>
                             <Settings::Members::ArchiveTier
                                 @product={{this.product}}
