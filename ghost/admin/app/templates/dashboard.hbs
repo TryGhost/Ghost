@@ -317,7 +317,7 @@
                 <Dashboard::LatestMemberActivity />
             {{/if}}
 
-            {{#unless (or  whatsNewEntriesLoading whatsNewEntriesError)}}
+            {{#unless (or  this.whatsNewEntriesLoading this.whatsNewEntriesError)}}
             <div class="gh-dashboard-box whats-new {{if this.whatsNew.hasNew "has-new"}}">
                 <div class="gh-dashboard-header-container">
                     <h4 class="gh-dashboard-header">What's new?</h4>

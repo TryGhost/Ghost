@@ -38,7 +38,7 @@
                     {{#if (or this.previewSrc @payload.productImageSrc)}}
                         <img src={{or this.previewSrc @payload.productImageSrc}} class="{{kg-style this.kgImgStyle sidebar=this.ui.hasSideNav}} kg-product-card-image">
                         {{#unless this.koenigDragDropHandler.isDragging}}
-                            <div class="bg-image-overlay-top child pe-none {{image.overlayClasses}}">
+                            <div class="bg-image-overlay-top child pe-none {{this.image.overlayClasses}}">
                                 <div class="flex flex-row-reverse">
                                     <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; right: 20px; font-size: 1.2rem;" type="button" {{action "resetSrcs"}}><span>{{svg-jar "koenig/kg-trash"}}</span></button>
                                 </div>

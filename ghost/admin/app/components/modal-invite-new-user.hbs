@@ -22,8 +22,8 @@
                     @shouldFocus={{true}}
                     @autocapitalize="off"
                     @autocorrect="off"
-                    @value={{readonly email}}
-                    @input={{action (mut email) value="target.value"}}
+                    @value={{readonly this.email}}
+                    @input={{action (mut this.email) value="target.value"}}
                     @keyEvents={{hash
                         Enter=(action "confirm")
                     }}

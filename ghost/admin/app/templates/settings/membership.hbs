@@ -108,7 +108,7 @@
                                         @placeholder={{readonly this.siteUrl}}
                                     />
                                     <GhErrorMessage
-                                        @errors={{settings.errors}}
+                                        @errors={{this.settings.errors}}
                                         @property="membersFreeSignupRedirect"
                                     />
                                     <p>Redirect to this URL after signup for a free membership</p>
@@ -219,7 +219,7 @@
                                             @placeholder={{readonly this.siteUrl}}
                                         />
                                         <GhErrorMessage
-                                            @errors={{settings.errors}}
+                                            @errors={{this.settings.errors}}
                                             @property="membersPaidSignupRedirect"
                                         />
                                         <p>Redirect to this URL after signup for premium membership</p>

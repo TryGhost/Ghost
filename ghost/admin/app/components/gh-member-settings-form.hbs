@@ -11,7 +11,7 @@
                             <label for="member-name">Name</label>
                             <GhTextInput @id="member-name" @name="name" @value={{this.scratchMember.name}} @tabindex="1"
                                 @focus-out={{action "setProperty" "name" this.scratchMember.name}} data-test-input="member-name" />
-                            <GhErrorMessage @errors={{member.errors}} @property="name" />
+                            <GhErrorMessage @errors={{this.member.errors}} @property="name" />
                         </GhFormGroup>
 
                         <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email" @classNames="max-width">

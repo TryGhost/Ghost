@@ -8,7 +8,7 @@
         </p>
     </div>
     <div class="gh-product-card-block benefits-block">
-        <h4>Benefits <span class="counter">({{if this.product.benefits.length product.benefits.length "0"}})</span></h4>
+        <h4>Benefits <span class="counter">({{if this.product.benefits.length this.product.benefits.length "0"}})</span></h4>
         {{#if this.product.benefits.length}}
             <ul class="benefits">
                 {{#each this.product.benefits as |benefit|}}
