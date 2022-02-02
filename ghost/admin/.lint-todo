@@ -1486,3 +1486,4 @@ add|ember-template-lint|no-unused-block-params|28|51|28|51|040794f44ec6dab3105b4
 add|ember-template-lint|no-implicit-this|86|38|86|38|901fa42864c87eba57199729acd1e15d6b3a7d3e|1643760000000|1646352000000|1648940400000|app/components/modal-portal-settings.hbs
 add|ember-template-lint|no-implicit-this|114|38|114|38|901fa42864c87eba57199729acd1e15d6b3a7d3e|1643760000000|1646352000000|1648940400000|app/components/modal-portal-settings.hbs
 add|ember-template-lint|no-invalid-interactive|10|134|10|134|0864ebcf096994ae4dd0e69637dfcd3e2d416aea|1643760000000|1646352000000|1648940400000|app/components/modal-portal-settings.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|076ff89ee4afc49aeed5f39d15436ac8ae45583f|1643760000000|1646352000000|1648940400000|lib/koenig-editor/addon/components/koenig-card-email.hbs
