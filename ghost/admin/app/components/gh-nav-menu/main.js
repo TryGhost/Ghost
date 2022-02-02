@@ -91,7 +91,11 @@ export default class Main extends Component.extend(ShortcutsMixin) {
         if (currentRouteName === 'site') {
             getOwner(this).lookup(`route:${currentRouteName}`).refresh();
         } else {
-            this.router.transitionTo('site');
+            if (this.session.user.isContributor) {
+                this.router.transitionTo('posts');
+            } else {
+                this.router.transitionTo('site');
+            }
         }
     }
 
