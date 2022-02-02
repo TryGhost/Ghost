@@ -29,6 +29,7 @@
         <GhProductCard
             @product={{product}}
             @openEditProduct={{this.openEditProduct}}
+            @onUnarchive={{this.onUnarchive}}
         />
     {{/each}}
     {{#if (eq this.type "active" )}}

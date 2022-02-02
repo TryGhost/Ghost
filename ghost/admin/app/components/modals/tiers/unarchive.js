@@ -13,12 +13,12 @@ export default class UnarchiveTierModalComponent extends Component {
 
     @task({drop: true})
     *unarchiveTask() {
-        const {product} = this.args.data;
+        const {product, onUnarchive} = this.args.data;
         product.active = true;
 
         try {
             yield product.save();
-
+            onUnarchive?.();
             return product;
         } catch (error) {
             if (error) {

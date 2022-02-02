@@ -31,7 +31,8 @@ export default class ArchiveTierComponent extends Component {
     handleUnarchiveTier() {
         if (!this.product.isNew) {
             this.modals.open('modals/tiers/unarchive', {
-                product: this.product
+                product: this.product,
+                onUnarchive: this.args.onUnarchive
             }, {
                 className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
             });

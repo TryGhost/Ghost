@@ -58,6 +58,11 @@ export default class extends Component {
     }
 
     @action
+    async onUnarchive() {
+        this.type = 'active';
+    }
+
+    @action
     async openNewProduct() {
         this.productModel = this.store.createRecord('product');
         this.showProductModal = true;
