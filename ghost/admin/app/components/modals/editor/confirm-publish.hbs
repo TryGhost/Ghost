@@ -3,7 +3,7 @@
         <header class="modal-header" data-test-state="confirm-publish">
             <h1>Ready to go? Here’s what happens next</h1>
         </header>
-        <button class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+        <button class="close" title="Close" type="button" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
         <div class="modal-body" {{did-insert this.countRecipientsTask.perform}}>
             {{#if (eq @data.post.displayName 'page')}}
@@ -53,7 +53,7 @@
                     <span>Close</span>
                 </button>
             {{else}}
-                <button {{on "click" @close}} class="gh-btn" data-test-button="cancel-publish-and-email">
+                <button class="gh-btn" data-test-button="cancel-publish-and-email" type="button" {{on "click" @close}}>
                     <span>Cancel</span>
                 </button>
                 {{#if @data.isScheduled}}
@@ -82,7 +82,7 @@
         <header class="modal-header" data-test-state="failed-send">
             <h1>Failed to send email</h1>
         </header>
-        <button class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+        <button class="close" title="Close" type="button" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
         <div class="modal-body">
             <p>Your post has been published but the email failed to send. Please verify your email settings if the error persists.</p>
@@ -106,7 +106,7 @@
         </div>
 
         <div class="modal-footer">
-            <button {{on "click" @close}} class="gh-btn" data-test-button="cancel-publish-and-email">
+            <button class="gh-btn" data-test-button="cancel-publish-and-email" type="button" {{on "click" @close}}>
                 <span>Close</span>
             </button>
             <GhTaskButton

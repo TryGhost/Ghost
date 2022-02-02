@@ -97,7 +97,7 @@
                                 data-test-input="lang"
                             />
                             <GhErrorMessage @errors={{this.settings.errors}} @property="lang" />
-                            <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://ghost.org/docs/themes/helpers/translate/" target="_blank" rel="noopener">any language</a></p>
+                            <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://ghost.org/docs/themes/helpers/translate/" target="_blank" rel="noopener noreferrer">any language</a></p>
                         </GhFormGroup>
                     </div>
                     {{/liquid-if}}
@@ -422,7 +422,7 @@
                         <div class="gh-setting-content-extended pt4 pb4">
                             <span class="avoid-break-out">
                                 A private RSS feed is available at
-                                <a href="{{this.privateRSSUrl}}" target="_blank" rel="noopener">{{this.privateRSSUrl}}</a>
+                                <a href="{{this.privateRSSUrl}}" target="_blank" rel="noopener noreferrer">{{this.privateRSSUrl}}</a>
                             </span>
                             <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
                                 <GhTextInput

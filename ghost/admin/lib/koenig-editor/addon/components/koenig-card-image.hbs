@@ -47,7 +47,7 @@
                 {{/if}}
 
                 {{#if (or uploader.errors uploader.isUploading (not this.payload.src))}}
-                    <div class="relative miw-100 flex items-center {{if (not this.previewSrc this.payload.src) "kg-media-placeholder ba b--whitegrey" "absolute absolute--fill bg-white-50"}}">
+                    <div class="relative miw-100 flex items-center {{if this.previewSrc "absolute absolute--fill bg-white-50" "kg-media-placeholder ba b--whitegrey"}}">
                         {{#if uploader.errors}}
                             <span class="db absolute top-0 right-0 left-0 flex items-center h8 pl2 pr2 bg-red white sans-serif f7">
                                 {{uploader.errors.firstObject.message}}
@@ -61,7 +61,7 @@
                         {{else if uploader.isUploading}}
                             {{uploader.progressBar}}
                         {{else if (not this.previewSrc this.payload.src)}}
-                            <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" onclick={{action "triggerFileDialog"}}>
+                            <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" onclick={{action "triggerFileDialog"}} type="button">
                                 {{svg-jar this.placeholder class="kg-placeholder-image"}}
                                 <span class="mt2 midgrey">Click to select an image</span>
                             </button>
@@ -91,8 +91,7 @@
             {{#if this.isSelected}}
                 <button
                     title="Toggle between editing alt text and caption"
-                    class="absolute right-0 bottom-0 ma2 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-green b--green white" "bg-white b--midlightgrey midlightgrey"}}"
-                    {{on "click" this.toggleAltEditing passive=true}}
+                    class="absolute right-0 bottom-0 ma2 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-green b--green white" "bg-white b--midlightgrey midlightgrey"}}" type="button" {{on "click" this.toggleAltEditing passive=true}}
                 >
                     Alt
                 </button>

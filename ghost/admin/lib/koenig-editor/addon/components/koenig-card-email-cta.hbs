@@ -161,7 +161,7 @@
 
         {{#if @payload.showDividers}}<hr class="border-top">{{/if}}
 
-        <div class="{{if (not @payload.showDividers) "pb2"}} {{if (eq @payload.alignment "center") "tc"}}">
+        <div class="{{unless @payload.showDividers "pb2"}}{{if (eq @payload.alignment "center") "tc"}}">
             {{#if @payload.html}}
                 <div class="relative">
                     <p>{{{this.formattedHtml}}}</p>

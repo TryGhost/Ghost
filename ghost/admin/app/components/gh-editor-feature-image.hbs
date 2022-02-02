@@ -67,8 +67,7 @@
                 {{/if}}
                 <button
                     title="Toggle between editing alt text and caption"
-                    class="h-100 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-green b--green white" "bg-white b--midlightgrey midlightgrey"}}"
-                    {{on "click" this.toggleAltEditing passive=true}}
+                    class="h-100 pl1 pr1 ba br3 f8 sans-serif fw4 lh-title tracked-2 {{if this.isEditingAlt "bg-green b--green white" "bg-white b--midlightgrey midlightgrey"}}" type="button" {{on "click" this.toggleAltEditing passive=true}}
                 >
                     Alt
                 </button>

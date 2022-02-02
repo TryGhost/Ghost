@@ -49,7 +49,7 @@
             or cancel the task when the post status updates and switches components
          --}}
         <footer class="gh-publishmenu-footer">
-            <button class="gh-btn gh-btn-outline" {{on "click" (action dd.actions.close)}} data-test-publishmenu-cancel>
+            <button class="gh-btn gh-btn-outline" data-test-publishmenu-cancel type="button" {{on "click" (action dd.actions.close)}}>
                 <span>Cancel</span>
             </button>
             <GhTaskButton

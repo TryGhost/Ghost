@@ -11,6 +11,6 @@
 </div>
 
 <div class="modal-footer">
-    <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
     <GhTaskButton @buttonText="Delete" @successText="Deleted" @task={{this.deleteTag}} @class="gh-btn gh-btn-red gh-btn-icon" />
 </div>

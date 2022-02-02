@@ -52,11 +52,11 @@
                         {{else if uploader.isUploading}}
                             {{uploader.progressBar}}
                         {{else if (not @payload.thumbnailSrc)}}
-                            <button class="kg-upload-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                            <button class="kg-upload-button" type="button" {{on "click" this.triggerThumbnailFileDialog}}>
                                 {{svg-jar "audio-upload"}}
                             </button>
                         {{else}}
-                            <button class="kg-upload-button" {{on "click" this.triggerThumbnailFileDialog}}>
+                            <button class="kg-upload-button" type="button" {{on "click" this.triggerThumbnailFileDialog}}>
                                 <img src={{@payload.thumbnailSrc}} class="{{kg-style this.kgImgStyle}}">
                             </button>
                         {{/if}}
@@ -72,7 +72,7 @@
                                 <img src={{@payload.thumbnailSrc}} />
                                 <div class="image-overlay">
                                     <div class="flex flex-row-reverse">
-                                        <button class="bg-white-90 br3 pe-auto" {{on "click" this.deleteThumbnail}}>
+                                        <button class="bg-white-90 br3 pe-auto" type="button" {{on "click" this.deleteThumbnail}}>
                                             {{svg-jar "koenig/kg-trash" class="kg-replace-icon fill-darkgrey"}}
                                         </button>
                                     </div>
@@ -80,11 +80,11 @@
                             </div>
                         {{else}}
                             {{#if @isEditing}}
-                                <button class="kg-upload-button pointer" {{on "click" this.triggerThumbnailFileDialog}}>
+                                <button class="kg-upload-button pointer" type="button" {{on "click" this.triggerThumbnailFileDialog}}>
                                     {{svg-jar "upload" class="kg-audio-upload-icon"}}
                                 </button>
                             {{else}}
-                                <button class="kg-upload-button">
+                                <button class="kg-upload-button" type="button">
                                     {{svg-jar "audio-file" class="kg-audio-icon"}}
                                 </button>
                             {{/if}}
@@ -108,21 +108,21 @@
                     @class="kg-upload-title"
                 />
                 <div class="kg-player">
-                    <button class="kg-player-play-icon">{{svg-jar "play"}}</button>
+                    <button class="kg-player-play-icon" type="button">{{svg-jar "play"}}</button>
                     <span class="kg-player-current-time">0:00</span>
                     <div class="kg-player-time">
                         /<span class="kg-player-duration">{{this.totalDuration}}</span>
                     </div>
                     <input type="range" class="kg-player-seek-slider" max="100" value="0">
-                    <button class="kg-player-playback-rate">1&#215;</button>
-                    <button class="kg-player-unmute-icon">{{svg-jar "unmute"}}</button>
+                    <button class="kg-player-playback-rate" type="button">1&#215;</button>
+                    <button class="kg-player-unmute-icon" type="button">{{svg-jar "unmute"}}</button>
                     <input type="range" class="kg-player-volume-slider" max="100" value="70">
                 </div>
             </div>
         </div>
-        {{#if (not @isEditing)}}
+        {{#unless @isEditing}}
             <div class="koenig-card-click-overlay"></div>
-        {{/if}}
+        {{/unless}}
     {{else}}
         <div class="kg-upload-container kg-upload-container-empty">
             <GhUploader

@@ -1,4 +1,4 @@
-<button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+<button class="close" href title="Close" type="button" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
     {{svg-jar "close"}}
 </button>
 
@@ -13,7 +13,7 @@
             <div class="gh-main-section-block span-2">
                 <h4 class="gh-main-section-header small bn">Basic</h4>
                 <div class="gh-main-section-content grey gh-product-priceform-block">
-                    {{#if (not this.isFreeProduct)}}
+                    {{#unless this.isFreeProduct}}
                         <GhFormGroup @errors={{this.errors}} @property="name">
                             <label for="name" class="fw6">Name</label>
                             <GhTextInput
@@ -25,15 +25,15 @@
                                 @class="gh-input" />
                             <GhErrorMessage @errors={{this.errors}} @property="name" />
                         </GhFormGroup>
-                    {{/if}}
+                    {{/unless}}
                     <GhFormGroup @errors={{this.errors}} @property="description">
                         <label for="description" class="fw6">Description</label>
-                        {{#if (not this.isFreeProduct)}}
+                        {{#if this.isFreeProduct}}
                             <GhTextInput
                                 @value={{readonly this.product.description}}
                                 @input={{action (mut this.product.description) value="target.value"}}
                                 @name="description"
-                                @placeholder="Full access to premium content"
+                                @placeholder="Free preview of {{this.settings.title}}"
                                 @id="description"
                                 @class="gh-input" />
                         {{else}}
@@ -41,7 +41,7 @@
                                 @value={{readonly this.product.description}}
                                 @input={{action (mut this.product.description) value="target.value"}}
                                 @name="description"
-                                @placeholder="Free preview of {{this.settings.title}}"
+                                @placeholder="Full access to premium content"
                                 @id="description"
                                 @class="gh-input" />
                         {{/if}}
@@ -58,14 +58,14 @@
                                 @validateUrl={{this.validateWelcomePageURL}}
                                 @placeholder={{readonly this.siteUrl}}
                             />
-                            {{#if (not this.isFreeProduct)}}
-                                <p>Redirect to this URL after signup for premium membership</p>
-                            {{else}}
+                            {{#if this.isFreeProduct}}
                                 <p>Redirect to this URL after signup for a free membership</p>
+                            {{else}}
+                                <p>Redirect to this URL after signup for premium membership</p>
                             {{/if}}
                         </GhFormGroup>
                     {{/if}} 
-                    {{#if (not this.isFreeProduct)}}
+                    {{#unless this.isFreeProduct}}
                         <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
                             <div class="gh-settings-members-pricelabelcont">
                                 <label for="monthlyPrice">Prices</label>
@@ -117,7 +117,7 @@
                                 <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                             {{/if}}
                         </GhFormGroup>
-                    {{/if}}
+                    {{/unless}}
                 </div>
 
                 <h4 class="gh-main-section-header small bn">Benefits</h4>
@@ -155,10 +155,10 @@
             </div>
             <div class="gh-main-section-block gh-product-form-tierpreview">
                 <div class="gh-product-form-tierpreview-content">
-                    {{#if (not this.isFreeProduct)}}
-                        <h4 class="gh-main-section-header small bn">Tier Preview</h4>
-                    {{else}}
+                    {{#if this.isFreeProduct}}
                         <h4 class="gh-main-section-header small bn">Free Membership Preview</h4>
+                    {{else}}
+                        <h4 class="gh-main-section-header small bn">Tier Preview</h4>
                     {{/if}}
                     <div class="gh-main-section-content" style="border-color: {{this.settings.accentColor}}">
                         <span class="checkmark" style="background-color: {{this.settings.accentColor}}"></span>
@@ -172,10 +172,10 @@
                         {{#if this.product.description}}
                             <p>{{this.product.description}}</p>
                         {{else}}
-                            {{#if (not this.isFreeProduct)}}
-                                <p class="placeholder">Full access to premium content</p>
-                            {{else}}
+                            {{#if this.isFreeProduct}}
                                 <p class="placeholder">Free preview of {{this.settings.title}}</p>
+                            {{else}}
+                                <p class="placeholder">Full access to premium content</p>
                             {{/if}}
                         {{/if}}
 
@@ -187,15 +187,20 @@
                             </ul>
                         {{else}}
                             <ul class="placeholder">
-                                {{#if (not this.isFreeProduct)}}
-                                    <li>{{svg-jar "check-2"}} <span>Expert analysis</span></li>
-                                {{else}}
+                                {{#if this.isFreeProduct}}
                                     <li>{{svg-jar "check-2"}} <span>Access to all public posts</span></li>
+                                {{else}}
+                                    <li>{{svg-jar "check-2"}} <span>Expert analysis</span></li>
                                 {{/if}}
                             </ul>
                         {{/if}}
                         <div class="price">
-                            {{#if (not this.isFreeProduct)}}
+                            {{#if this.isFreeProduct}}
+                            <span class="monthly-price">
+                                <span class="currency">{{currency-symbol this.currency}}</span>
+                                0
+                            </span>
+                            {{else}}
                                 {{#if this.stripeMonthlyAmount}}
                                     <span class="monthly-price">
                                         <span class="currency">{{currency-symbol this.currency}}</span>
@@ -215,11 +220,6 @@
                                 {{else}}
                                     <span class="yearly-price placeholder">0<span class="currency">{{this.currency}}</span>/year</span>
                                 {{/if}}
-                            {{else}}
-                            <span class="monthly-price">
-                                <span class="currency">{{currency-symbol this.currency}}</span>
-                                0
-                            </span>
                             {{/if}}
                         </div>
                     </div>
@@ -232,11 +232,9 @@
 
 <div class="modal-footer top-shadow items-center">
     <button
-        class="gh-btn"
-        {{action "closeModal"}}
+        class="gh-btn" data-test-button="cancel-webhook" type="button" {{action "closeModal"}}
         {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
         {{action (optional this.noop) on="mouseDown"}}
-        data-test-button="cancel-webhook"
     >
         <span>Cancel</span>
     </button>

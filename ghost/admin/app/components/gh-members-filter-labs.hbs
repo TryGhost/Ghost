@@ -71,15 +71,13 @@
         </section>
         <div class="gh-filter-builder-footer">
             <button
-                class="gh-btn"
-                {{on "click" this.resetFilter}}
+                class="gh-btn" type="button" {{on "click" this.resetFilter}}
             >
                 <span>Reset all</span>
             </button>
             <button
                 class="gh-btn gh-btn-primary"
-                data-test-button="members-apply-filter"
-                {{on "click" this.applyFilter}}
+                data-test-button="members-apply-filter" type="button" {{on "click" this.applyFilter}}
             >
                 <span>Apply filters</span>
             </button>

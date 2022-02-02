@@ -83,7 +83,7 @@
                                         </button>
                                     {{/unless}}
                                 {{else}}
-                                    You need to <button class="b gh-setting-group" {{on "click" this.openStripeConnect}}>connect to Stripe</button> to add prices
+                                    You need to <button class="b gh-setting-group" type="button" {{on "click" this.openStripeConnect}}>connect to Stripe</button> to add prices
                                 {{/if}}
                             </div>
                         </td>
@@ -109,15 +109,15 @@
 
                     <div class="gh-list-data gh-price-list-actions">
                         <div class="gh-price-list-actionlist">
-                            <button class="gh-btn gh-btn-link" {{action "openEditPrice" price}}>
+                            <button class="gh-btn gh-btn-link" type="button" {{action "openEditPrice" price}}>
                                 <span>Edit</span>
                             </button>
                             {{#if price.active}}
-                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle archived" {{action "archivePrice" price}} disabled={{this.saveTask.isRunning}}>
+                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle archived" disabled={{this.saveTask.isRunning}} type="button" {{action "archivePrice" price}}>
                                     <span>Archive</span>
                                 </button>
                             {{else}}
-                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle" {{action "activatePrice" price}} disabled={{this.saveTask.isRunning}}>
+                                <button class="gh-btn gh-btn-link gh-btn-archive-toggle" disabled={{this.saveTask.isRunning}} type="button" {{action "activatePrice" price}}>
                                     <span>Activate</span>
                                 </button>
                             {{/if}}

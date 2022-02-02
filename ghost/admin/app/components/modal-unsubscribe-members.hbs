@@ -3,15 +3,7 @@
 </header>
 <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
-{{#if (not this.confirmed)}}
-    <div class="modal-body" data-test-state="unsubscribe-unconfirmed">
-        <p>
-            You're about to unsubscribe
-            <strong data-test-text="unsubscribe-count">{{gh-pluralize this.model.memberCount "member"}}</strong> from email newsletters.
-            Are you sure?
-        </p>
-    </div>
-{{else}}
+{{#if this.confirmed}}
     <div class="gh-content-box pa" data-test-state="unsubscribe-complete">
         {{#if this.error}}
             <div class="flex items-center">
@@ -43,11 +35,23 @@
             {{/if}}
         {{/if}}
     </div>
+{{else}}
+    <div class="modal-body" data-test-state="unsubscribe-unconfirmed">
+        <p>
+            You're about to unsubscribe
+            <strong data-test-text="unsubscribe-count">{{gh-pluralize this.model.memberCount "member"}}</strong> from email newsletters.
+            Are you sure?
+        </p>
+    </div>
 {{/if}}
 
 <div class="modal-footer">
-    {{#if (not this.confirmed)}}
-        <button {{action "closeModal"}} class="gh-btn" data-test-button="cancel">
+    {{#if this.confirmed}}
+        <button class="gh-btn gh-btn-black" data-test-button="close-modal" type="button" {{action "closeModal"}}>
+            <span>Close</span>
+        </button>
+    {{else}}
+        <button class="gh-btn" data-test-button="cancel" type="button" {{action "closeModal"}}>
             <span>Cancel</span>
         </button>
 
@@ -58,9 +62,5 @@
             @class="gh-btn gh-btn-red gh-btn-icon"
             data-test-button="confirm"
         />
-    {{else}}
-        <button {{action "closeModal"}} class="gh-btn gh-btn-black" data-test-button="close-modal">
-            <span>Close</span>
-        </button>
     {{/if}}
 </div>

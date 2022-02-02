@@ -5,7 +5,7 @@
 >
 
     {{#if (and this.session.user.isContributor @post.isPublished)}}
-        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-title" target="_blank">
+        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-title" target="_blank" rel="noopener noreferrer">
             <h3 class="gh-content-entry-title">
                 {{@post.title}} {{svg-jar "external" class="gh-post-list-external"}}
             </h3>
@@ -75,7 +75,7 @@
     {{/if}}
 
     {{#if (and this.session.user.isContributor @post.isPublished)}}
-        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank">
+        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
             <div class="flex items-center">
                 {{#if @post.isScheduled}}
                 <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">

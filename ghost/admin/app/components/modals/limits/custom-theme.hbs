@@ -3,7 +3,7 @@
     <header class="modal-header">
         <h1>Upgrade to enable custom themes</h1>
     </header>
-    <button class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+    <button class="close" title="Close" type="button" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
         <p>
@@ -16,7 +16,7 @@
     </div>
 
     <div class="modal-footer">
-        <button {{on "click" @close}} class="gh-btn" data-test-button="cancel-upgrade">
+        <button class="gh-btn" data-test-button="cancel-upgrade" type="button" {{on "click" @close}}>
             <span>Cancel</span>
         </button>
 

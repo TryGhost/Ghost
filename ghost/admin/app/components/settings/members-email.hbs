@@ -176,7 +176,7 @@
                     <div class="gh-expandable-header">
                         <div>
                             <h4 class="gh-expandable-title">Mailgun configuration</h4>
-                            <p class="gh-expandable-description">The Mailgun API is used for bulk email newsletter delivery. <a href="https://ghost.org/docs/faq/mailgun-newsletters/" target="_blank" rel="noopener">Why is this required?</a></p>
+                            <p class="gh-expandable-description">The Mailgun API is used for bulk email newsletter delivery. <a href="https://ghost.org/docs/faq/mailgun-newsletters/" target="_blank" rel="noopener noreferrer">Why is this required?</a></p>
                         </div>
                         <button type="button" class="gh-btn" {{action (toggle "membersEmailOpen" this)}} data-test-toggle-membersemail>
                             <span>{{if this.membersEmailOpen "Close" "Expand"}}</span>
@@ -214,7 +214,7 @@
                                         </GhFormGroup>
                                     </div>
                                     <p>Find your Mailgun region and domain
-                                        <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="fw5">here</a>
+                                        <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="fw5" rel="noopener noreferrer">here</a>
                                     </p>
                                 </GhFormGroup>
                                 <GhFormGroup>
@@ -227,7 +227,7 @@
                                         data-test-mailgun-api-key-input={{true}}
                                     />
                                     <p>Find your Mailgun API keys
-                                        <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="fw5">here</a>
+                                        <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="fw5" rel="noopener noreferrer">here</a>
                                     </p>
                                 </GhFormGroup>
                             </div>

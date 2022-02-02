@@ -11,7 +11,7 @@
     </div>
 
     <div class="modal-footer">
-        <button {{action "closeModal"}} class="gh-btn"><span>Cancel</span></button>
+        <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
         <GhTaskButton @buttonText="Delete" @successText="Deleted" @task={{this.deleteLabel}} @class="gh-btn gh-btn-red gh-btn-icon" />
     </div>
 {{else}}
@@ -20,7 +20,7 @@
         <h1>{{if this.label.isNew "New label" "Edit label"}}</h1>
     </header>
     {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
-    <button class="close" href title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    <button class="close" href title="Close" type="button" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
         {{svg-jar "close"}}
     </button>
 
@@ -44,24 +44,19 @@
     <div class="modal-footer">
         {{#if this.label.isNew}}
             <button
-                class="gh-btn"
-                {{action "closeModal"}}
+                class="gh-btn" data-test-button="cancel-label-form" type="button" {{action "closeModal"}}
                 {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
                 {{action (optional this.noop) on="mouseDown"}}
-                data-test-button="cancel-label-form"
             >
                 <span>Cancel</span>
             </button>
         {{else}}
             <button
-                class="gh-btn gh-btn-red gh-btn-icon"
-                {{on "click" (action "toggleDeleteLabelModal")}}
+                class="gh-btn gh-btn-red gh-btn-icon" data-test-button="delete-label" type="button" {{on "click" (action "toggleDeleteLabelModal")}}
                 {{on "mousedown" (optional this.noop)}}
-                data-test-button="delete-label"
             >
                 <span>{{svg-jar "trash"}} Delete</span>
-            </button
-            >
+            </button>
         {{/if}}
 
         <GhTaskButton

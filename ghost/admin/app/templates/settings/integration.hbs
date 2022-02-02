@@ -199,7 +199,7 @@
                                     <LinkTo @route="settings.integration.webhooks.edit" @models={{array this.integration webhook}} data-test-link="edit-webhook">
                                         {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
                                     </LinkTo>
-                                    <button {{action "confirmWebhookDeletion" webhook}} data-test-button="delete-webhook">
+                                    <button data-test-button="delete-webhook" type="button" {{action "confirmWebhookDeletion" webhook}}>
                                         {{svg-jar "trash" class="w6 fill-red pa1"}}
                                     </button>
                                 </div>
@@ -212,7 +212,7 @@
                                 <p class="ma0 pa0 tc midgrey lh-title mt2">
                                     No webhooks configured
                                 </p>
-                                <LinkTo @route="settings.integration.webhooks.new" @model={{this.integration}} @classNames="flex items-center" data-test-link="add-webhook">
+                                <LinkTo @route="settings.integration.webhooks.new" @model={{this.integration}} class="flex items-center" data-test-link="add-webhook">
                                 <div class="flex items-center pa2 pt1">
                                     {{svg-jar "add" class="w3 h3 fill-green-d1"}}
                                     <span class="ml1 green">Add webhook</span>
@@ -227,7 +227,7 @@
                 <tfoot>
                     <tr class="gh-list-row new-webhook-cell">
                         <td colspan="5" class="gh-list-data">
-                            <LinkTo @route="settings.integration.webhooks.new" @model={{this.integration}} @classNames="flex items-center" data-test-link="add-webhook">
+                            <LinkTo @route="settings.integration.webhooks.new" @model={{this.integration}} class="flex items-center" data-test-link="add-webhook">
                             <div class="pt1 pb1 f7">
                                 {{svg-jar "add" class="w3 h3 fill-green-d1"}}
                                 <span class="ml1 green">Add webhook</span>
@@ -243,7 +243,7 @@
 
     <section class="gh-main-section">
         <div class="gh-main-section-block">
-            <button class="gh-btn gh-btn-red gh-btn-icon" {{action "confirmIntegrationDeletion"}}>
+            <button class="gh-btn gh-btn-red gh-btn-icon" type="button" {{action "confirmIntegrationDeletion"}}>
                 <span> Delete integration </span>
             </button>
         </div>

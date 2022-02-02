@@ -27,6 +27,6 @@
         New
     {{else}}
         Draft
-        {{if (not @hasDirtyAttributes) "- Saved"}}
+        {{unless @hasDirtyAttributes "- Saved"}}
     {{/if}}
 </div>

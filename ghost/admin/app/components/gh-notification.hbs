@@ -24,6 +24,6 @@
         <span class="gh-notification-actions">{{this.message.actions}}</span>
     {{/if}}
 </div>
-<button class="gh-notification-close" {{action "closeNotification"}} data-test-button="close-notification">
+<button class="gh-notification-close" data-test-button="close-notification" type="button" {{action "closeNotification"}}>
     {{svg-jar "close"}}<span class="hidden">Close</span>
 </button>

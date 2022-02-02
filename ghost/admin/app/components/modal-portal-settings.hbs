@@ -1,5 +1,5 @@
 <div class="modal-body gh-ps-modal-body">
-    <div class="flex pa0 flex-grow-1 gh-portal-settings" {{did-insert (fn this.finishPreloading)}}>
+    <div class="flex pa0 flex-grow-1 gh-portal-settings" {{did-insert this.finishPreloading}}>
         {{#if this.isPreloading}}
             <GhLoadingSpinner />
         {{else}}
@@ -158,7 +158,7 @@
                             </div>
                         {{else}}
                         <div class="gh-portal-setting-no-stripe">
-                            You need to <button class="gh-btn gh-btn-link black {{if (not this.session.user.isAdmin) "disabled"}}" {{on "click" (action "openStripeSettings")}}>connect to Stripe</button> to take payments
+                            You need to <button class="gh-btn gh-btn-link black {{unless this.session.user.isAdmin "disabled"}}" type="button" {{on "click" (action "openStripeSettings")}}>connect to Stripe</button> to take payments
                         </div>
                         {{/if}}
                     </div>
@@ -313,8 +313,7 @@
 
                 <div class="gh-portal-settings-actions">
                     <button
-                        class="gh-btn mr3"
-                        {{action "closeModal"}}
+                        class="gh-btn mr3" type="button" {{action "closeModal"}}
                         {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
                         {{on "mousedown" (optional this.noop)}}
                     >

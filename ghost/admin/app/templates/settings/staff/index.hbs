@@ -26,15 +26,15 @@
                             @tagName="ul"
                             @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
                         >
-                            <li >
-                                <button {{on "click" (action "toggleResetAllPasswordsModal")}}>
+                            <li>
+                                <button type="button" {{on "click" (action "toggleResetAllPasswordsModal")}}>
                                     <span>Reset all passwords</span>
                                 </button>
                             </li>
                         </GhDropdown>
                     </span>
                 {{/if}}
-                <button class="gh-btn gh-btn-primary" {{on "click" (action "toggleInviteUserModal")}} data-test-button="invite-staff-user"><span>Invite people</span></button>
+                <button class="gh-btn gh-btn-primary" data-test-button="invite-staff-user" type="button" {{on "click" (action "toggleInviteUserModal")}}><span>Invite people</span></button>
             </section>
         {{/unless}}
     </GhCanvasHeader>

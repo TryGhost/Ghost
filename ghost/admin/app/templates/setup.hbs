@@ -2,7 +2,7 @@
     <header class="gh-flow-head">
         <nav class="gh-flow-nav">
             {{#if this.showBackLink}}
-                <LinkTo @route={{this.backRoute}} @classNames="gh-flow-back">{{svg-jar "arrow-left-small"}} Back</LinkTo>
+                <LinkTo @route={{this.backRoute}} class="gh-flow-back">{{svg-jar "arrow-left-small"}} Back</LinkTo>
             {{/if}}
             <ol>
                 <GhActivatingListItem @route="setup.one" @linkClasses="step">

@@ -36,7 +36,7 @@
                     <GhDropdown @name="user-actions-menu" @tagName="ul" @classNames="user-actions-menu dropdown-menu dropdown-align-right">
                         {{#if this.canMakeOwner}}
                             <li>
-                                <button {{action "toggleTransferOwnerModal"}}>
+                                <button type="button" {{action "toggleTransferOwnerModal"}}>
                                     Make owner
                                 </button>
                                 {{#if this.showTransferOwnerModal}}
@@ -49,20 +49,20 @@
                         {{/if}}
                         {{#if this.deleteUserActionIsVisible}}
                             <li>
-                                <button {{action "toggleDeleteUserModal"}} class="delete" data-test-delete-button>
+                                <button class="delete" data-test-delete-button type="button" {{action "toggleDeleteUserModal"}}>
                                     Delete user
                                 </button>
                             </li>
                             {{#if this.user.isActive}}
                                 <li>
-                                    <button {{action "toggleSuspendUserModal"}} class="suspend" data-test-suspend-button>
+                                    <button class="suspend" data-test-suspend-button type="button" {{action "toggleSuspendUserModal"}}>
                                         Suspend user
                                     </button>
                                 </li>
                             {{/if}}
                             {{#if this.user.isSuspended}}
                                 <li>
-                                    <button {{action "toggleUnsuspendUserModal"}} class="unsuspend" data-test-unsuspend-button>
+                                    <button class="unsuspend" data-test-unsuspend-button type="button" {{action "toggleUnsuspendUserModal"}}>
                                         Un-suspend user
                                     </button>
                                 </li>
