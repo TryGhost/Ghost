@@ -1,5 +1,7 @@
 import ApplicationSerializer from './application';
+import classic from 'ember-classic-decorator';
 
-export default ApplicationSerializer.extend({
-    primaryKey: 'name'
-});
+@classic
+export default class Theme extends ApplicationSerializer {
+    primaryKey = 'name';
+}
