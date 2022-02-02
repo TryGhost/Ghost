@@ -1,14 +1,20 @@
 import Helper from '@ember/component/helper';
+import classic from 'ember-classic-decorator';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 
 export const EMAIL_EVENTS = ['email_delivered_event','email_opened_event','email_failed_event'];
 export const NEWSLETTER_EVENTS = ['newsletter_event'];
 
-export default Helper.extend({
-    settings: service(),
+@classic
+export default class MembersEventFilter extends Helper {
+    @service
+    settings;
 
-    compute(positionalParams, {excludedEvents = [], member = '', excludeEmailEvents = false}) {
+    compute(
+        positionalParams,
+        {excludedEvents = [], member = '', excludeEmailEvents = false}
+    ) {
         const excludedEventsSet = new Set();
 
         if (this.settings.get('editorDefaultEmailRecipients') === 'disabled') {
@@ -36,4 +42,4 @@ export default Helper.extend({
 
         return filterParts.join('+');
     }
-});
+}
