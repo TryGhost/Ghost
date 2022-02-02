@@ -1,7 +1,7 @@
-import ApplicationSerializer from './application';
+import ApplicationSerializer from 'ghost-admin/serializers/application';
 
-export default ApplicationSerializer.extend({
-    attrs: {
+export default class NotificationSerializer extends ApplicationSerializer {
+    attrs = {
         key: {key: 'location'}
     }
-});
+}
