@@ -1,24 +1,29 @@
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
+import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 
-export default Service.extend({
-    ajax: service(),
-    ghostPaths: service(),
+@classic
+export default class LazyLoaderService extends Service {
+    @service
+    ajax;
+
+    @service
+    ghostPaths;
 
     // This is needed so we can disable it in unit tests
-    testing: undefined,
+    testing = undefined;
 
-    scriptPromises: null,
+    scriptPromises = null;
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.scriptPromises = {};
 
         if (this.testing === undefined) {
             this.testing = config.environment === 'test';
         }
-    },
+    }
 
     loadScript(key, url) {
         if (this.testing) {
@@ -52,7 +57,7 @@ export default Service.extend({
         this.scriptPromises[key] = scriptPromise;
 
         return scriptPromise;
-    },
+    }
 
     loadStyle(key, url, alternate = false) {
         if (this.testing || document.querySelector(`#${key}-styles`)) {
@@ -82,4 +87,4 @@ export default Service.extend({
             document.querySelector('head').appendChild(link);
         });
     }
-});
+}

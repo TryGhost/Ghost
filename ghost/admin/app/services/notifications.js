@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/browser';
 import Service, {inject as service} from '@ember/service';
+import classic from 'ember-classic-decorator';
 import {dasherize} from '@ember/string';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 import {filter} from '@ember/object/computed';
@@ -20,28 +21,34 @@ import {
 // to avoid stacking of multiple error messages whilst leaving enough
 // specificity to re-use keys for i18n lookups
 
-export default Service.extend({
-    delayedNotifications: null,
-    content: null,
+@classic
+export default class NotificationsService extends Service {
+    delayedNotifications = null;
+    content = null;
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.delayedNotifications = emberA();
         this.content = emberA();
-    },
+    }
 
-    config: service(),
-    upgradeStatus: service(),
+    @service
+    config;
 
-    alerts: filter('content', function (notification) {
+    @service
+    upgradeStatus;
+
+    @filter('content', function (notification) {
         let status = get(notification, 'status');
         return status === 'alert';
-    }),
+    })
+    alerts;
 
-    notifications: filter('content', function (notification) {
+    @filter('content', function (notification) {
         let status = get(notification, 'status');
         return status === 'notification';
-    }),
+    })
+    notifications;
 
     handleNotification(message, delayed) {
         // If this is an alert message from the server, treat it as html safe
@@ -70,7 +77,7 @@ export default Service.extend({
         } else {
             this.delayedNotifications.pushObject(message);
         }
-    },
+    }
 
     showAlert(message, options) {
         options = options || {};
@@ -107,7 +114,7 @@ export default Service.extend({
             key: options.key,
             actions: options.actions
         }, options.delayed);
-    },
+    }
 
     showNotification(message, options) {
         options = options || {};
@@ -121,7 +128,7 @@ export default Service.extend({
             key: options.key,
             actions: options.actions
         }, options.delayed);
-    },
+    }
 
     showAPIError(resp, options) {
         // handle "global" errors
@@ -139,7 +146,7 @@ export default Service.extend({
         }
 
         this._showAPIError(resp, options);
-    },
+    }
 
     _showAPIError(resp, options) {
         options = options || {};
@@ -188,14 +195,14 @@ export default Service.extend({
         options.isApiError = true;
 
         this.showAlert(msg, options);
-    },
+    }
 
     displayDelayed() {
         this.delayedNotifications.forEach((message) => {
             this.content.pushObject(message);
         });
         this.set('delayedNotifications', []);
-    },
+    }
 
     closeNotification(notification) {
         let content = this.content;
@@ -208,19 +215,19 @@ export default Service.extend({
         } else {
             content.removeObject(notification);
         }
-    },
+    }
 
     closeNotifications(key) {
         this._removeItems('notification', key);
-    },
+    }
 
     closeAlerts(key) {
         this._removeItems('alert', key);
-    },
+    }
 
     clearAll() {
         this.content.clear();
-    },
+    }
 
     _removeItems(status, key) {
         if (key) {
@@ -239,11 +246,11 @@ export default Service.extend({
         } else {
             this.set('content', this.content.rejectBy('status', status));
         }
-    },
+    }
 
     // take a key and return the first two elements, eg:
     // "invite.revoke.failed" => "invite.revoke"
     _getKeyBase(key) {
         return key.split('.').slice(0, 2).join('.');
     }
-});
+}

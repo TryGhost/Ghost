@@ -2,24 +2,27 @@ import Ember from 'ember';
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import classic from 'ember-classic-decorator';
 import {get} from '@ember/object';
 
 // ember-cli-shims doesn't export _ProxyMixin
 const {_ProxyMixin} = Ember;
 
-export default Service.extend(_ProxyMixin, ValidationEngine, {
-    store: service(),
+@classic
+export default class SettingsService extends Service.extend(_ProxyMixin, ValidationEngine) {
+    @service
+    store;
 
     // will be set to the single Settings model, it's a reference so any later
     // changes to the settings object in the store will be reflected
-    content: null,
+    content = null;
 
-    validationType: 'setting',
-    _loadingPromise: null,
+    validationType = 'setting';
+    _loadingPromise = null;
 
     // this is an odd case where we only want to react to changes that we get
     // back from the API rather than local updates
-    settledIcon: '',
+    settledIcon = '';
 
     // the settings API endpoint is a little weird as it's singular and we have
     // to pass in all types - if we ever fetch settings without all types then
@@ -35,7 +38,7 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
         }
 
         return this._loadingPromise;
-    },
+    }
 
     fetch() {
         if (!this.content) {
@@ -43,7 +46,7 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
         } else {
             return RSVP.resolve(this);
         }
-    },
+    }
 
     reload() {
         return this._loadSettings().then((settings) => {
@@ -51,7 +54,7 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
             this.set('settledIcon', get(settings, 'icon'));
             return this;
         });
-    },
+    }
 
     async save() {
         let settings = this.content;
@@ -63,13 +66,13 @@ export default Service.extend(_ProxyMixin, ValidationEngine, {
         await settings.save();
         this.set('settledIcon', settings.icon);
         return settings;
-    },
+    }
 
     rollbackAttributes() {
         return this.content?.rollbackAttributes();
-    },
+    }
 
     changedAttributes() {
         return this.content?.changedAttributes();
     }
-});
+}

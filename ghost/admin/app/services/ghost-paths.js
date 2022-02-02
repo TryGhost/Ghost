@@ -1,4 +1,6 @@
 import Service from '@ember/service';
+import classic from 'ember-classic-decorator';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 
-export default Service.extend(ghostPaths());
+@classic
+export default class GhostPathsService extends Service.extend(ghostPaths()) {}
