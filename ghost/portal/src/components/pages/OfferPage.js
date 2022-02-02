@@ -245,7 +245,14 @@ export default class OfferPage extends React.Component {
         ];
 
         /** Show Name field if portal option is set*/
-        if (portalName) {
+        let showNameField = !!portalName;
+
+        /** Hide name field for logged in member if empty */
+        if (!!member && !member?.name) {
+            showNameField = false;
+        }
+
+        if (showNameField) {
             fields.unshift({
                 type: 'text',
                 value: member?.name || state.name,
