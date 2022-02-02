@@ -2,20 +2,20 @@
 import ApplicationSerializer from 'ghost-admin/serializers/application';
 import {pluralize} from 'ember-inflector';
 
-export default ApplicationSerializer.extend({
-    attrs: {
+export default class TagSerializer extends ApplicationSerializer {
+    attrs = {
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'}
-    },
+    }
 
     serialize(/*snapshot, options*/) {
-        let json = this._super(...arguments);
+        let json = super.serialize(...arguments);
 
         // Properties that exist on the model but we don't want sent in the payload
         delete json.count;
 
         return json;
-    },
+    }
 
     // if we use `queryRecord` ensure we grab the first record to avoid
     // DS.SERIALIZER.REST.QUERYRECORD-ARRAY-RESPONSE deprecations
@@ -29,6 +29,6 @@ export default ApplicationSerializer.extend({
                 delete payload[plural];
             }
         }
-        return this._super(...arguments);
+        return super.normalizeResponse(...arguments);
     }
-});
+}

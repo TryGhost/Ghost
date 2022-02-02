@@ -1,7 +1,5 @@
 import PostSerializer from './post';
-import classic from 'ember-classic-decorator';
 
-@classic
 export default class Page extends PostSerializer {
     serialize() {
         let json = super.serialize(...arguments);

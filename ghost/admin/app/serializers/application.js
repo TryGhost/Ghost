@@ -1,9 +1,7 @@
 import RESTSerializer from '@ember-data/serializer/rest';
-import classic from 'ember-classic-decorator';
 import {camelize, decamelize, underscore} from '@ember/string';
 import {pluralize} from 'ember-inflector';
 
-@classic
 export default class Application extends RESTSerializer {
     // hacky method for getting access to meta data for single-resource responses
     // https://github.com/emberjs/data/pull/4077#issuecomment-200780097

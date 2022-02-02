@@ -1,8 +1,6 @@
 import ApplicationSerializer from 'ghost-admin/serializers/application';
-import classic from 'ember-classic-decorator';
 import {pluralize} from 'ember-inflector';
 
-@classic
 export default class Setting extends ApplicationSerializer {
     serializeIntoHash(hash, type, record, options) {
         // Settings API does not want ids
