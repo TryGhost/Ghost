@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/verification-trigger",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/verification-trigger",
   "author": "Ghost Foundation",
   "license": "MIT",
