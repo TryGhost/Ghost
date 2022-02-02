@@ -358,7 +358,7 @@ module.exports = class EventRepository {
             {type: 'signup_event', action: 'getSignupEvents'}
         ];
         if (this._labsService.isSet('membersActivityFeed') && this._EmailRecipient) {
-            pageActions.push({type: 'email_delivered_event', action: 'getEmailDelieveredEvents'});
+            pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
             pageActions.push({type: 'email_opened_event', action: 'getEmailOpenedEvents'});
             pageActions.push({type: 'email_failed_event', action: 'getEmailFailedEvents'});
         }
