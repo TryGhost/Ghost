@@ -25,7 +25,7 @@ describe('Acceptance: Settings - General', function () {
         await authenticateSession();
         await visit('/settings/general');
 
-        expect(currentURL(), 'currentURL').to.equal('/site');
+        expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
     it('redirects to home page when authenticated as author', async function () {

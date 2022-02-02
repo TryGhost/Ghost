@@ -29,7 +29,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             await authenticateSession();
             await visit('/settings/integrations');
 
-            expect(currentURL(), 'currentURL').to.equal('/site');
+            expect(currentURL(), 'currentURL').to.equal('/posts');
         });
 
         it('redirects /integrations/ to home page when authenticated as author', async function () {
@@ -66,7 +66,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             await authenticateSession();
             await visit('/settings/integrations/1');
 
-            expect(currentURL(), 'currentURL').to.equal('/site');
+            expect(currentURL(), 'currentURL').to.equal('/posts');
         });
 
         it('redirects /integrations/:id/ to home page when authenticated as author', async function () {

@@ -26,7 +26,7 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
         await authenticateSession();
         await visit('/settings/integrations/slack');
 
-        expect(currentURL(), 'currentURL').to.equal('/site');
+        expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
     it('redirects to home page when authenticated as author', async function () {
