@@ -183,7 +183,7 @@
         {{/if}}
 
         {{#if (eq this.state 'ERROR')}}
-            {{#if showTryAgainButton}}
+            {{#if this.showTryAgainButton}}
                 <button class="gh-btn" data-test-button="restart-import-members" type="button" {{action "reset"}}>
                     <span>Try again</span>
                 </button>

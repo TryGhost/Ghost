@@ -3,11 +3,11 @@
         <div class="gh-setting-content">
             <div class="gh-setting-title">Accent color</div>
             <div class="gh-setting-desc">Primary color used in your publication theme</div>
-            {{#each uploader.errors as |error|}}
+            {{#each this.uploader.errors as |error|}}
                 <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
             {{/each}}
             <div class="w-100 flex flex-column flex-row-ns">
-                <GhErrorMessage @errors={{settings.errors}} @property="accentColor" class="w-100 red"/>
+                <GhErrorMessage @errors={{this.settings.errors}} @property="accentColor" class="w-100 red" />
             </div>
         </div>
 
@@ -75,7 +75,7 @@
                     </button>
                 </div>
             {{else}}
-                <button type="button" class="gh-btn self-center" {{on "click" triggerFileDialog}} data-test-image-upload-btn="icon">
+                <button type="button" class="gh-btn self-center" {{on "click" this.triggerFileDialog}} data-test-image-upload-btn="icon">
                     <span>Upload icon</span>
                 </button>
             {{/if}}

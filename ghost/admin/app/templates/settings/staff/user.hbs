@@ -94,7 +94,7 @@
                 {{#if this.limitErrorMessage}}
                     <GhFullscreenModal @modal="upgrade-unsuspend-user-host-limit"
                         @model={{hash
-                            message=limitErrorMessage
+                            message=this.limitErrorMessage
                         }}
                         @close={{action "toggleUnsuspendUserModal"}}
                         @modifier="action wide" />
@@ -109,7 +109,7 @@
         </section>
     </GhCanvasHeader>
 
-    {{#if user.isLocked}}
+    {{#if this.user.isLocked}}
         <p class="gh-box gh-box-alert">{{svg-jar "info"}}This user account is locked. To sign in, ask this user to perform a password reset on their account.</p>
     {{/if}}
 

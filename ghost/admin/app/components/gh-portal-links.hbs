@@ -1,13 +1,13 @@
 <div class="gh-portal-links-container" {{did-insert (perform this.fetchProducts)}}>
     <div class="gh-portal-links-main">
         <h2>Links</h2>
-        <p>Use these {{if isLink "links" "data attributes"}} in your theme to show pages of Portal.</p>
+        <p>Use these {{if this.isLink "links" "data attributes"}} in your theme to show pages of Portal.</p>
         <table class="gh-portal-links-table">
             <tr class="header">
                 <td><h4>Page</h4></td>
                 <td>
                     <div class='toggle-header'>
-                        <h4>{{sectionHeaderLabel}}</h4>
+                        <h4>{{this.sectionHeaderLabel}}</h4>
                         <h4 class='gh-portal-links-cell toggle' onclick={{action "toggleShowLinks"}}>{{this.toggleValue}}</h4>
                     </div>
                 </td>
@@ -20,7 +20,7 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if isLink}}
+                            {{#if this.isLink}}
                                 <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal</span>
                             {{else}}
                                 data-portal
@@ -44,7 +44,7 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if isLink}}
+                            {{#if this.isLink}}
                                 <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signin</span>
                             {{else}}
                                 data-portal="signin"
@@ -65,7 +65,7 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if isLink}}
+                            {{#if this.isLink}}
                                 <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup</span>
                             {{else}}
                                 data-portal="signup"
@@ -111,7 +111,7 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if isLink}}
+                                {{#if this.isLink}}
                                     <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup{{this.selectedProductIdPath}}/monthly</span>
                                 {{else}}
                                     data-portal="signup{{this.selectedProductIdPath}}/monthly"
@@ -132,7 +132,7 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if isLink}}
+                                {{#if this.isLink}}
                                     <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup{{this.selectedProductIdPath}}/yearly</span>
                                 {{else}}
                                     data-portal="signup{{this.selectedProductIdPath}}/yearly"
@@ -153,7 +153,7 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if isLink}}
+                                {{#if this.isLink}}
                                     <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
                                 {{else}}
                                     data-portal="signup/free"
@@ -175,7 +175,7 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if isLink}}
+                                {{#if this.isLink}}
                                     <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/monthly</span>
                                 {{else}}
                                     data-portal="signup/monthly"
@@ -196,7 +196,7 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if isLink}}
+                                {{#if this.isLink}}
                                     <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/yearly</span>
                                 {{else}}
                                     data-portal="signup/yearly"
@@ -217,7 +217,7 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if isLink}}
+                                {{#if this.isLink}}
                                     <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
                                 {{else}}
                                     data-portal="signup/free"
@@ -242,7 +242,7 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if isLink}}
+                            {{#if this.isLink}}
                                 <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account</span>
                             {{else}}
                                 data-portal="account"
@@ -263,7 +263,7 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if isLink}}
+                            {{#if this.isLink}}
                                 <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account/plans</span>
                             {{else}}
                                 data-portal="account/plans"
@@ -284,7 +284,7 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if isLink}}
+                            {{#if this.isLink}}
                                 <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account/profile</span>
                             {{else}}
                                 data-portal="account/profile"

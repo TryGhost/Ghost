@@ -34,7 +34,7 @@
     {{/each}}
     {{#if (eq this.type "active" )}}
         <div class="gh-product-cards-footer">
-            <button class="gh-btn gh-btn-link gh-btn-text gh-btn-icon gh-btn-add-product green" type="button" {{action "openNewProduct" product}}>
+            <button class="gh-btn gh-btn-link gh-btn-text gh-btn-icon gh-btn-add-product green" type="button" {{action "openNewProduct" this.product}}>
                 <span>{{svg-jar "add-stroke" class="stroke-green"}}Add tier</span>
             </button>
         </div>
