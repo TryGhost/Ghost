@@ -103,7 +103,7 @@
     "@tryghost/update-check-service": "0.3.0",
     "@tryghost/url-utils": "2.0.5",
     "@tryghost/validator": "0.1.11",
-    "@tryghost/verification-trigger": "0.1.0",
+    "@tryghost/verification-trigger": "0.1.1",
     "@tryghost/version": "0.1.9",
     "@tryghost/vhost-middleware": "1.0.20",
     "@tryghost/zip": "1.1.19",
