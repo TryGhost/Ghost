@@ -1,14 +1,17 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import {computed} from '@ember/object';
+import {tagName} from '@ember-decorators/component';
 
-export default Component.extend({
-    tagName: '',
+@classic
+@tagName('')
+export default class KgActionBar extends Component {
+    instantClose = false;
+    isVisible = false;
+    style = null;
 
-    instantClose: false,
-    isVisible: false,
-    style: null,
-
-    animationClasses: computed('isVisible', 'instantClose', function () {
+    @computed('isVisible', 'instantClose')
+    get animationClasses() {
         let {instantClose, isVisible} = this;
         let classes = [];
 
@@ -21,5 +24,5 @@ export default Component.extend({
         }
 
         return classes.join(' ');
-    })
-});
+    }
+}

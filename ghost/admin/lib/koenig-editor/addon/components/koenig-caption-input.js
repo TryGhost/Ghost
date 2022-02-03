@@ -1,34 +1,36 @@
 import Component from '@ember/component';
 import Key from 'mobiledoc-kit/utils/key';
-import {computed} from '@ember/object';
+import classic from 'ember-classic-decorator';
+import {action, computed} from '@ember/object';
+import {classNameBindings, tagName} from '@ember-decorators/component';
 import {kgStyle} from '../helpers/kg-style';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    koenigUi: service(),
+@classic
+@tagName('figcaption')
+@classNameBindings('figCaptionClass')
+export default class KoenigCaptionInput extends Component {
+    @service
+    koenigUi;
 
-    tagName: 'figcaption',
-    classNameBindings: ['figCaptionClass'],
+    caption = '';
+    captureInput = false;
+    placeholder = '';
+    _keypressHandler = null;
+    _keydownHandler = null;
+    update() {}
+    addParagraphAfterCard() {}
+    moveCursorToNextSection() {}
+    moveCursorToPrevSection() {}
 
-    caption: '',
-    captureInput: false,
-    placeholder: '',
-
-    _keypressHandler: null,
-    _keydownHandler: null,
-
-    update() {},
-    addParagraphAfterCard() {},
-    moveCursorToNextSection() {},
-    moveCursorToPrevSection() {},
-
-    figCaptionClass: computed(function () {
+    @computed
+    get figCaptionClass() {
         return `${kgStyle(['figcaption'])} w-100 relative`;
-    }),
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         if (this.captureInput && !this._keypressHandler) {
             this._attachHandlers();
@@ -37,51 +39,51 @@ export default Component.extend({
         if (!this.captureInput && this._keypressHandler) {
             this._detachHandlers();
         }
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         this.koenigUi.captionLostFocus(this);
         this._detachHandlers();
-    },
+    }
 
-    actions: {
-        registerEditor(editor) {
-            let commands = {
-                ENTER: run.bind(this, this._enter),
-                ESC: run.bind(this, this._escape),
-                UP: run.bind(this, this._upOrLeft),
-                LEFT: run.bind(this, this._upOrLeft),
-                DOWN: run.bind(this, this._rightOrDown),
-                RIGHT: run.bind(this, this._rightOrDown)
-            };
+    @action
+    registerEditor(editor) {
+        let commands = {
+            ENTER: run.bind(this, this._enter),
+            ESC: run.bind(this, this._escape),
+            UP: run.bind(this, this._upOrLeft),
+            LEFT: run.bind(this, this._upOrLeft),
+            DOWN: run.bind(this, this._rightOrDown),
+            RIGHT: run.bind(this, this._rightOrDown)
+        };
 
-            Object.keys(commands).forEach((str) => {
-                editor.registerKeyCommand({
-                    str,
-                    run() {
-                        return commands[str](editor, str);
-                    }
-                });
+        Object.keys(commands).forEach((str) => {
+            editor.registerKeyCommand({
+                str,
+                run() {
+                    return commands[str](editor, str);
+                }
             });
+        });
 
-            this.editor = editor;
-        },
+        this.editor = editor;
+    }
 
-        handleEnter() {
-            this.addParagraphAfterCard();
-        }
-    },
+    @action
+    handleEnter() {
+        this.addParagraphAfterCard();
+    }
 
     // events ------------------------------------------------------------------
 
     focusIn() {
         this.koenigUi.captionGainedFocus(this);
-    },
+    }
 
     focusOut() {
         this.koenigUi.captionLostFocus(this);
-    },
+    }
 
     // private -----------------------------------------------------------------
 
@@ -90,13 +92,13 @@ export default Component.extend({
             this._keypressHandler = run.bind(this, this._handleKeypress);
             window.addEventListener('keypress', this._keypressHandler);
         }
-    },
+    }
 
     _detachHandlers() {
         window.removeEventListener('keypress', this._keypressHandler);
         this._keypressHandler = null;
         this._keydownHandler = null;
-    },
+    }
 
     // only fires if the card is selected, moves focus to the caption input so
     // that it's possible to start typing without explicitly focusing the input
@@ -112,19 +114,19 @@ export default Component.extend({
 
             event.preventDefault();
         }
-    },
+    }
 
     /* key commands ----------------------------------------------------------*/
 
     _enter() {
         this.send('handleEnter');
-    },
+    }
 
     _escape(editor) {
         editor.element.blur();
         this.deselectCard();
         this.selectCard();
-    },
+    }
 
     _upOrLeft(editor, key) {
         let {isCollapsed, head} = editor.range;
@@ -140,7 +142,7 @@ export default Component.extend({
         }
 
         return false;
-    },
+    }
 
     _rightOrDown(editor, key) {
         let {isCollapsed, tail} = editor.range;
@@ -157,4 +159,4 @@ export default Component.extend({
 
         return false;
     }
-});
+}

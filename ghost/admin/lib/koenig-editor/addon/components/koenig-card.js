@@ -1,5 +1,7 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
+import {attributeBindings, classNameBindings} from '@ember-decorators/component';
 import {computed} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
@@ -7,49 +9,53 @@ import {inject as service} from '@ember/service';
 
 const TICK_HEIGHT = 8;
 
-export default Component.extend({
-    koenigUi: service(),
-
-    attributeBindings: ['_style:style'],
-    classNameBindings: ['selectedClass'],
+@classic
+@attributeBindings('_style:style')
+@classNameBindings('selectedClass')
+export default class KoenigCard extends Component {
+    @service
+    koenigUi;
 
     // attrs
-    editor: null,
-    icon: null,
-    iconClass: 'ih5 absolute stroke-midgrey-l2 mt1 nl15 kg-icon',
-    toolbar: null,
-    isSelected: false,
-    isEditing: false,
-    hasEditMode: true,
-    headerOffset: 0,
-    showSelectedOutline: true,
+    editor = null;
+    icon = null;
+    iconClass = 'ih5 absolute stroke-midgrey-l2 mt1 nl15 kg-icon';
+    toolbar = null;
+    isSelected = false;
+    isEditing = false;
+    hasEditMode = true;
+    headerOffset = 0;
+    showSelectedOutline = true;
 
     // properties
-    showToolbar: false,
-    toolbarWidth: 0,
-    toolbarHeight: 0,
+    showToolbar = false;
+    toolbarWidth = 0;
+    toolbarHeight = 0;
 
     // internal properties
-    _lastIsEditing: false,
+    _lastIsEditing = false;
 
     // closure actions
-    selectCard() {},
-    deselectCard() {},
-    editCard() {},
-    // hooks - when attached these will be fired on the individual card components
-    onSelect() {},
-    onDeselect() {},
-    onEnterEdit() {},
-    onLeaveEdit() {},
+    selectCard() {}
+    deselectCard() {}
+    editCard() {}
 
-    shouldShowToolbar: computed('showToolbar', 'koenigUi.{captionHasFocus,isDragging,inputHasFocus}', function () {
+    // hooks - when attached these will be fired on the individual card components
+    onSelect() {}
+    onDeselect() {}
+    onEnterEdit() {}
+    onLeaveEdit() {}
+
+    @computed('showToolbar', 'koenigUi.{captionHasFocus,isDragging,inputHasFocus}')
+    get shouldShowToolbar() {
         return this.showToolbar
             && !this.koenigUi.captionHasFocus
             && !this.koenigUi.inputHasFocus
             && !this.koenigUi.isDragging;
-    }),
+    }
 
-    toolbarStyle: computed('shouldShowToolbar', 'toolbarWidth', 'toolbarHeight', function () {
+    @computed('shouldShowToolbar', 'toolbarWidth', 'toolbarHeight')
+    get toolbarStyle() {
         let showToolbar = this.shouldShowToolbar;
         let width = this.toolbarWidth;
         let height = this.toolbarHeight;
@@ -63,18 +69,20 @@ export default Component.extend({
         }
 
         return htmlSafe(styles.join('; '));
-    }),
+    }
 
-    iconTop: computed('headerOffset', function () {
+    @computed('headerOffset')
+    get iconTop() {
         return this.headerOffset + 24;
-    }),
+    }
 
-    selectedClass: computed('isSelected', 'showSelectedOutline', function () {
+    @computed('isSelected', 'showSelectedOutline')
+    get selectedClass() {
         return this.isSelected && this.showSelectedOutline ? 'kg-card-selected' : '';
-    }),
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         let isSelected = this.isSelected;
         let isEditing = this.isEditing;
@@ -117,20 +125,20 @@ export default Component.extend({
         this._lastIsEditing = isEditing;
         this._lastToolbar = this.toolbar;
         this._lastSaveAsSnippet = this.saveAsSnippet;
-    },
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         this._setToolbarProperties();
         this._createMutationObserver(
             this.element,
             run.bind(this, this._inputFocus),
             run.bind(this, this._inputBlur)
         );
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         window.removeEventListener('keydown', this._onKeydownHandler);
         window.removeEventListener('click', this._onClickHandler);
         this._removeMousemoveHandler();
@@ -142,7 +150,7 @@ export default Component.extend({
         if (this._hasDisabledContenteditable) {
             this.editor.element.contentEditable = true;
         }
-    },
+    }
 
     mouseDown(event) {
         let {isSelected, isEditing, hasEditMode} = this;
@@ -178,7 +186,7 @@ export default Component.extend({
                 this._skipMouseUp = true;
             }
         }
-    },
+    }
 
     // lazy-click to enter edit mode
     mouseUp(event) {
@@ -197,7 +205,7 @@ export default Component.extend({
         }
 
         this._skipMouseUp = false;
-    },
+    }
 
     doubleClick() {
         let allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
@@ -205,7 +213,7 @@ export default Component.extend({
             this.editCard();
             this.set('showToolbar', true);
         }
-    },
+    }
 
     _onSelect() {
         this._fireWhenRendered(this._showToolbar);
@@ -214,13 +222,13 @@ export default Component.extend({
 
         this._onClickHandler = run.bind(this, this._handleClick);
         window.addEventListener('click', this._onClickHandler);
-    },
+    }
 
     _onDeselect() {
         window.removeEventListener('click', this._onClickHandler);
         this._hideToolbar();
         this.onDeselect();
-    },
+    }
 
     _onEnterEdit() {
         // don't register key down handlers immediately otherwise we can interfere
@@ -233,7 +241,7 @@ export default Component.extend({
         }, 20);
 
         this.onEnterEdit();
-    },
+    }
 
     _onLeaveEdit() {
         window.removeEventListener('keydown', this._onKeydownHandler);
@@ -246,7 +254,7 @@ export default Component.extend({
         }
 
         this.onLeaveEdit();
-    },
+    }
 
     _setToolbarProperties() {
         // select the last toolbar in the element because card contents/captions
@@ -263,7 +271,7 @@ export default Component.extend({
             toolbarWidth: width,
             toolbarHeight: height + TICK_HEIGHT
         });
-    },
+    }
 
     _showToolbar() {
         // only show a toolbar if we have one
@@ -275,12 +283,12 @@ export default Component.extend({
                 window.addEventListener('mousemove', this._onMousemoveHandler);
             }
         }
-    },
+    }
 
     _hideToolbar() {
         this.set('showToolbar', false);
         this._removeMousemoveHandler();
-    },
+    }
 
     _handleKeydown(event) {
         if (
@@ -293,7 +301,7 @@ export default Component.extend({
             this.selectCard(false);
             event.preventDefault();
         }
-    },
+    }
 
     // exit edit mode any time we have a click outside of the card unless it's
     // a click inside one of our modals or on the plus menu
@@ -324,19 +332,19 @@ export default Component.extend({
         }
 
         this.deselectCard();
-    },
+    }
 
     _handleMousemove() {
         if (!this.showToolbar) {
             this.set('showToolbar', true);
             this._removeMousemoveHandler();
         }
-    },
+    }
 
     _removeMousemoveHandler() {
         window.removeEventListener('mousemove', this._onMousemoveHandler);
         this._onMousemoveHandler = null;
-    },
+    }
 
     // convenience method for when we only want to run a method when our
     // elements have been rendered
@@ -346,7 +354,7 @@ export default Component.extend({
         } else {
             run.scheduleOnce('afterRender', this, method);
         }
-    },
+    }
 
     // Firefox can't handle inputs inside of a contenteditable element so we
     // need to watch for any inputs being added so that we can attach focus/blur
@@ -405,15 +413,15 @@ export default Component.extend({
                 }
             }
         };
-    },
+    }
 
     _inputFocus() {
         this._hasDisabledContenteditable = true;
         this.editor.element.contentEditable = false;
-    },
+    }
 
     _inputBlur() {
         this._hasDisabledContenteditable = false;
         this.editor.element.contentEditable = true;
     }
-});
+}

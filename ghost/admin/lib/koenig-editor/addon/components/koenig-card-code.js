@@ -1,11 +1,11 @@
 import Component from '@ember/component';
 import Ember from 'ember';
-import {computed} from '@ember/object';
+import classic from 'ember-classic-decorator';
+import {action, computed, set} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
-import {set} from '@ember/object';
 
 const {Handlebars} = Ember;
 const {countWords} = ghostHelperUtils;
@@ -17,34 +17,38 @@ const CM_MODE_MAP = {
     js: 'javascript'
 };
 
-export default Component.extend({
+@classic
+export default class KoenigCardCode extends Component {
     // attrs
-    payload: null,
-    isSelected: false,
-    isEditing: false,
-    headerOffset: 0,
-    showLanguageInput: true,
+    payload = null;
+    isSelected = false;
+    isEditing = false;
+    headerOffset = 0;
+    showLanguageInput = true;
 
     // closure actions
-    editCard() {},
-    saveCard() {},
-    selectCard() {},
-    deselectCard() {},
-    deleteCard() {},
-    registerComponent() {},
-    moveCursorToNextSection() {},
-    moveCursorToPrevSection() {},
-    addParagraphAfterCard() {},
+    editCard() {}
+    saveCard() {}
+    selectCard() {}
+    deselectCard() {}
+    deleteCard() {}
+    registerComponent() {}
+    moveCursorToNextSection() {}
+    moveCursorToPrevSection() {}
+    addParagraphAfterCard() {}
 
-    isEmpty: computed('payload.code', function () {
+    @computed('payload.code')
+    get isEmpty() {
         return isBlank(this.payload.code);
-    }),
+    }
 
-    counts: computed('payload.code', function () {
+    @computed('payload.code')
+    get counts() {
         return {wordCount: countWords(this.payload.code)};
-    }),
+    }
 
-    toolbar: computed('isEditing', function () {
+    @computed('isEditing')
+    get toolbar() {
         if (this.isEditing) {
             return false;
         }
@@ -59,33 +63,37 @@ export default Component.extend({
                 action: run.bind(this, this.editCard)
             }]
         };
-    }),
+    }
 
-    escapedCode: computed('payload.code', function () {
+    @computed('payload.code')
+    get escapedCode() {
         let escapedCode = Handlebars.Utils.escapeExpression(this.payload.code);
         return htmlSafe(escapedCode);
-    }),
+    }
 
-    cmMode: computed('payload.language', function () {
+    @computed('payload.language')
+    get cmMode() {
         let {language} = this.payload;
         return CM_MODE_MAP[language] || language;
-    }),
+    }
 
-    cardStyle: computed('isEditing', function () {
+    @computed('isEditing')
+    get cardStyle() {
         let style = this.isEditing ? 'background-color: #f4f8fb; border-color: #f4f8fb' : '';
         return htmlSafe(style);
-    }),
+    }
 
-    languageInputStyle: computed('showLanguageInput', function () {
+    @computed('showLanguageInput')
+    get languageInputStyle() {
         let styles = ['top: 6px', 'right: 6px'];
         if (!this.showLanguageInput) {
             styles.push('opacity: 0');
         }
         return htmlSafe(styles.join('; '));
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         let payload = this.payload || {};
 
         // CodeMirror errors on a `null` or `undefined` value
@@ -96,32 +104,34 @@ export default Component.extend({
         this.set('payload', payload);
 
         this.registerComponent(this);
-    },
+    }
 
-    actions: {
-        updateCode(code) {
-            this._hideLanguageInput();
-            this._updatePayloadAttr('code', code);
-        },
+    @action
+    updateCode(code) {
+        this._hideLanguageInput();
+        this._updatePayloadAttr('code', code);
+    }
 
-        updateCaption(caption) {
-            this._updatePayloadAttr('caption', caption);
-        },
+    @action
+    updateCaption(caption) {
+        this._updatePayloadAttr('caption', caption);
+    }
 
-        enterEditMode() {
-            this._addMousemoveHandler();
-        },
+    @action
+    enterEditMode() {
+        this._addMousemoveHandler();
+    }
 
-        leaveEditMode() {
-            this._removeMousemoveHandler();
+    @action
+    leaveEditMode() {
+        this._removeMousemoveHandler();
 
-            if (this.isEmpty) {
-                // afterRender is required to avoid double modification of `isSelected`
-                // TODO: see if there's a way to avoid afterRender
-                run.scheduleOnce('afterRender', this, this.deleteCard);
-            }
+        if (this.isEmpty) {
+            // afterRender is required to avoid double modification of `isSelected`
+            // TODO: see if there's a way to avoid afterRender
+            run.scheduleOnce('afterRender', this, this.deleteCard);
         }
-    },
+    }
 
     _updatePayloadAttr(attr, value) {
         let payload = this.payload;
@@ -131,22 +141,22 @@ export default Component.extend({
 
         // update the mobiledoc and stay in edit mode
         save(payload, false);
-    },
+    }
 
     _hideLanguageInput() {
         this.set('showLanguageInput', false);
-    },
+    }
 
     _showLanguageInput() {
         this.set('showLanguageInput', true);
-    },
+    }
 
     _addMousemoveHandler() {
         this._mousemoveHandler = run.bind(this, this._showLanguageInput);
         window.addEventListener('mousemove', this._mousemoveHandler);
-    },
+    }
 
     _removeMousemoveHandler() {
         window.removeEventListener('mousemove', this._mousemoveHandler);
     }
-});
+}

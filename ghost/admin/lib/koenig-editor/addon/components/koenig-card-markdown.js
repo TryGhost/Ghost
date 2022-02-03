@@ -1,51 +1,56 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import formatMarkdown from 'ghost-admin/utils/format-markdown';
-import {computed} from '@ember/object';
+import {action, computed, set} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
-import {set} from '@ember/object';
 import {task, timeout} from 'ember-concurrency';
 
 const {countWords, countImages} = ghostHelperUtils;
 const MIN_HEIGHT = 130;
 
-export default Component.extend({
+@classic
+export default class KoenigCardMarkdown extends Component {
     // attrs
-    payload: null,
-    isSelected: false,
-    isEditing: false,
-    headerOffset: 0,
+    payload = null;
+    isSelected = false;
+    isEditing = false;
+    headerOffset = 0;
 
     // internal attrs
-    bottomOffset: 0,
-    preventClick: false,
+    bottomOffset = 0;
+    preventClick = false;
 
     // closure actions
-    editCard() {},
-    saveCard() {},
-    selectCard() {},
-    deselectCard() {},
-    deleteCard() {},
-    registerComponent() {},
+    editCard() {}
+    saveCard() {}
+    selectCard() {}
+    deselectCard() {}
+    deleteCard() {}
+    registerComponent() {}
 
-    isEmpty: computed('payload.markdown', function () {
+    @computed('payload.markdown')
+    get isEmpty() {
         return isBlank(this.payload.markdown);
-    }),
+    }
 
-    counts: computed('renderedMarkdown', function () {
+    @computed('renderedMarkdown')
+    get counts() {
         return {
             wordCount: countWords(this.renderedMarkdown),
             imageCount: countImages(this.renderedMarkdown)
         };
-    }),
+    }
 
-    renderedMarkdown: computed('payload.markdown', function () {
+    @computed('payload.markdown')
+    get renderedMarkdown() {
         return htmlSafe(formatMarkdown(this.payload.markdown));
-    }),
+    }
 
-    toolbar: computed('isEditing', function () {
+    @computed('isEditing')
+    get toolbar() {
         if (this.isEditing) {
             return false;
         }
@@ -60,10 +65,10 @@ export default Component.extend({
                 action: run.bind(this, this.editCard)
             }]
         };
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         if (!this.payload) {
             this.set('payload', {});
@@ -74,72 +79,79 @@ export default Component.extend({
         this.set('bottomOffset', -MIN_HEIGHT);
 
         this.registerComponent(this);
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         this._teardownResizeHandler();
-    },
+    }
 
-    actions: {
-        enterEditMode() {
-            this._preventAccidentalClick.perform();
-        },
+    @action
+    enterEditMode() {
+        this._preventAccidentalClick.perform();
+    }
 
-        leaveEditMode() {
-            if (this.isEmpty) {
-                // afterRender is required to avoid double modification of `isSelected`
-                // TODO: see if there's a way to avoid afterRender
-                run.scheduleOnce('afterRender', this, this.deleteCard);
-            }
-        },
-
-        updateMarkdown(markdown) {
-            let payload = this.payload;
-            let save = this.saveCard;
-
-            set(payload, 'markdown', markdown);
-
-            // update the mobiledoc and stay in edit mode
-            save(payload, false);
-        },
-
-        // fires if top comes into view 0 px from viewport top
-        // fires if top comes into view MIN_HEIGHTpx above viewport bottom
-        topEntered() {
-            this._isTopVisible = true;
-            run.scheduleOnce('actions', this, this._applyToolbarStyles);
-        },
-
-        // fires if top leaves viewport 0 px from viewport top
-        // fires if top leaves viewport MIN_HEIGHTpx above viewport bottom
-        topExited() {
-            let top = this._topElement.getBoundingClientRect().top;
-            this._isTopVisible = false;
-            this._isTopAbove = top < 0;
-            run.scheduleOnce('actions', this, this._applyToolbarStyles);
-        },
-
-        bottomEntered() {
-            this._isBottomVisible = true;
-            run.scheduleOnce('actions', this, this._applyToolbarStyles);
-        },
-
-        bottomExited() {
-            let top = this._bottomElement.getBoundingClientRect().top;
-            this._isBottomVisible = false;
-            this._isBottomBelow = top > window.innerHeight;
-            run.scheduleOnce('actions', this, this._applyToolbarStyles);
-        },
-
-        registerTop(element) {
-            this._topElement = element;
-        },
-
-        registerBottom(element) {
-            this._bottomElement = element;
+    @action
+    leaveEditMode() {
+        if (this.isEmpty) {
+            // afterRender is required to avoid double modification of `isSelected`
+            // TODO: see if there's a way to avoid afterRender
+            run.scheduleOnce('afterRender', this, this.deleteCard);
         }
-    },
+    }
+
+    @action
+    updateMarkdown(markdown) {
+        let payload = this.payload;
+        let save = this.saveCard;
+
+        set(payload, 'markdown', markdown);
+
+        // update the mobiledoc and stay in edit mode
+        save(payload, false);
+    }
+
+    // fires if top comes into view 0 px from viewport top
+    // fires if top comes into view MIN_HEIGHTpx above viewport bottom
+    @action
+    topEntered() {
+        this._isTopVisible = true;
+        run.scheduleOnce('actions', this, this._applyToolbarStyles);
+    }
+
+    // fires if top leaves viewport 0 px from viewport top
+    // fires if top leaves viewport MIN_HEIGHTpx above viewport bottom
+    @action
+    topExited() {
+        let top = this._topElement.getBoundingClientRect().top;
+        this._isTopVisible = false;
+        this._isTopAbove = top < 0;
+        run.scheduleOnce('actions', this, this._applyToolbarStyles);
+    }
+
+    @action
+    bottomEntered() {
+        this._isBottomVisible = true;
+        run.scheduleOnce('actions', this, this._applyToolbarStyles);
+    }
+
+    @action
+    bottomExited() {
+        let top = this._bottomElement.getBoundingClientRect().top;
+        this._isBottomVisible = false;
+        this._isBottomBelow = top > window.innerHeight;
+        run.scheduleOnce('actions', this, this._applyToolbarStyles);
+    }
+
+    @action
+    registerTop(element) {
+        this._topElement = element;
+    }
+
+    @action
+    registerBottom(element) {
+        this._bottomElement = element;
+    }
 
     _applyToolbarStyles() {
         let toolbar = this.element.querySelector('.editor-toolbar');
@@ -193,11 +205,11 @@ export default Component.extend({
         }
 
         toolbar.setAttribute('style', style);
-    },
+    }
 
     _containerDimensions() {
         return this.element.querySelector('.kg-card-selected').getBoundingClientRect();
-    },
+    }
 
     _setupResizeHandler() {
         if (this._resizeHandler) {
@@ -206,20 +218,20 @@ export default Component.extend({
 
         this._resizeHandler = run.bind(this, this._applyToolbarStyles);
         window.addEventListener('resize', this._resizeHandler);
-    },
+    }
 
     _teardownResizeHandler() {
         window.removeEventListener('resize', this._resizeHandler);
         this._resizeHandler = null;
-    },
+    }
 
     // when entering edit mode it can be easy to accidentally click where the
     // toolbar is inserted. Setting `preventClick` to true adds an overlay, so
     // we set that for half a second to stop double-clicks hitting the toolbar
-    _preventAccidentalClick: task(function* () {
+    @task(function* () {
         this.set('preventClick', true);
         yield timeout(500);
         this.set('preventClick', false);
     })
-
-});
+    _preventAccidentalClick;
+}
