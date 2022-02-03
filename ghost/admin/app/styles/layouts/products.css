@@ -16,6 +16,11 @@
     background: transparent !important;
 }
 
+.gh-contentfilter-menu-trigger-tiers .ember-power-select-selected-item {
+    font-weight: 400 !important;
+    color: #394047 !important;
+}
+
 .gh-product-cards {
     margin: 0 0 24px;
 }
