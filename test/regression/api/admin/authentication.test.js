@@ -7,6 +7,10 @@ const framework = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
+// Requires needed to enable a labs flag
+const sinon = require('sinon');
+const configUtils = require('../../../utils/configUtils');
+
 describe('Authentication API canary', function () {
     let agent;
     let emailStub;
@@ -41,6 +45,14 @@ describe('Authentication API canary', function () {
         });
 
         it('complete setup', async function () {
+            // Enable the improvedOnboarding flag
+            configUtils.set('enableDeveloperExperiments', true);
+            sinon.stub(settingsCache, 'get');
+            settingsCache.get.withArgs('labs').returns({
+                improvedOnboarding: true
+            });
+            settingsCache.get.callThrough();
+
             const res = await agent
                 .post('authentication/setup')
                 .body({
@@ -48,7 +60,8 @@ describe('Authentication API canary', function () {
                         name: 'test user',
                         email: 'test@example.com',
                         password: 'thisissupersafe',
-                        blogTitle: 'a test blog'
+                        blogTitle: 'a test blog',
+                        theme: 'TryGhost/Dawn'
                     }]
                 })
                 .expectHeader('Content-Type', 'application/json; charset=utf-8')
@@ -66,6 +79,8 @@ describe('Authentication API canary', function () {
             });
 
             expect(emailStub.called).to.be.true;
+
+            expect(await settingsCache.get('active_theme')).to.eq('dawn');
         });
 
         it('is setup? yes', async function () {
