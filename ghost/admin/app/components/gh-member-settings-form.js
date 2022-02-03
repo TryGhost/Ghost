@@ -20,8 +20,8 @@ export default class extends Component {
         this.scratchMember = this.args.scratchMember;
     }
 
-    @tracked
-    showMemberProductModal = false;
+    @tracked showMemberProductModal = false;
+    @tracked productsList;
 
     get canShowStripeInfo() {
         return !this.member.get('isNew') && this.membersUtils.isStripeEnabled;
@@ -35,6 +35,10 @@ export default class extends Component {
         let products = this.member.get('products');
         if (products && products.length > 0) {
             return false;
+        }
+
+        if (this.feature.get('multipleProducts')) {
+            return !!this.productsList?.length;
         }
 
         return true;
@@ -84,6 +88,11 @@ export default class extends Component {
             };
         }
         return null;
+    }
+
+    @action
+    setup() {
+        this.fetchProducts.perform();
     }
 
     get isCreatingComplimentary() {
@@ -172,5 +181,10 @@ export default class extends Component {
 
         this.store.pushPayload('member', response);
         return response;
+    }
+
+    @task({drop: true})
+    *fetchProducts() {
+        this.productsList = yield this.store.query('product', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price'});
     }
 }
