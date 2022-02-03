@@ -1551,10 +1551,10 @@
     "@tryghost/domain-events" "^0.1.6"
     "@tryghost/member-events" "^0.3.4"
 
-"@tryghost/members-api@4.8.11":
-  version "4.8.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.8.11.tgz#d1929bdd8685bb67967bf1d5798973806714c5e2"
-  integrity sha512-TjiuZ4JadaBseH4yZezmOobmQH1OP+xWTG8RCiCzglt4Ml8s3DbFL2Q/aeBsBki1ZJ5IMKYA7+lA4e+dEXn0+A==
+"@tryghost/members-api@4.8.12":
+  version "4.8.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-4.8.12.tgz#b878ac8f1642a0bf79b9011fcfb43ee2c28ac4c6"
+  integrity sha512-Dj/l6lpPdWajrz8Idk6knk9z8jCmYdahguJSCXHfhnyPlkfFeLRpLFopFF2zd8P0flrwaYhGwHz76jz4RU6nbQ==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
@@ -1846,10 +1846,10 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/verification-trigger@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.1.1.tgz#40c58124aebba895fe608c306f7c1a900db538fb"
-  integrity sha512-NtOexknELPDeYvxHNy1/e2cN9re6/G0nUUen+799At4A1F0vdYiCeaoWcVY3lRGRj5veGKaFblR7cD/j30lYIg==
+"@tryghost/verification-trigger@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.1.2.tgz#95a3d39bb09d69fe8db1bf055c48691f1a0727eb"
+  integrity sha512-b6jH+ZHh2XfPw1XsGwoeNXg7+Wmb+Vj3c7sPNryoqn3D0POfF08llVo7y6INIXEZkg2s9PO9PjaINKfkbEmo/w==
   dependencies:
     "@tryghost/domain-events" "^0.1.6"
     "@tryghost/member-events" "^0.3.4"
