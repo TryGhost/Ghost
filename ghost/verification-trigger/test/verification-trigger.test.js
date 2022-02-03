@@ -3,6 +3,8 @@
 const sinon = require('sinon');
 require('./utils');
 const VerificationTrigger = require('../lib/verification-trigger');
+const DomainEvents = require('@tryghost/domain-events');
+const {MemberSubscribeEvent} = require('@tryghost/member-events');
 
 describe('Import threshold', function () {
     it('Creates a threshold based on config', async function () {
@@ -151,5 +153,41 @@ describe('Email verification flow', function () {
             message: 'Email verification needed for site: {siteUrl}, just imported: {importedNumber} members.',
             amountImported: 10
         });
+    });
+
+    it('Triggers when a number of API events are dispatched', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const eventStub = sinon.stub().resolves({
+            meta: {
+                pagination: {
+                    total: 10
+                }
+            }
+        });
+        
+        new VerificationTrigger({
+            configThreshold: 2,
+            Settings: {
+                edit: settingsStub
+            },
+            isVerified: () => false,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub,
+            eventRepository: {
+                getNewsletterSubscriptionEvents: eventStub
+            }
+        });
+
+        DomainEvents.dispatch(MemberSubscribeEvent.create({
+            memberId: 'hello!',
+            source: 'api'
+        }, new Date()));
+
+        eventStub.callCount.should.eql(1);
+        eventStub.lastCall.lastArg.should.have.property('data.source');
+        eventStub.lastCall.lastArg.should.have.property('data.created_at');
+        eventStub.lastCall.lastArg['data.source'].should.eql('data.source:api');
+        eventStub.lastCall.lastArg['data.created_at'].should.startWith('data.created_at:>');
     });
 });

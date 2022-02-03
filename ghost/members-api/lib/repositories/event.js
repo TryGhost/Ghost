@@ -36,6 +36,9 @@ module.exports = class EventRepository {
         if (filters['data.created_at']) {
             options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
         }
+        if (filters['data.source']) {
+            options.filter.push(filters['data.source'].replace(/data.source:/g, 'source:'));
+        }
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
         }
