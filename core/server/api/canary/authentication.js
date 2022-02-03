@@ -13,6 +13,7 @@ const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const {deleteAllSessions} = require('../../services/auth/session');
+const labs = require('../../../shared/labs');
 
 const messages = {
     notTheBlogOwner: 'You are not the site owner.'
@@ -41,6 +42,7 @@ module.exports = {
                         email: frame.data.setup[0].email,
                         password: frame.data.setup[0].password,
                         blogTitle: frame.data.setup[0].blogTitle,
+                        theme: frame.data.setup[0].theme,
                         status: 'active'
                     };
 
@@ -52,6 +54,12 @@ module.exports = {
                     } catch (e) {
                         return data;
                     }
+                })
+                .then((data) => {
+                    if (labs.isSet('improvedOnboarding')) {
+                        return auth.setup.installTheme(data, api);
+                    }
+                    return data;
                 })
                 .then((data) => {
                     return auth.setup.doSettings(data, api.settings);
