@@ -5,7 +5,8 @@ const {MemberSubscribeEvent} = require('@tryghost/member-events');
 const messages = {
     emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
     emailVerificationEmailSubject: `Email needs verification`,
-    emailVerificationEmailMessage: `Email verification needed for site: {siteUrl}, just imported: {importedNumber} members.`
+    emailVerificationEmailMessageImport: `Email verification needed for site: {siteUrl}, just imported: {importedNumber} members.`,
+    emailVerificationEmailMessageAPI: `Email verification needed for site: {siteUrl} has added: {importedNumber} members through the API in the last 30 days.`
 };
 
 class VerificationTrigger {
@@ -49,7 +50,8 @@ class VerificationTrigger {
                 if (events.meta.pagination.total > this._configThreshold) {
                     await this.startVerificationProcess({
                         amountImported: events.meta.pagination.total,
-                        throwOnTrigger: false
+                        throwOnTrigger: false,
+                        source: 'api'
                     });
                 }
             }
@@ -75,11 +77,13 @@ class VerificationTrigger {
      * @param {object} config
      * @param {number} config.amountImported Amount of members which were imported
      * @param {boolean} config.throwOnTrigger Whether to throw if verification is needed
+     * @param {string} config.source Source of the verification trigger - currently either 'api' or 'import'
      * @returns {Promise<IVerificationResult>} Object containing property "needsVerification" - true when triggered 
      */
     async startVerificationProcess({
         amountImported,
-        throwOnTrigger
+        throwOnTrigger,
+        source
     }) {
         if (!this._isVerified()) {
             // Only trigger flag change and escalation email the first time
@@ -90,7 +94,9 @@ class VerificationTrigger {
                 }], {context: {internal: true}});
 
                 this._sendVerificationEmail({
-                    message: messages.emailVerificationEmailMessage,
+                    message: source === 'api'
+                        ? messages.emailVerificationEmailMessageAPI
+                        : messages.emailVerificationEmailMessageImport,
                     subject: messages.emailVerificationEmailSubject,
                     amountImported
                 });
