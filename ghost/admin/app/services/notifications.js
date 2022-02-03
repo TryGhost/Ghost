@@ -32,11 +32,8 @@ export default class NotificationsService extends Service {
         this.content = emberA();
     }
 
-    @service
-    config;
-
-    @service
-    upgradeStatus;
+    @service config;
+    @service upgradeStatus;
 
     @filter('content', function (notification) {
         let status = get(notification, 'status');

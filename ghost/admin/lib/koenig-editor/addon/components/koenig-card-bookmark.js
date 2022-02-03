@@ -11,11 +11,8 @@ const {countWords} = ghostHelperUtils;
 
 @classic
 export default class KoenigCardBookmark extends Component {
-    @service
-    ajax;
-
-    @service
-    ghostPaths;
+    @service ajax;
+    @service ghostPaths;
 
     // attrs
     payload = null;

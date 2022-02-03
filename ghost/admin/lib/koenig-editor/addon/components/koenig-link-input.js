@@ -18,8 +18,7 @@ const TICK_ADJUSTMENT = 8;
 @attributeBindings('style')
 @classNames('kg-input-bar', 'absolute', 'z-999')
 export default class KoenigLinkInput extends Component {
-    @service
-    config;
+    @service config;
 
     // public attrs
     editor = null;

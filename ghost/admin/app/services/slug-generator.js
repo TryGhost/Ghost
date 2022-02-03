@@ -6,11 +6,8 @@ const {resolve} = RSVP;
 
 @classic
 export default class SlugGeneratorService extends Service {
-    @service
-    ghostPaths;
-
-    @service
-    ajax;
+    @service ghostPaths;
+    @service ajax;
 
     generateSlug(slugType, textToSlugify) {
         let url;

@@ -5,11 +5,8 @@ import config from 'ghost-admin/config/environment';
 
 @classic
 export default class LazyLoaderService extends Service {
-    @service
-    ajax;
-
-    @service
-    ghostPaths;
+    @service ajax;
+    @service ghostPaths;
 
     // This is needed so we can disable it in unit tests
     testing = undefined;

@@ -35,8 +35,7 @@ export default class KoenigCardCalloutComponent extends Component {
     ];
     latestEmojiUsed = null;
 
-    @tracked
-    isPickerVisible = false;
+    @tracked isPickerVisible = false;
 
     get selectedBackgroundColor() {
         return this.backgroundColors.find(option => option.color === this.args.payload.backgroundColor);
