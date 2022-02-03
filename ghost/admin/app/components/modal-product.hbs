@@ -47,24 +47,6 @@
                         {{/if}}
                         <GhErrorMessage @errors={{this.errors}} @property="description" />
                     </GhFormGroup>
-                    {{#if (feature "tierWelcomePages")}}
-                        <GhFormGroup>
-                            <label for="welcomePage" class="fw6">Welcome page</label>
-                            <GhUrlInput
-                                @id="welcomePage"
-                                @value={{readonly this.model.product.welcomePageURL}}
-                                @baseUrl={{readonly this.siteUrl}}
-                                @setResult={{this.setWelcomePageURL}}
-                                @validateUrl={{this.validateWelcomePageURL}}
-                                @placeholder={{readonly this.siteUrl}}
-                            />
-                            {{#if this.isFreeProduct}}
-                                <p>Redirect to this URL after signup for a free membership</p>
-                            {{else}}
-                                <p>Redirect to this URL after signup for premium membership</p>
-                            {{/if}}
-                        </GhFormGroup>
-                    {{/if}} 
                     {{#unless this.isFreeProduct}}
                         <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
                             <div class="gh-settings-members-pricelabelcont">
@@ -118,6 +100,24 @@
                             {{/if}}
                         </GhFormGroup>
                     {{/unless}}
+                    {{#if (feature "tierWelcomePages")}}
+                        <GhFormGroup>
+                            <label for="welcomePage" class="fw6">Welcome page</label>
+                            <GhUrlInput
+                                @id="welcomePage"
+                                @value={{readonly this.model.product.welcomePageURL}}
+                                @baseUrl={{readonly this.siteUrl}}
+                                @setResult={{this.setWelcomePageURL}}
+                                @validateUrl={{this.validateWelcomePageURL}}
+                                @placeholder={{readonly this.siteUrl}}
+                            />
+                            {{#if this.isFreeProduct}}
+                                <p>Redirect to this URL after signup for a free membership</p>
+                            {{else}}
+                                <p>Redirect to this URL after signup for premium membership</p>
+                            {{/if}}
+                        </GhFormGroup>
+                    {{/if}} 
                 </div>
 
                 <h4 class="gh-main-section-header small bn">Benefits</h4>
