@@ -75,7 +75,7 @@
                     @classNames="gh-tier-actions-menu dropdown-menu dropdown-triangle-top-right"
                 >
                     <li>
-                        <button class="mr2" type="button" {{action "openEditProduct" this.product}}>
+                        <button class="mr2" type="button" {{on "click" (fn this.openEditProduct this.product)}}>
                             <span>Edit</span>
                         </button>
                     </li>
@@ -92,7 +92,7 @@
     </div>
     {{else}}
     <div class="gh-product-card-button-container">
-        <button type="button" {{action "openEditProduct" this.product}} class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-edit-button icon-only">
+        <button type="button" {{on "click" (fn this.openEditProduct this.product)}} class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-edit-button icon-only">
             <span>
                 {{svg-jar "pen"}}
             </span>
