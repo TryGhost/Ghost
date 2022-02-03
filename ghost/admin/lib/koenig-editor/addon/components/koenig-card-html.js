@@ -1,39 +1,43 @@
 import Component from '@ember/component';
-import {computed} from '@ember/object';
+import classic from 'ember-classic-decorator';
+import {action, computed, set} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
-import {set} from '@ember/object';
 
 const {countWords, countImages} = ghostHelperUtils;
 
-export default Component.extend({
+@classic
+export default class KoenigCardHtml extends Component {
     // attrs
-    payload: null,
-    isSelected: false,
-    isEditing: false,
-    headerOffset: 0,
+    payload = null;
+    isSelected = false;
+    isEditing = false;
+    headerOffset = 0;
 
     // closure actions
-    selectCard() {},
-    deselectCard() {},
-    editCard() {},
-    saveCard() {},
-    deleteCard() {},
-    registerComponent() {},
+    selectCard() {}
+    deselectCard() {}
+    editCard() {}
+    saveCard() {}
+    deleteCard() {}
+    registerComponent() {}
 
-    isEmpty: computed('payload.html', function () {
+    @computed('payload.html')
+    get isEmpty() {
         return isBlank(this.payload.html);
-    }),
+    }
 
-    counts: computed('payload.html', function () {
+    @computed('payload.html')
+    get counts() {
         return {
             wordCount: countWords(this.payload.html),
             imageCount: countImages(this.payload.html)
         };
-    }),
+    }
 
-    toolbar: computed('isEditing', function () {
+    @computed('isEditing')
+    get toolbar() {
         if (this.isEditing) {
             return false;
         }
@@ -48,10 +52,10 @@ export default Component.extend({
                 action: run.bind(this, this.editCard)
             }]
         };
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         let payload = this.payload || {};
 
         // CodeMirror errors on a `null` or `undefined` value
@@ -62,21 +66,21 @@ export default Component.extend({
         this.set('payload', payload);
 
         this.registerComponent(this);
-    },
+    }
 
-    actions: {
-        updateHtml(html) {
-            this._updatePayloadAttr('html', html);
-        },
+    @action
+    updateHtml(html) {
+        this._updatePayloadAttr('html', html);
+    }
 
-        leaveEditMode() {
-            if (this.isEmpty) {
-                // afterRender is required to avoid double modification of `isSelected`
-                // TODO: see if there's a way to avoid afterRender
-                run.scheduleOnce('afterRender', this, this.deleteCard);
-            }
+    @action
+    leaveEditMode() {
+        if (this.isEmpty) {
+            // afterRender is required to avoid double modification of `isSelected`
+            // TODO: see if there's a way to avoid afterRender
+            run.scheduleOnce('afterRender', this, this.deleteCard);
         }
-    },
+    }
 
     _updatePayloadAttr(attr, value) {
         let payload = this.payload;
@@ -87,4 +91,4 @@ export default Component.extend({
         // update the mobiledoc and stay in edit mode
         save(payload, false);
     }
-});
+}

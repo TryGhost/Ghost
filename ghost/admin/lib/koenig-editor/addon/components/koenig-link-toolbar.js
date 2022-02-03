@@ -1,6 +1,8 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import relativeToAbsolute from '../lib/relative-to-absolute';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
+import {attributeBindings, classNames} from '@ember-decorators/component';
 import {getEventTargetMatchingTag} from 'mobiledoc-kit/utils/element-utils';
 import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
@@ -16,35 +18,37 @@ const TOOLBAR_PADDING = 12;
 // ms to wait before showing the tooltip
 const DELAY = 120;
 
-export default Component.extend({
-    config: service(),
-
-    attributeBindings: ['style'],
-    classNames: ['absolute', 'z-999'],
+@classic
+@attributeBindings('style')
+@classNames('absolute', 'z-999')
+export default class KoenigLinkToolbar extends Component {
+    @service
+    config;
 
     // public attrs
-    container: null,
-    editor: null,
-    linkRange: null,
-    selectedRange: null,
+    container = null;
+    editor = null;
+    linkRange = null;
+    selectedRange = null;
 
     // internal attrs
-    url: 'http://example.com',
-    showToolbar: false,
-    top: null,
-    left: -1000,
-    right: null,
+    url = 'http://example.com';
+    showToolbar = false;
+    top = null;
+    left = -1000;
+    right = null;
 
     // private attrs
-    _canShowToolbar: true,
-    _eventListeners: null,
+    _canShowToolbar = true;
+    _eventListeners = null;
 
     // closure actions
-    editLink() {},
+    editLink() {}
 
     /* computed properties -------------------------------------------------- */
 
-    style: computed('showToolbar', 'top', 'left', 'right', function () {
+    @computed('showToolbar', 'top', 'left', 'right')
+    get style() {
         let position = this.getProperties('top', 'left', 'right');
         let styles = Object.keys(position).map((style) => {
             if (position[style] !== null) {
@@ -63,17 +67,17 @@ export default Component.extend({
         }
 
         return htmlSafe(styles.compact().join('; '));
-    }),
+    }
 
     /* lifecycle hooks ------------------------------------------------------ */
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this._eventListeners = [];
-    },
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         // don't show popups if link edit or formatting toolbar is shown
         // TODO: have a service for managing UI state?
@@ -84,42 +88,40 @@ export default Component.extend({
         } else {
             this._canShowToolbar = true;
         }
-    },
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
 
         let container = this.container;
         container.dataset.kgHasLinkToolbar = true;
         this._addEventListener(container, 'mouseover', this._handleMouseover);
         this._addEventListener(container, 'mouseout', this._handleMouseout);
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         this._removeAllEventListeners();
-    },
+    }
 
-    /* actions -------------------------------------------------------------- */
+    @action
+    edit() {
+        // get range that covers link
+        let linkRange = this._getLinkRange();
+        this.editLink(linkRange, this._targetRect);
+    }
 
-    actions: {
-        edit() {
-            // get range that covers link
-            let linkRange = this._getLinkRange();
-            this.editLink(linkRange, this._targetRect);
-        },
-
-        remove() {
-            let editor = this.editor;
-            let linkRange = this._getLinkRange();
-            let editorRange = editor.range;
-            editor.run((postEditor) => {
-                postEditor.toggleMarkup('a', linkRange);
-            });
-            this.set('showToolbar', false);
-            editor.selectRange(editorRange);
-        }
-    },
+    @action
+    remove() {
+        let editor = this.editor;
+        let linkRange = this._getLinkRange();
+        let editorRange = editor.range;
+        editor.run((postEditor) => {
+            postEditor.toggleMarkup('a', linkRange);
+        });
+        this.set('showToolbar', false);
+        editor.selectRange(editorRange);
+    }
 
     /* private methods ------------------------------------------------------ */
 
@@ -137,7 +139,7 @@ export default Component.extend({
             let linkRange = position.toRange().expandByMarker(marker => !!marker.markups.includes(linkMarkup));
             return linkRange;
         }
-    },
+    }
 
     _handleMouseover(event) {
         if (this._canShowToolbar) {
@@ -148,7 +150,7 @@ export default Component.extend({
                 }, DELAY);
             }
         }
-    },
+    }
 
     _handleMouseout(event) {
         this._cancelTimeouts();
@@ -159,7 +161,7 @@ export default Component.extend({
                 this.set('showToolbar', false);
             }
         }
-    },
+    }
 
     _showToolbar(target, mousePos) {
         // extract the href attribute value and convert it to absolute based
@@ -172,14 +174,14 @@ export default Component.extend({
         run.schedule('afterRender', this, function () {
             this._positionToolbar(target, mousePos);
         });
-    },
+    }
 
     _cancelTimeouts() {
         run.cancel(this._timeout);
         if (this._elementObserver) {
             this._elementObserver.cancel();
         }
-    },
+    }
 
     _positionToolbar(target, {x, y}) {
         let containerRect = this.element.offsetParent.getBoundingClientRect();
@@ -220,31 +222,31 @@ export default Component.extend({
 
         // update the toolbar position
         this.setProperties(newPosition);
-    },
+    }
 
     _addStyleElement(styles) {
         let styleElement = document.createElement('style');
         styleElement.id = `${this.elementId}-style`;
         styleElement.innerHTML = `#${this.elementId} > ul:after { ${styles} }`;
         document.head.appendChild(styleElement);
-    },
+    }
 
     _removeStyleElement() {
         let styleElement = document.querySelector(`#${this.elementId}-style`);
         if (styleElement) {
             styleElement.remove();
         }
-    },
+    }
 
     _addEventListener(element, type, listener) {
         let boundListener = run.bind(this, listener);
         element.addEventListener(type, boundListener);
         this._eventListeners.push([element, type, boundListener]);
-    },
+    }
 
     _removeAllEventListeners() {
         this._eventListeners.forEach(([element, type, listener]) => {
             element.removeEventListener(type, listener);
         });
     }
-});
+}

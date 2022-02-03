@@ -1,8 +1,10 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import getScrollParent from '../utils/get-scroll-parent';
 import relativeToAbsolute from '../lib/relative-to-absolute';
 import {TOOLBAR_MARGIN} from './koenig-toolbar';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
+import {attributeBindings, classNames} from '@ember-decorators/component';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
@@ -12,36 +14,38 @@ import {inject as service} from '@ember/service';
 // TODO: handle via CSS?
 const TICK_ADJUSTMENT = 8;
 
-export default Component.extend({
-    config: service(),
-
-    attributeBindings: ['style'],
-    classNames: ['kg-input-bar', 'absolute', 'z-999'],
+@classic
+@attributeBindings('style')
+@classNames('kg-input-bar', 'absolute', 'z-999')
+export default class KoenigLinkInput extends Component {
+    @service
+    config;
 
     // public attrs
-    editor: null,
-    linkRange: null,
-    linkRect: null,
-    selectedRange: null,
+    editor = null;
+    linkRange = null;
+    linkRect = null;
+    selectedRange = null;
 
     // internal properties
-    top: null,
-    left: null,
-    right: null,
-    _href: '',
+    top = null;
+    left = null;
+    right = null;
+    _href = '';
 
     // private properties
-    _selectedRange: null,
-    _windowRange: null,
-    _onMousedownHandler: null,
-    _onMouseupHandler: null,
+    _selectedRange = null;
+    _windowRange = null;
+    _onMousedownHandler = null;
+    _onMouseupHandler = null;
 
     // closure actions
-    cancel() {},
+    cancel() {}
 
     /* computed properties -------------------------------------------------- */
 
-    style: computed('top', 'left', 'right', function () {
+    @computed('top', 'left', 'right')
+    get style() {
         let position = this.getProperties('top', 'left', 'right');
         let styles = Object.keys(position).map((style) => {
             if (position[style] !== null) {
@@ -50,12 +54,12 @@ export default Component.extend({
         });
 
         return htmlSafe(styles.compact().join('; '));
-    }),
+    }
 
     /* lifecycle hooks ------------------------------------------------------ */
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         if (!this.source) {
             // record the range now because the property is bound and will update
@@ -95,57 +99,57 @@ export default Component.extend({
         // watch for keydown events so that we can close the menu on Escape
         this._onKeydownHandler = run.bind(this, this._handleKeydown);
         window.addEventListener('keydown', this._onKeydownHandler);
-    },
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         if (this.source === 'direct' && this.href !== this._href) {
             this.set('_href', this.href);
         }
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         this._removeStyleElement();
         window.removeEventListener('mousedown', this._onMousedownHandler);
         window.removeEventListener('keydown', this._onKeydownHandler);
-    },
+    }
 
-    actions: {
-        inputKeydown(event) {
-            if (event.key === 'Enter') {
-                // prevent Enter from triggering in the editor and removing text
-                event.preventDefault();
+    @action
+    inputKeydown(event) {
+        if (event.key === 'Enter') {
+            // prevent Enter from triggering in the editor and removing text
+            event.preventDefault();
 
-                let href = relativeToAbsolute(this._href, this.config.get('blogUrl'));
-                this.set('_href', href);
+            let href = relativeToAbsolute(this._href, this.config.get('blogUrl'));
+            this.set('_href', href);
 
-                if (this.source === 'direct') {
-                    this.update(href);
-                    this.cancel();
-                    return;
-                }
-
-                // create a single editor runloop here so that we don't get
-                // separate remove and replace ops pushed onto the undo stack
-                this.editor.run((postEditor) => {
-                    if (href) {
-                        this._replaceLink(href, postEditor);
-                    } else {
-                        this._removeLinks(postEditor);
-                    }
-                });
-
-                this._cancelAndReselect();
+            if (this.source === 'direct') {
+                this.update(href);
+                this.cancel();
+                return;
             }
-        },
 
-        clear() {
-            this.set('_href', '');
-            this._focusInput();
+            // create a single editor runloop here so that we don't get
+            // separate remove and replace ops pushed onto the undo stack
+            this.editor.run((postEditor) => {
+                if (href) {
+                    this._replaceLink(href, postEditor);
+                } else {
+                    this._removeLinks(postEditor);
+                }
+            });
+
+            this._cancelAndReselect();
         }
-    },
+    }
+
+    @action
+    clear() {
+        this.set('_href', '');
+        this._focusInput();
+    }
 
     // if we have a single link or a slice of a single link selected, grab the
     // href and adjust our linkRange to encompass the whole link
@@ -155,13 +159,13 @@ export default Component.extend({
             this.set('_href', linkMarkup.attributes.href);
             this._linkRange = this._linkRange.expandByMarker(marker => !!marker.markups.includes(linkMarkup));
         }
-    },
+    }
 
     _replaceLink(href, postEditor) {
         this._removeLinks(postEditor);
         let linkMarkup = postEditor.builder.createMarkup('a', {href});
         postEditor.toggleMarkup(linkMarkup, this._linkRange);
-    },
+    }
 
     // loop over all markers that are touched by linkRange, removing any 'a'
     // markups on them to clear all links
@@ -176,14 +180,14 @@ export default Component.extend({
             });
             curMarker = curMarker.next;
         }
-    },
+    }
 
     _cancelAndReselect() {
         this.cancel();
         if (this._selectedRange) {
             this.editor.selectRange(this._selectedRange);
         }
-    },
+    }
 
     _focusInput() {
         let scrollParent = getScrollParent(this.element);
@@ -194,7 +198,7 @@ export default Component.extend({
         // reset the scroll position to avoid jumps
         // TODO: why does the input focus cause a scroll to the bottom of the doc?
         scrollParent.scrollTop = scrollTop;
-    },
+    }
 
     // TODO: largely shared with {{koenig-toolbar}} and {{koenig-snippet-input}} - extract to a shared util?
     _positionToolbar() {
@@ -245,32 +249,32 @@ export default Component.extend({
 
         // update the toolbar position
         this.setProperties(newPosition);
-    },
+    }
 
     _addStyleElement(styles) {
         let styleElement = document.createElement('style');
         styleElement.id = `${this.elementId}-style`;
         styleElement.innerHTML = `#${this.elementId}:before, #${this.elementId}:after { ${styles} }`;
         document.head.appendChild(styleElement);
-    },
+    }
 
     _removeStyleElement() {
         let styleElement = document.querySelector(`#${this.elementId}-style`);
         if (styleElement) {
             styleElement.remove();
         }
-    },
+    }
 
     _handleMousedown(event) {
         if (!event.target.closest(`#${this.elementId}`)) {
             // no need to re-select for mouse clicks
             this.cancel();
         }
-    },
+    }
 
     _handleKeydown(event) {
         if (event.key === 'Escape') {
             this._cancelAndReselect();
         }
     }
-});
+}

@@ -1,14 +1,15 @@
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
+import classic from 'ember-classic-decorator';
 import cleanTextReplacementHtml from '../lib/clean-text-replacement-html';
 import defaultAtoms from '../options/atoms';
 import registerKeyCommands, {TEXT_REPLACEMENT_KEY_COMMANDS} from '../options/key-commands';
 import validator from 'validator';
 import {BLANK_DOC, MOBILEDOC_VERSION} from './koenig-editor';
 import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
+import {action, computed} from '@ember/object';
 import {arrayToMap} from './koenig-editor';
 import {assign} from '@ember/polyfills';
-import {computed} from '@ember/object';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {registerTextReplacementTextExpansions} from '../options/text-expansions';
@@ -58,40 +59,43 @@ function toggleSpecialFormatEditState(editor) {
     }
 }
 
-export default Component.extend({
+@classic
+export default class KoenigTextReplacementHtmlInput extends Component {
     // public attrs
-    autofocus: false,
-    html: null,
-    placeholder: '',
-    spellcheck: true,
+    autofocus = false;
+    html = null;
+    placeholder = '';
+    spellcheck = true;
 
     // internal properties
-    activeMarkupTagNames: null,
-    editor: null,
-    linkRange: null,
-    mobiledoc: null,
-    selectedRange: null,
+    activeMarkupTagNames = null;
+    editor = null;
+    linkRange = null;
+    mobiledoc = null;
+    selectedRange = null;
 
     // private properties
-    _hasFocus: false,
-    _lastMobiledoc: null,
-    _startedRunLoop: false,
+    _hasFocus = false;
+    _lastMobiledoc = null;
+    _startedRunLoop = false;
 
     // closure actions
-    willCreateEditor() {},
-    didCreateEditor() {},
-    onChange() {},
-    onFocus() {},
-    onBlur() {},
+    willCreateEditor() {}
+    didCreateEditor() {}
+    onChange() {}
+    onFocus() {}
+    onBlur() {}
 
     /* computed properties -------------------------------------------------- */
 
-    formattedHtml: computed('html', function () {
+    @computed('html')
+    get formattedHtml() {
         return formatTextReplacementHtml(this.html);
-    }),
+    }
 
     // merge in named options with any passed in `options` property data-bag
-    editorOptions: computed('formattedHtml', function () {
+    @computed('formattedHtml')
+    get editorOptions() {
         let options = this.options || {};
         let atoms = this.atoms || [];
         let cards = this.cards || [];
@@ -111,17 +115,17 @@ export default Component.extend({
             unknownCardHandler() {},
             unknownAtomHandler() {}
         }, options);
-    }),
+    }
 
     /* lifecycle hooks ------------------------------------------------------ */
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.SPECIAL_MARKUPS = SPECIAL_MARKUPS;
-    },
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         // reset local mobiledoc if html has been changed upstream so that
         // the html will be re-parsed by the mobiledoc-kit editor
@@ -129,10 +133,10 @@ export default Component.extend({
             this.set('mobiledoc', null);
         }
         this._lastHtml = this.html;
-    },
+    }
 
     willRender() {
-        this._super(...arguments);
+        super.willRender(...arguments);
 
         let mobiledoc = this.mobiledoc;
 
@@ -236,22 +240,22 @@ export default Component.extend({
 
         this.set('editor', editor);
         this.didCreateEditor(editor);
-    },
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         let editorElement = this.element.querySelector('[data-kg="editor"]');
 
         this._pasteHandler = run.bind(this, this.handlePaste);
         editorElement.addEventListener('paste', this._pasteHandler);
 
         this.element.dataset[DRAG_DISABLED_DATA_ATTR] = 'true';
-    },
+    }
 
     // our ember component has rendered, now we need to render the mobiledoc
     // editor itself if necessary
     didRender() {
-        this._super(...arguments);
+        super.didRender(...arguments);
         let {editor} = this;
         if (!editor.hasRendered) {
             let editorElement = this.element.querySelector('[data-kg="editor"]');
@@ -259,37 +263,38 @@ export default Component.extend({
             editor.render(editorElement);
             this._isRenderingEditor = false;
         }
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
 
         let editorElement = this.element.querySelector('[data-kg="editor"]');
         editorElement.removeEventListener('paste', this._pasteHandler);
 
         this.editor.destroy();
-    },
+    }
 
-    actions: {
-        toggleMarkup(markupTagName, postEditor) {
-            (postEditor || this.editor).toggleMarkup(markupTagName);
-        },
+    @action
+    toggleMarkup(markupTagName, postEditor) {
+        (postEditor || this.editor).toggleMarkup(markupTagName);
+    }
 
-        // range should be set to the full extent of the selection or the
-        // appropriate <a> markup. If there's a selection when the link edit
-        // component renders it will re-select when finished which should
-        // trigger the normal toolbar
-        editLink(range) {
-            let linkMarkup = getLinkMarkupFromRange(range);
-            if ((!range.isCollapsed || linkMarkup) && range.headSection.isMarkerable) {
-                this.set('linkRange', range);
-            }
-        },
-
-        cancelEditLink() {
-            this.set('linkRange', null);
+    // range should be set to the full extent of the selection or the
+    // appropriate <a> markup. If there's a selection when the link edit
+    // component renders it will re-select when finished which should
+    // trigger the normal toolbar
+    @action
+    editLink(range) {
+        let linkMarkup = getLinkMarkupFromRange(range);
+        if ((!range.isCollapsed || linkMarkup) && range.headSection.isMarkerable) {
+            this.set('linkRange', range);
         }
-    },
+    }
+
+    @action
+    cancelEditLink() {
+        this.set('linkRange', null);
+    }
 
     /* ember event handlers --------------------------------------------------*/
 
@@ -300,14 +305,14 @@ export default Component.extend({
             this._hasFocus = true;
             run.scheduleOnce('actions', this, this.onFocus, event);
         }
-    },
+    }
 
     focusOut(event) {
         if (!event.relatedTarget || !this.element.contains(event.relatedTarget)) {
             this._hasFocus = false;
             run.scheduleOnce('actions', this, this.onBlur, event);
         }
-    },
+    }
 
     /* custom event handlers ------------------------------------------------ */
 
@@ -334,7 +339,7 @@ export default Component.extend({
                 return;
             }
         }
-    },
+    }
 
     /* mobiledoc event handlers ----------------------------------------------*/
 
@@ -372,12 +377,12 @@ export default Component.extend({
                 }
             }
         });
-    },
+    }
 
     postDidChange() {
         // trigger closure action
         this.onChange(this.getCleanHTML());
-    },
+    }
 
     cursorDidChange(editor) {
         // if we have `code` or ~strike~ formatting to the left but not the right
@@ -387,7 +392,7 @@ export default Component.extend({
 
         // pass the selected range through to the toolbar + menu components
         this.set('selectedRange', editor.range);
-    },
+    }
 
     // fired when the active section(s) or markup(s) at the current cursor
     // position or selection have changed. We use this event to update the
@@ -412,7 +417,7 @@ export default Component.extend({
         } else {
             this.set('activeMarkupTagNames', markupTags);
         }
-    },
+    }
 
     /* private methods -------------------------------------------------------*/
 
@@ -424,4 +429,4 @@ export default Component.extend({
             return cleanTextReplacementHtml(this.editor.element.innerHTML);
         }
     }
-});
+}

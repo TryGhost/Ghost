@@ -1,5 +1,7 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 
-export default Component.extend({
-    payload: null
-});
+@classic
+export default class Nft extends Component {
+    payload = null;
+}

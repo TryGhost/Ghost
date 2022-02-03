@@ -1,67 +1,73 @@
+import classic from 'ember-classic-decorator';
+import {inject as service} from '@ember/service';
 /* global noframe */
 import Component from '@ember/component';
 import {NO_CURSOR_MOVEMENT} from './koenig-editor';
-import {computed} from '@ember/object';
+import {action, computed, set} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
-import {inject as service} from '@ember/service';
-import {set} from '@ember/object';
 import {task} from 'ember-concurrency';
 
 const {countWords} = ghostHelperUtils;
 
-export default Component.extend({
-    ajax: service(),
-    ghostPaths: service(),
+@classic
+export default class KoenigCardEmbed extends Component {
+    @service
+    ajax;
+
+    @service
+    ghostPaths;
 
     // attrs
-    payload: null,
-    isSelected: false,
-    isEditing: false,
+    payload = null;
+    isSelected = false;
+    isEditing = false;
 
     // internal properties
-    hasError: false,
+    hasError = false;
 
     // closure actions
-    selectCard() {},
-    deselectCard() {},
-    editCard() {},
-    saveCard() {},
-    deleteCard() {},
-    moveCursorToNextSection() {},
-    moveCursorToPrevSection() {},
-    addParagraphAfterCard() {},
-    registerComponent() {},
+    selectCard() {}
+    deselectCard() {}
+    editCard() {}
+    saveCard() {}
+    deleteCard() {}
+    moveCursorToNextSection() {}
+    moveCursorToPrevSection() {}
+    addParagraphAfterCard() {}
+    registerComponent() {}
 
-    isEmpty: computed('payload.html', function () {
+    @computed('payload.html')
+    get isEmpty() {
         return isBlank(this.payload.html) && this.payload.type !== 'nft';
-    }),
+    }
 
-    counts: computed('payload.{html,caption}', function () {
+    @computed('payload.{html,caption}')
+    get counts() {
         return {
             imageCount: this.payload.html ? 1 : 0,
             wordCount: countWords(this.payload.caption)
         };
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         if (this.payload.url && !this.payload.html) {
             this.convertUrl.perform(this.payload.url);
         }
 
         this.registerComponent(this);
-    },
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         this._populateIframe();
         this._focusInput();
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
 
         run.cancel(this._resizeDebounce);
 
@@ -70,93 +76,98 @@ export default Component.extend({
         }
 
         window.removeEventListener('resize', this._windowResizeHandler);
-    },
+    }
 
-    actions: {
-        onDeselect() {
-            if (this.payload.url && !this.payload.html && !this.hasError) {
-                this.convertUrl.perform(this.payload.url);
-            } else {
-                if (this.isEmpty && !this.convertUrl.isRunning && !this.hasError) {
-                    this.deleteCard(NO_CURSOR_MOVEMENT);
-                }
+    @action
+    onDeselect() {
+        if (this.payload.url && !this.payload.html && !this.hasError) {
+            this.convertUrl.perform(this.payload.url);
+        } else {
+            if (this.isEmpty && !this.convertUrl.isRunning && !this.hasError) {
+                this.deleteCard(NO_CURSOR_MOVEMENT);
             }
-        },
-
-        updateUrl(event) {
-            let url = event.target.value;
-            set(this.payload, 'url', url);
-        },
-
-        urlKeydown(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                this.convertUrl.perform(this.payload.url);
-            }
-
-            if (event.key === 'Escape') {
-                event.target.blur();
-                this.deleteCard();
-            }
-        },
-
-        updateCaption(caption) {
-            set(this.payload, 'caption', caption);
-            this.saveCard(this.payload, false);
-        },
-
-        retry() {
-            this.set('hasError', false);
-        },
-
-        insertAsLink(options = {linkOnError: false}) {
-            let {range} = this.editor;
-
-            this.editor.run((postEditor) => {
-                let {builder} = postEditor;
-                let cardSection = this.env.postModel;
-                let p = builder.createMarkupSection('p');
-                let link = builder.createMarkup('a', {href: this.payload.url});
-
-                postEditor.replaceSection(cardSection, p);
-                postEditor.insertTextWithMarkup(p.toRange().head, this.payload.url, [link]);
-
-                // if a user is typing further on in the doc (possible if embed
-                // was created automatically via paste of URL) then return the
-                // cursor so the card->link change doesn't cause a cursor jump
-                if (range.headSection !== cardSection) {
-                    postEditor.setRange(range);
-                }
-
-                // avoid adding an extra undo step when automatically creating
-                // link after an error so that an Undo after pasting a URL
-                // doesn't get stuck in a loop going through link->embed->link
-                if (options.linkOnError) {
-                    postEditor.cancelSnapshot();
-                }
-            });
-        },
-
-        insertAsBookmark(payload) {
-            let {range} = this.editor;
-
-            this.editor.run((postEditor) => {
-                let cardSection = this.env.postModel;
-                let bookmarkCard = postEditor.builder.createCardSection('bookmark', payload);
-
-                postEditor.replaceSection(cardSection, bookmarkCard);
-
-                // if a user is typing further on in the doc (possible if embed
-                // was created automatically via paste of URL) then return the
-                // cursor so the card->link change doesn't cause a cursor jump
-                if (range.headSection !== cardSection) {
-                    postEditor.setRange(range);
-                }
-            });
         }
-    },
+    }
 
-    convertUrl: task(function* (url) {
+    @action
+    updateUrl(event) {
+        let url = event.target.value;
+        set(this.payload, 'url', url);
+    }
+
+    @action
+    urlKeydown(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.convertUrl.perform(this.payload.url);
+        }
+
+        if (event.key === 'Escape') {
+            event.target.blur();
+            this.deleteCard();
+        }
+    }
+
+    @action
+    updateCaption(caption) {
+        set(this.payload, 'caption', caption);
+        this.saveCard(this.payload, false);
+    }
+
+    @action
+    retry() {
+        this.set('hasError', false);
+    }
+
+    @action
+    insertAsLink(options = {linkOnError: false}) {
+        let {range} = this.editor;
+
+        this.editor.run((postEditor) => {
+            let {builder} = postEditor;
+            let cardSection = this.env.postModel;
+            let p = builder.createMarkupSection('p');
+            let link = builder.createMarkup('a', {href: this.payload.url});
+
+            postEditor.replaceSection(cardSection, p);
+            postEditor.insertTextWithMarkup(p.toRange().head, this.payload.url, [link]);
+
+            // if a user is typing further on in the doc (possible if embed
+            // was created automatically via paste of URL) then return the
+            // cursor so the card->link change doesn't cause a cursor jump
+            if (range.headSection !== cardSection) {
+                postEditor.setRange(range);
+            }
+
+            // avoid adding an extra undo step when automatically creating
+            // link after an error so that an Undo after pasting a URL
+            // doesn't get stuck in a loop going through link->embed->link
+            if (options.linkOnError) {
+                postEditor.cancelSnapshot();
+            }
+        });
+    }
+
+    @action
+    insertAsBookmark(payload) {
+        let {range} = this.editor;
+
+        this.editor.run((postEditor) => {
+            let cardSection = this.env.postModel;
+            let bookmarkCard = postEditor.builder.createCardSection('bookmark', payload);
+
+            postEditor.replaceSection(cardSection, bookmarkCard);
+
+            // if a user is typing further on in the doc (possible if embed
+            // was created automatically via paste of URL) then return the
+            // cursor so the card->link change doesn't cause a cursor jump
+            if (range.headSection !== cardSection) {
+                postEditor.setRange(range);
+            }
+        });
+    }
+
+    @(task(function* (url) {
         if (isBlank(url)) {
             this.deleteCard();
             return;
@@ -201,7 +212,8 @@ export default Component.extend({
             }
             this.set('hasError', true);
         }
-    }).drop(),
+    }).drop())
+    convertUrl;
 
     _focusInput() {
         let urlInput = this.element.querySelector('[name="url"]');
@@ -209,7 +221,7 @@ export default Component.extend({
         if (urlInput) {
             urlInput.focus();
         }
-    },
+    }
 
     _populateIframe() {
         let iframe = this.element.querySelector('iframe');
@@ -236,7 +248,7 @@ export default Component.extend({
 
             this._setupWindowResizeHandler(iframe);
         }
-    },
+    }
 
     _createMutationObserver(target, callback) {
         function addImageLoadListeners(mutation) {
@@ -306,11 +318,11 @@ export default Component.extend({
                 }
             }
         };
-    },
+    }
 
     _resizeIframe(iframe) {
         this._resizeDebounce = run.debounce(this, this.__debouncedResizeIframe, iframe, 66);
-    },
+    }
 
     __debouncedResizeIframe(iframe) {
         iframe.style.height = null;
@@ -343,11 +355,11 @@ export default Component.extend({
         // otherwise use iframes internal height (eg, Instagram)
         const height = iframe.contentDocument.scrollingElement.scrollHeight;
         iframe.style.height = `${height}px`;
-    },
+    }
 
     _setupWindowResizeHandler(iframe) {
         window.removeEventListener('resize', this._windowResizeHandler);
         this._windowResizeHandler = run.bind(this, this._resizeIframe, iframe);
         window.addEventListener('resize', this._windowResizeHandler, {passive: true});
     }
-});
+}
