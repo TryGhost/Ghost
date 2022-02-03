@@ -22,8 +22,7 @@ const DELAY = 120;
 @attributeBindings('style')
 @classNames('absolute', 'z-999')
 export default class KoenigLinkToolbar extends Component {
-    @service
-    config;
+    @service config;
 
     // public attrs
     container = null;

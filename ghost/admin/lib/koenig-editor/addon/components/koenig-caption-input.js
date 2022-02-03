@@ -11,8 +11,7 @@ import {inject as service} from '@ember/service';
 @tagName('figcaption')
 @classNameBindings('figCaptionClass')
 export default class KoenigCaptionInput extends Component {
-    @service
-    koenigUi;
+    @service koenigUi;
 
     caption = '';
     captureInput = false;

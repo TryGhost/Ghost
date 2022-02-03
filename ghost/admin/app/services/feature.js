@@ -39,23 +39,14 @@ export function feature(name, options = {}) {
 
 @classic
 export default class FeatureService extends Service {
-    @service
-    store;
+    @service store;
+    @service config;
 
-    @service
-    config;
+    @service session;
+    @service settings;
 
-    @service
-    session;
-
-    @service
-    settings;
-
-    @service
-    notifications;
-
-    @service
-    lazyLoader;
+    @service notifications;
+    @service lazyLoader;
 
     // features
     @feature('emailAnalytics')

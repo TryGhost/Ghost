@@ -19,15 +19,12 @@ export default class KoenigCardProductComponent extends Component {
     @service membersUtils;
     @service ui;
 
-    @tracked
-    files = null;
+    @tracked files = null;
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
 
-    @tracked
-    previewSrc = null;
-    @tracked
-    isDraggedOver = false;
+    @tracked previewSrc = null;
+    @tracked isDraggedOver = false;
 
     handlesDragDrop = true;
 

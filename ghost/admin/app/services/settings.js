@@ -10,8 +10,7 @@ const {_ProxyMixin} = Ember;
 
 @classic
 export default class SettingsService extends Service.extend(_ProxyMixin, ValidationEngine) {
-    @service
-    store;
+    @service store;
 
     // will be set to the single Settings model, it's a reference so any later
     // changes to the settings object in the store will be reflected

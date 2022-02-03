@@ -18,8 +18,7 @@ const {countWords} = ghostHelperUtils;
 
 @classic
 export default class KoenigCardGallery extends Component {
-    @service
-    koenigDragDropHandler;
+    @service koenigDragDropHandler;
 
     // attrs
     files = null;

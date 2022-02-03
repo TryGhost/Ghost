@@ -6,8 +6,7 @@ import {inject as service} from '@ember/service';
 
 @classic
 export default class Gravatar extends Helper {
-    @service
-    config;
+    @service config;
 
     compute([email], {size = 180, d = 'blank'}/*, hash*/) {
         if (!this.get('config.useGravatar')) {

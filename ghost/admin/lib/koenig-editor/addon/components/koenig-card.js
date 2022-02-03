@@ -13,8 +13,7 @@ const TICK_HEIGHT = 8;
 @attributeBindings('_style:style')
 @classNameBindings('selectedClass')
 export default class KoenigCard extends Component {
-    @service
-    koenigUi;
+    @service koenigUi;
 
     // attrs
     editor = null;

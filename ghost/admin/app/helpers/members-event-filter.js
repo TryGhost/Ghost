@@ -8,8 +8,7 @@ export const NEWSLETTER_EVENTS = ['newsletter_event'];
 
 @classic
 export default class MembersEventFilter extends Helper {
-    @service
-    settings;
+    @service settings;
 
     compute(
         positionalParams,

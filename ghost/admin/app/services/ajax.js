@@ -163,11 +163,8 @@ export function isAcceptedResponse(errorOrStatus) {
 
 @classic
 class ajaxService extends AjaxService {
-    @service
-    config;
-
-    @service
-    session;
+    @service config;
+    @service session;
 
     // flag to tell our ESA authenticator not to try an invalidate DELETE request
     // because it's been triggered by this service's 401 handling which means the

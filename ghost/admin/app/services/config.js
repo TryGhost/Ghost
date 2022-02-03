@@ -10,14 +10,10 @@ const {_ProxyMixin} = Ember;
 
 @classic
 export default class ConfigService extends Service.extend(_ProxyMixin) {
-    @service
-    ajax;
+    @service ajax;
+    @service ghostPaths;
 
-    @service
-    ghostPaths;
-
-    @service
-    session;
+    @service session;
 
     content = null;
 
