@@ -205,7 +205,7 @@
     "mocha": "9.2.0",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "0.4.10",
-    "nock": "13.2.2",
+    "nock": "13.2.3",
     "papaparse": "5.3.1",
     "postcss": "8.4.6",
     "rewire": "5.0.0",
