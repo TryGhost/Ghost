@@ -38,19 +38,24 @@
     }
 }
 
-.gh-product-card-editbutton-container {
+.gh-product-card-button-container {
     position: absolute;
     right: 24px;
     top: 24px;
     margin-right: 0;
 }
 
-.gh-product-card-editbutton {
+.gh-product-card-actions-button, .gh-product-card-edit-button {
     margin-right: 0;
 }
 
-.gh-product-card-editbutton.gh-btn span {
+.gh-product-card-actions-button.gh-btn span, .gh-product-card-edit-button.gh-btn span {
     height: 24px;
+}
+
+.gh-product-card-edit-button svg {
+    fill: #15171a;
+    color: transparent;
 }
 
 .gh-tier-actions-menu {
