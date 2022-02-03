@@ -1,41 +1,45 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
 import snippetIcon from '../utils/snippet-icon';
 import {CARD_MENU} from '../options/cards';
-import {computed} from '@ember/object';
+import {action, computed} from '@ember/object';
+import {attributeBindings, classNames} from '@ember-decorators/component';
 import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 
-export default Component.extend({
-    // public attrs
-    classNames: ['absolute'],
-    attributeBindings: ['style', 'data-kg'],
-    editor: null,
-    editorRange: null,
-    snippets: null,
+@classic
+@classNames('absolute')
+@attributeBindings('style', 'data-kg')
+export default class KoenigPlusMenu extends Component {
+    editor = null;
+    editorRange = null;
+    snippets = null;
 
     // internal properties
-    showButton: false,
-    showMenu: false,
-    top: 0,
-    'data-kg': 'plus-menu',
+    showButton = false;
+    showMenu = false;
+    top = 0;
+    'data-kg' = 'plus-menu';
 
     // private properties
-    _onResizeHandler: null,
-    _onWindowMousedownHandler: null,
-    _lastEditorRange: null,
-    _hasCursorButton: false,
-    _onMousemoveHandler: null,
-    _onKeydownHandler: null,
+    _onResizeHandler = null;
+    _onWindowMousedownHandler = null;
+    _lastEditorRange = null;
+    _hasCursorButton = false;
+    _onMousemoveHandler = null;
+    _onKeydownHandler = null;
 
     // closure actions
-    replaceWithCardSection() {},
+    replaceWithCardSection() {}
 
-    style: computed('top', function () {
+    @computed('top')
+    get style() {
         return htmlSafe(`top: ${this.top}px`);
-    }),
+    }
 
-    itemSections: computed('snippets.[]', function () {
+    @computed('snippets.[]')
+    get itemSections() {
         let {snippets} = this;
         let itemSections = [...CARD_MENU];
 
@@ -68,20 +72,20 @@ export default Component.extend({
         }
 
         return itemSections;
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         this._onResizeHandler = run.bind(this, this._handleResize);
         window.addEventListener('resize', this._onResizeHandler);
 
         this._onMousemoveHandler = run.bind(this, this._mousemoveRaf);
         window.addEventListener('mousemove', this._onMousemoveHandler);
-    },
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         let editorRange = this.editorRange;
 
@@ -104,53 +108,54 @@ export default Component.extend({
 
         this._lastEditorRange = editorRange;
         this._ignoreRangeChange = false;
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         run.cancel(this._throttleResize);
         window.removeEventListener('mousedown', this._onWindowMousedownHandler);
         window.removeEventListener('resize', this._onResizeHandler);
         window.removeEventListener('mousemove', this._onMousemoveHandler);
         window.removeEventListener('keydown', this._onKeydownHandler);
-    },
+    }
 
-    actions: {
-        openMenu() {
-            this._showMenu();
-        },
+    @action
+    openMenu() {
+        this._showMenu();
+    }
 
-        closeMenu() {
-            this._hideMenu();
-        },
+    @action
+    closeMenu() {
+        this._hideMenu();
+    }
 
-        itemClicked(item, event) {
-            if (event) {
-                event.preventDefault();
-            }
-
-            let range = this._editorRange;
-
-            if (item.type === 'card') {
-                this.replaceWithCardSection(item.replaceArg, range, item.payload);
-            }
-
-            if (item.type === 'snippet') {
-                let clickedSnippet = this.snippets.find(snippet => snippet.name === item.label);
-                if (clickedSnippet) {
-                    let post = mobiledocParsers.parse(this.editor.builder, clickedSnippet.mobiledoc);
-                    this.replaceWithPost(range, post);
-                }
-            }
-
-            if (item.type === 'selector') {
-                this.openSelectorComponent(item.selectorComponent, range);
-            }
-
-            this._hideButton();
-            this._hideMenu();
+    @action
+    itemClicked(item, event) {
+        if (event) {
+            event.preventDefault();
         }
-    },
+
+        let range = this._editorRange;
+
+        if (item.type === 'card') {
+            this.replaceWithCardSection(item.replaceArg, range, item.payload);
+        }
+
+        if (item.type === 'snippet') {
+            let clickedSnippet = this.snippets.find(snippet => snippet.name === item.label);
+            if (clickedSnippet) {
+                let post = mobiledocParsers.parse(this.editor.builder, clickedSnippet.mobiledoc);
+                this.replaceWithPost(range, post);
+            }
+        }
+
+        if (item.type === 'selector') {
+            this.openSelectorComponent(item.selectorComponent, range);
+        }
+
+        this._hideButton();
+        this._hideMenu();
+    }
 
     _showOrHideButton(editorRange) {
         if (!editorRange) {
@@ -170,16 +175,16 @@ export default Component.extend({
             this._hideButton();
             this._hideMenu();
         }
-    },
+    }
 
     _showButton() {
         this._positionMenu();
         this.set('showButton', true);
-    },
+    }
 
     _hideButton() {
         this.set('showButton', false);
-    },
+    }
 
     // find the "top" position by grabbing the current sections
     // render node and querying it's bounding rect. Setting "top"
@@ -199,7 +204,7 @@ export default Component.extend({
                 this.set('top', top);
             }
         }
-    },
+    }
 
     _showMenu() {
         this.set('showMenu', true);
@@ -223,7 +228,7 @@ export default Component.extend({
         // watch for keydown events so that we can close the menu on Escape
         this._onKeydownHandler = run.bind(this, this._handleKeydown);
         window.addEventListener('keydown', this._onKeydownHandler);
-    },
+    }
 
     _hideMenu() {
         if (this.showMenu) {
@@ -237,14 +242,14 @@ export default Component.extend({
             // hide the menu
             this.set('showMenu', false);
         }
-    },
+    }
 
     _focusSearch() {
         let search = this.element.querySelector('input');
         if (search) {
             search.focus();
         }
-    },
+    }
 
     _handleWindowMousedown(event) {
         if (
@@ -252,14 +257,14 @@ export default Component.extend({
         ) {
             this._hideMenu();
         }
-    },
+    }
 
     _mousemoveRaf(event) {
         if (!this._mousemoveTicking) {
             requestAnimationFrame(run.bind(this, this._handleMousemove, event));
         }
         this._mousemoveTicking = true;
-    },
+    }
 
     // show the (+) button when the mouse is over a blank P tag
     _handleMousemove(event) {
@@ -301,7 +306,7 @@ export default Component.extend({
         }
 
         this._mousemoveTicking = false;
-    },
+    }
 
     _handleKeydown(event) {
         if (event.key === 'Escape') {
@@ -315,18 +320,17 @@ export default Component.extend({
         if (arrowKeys.includes(event.key)) {
             this._hideMenu();
         }
-    },
+    }
 
     _handleResize() {
         if (this.showButton) {
             this._throttleResize = run.throttle(this, this._positionMenu, 100);
         }
-    },
+    }
 
     _moveCaretToCachedEditorRange() {
         this._ignoreRangeChange = true;
         this.set('editorRange', this._editorRange);
         this.editor.selectRange(this._editorRange);
     }
-
-});
+}

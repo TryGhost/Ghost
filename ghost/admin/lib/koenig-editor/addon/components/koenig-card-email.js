@@ -1,37 +1,41 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@ember/component';
-import {computed} from '@ember/object';
+import classic from 'ember-classic-decorator';
+import {action, computed, set} from '@ember/object';
 import {formatTextReplacementHtml} from './koenig-text-replacement-html-input';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
-import {set} from '@ember/object';
 
-export default Component.extend({
+@classic
+export default class KoenigCardEmail extends Component {
     // attrs
-    payload: null,
-    isSelected: false,
-    isEditing: false,
+    payload = null;
+    isSelected = false;
+    isEditing = false;
 
     // closure actions
-    selectCard() {},
-    deselectCard() {},
-    editCard() {},
-    saveCard() {},
-    deleteCard() {},
-    moveCursorToNextSection() {},
-    moveCursorToPrevSection() {},
-    addParagraphAfterCard() {},
-    registerComponent() {},
+    selectCard() {}
+    deselectCard() {}
+    editCard() {}
+    saveCard() {}
+    deleteCard() {}
+    moveCursorToNextSection() {}
+    moveCursorToPrevSection() {}
+    addParagraphAfterCard() {}
+    registerComponent() {}
 
-    isEmpty: computed('payload.html', function () {
+    @computed('payload.html')
+    get isEmpty() {
         return isBlank(this.payload.html);
-    }),
+    }
 
-    formattedHtml: computed('payload.html', function () {
+    @computed('payload.html')
+    get formattedHtml() {
         return formatTextReplacementHtml(this.payload.html);
-    }),
+    }
 
-    toolbar: computed('isEditing', function () {
+    @computed('isEditing')
+    get toolbar() {
         if (this.isEditing) {
             return false;
         }
@@ -46,50 +50,51 @@ export default Component.extend({
                 action: run.bind(this, this.editCard)
             }]
         };
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.registerComponent(this);
 
         if (!this.payload.html) {
             this._updatePayloadAttr('html', '<p>Hey {first_name, "there"},</p>');
         }
-    },
+    }
 
-    actions: {
-        updateHtml(html) {
-            this._updatePayloadAttr('html', html);
-        },
+    @action
+    updateHtml(html) {
+        this._updatePayloadAttr('html', html);
+    }
 
-        registerEditor(textReplacementEditor) {
-            let commands = {
-                'META+ENTER': run.bind(this, this._enter, 'meta'),
-                'CTRL+ENTER': run.bind(this, this._enter, 'ctrl')
-            };
+    @action
+    registerEditor(textReplacementEditor) {
+        let commands = {
+            'META+ENTER': run.bind(this, this._enter, 'meta'),
+            'CTRL+ENTER': run.bind(this, this._enter, 'ctrl')
+        };
 
-            Object.keys(commands).forEach((str) => {
-                textReplacementEditor.registerKeyCommand({
-                    str,
-                    run() {
-                        return commands[str](textReplacementEditor, str);
-                    }
-                });
+        Object.keys(commands).forEach((str) => {
+            textReplacementEditor.registerKeyCommand({
+                str,
+                run() {
+                    return commands[str](textReplacementEditor, str);
+                }
             });
+        });
 
-            this._textReplacementEditor = textReplacementEditor;
+        this._textReplacementEditor = textReplacementEditor;
 
-            run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
-        },
+        run.scheduleOnce('afterRender', this, this._placeCursorAtEnd);
+    }
 
-        leaveEditMode() {
-            if (this.isEmpty) {
-                // afterRender is required to avoid double modification of `isSelected`
-                // TODO: see if there's a way to avoid afterRender
-                run.scheduleOnce('afterRender', this, this.deleteCard);
-            }
+    @action
+    leaveEditMode() {
+        if (this.isEmpty) {
+            // afterRender is required to avoid double modification of `isSelected`
+            // TODO: see if there's a way to avoid afterRender
+            run.scheduleOnce('afterRender', this, this.deleteCard);
         }
-    },
+    }
 
     _updatePayloadAttr(attr, value) {
         let payload = this.payload;
@@ -99,7 +104,7 @@ export default Component.extend({
 
         // update the mobiledoc and stay in edit mode
         save(payload, false);
-    },
+    }
 
     /* key commands ----------------------------------------------------------*/
 
@@ -107,7 +112,7 @@ export default Component.extend({
         if (this.isEditing && (modifier === 'meta' || (modifier === 'crtl' && Browser.isWin()))) {
             this.editCard();
         }
-    },
+    }
 
     _placeCursorAtEnd() {
         if (!this._textReplacementEditor) {
@@ -118,4 +123,4 @@ export default Component.extend({
         let rangeToSelect = tailPosition.toRange();
         this._textReplacementEditor.selectRange(rangeToSelect);
     }
-});
+}

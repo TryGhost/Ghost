@@ -1,14 +1,15 @@
 import * as softReturnParser from '@tryghost/kg-parser-plugins/lib/cards/softReturn';
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
+import classic from 'ember-classic-decorator';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import registerKeyCommands, {BASIC_KEY_COMMANDS, BASIC_KEY_COMMANDS_WITH_BR} from '../options/key-commands';
 import validator from 'validator';
 import {DRAG_DISABLED_DATA_ATTR} from '../lib/dnd/constants';
 import {MOBILEDOC_VERSION, getBlankMobileDoc} from './koenig-editor';
+import {action, computed} from '@ember/object';
 import {arrayToMap, toggleSpecialFormatEditState} from './koenig-editor';
 import {assign} from '@ember/polyfills';
-import {computed} from '@ember/object';
 import {getContentFromPasteEvent, parsePostFromPaste} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';
 import {registerBasicInputTextExpansions} from '../options/text-expansions';
@@ -32,42 +33,45 @@ const SPECIAL_MARKUPS = {
     SUB: '~'
 };
 
-export default Component.extend({
+@classic
+export default class KoenigBasicHtmlInput extends Component {
     // public attrs
-    autofocus: false,
-    html: null,
-    placeholder: '',
-    spellcheck: true,
-    defaultTag: 'p',
+    autofocus = false;
+    html = null;
+    placeholder = '';
+    spellcheck = true;
+    defaultTag = 'p';
 
     // internal properties
-    activeMarkupTagNames: null,
-    editor: null,
-    linkRange: null,
-    mobiledoc: null,
-    selectedRange: null,
+    activeMarkupTagNames = null;
+    editor = null;
+    linkRange = null;
+    mobiledoc = null;
+    selectedRange = null;
 
     // private properties
-    _hasFocus: false,
-    _lastMobiledoc: null,
-    _startedRunLoop: false,
+    _hasFocus = false;
+    _lastMobiledoc = null;
+    _startedRunLoop = false;
 
     // closure actions
-    willCreateEditor() {},
-    didCreateEditor() {},
-    onChange() {},
-    onNewline() {},
-    onFocus() {},
-    onBlur() {},
+    willCreateEditor() {}
+    didCreateEditor() {}
+    onChange() {}
+    onNewline() {}
+    onFocus() {}
+    onBlur() {}
 
     /* computed properties -------------------------------------------------- */
 
-    cleanHTML: computed('html', function () {
+    @computed('html')
+    get cleanHTML() {
         return cleanBasicHtml(this.html || '', {allowBr: !!this.allowBr});
-    }),
+    }
 
     // merge in named options with any passed in `options` property data-bag
-    editorOptions: computed('cleanHTML', function () {
+    @computed('cleanHTML')
+    get editorOptions() {
         let options = this.options || {};
         let atoms = this.atoms || [];
         let cards = this.cards || [];
@@ -84,18 +88,18 @@ export default Component.extend({
             unknownCardHandler() {},
             unknownAtomHandler() {}
         }, options);
-    }),
+    }
 
     /* lifecycle hooks ------------------------------------------------------ */
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.SPECIAL_MARKUPS = SPECIAL_MARKUPS;
         this._lastSetHtml = this.html;
-    },
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         // reset local mobiledoc if html has been changed upstream so that
         // the html will be re-parsed by the mobiledoc-kit editor
@@ -103,10 +107,10 @@ export default Component.extend({
             this.set('mobiledoc', null);
             this._lastSetHtml = this.html;
         }
-    },
+    }
 
     willRender() {
-        this._super(...arguments);
+        super.willRender(...arguments);
 
         let mobiledoc = this.mobiledoc;
 
@@ -223,22 +227,22 @@ export default Component.extend({
 
         this.set('editor', editor);
         this.didCreateEditor(editor);
-    },
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         let editorElement = this.element.querySelector('[data-kg="editor"]');
 
         this._pasteHandler = run.bind(this, this.handlePaste);
         editorElement.addEventListener('paste', this._pasteHandler);
 
         this.element.dataset[DRAG_DISABLED_DATA_ATTR] = 'true';
-    },
+    }
 
     // our ember component has rendered, now we need to render the mobiledoc
     // editor itself if necessary
     didRender() {
-        this._super(...arguments);
+        super.didRender(...arguments);
         let {editor} = this;
         if (!editor.hasRendered) {
             let editorElement = this.element.querySelector('[data-kg="editor"]');
@@ -246,37 +250,38 @@ export default Component.extend({
             editor.render(editorElement);
             this._isRenderingEditor = false;
         }
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
 
         let editorElement = this.element.querySelector('[data-kg="editor"]');
         editorElement.removeEventListener('paste', this._pasteHandler);
 
         this.editor.destroy();
-    },
+    }
 
-    actions: {
-        toggleMarkup(markupTagName, postEditor) {
-            (postEditor || this.editor).toggleMarkup(markupTagName);
-        },
+    @action
+    toggleMarkup(markupTagName, postEditor) {
+        (postEditor || this.editor).toggleMarkup(markupTagName);
+    }
 
-        // range should be set to the full extent of the selection or the
-        // appropriate <a> markup. If there's a selection when the link edit
-        // component renders it will re-select when finished which should
-        // trigger the normal toolbar
-        editLink(range) {
-            let linkMarkup = getLinkMarkupFromRange(range);
-            if ((!range.isCollapsed || linkMarkup) && range.headSection.isMarkerable) {
-                this.set('linkRange', range);
-            }
-        },
-
-        cancelEditLink() {
-            this.set('linkRange', null);
+    // range should be set to the full extent of the selection or the
+    // appropriate <a> markup. If there's a selection when the link edit
+    // component renders it will re-select when finished which should
+    // trigger the normal toolbar
+    @action
+    editLink(range) {
+        let linkMarkup = getLinkMarkupFromRange(range);
+        if ((!range.isCollapsed || linkMarkup) && range.headSection.isMarkerable) {
+            this.set('linkRange', range);
         }
-    },
+    }
+
+    @action
+    cancelEditLink() {
+        this.set('linkRange', null);
+    }
 
     /* ember event handlers --------------------------------------------------*/
 
@@ -287,14 +292,14 @@ export default Component.extend({
             this._hasFocus = true;
             run.scheduleOnce('actions', this, this.onFocus, event);
         }
-    },
+    }
 
     focusOut(event) {
         if (!event.relatedTarget || !this.element.contains(event.relatedTarget)) {
             this._hasFocus = false;
             run.scheduleOnce('actions', this, this.onBlur, event);
         }
-    },
+    }
 
     /* custom event handlers ------------------------------------------------ */
 
@@ -368,14 +373,14 @@ export default Component.extend({
             const newPosition = postEditor.insertPost(position, pastedPost);
             postEditor.setRange(newPosition);
         });
-    },
+    }
 
     /* mobiledoc event handlers ----------------------------------------------*/
 
     willHandleNewline(event) {
         event.preventDefault();
         this.onNewline();
-    },
+    }
 
     // manipulate mobiledoc content before committing changes
     // - only one section
@@ -419,14 +424,14 @@ export default Component.extend({
         if (post.sections.head) {
             post.sections.head.tagName = this.defaultTag;
         }
-    },
+    }
 
     postDidChange() {
         // trigger closure action
         const html = this._getHTML();
         this._lastSetHtml = html;
         this.onChange(html);
-    },
+    }
 
     cursorDidChange(editor) {
         // if we have `code` or ~strike~ formatting to the left but not the right
@@ -436,7 +441,7 @@ export default Component.extend({
 
         // pass the selected range through to the toolbar + menu components
         this.set('selectedRange', editor.range);
-    },
+    }
 
     // fired when the active section(s) or markup(s) at the current cursor
     // position or selection have changed. We use this event to update the
@@ -461,7 +466,7 @@ export default Component.extend({
         } else {
             this.set('activeMarkupTagNames', markupTags);
         }
-    },
+    }
 
     /* private methods -------------------------------------------------------*/
 
@@ -480,4 +485,4 @@ export default Component.extend({
             return cleanBasicHtml(html, {allowBr: !!this.allowBr});
         }
     }
-});
+}

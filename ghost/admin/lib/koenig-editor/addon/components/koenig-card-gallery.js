@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import Component from '@ember/component';
-import EmberObject, {computed, set} from '@ember/object';
+import EmberObject, {action, computed, set} from '@ember/object';
+import classic from 'ember-classic-decorator';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
@@ -15,36 +16,38 @@ const MAX_IMAGES = 9;
 const MAX_PER_ROW = 3;
 const {countWords} = ghostHelperUtils;
 
-export default Component.extend({
-    koenigDragDropHandler: service(),
+@classic
+export default class KoenigCardGallery extends Component {
+    @service
+    koenigDragDropHandler;
 
     // attrs
-    files: null,
-    images: null,
-    payload: null,
-    isSelected: false,
-    isEditing: false,
-    imageExtensions: IMAGE_EXTENSIONS,
-    imageMimeTypes: IMAGE_MIME_TYPES,
+    files = null;
+    images = null;
+    payload = null;
+    isSelected = false;
+    isEditing = false;
+    imageExtensions = IMAGE_EXTENSIONS;
+    imageMimeTypes = IMAGE_MIME_TYPES;
 
     // properties
-    errorMessage: null,
-    handlesDragDrop: true,
-
-    _dragDropContainer: null,
+    errorMessage = null;
+    handlesDragDrop = true;
+    _dragDropContainer = null;
 
     // closure actions
-    selectCard() { },
-    deselectCard() { },
-    editCard() { },
-    saveCard() { },
-    deleteCard() { },
-    moveCursorToNextSection() { },
-    moveCursorToPrevSection() { },
-    addParagraphAfterCard() { },
-    registerComponent() { },
+    selectCard() { }
+    deselectCard() { }
+    editCard() { }
+    saveCard() { }
+    deleteCard() { }
+    moveCursorToNextSection() { }
+    moveCursorToPrevSection() { }
+    addParagraphAfterCard() { }
+    registerComponent() { }
 
-    counts: computed('payload.{caption,payload.images.[]}', function () {
+    @computed('payload.{caption,payload.images.[]}')
+    get counts() {
         let wordCount = 0;
         let imageCount = this.payload.images.length;
 
@@ -53,9 +56,10 @@ export default Component.extend({
         }
 
         return {wordCount, imageCount};
-    }),
+    }
 
-    toolbar: computed('images.[]', function () {
+    @computed('images.[]')
+    get toolbar() {
         if (isEmpty(this.images)) {
             return false;
         }
@@ -68,9 +72,10 @@ export default Component.extend({
                 action: run.bind(this, this._triggerFileDialog)
             }]
         };
-    }),
+    }
 
-    imageRows: computed('images.@each.{src,previewSrc,width,height,row}', function () {
+    @computed('images.@each.{src,previewSrc,width,height,row}')
+    get imageRows() {
         let rows = [];
         let noOfImages = this.images.length;
         // 3 images per row unless last row would have a single image in which
@@ -119,10 +124,10 @@ export default Component.extend({
         });
 
         return rows;
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         if (!this.payload || isEmpty(this.payload.images)) {
             this._updatePayloadAttr('images', []);
@@ -131,89 +136,99 @@ export default Component.extend({
         this._buildImages();
 
         this.registerComponent(this);
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
 
         if (this._dragDropContainer) {
             this._dragDropContainer.destroy();
         }
-    },
+    }
 
-    actions: {
-        addImage(file) {
-            let count = this.images.length + 1;
-            let row = Math.ceil(count / MAX_PER_ROW) - 1;
+    @action
+    addImage(file) {
+        let count = this.images.length + 1;
+        let row = Math.ceil(count / MAX_PER_ROW) - 1;
 
-            let image = this._readDataFromImageFile(file);
-            image.row = row;
-            this.images.pushObject(image);
-        },
+        let image = this._readDataFromImageFile(file);
+        image.row = row;
+        this.images.pushObject(image);
+    }
 
-        setImageSrc(uploadResult) {
-            let image = this.images.findBy('fileName', uploadResult.fileName);
+    @action
+    setImageSrc(uploadResult) {
+        let image = this.images.findBy('fileName', uploadResult.fileName);
 
-            image.set('src', uploadResult.url);
+        image.set('src', uploadResult.url);
 
-            this._buildAndSaveImagesPayload();
-        },
+        this._buildAndSaveImagesPayload();
+    }
 
-        setFiles(files) {
-            this._startUpload(files);
-        },
+    @action
+    setFiles(files) {
+        this._startUpload(files);
+    }
 
-        deleteImage(image) {
-            let localImage = this.images.findBy('fileName', image.fileName);
-            this.images.removeObject(localImage);
-            this._recalculateImageRows();
-            this._buildAndSaveImagesPayload();
-        },
+    @action
+    deleteImage(image) {
+        let localImage = this.images.findBy('fileName', image.fileName);
+        this.images.removeObject(localImage);
+        this._recalculateImageRows();
+        this._buildAndSaveImagesPayload();
+    }
 
-        updateCaption(caption) {
-            this._updatePayloadAttr('caption', caption);
-        },
+    @action
+    updateCaption(caption) {
+        this._updatePayloadAttr('caption', caption);
+    }
 
-        triggerFileDialog(event) {
-            this._triggerFileDialog(event);
-        },
+    @action
+    triggerFileDialog(event) {
+        this._triggerFileDialog(event);
+    }
 
-        uploadFailed(uploadResult) {
-            let image = this.images.findBy('fileName', uploadResult.fileName);
-            this.images.removeObject(image);
+    @action
+    uploadFailed(uploadResult) {
+        let image = this.images.findBy('fileName', uploadResult.fileName);
+        this.images.removeObject(image);
 
-            this._buildAndSaveImagesPayload();
-            let fileName = (uploadResult.fileName.length > 20) ? `${uploadResult.fileName.substr(0, 20)}...` : uploadResult.fileName;
-            this.set('errorMessage', `${fileName} failed to upload`);
-        },
-        handleErrors(errors) {
-            let errorMssg = ((errors[0] && errors[0].message)) || 'Some images failed to upload';
-            this.set('errorMessage', errorMssg);
-        },
+        this._buildAndSaveImagesPayload();
+        let fileName = (uploadResult.fileName.length > 20) ? `${uploadResult.fileName.substr(0, 20)}...` : uploadResult.fileName;
+        this.set('errorMessage', `${fileName} failed to upload`);
+    }
 
-        clearErrorMessage() {
-            this.set('errorMessage', null);
-        },
+    @action
+    handleErrors(errors) {
+        let errorMssg = ((errors[0] && errors[0].message)) || 'Some images failed to upload';
+        this.set('errorMessage', errorMssg);
+    }
 
-        didSelect() {
-            if (this._dragDropContainer) {
-                // add a delay when enabling reorder drag/drop so that the card
-                // must be selected before a reorder drag can be initiated
-                // - allows for cards to be drag and dropped themselves
-                run.later(this, function () {
-                    if (!this.isDestroyed && !this.isDestroying) {
-                        this._dragDropContainer.enableDrag();
-                    }
-                }, 100);
-            }
-        },
+    @action
+    clearErrorMessage() {
+        this.set('errorMessage', null);
+    }
 
-        didDeselect() {
-            if (this._dragDropContainer) {
-                this._dragDropContainer.disableDrag();
-            }
+    @action
+    didSelect() {
+        if (this._dragDropContainer) {
+            // add a delay when enabling reorder drag/drop so that the card
+            // must be selected before a reorder drag can be initiated
+            // - allows for cards to be drag and dropped themselves
+            run.later(this, function () {
+                if (!this.isDestroyed && !this.isDestroying) {
+                    this._dragDropContainer.enableDrag();
+                }
+            }, 100);
         }
-    },
+    }
+
+    @action
+    didDeselect() {
+        if (this._dragDropContainer) {
+            this._dragDropContainer.disableDrag();
+        }
+    }
 
     // Ember event handlers ----------------------------------------------------
 
@@ -233,12 +248,12 @@ export default Component.extend({
         event.preventDefault();
 
         this.set('isDraggedOver', true);
-    },
+    }
 
     dragLeave(event) {
         event.preventDefault();
         this.set('isDraggedOver', false);
-    },
+    }
 
     drop(event) {
         event.preventDefault();
@@ -247,7 +262,7 @@ export default Component.extend({
         if (event.dataTransfer.files) {
             this._startUpload(event.dataTransfer.files);
         }
-    },
+    }
 
     // Private methods ---------------------------------------------------------
 
@@ -255,7 +270,7 @@ export default Component.extend({
         this.images.forEach((image, idx) => {
             image.set('row', Math.ceil((idx + 1) / MAX_PER_ROW) - 1);
         });
-    },
+    }
 
     _startUpload(files = []) {
         let currentCount = this.images.length;
@@ -266,7 +281,7 @@ export default Component.extend({
             this.set('errorMessage', 'Galleries are limited to 9 images');
         }
         this.set('files', strippedFiles);
-    },
+    }
 
     _readDataFromImageFile(file) {
         let url = URL.createObjectURL(file);
@@ -287,7 +302,7 @@ export default Component.extend({
         imageElem.src = url;
 
         return image;
-    },
+    }
 
     _buildAndSaveImagesPayload() {
         let payloadImages = [];
@@ -307,12 +322,12 @@ export default Component.extend({
         });
 
         this._updatePayloadAttr('images', payloadImages);
-    },
+    }
 
     _buildImages() {
         this.images = this.payload.images.map(image => EmberObject.create(image));
         this._registerOrRefreshDragDropHandler();
-    },
+    }
 
     _updatePayloadAttr(attr, value) {
         let payload = this.payload;
@@ -324,7 +339,7 @@ export default Component.extend({
         save(payload, false);
 
         this._registerOrRefreshDragDropHandler();
-    },
+    }
 
     _triggerFileDialog(event) {
         let target = event && event.target || this.element;
@@ -335,7 +350,7 @@ export default Component.extend({
             .closest('.__mobiledoc-card')
             .find('input[type="file"]')
             .click();
-    },
+    }
 
     // - rename container so that it's more explicit when we have an initial file
     //   drop container vs a drag reorder+file drop container?
@@ -345,7 +360,7 @@ export default Component.extend({
         } else {
             run.scheduleOnce('afterRender', this, this._registerDragDropContainer);
         }
-    },
+    }
 
     _refreshDragDropContainer() {
         const galleryElem = this.element.querySelector('[data-gallery]');
@@ -362,7 +377,7 @@ export default Component.extend({
         if (!isEmpty(this.images) && !this._dragDropContainer.isDragEnabled) {
             this._dragDropContainer.enableDrag();
         }
-    },
+    }
 
     _registerDragDropContainer() {
         const galleryElem = this.element.querySelector('[data-gallery]');
@@ -384,7 +399,7 @@ export default Component.extend({
                 }
             );
         }
-    },
+    }
 
     _dragStart(draggableInfo) {
         this.element.querySelector('figure').classList.remove('kg-card-selected');
@@ -394,7 +409,7 @@ export default Component.extend({
         if (isImageDrag && draggableInfo.payload.src && this.images.length !== MAX_IMAGES) {
             this._dragDropContainer.enableDrag();
         }
-    },
+    }
 
     _dragEnd() {
         if (this.isSelected) {
@@ -406,17 +421,17 @@ export default Component.extend({
         if (this.isDraggedOver) {
             this.set('isDraggedOver', false);
         }
-    },
+    }
 
     _dragEnter() {
         if (this.images.length === 0) {
             this.set('isDraggedOver', true);
         }
-    },
+    }
 
     _dragLeave() {
         this.set('isDraggedOver', false);
-    },
+    }
 
     _getDraggableInfo(draggableElement) {
         let src = draggableElement.querySelector('img').getAttribute('src');
@@ -431,7 +446,7 @@ export default Component.extend({
         }
 
         return {};
-    },
+    }
 
     _onDrop(draggableInfo/*, droppableElem, position*/) {
         // do not allow dropping of non-images
@@ -480,7 +495,7 @@ export default Component.extend({
         }
 
         return false;
-    },
+    }
 
     // if an image is dragged out of a gallery we need to remove it
     _onDropEnd(draggableInfo, success) {
@@ -496,7 +511,7 @@ export default Component.extend({
             this._buildAndSaveImagesPayload();
             this._dragDropContainer.refresh();
         }
-    },
+    }
 
     // returns {
     //   direction: 'horizontal' TODO: use a constant?
@@ -555,7 +570,7 @@ export default Component.extend({
         } else {
             return false;
         }
-    },
+    }
 
     // we don't allow an image to be dropped where it would end up in the
     // same position within the gallery
@@ -581,4 +596,4 @@ export default Component.extend({
 
         return droppableIndex !== draggableIndex;
     }
-});
+}
