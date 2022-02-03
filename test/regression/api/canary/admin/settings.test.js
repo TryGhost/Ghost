@@ -145,6 +145,11 @@ const defaultSettingsKeyTypes = [
         group: 'members'
     },
     {
+        key: 'default_content_visibility_tiers',
+        type: 'array',
+        group: 'members'
+    },
+    {
         key: 'members_signup_access',
         type: 'string',
         group: 'members'

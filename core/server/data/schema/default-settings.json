@@ -235,6 +235,10 @@
             "defaultValue": "public",
             "type": "string"
         },
+        "default_content_visibility_tiers": {
+            "defaultValue": "[]",
+            "type": "array"
+        },
         "members_signup_access": {
             "defaultValue": "all",
             "validations": {
