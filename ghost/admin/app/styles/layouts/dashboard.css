@@ -212,6 +212,11 @@
     color: var(--green-d2);
 }
 
+.gh-dashboard-box .content a.gh-btn,
+.gh-dashboard-box .footer a.gh-btn {
+    color: var(--darkgrey);
+}
+
 .gh-dashboard-box .content .read-time {
     font-size: 1.2rem;
     color: var(--midgrey);
