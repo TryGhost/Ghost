@@ -11,9 +11,7 @@ export default class PostsLoadingController extends Controller {
 
     @service session;
     @service ui;
-
-    @service
-    config;
+    @service config;
 
     @readOnly('postsController.availableTypes')
     availableTypes;

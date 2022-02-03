@@ -5,14 +5,10 @@ import {isEmpty} from '@ember/utils';
 
 @classic
 export default class MemberImportValidatorService extends Service {
-    @service
-    ajax;
+    @service ajax;
+    @service membersUtils;
 
-    @service
-    membersUtils;
-
-    @service
-    ghostPaths;
+    @service ghostPaths;
 
     check(data) {
         let sampledData = this._sampleData(data);

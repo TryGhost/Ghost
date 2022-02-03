@@ -3,17 +3,11 @@ import classic from 'ember-classic-decorator';
 
 @classic
 export default class BillingService extends Service {
-    @service
-    router;
+    @service router;
+    @service config;
 
-    @service
-    config;
-
-    @service
-    ghostPaths;
-
-    @service
-    store;
+    @service ghostPaths;
+    @service store;
 
     billingRouteRoot = '#/pro';
     billingWindowOpen = false;

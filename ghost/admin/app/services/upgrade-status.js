@@ -5,8 +5,7 @@ import {htmlSafe} from '@ember/template';
 
 @classic
 export default class UpgradeStatusService extends Service {
-    @service
-    notifications;
+    @service notifications;
 
     isRequired = false;
     message = '';
