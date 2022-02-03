@@ -54,9 +54,20 @@ Post = ghostBookshelf.Model.extend({
      */
     defaults: function defaults() {
         let visibility = 'public';
-
-        if (settingsCache.get('default_content_visibility')) {
-            visibility = settingsCache.get('default_content_visibility');
+        let tiers = [];
+        const defaultContentVisibility = settingsCache.get('default_content_visibility');
+        if (defaultContentVisibility) {
+            if (defaultContentVisibility === 'tiers') {
+                const tiersData = settingsCache.get('default_content_visibility_tiers') || [];
+                visibility = 'tiers',
+                tiers = tiersData.map((tierId) => {
+                    return {
+                        id: tierId
+                    };
+                });
+            } else if (defaultContentVisibility !== 'tiers') {
+                visibility = settingsCache.get('default_content_visibility');
+            }
         }
 
         return {
@@ -64,6 +75,7 @@ Post = ghostBookshelf.Model.extend({
             status: 'draft',
             featured: false,
             type: 'post',
+            tiers,
             visibility: visibility,
             email_recipient_filter: 'none'
         };
