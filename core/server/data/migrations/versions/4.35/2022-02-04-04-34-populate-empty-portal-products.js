@@ -33,7 +33,7 @@ module.exports = createTransactionalMigration(
         const currPortalProductsValue = JSON.parse(portalProductsSetting.value);
 
         if (currPortalProductsValue.length > 0) {
-            logging.warn(`Ignoring - portal_products setting is not empty, is - ${currPortalProductsValue}`);
+            logging.warn(`Ignoring - portal_products setting is not empty, - ${currPortalProductsValue}`);
             return;
         }
 
@@ -42,9 +42,14 @@ module.exports = createTransactionalMigration(
 
         logging.info(`Setting portal_products setting to have product - ${defaultProduct.id}`);
 
+        const now = knex.raw('CURRENT_TIMESTAMP');
+
         await knex('settings')
             .where('key', 'portal_products')
-            .update({value: JSON.stringify(portalProductsValue)});
+            .update({
+                value: JSON.stringify(portalProductsValue),
+                updated_at: now
+            });
     },
     // no-op - we don't want to return to invalid state
     async function down() {}
