@@ -1,0 +1,29 @@
+<div class="gh-flow">
+    <div class="tc">
+        <h1>Finishing touches</h1>
+        <p>You chose a look, now it's time to make it your own.</p>
+    </div>
+    <div class="flex flex-row h-100">
+        <div class="gh-nav gh-nav-contextual gh-nav-design">
+            <div class="flex flex-column h-100">
+                <div class="gh-nav-body">
+                    <div class="gh-nav-design-settings">
+                        <div class="gh-stack">
+                            <Settings::FormFields::AccentColor class="gh-stack-item gh-setting-first" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            <Settings::FormFields::PublicationCover class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            <Settings::FormFields::SiteDescription class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                        </div>
+                    </div>
+                    <div class="pa4">
+                        <button type="button" class="gh-btn gh-btn-black w-100" {{on "click" this.saveAndContinue}} data-test-button="save-and-continue"><span>Let's get writing →</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex-grow-1 pa10">
+            <GhBrowserPreview>
+                <GhHtmlIframe class="site-frame" @html={{this.themeManagement.previewHtml}} />
+            </GhBrowserPreview>
+        </div>
+    </div>
+</div>
