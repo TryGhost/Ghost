@@ -311,7 +311,7 @@ class ProductRepository {
                 value: JSON.stringify(updatedProducts)
             }, {
                 ...options,
-                id: portalProductsSetting
+                id: portalProductsSetting.get('id')
             });
         }
 
