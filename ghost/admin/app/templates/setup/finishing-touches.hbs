@@ -15,7 +15,14 @@
                         </div>
                     </div>
                     <div class="pa4">
-                        <button type="button" class="gh-btn gh-btn-black w-100" {{on "click" this.saveAndContinue}} data-test-button="save-and-continue"><span>Let's get writing →</span></button>
+                        <GhTaskButton
+                            class="gh-btn gh-btn-black gh-btn-icon w-100"
+                            @task={{this.saveAndContinueTask}}
+                            @buttonText="Let's get writing →"
+                            @runningText="Saving..."
+                            @showSuccess={{false}}
+                            data-test-button="save-and-continue"
+                        />
                     </div>
                 </div>
             </div>
