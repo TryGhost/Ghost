@@ -21,13 +21,6 @@ export default class VisibilitySegmentSelect extends Component {
     }
 
     get options() {
-        if (this.args.hideOptionsWhenAllSelected) {
-            const selectedSegments = this.selectedOptions.mapBy('segment');
-            if (selectedSegments.includes('status:free') && selectedSegments.includes('status:-free')) {
-                return this._options.filter(option => !option.groupName);
-            }
-        }
-
         return this._options;
     }
 
@@ -48,17 +41,20 @@ export default class VisibilitySegmentSelect extends Component {
     }
 
     get selectedOptions() {
-        const segments = (this.args.segment || '').split(',');
-        return this.flatOptions.filter(option => segments.includes(option.segment));
+        const tierList = this.args.tiers.map((product) => {
+            return this.products.find((p) => {
+                return p.id === product.id;
+            });
+        }).filter(d => !!d);
+        const tierIdList = tierList.map(d => d.id);
+        return this.flatOptions.filter(option => tierIdList.includes(option.id));
     }
 
     @action
     setSegment(options) {
-        const segment = options.mapBy('segment').join(',') || null;
-        let ids = segment?.split(',').map((d) => {
-            let slug = d.replace('product:', '');
+        let ids = options.mapBy('id').map((id) => {
             let product = this.products.find((p) => {
-                return p.slug === slug;
+                return p.id === id;
             });
             return {
                 id: product.id,
@@ -88,15 +84,15 @@ export default class VisibilitySegmentSelect extends Component {
                 products.forEach((product) => {
                     productsGroup.options.push({
                         name: product.name,
-                        segment: `product:${product.slug}`,
+                        id: product.id,
                         count: product.count?.members,
                         class: 'segment-product'
                     });
                 });
 
                 options.push(productsGroup);
-                if (this.args.selectDefaultProduct && !this.args.segment) {
-                    this.args.onChange?.(productsGroup.options[0].segment);
+                if (this.args.selectDefaultProduct && !this.args.tiers) {
+                    this.setSegment([productsGroup.options[0]]);
                 }
             }
         }

@@ -83,7 +83,7 @@
                         {{#if (eq this.post.visibility "tiers")}}
                             <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" @class="nt3">
                                 <GhPostSettingsMenu::VisibilitySegmentSelect
-                                    @segment={{this.post.visibilitySegment}}
+                                    @tiers={{this.post.tiers}}
                                     @onChange={{action "setVisibility"}}
                                     @renderInPlace={{true}}
                                     @hideOptionsWhenAllSelected={{true}}

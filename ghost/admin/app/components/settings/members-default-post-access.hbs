@@ -25,13 +25,11 @@
     </PowerSelect>
     {{#if this.hasVisibilityFilter}}
         <div class="mt2">
-            <GhMembersSegmentSelect
-                @hideLabels={{true}}
+            <GhPostSettingsMenu::VisibilitySegmentSelect
                 @selectDefaultProduct={{true}}
-                @segment={{this.settings.defaultContentVisibility}}
+                @tiers={{this.visibilityTiers}}
                 @onChange={{action "setVisibility"}}
                 @renderInPlace={{true}}
-                @hideDefaultSegments={{true}}
                 @hideOptionsWhenAllSelected={{true}}
             />
             {{#if this.showSegmentError}}

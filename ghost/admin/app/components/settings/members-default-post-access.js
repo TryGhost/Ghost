@@ -32,7 +32,7 @@ export default class SettingsMembersDefaultPostAccess extends Component {
             defaultOptions.push({
                 name: 'Specific tier(s)',
                 description: 'Members with any of the selected tiers',
-                value: 'filter',
+                value: 'tiers',
                 icon: 'members-segment',
                 icon_color: 'yellow'
             });
@@ -44,20 +44,29 @@ export default class SettingsMembersDefaultPostAccess extends Component {
         return this.feature.get('multipleProducts') && !['public', 'members', 'paid'].includes(this.settings.get('defaultContentVisibility'));
     }
 
+    get visibilityTiers() {
+        const visibilityTiersData = this.settings.get('defaultContentVisibilityTiers');
+        return visibilityTiersData.map((id) => {
+            return {id};
+        });
+    }
+
     get selectedOption() {
         if (this.settings.get('membersSignupAccess') === 'none') {
             return this.options.find(o => o.value === 'public');
         }
-        if (!['public', 'members', 'paid'].includes(this.settings.get('defaultContentVisibility'))) {
-            return this.options.find(o => o.value === 'filter');
-        }
+
         return this.options.find(o => o.value === this.settings.get('defaultContentVisibility'));
     }
 
     @action
     setVisibility(segment) {
         if (segment) {
-            this.settings.set('defaultContentVisibility', segment);
+            const productIds = segment?.map((product) => {
+                return product.id;
+            });
+            this.settings.set('defaultContentVisibility', 'tiers');
+            this.settings.set('defaultContentVisibilityTiers', productIds);
             this.showSegmentError = false;
         } else {
             this.settings.set('defaultContentVisibility', '');
@@ -68,10 +77,9 @@ export default class SettingsMembersDefaultPostAccess extends Component {
     @action
     setDefaultContentVisibility(option) {
         if (this.settings.get('membersSignupAccess') !== 'none') {
-            if (option.value === 'filter') {
-                this.settings.set('defaultContentVisibility', '');
-            } else {
-                this.settings.set('defaultContentVisibility', option.value);
+            this.settings.set('defaultContentVisibility', option.value);
+            if (option.value === 'tiers') {
+                this.settings.set('defaultContentVisibilityTiers', []);
             }
         }
     }
