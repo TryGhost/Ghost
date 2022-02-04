@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
-import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency-decorators';
 
 export default class SetupFinishingTouchesController extends Controller {
     @service modals;
@@ -8,9 +8,9 @@ export default class SetupFinishingTouchesController extends Controller {
     @service settings;
     @service themeManagement;
 
-    @action
-    async saveAndContinue() {
-        await this.settings.save();
+    @task
+    *saveAndContinueTask() {
+        yield this.settings.save();
         this.modals.open('modals/get-started');
         this.router.transitionTo('home');
     }
