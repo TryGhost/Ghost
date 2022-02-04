@@ -1625,3 +1625,17 @@ remove|ember-template-lint|no-action|73|58|73|58|d1d0e1007c121763f7e834895085729
 remove|ember-template-lint|no-action|95|30|95|30|d1d0e1007c121763f7e834895085729dd0971d3a|1643846400000|1646438400000|1649026800000|app/components/gh-product-card.hbs
 remove|ember-template-lint|require-iframe-title|39|20|39|20|c689f93ed9b4081b978dfde525489dfe87f0fbb9|1643760000000|1646352000000|1648940400000|app/components/modals/design/view-theme.hbs
 remove|ember-template-lint|no-inline-styles|24|11|24|11|d60f0d0976b0cf5db9cdc1d4056920804fe8b7a5|1643760000000|1646352000000|1648940400000|app/components/gh-membership-products-alpha.hbs
+remove|ember-template-lint|no-invalid-interactive|6|32|6|32|3bd853a37e873fd263f7729702b639090dacab67|1643760000000|1646352000000|1648940400000|app/components/gh-nav-menu/design.hbs
+remove|ember-template-lint|no-action|10|31|10|31|03463f0fb55cc878bd4c913e47d55f41e2947661|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|no-inline-styles|97|17|97|17|5c16a7d3532152607972122b09cd882de9b0e5d7|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|no-inline-styles|132|25|132|25|5c16a7d3532152607972122b09cd882de9b0e5d7|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|no-inline-styles|168|21|168|21|5c16a7d3532152607972122b09cd882de9b0e5d7|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|no-invalid-interactive|87|72|87|72|431bdbf005b9372c2c174698d2f33914cb5797ab|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|no-invalid-interactive|122|80|122|80|7079e498c9add301f177d9056312b9c5b0848a30|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|no-invalid-interactive|158|83|158|83|25547784a8d412e4463149020bbf91db815057fe|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|10|24|10|24|83c111cfc155ec3b6832e60e2d1a9414f6f75623|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|require-input-label|37|20|37|20|a9cd381b8ac601bc9cbf7a4eace7bcefa67ecae6|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|require-input-label|55|24|55|24|8aec13864a8e34e86eea56eced36e8271d3bc4ea|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|require-valid-alt-text|122|28|122|28|7079e498c9add301f177d9056312b9c5b0848a30|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+remove|ember-template-lint|require-valid-alt-text|158|24|158|24|25547784a8d412e4463149020bbf91db815057fe|1643760000000|1646352000000|1648940400000|app/components/settings/design/general-settings-form.hbs
+add|ember-template-lint|no-invalid-interactive|6|32|6|32|508e64575a985432d0588f3291a126c4b62e68d8|1643932800000|1646524800000|1649113200000|app/components/gh-nav-menu/design.hbs
