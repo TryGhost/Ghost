@@ -51,7 +51,7 @@ module.exports = createTransactionalMigration(
                     updated_at: now
                 });
         } catch (e) {
-            logging.warn(`Ignoring, unable to parse portal_products setting value`);
+            logging.warn(`Ignoring, unable to parse portal_products setting value - ${portalProductsSetting.value}`);
         }
     },
     // no-op - we don't want to return to invalid state
