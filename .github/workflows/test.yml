@@ -255,7 +255,8 @@ jobs:
 
       - name: Print debug logs
         if: failure()
-        run: cat ~/.ghost/logs/*.log
+        run: |
+          [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
