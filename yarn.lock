@@ -1877,15 +1877,7 @@
     "@tryghost/domain-events" "^0.1.6"
     "@tryghost/member-events" "^0.3.4"
 
-"@tryghost/version@0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.9.tgz#47474fc04675028d5e178c73d135c138165802a1"
-  integrity sha512-WWD/l8KljopfcG/bgLFcw9fLxFYpe/AVoIDKw2CmOISFXs7s90fWd77ELGzxT7ouCQKlIKsqHDkRCc9w/TZaCg==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.9"
-    semver "^7.3.5"
-
-"@tryghost/version@^0.1.10":
+"@tryghost/version@0.1.10", "@tryghost/version@^0.1.10":
   version "0.1.10"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.10.tgz#615fb1de1843e6c3396f99d6f37309d8909233f9"
   integrity sha512-Jt/7tYz2cUmH443RKAxgMtfQK3WLyiV/csREGpc6Usoz2heDSiUrN7JoBb2mGFa/FA0NPTikcpV8SZkoexpRpQ==
