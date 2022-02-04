@@ -165,7 +165,7 @@ describe('Email verification flow', function () {
                 }
             }
         });
-        
+
         new VerificationTrigger({
             configThreshold: 2,
             Settings: {
@@ -187,7 +187,7 @@ describe('Email verification flow', function () {
         eventStub.callCount.should.eql(1);
         eventStub.lastCall.lastArg.should.have.property('data.source');
         eventStub.lastCall.lastArg.should.have.property('data.created_at');
-        eventStub.lastCall.lastArg['data.source'].should.eql('data.source:api');
-        eventStub.lastCall.lastArg['data.created_at'].should.startWith('data.created_at:>');
+        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'api'`);
+        eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
     });
 });
