@@ -55,6 +55,7 @@ export default Model.extend(ValidationEngine, {
      */
     membersSignupAccess: attr('string'),
     defaultContentVisibility: attr('string'),
+    defaultContentVisibilityTiers: attr('json-string'),
     membersFromAddress: attr('string'),
     membersSupportAddress: attr('string'),
     membersReplyAddress: attr('string'),
