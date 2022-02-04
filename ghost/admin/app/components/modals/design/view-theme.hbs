@@ -17,28 +17,8 @@
     </GhCanvasHeader>
 
     <section class="view-container">
-        {{!-- changes only classes between desktop/mobile to avoid re-rendering iframe contents --}}
-        <div class="{{if this.isMobilePreview "gh-pe-mobile-container flex justify-center" "gh-browserpreview-previewcontainer gh-theme-previewcontainer"}}">
-            {{#if this.isDesktopPreview}}
-                <div class="gh-browserpreview-browser">
-                    <div class="tabs">
-                        <ul><li></li><li></li><li></li></ul>
-                        <div>
-                            {{#if this.settings.icon}}
-                                <span class="favicon"><img src={{this.settings.icon}} alt="icon"></span>
-                            {{else}}
-                                <span class="favicon default">{{svg-jar "default-favicon"}}</span>
-                            {{/if}}
-                            <span class="site-title">{{this.settings.title}}</span>
-                        </div>
-                    </div>
-                </div>
-            {{/if}}
-            <div class="{{if this.isMobilePreview "gh-pe-mobile-bezel" "gh-browserpreview-iframecontainer"}}">
-                <div class="{{if this.isMobilePreview "gh-pe-mobile-screen"}}">
-                    <iframe class={{if this.isMobilePreview "gh-post-preview-iframe" "site-frame"}} src={{@data.theme.previewUrl}} />
-                </div>
-            </div>
-        </div>
+        <GhBrowserPreview @isMobilePreview={{this.isMobilePreview}}>
+            <iframe class={{if this.isMobilePreview "gh-post-preview-iframe" "site-frame"}} src={{@data.theme.previewUrl}} title="{{@data.theme.name}} theme preview" />
+        </GhBrowserPreview>
     </section>
 </section>
