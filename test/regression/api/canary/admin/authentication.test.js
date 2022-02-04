@@ -8,12 +8,12 @@ const models = require('../../../../../core/server/models/index');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 
 describe('Authentication API canary', function () {
-    let request;
+    let agent;
     let emailStub;
 
     describe('Blog setup', function () {
         before(async function () {
-            request = await framework.getAgent('/ghost/api/canary/admin/');
+            agent = await framework.getAgent('/ghost/api/canary/admin/');
         });
 
         after(async function () {
@@ -29,7 +29,7 @@ describe('Authentication API canary', function () {
         });
 
         it('is setup? no', async function () {
-            const res = await request
+            const res = await agent
                 .get('authentication/setup')
                 .expect(200);
 
@@ -41,7 +41,7 @@ describe('Authentication API canary', function () {
         });
 
         it('complete setup', async function () {
-            const res = await request
+            const res = await agent
                 .post('authentication/setup')
                 .send({
                     setup: [{
@@ -69,7 +69,7 @@ describe('Authentication API canary', function () {
         });
 
         it('is setup? yes', async function () {
-            const res = await request
+            const res = await agent
                 .get('authentication/setup');
 
             expect(res.body).to.matchSnapshot();
@@ -80,7 +80,7 @@ describe('Authentication API canary', function () {
         });
 
         it('complete setup again', function () {
-            return request
+            return agent
                 .post('authentication/setup')
                 .send({
                     setup: [{
@@ -96,9 +96,9 @@ describe('Authentication API canary', function () {
 
         it('update setup', async function () {
             await framework.initFixtures();
-            await request.loginAsOwner();
+            await agent.loginAsOwner();
 
-            const res = await request
+            const res = await agent
                 .put('authentication/setup')
                 .send({
                     setup: [{
@@ -127,10 +127,10 @@ describe('Authentication API canary', function () {
 
     describe('Invitation', function () {
         before(async function () {
-            request = await framework.getAgent('/ghost/api/canary/admin/');
+            agent = await framework.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await framework.initFixtures('invites');
-            await request.loginAsOwner();
+            await agent.loginAsOwner();
         });
 
         after(async function () {
@@ -138,14 +138,14 @@ describe('Authentication API canary', function () {
         });
 
         it('check invite with invalid email', function () {
-            return request
+            return agent
                 .get('authentication/invitation?email=invalidemail')
                 .expect('Content-Type', /json/)
                 .expect(400);
         });
 
         it('check valid invite', async function () {
-            const res = await request
+            const res = await agent
                 .get(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`)
                 .expect('Content-Type', /json/)
                 .expect(200);
@@ -154,7 +154,7 @@ describe('Authentication API canary', function () {
         });
 
         it('check invalid invite', async function () {
-            const res = await request
+            const res = await agent
                 .get(`authentication/invitation?email=notinvited@example.org`)
                 .expect('Content-Type', /json/)
                 .expect(200);
@@ -163,7 +163,7 @@ describe('Authentication API canary', function () {
         });
 
         it('try to accept without invite', function () {
-            return request
+            return agent
                 .post('authentication/invitation')
                 .send({
                     invitation: [{
@@ -178,7 +178,7 @@ describe('Authentication API canary', function () {
         });
 
         it('try to accept with invite and existing email address', function () {
-            return request
+            return agent
                 .post('authentication/invitation')
                 .send({
                     invitation: [{
@@ -193,7 +193,7 @@ describe('Authentication API canary', function () {
         });
 
         it('try to accept with invite', async function () {
-            const res = await request
+            const res = await agent
                 .post('authentication/invitation')
                 .send({
                     invitation: [{
@@ -214,10 +214,10 @@ describe('Authentication API canary', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(async function () {
-            request = await framework.getAgent('/ghost/api/canary/admin/');
+            agent = await framework.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await framework.initFixtures('invites');
-            await request.loginAsOwner();
+            await agent.loginAsOwner();
         });
 
         after(async function () {
@@ -242,7 +242,7 @@ describe('Authentication API canary', function () {
                 password: ownerUser.get('password')
             });
 
-            const res = await request.put('authentication/passwordreset')
+            const res = await agent.put('authentication/passwordreset')
                 .set('Accept', 'application/json')
                 .send({
                     passwordreset: [{
@@ -261,7 +261,7 @@ describe('Authentication API canary', function () {
         });
 
         it('reset password: invalid token', async function () {
-            const res = await request
+            const res = await agent
                 .put('authentication/passwordreset')
                 .set('Accept', 'application/json')
                 .send({
@@ -295,7 +295,7 @@ describe('Authentication API canary', function () {
                 password: ownerUser.get('password')
             });
 
-            const res = await request
+            const res = await agent
                 .put('authentication/passwordreset')
                 .set('Accept', 'application/json')
                 .send({
@@ -326,7 +326,7 @@ describe('Authentication API canary', function () {
                 password: 'invalid_password'
             });
 
-            const res = await request
+            const res = await agent
                 .put('authentication/passwordreset')
                 .set('Accept', 'application/json')
                 .send({
@@ -350,7 +350,7 @@ describe('Authentication API canary', function () {
         });
 
         it('reset password: generate reset token', async function () {
-            const res = await request
+            const res = await agent
                 .post('authentication/passwordreset')
                 .set('Accept', 'application/json')
                 .send({
@@ -371,10 +371,10 @@ describe('Authentication API canary', function () {
     describe('Reset all passwords', function () {
         let sendEmail;
         before(async function () {
-            request = await framework.getAgent('/ghost/api/canary/admin/');
+            agent = await framework.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await framework.initFixtures('invites');
-            await request.loginAsOwner();
+            await agent.loginAsOwner();
         });
 
         after(async function () {
@@ -390,7 +390,7 @@ describe('Authentication API canary', function () {
         });
 
         it('reset all passwords returns 200', async function () {
-            const res = await request.post('authentication/reset_all_passwords')
+            const res = await agent.post('authentication/reset_all_passwords')
                 .set('Accept', 'application/json')
                 .send({})
                 .expect(200);
