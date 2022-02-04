@@ -15,7 +15,7 @@
                     {{#liquid-if isOpen}}
                         <div class="gh-nav-design-settings" data-test-nav-group="general">
                             <Settings::Design::GeneralSettingsForm
-                                @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                                @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}}
                             />
                         </div>
                     {{/liquid-if}}
