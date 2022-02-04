@@ -695,16 +695,6 @@
     ee-log "^3.0.0"
     section-tests "^1.3.0"
 
-"@elastic/elasticsearch@7.15.0":
-  version "7.15.0"
-  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.15.0.tgz#4b009a87e0b11b8cfd2e4f378f0292574bc17300"
-  integrity sha512-FUKvjV2IKtIiWsvBy7D+wLbSEONsmNR15RRN7P/Sb30g4ObZRHH2qGOP5PPnzxdntEkzZ8HzY7nKKXFS+3Du1g==
-  dependencies:
-    debug "^4.3.1"
-    hpagent "^0.1.1"
-    ms "^2.1.3"
-    secure-json-parse "^2.4.0"
-
 "@elastic/elasticsearch@7.17.0":
   version "7.17.0"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.17.0.tgz#589fb219234cf1b0da23744e82b1d25e2fe9a797"
@@ -1326,7 +1316,7 @@
     "@tryghost/root-utils" "^0.3.8"
     debug "^4.3.1"
 
-"@tryghost/debug@0.1.12":
+"@tryghost/debug@0.1.12", "@tryghost/debug@^0.1.12":
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.12.tgz#a204b6e7198252c06fa505e8e6d46adbae26af88"
   integrity sha512-mjmS5RSdfGOXgd591LvpagrTOeLQiZtjMgnm4CwztixWiwlAU9JQAXEfcLKx/dbQewtEOc9AiB4LY+yBvifcwA==
@@ -1342,14 +1332,6 @@
     "@tryghost/root-utils" "^0.3.9"
     debug "^4.3.1"
 
-"@tryghost/debug@^0.1.12":
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.12.tgz#a204b6e7198252c06fa505e8e6d46adbae26af88"
-  integrity sha512-mjmS5RSdfGOXgd591LvpagrTOeLQiZtjMgnm4CwztixWiwlAU9JQAXEfcLKx/dbQewtEOc9AiB4LY+yBvifcwA==
-  dependencies:
-    "@tryghost/root-utils" "^0.3.10"
-    debug "^4.3.1"
-
 "@tryghost/domain-events@^0.1.6":
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.6.tgz#eb7ce76b6bf242d0544097f843525c0f502ce892"
@@ -1361,14 +1343,6 @@
   integrity sha512-ILhumzdwJNoRG44S0FkgzZQlkCYioTKWEiY+FFFQpTFWwZ3Jd5a6us5k8tEsd+Wf2rZOvul/ehV45j2c2l1BMw==
   dependencies:
     "@elastic/elasticsearch" "^7.10.0"
-
-"@tryghost/elasticsearch@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.2.tgz#ec9caadacf1f7b4b6196b86a4719aee8286e88f8"
-  integrity sha512-ectlVXNejTYLIGBfSoXWMj6bJ7Sq/GjNriUF8Hoab7oNeZTuG+8uLNQ0MDLDwCDlH+LP6DwRbemH0C0qel/rkA==
-  dependencies:
-    "@elastic/elasticsearch" "7.15.0"
-    "@tryghost/debug" "^0.1.11"
 
 "@tryghost/elasticsearch@^1.0.3":
   version "1.0.3"
@@ -1748,15 +1722,6 @@
   dependencies:
     chalk "^4.1.0"
     sywac "^1.3.0"
-
-"@tryghost/pretty-stream@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.4.tgz#39d435c1fc9b454a07f8fbe3a9daf66e878ac0ce"
-  integrity sha512-sXJReMgt9Fr7iHdfWj3Y4TMY1xkgMaLG9F7tMVAfPYAQC2Gee4Kweh1PHUscFIVKRBDAOUPQcF4fI587vMRmJg==
-  dependencies:
-    lodash "^4.17.21"
-    moment "^2.29.1"
-    prettyjson "1.2.5"
 
 "@tryghost/pretty-stream@^0.1.5":
   version "0.1.5"
