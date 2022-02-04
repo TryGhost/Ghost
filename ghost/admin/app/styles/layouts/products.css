@@ -88,6 +88,17 @@
     margin: 0;
 }
 
+.gh-product-card-empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gh-product-card-empty-state p {
+    margin-bottom: 0;
+    padding: 3.2rem;
+}
+
 .gh-product-card-description {
     font-size: 1.3rem;
     line-height: 1.45em;
