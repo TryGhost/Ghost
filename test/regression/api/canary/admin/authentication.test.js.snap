@@ -15,7 +15,6 @@ exports[`Authentication API canary Blog setup complete setup 2`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "434",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -40,7 +39,6 @@ exports[`Authentication API canary Blog setup is setup? no 2`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "28",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -64,7 +62,6 @@ exports[`Authentication API canary Blog setup is setup? yes 2`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "27",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -90,7 +87,6 @@ exports[`Authentication API canary Blog setup update setup 2`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "506",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -145,7 +141,6 @@ exports[`Authentication API canary Password reset reset password 2`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "64",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -169,7 +164,6 @@ exports[`Authentication API canary Password reset reset password: expired token 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "260",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -193,7 +187,6 @@ exports[`Authentication API canary Password reset reset password: generate reset
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "76",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -217,7 +210,6 @@ exports[`Authentication API canary Password reset reset password: invalid token 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "314",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -241,7 +233,6 @@ exports[`Authentication API canary Password reset reset password: unmatched toke
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "274",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
@@ -257,7 +248,6 @@ exports[`Authentication API canary Reset all passwords reset all passwords retur
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "connection": "close",
   "content-length": "2",
   "content-type": "application/json; charset=utf-8",
   "date": Any<String>,
