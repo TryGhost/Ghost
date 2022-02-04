@@ -1624,3 +1624,4 @@ add|ember-template-lint|no-action|95|30|95|30|d1d0e1007c121763f7e834895085729dd0
 remove|ember-template-lint|no-action|73|58|73|58|d1d0e1007c121763f7e834895085729dd0971d3a|1643760000000|1646352000000|1648940400000|app/components/gh-product-card.hbs
 remove|ember-template-lint|no-action|95|30|95|30|d1d0e1007c121763f7e834895085729dd0971d3a|1643846400000|1646438400000|1649026800000|app/components/gh-product-card.hbs
 remove|ember-template-lint|require-iframe-title|39|20|39|20|c689f93ed9b4081b978dfde525489dfe87f0fbb9|1643760000000|1646352000000|1648940400000|app/components/modals/design/view-theme.hbs
+remove|ember-template-lint|no-inline-styles|24|11|24|11|d60f0d0976b0cf5db9cdc1d4056920804fe8b7a5|1643760000000|1646352000000|1648940400000|app/components/gh-membership-products-alpha.hbs
