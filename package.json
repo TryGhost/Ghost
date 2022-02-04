@@ -26,7 +26,7 @@
     "setup": "yarn install && knex-migrator init && grunt symlink && grunt init || (exit 0)",
     "main": "grunt shell:main && grunt subgrunt:init",
     "build": "grunt build",
-    "test": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js --timeout=60000",
+    "test": "mocha --require=./test/utils/overrides.js --require=./test/utils/snapshots.js --exit --trace-warnings --recursive --extension=test.js --timeout=60000",
     "test:all": "yarn test:unit && yarn test:integration && yarn test:e2e && yarn lint",
     "test:debug": "DEBUG=ghost:test* yarn test",
     "test:unit": "c8 --reporter text-summary --reporter cobertura mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/unit' --timeout=2000",
