@@ -365,14 +365,16 @@ describe('Acceptance: Setup', function () {
             await authenticateSession();
         });
 
-        it('opens modal', async function () {
+        it('transitions to finishing-touches screen', async function () {
             await visit('/?firstStart=true');
-            expect(find('[data-test-modal="get-started"]')).to.exist;
+            expect(currentURL()).to.equal('/setup/finishing-touches');
         });
 
-        it('clears query param', async function () {
+        it('transitions to dashboard with get-started modal on save', async function () {
             await visit('/?firstStart=true');
+            await click('[data-test-button="save-and-continue"]');
             expect(currentURL()).to.equal('/dashboard');
+            expect(find('[data-test-modal="get-started"]')).to.exist;
         });
     });
 });

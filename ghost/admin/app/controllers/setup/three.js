@@ -20,6 +20,7 @@ const {Errors} = DS;
 export default Controller.extend({
     two: controller('setup/two'),
 
+    modals: service(),
     notifications: service(),
     router: service(),
     session: service(),
@@ -127,7 +128,8 @@ export default Controller.extend({
 
         skipInvite() {
             this.session.loadServerNotifications();
-            this.router.transitionTo('home', {queryParams: {firstStart: 'true'}});
+            this.modals.open('modals/get-started');
+            this.router.transitionTo('home');
         }
     },
 
@@ -159,7 +161,8 @@ export default Controller.extend({
     _transitionAfterSubmission() {
         if (!this._hasTransitioned) {
             this._hasTransitioned = true;
-            this.router.transitionTo('home', {queryParams: {firstStart: 'true'}});
+            this.modals.open('modals/get-started');
+            this.router.transitionTo('home');
         }
     },
 
