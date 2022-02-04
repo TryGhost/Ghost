@@ -34,7 +34,7 @@ module.exports = createTransactionalMigration(
                 .update('welcome_page_url', freeSignupRedirect.value)
                 .where('type', 'free');
         } else {
-            logging.info(`No members_paid_signup_redirect setting found`);
+            logging.info(`No members_free_signup_redirect setting found`);
         }
     },
     async function down(knex) {
