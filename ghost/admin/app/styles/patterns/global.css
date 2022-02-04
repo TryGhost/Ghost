@@ -571,7 +571,8 @@ i {
     display: block;
 }
 
-img {
+img,
+input[type="image"] {
     max-width: 100%;
 }
 
