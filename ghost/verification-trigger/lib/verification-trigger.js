@@ -11,7 +11,7 @@ const messages = {
 
 class VerificationTrigger {
     /**
-     * 
+     *
      * @param {object} deps
      * @param {number} deps.configThreshold Threshold for triggering verification as defined in config
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
@@ -43,8 +43,8 @@ class VerificationTrigger {
                 const createdAt = new Date();
                 createdAt.setDate(createdAt.getDate() - 30);
                 const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
-                    'data.source': 'data.source:api',
-                    'data.created_at': `data.created_at:>${createdAt.toISOString().replace('T', ' ').substring(0, 19)}`
+                    'data.source': `data.source:'api'`,
+                    'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
                 });
 
                 if (events.meta.pagination.total > this._configThreshold) {
@@ -68,17 +68,18 @@ class VerificationTrigger {
         }
     }
 
-    /** @typedef IVerificationResult
+    /**
+     * @typedef IVerificationResult
      * @property {boolean} needsVerification Whether the verification workflow was triggered
      */
 
     /**
-     * 
+     *
      * @param {object} config
      * @param {number} config.amountImported Amount of members which were imported
      * @param {boolean} config.throwOnTrigger Whether to throw if verification is needed
      * @param {string} config.source Source of the verification trigger - currently either 'api' or 'import'
-     * @returns {Promise<IVerificationResult>} Object containing property "needsVerification" - true when triggered 
+     * @returns {Promise<IVerificationResult>} Object containing property "needsVerification" - true when triggered
      */
     async startVerificationProcess({
         amountImported,
