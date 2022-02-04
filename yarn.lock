@@ -1861,10 +1861,10 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/verification-trigger@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.1.2.tgz#95a3d39bb09d69fe8db1bf055c48691f1a0727eb"
-  integrity sha512-b6jH+ZHh2XfPw1XsGwoeNXg7+Wmb+Vj3c7sPNryoqn3D0POfF08llVo7y6INIXEZkg2s9PO9PjaINKfkbEmo/w==
+"@tryghost/verification-trigger@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.1.3.tgz#4fe30bcc3796de62a05259b22c21bcd28a66fd7b"
+  integrity sha512-5Z6zR2ZKrcnd9a8MGO6OVI8J/5aSEdsXH5nUPi7DJMWpMPU3LFbDTvmA70cNPrnDNXAd9+/2gJ1oYq+KzvmcMA==
   dependencies:
     "@tryghost/domain-events" "^0.1.6"
     "@tryghost/member-events" "^0.3.4"
