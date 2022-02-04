@@ -30,8 +30,8 @@ module.exports = {
             defaultTo: 'public'
         },
         email_recipient_filter: {
-            type: 'string',
-            maxlength: 50,
+            type: 'text',
+            maxlength: 1000000000,
             nullable: false,
             defaultTo: 'none'
         },
@@ -598,8 +598,8 @@ module.exports = {
             validations: {isIn: [['pending', 'submitting', 'submitted', 'failed']]}
         },
         recipient_filter: {
-            type: 'string',
-            maxlength: 50,
+            type: 'text',
+            maxlength: 1000000000,
             nullable: false,
             defaultTo: 'status:-free'
         },
