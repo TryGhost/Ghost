@@ -85,7 +85,7 @@ module.exports.getFinalChangelog = function getFinalChangelog(options) {
     }
 
     if (_.isEmpty(changelog)) {
-        changelog = ['No user-visible changes in this release.'];
+        changelog = ['This release contains fixes for minor bugs and issues reported by Ghost users.'];
     }
 
     finalChangelog = finalChangelog.concat(changelog);
