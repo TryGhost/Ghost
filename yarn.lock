@@ -1536,15 +1536,15 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.0.1", "@tryghost/logging@2.0.2", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.2.tgz#4cd253473f50d8fe75b814d2b981291db1b64d70"
-  integrity sha512-O4oHfJk4F3kVrdOd9zJJNqtAozkozUVgU+fLyrNFjAXvGksVBajZo5LfhTSkoby9msJyeVMqst38fv9725kZ0w==
+"@tryghost/logging@2.0.1", "@tryghost/logging@2.0.3", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.3.tgz#46990446695fc2042036371180df3b21d5182827"
+  integrity sha512-TPbAVz7ohRAUFqCHWEZddX3NqxIPsyM8ozlrnPI0pRI5M3BKaDs1ouM/4zFsZwFLwPz7H9rv9jZfp7yuOLJrJg==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch" "^1.0.2"
-    "@tryghost/pretty-stream" "^0.1.4"
-    "@tryghost/root-utils" "^0.3.9"
+    "@tryghost/elasticsearch" "^1.0.3"
+    "@tryghost/pretty-stream" "^0.1.5"
+    "@tryghost/root-utils" "^0.3.10"
     bunyan "^1.8.15"
     bunyan-loggly "^1.4.2"
     fs-extra "^10.0.0"
