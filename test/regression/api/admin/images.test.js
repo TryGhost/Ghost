@@ -3,8 +3,8 @@ const fs = require('fs-extra');
 const should = require('should');
 const supertest = require('supertest');
 const localUtils = require('./utils');
-const testUtils = require('../../../../utils');
-const config = require('../../../../../core/shared/config');
+const testUtils = require('../../../utils');
+const config = require('../../../../core/shared/config');
 
 describe('Images API', function () {
     const images = [];
@@ -35,7 +35,7 @@ describe('Images API', function () {
         request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('file', path.join(__dirname, '/../../../../utils/fixtures/csv/single-column-with-header.csv'))
+            .attach('file', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
             .expect(415)
             .end(function (err) {
                 if (err) {
@@ -51,7 +51,7 @@ describe('Images API', function () {
             .set('Origin', config.get('url'))
             .set('content-type', 'image/png')
             .expect('Content-Type', /json/)
-            .attach('file', path.join(__dirname, '/../../../../utils/fixtures/images/ghost-logo.pngx'))
+            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.pngx'))
             .expect(415)
             .end(function (err) {
                 if (err) {
@@ -67,7 +67,7 @@ describe('Images API', function () {
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .field('purpose', 'profile_image')
-            .attach('file', path.join(__dirname, '/../../../../utils/fixtures/images/favicon_not_square.png'))
+            .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/favicon_not_square.png'))
             .expect(422)
             .end(function (err) {
                 if (err) {
