@@ -31,7 +31,7 @@ describe('Authentication API canary', function () {
         it('is setup? no', async function () {
             const res = await agent
                 .get('authentication/setup')
-                .expect(200);
+                .expectStatus(200);
 
             expect(res.body).to.matchSnapshot();
             expect(res.headers).to.matchSnapshot({
@@ -43,7 +43,7 @@ describe('Authentication API canary', function () {
         it('complete setup', async function () {
             const res = await agent
                 .post('authentication/setup')
-                .send({
+                .body({
                     setup: [{
                         name: 'test user',
                         email: 'test@example.com',
@@ -51,8 +51,8 @@ describe('Authentication API canary', function () {
                         blogTitle: 'a test blog'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect(201);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(201);
 
             expect(res.body).to.matchSnapshot({
                 users: [{
@@ -82,7 +82,7 @@ describe('Authentication API canary', function () {
         it('complete setup again', function () {
             return agent
                 .post('authentication/setup')
-                .send({
+                .body({
                     setup: [{
                         name: 'test user',
                         email: 'test-leo@example.com',
@@ -90,8 +90,8 @@ describe('Authentication API canary', function () {
                         blogTitle: 'a test blog'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect(403);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(403);
         });
 
         it('update setup', async function () {
@@ -100,7 +100,7 @@ describe('Authentication API canary', function () {
 
             const res = await agent
                 .put('authentication/setup')
-                .send({
+                .body({
                     setup: [{
                         name: 'test user edit',
                         email: 'test-edit@example.com',
@@ -108,8 +108,8 @@ describe('Authentication API canary', function () {
                         blogTitle: 'a test blog'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect(200);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(200);
 
             expect(res.body).to.matchSnapshot({
                 users: [{
@@ -140,15 +140,15 @@ describe('Authentication API canary', function () {
         it('check invite with invalid email', function () {
             return agent
                 .get('authentication/invitation?email=invalidemail')
-                .expect('Content-Type', /json/)
-                .expect(400);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(400);
         });
 
         it('check valid invite', async function () {
             const res = await agent
                 .get(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`)
-                .expect('Content-Type', /json/)
-                .expect(200);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(200);
 
             expect(res.body).to.matchSnapshot();
         });
@@ -156,8 +156,8 @@ describe('Authentication API canary', function () {
         it('check invalid invite', async function () {
             const res = await agent
                 .get(`authentication/invitation?email=notinvited@example.org`)
-                .expect('Content-Type', /json/)
-                .expect(200);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(200);
 
             expect(res.body).to.matchSnapshot();
         });
@@ -165,7 +165,7 @@ describe('Authentication API canary', function () {
         it('try to accept without invite', function () {
             return agent
                 .post('authentication/invitation')
-                .send({
+                .body({
                     invitation: [{
                         token: 'lul11111',
                         password: 'lel123456',
@@ -173,14 +173,14 @@ describe('Authentication API canary', function () {
                         name: 'not invited'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect(404);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(404);
         });
 
         it('try to accept with invite and existing email address', function () {
             return agent
                 .post('authentication/invitation')
-                .send({
+                .body({
                     invitation: [{
                         token: testUtils.DataGenerator.forKnex.invites[0].token,
                         password: '12345678910',
@@ -188,14 +188,14 @@ describe('Authentication API canary', function () {
                         name: 'invited'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect(422);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(422);
         });
 
         it('try to accept with invite', async function () {
             const res = await agent
                 .post('authentication/invitation')
-                .send({
+                .body({
                     invitation: [{
                         token: testUtils.DataGenerator.forKnex.invites[0].token,
                         password: '12345678910',
@@ -203,8 +203,8 @@ describe('Authentication API canary', function () {
                         name: 'invited'
                     }]
                 })
-                .expect('Content-Type', /json/)
-                .expect(200);
+                .expectHeader('Content-Type', 'application/json; charset=utf-8')
+                .expectStatus(200);
 
             expect(res.body).to.matchSnapshot();
         });
@@ -243,15 +243,15 @@ describe('Authentication API canary', function () {
             });
 
             const res = await agent.put('authentication/passwordreset')
-                .set('Accept', 'application/json')
-                .send({
+                .header('Accept', 'application/json')
+                .body({
                     passwordreset: [{
                         token: token,
                         newPassword: 'thisissupersafe',
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect(200);
+                .expectStatus(200);
 
             expect(res.body).to.matchSnapshot();
             expect(res.headers).to.matchSnapshot({
@@ -263,15 +263,15 @@ describe('Authentication API canary', function () {
         it('reset password: invalid token', async function () {
             const res = await agent
                 .put('authentication/passwordreset')
-                .set('Accept', 'application/json')
-                .send({
+                .header('Accept', 'application/json')
+                .body({
                     passwordreset: [{
                         token: 'invalid',
                         newPassword: 'thisissupersafe',
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect(401);
+                .expectStatus(401);
 
             expect(res.body).to.matchSnapshot({
                 errors: [{
@@ -297,15 +297,15 @@ describe('Authentication API canary', function () {
 
             const res = await agent
                 .put('authentication/passwordreset')
-                .set('Accept', 'application/json')
-                .send({
+                .header('Accept', 'application/json')
+                .body({
                     passwordreset: [{
                         token: token,
                         newPassword: 'thisissupersafe',
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect(400);
+                .expectStatus(400);
 
             expect(res.body).to.matchSnapshot({
                 errors: [{
@@ -328,15 +328,15 @@ describe('Authentication API canary', function () {
 
             const res = await agent
                 .put('authentication/passwordreset')
-                .set('Accept', 'application/json')
-                .send({
+                .header('Accept', 'application/json')
+                .body({
                     passwordreset: [{
                         token: token,
                         newPassword: 'thisissupersafe',
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expect(400);
+                .expectStatus(400);
 
             expect(res.body).to.matchSnapshot({
                 errors: [{
@@ -352,13 +352,13 @@ describe('Authentication API canary', function () {
         it('reset password: generate reset token', async function () {
             const res = await agent
                 .post('authentication/passwordreset')
-                .set('Accept', 'application/json')
-                .send({
+                .header('Accept', 'application/json')
+                .body({
                     passwordreset: [{
                         email: user.email
                     }]
                 })
-                .expect(200);
+                .expectStatus(200);
 
             expect(res.body).to.matchSnapshot();
             expect(res.headers).to.matchSnapshot({
@@ -391,9 +391,9 @@ describe('Authentication API canary', function () {
 
         it('reset all passwords returns 200', async function () {
             const res = await agent.post('authentication/reset_all_passwords')
-                .set('Accept', 'application/json')
-                .send({})
-                .expect(200);
+                .header('Accept', 'application/json')
+                .body({})
+                .expectStatus(200);
 
             expect(res.body).to.matchSnapshot();
             expect(res.headers).to.matchSnapshot({
