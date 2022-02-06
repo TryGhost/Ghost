@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
-const config = require('../../../../../core/shared/config');
-const testUtils = require('../../../../utils');
+const config = require('../../../../core/shared/config');
+const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const db = require('../../../../../core/server/data/db');
+const db = require('../../../../core/server/data/db');
 
 // NOTE: in future iterations these fields should be fetched from a central module.
 //       Have put a list as is here for the lack of better place for it.

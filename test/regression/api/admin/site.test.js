@@ -1,7 +1,7 @@
 const {expect} = require('chai');
 const {any, stringMatching} = require('expect');
 
-const framework = require('../../../../utils/e2e-framework');
+const framework = require('../../../utils/e2e-framework');
 
 describe('Config API', function () {
     let agent;

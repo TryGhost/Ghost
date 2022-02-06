@@ -2,9 +2,9 @@ const path = require('path');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const testUtils = require('../../../../utils');
+const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const config = require('../../../../../core/shared/config');
+const config = require('../../../../core/shared/config');
 
 let request;
 
