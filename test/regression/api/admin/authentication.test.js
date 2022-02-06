@@ -2,10 +2,10 @@ const {expect} = require('chai');
 const {any} = require('expect');
 const security = require('@tryghost/security');
 
-const testUtils = require('../../../../utils/index');
-const framework = require('../../../../utils/e2e-framework');
-const models = require('../../../../../core/server/models/index');
-const settingsCache = require('../../../../../core/shared/settings-cache');
+const testUtils = require('../../../utils');
+const framework = require('../../../utils/e2e-framework');
+const models = require('../../../../core/server/models');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Authentication API canary', function () {
     let agent;

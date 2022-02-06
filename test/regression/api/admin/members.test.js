@@ -3,11 +3,11 @@ const querystring = require('querystring');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const testUtils = require('../../../../utils');
+const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const config = require('../../../../../core/shared/config');
-const labs = require('../../../../../core/shared/labs');
-const mailService = require('../../../../../core/server/services/mail');
+const config = require('../../../../core/shared/config');
+const labs = require('../../../../core/shared/labs');
+const mailService = require('../../../../core/server/services/mail');
 
 let request;
 
@@ -321,7 +321,7 @@ describe('Members API (canary)', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('labels', ['global-label-1', 'global-label-1'])
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-labels.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-labels.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -387,7 +387,7 @@ describe('Members API (canary)', function () {
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('mapping[correo_electrpnico]', 'email')
             .field('mapping[nombre]', 'name')
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-with-mappings.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/members-with-mappings.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -437,7 +437,7 @@ describe('Members API (canary)', function () {
     it('Can import CSV with labels and provide additional labels', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/valid-members-defaults.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/valid-members-defaults.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -485,7 +485,7 @@ describe('Members API (canary)', function () {
     it('Runs imports with stripe_customer_id as background job', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-with-stripe-ids.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/members-with-stripe-ids.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -504,7 +504,7 @@ describe('Members API (canary)', function () {
         return request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('labels', ['new-global-label'])
-            .attach('membersfile', path.join(__dirname, '/../../../../utils/fixtures/csv/members-invalid-values.csv'))
+            .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/members-invalid-values.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
