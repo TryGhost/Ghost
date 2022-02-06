@@ -3,12 +3,12 @@ const sinon = require('sinon');
 const moment = require('moment');
 const supertest = require('supertest');
 const _ = require('lodash');
-const labs = require('../../../../../core/shared/labs');
-const testUtils = require('../../../../utils');
+const labs = require('../../../../core/shared/labs');
+const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../../../utils/configUtils');
-const urlUtils = require('../../../../utils/urlUtils');
-const config = require('../../../../../core/shared/config');
+const configUtils = require('../../../utils/configUtils');
+const urlUtils = require('../../../utils/urlUtils');
+const config = require('../../../../core/shared/config');
 
 describe('api/canary/content/posts', function () {
     let request;

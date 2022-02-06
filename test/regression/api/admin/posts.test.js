@@ -3,9 +3,9 @@ const should = require('should');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid');
 const moment = require('moment-timezone');
-const testUtils = require('../../../../utils');
-const config = require('../../../../../core/shared/config');
-const models = require('../../../../../core/server/models');
+const testUtils = require('../../../utils');
+const config = require('../../../../core/shared/config');
+const models = require('../../../../core/server/models');
 const localUtils = require('./utils');
 
 describe('Posts API (canary)', function () {

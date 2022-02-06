@@ -6,9 +6,9 @@ const uuid = require('uuid');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
-const config = require('../../../../../core/shared/config');
-const events = require('../../../../../core/server/lib/common/events');
-const testUtils = require('../../../../utils');
+const config = require('../../../../core/shared/config');
+const events = require('../../../../core/server/lib/common/events');
+const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 
 let request;
@@ -120,7 +120,7 @@ describe('DB API (canary)', function () {
         return request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../../../utils/fixtures/csv/single-column-with-header.csv'))
+            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
             .expect(415);
     });
 
@@ -186,7 +186,7 @@ describe('DB API (canary)', function () {
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../../../utils/fixtures/export/v2_export.json'))
+            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/export/v2_export.json'))
             .expect(200);
 
         const jsonResponse = res.body;
@@ -233,7 +233,7 @@ describe('DB API (canary)', function () {
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../../../utils/fixtures/export/v3_export.json'))
+            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/export/v3_export.json'))
             .expect(200);
 
         const jsonResponse = res.body;
@@ -280,7 +280,7 @@ describe('DB API (canary)', function () {
             .set('Origin', config.get('url'))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .attach('importfile', path.join(__dirname, '/../../../../utils/fixtures/export/v4_export.json'))
+            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/export/v4_export.json'))
             .expect(200);
 
         const jsonResponse = res.body;

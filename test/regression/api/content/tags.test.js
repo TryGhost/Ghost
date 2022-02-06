@@ -2,9 +2,9 @@ const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const localUtils = require('./utils');
-const testUtils = require('../../../../utils');
-const configUtils = require('../../../../utils/configUtils');
-const config = require('../../../../../core/shared/config');
+const testUtils = require('../../../utils');
+const configUtils = require('../../../utils/configUtils');
+const config = require('../../../../core/shared/config');
 
 let request;
 

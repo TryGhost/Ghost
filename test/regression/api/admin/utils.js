@@ -1,5 +1,5 @@
 const url = require('url');
-const testUtils = require('../../../../utils');
+const testUtils = require('../../../utils');
 
 const API_URL = '/ghost/api/canary/admin/';
 

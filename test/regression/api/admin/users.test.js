@@ -1,8 +1,8 @@
 const should = require('should');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid');
-const testUtils = require('../../../../utils');
-const config = require('../../../../../core/shared/config');
+const testUtils = require('../../../utils');
+const config = require('../../../../core/shared/config');
 const localUtils = require('./utils');
 let request;
 
