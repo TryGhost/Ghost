@@ -1059,3 +1059,16 @@ a.gh-dashboard-container {
         font-size: 2.0rem;
     }
 }
+
+/* panel collapse animation */
+.gh-dashboard-area-leave {
+    opacity: 100;
+    max-height: 350px;
+}
+.gh-dashboard-area-leave-active {
+    transition: all ease-in-out 0.25s;
+}
+.gh-dashboard-area-leave-to {
+    opacity: 0;
+    max-height: 0;
+}
