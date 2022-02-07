@@ -232,7 +232,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
     /* key commands ----------------------------------------------------------*/
 
     _enter(modifier) {
-        if (this.isEditing && (modifier === 'meta' || (modifier === 'crtl' && Browser.isWin()))) {
+        if (this.isEditing && (modifier === 'meta' || (modifier === 'ctrl' && Browser.isWin()))) {
             this.args.editCard?.();
         }
     }

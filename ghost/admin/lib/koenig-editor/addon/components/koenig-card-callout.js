@@ -194,7 +194,7 @@ export default class KoenigCardCalloutComponent extends Component {
     }
 
     _metaEnter(modifier) {
-        if (this.args.isEditing && (modifier === 'meta' || (modifier === 'crtl' && Browser.isWin()))) {
+        if (this.args.isEditing && (modifier === 'meta' || (modifier === 'ctrl' && Browser.isWin()))) {
             this.args.editCard();
         }
     }
