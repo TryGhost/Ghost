@@ -105,7 +105,7 @@ const restartModeGhostStart = async ({frontend}) => {
     // TODO: figure out why we need this if we reset again later?
     urlServiceUtils.reset();
 
-    await dbUtils.reset();
+    await dbUtils.reset({truncate: true});
 
     debug('init done');
 

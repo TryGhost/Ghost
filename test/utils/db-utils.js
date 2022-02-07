@@ -17,7 +17,7 @@ const urlServiceUtils = require('./url-service-utils');
 
 const dbHash = Date.now();
 
-module.exports.reset = async () => {
+module.exports.reset = async ({truncate} = {truncate: false}) => {
     // Only run this copy in CI until it gets fleshed out
     if (process.env.CI && config.get('database:client') === 'sqlite3') {
         const filename = config.get('database:connection:filename');
@@ -37,10 +37,16 @@ module.exports.reset = async () => {
             await fs.copyFile(filename, filenameOrig);
         }
     } else {
-        await knexMigrator.reset({force: true});
-
-        // Do a full database initialisation
-        await knexMigrator.init();
+        if (truncate) {
+            // Perform a fast reset by tearing down all the tables and
+            // inserting the fixtures
+            await module.exports.teardown();
+            await knexMigrator.init({only: 2});
+        } else {
+            // Do a full database reset + initialisation
+            await knexMigrator.reset({force: true});
+            await knexMigrator.init();
+        }
     }
 };
 
