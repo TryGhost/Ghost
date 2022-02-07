@@ -254,12 +254,12 @@ input:focus,
     background: var(--black) !important;
 }
 
-.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent) {
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link) {
     background: var(--lightgrey);
     color: var(--black);
 }
 
-.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):hover {
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):hover {
     background: var(--lightgrey-d1);
     color: var(--black);
 }
@@ -950,11 +950,20 @@ input:focus,
     background: var(--dark-main-bg-color);
 }
 
+.gh-members-empty .gh-members-placeholder {
+    fill: var(--midgrey-d2);
+}
+
 /* Members activity */
 .gh-members-activity-icon svg path,
 .gh-dashboard-activity-container svg path,
 .gh-member-feed-icon svg path {
     stroke: #fff;
+}
+
+/* Offers */
+.gh-offers-list-cta .discount-bubble {
+    color: var(--midgrey-d2);
 }
 
 /* Portal */
