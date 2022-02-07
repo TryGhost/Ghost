@@ -34,6 +34,11 @@ describe('getAssetUrl', function () {
         testUrl.should.equal('/public/myfile.js?v=' + config.get('assetHash'));
     });
 
+    it('should return hash before #', function () {
+        const testUrl = getAssetUrl('myfile.svg#arrow-up');
+        testUrl.should.equal(`/assets/myfile.svg?v=${config.get('assetHash')}#arrow-up`);
+    });
+
     describe('favicon', function () {
         it('should not add asset to url if favicon.ico', function () {
             const testUrl = getAssetUrl('favicon.ico');
