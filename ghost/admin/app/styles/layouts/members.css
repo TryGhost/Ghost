@@ -953,6 +953,12 @@ textarea.gh-member-details-textarea {
     margin-right: 1rem;
 }
 
+.gh-member-feed-row a {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--darkgrey);
+}
+
 .gh-member-feed-title {
     display: table-cell;
     padding: 10px 0;
@@ -964,6 +970,14 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-feed-title:hover {
+    color: var(--black);
+}
+
+.gh-member-feed-title a {
+    color: var(--darkgrey);
+}
+
+.gh-member-feed-title a:hover {
     color: var(--black);
 }
 
@@ -1028,12 +1042,6 @@ textarea.gh-member-details-textarea {
 
 .gh-member-feed-footer {
     padding-top: 16px;
-}
-
-.gh-member-feed-row a {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--blackgrey);
 }
 
 
