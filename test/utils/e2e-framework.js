@@ -130,12 +130,19 @@ const getAgent = async (apiURL) => {
     }
 };
 
-// request agent
-module.exports.getAgent = getAgent;
+module.exports = {
+    // request agent
+    agentProvider: {
+        getAgent
+    },
 
-// state manipulation
-module.exports.initFixtures = initFixtures;
-module.exports.getFixture = getFixture;
-module.exports.resetDb = resetDb;
-module.exports.stubMail = mockUtils.stubMail;
-module.exports.restoreMocks = mockUtils.restoreMocks;
+    // Mocks and Stubs
+    mockManager: mockUtils,
+
+    // DB State Manipulation
+    fixtureManager: {
+        get: getFixture,
+        init: initFixtures,
+        reset: resetDb
+    }
+};

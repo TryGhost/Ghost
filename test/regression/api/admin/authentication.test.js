@@ -3,7 +3,7 @@ const {any} = require('expect');
 const security = require('@tryghost/security');
 
 const testUtils = require('../../../utils');
-const framework = require('../../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
@@ -17,15 +17,15 @@ describe('Authentication API canary', function () {
 
     describe('Blog setup', function () {
         before(async function () {
-            agent = await framework.getAgent('/ghost/api/canary/admin/');
+            agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
         });
 
         beforeEach(function () {
-            emailStub = framework.stubMail();
+            emailStub = mockManager.mockMail();
         });
 
         afterEach(function () {
-            framework.restoreMocks();
+            mockManager.restore();
         });
 
         it('is setup? no', async function () {
@@ -106,7 +106,7 @@ describe('Authentication API canary', function () {
         });
 
         it('update setup', async function () {
-            await framework.initFixtures();
+            await fixtureManager.init();
             await agent.loginAsOwner();
 
             const res = await agent
@@ -138,14 +138,10 @@ describe('Authentication API canary', function () {
 
     describe('Invitation', function () {
         before(async function () {
-            agent = await framework.getAgent('/ghost/api/canary/admin/');
+            agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
-            await framework.initFixtures('invites');
+            await fixtureManager.init('invites');
             await agent.loginAsOwner();
-        });
-
-        after(async function () {
-            await framework.resetDb();
         });
 
         it('check invite with invalid email', function () {
@@ -225,22 +221,18 @@ describe('Authentication API canary', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(async function () {
-            agent = await framework.getAgent('/ghost/api/canary/admin/');
+            agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
-            await framework.initFixtures('invites');
+            await fixtureManager.init('invites');
             await agent.loginAsOwner();
         });
 
-        after(async function () {
-            await framework.resetDb();
-        });
-
         beforeEach(function () {
-            emailStub = framework.stubMail();
+            emailStub = mockManager.mockMail();
         });
 
         afterEach(function () {
-            framework.restoreMocks();
+            mockManager.restore();
         });
 
         it('reset password', async function () {
@@ -380,24 +372,19 @@ describe('Authentication API canary', function () {
     });
 
     describe('Reset all passwords', function () {
-        let sendEmail;
         before(async function () {
-            agent = await framework.getAgent('/ghost/api/canary/admin/');
+            agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
-            await framework.initFixtures('invites');
+            await fixtureManager.init('invites');
             await agent.loginAsOwner();
         });
 
-        after(async function () {
-            await framework.resetDb();
-        });
-
         beforeEach(function () {
-            emailStub = framework.stubMail();
+            emailStub = mockManager.mockMail();
         });
 
         afterEach(function () {
-            framework.restoreMocks();
+            mockManager.restore();
         });
 
         it('reset all passwords returns 200', async function () {
@@ -425,6 +412,8 @@ describe('Authentication API canary', function () {
             expect(emailStub.callCount).to.equal(2);
             expect(emailStub.firstCall.args[0].subject).to.equal('Reset Password');
             expect(emailStub.secondCall.args[0].subject).to.equal('Reset Password');
+            expect(emailStub.firstCall.args[0].to).to.equal('jbloggs@example.com');
+            expect(emailStub.secondCall.args[0].to).to.equal('ghost-author@example.com');
         });
     });
 });
