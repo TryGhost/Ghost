@@ -3,9 +3,8 @@ const sinon = require('sinon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const TaxonomyRouter = require('../../../../../core/frontend/services/routing/TaxonomyRouter');
-const RESOURCE_CONFIG_V2 = require('../../../../../core/frontend/services/routing/config/v2');
-const RESOURCE_CONFIG_CANARY = require('../../../../../core/frontend/services/routing/config/canary');
-const RESOURCE_CONFIG_V3 = require('../../../../../core/frontend/services/routing/config/v3');
+
+const RESOURCE_CONFIG = require('../../../../../core/frontend/services/routing/config/canary');
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
     let req;
@@ -63,8 +62,8 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
         taxonomyRouter.mountRoute.args[2][1].should.eql(taxonomyRouter._redirectEditOption.bind(taxonomyRouter));
     });
 
-    it('v2:fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_V2, routerCreatedSpy);
+    it('_prepareContext behaves as expected', function () {
+        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG, routerCreatedSpy);
         taxonomyRouter._prepareContext(req, res, next);
         next.calledOnce.should.eql(true);
 
@@ -72,45 +71,9 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
             type: 'channel',
             name: 'tag',
             permalinks: '/tag/:slug/',
-            resourceType: RESOURCE_CONFIG_V2.QUERY.tag.resource,
-            data: {tag: RESOURCE_CONFIG_V2.QUERY.tag},
-            filter: RESOURCE_CONFIG_V2.TAXONOMIES.tag.filter,
-            context: ['tag'],
-            slugTemplate: true,
-            identifier: taxonomyRouter.identifier
-        });
-    });
-
-    it('canary:fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_CANARY, routerCreatedSpy);
-        taxonomyRouter._prepareContext(req, res, next);
-        next.calledOnce.should.eql(true);
-
-        res.routerOptions.should.eql({
-            type: 'channel',
-            name: 'tag',
-            permalinks: '/tag/:slug/',
-            resourceType: RESOURCE_CONFIG_V2.QUERY.tag.resource,
-            data: {tag: RESOURCE_CONFIG_V2.QUERY.tag},
-            filter: RESOURCE_CONFIG_V2.TAXONOMIES.tag.filter,
-            context: ['tag'],
-            slugTemplate: true,
-            identifier: taxonomyRouter.identifier
-        });
-    });
-
-    it('v3:fn: _prepareContext', function () {
-        const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG_V3, routerCreatedSpy);
-        taxonomyRouter._prepareContext(req, res, next);
-        next.calledOnce.should.eql(true);
-
-        res.routerOptions.should.eql({
-            type: 'channel',
-            name: 'tag',
-            permalinks: '/tag/:slug/',
-            resourceType: RESOURCE_CONFIG_V2.QUERY.tag.resource,
-            data: {tag: RESOURCE_CONFIG_V2.QUERY.tag},
-            filter: RESOURCE_CONFIG_V2.TAXONOMIES.tag.filter,
+            resourceType: RESOURCE_CONFIG.QUERY.tag.resource,
+            data: {tag: RESOURCE_CONFIG.QUERY.tag},
+            filter: RESOURCE_CONFIG.TAXONOMIES.tag.filter,
             context: ['tag'],
             slugTemplate: true,
             identifier: taxonomyRouter.identifier

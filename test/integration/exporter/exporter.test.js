@@ -58,6 +58,7 @@ describe('Exporter', function () {
                 'posts_authors',
                 'posts_meta',
                 'posts_tags',
+                'posts_products',
                 'products',
                 'benefits',
                 'products_benefits',

@@ -29,7 +29,7 @@ const expectedProperties = {
 
     action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor'],
 
-    config: ['version', 'environment', 'database', 'mail', 'labs', 'clientExtensions', 'enableDeveloperExperiments', 'useGravatar', 'stripeDirect', 'emailAnalytics', 'tenor'],
+    config: ['version', 'environment', 'database', 'mail', 'labs', 'clientExtensions', 'enableDeveloperExperiments', 'useGravatar', 'stripeDirect', 'emailAnalytics', 'tenor', 'mailgunIsConfigured'],
 
     post: [
         'id',
@@ -70,7 +70,8 @@ const expectedProperties = {
         'meta_description',
         'email_subject',
         'frontmatter',
-        'email_only'
+        'email_only',
+        'tiers'
     ],
 
     page: [
@@ -108,7 +109,8 @@ const expectedProperties = {
         'twitter_description',
         'meta_title',
         'meta_description',
-        'frontmatter'
+        'frontmatter',
+        'tiers'
     ],
 
     user: _(schema.users)

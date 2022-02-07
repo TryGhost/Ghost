@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-const api = require('../../../../../../core/server/api').v2;
+const API_VERSION = 'canary';
+const api = require('../../../../../../core/server/api')[API_VERSION];
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
 const testUtils = require('../../../../../utils');
 
@@ -47,7 +48,7 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             };
         });
 
-        locals = {apiVersion: 'v2'};
+        locals = {apiVersion: API_VERSION};
     });
 
     afterEach(function () {
@@ -107,16 +108,12 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
             should.exist(result);
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
-            result.data.featured.should.be.an.Object().with.properties('posts', 'meta');
-            result.data.featured.should.not.have.properties('data');
 
             result.posts.length.should.eql(posts.length);
             result.data.featured.length.should.eql(posts.length);
-            // @TODO v3 will deprecate this style (featured.posts)
-            result.data.featured.posts.length.should.eql(posts.length);
 
             browsePostsStub.calledTwice.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags');
+            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
             browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
             browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
             done();
@@ -143,16 +140,12 @@ describe('Unit - services/routing/helpers/fetch-data', function () {
 
             result.should.be.an.Object().with.properties('posts', 'meta', 'data');
             result.data.should.be.an.Object().with.properties('featured');
-            result.data.featured.should.be.an.Object().with.properties('posts', 'meta');
-            result.data.featured.should.not.have.properties('data');
 
             result.posts.length.should.eql(posts.length);
             result.data.featured.length.should.eql(posts.length);
-            // @TODO v3 will deprecate this style (featured.posts)
-            result.data.featured.posts.length.should.eql(posts.length);
 
             browsePostsStub.calledTwice.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags');
+            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
             browsePostsStub.firstCall.args[0].should.have.property('page', 2);
             browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
             browsePostsStub.secondCall.args[0].should.have.property('limit', 3);

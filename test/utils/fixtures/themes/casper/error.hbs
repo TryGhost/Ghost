@@ -1,7 +1,15 @@
 {{!--
-This error template is used for all 400/500 errors, except 404, which might occur on your site.
-It's a good idea to keep this template as minimal as possible in terms of both file size and complexity.
-You'll notice that we *don't* use any JavsScript, or ghost_head / ghost_foot in this file.
+
+There are two error files in this theme, one for 404s and one for all other errors.
+This file is the latter, and handle all 400/500 errors that might occur.
+
+Because 500 errors in particular usuall happen when a server is struggling, this
+template is as simple as possible. No template dependencies, no JS, no API calls.
+This is to prevent rendering the error-page itself compounding the issue causing
+the error in the first place.
+
+Keep this template as lightweight as you can!
+
 --}}
 
 <!DOCTYPE html>
@@ -14,44 +22,47 @@ You'll notice that we *don't* use any JavsScript, or ghost_head / ghost_foot in 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="{{asset "built/screen.css"}}" />
 </head>
-<body class="error-template">
+<body>
     <div class="site-wrapper">
 
-        <header class="site-header outer {{#if feature_image}}" style="background-image: url({{feature_image}}){{else}}no-cover{{/if}}">
-            <div class="inner">
-                <nav class="site-nav-center">
-                    {{#if @blog.logo}}
-                        <a class="site-nav-logo" href="{{@blog.url}}"><img src="{{@blog.logo}}" alt="{{@blog.title}}" /></a>
-                    {{else}}
-                        <a class="site-nav-logo" href="{{@blog.url}}">{{@blog.title}}</a>
-                    {{/if}}
-                </nav>
+        <header class="site-header no-image">
+            <div class="site-nav-main outer">
+                <div class="inner">
+                    <nav class="site-nav-center">
+                        {{#if @site.logo}}
+                        <a class="site-nav-logo" href="{{@site.url}}"><img src="{{img_url @site.logo size="xs"}}"
+                                alt="{{@site.title}}" /></a>
+                        {{else}}
+                        <a class="site-nav-logo" href="{{@site.url}}">{{@site.title}}</a>
+                        {{/if}}
+                    </nav>
+                </div>
             </div>
         </header>
 
-        <main id="site-main" class="site-main outer">
+        <main class="outer error-content">
             <div class="inner">
 
                 <section class="error-message">
-                    <h1 class="error-code">{{code}}</h1>
+                    <h1 class="error-code">{{statusCode}}</h1>
                     <p class="error-description">{{message}}</p>
-                    <a class="error-link" href="{{@blog.url}}">Go to the front page →</a>
+                    <a class="error-link" href="{{@site.url}}">Go to the front page →</a>
                 </section>
 
                 {{#if errorDetails}}
                 <section class="error-stack">
                     <h3>Theme errors</h3>
                     <ul class="error-stack-list">
-                        {{#each errorDetails}}
+                        {{#foreach errorDetails}}
                             <li>
                                 <em class="error-stack-function">{{{rule}}}</em>
 
-                                {{#each failures}}
+                                {{#foreach failures}}
                                     <p><span class="error-stack-file">Ref: {{ref}}</span></p>
                                     <p><span class="error-stack-file">Message: {{message}}</span></p>
-                                {{/each}}
+                                {{/foreach}}
                             </li>
-                        {{/each}}
+                        {{/foreach}}
                     </ul>
                 </section>
                 {{/if}}

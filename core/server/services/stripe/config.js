@@ -1,7 +1,13 @@
-const ghostVersion = require('@tryghost/version');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
 
+const messages = {
+    remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.'
+};
+
+// @TODO Refactor to a class w/ constructor
 module.exports = {
-    getConfig(settings, config) {
+    getConfig(settings, config, urlUtils) {
         /**
          * @param {'direct' | 'connect'} type - The "type" of keys to fetch from settings
          * @returns {{publicKey: string, secretKey: string} | null}
@@ -42,16 +48,25 @@ module.exports = {
         if (!keys) {
             return null;
         }
+
+        const env = config.get('env');
+        let webhookSecret = process.env.WEBHOOK_SECRET;
+
+        if (env !== 'production') {
+            if (!webhookSecret) {
+                webhookSecret = 'DEFAULT_WEBHOOK_SECRET';
+                logging.warn(tpl(messages.remoteWebhooksInDevelopment));
+            }
+        }
+
+        const webhookHandlerUrl = new URL('members/webhooks/stripe/', urlUtils.getSiteUrl());
+
         return {
             secretKey: keys.secretKey,
             publicKey: keys.publicKey,
-            appInfo: {
-                name: 'Ghost',
-                partner_id: 'pp_partner_DKmRVtTs4j9pwZ',
-                version: ghostVersion.original,
-                url: 'https://ghost.org/'
-            },
-            enablePromoCodes: config.get('enableStripePromoCodes')
+            enablePromoCodes: config.get('enableStripePromoCodes'),
+            webhookSecret: webhookSecret,
+            webhookHandlerUrl: webhookHandlerUrl.href
         };
     }
 };

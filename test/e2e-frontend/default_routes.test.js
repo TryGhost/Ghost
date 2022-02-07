@@ -120,18 +120,14 @@ describe('Default Frontend routing', function () {
             await request.get('/welcome/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    const $ = cheerio.load(res.text);
-
-                    // NOTE: This is the title from the settings.
-                    $('title').text().should.equal('Start here for a quick overview of everything you need to know');
-
-                    $('body.post-template').length.should.equal(1);
-                    $('body.tag-getting-started').length.should.equal(1);
-                    $('article.post').length.should.equal(2);
-                    $('article.tag-getting-started').length.should.equal(2);
-
+                    // Test that head and body have rendered something...
+                    res.text.should.containEql('<title>Start here for a quick overview of everything you need to know</title>');
+                    res.text.should.match(/<h1[^>]*?>Start here for a quick overview of everything you need to know<\/h1>/);
+                    // We should write a single test for this, or encapsulate it as an assertion
+                    // E.g. res.text.should.not.containInvalidUrls()
                     res.text.should.not.containEql('__GHOST_URL__');
                 });
         });
@@ -311,7 +307,7 @@ describe('Default Frontend routing', function () {
 
     describe('Static assets', function () {
         it('should retrieve theme assets', async function () {
-            await request.get('/assets/css/screen.css')
+            await request.get('/assets/built/screen.css')
                 .expect('Cache-Control', testUtils.cacheRules.year)
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);

@@ -28,7 +28,9 @@ function calculateLegacyPriceData(products) {
         };
     }
 
-    const defaultProduct = products[0] || {};
+    const defaultProduct = products.find((product) => {
+        return product.type === 'paid';
+    }) || {};
 
     const monthlyPrice = makePriceObject(defaultProduct.monthly_price || defaultPrice);
 
@@ -46,8 +48,9 @@ function calculateLegacyPriceData(products) {
 async function getProductAndPricesData() {
     try {
         const page = await api.canary.productsPublic.browse({
-            include: ['monthly_price', 'yearly_price'],
-            limit: 'all'
+            include: ['monthly_price', 'yearly_price', 'benefits'],
+            limit: 'all',
+            filter: 'active:true'
         });
 
         return page.products;

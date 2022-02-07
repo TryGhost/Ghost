@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const ALLOWED_INCLUDES = ['tags', 'authors'];
+const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers'];
 
 const messages = {
     pageNotFound: 'Page not found.'

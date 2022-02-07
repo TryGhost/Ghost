@@ -7,8 +7,12 @@ const {SafeString} = require('../../../../core/frontend/services/rendering');
 const get = require('../../../../core/frontend/helpers/get');
 
 const models = require('../../../../core/server/models');
-const api = require('../../../../core/server/api');
+
 const proxy = require('../../../../core/frontend/services/proxy');
+
+const API_VERSION = 'canary';
+
+const api = require('../../../../core/server/api')[API_VERSION];
 
 describe('{{#get}} helper', function () {
     let fn;
@@ -23,7 +27,7 @@ describe('{{#get}} helper', function () {
         fn = sinon.spy();
         inverse = sinon.spy();
 
-        locals = {root: {_locals: {apiVersion: 'v2'}}, globalProp: {foo: 'bar'}};
+        locals = {root: {_locals: {apiVersion: API_VERSION}}, globalProp: {foo: 'bar'}};
     });
 
     afterEach(function () {
@@ -37,7 +41,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             locals = {root: {_locals: {apiVersion: 'canary'}}};
 
-            browsePostsStub = sinon.stub(api.canary, 'postsPublic').get(() => {
+            browsePostsStub = sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({posts: [{feature_image_caption: '<a href="#">A link</a>'}], meta: meta})
                 };
@@ -60,74 +64,14 @@ describe('{{#get}} helper', function () {
         });
     });
 
-    describe('authors v2', function () {
-        let browseAuthorsStub;
-        const meta = {pagination: {}};
-
-        beforeEach(function () {
-            locals = {root: {_locals: {apiVersion: 'v2'}}};
-
-            browseAuthorsStub = sinon.stub(api.v2, 'authorsPublic').get(() => {
-                return {
-                    browse: sinon.stub().resolves({authors: [], meta: meta})
-                };
-            });
-        });
-
-        it('browse authors', function (done) {
-            get.call(
-                {},
-                'authors',
-                {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                fn.called.should.be.true();
-                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
-                fn.firstCall.args[0].authors.should.eql([]);
-                inverse.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-    });
-
     describe('authors canary', function () {
         let browseAuthorsStub;
         const meta = {pagination: {}};
 
         beforeEach(function () {
-            locals = {root: {_locals: {apiVersion: 'canary'}}};
+            locals = {root: {_locals: {apiVersion: API_VERSION}}};
 
-            browseAuthorsStub = sinon.stub(api.canary, 'authorsPublic').get(() => {
-                return {
-                    browse: sinon.stub().resolves({authors: [], meta: meta})
-                };
-            });
-        });
-
-        it('browse authors', function (done) {
-            get.call(
-                {},
-                'authors',
-                {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                fn.called.should.be.true();
-                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
-                fn.firstCall.args[0].authors.should.eql([]);
-                inverse.called.should.be.false();
-
-                done();
-            }).catch(done);
-        });
-    });
-
-    describe('authors v3', function () {
-        let browseAuthorsStub;
-        const meta = {pagination: {}};
-
-        beforeEach(function () {
-            locals = {root: {_locals: {apiVersion: 'v3'}}};
-
-            browseAuthorsStub = sinon.stub(api.v3, 'authorsPublic').get(() => {
+            browseAuthorsStub = sinon.stub(api, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -209,7 +153,7 @@ describe('{{#get}} helper', function () {
         beforeEach(function () {
             browseStub = sinon.stub().resolves();
             readStub = sinon.stub().resolves();
-            sinon.stub(api.v2, 'postsPublic').get(() => {
+            sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     browse: browseStub,
                     read: readStub
@@ -321,17 +265,8 @@ describe('{{#get}} helper', function () {
 
         beforeEach(function () {
             browseStub = sinon.stub().resolves();
-            sinon.stub(api.v2, 'postsPublic').get(() => {
-                return {
-                    browse: browseStub
-                };
-            });
-            sinon.stub(api.v3, 'postsPublic').get(() => {
-                return {
-                    browse: browseStub
-                };
-            });
-            sinon.stub(api.canary, 'postsPublic').get(() => {
+
+            sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     browse: browseStub
                 };
@@ -339,53 +274,25 @@ describe('{{#get}} helper', function () {
         });
 
         it('Behaves normally without config', async function () {
-            locals = {root: {_locals: {apiVersion: 'v2'}}};
+            locals = {root: {_locals: {apiVersion: API_VERSION}}};
             await get.call(
                 {},
                 'posts',
                 {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
             );
             browseStub.firstCall.args[0].limit.should.eql('all');
-            locals = {root: {_locals: {apiVersion: 'v3'}}};
-            await get.call(
-                {},
-                'posts',
-                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
-            );
-            browseStub.secondCall.args[0].limit.should.eql('all');
-            locals = {root: {_locals: {apiVersion: 'canary'}}};
-            await get.call(
-                {},
-                'posts',
-                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
-            );
-            browseStub.thirdCall.args[0].limit.should.eql('all');
         });
 
         it('Replaces "all" with "getHelperLimitAllMax" config, if present', async function () {
             sinon.stub(proxy.config, 'get').withArgs('getHelperLimitAllMax').returns(2);
 
-            locals = {root: {_locals: {apiVersion: 'v2'}}};
+            locals = {root: {_locals: {apiVersion: API_VERSION}}};
             await get.call(
                 {},
                 'posts',
                 {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
             );
             browseStub.firstCall.args[0].limit.should.eql(2);
-            locals = {root: {_locals: {apiVersion: 'v3'}}};
-            await get.call(
-                {},
-                'posts',
-                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
-            );
-            browseStub.secondCall.args[0].limit.should.eql(2);
-            locals = {root: {_locals: {apiVersion: 'canary'}}};
-            await get.call(
-                {},
-                'posts',
-                {hash: {limit: 'all'}, data: locals, fn: fn, inverse: inverse}
-            );
-            browseStub.thirdCall.args[0].limit.should.eql(2);
         });
     });
 });

@@ -4,8 +4,16 @@
             "name": "Product",
             "entries": [
                 {
+                    "name":             "Free",
+                    "slug":             "free",
+                    "type":             "free",
+                    "active":           true
+                },
+                {
                     "name":             "Default Product",
-                    "slug":             "default-product"
+                    "slug":             "default-product",
+                    "type":             "paid",
+                    "active":           true
                 }
             ]
         },

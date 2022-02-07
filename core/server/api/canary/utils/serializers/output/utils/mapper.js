@@ -7,6 +7,10 @@ const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
 const mega = require('../../../../../../services/mega');
+const labsService = require('../../../../../../../shared/labs');
+
+const getPostServiceInstance = require('../../../../../../services/posts/posts-service');
+const postsService = getPostServiceInstance('canary');
 
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -27,7 +31,7 @@ const mapTag = (model, frame) => {
     return jsonModel;
 };
 
-const mapPost = (model, frame) => {
+const mapPost = async (model, frame) => {
     const extendedOptions = Object.assign(_.cloneDeep(frame.options), {
         extraProperties: ['canonical_url']
     });
@@ -37,6 +41,17 @@ const mapPost = (model, frame) => {
     url.forPost(model.id, jsonModel, frame);
 
     extraAttrs.forPost(frame, model, jsonModel);
+
+    // Attach tiers to custom nql visibility filter
+    if (labsService.isSet('multipleProducts')
+        && jsonModel.visibility
+        && !['members', 'public', 'paid', 'tiers'].includes(jsonModel.visibility)
+    ) {
+        const tiers = await postsService.getProductsFromVisibilityFilter(jsonModel.visibility);
+
+        jsonModel.visibility = 'tiers';
+        jsonModel.tiers = tiers;
+    }
 
     if (utils.isContentAPI(frame)) {
         // Content api v2 still expects page prop
@@ -88,8 +103,8 @@ const mapPost = (model, frame) => {
     return jsonModel;
 };
 
-const mapPage = (model, frame) => {
-    const jsonModel = mapPost(model, frame);
+const mapPage = async (model, frame) => {
+    const jsonModel = await mapPost(model, frame);
 
     delete jsonModel.email_subject;
     delete jsonModel.email_recipient_filter;

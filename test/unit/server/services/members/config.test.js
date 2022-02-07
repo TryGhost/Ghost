@@ -47,13 +47,13 @@ function createUrlUtilsMock() {
         getSiteUrl: configUtils.config.getSiteUrl,
         getAdminUrl: configUtils.config.getAdminUrl,
         apiVersions: {
-            all: ['v3'],
-            v3: {
-                admin: 'v3/admin',
-                content: 'v3/content'
+            all: ['canary'],
+            canary: {
+                admin: 'canary/admin',
+                content: 'canary/content'
             }
         },
-        defaultApiVersion: 'v3',
+        defaultApiVersion: 'canary',
         slugs: ['ghost', 'rss', 'amp'],
         redirectCacheMaxAge: 31536000,
         baseApiPath: '/ghost/api'
@@ -72,7 +72,7 @@ describe('Members - config', function () {
         configUtils.restore();
     });
 
-    it('Includes the subdirectory in the webhookHandlerUrl', function () {
+    it('Does not export webhookHandlerUrl', function () {
         configUtils.set({
             stripeDirect: false,
             url: 'http://site.com/subdir'
@@ -90,6 +90,6 @@ describe('Members - config', function () {
 
         const paymentConfig = membersConfig.getStripePaymentConfig();
 
-        should.equal(paymentConfig.webhookHandlerUrl, 'http://site.com/subdir/members/webhooks/stripe/');
+        should.not.exist(paymentConfig.webhookHandlerUrl);
     });
 });

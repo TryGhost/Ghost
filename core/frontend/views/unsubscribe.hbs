@@ -42,8 +42,10 @@
                                 {{#if member}}
                                     <p>
                                         <span class="gh-flow-em">{{member.email}}</span> has been successfully unsubscribed from emails.
-                                        <br>
-                                        Don't worry, this will not cancel your paid subscription to {{@site.title}}.
+                                        {{#match member.status "!=" "free"}}
+                                            <br>
+                                            Don't worry, this will not cancel your paid subscription to {{@site.title}}.
+                                        {{/match}}
                                     </p>
                                     <p>Didn't mean to do this? Manage your account <a href="{{@site.url}}/#/portal/account">here</a>.</p>
                                 {{/if}}

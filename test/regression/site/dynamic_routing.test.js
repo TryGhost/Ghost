@@ -10,7 +10,7 @@ const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 const cheerio = require('cheerio');
 const config = require('../../../core/shared/config');
-const settingsCache = require('../../../core/shared/settings-cache');
+const themeEngine = require('../../../core/frontend/services/theme-engine');
 
 let request;
 
@@ -31,18 +31,9 @@ describe('Dynamic Routing', function () {
     }
 
     before(function () {
-        // Default is always casper. We use the old compatible 1.4 casper theme for these tests. Available in the test content folder.
-        const originalSettingsCacheGetFn = settingsCache.get;
-        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-            if (key === 'active_theme') {
-                return 'casper-1.4';
-            }
-
-            return originalSettingsCacheGetFn(key, options);
-        });
-
         return testUtils.startGhost()
             .then(function () {
+                sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                 request = supertest.agent(config.get('url'));
             });
     });
@@ -70,8 +61,6 @@ describe('Dynamic Routing', function () {
                     should.exist(res.headers.date);
 
                     $('title').text().should.equal('Ghost');
-                    $('.content .post').length.should.equal(5);
-                    $('.poweredby').text().should.equal('Proudly published with Ghost');
                     $('body.home-template').length.should.equal(1);
                     $('article.post').length.should.equal(5);
                     $('article.tag-getting-started').length.should.equal(5);
@@ -150,9 +139,7 @@ describe('Dynamic Routing', function () {
                     should.not.exist(res.headers['set-cookie']);
                     should.exist(res.headers.date);
 
-                    $('body').attr('class').should.eql('tag-template tag-getting-started nav-closed');
-                    $('.content .post').length.should.equal(5);
-                    $('.poweredby').text().should.equal('Proudly published with Ghost');
+                    $('body').attr('class').should.eql('tag-template tag-getting-started');
                     $('article.post').length.should.equal(5);
                     $('article.tag-getting-started').length.should.equal(5);
 
@@ -234,6 +221,7 @@ describe('Dynamic Routing', function () {
 
                 return testUtils.startGhost({forceStart: true})
                     .then(function () {
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                         request = supertest.agent(config.get('url'));
                     });
             });
@@ -243,6 +231,7 @@ describe('Dynamic Routing', function () {
 
                 return testUtils.startGhost({forceStart: true})
                     .then(function () {
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                         request = supertest.agent(config.get('url'));
                     });
             });
@@ -407,7 +396,7 @@ describe('Dynamic Routing', function () {
 
             it('should redirect to editor', function (done) {
                 request.get('/author/ghost-owner/edit/')
-                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/staff/ghost-owner/')
+                    .expect('Location', 'http://127.0.0.1:2369/ghost/#/settings/staff/ghost-owner/')
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
@@ -428,6 +417,7 @@ describe('Dynamic Routing', function () {
 
                 return testUtils.startGhost({forceStart: true})
                     .then(function () {
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                         request = supertest.agent(config.get('url'));
                     });
             });
@@ -437,6 +427,7 @@ describe('Dynamic Routing', function () {
 
                 return testUtils.startGhost({forceStart: true})
                     .then(function () {
+                        sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(5);
                         request = supertest.agent(config.get('url'));
                     });
             });

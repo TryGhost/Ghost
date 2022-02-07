@@ -1,0 +1,12 @@
+{
+    "name": "members-test-theme",
+    "description": "A minimal theme for testing members behaviour",
+    "version": "1.0.0",
+    "engines": {
+        "ghost-api": "canary"
+    },
+    "license": "MIT",
+    "config": {
+        "posts_per_page": 25
+    }
+}

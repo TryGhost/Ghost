@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const membersService = require('./service');
+const models = require('../../models');
 const offersService = require('../offers/service');
 const urlUtils = require('../../../shared/url-utils');
 const ghostVersion = require('@tryghost/version');
@@ -109,10 +110,13 @@ const getPortalProductPrices = async function () {
             monthlyPrice: product.monthlyPrice,
             yearlyPrice: product.yearlyPrice,
             benefits: product.benefits,
+            type: product.type,
             prices: productPrices
         };
     });
-    const defaultProduct = products[0];
+    const defaultProduct = products.find((product) => {
+        return product.type === 'paid';
+    });
     const defaultPrices = defaultProduct ? defaultProduct.prices : [];
     let portalProducts = defaultProduct ? [defaultProduct] : [];
     if (labsService.isSet('multipleProducts')) {
@@ -196,10 +200,26 @@ const createSessionFromMagicLink = async function (req, res, next) {
 
         if (action === 'signup') {
             let customRedirect = '';
-            if (subscriptions.find(sub => ['active', 'trialing'].includes(sub.status))) {
-                customRedirect = settingsCache.get('members_paid_signup_redirect') || '';
+            const mostRecentActiveSubscription = subscriptions
+                .sort((a, b) => {
+                    const aStartDate = new Date(a.start_date);
+                    const bStartDate = new Date(b.start_date);
+                    return bStartDate.valueOf() - aStartDate.valueOf();
+                })
+                .find(sub => ['active', 'trialing'].includes(sub.status));
+            if (mostRecentActiveSubscription) {
+                if (labsService.isSet('multipleProducts')) {
+                    customRedirect = mostRecentActiveSubscription.tier.welcome_page_url;
+                } else {
+                    customRedirect = settingsCache.get('members_paid_signup_redirect') || '';
+                }
             } else {
-                customRedirect = settingsCache.get('members_free_signup_redirect') || '';
+                if (labsService.isSet('multipleProducts')) {
+                    const freeTier = await models.Product.findOne({type: 'free'});
+                    customRedirect = freeTier && freeTier.get('welcome_page_url') || '';
+                } else {
+                    customRedirect = settingsCache.get('members_free_signup_redirect') || '';
+                }
             }
 
             if (customRedirect && customRedirect !== '/') {
@@ -234,6 +254,5 @@ module.exports = {
     getOfferData,
     updateMemberData,
     getMemberSiteData,
-    deleteSession,
-    stripeWebhooks: (req, res, next) => membersService.api.middleware.handleStripeWebhook(req, res, next)
+    deleteSession
 };

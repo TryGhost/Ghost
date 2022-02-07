@@ -173,21 +173,7 @@ function createApiInstance(config) {
             stripe: config.getStripePaymentConfig()
         },
         models: {
-            /**
-             * Settings do not have their own models, so we wrap the webhook in a "fake" model
-             */
-            StripeWebhook: {
-                async upsert(data, options) {
-                    const settings = [{
-                        key: 'members_stripe_webhook_id',
-                        value: data.webhook_id
-                    }, {
-                        key: 'members_stripe_webhook_secret',
-                        value: data.secret
-                    }];
-                    await models.Settings.edit(settings, options);
-                }
-            },
+            EmailRecipient: models.EmailRecipient,
             StripeCustomer: models.MemberStripeCustomer,
             StripeCustomerSubscription: models.StripeCustomerSubscription,
             Member: models.Member,

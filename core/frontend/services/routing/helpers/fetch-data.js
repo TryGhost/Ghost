@@ -19,7 +19,7 @@ const queryDefaults = {
  */
 const defaultQueryOptions = {
     options: {
-        include: 'authors,tags'
+        include: 'authors,tags,tiers'
     }
 };
 
@@ -113,8 +113,6 @@ function fetchData(pathOptions, routerOptions, locals) {
 
                     if (config.type === 'browse') {
                         response.data[name].meta = results[name].meta;
-                        // @TODO remove in v3
-                        response.data[name][config.resource] = results[name][config.resource];
                     }
                 });
             }
