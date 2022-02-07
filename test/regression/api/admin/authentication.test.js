@@ -409,11 +409,16 @@ describe('Authentication API canary', function () {
             const sessions = await models.Session.fetchAll();
             expect(sessions.length).to.equal(0);
 
-            expect(emailStub.callCount).to.equal(2);
-            expect(emailStub.firstCall.args[0].subject).to.equal('Reset Password');
-            expect(emailStub.secondCall.args[0].subject).to.equal('Reset Password');
-            expect(emailStub.firstCall.args[0].to).to.equal('jbloggs@example.com');
-            expect(emailStub.secondCall.args[0].to).to.equal('ghost-author@example.com');
+            mockManager.assert.sentEmailCount(2);
+
+            mockManager.assert.sentEmail({
+                subject: 'Reset Password',
+                to: 'jbloggs@example.com'
+            });
+            mockManager.assert.sentEmail({
+                subject: 'Reset Password',
+                to: 'ghost-author@example.com'
+            });
         });
     });
 });
