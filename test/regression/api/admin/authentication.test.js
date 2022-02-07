@@ -20,10 +20,6 @@ describe('Authentication API canary', function () {
             agent = await framework.getAgent('/ghost/api/canary/admin/');
         });
 
-        after(async function () {
-            await framework.resetDb();
-        });
-
         beforeEach(function () {
             emailStub = framework.stubMail();
         });
