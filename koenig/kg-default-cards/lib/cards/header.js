@@ -6,6 +6,7 @@ const {
     toTransformReady,
     htmlToTransformReady
 } = require('@tryghost/url-utils/lib/utils');
+const {slugify} = require('@tryghost/kg-utils');
 const {
     hbs,
     dedent
@@ -15,7 +16,7 @@ module.exports = {
     name: 'header',
     type: 'dom',
 
-    render({payload, env: {dom}}) {
+    render({payload, env: {dom}, options: {ghostVersion} = {}}) {
         if (!payload.header && !payload.subheader && (!payload.buttonEnabled || (!payload.buttonUrl || !payload.buttonText))) {
             return dom.createTextNode('');
         }
@@ -23,10 +24,10 @@ module.exports = {
         const frontendTemplate = hbs`
             <div class="kg-card kg-header-card kg-width-full kg-size-{{size}} kg-style-{{style}}" style="{{backgroundImageStyle}}" data-kg-background-image="{{backgroundImageSrc}}">
                 {{#if this.hasHeader}}
-                    <h2 class="kg-header-card-header">{{{header}}}</h2>
+                    <h2 class="kg-header-card-header" id="{{headerSlug}}">{{{header}}}</h2>
                 {{/if}}
                 {{#if this.hasSubheader}}
-                    <h3 class="kg-header-card-subheader">{{{subheader}}}</h3>
+                    <h3 class="kg-header-card-subheader" id="{{subheaderSlug}}">{{{subheader}}}</h3>
                 {{/if}}
                 {{#if buttonEnabled}}
                     <a href="{{buttonUrl}}" class="kg-header-card-button">
@@ -43,7 +44,9 @@ module.exports = {
             buttonUrl: payload.buttonUrl,
             buttonText: payload.buttonText,
             header: payload.header,
+            headerSlug: slugify(payload.header, {ghostVersion}),
             subheader: payload.subheader,
+            subheaderSlug: slugify(payload.subheader, {ghostVersion}),
             hasHeader: payload.header && true,
             hasSubheader: payload.subheader && Boolean(payload.subheader.replace(/(<br>)+$/g).trim()),
             backgroundImageStyle: payload.style === 'image' ? `background-image: url(${payload.backgroundImageSrc})` : '',
