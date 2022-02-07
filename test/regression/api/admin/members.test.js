@@ -1,14 +1,10 @@
-const path = require('path');
 const querystring = require('querystring');
 const should = require('should');
-const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const {agentProvider, mockManager, fixtureManager} = require('../../../utils/e2e-framework');
 const localUtils = require('./utils');
-const config = require('../../../../core/shared/config');
 const labs = require('../../../../core/shared/labs');
-const mailService = require('../../../../core/server/services/mail');
 
 let agent;
 let emailStub;
@@ -65,8 +61,10 @@ describe('Members API', function () {
         should.exist(res.headers.location);
         res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('members/')}${res.body.members[0].id}/`);
 
-        mailService.GhostMailer.prototype.send.called.should.be.true();
-        mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('member_getting_confirmation@test.com');
+        mockManager.assert.sentEmail({
+            subject: '🙌 Complete your sign up to Ghost!',
+            to: 'member_getting_confirmation@test.com'
+        });
 
         await agent
             .delete(`members/${jsonResponse.members[0].id}/`)
