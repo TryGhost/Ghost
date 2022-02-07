@@ -1,11 +1,25 @@
 const querystring = require('querystring');
-const should = require('should');
-const sinon = require('sinon');
-const testUtils = require('../../../utils');
-const {agentProvider, mockManager, fixtureManager} = require('../../../utils/e2e-framework');
-const localUtils = require('./utils');
+const assert = require('assert');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
+const {anyString, anyArray, anyObjectId, anyEtag, anyUuid, anyErrorId, anyDate} = matchers;
 
 let agent;
+
+const memberMatcherNoIncludes = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    created_at: anyDate,
+    updated_at: anyDate
+};
+
+const memberMatcherShallowIncludes = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    created_at: anyDate,
+    updated_at: anyDate,
+    subscriptions: anyArray,
+    labels: anyArray
+};
 
 describe('Members API', function () {
     before(async function () {
@@ -35,270 +49,215 @@ describe('Members API', function () {
             email_type: 'signup'
         };
 
-        const res = await agent
+        const {body} = await agent
             .post(`members/?${querystring.stringify(queryParams)}`)
             .body({members: [member]})
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
-            .expectStatus(201);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.members);
-        jsonResponse.members.should.have.length(1);
-
-        jsonResponse.members[0].name.should.equal(member.name);
-        jsonResponse.members[0].email.should.equal(member.email);
-        jsonResponse.members[0].subscribed.should.equal(member.subscribed);
-        testUtils.API.isISO8601(jsonResponse.members[0].created_at).should.be.true();
-
-        should.exist(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('members/')}${res.body.members[0].id}/`);
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [memberMatcherNoIncludes]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyString
+            });
 
         mockManager.assert.sentEmail({
             subject: '🙌 Complete your sign up to Ghost!',
             to: 'member_getting_confirmation@test.com'
         });
 
+        // @TODO: do we really need to delete this member here?
         await agent
-            .delete(`members/${jsonResponse.members[0].id}/`)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
             .expectStatus(204);
     });
 
     it('Can order by email_open_rate', async function () {
         await agent
             .get('members/?order=email_open_rate%20desc')
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
             .expectStatus(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse.members);
-                localUtils.API.checkResponse(jsonResponse, 'members');
-                jsonResponse.members.should.have.length(8);
-
-                jsonResponse.members[0].email.should.equal('paid@test.com');
-                jsonResponse.members[0].email_open_rate.should.equal(80);
-                jsonResponse.members[1].email.should.equal('member2@test.com');
-                jsonResponse.members[1].email_open_rate.should.equal(50);
-                jsonResponse.members[2].email.should.equal('member1@test.com');
-                should.equal(null, jsonResponse.members[2].email_open_rate);
-                jsonResponse.members[3].email.should.equal('trialing@test.com');
-                should.equal(null, jsonResponse.members[3].email_open_rate);
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                members: new Array(8).fill(memberMatcherShallowIncludes)
+            })
+            .expect(({body}) => {
+                const {members} = body;
+                assert.equal(members[0].email_open_rate > members[1].email_open_rate, true, 'Expected the first member to have a greater open rate than the second.');
             });
 
         await agent
             .get('members/?order=email_open_rate%20asc')
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
             .expectStatus(200)
-            .then((res) => {
-                const jsonResponse = res.body;
-                localUtils.API.checkResponse(jsonResponse, 'members');
-                jsonResponse.members.should.have.length(8);
-
-                jsonResponse.members[0].email.should.equal('member2@test.com');
-                jsonResponse.members[0].email_open_rate.should.equal(50);
-                jsonResponse.members[1].email.should.equal('paid@test.com');
-                jsonResponse.members[1].email_open_rate.should.equal(80);
-                jsonResponse.members[2].email.should.equal('member1@test.com');
-                should.equal(null, jsonResponse.members[2].email_open_rate);
-                jsonResponse.members[3].email.should.equal('trialing@test.com');
-                should.equal(null, jsonResponse.members[3].email_open_rate);
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                members: new Array(8).fill(memberMatcherShallowIncludes)
+            })
+            .expect(({body}) => {
+                const {members} = body;
+                assert.equal(members[0].email_open_rate < members[1].email_open_rate, true, 'Expected the first member to have a smaller open rate than the second.');
             });
     });
 
-    it('Can search by case-insensitive name', function () {
-        return agent
+    it('Sarch by case-insensitive name egg receives member with name Mr Egg', async function () {
+        await agent
             .get('members/?search=egg')
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
             .expectStatus(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
-                jsonResponse.members[0].email.should.equal('member1@test.com');
-                localUtils.API.checkResponse(jsonResponse, 'members');
-                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+            .matchBodySnapshot({
+                members: [memberMatcherShallowIncludes]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
             });
     });
 
-    it('Can search by case-insensitive email', function () {
-        return agent
+    it('Search by case-insensitive email MEMBER2 receives member with email member2@test.com', async function () {
+        await agent
             .get('members/?search=MEMBER2')
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
             .expectStatus(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
-                jsonResponse.members[0].email.should.equal('member2@test.com');
-                localUtils.API.checkResponse(jsonResponse, 'members');
-                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+            .matchBodySnapshot({
+                members: [memberMatcherShallowIncludes]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
             });
     });
 
-    it('Can search for paid members', function () {
-        return agent
+    it('Sarch for paid members retrieves member with email paid@test.com', async function () {
+        await agent
             .get('members/?search=egon&paid=true')
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
             .expectStatus(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
-                jsonResponse.members[0].email.should.equal('paid@test.com');
-                localUtils.API.checkResponse(jsonResponse, 'members');
-                localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+            .matchBodySnapshot({
+                members: [memberMatcherShallowIncludes]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
             });
     });
 
-    it('Search for non existing member returns empty result set', function () {
-        return agent
+    it('Search for non existing member returns empty result set', async function () {
+        await agent
             .get('members/?search=do_not_exist')
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
             .expectStatus(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(0);
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                members: []
             });
     });
 
-    it('Paid members subscriptions has price data', function () {
+    it('Can update a member with subscription included, change name to "Updated name"', async function () {
         const memberChanged = {
             name: 'Updated name'
         };
-        return agent
-            .get('members/?search=egon&paid=true')
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+
+        const paidMember = fixtureManager.get('members', 2);
+
+        await agent
+            .put(`members/${paidMember.id}/`)
+            .body({members: [memberChanged]})
             .expectStatus(200)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
-                should.exist(jsonResponse.members[0].subscriptions[0].price);
-                return jsonResponse.members[0];
-            }).then((paidMember) => {
-                return agent
-                    .put(`members/${paidMember.id}/`)
-                    .body({members: [memberChanged]})
-                    .expectHeader('Content-Type', /json/)
-                    .expectHeader('Cache-Control', testUtils.cacheRules.private)
-                    .expectStatus(200)
-                    .then((res) => {
-                        should.not.exist(res.headers['x-cache-invalidate']);
-
-                        const jsonResponse = res.body;
-
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.members);
-                        jsonResponse.members.should.have.length(1);
-                        localUtils.API.checkResponse(jsonResponse.members[0], 'member', ['subscriptions', 'products']);
-                        should.exist(jsonResponse.members[0].subscriptions[0].price);
-                        jsonResponse.members[0].name.should.equal(memberChanged.name);
-                    });
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                members: [memberMatcherShallowIncludes]
             });
     });
 
-    it('Add should fail when passing incorrect email_type query parameter', function () {
-        const member = {
+    it('Add should fail when passing incorrect email_type query parameter', async function () {
+        const newMember = {
             name: 'test',
             email: 'memberTestAdd@test.com'
         };
 
-        return agent
+        await agent
             .post(`members/?send_email=true&email_type=lel`)
-            .body({members: [member]})
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
-            .expectStatus(422);
+            .body({members: [newMember]})
+            .expectStatus(422)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
     });
 
-    it('Add should fail when comped flag is passed in but Stripe is not enabled', function () {
-        const member = {
+    it('Add should fail when comped flag is passed in but Stripe is not enabled', async function () {
+        const newMember = {
             email: 'memberTestAdd@test.com',
             comped: true
         };
 
-        return agent
+        await agent
             .post(`members/`)
-            .body({members: [member]})
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .body({members: [newMember]})
             .expectStatus(422)
-            .then((res) => {
-                const jsonResponse = res.body;
-
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.errors);
-
-                jsonResponse.errors[0].message.should.eql('Validation error, cannot save member.');
-                jsonResponse.errors[0].context.should.match(/Missing Stripe connection./);
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
             });
     });
 
     it('Can delete a member without cancelling Stripe Subscription', async function () {
-        const member = {
+        const newMember = {
             name: 'Member 2 Delete',
             email: 'Member2Delete@test.com'
         };
 
+        // @TODO: use a fixture member in the right state using fixtureManager.get('members', x)
+        // @TODO: instead of creating a new member as this wastes a request
         const createdMember = await agent
             .post(`members/`)
-            .body({members: [member]})
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .body({members: [newMember]})
             .expectStatus(201)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-                const jsonResponse = res.body;
-                should.exist(jsonResponse);
-                should.exist(jsonResponse.members);
-                jsonResponse.members.should.have.length(1);
-
-                return jsonResponse.members[0];
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyString
+            })
+            .matchBodySnapshot({
+                members: [
+                    memberMatcherNoIncludes
+                ]
+            })
+            .then(({body}) => {
+                return body.members[0];
             });
 
         await agent
             .delete(`members/${createdMember.id}/`)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
             .expectStatus(204)
-            .then((res) => {
-                should.not.exist(res.headers['x-cache-invalidate']);
-
-                const jsonResponse = res.body;
-
-                should.exist(jsonResponse);
-            });
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot();
+        // @TODO: assert side effect - stripe subscription is not cancelled
     });
 
-    it('Errors when fetching stats with unknown days param value', function () {
-        return agent
+    it('Errors when fetching stats with unknown days param value', async function () {
+        await agent
             .get('members/stats/?days=nope')
-            .expectHeader('Content-Type', /json/)
-            .expectHeader('Cache-Control', testUtils.cacheRules.private)
-            .expectStatus(422);
+            .expectStatus(422)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
     });
 });

@@ -151,6 +151,7 @@ module.exports = {
     },
     matchers: {
         anyString: any(String),
+        anyArray: any(Array),
         anyDate: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
         anyEtag: stringMatching(/(?:W\/)?"(?:[ !#-\x7E\x80-\xFF]*|\r\n[\t ]|\\.)*"/),
         anyObjectId: stringMatching(/[a-f0-9]{24}/),
