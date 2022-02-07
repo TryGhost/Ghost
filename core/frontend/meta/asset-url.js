@@ -41,9 +41,20 @@ function getAssetUrl(path, hasMinFile) {
         config.set('assetHash', (crypto.createHash('md5').update(Date.now().toString()).digest('hex')).substring(0, 10));
     }
 
+    // if url has # make sure the hash is at th right place
+    let anchor;
+    if (path.match('#')) {
+        const index = output.indexOf('#');
+        anchor = output.substring(index);
+        output = output.slice(0, index);
+    }
+
     // Finally add the asset hash to the output URL
     output += '?v=' + config.get('assetHash');
 
+    if (anchor) {
+        output += anchor;
+    }
     return output;
 }
 
