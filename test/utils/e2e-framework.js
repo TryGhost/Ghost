@@ -45,6 +45,9 @@ const startGhost = async () => {
         server: false
     };
 
+    // Ensure the DB state
+    await resetDb();
+
     return boot(defaults);
 };
 
@@ -105,7 +108,7 @@ const getFixture = (type, index = 0) => {
 };
 
 const resetDb = async () => {
-    await db.teardown();
+    await db.reset();
 };
 
 /**
