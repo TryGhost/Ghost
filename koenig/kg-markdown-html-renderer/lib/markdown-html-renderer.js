@@ -1,28 +1,12 @@
 const MarkdownIt = require('markdown-it');
 const semver = require('semver');
+const {slugify: kgSlugify} = require('@tryghost/kg-utils');
 
 const renderers = {};
 
 const namedHeaders = function ({ghostVersion} = {}) {
     const slugify = function (inputString, usedHeaders = {}) {
-        const version = semver.coerce(ghostVersion || '4.0');
-
-        let slug;
-
-        if (semver.satisfies(version, '<4.x')) {
-            // backwards compatible slugs used in Ghost 0.x to 3.x markdown
-            slug = inputString.replace(/[^\w]/g, '').toLowerCase();
-        } else {
-            // news slugs introduced in 4.0
-            // allows all chars except symbols but will urlEncode everything
-            // produces %-encoded chars in src but browsers show real chars in status bar and url bar
-            slug = encodeURIComponent(inputString.trim()
-                .toLowerCase()
-                .replace(/[\][!"#$%&'()*+,./:;<=>?@\\^_{|}~]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/^-|-{2,}|-$/g, '')
-            );
-        }
+        let slug = kgSlugify(inputString, {ghostVersion, type: 'markdown'});
 
         if (usedHeaders[slug]) {
             usedHeaders[slug] += 1;

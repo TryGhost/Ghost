@@ -28,11 +28,12 @@
     "sinon": "13.0.1"
   },
   "dependencies": {
+    "@tryghost/kg-utils": "^1.0.0",
     "markdown-it": "^12.2.0",
     "markdown-it-footnote": "^3.0.3",
     "markdown-it-image-lazy-loading": "^1.1.0",
     "markdown-it-lazy-headers": "^0.1.3",
     "markdown-it-mark": "^3.0.0",
-    "semver": "^7.3.4"
+    "semver": "^7.3.5"
   }
 }

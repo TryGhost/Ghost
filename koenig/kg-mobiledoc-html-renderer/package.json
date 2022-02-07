@@ -22,8 +22,8 @@
     "access": "public"
   },
   "dependencies": {
+    "@tryghost/kg-utils": "^1.0.0",
     "mobiledoc-dom-renderer": "^0.7.0",
-    "semver": "^7.3.4",
     "simple-dom": "^1.4.0"
   },
   "devDependencies": {
