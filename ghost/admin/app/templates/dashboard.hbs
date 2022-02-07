@@ -52,7 +52,7 @@
                             </span>
                         </GhDropdownButton>
                         <GhDropdown @name="launch-wizard-dismiss" @classNames="gh-dashboard-dismiss-dropdown dropdown-menu dropdown-triangle-top-right">
-                            <button class="gh-btn" type="button" {{action "dismissLaunchBanner"}}><span>Dismiss</span></button>
+                            <button class="gh-btn" type="button" {{on "click" this.dismissLaunchBanner}}><span>Dismiss</span></button>
                         </GhDropdown>
                     </div>
                 </div>
@@ -262,7 +262,7 @@
 
         <section class="gh-dashboard-area members-activity">
             {{#if this.showMembersData}}
-                {{#unless (feature "membersActivityFeed")}}
+                {{#if (not (feature "membersActivityFeed"))}}
                 {{#if this.topMembersData}}
                     <div class="gh-dashboard-box grey top-members">
                         <div class="gh-dashboard-header-container">
@@ -312,12 +312,12 @@
                         </div>
                     </div>
                 {{/if}}
-                {{/unless}}
+                {{/if}}
 
                 <Dashboard::LatestMemberActivity />
             {{/if}}
 
-            {{#unless (or  this.whatsNewEntriesLoading this.whatsNewEntriesError)}}
+            {{#if (not (or this.whatsNewEntriesLoading this.whatsNewEntriesError))}}
             <div class="gh-dashboard-box whats-new {{if this.whatsNew.hasNew "has-new"}}">
                 <div class="gh-dashboard-header-container">
                     <h4 class="gh-dashboard-header">What's new?</h4>
@@ -338,7 +338,7 @@
                     <LinkTo @route="whatsnew" @query={{hash entry=null}} class="green">See more &rarr;</LinkTo>
                 </div>
             </div>
-            {{/unless}}
+            {{/if}}
         </section>
     </div>
 </section>
