@@ -1749,3 +1749,6 @@ remove|ember-template-lint|no-inline-styles|2|24|2|24|2d0ef0aab274628106cd50bf3f
 remove|ember-template-lint|no-inline-styles|5|9|5|9|3237d3db72009ef7baa5ebfa8d525fa5fd81262c|1643760000000|1646352000000|1648940400000|lib/koenig-editor/addon/components/koenig-card.hbs
 remove|ember-template-lint|no-inline-styles|4|184|4|184|a12733a23b22869ee4768f3eb54ae173ec89cf57|1643760000000|1646352000000|1648940400000|lib/koenig-editor/addon/components/koenig-menu-content.hbs
 remove|ember-template-lint|no-inline-styles|1|65|1|65|9aa896506aeda32973773a70e1b3ecf21cf7e9ec|1643760000000|1646352000000|1648940400000|lib/koenig-editor/addon/components/koenig-text-replacement-html-input.hbs
+remove|ember-template-lint|no-action|55|65|55|65|4f2484807aa3b43053ef6fbe972def1d322931aa|1643760000000|1646352000000|1648940400000|app/templates/dashboard.hbs
+remove|ember-template-lint|simple-unless|265|26|265|26|17d2867a6155411eaf3c32cb83391e3118c2afc8|1643760000000|1646352000000|1648940400000|app/templates/dashboard.hbs
+remove|ember-template-lint|simple-unless|320|22|320|22|ca177565b6e1c5a6175982047708732f5dde7e59|1643760000000|1646352000000|1648940400000|app/templates/dashboard.hbs
