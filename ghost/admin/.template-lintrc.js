@@ -1,3 +1,7 @@
 module.exports = {
-  extends: "recommended"
+    extends: "recommended",
+
+    rules: {
+        "no-inline-styles": false
+    }
 };
