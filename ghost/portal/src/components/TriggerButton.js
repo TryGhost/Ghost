@@ -107,7 +107,7 @@ class TriggerButtonContent extends React.Component {
         const Style = Styles({brandColor: this.context.brandColor});
         const memberGravatar = this.context.member && this.context.member.avatar_image;
 
-        if (!buttonStyle.includes('icon')) {
+        if (!buttonStyle.includes('icon') && !this.context.member) {
             return null;
         }
 
