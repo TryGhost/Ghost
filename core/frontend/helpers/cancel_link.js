@@ -44,6 +44,6 @@ module.exports = function cancelLabsWrapper() {
         helperName: 'cancel_link',
         helpUrl: 'https://ghost.org/docs/themes/members/'
     }, () => {
-        return cancel_link.apply(self, args);
+        return cancel_link.apply(self, args); // eslint-disable-line camelcase
     });
 };
