@@ -1,9 +1,13 @@
-<LiquidWormhole @class="unsplash">
+{{#in-element (query-selector "#unsplash-selector-wormhole")}}
     {{!-- TODO: why does this modal background not cover the PSM without style override? --}}
-    <div class="fullscreen-modal-background" {{action "close"}} style="z-index: 999"></div>
-    <div class="absolute top-8 right-8 bottom-8 left-8 br4 overflow-hidden bg-white z-9999" data-unsplash>
+    <div class="fullscreen-modal-background" role="button" {{on "click" @close}} style="z-index: 999"></div>
+    <div
+        class="absolute top-8 right-8 bottom-8 left-8 br4 overflow-hidden bg-white z-9999"
+        {{on-resize this.handleResize}}
+        {{on-key "Escape" this.handleEscape}}
+    >
         {{!-- close button --}}
-        <button type="button" class="absolute top-6 right-6" {{action "close"}}>
+        <button type="button" class="absolute top-6 right-6" {{on "click" @close}}>
             {{svg-jar "close" class="w4 stroke-midlightgrey-l2"}}
         </button>
 
@@ -16,17 +20,18 @@
                 </h1>
                 <span class="gh-input-icon mw88-l flex-auto w-100 mt3 mt0-l">
                     {{svg-jar "search"}}
-                    <GhTextInput
-                        @class="gh-unsplash-search"
-                        @name="searchKeyword"
-                        @placeholder="Search free high-resolution photos"
-                        @tabindex="1"
-                        @shouldFocus={{true}}
-                        @autocorrect="off"
-                        @value={{readonly this.unsplash.searchTerm}}
-                        @input={{action "search" value="target.value"}}
-                        @focusIn={{action "setKeyScope"}}
-                        @focus-out={{action "resetKeyScope"}}
+                    <input
+                        type="text"
+                        class="gh-unsplash-search"
+                        name="searchKeyword"
+                        placeholder="Search free high-resolution photos"
+                        tabindex="0"
+                        autocorrect="off"
+                        value={{readonly this.unsplash.searchTerm}}
+                        aria-label="Search Unsplash photos"
+                        {{on "input" this.search}}
+                        {{on-key "Escape" this.clearSearch}}
+                        {{autofocus}}
                     />
                 </span>
             </header>
@@ -40,7 +45,7 @@
                             {{#each this.unsplash.columns as |photos|}}
                                 <div class="gh-unsplash-grid-column">
                                     {{#each photos as |photo|}}
-                                        <GhUnsplashPhoto @photo={{photo}} @zoom={{action "zoomPhoto"}} @select={{action "select"}} />
+                                        <GhUnsplashPhoto @photo={{photo}} @zoom={{this.zoomPhoto}} @select={{this.select}} />
                                     {{/each}}
                                 </div>
                             {{/each}}
@@ -59,7 +64,7 @@
                         <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
                             <div>
                                 <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="Network error" />
-                                <h4>{{this.unsplash.error}} (<a href="#" {{action "retry"}}>retry</a>)</h4>
+                                <h4>{{this.unsplash.error}} (<a href="#" {{on "click" this.retry}}>retry</a>)</h4>
                             </div>
                         </section>
                     {{/if}}
@@ -71,22 +76,21 @@
                     {{/if}}
 
                     <GhScrollTrigger
-                        @enter={{action "loadNextPage"}}
+                        @enter={{this.loadNextPage}}
                         @triggerOffset={{1000}} />
                 </div>
 
                 {{!-- zoomed image overlay --}}
                 {{#if this.zoomedPhoto}}
-                    <div class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{action "closeZoom"}}>
+                    <a href="#" class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{on "click" this.closeZoom}}>
                         <GhUnsplashPhoto
                             @photo={{this.zoomedPhoto}}
                             @zoomed={{true}}
-                            @zoom={{action "closeZoom"}}
-                            @select={{action "select"}} />
-                    </div>
+                            @zoom={{this.closeZoom}}
+                            @select={{this.select}} />
+                    </a>
                 {{/if}}
             </div>
         </div>
     </div>
-
-</LiquidWormhole>
+{{/in-element}}
