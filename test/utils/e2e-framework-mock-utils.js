@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const assert = require('node:assert');
+const assert = require('assert');
 
 let mocks = {};
 let emailCount = 0;
