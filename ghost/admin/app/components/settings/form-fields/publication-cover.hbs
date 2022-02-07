@@ -29,9 +29,16 @@
                     </button>
                 </div>
             {{else}}
-                <button id="publication-cover" type="button" class="gh-btn gh-btn-white self-start" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="coverImage">
-                    <span>Upload cover</span>
-                </button>
+                <div class="self-start">
+                    <button id="publication-cover" type="button" class="gh-btn gh-btn-white" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="coverImage">
+                        <span>Upload cover</span>
+                    </button>
+                    {{#if (feature "improvedOnboarding")}}
+                        <button type="button" class="gh-btn gh-btn-white w10" {{on "click" this.toggleUnsplashSelector}} aria-label="Select photo from Unsplash">
+                            <span>{{svg-jar "unsplash"}}</span>
+                        </button>
+                    {{/if}}
+                </div>
             {{/if}}
             <div class="dn">
                 <GhFileInput
@@ -45,4 +52,11 @@
         </div>
     </div>
     </GhUploader>
+
+    {{#if this.showUnsplashSelector}}
+        <GhUnsplash
+            @select={{this.setUnsplashImage}}
+            @close={{this.toggleUnsplashSelector}}
+        />
+    {{/if}}
 </div>
