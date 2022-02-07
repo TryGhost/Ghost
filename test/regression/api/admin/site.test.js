@@ -1,13 +1,13 @@
 const {expect} = require('chai');
 const {any, stringMatching} = require('expect');
 
-const framework = require('../../../utils/e2e-framework');
+const {agentProvider} = require('../../../utils/e2e-framework');
 
 describe('Config API', function () {
     let agent;
 
     before(async function () {
-        agent = await framework.getAgent('/ghost/api/canary/admin/');
+        agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
     });
 
     it('can retrieve config and all expected properties', async function () {
