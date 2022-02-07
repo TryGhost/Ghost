@@ -4,34 +4,32 @@ const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
+const {agentProvider, mockManager, fixtureManager} = require('../../../utils/e2e-framework');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
 const labs = require('../../../../core/shared/labs');
 const mailService = require('../../../../core/server/services/mail');
 
-let request;
+let agent;
+let emailStub;
 
 describe('Members API', function () {
     before(function () {
         sinon.stub(labs, 'isSet').withArgs('members').returns(true);
     });
 
-    after(function () {
-        sinon.restore();
-    });
-
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'members');
+        agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
+        await fixtureManager.init('members');
+        await agent.loginAsOwner();
     });
 
     beforeEach(function () {
-        sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        emailStub = mockManager.mockMail();
     });
 
     afterEach(function () {
-        sinon.restore();
+        mockManager.restore();
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -46,13 +44,12 @@ describe('Members API', function () {
             email_type: 'signup'
         };
 
-        const res = await request
-            .post(localUtils.API.getApiQuery(`members/?${querystring.stringify(queryParams)}`))
-            .send({members: [member]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
+        const res = await agent
+            .post(`members/?${querystring.stringify(queryParams)}`)
+            .body({members: [member]})
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(201);
 
         should.not.exist(res.headers['x-cache-invalidate']);
         const jsonResponse = res.body;
@@ -71,20 +68,18 @@ describe('Members API', function () {
         mailService.GhostMailer.prototype.send.called.should.be.true();
         mailService.GhostMailer.prototype.send.args[0][0].to.should.equal('member_getting_confirmation@test.com');
 
-        await request
-            .delete(localUtils.API.getApiQuery(`members/${jsonResponse.members[0].id}/`))
-            .set('Origin', config.get('url'))
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(204);
+        await agent
+            .delete(`members/${jsonResponse.members[0].id}/`)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(204);
     });
 
     it('Can order by email_open_rate', async function () {
-        await request
-            .get(localUtils.API.getApiQuery('members/?order=email_open_rate%20desc'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
+        await agent
+            .get('members/?order=email_open_rate%20desc')
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 const jsonResponse = res.body;
@@ -102,12 +97,11 @@ describe('Members API', function () {
                 should.equal(null, jsonResponse.members[3].email_open_rate);
             });
 
-        await request
-            .get(localUtils.API.getApiQuery('members/?order=email_open_rate%20asc'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
+        await agent
+            .get('members/?order=email_open_rate%20asc')
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(200)
             .then((res) => {
                 const jsonResponse = res.body;
                 localUtils.API.checkResponse(jsonResponse, 'members');
@@ -125,12 +119,11 @@ describe('Members API', function () {
     });
 
     it('Can search by case-insensitive name', function () {
-        return request
-            .get(localUtils.API.getApiQuery('members/?search=egg'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
+        return agent
+            .get('members/?search=egg')
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 const jsonResponse = res.body;
@@ -145,12 +138,11 @@ describe('Members API', function () {
     });
 
     it('Can search by case-insensitive email', function () {
-        return request
-            .get(localUtils.API.getApiQuery('members/?search=MEMBER2'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
+        return agent
+            .get('members/?search=MEMBER2')
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 const jsonResponse = res.body;
@@ -165,12 +157,11 @@ describe('Members API', function () {
     });
 
     it('Can search for paid members', function () {
-        return request
-            .get(localUtils.API.getApiQuery('members/?search=egon&paid=true'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
+        return agent
+            .get('members/?search=egon&paid=true')
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 const jsonResponse = res.body;
@@ -185,12 +176,11 @@ describe('Members API', function () {
     });
 
     it('Search for non existing member returns empty result set', function () {
-        return request
-            .get(localUtils.API.getApiQuery('members/?search=do_not_exist'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
+        return agent
+            .get('members/?search=do_not_exist')
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 const jsonResponse = res.body;
@@ -204,12 +194,11 @@ describe('Members API', function () {
         const memberChanged = {
             name: 'Updated name'
         };
-        return request
-            .get(localUtils.API.getApiQuery('members/?search=egon&paid=true'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
+        return agent
+            .get('members/?search=egon&paid=true')
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 const jsonResponse = res.body;
@@ -219,13 +208,12 @@ describe('Members API', function () {
                 should.exist(jsonResponse.members[0].subscriptions[0].price);
                 return jsonResponse.members[0];
             }).then((paidMember) => {
-                return request
-                    .put(localUtils.API.getApiQuery(`members/${paidMember.id}/`))
-                    .send({members: [memberChanged]})
-                    .set('Origin', config.get('url'))
-                    .expect('Content-Type', /json/)
-                    .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
+                return agent
+                    .put(`members/${paidMember.id}/`)
+                    .body({members: [memberChanged]})
+                    .expectHeader('Content-Type', /json/)
+                    .expectHeader('Cache-Control', testUtils.cacheRules.private)
+                    .expectStatus(200)
                     .then((res) => {
                         should.not.exist(res.headers['x-cache-invalidate']);
 
@@ -247,13 +235,12 @@ describe('Members API', function () {
             email: 'memberTestAdd@test.com'
         };
 
-        return request
-            .post(localUtils.API.getApiQuery(`members/?send_email=true&email_type=lel`))
-            .send({members: [member]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422);
+        return agent
+            .post(`members/?send_email=true&email_type=lel`)
+            .body({members: [member]})
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(422);
     });
 
     it('Add should fail when comped flag is passed in but Stripe is not enabled', function () {
@@ -262,13 +249,12 @@ describe('Members API', function () {
             comped: true
         };
 
-        return request
-            .post(localUtils.API.getApiQuery(`members/`))
-            .send({members: [member]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422)
+        return agent
+            .post(`members/`)
+            .body({members: [member]})
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(422)
             .then((res) => {
                 const jsonResponse = res.body;
 
@@ -286,12 +272,12 @@ describe('Members API', function () {
             email: 'Member2Delete@test.com'
         };
 
-        const createdMember = await request.post(localUtils.API.getApiQuery(`members/`))
-            .send({members: [member]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201)
+        const createdMember = await agent
+            .post(`members/`)
+            .body({members: [member]})
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(201)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
                 const jsonResponse = res.body;
@@ -302,10 +288,10 @@ describe('Members API', function () {
                 return jsonResponse.members[0];
             });
 
-        await request.delete(localUtils.API.getApiQuery(`members/${createdMember.id}/`))
-            .set('Origin', config.get('url'))
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(204)
+        await agent
+            .delete(`members/${createdMember.id}/`)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(204)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
 
@@ -316,11 +302,10 @@ describe('Members API', function () {
     });
 
     it('Errors when fetching stats with unknown days param value', function () {
-        return request
-            .get(localUtils.API.getApiQuery('members/stats/?days=nope'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422);
+        return agent
+            .get('members/stats/?days=nope')
+            .expectHeader('Content-Type', /json/)
+            .expectHeader('Cache-Control', testUtils.cacheRules.private)
+            .expectStatus(422);
     });
 });

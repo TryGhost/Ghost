@@ -19,6 +19,7 @@ class TestAgent extends Agent {
         super(app, {
             baseUrl: options.apiURL,
             headers: {
+                host: options.originURL.replace(/http:\/\//, ''),
                 origin: options.originURL
             }
         });
