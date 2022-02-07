@@ -1,120 +1,100 @@
 /* global key */
-import Component from '@ember/component';
-import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
-import {bind} from '@ember/runloop';
-import {or} from '@ember/object/computed';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 const ONE_COLUMN_WIDTH = 540;
 const TWO_COLUMN_WIDTH = 940;
 
-export default Component.extend(ShortcutsMixin, {
-    resizeDetector: service(),
-    unsplash: service(),
-    ui: service(),
+export default class GhUnsplash extends Component {
+    @service unsplash;
+    @service ui;
 
-    shortcuts: null,
-    tagName: '',
-    zoomedPhoto: null,
-    searchTerm: null,
+    @tracked zoomedPhoto = null;
+    @tracked searchTerm = null;
 
-    // closure actions
-    close() {},
-    select() {},
+    get sideNavHidden() {
+        return this.ui.isFullScreen || this.ui.showMobileMenu;
+    }
 
-    sideNavHidden: or('ui.{isFullScreen,showMobileMenu}'),
+    constructor() {
+        super(...arguments);
+        key.setScope('unsplash');
+    }
 
-    init() {
-        this._super(...arguments);
+    willDestroy() {
+        super.willDestroy(...arguments);
+        key.setScope('default');
+    }
 
-        this.shortcuts = {
-            escape: {action: 'handleEscape', scope: 'all'}
+    @action
+    loadNextPage() {
+        this.unsplash.loadNextPage();
+    }
+
+    @action
+    search(event) {
+        event.preventDefault();
+        const term = event.target.value;
+        this.unsplash.updateSearch(term);
+        this.closeZoom();
+    }
+
+    @action
+    clearSearch(event, ekEvent) {
+        if (event.target.value) {
+            ekEvent.stopPropagation();
+            this.unsplash.updateSearch('');
+        }
+    }
+
+    @action
+    zoomPhoto(photo) {
+        this.zoomedPhoto = photo;
+    }
+
+    @action
+    closeZoom(event) {
+        event?.preventDefault?.();
+        this.zoomedPhoto = null;
+    }
+
+    @action
+    select(photo) {
+        this.unsplash.triggerDownload(photo);
+
+        let selectParams = {
+            src: photo.urls.regular.replace(/&w=1080/, '&w=2000'),
+            width: photo.width,
+            height: photo.height,
+            alt: photo.description || '',
+            caption: `Photo by <a href="${photo.user.links.html}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">${photo.user.name}</a> / <a href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">Unsplash</a>`
         };
-    },
+        this.args.select(selectParams);
 
-    didReceiveAttrs() {
-        this._super(...arguments);
+        this.args.close();
+    }
 
-        if (this.searchTerm !== this._searchTerm) {
-            this.unsplash.updateSearch(this.searchTerm);
+    @action
+    retry(event) {
+        event?.preventDefault();
+        this.unsplash.retryLastRequest();
+    }
+
+    @action
+    handleEscape(event) {
+        event?.preventDefault();
+
+        if (this.zoomedPhoto) {
+            return this.closeZoom();
         }
 
-        this._searchTerm = this.searchTerm;
-    },
+        this.args.close();
+    }
 
-    didInsertElement() {
-        this._super(...arguments);
-        this._resizeCallback = bind(this, this._handleResize);
-        this.resizeDetector.setup('[data-unsplash]', this._resizeCallback);
-        this.registerShortcuts();
-    },
-
-    willDestroyElement() {
-        this.resizeDetector.teardown('[data-unsplash]', this._resizeCallback);
-        this.removeShortcuts();
-        this.send('resetKeyScope');
-        this._super(...arguments);
-    },
-
-    actions: {
-        loadNextPage() {
-            this.unsplash.loadNextPage();
-        },
-
-        search(term) {
-            this.unsplash.updateSearch(term);
-            this.send('closeZoom');
-        },
-
-        zoomPhoto(photo) {
-            this.set('zoomedPhoto', photo);
-        },
-
-        closeZoom() {
-            this.set('zoomedPhoto', null);
-        },
-
-        select(photo) {
-            this.unsplash.triggerDownload(photo);
-
-            let selectParams = {
-                src: photo.urls.regular.replace(/&w=1080/, '&w=2000'),
-                width: photo.width,
-                height: photo.height,
-                alt: photo.description || '',
-                caption: `Photo by <a href="${photo.user.links.html}?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">${photo.user.name}</a> / <a href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">Unsplash</a>`
-            };
-            this.select(selectParams);
-
-            this.close();
-        },
-
-        close() {
-            this.close();
-        },
-
-        retry() {
-            this.unsplash.retryLastRequest();
-        },
-
-        setKeyScope() {
-            key.setScope('unsplash');
-        },
-
-        resetKeyScope() {
-            key.setScope('default');
-        },
-
-        handleEscape() {
-            if (this.zoomedPhoto) {
-                return this.send('closeZoom');
-            }
-
-            this.close();
-        }
-    },
-
-    _handleResize(element) {
+    @action
+    handleResize(element) {
         let width = element.clientWidth;
         let columns = 3;
 
@@ -126,4 +106,4 @@ export default Component.extend(ShortcutsMixin, {
 
         this.unsplash.changeColumnCount(columns);
     }
-});
+}
