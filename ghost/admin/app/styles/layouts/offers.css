@@ -35,14 +35,14 @@
 
 .gh-offers-list-cta .discount-bubble {
     color: var(--lightgrey);
-    width: 72px;
-    height: 72px;
-    margin-bottom: 16px;
+    width: 68px;
+    height: 68px;
+    margin-bottom: 20px;
 }
 
 .gh-offers-list-cta .discount-bubble path,
 .gh-offers-list-cta .discount-bubble circle {
-    stroke-width: 0.8px;
+    stroke-width: 1px;
 }
 
 .gh-offers-list-cta button {

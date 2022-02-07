@@ -77,6 +77,11 @@
     top: 0;
 }
 
+.gh-list-with-helpsection {
+    height: unset;
+    margin: 0 -48px;
+}
+
 .members-header .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
     padding-left: 32px;
@@ -135,11 +140,6 @@ p.gh-members-list-email {
     display: inline-block;
     max-width: 300px;
     min-width: 220px;
-}
-
-.gh-members-placeholder {
-    width: 118px;
-    margin: -30px 0 15px;
 }
 
 .gh-member-list-avatar {
@@ -467,6 +467,176 @@ p.gh-members-list-email {
     }
 }
 
+/* Members empty state
+/* ----------------------------------------- */
+
+.gh-members-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2vw 4vw;
+}
+
+.gh-members-empty .gh-members-placeholder {
+    fill: var(--lightgrey);
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+}
+
+.gh-members-empty h4 {
+    color: var(--black);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.gh-members-empty p {
+    max-width: 390px;
+    color: var(--midgrey);
+    text-align: center;
+    line-height: 1.45em;
+    margin: 0 0 20px;
+    padding: 0;
+}
+
+.gh-members-empty .gh-members-empty-secondary-cta {
+    margin-top: 3.2rem;
+    max-width: max-content;
+}
+
+.gh-members-empty-secondary-cta a {
+    font-weight: 500;
+}
+
+.gh-members-help {
+    margin-top: 8vmin;
+    margin-bottom: 0;
+}
+
+.gh-members-help .gh-main-section-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 32px;
+    padding: 32px;
+}
+
+@media (max-width: 1080px) {
+    .gh-members-help .gh-main-section-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.gh-members-help-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: var(--white);
+    border-radius: 3px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.07);
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    padding: 32px;
+    transition: all 0.3s ease-in-out;
+}
+
+.gh-members-help-card p {
+    line-height: 1.4em;
+    margin-top: 12px;
+}
+
+.gh-members-help-card .thumbnail {
+    width: 100%;
+    height: 200px;
+    max-width: 200px;
+    background-size: cover;
+    background-position: left -80px top 0;
+    aspect-ratio: 1 / 1;
+}
+
+.gh-members-help-card .thumbnail.right {
+    background-position: left -40px top 0;
+}
+
+@media (max-width: 620px),
+(min-width: 800px) and (max-width: 960px), 
+(min-width: 1080px) and (max-width: 1440px) {  
+    .gh-members-help-card .thumbnail {
+        max-width: unset;
+        margin-top: 2rem;
+        background-position: unset;
+    }
+
+    .gh-members-help-card .thumbnail.right {
+        background-position: unset;
+    }
+}
+
+
+
+.gh-members-help-card:hover {
+    box-shadow:
+        0px 54px 80px rgba(0, 0, 0, 0.07),
+        0px 19.7109px 29.2013px rgba(0, 0, 0, 0.0482987),
+        0px 9.56927px 14.1767px rgba(0, 0, 0, 0.0389404),
+        0px 4.69103px 6.94968px rgba(0, 0, 0, 0.0310596),
+        0px 1.85484px 2.74791px rgba(0, 0, 0, 0.0217013);
+    transition: all 0.3s ease-in-out;
+    transform: translateY(-4px);
+}
+
+.gh-members-help-content {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 620px),
+(min-width: 800px) and (max-width: 960px), 
+(min-width: 1080px) and (max-width: 1440px) {  
+    .gh-members-help-content {
+        flex-direction: column;
+    }
+}
+
+.gh-members-help-content .text {
+    position: relative;
+    margin: 2rem 0 0 3.2rem;
+    flex-grow: 1;
+}
+
+.gh-members-help-content .gh-btn-link {
+    position: absolute;
+    bottom: 0;
+    margin: 1rem 0;
+}
+
+@media (min-width: 1440px) and (max-width: 1560px) {
+    .gh-members-help-content .text {
+        margin: 0 0 0 2rem;
+    }
+
+    .gh-members-help-content .gh-btn-link {
+        margin: 0;
+    }
+}
+
+@media (max-width: 620px),
+(min-width: 800px) and (max-width: 960px), 
+(min-width: 1080px) and (max-width: 1440px) {    
+    .gh-members-help-content .text {
+        margin: 2rem 0 0;
+    }
+    
+    .gh-members-help-content .text p {
+        margin-bottom: 2.8em;
+    }
+
+    .gh-members-help-content .gh-btn-link {
+        margin: 0;
+    }
+}
 
 /* Member details
 /* ----------------------------------------- */
