@@ -1,8 +1,8 @@
 const {expect} = require('chai');
-const security = require('@tryghost/security');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyEtag, anyDate, anyErrorId} = matchers;
-const testUtils = require('../../../utils');
+
+const security = require('@tryghost/security');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
@@ -12,7 +12,6 @@ const configUtils = require('../../../utils/configUtils');
 
 describe('Authentication API', function () {
     let agent;
-    let emailStub;
 
     describe('Blog setup', function () {
         before(async function () {
@@ -20,7 +19,7 @@ describe('Authentication API', function () {
         });
 
         beforeEach(function () {
-            emailStub = mockManager.mockMail();
+            mockManager.mockMail();
         });
 
         afterEach(function () {
@@ -69,7 +68,10 @@ describe('Authentication API', function () {
                 });
 
             // Test our side effects
-            expect(emailStub.called).to.be.true;
+            mockManager.assert.sentEmail({
+                subject: 'Your New Ghost Site',
+                to: 'test@example.com'
+            });
 
             expect(await settingsCache.get('active_theme')).to.eq('dawn');
         });
@@ -136,7 +138,6 @@ describe('Authentication API', function () {
     describe('Invitation', function () {
         before(async function () {
             agent = await agentProvider.getAdminAPIAgent();
-            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await fixtureManager.init('invites');
             await agent.loginAsOwner();
         });
@@ -152,7 +153,7 @@ describe('Authentication API', function () {
 
         it('check valid invite', async function () {
             await agent
-                .get(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`)
+                .get(`authentication/invitation?email=${fixtureManager.get('invites', 0).email}`)
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
@@ -192,9 +193,9 @@ describe('Authentication API', function () {
                 .post('authentication/invitation')
                 .body({
                     invitation: [{
-                        token: testUtils.DataGenerator.forKnex.invites[0].token,
+                        token: fixtureManager.get('invites', 0).token,
                         password: '12345678910',
-                        email: testUtils.DataGenerator.forKnex.users[0].email,
+                        email: fixtureManager.get('users', 0).email,
                         name: 'invited'
                     }]
                 })
@@ -214,9 +215,9 @@ describe('Authentication API', function () {
                 .post('authentication/invitation')
                 .body({
                     invitation: [{
-                        token: testUtils.DataGenerator.forKnex.invites[0].token,
+                        token: fixtureManager.get('invites', 0).token,
                         password: '12345678910',
-                        email: testUtils.DataGenerator.forKnex.invites[0].email,
+                        email: fixtureManager.get('invites', 0).email,
                         name: 'invited'
                     }]
                 })
@@ -229,7 +230,7 @@ describe('Authentication API', function () {
     });
 
     describe('Password reset', function () {
-        const user = testUtils.DataGenerator.forModel.users[0];
+        const email = fixtureManager.get('users', 0).email;
 
         before(async function () {
             agent = await agentProvider.getAdminAPIAgent();
@@ -239,7 +240,7 @@ describe('Authentication API', function () {
         });
 
         beforeEach(function () {
-            emailStub = mockManager.mockMail();
+            mockManager.mockMail();
         });
 
         afterEach(function () {
@@ -247,11 +248,11 @@ describe('Authentication API', function () {
         });
 
         it('reset password', async function () {
-            const ownerUser = await models.User.getOwnerUser(testUtils.context.internal);
+            const ownerUser = await fixtureManager.getCurrentOwnerUser();
 
             const token = security.tokens.resetToken.generateHash({
                 expires: Date.now() + (1000 * 60),
-                email: user.email,
+                email: email,
                 dbHash: settingsCache.get('db_hash'),
                 password: ownerUser.get('password')
             });
@@ -295,12 +296,12 @@ describe('Authentication API', function () {
         });
 
         it('reset password: expired token', async function () {
-            const ownerUser = await models.User.getOwnerUser(testUtils.context.internal);
+            const ownerUser = await fixtureManager.getCurrentOwnerUser();
 
             const dateInThePast = Date.now() - (1000 * 60);
             const token = security.tokens.resetToken.generateHash({
                 expires: dateInThePast,
-                email: user.email,
+                email: email,
                 dbHash: settingsCache.get('db_hash'),
                 password: ownerUser.get('password')
             });
@@ -329,7 +330,7 @@ describe('Authentication API', function () {
         it('reset password: unmatched token', async function () {
             const token = security.tokens.resetToken.generateHash({
                 expires: Date.now() + (1000 * 60),
-                email: user.email,
+                email: email,
                 dbHash: settingsCache.get('db_hash'),
                 password: 'invalid_password'
             });
@@ -361,7 +362,7 @@ describe('Authentication API', function () {
                 .header('Accept', 'application/json')
                 .body({
                     passwordreset: [{
-                        email: user.email
+                        email: email
                     }]
                 })
                 .expectStatus(200)
@@ -375,13 +376,12 @@ describe('Authentication API', function () {
     describe('Reset all passwords', function () {
         before(async function () {
             agent = await agentProvider.getAdminAPIAgent();
-            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await fixtureManager.init('invites');
             await agent.loginAsOwner();
         });
 
         beforeEach(function () {
-            emailStub = mockManager.mockMail();
+            mockManager.mockMail();
         });
 
         afterEach(function () {
