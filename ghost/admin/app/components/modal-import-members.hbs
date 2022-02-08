@@ -3,6 +3,7 @@
         <header class="modal-header" data-test-modal="import-members">
             <h1>Import members</h1>
         </header>
+        <p class="gh-box gh-box-green">Need some help? <a href="https://ghost.org/help/import-members/" target="_blank" rel="noopener noreferrer">Learn more</a> about importing members or <a href="https://static.ghost.org/v4.0.0/files/member-import-template.csv" target="_blank" rel="noopener noreferrer">download a sample CSV file</a>.</p>
     {{/if}}
 
     {{#if (or (eq this.state 'MAPPING') (eq this.state 'UPLOADING'))}}
@@ -104,18 +105,11 @@
         {{/if}}
     </div>
 
-    <div class="modal-footer modal-footer-spread">
+    <div class="modal-footer">
         {{#if (eq this.state 'INIT')}}
             <button class="gh-btn" data-test-button="close-import-members" type="button" {{action "closeModal"}}>
                 <span>Close</span>
             </button>
-            <a
-                class="gh-btn"
-                href="https://static.ghost.org/v4.0.0/files/member-import-template.csv"
-                target="_blank" rel="noopener noreferrer"
-            >
-                <span>Download sample CSV file</span>
-            </a>
         {{/if}}
 
         {{#if (eq this.state 'MAPPING')}}

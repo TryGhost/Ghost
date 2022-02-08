@@ -15,19 +15,29 @@
 
 .gh-box a {
     color: var(--black);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .gh-box svg:first-of-type {
     position: absolute;
     left: 12px;
     width: auto;
+    fill: var(--blue);
 }
 
 .gh-box-tip svg:first-of-type {
     top: 12px;
     height: 2rem;
-    fill: var(--blue);
+}
+
+.gh-box-green {
+    padding: 12px 24px;
+    background: color-mod(var(--green) a(4%));
+    border-color: color-mod(var(--green) a(60%));
+}
+
+.gh-box-green a {
+    color: var(--green-d1);
 }
 
 .gh-box-alert {
