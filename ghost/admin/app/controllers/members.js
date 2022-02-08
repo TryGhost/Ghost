@@ -45,7 +45,6 @@ export default class MembersController extends Controller {
     ];
 
     @tracked members = A([]);
-    @tracked searchText = '';
     @tracked searchParam = '';
     @tracked filterParam = null;
     @tracked softFilterParam = null;
@@ -77,13 +76,13 @@ export default class MembersController extends Controller {
     // Computed properties -----------------------------------------------------
 
     get listHeader() {
-        let {searchText, selectedLabel, members} = this;
+        let {searchParam, selectedLabel, members} = this;
 
         if (members.loading) {
             return 'Loading...';
         }
 
-        if (searchText) {
+        if (searchParam) {
             return 'Search result';
         }
 
@@ -369,10 +368,6 @@ export default class MembersController extends Controller {
         // params is undefined when called as a "refresh" of the model
         let {label, paidParam, searchParam, orderParam, filterParam} = typeof params === 'undefined' ? this : params;
 
-        if (!searchParam) {
-            this.resetSearch();
-        }
-
         // use a fixed created_at date so that subsequent pages have a consistent index
         let startDate = new Date();
 
@@ -536,10 +531,6 @@ export default class MembersController extends Controller {
         return response?.bulk?.meta;
     }
     // Internal ----------------------------------------------------------------
-
-    resetSearch() {
-        this.searchText = '';
-    }
 
     resetFilters(params) {
         if (!params?.filterParam) {

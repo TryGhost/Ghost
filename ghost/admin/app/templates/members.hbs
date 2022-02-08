@@ -7,9 +7,9 @@
                     {{svg-jar "search" class="gh-input-search-icon"}}
                     <GhTextInput
                         placeholder="Search members..."
-                        @value={{this.searchText}}
+                        @value={{this.searchParam}}
                         @input={{this.search}}
-                        class="gh-members-list-searchfield {{if this.searchText "active"}}" />
+                        class="gh-members-list-searchfield {{if this.searchParam "active"}}" />
                 </div>
             </div>
 
@@ -125,7 +125,7 @@
                     <div class="gh-members-empty">
                         {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
                         <h4>No members match the current filter</h4>
-                        <LinkTo @route="members" @query={{hash filter=null}} class="gh-btn mt4">
+                        <LinkTo @route="members" @query={{reset-query-params "members.index"}} class="gh-btn mt4">
                             <span>Show all members</span>
                         </LinkTo>
                     </div>
