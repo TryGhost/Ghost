@@ -48,7 +48,8 @@ export default class MembersFilterValue extends Component {
 
     @action
     updateInputFilterValueOnEnter(filterType, filterId, event) {
-        if (event.keyCode === 13) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
             this.args.setFilterValue(filterType, filterId, this.filterValue);
         }
     }
