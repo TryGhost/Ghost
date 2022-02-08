@@ -130,6 +130,7 @@ module.exports = {
                 id: emailModel.id
             });
         } catch (err) {
+            sentry.captureException(err);
             logging.error(err);
         }
 
