@@ -14,7 +14,7 @@
 // The output state checker is responsible for checking the response from the app after performing a request.
 const _ = require('lodash');
 const {sequence} = require('@tryghost/promise');
-const {any, anything, stringMatching} = require('@tryghost/jest-snapshot');
+const {any, stringMatching} = require('@tryghost/jest-snapshot');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
@@ -148,7 +148,13 @@ module.exports = {
         init: initFixtures,
         reset: resetDb
     },
-    any,
-    anything,
-    stringMatching
+    matchers: {
+        anyString: any(String),
+        anyDate: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
+        anyEtag: stringMatching(/(?:W\/)?"(?:[ !#-\x7E\x80-\xFF]*|\r\n[\t ]|\\.)*"/),
+        anyObjectId: stringMatching(/[a-f0-9]{24}/),
+        anyErrorId: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
+        anyUuid: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
+        stringMatching
+    }
 };

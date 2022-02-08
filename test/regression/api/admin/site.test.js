@@ -1,5 +1,5 @@
-const {any, stringMatching} = require('@tryghost/jest-snapshot');
-const {agentProvider} = require('../../../utils/e2e-framework');
+const {agentProvider, matchers} = require('../../../utils/e2e-framework');
+const {anyString, stringMatching} = matchers;
 
 describe('Site API', function () {
     let agent;
@@ -17,7 +17,7 @@ describe('Site API', function () {
                 }
             })
             .matchHeaderSnapshot({
-                etag: any(String)
+                etag: anyString
             });
     });
 });
