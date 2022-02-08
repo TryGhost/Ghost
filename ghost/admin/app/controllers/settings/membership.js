@@ -259,8 +259,8 @@ export default class MembersAccessController extends Controller {
     @action
     updatePortalPreview({forceRefresh} = {forceRefresh: false}) {
         // TODO: can these be worked out from settings in membersUtils?
-        const monthlyPrice = Math.round(this.stripeMonthlyAmount * 100);
-        const yearlyPrice = Math.round(this.stripeYearlyAmount * 100);
+        const monthlyPrice = this.stripeMonthlyAmount * 100;
+        const yearlyPrice = this.stripeYearlyAmount * 100;
         let portalPlans = this.settings.get('portalPlans') || [];
 
         let isMonthlyChecked = portalPlans.includes('monthly');
