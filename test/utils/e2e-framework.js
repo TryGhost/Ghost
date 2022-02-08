@@ -23,7 +23,7 @@ const uuid = require('uuid');
 const fixtures = require('./fixture-utils');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
-const mockUtils = require('./e2e-framework-mock-utils');
+const mockManager = require('./e2e-framework-mock-manager');
 
 const boot = require('../../core/boot');
 const TestAgent = require('./test-agent');
@@ -140,7 +140,7 @@ module.exports = {
     },
 
     // Mocks and Stubs
-    mockManager: mockUtils,
+    mockManager,
 
     // DB State Manipulation
     fixtureManager: {
