@@ -1,6 +1,7 @@
 const {expect} = require('chai');
 const security = require('@tryghost/security');
-const {agentProvider, mockManager, fixtureManager, any} = require('../../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
+const {anyEtag, anyDate, anyErrorId} = matchers;
 const testUtils = require('../../../utils');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
@@ -32,7 +33,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -59,12 +60,12 @@ describe('Authentication API', function () {
                 .expectStatus(201)
                 .matchBodySnapshot({
                     users: [{
-                        created_at: any(String),
-                        updated_at: any(String)
+                        created_at: anyDate,
+                        updated_at: anyDate
                     }]
                 })
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
 
             // Test our side effects
@@ -78,7 +79,7 @@ describe('Authentication API', function () {
                 .get('authentication/setup')
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -96,11 +97,11 @@ describe('Authentication API', function () {
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{
-                        id: any(String)
+                        id: anyErrorId
                     }]
                 })
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -121,13 +122,13 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot({
                     users: [{
-                        created_at: any(String),
-                        last_seen: any(String),
-                        updated_at: any(String)
+                        created_at: anyDate,
+                        last_seen: anyDate,
+                        updated_at: anyDate
                     }]
                 })
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
     });
@@ -145,7 +146,7 @@ describe('Authentication API', function () {
                 .get('authentication/invitation?email=invalidemail')
                 .expectStatus(400)
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -155,7 +156,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -165,7 +166,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -182,7 +183,7 @@ describe('Authentication API', function () {
                 })
                 .expectStatus(404)
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -200,11 +201,11 @@ describe('Authentication API', function () {
                 .expectStatus(422)
                 .matchBodySnapshot({
                     errors: [{
-                        id: any(String)
+                        id: anyErrorId
                     }]
                 })
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -222,7 +223,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
     });
@@ -267,7 +268,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -285,11 +286,11 @@ describe('Authentication API', function () {
                 .expectStatus(401)
                 .matchBodySnapshot({
                     errors: [{
-                        id: any(String)
+                        id: anyErrorId
                     }]
                 })
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -317,11 +318,11 @@ describe('Authentication API', function () {
                 .expectStatus(400)
                 .matchBodySnapshot({
                     errors: [{
-                        id: any(String)
+                        id: anyErrorId
                     }]
                 })
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -346,11 +347,11 @@ describe('Authentication API', function () {
                 .expectStatus(400)
                 .matchBodySnapshot({
                     errors: [{
-                        id: any(String)
+                        id: anyErrorId
                     }]
                 })
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
 
@@ -366,7 +367,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
         });
     });
@@ -394,7 +395,7 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot()
                 .matchHeaderSnapshot({
-                    etag: any(String)
+                    etag: anyEtag
                 });
 
             // Check side effects
