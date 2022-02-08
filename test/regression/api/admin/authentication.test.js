@@ -1,9 +1,7 @@
 const {expect} = require('chai');
-const {any} = require('expect');
 const security = require('@tryghost/security');
-
+const {agentProvider, mockManager, fixtureManager, any} = require('../../../utils/e2e-framework');
 const testUtils = require('../../../utils');
-const {agentProvider, mockManager, fixtureManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
@@ -11,7 +9,7 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/configUtils');
 
-describe('Authentication API canary', function () {
+describe('Authentication API', function () {
     let agent;
     let emailStub;
 
@@ -29,15 +27,13 @@ describe('Authentication API canary', function () {
         });
 
         it('is setup? no', async function () {
-            const res = await agent
+            await agent
                 .get('authentication/setup')
-                .expectStatus(200);
-
-            expect(res.body).to.matchSnapshot();
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('complete setup', async function () {
@@ -49,7 +45,7 @@ describe('Authentication API canary', function () {
             });
             settingsCache.get.callThrough();
 
-            const res = await agent
+            await agent
                 .post('authentication/setup')
                 .body({
                     setup: [{
@@ -60,34 +56,30 @@ describe('Authentication API canary', function () {
                         theme: 'TryGhost/Dawn'
                     }]
                 })
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(201);
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    users: [{
+                        created_at: any(String),
+                        updated_at: any(String)
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
 
-            expect(res.body).to.matchSnapshot({
-                users: [{
-                    created_at: any(Date),
-                    updated_at: any(Date)
-                }]
-            });
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
-
+            // Test our side effects
             expect(emailStub.called).to.be.true;
 
             expect(await settingsCache.get('active_theme')).to.eq('dawn');
         });
 
         it('is setup? yes', async function () {
-            const res = await agent
-                .get('authentication/setup');
-
-            expect(res.body).to.matchSnapshot();
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
+            await agent
+                .get('authentication/setup')
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('complete setup again', function () {
@@ -101,15 +93,22 @@ describe('Authentication API canary', function () {
                         blogTitle: 'a test blog'
                     }]
                 })
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(403);
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: any(String)
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('update setup', async function () {
             await fixtureManager.init();
             await agent.loginAsOwner();
 
-            const res = await agent
+            await agent
                 .put('authentication/setup')
                 .body({
                     setup: [{
@@ -119,20 +118,17 @@ describe('Authentication API canary', function () {
                         blogTitle: 'a test blog'
                     }]
                 })
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(200);
-
-            expect(res.body).to.matchSnapshot({
-                users: [{
-                    created_at: any(String),
-                    last_seen: any(String),
-                    updated_at: any(String)
-                }]
-            });
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    users: [{
+                        created_at: any(String),
+                        last_seen: any(String),
+                        updated_at: any(String)
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
     });
 
@@ -147,26 +143,30 @@ describe('Authentication API canary', function () {
         it('check invite with invalid email', function () {
             return agent
                 .get('authentication/invitation?email=invalidemail')
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(400);
+                .expectStatus(400)
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('check valid invite', async function () {
-            const res = await agent
+            await agent
                 .get(`authentication/invitation?email=${testUtils.DataGenerator.forKnex.invites[0].email}`)
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(200);
-
-            expect(res.body).to.matchSnapshot();
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('check invalid invite', async function () {
-            const res = await agent
+            await agent
                 .get(`authentication/invitation?email=notinvited@example.org`)
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(200);
-
-            expect(res.body).to.matchSnapshot();
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('try to accept without invite', function () {
@@ -180,8 +180,10 @@ describe('Authentication API canary', function () {
                         name: 'not invited'
                     }]
                 })
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(404);
+                .expectStatus(404)
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('try to accept with invite and existing email address', function () {
@@ -195,12 +197,19 @@ describe('Authentication API canary', function () {
                         name: 'invited'
                     }]
                 })
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(422);
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: any(String)
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('try to accept with invite', async function () {
-            const res = await agent
+            await agent
                 .post('authentication/invitation')
                 .body({
                     invitation: [{
@@ -210,10 +219,11 @@ describe('Authentication API canary', function () {
                         name: 'invited'
                     }]
                 })
-                .expectHeader('Content-Type', 'application/json; charset=utf-8')
-                .expectStatus(200);
-
-            expect(res.body).to.matchSnapshot();
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
     });
 
@@ -254,17 +264,15 @@ describe('Authentication API canary', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expectStatus(200);
-
-            expect(res.body).to.matchSnapshot();
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('reset password: invalid token', async function () {
-            const res = await agent
+            await agent
                 .put('authentication/passwordreset')
                 .header('Accept', 'application/json')
                 .body({
@@ -274,17 +282,15 @@ describe('Authentication API canary', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expectStatus(401);
-
-            expect(res.body).to.matchSnapshot({
-                errors: [{
-                    id: any(String)
-                }]
-            });
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
+                .expectStatus(401)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: any(String)
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('reset password: expired token', async function () {
@@ -298,7 +304,7 @@ describe('Authentication API canary', function () {
                 password: ownerUser.get('password')
             });
 
-            const res = await agent
+            await agent
                 .put('authentication/passwordreset')
                 .header('Accept', 'application/json')
                 .body({
@@ -308,17 +314,15 @@ describe('Authentication API canary', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expectStatus(400);
-
-            expect(res.body).to.matchSnapshot({
-                errors: [{
-                    id: any(String)
-                }]
-            });
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: any(String)
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('reset password: unmatched token', async function () {
@@ -329,7 +333,7 @@ describe('Authentication API canary', function () {
                 password: 'invalid_password'
             });
 
-            const res = await agent
+            await agent
                 .put('authentication/passwordreset')
                 .header('Accept', 'application/json')
                 .body({
@@ -339,21 +343,19 @@ describe('Authentication API canary', function () {
                         ne2Password: 'thisissupersafe'
                     }]
                 })
-                .expectStatus(400);
-
-            expect(res.body).to.matchSnapshot({
-                errors: [{
-                    id: any(String)
-                }]
-            });
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: any(String)
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
 
         it('reset password: generate reset token', async function () {
-            const res = await agent
+            await agent
                 .post('authentication/passwordreset')
                 .header('Accept', 'application/json')
                 .body({
@@ -361,13 +363,11 @@ describe('Authentication API canary', function () {
                         email: user.email
                     }]
                 })
-                .expectStatus(200);
-
-            expect(res.body).to.matchSnapshot();
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
         });
     });
 
@@ -388,17 +388,16 @@ describe('Authentication API canary', function () {
         });
 
         it('reset all passwords returns 200', async function () {
-            const res = await agent.post('authentication/reset_all_passwords')
+            await agent.post('authentication/reset_all_passwords')
                 .header('Accept', 'application/json')
                 .body({})
-                .expectStatus(200);
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: any(String)
+                });
 
-            expect(res.body).to.matchSnapshot();
-            expect(res.headers).to.matchSnapshot({
-                date: any(String),
-                etag: any(String)
-            });
-
+            // Check side effects
             // All users locked
             const users = await models.User.fetchAll();
             for (const user of users) {

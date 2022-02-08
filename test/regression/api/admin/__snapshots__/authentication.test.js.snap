@@ -1,0 +1,422 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Authentication API Blog setup complete setup 1: [body] 1`] = `
+Object {
+  "users": Array [
+    Object {
+      "accessibility": null,
+      "bio": null,
+      "cover_image": null,
+      "created_at": Any<String>,
+      "email": "test@example.com",
+      "facebook": null,
+      "id": "1",
+      "last_seen": null,
+      "location": null,
+      "meta_description": null,
+      "meta_title": null,
+      "name": "test user",
+      "profile_image": null,
+      "slug": "test",
+      "status": "active",
+      "tour": null,
+      "twitter": null,
+      "updated_at": Any<String>,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup complete setup 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "434",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup complete setup again 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "help": null,
+      "id": Any<String>,
+      "message": "Setup has already been completed.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup complete setup again 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "201",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup is setup? no 1: [body] 1`] = `
+Object {
+  "setup": Array [
+    Object {
+      "status": false,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup is setup? no 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "28",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup is setup? yes 1: [body] 1`] = `
+Object {
+  "setup": Array [
+    Object {
+      "status": true,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup is setup? yes 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "27",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Blog setup update setup 1: [body] 1`] = `
+Object {
+  "users": Array [
+    Object {
+      "accessibility": null,
+      "bio": "bio",
+      "cover_image": null,
+      "created_at": Any<String>,
+      "email": "test-edit@example.com",
+      "facebook": null,
+      "id": "1",
+      "last_seen": Any<String>,
+      "location": "location",
+      "meta_description": null,
+      "meta_title": null,
+      "name": "test user edit",
+      "profile_image": "https://example.com/super_photo.jpg",
+      "slug": "test",
+      "status": "active",
+      "tour": null,
+      "twitter": null,
+      "updated_at": Any<String>,
+      "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+      "website": null,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Blog setup update setup 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "506",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation check invalid invite 1: [body] 1`] = `
+Object {
+  "invitation": Array [
+    Object {
+      "valid": false,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Invitation check invalid invite 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "32",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation check invite with invalid email 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "206",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation check valid invite 1: [body] 1`] = `
+Object {
+  "invitation": Array [
+    Object {
+      "valid": true,
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Invitation check valid invite 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "31",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation try to accept with invite 1: [body] 1`] = `
+Object {
+  "invitation": Array [
+    Object {
+      "message": "Invitation accepted.",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Invitation try to accept with invite 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "51",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation try to accept with invite and existing email address 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Attempting to create an account with existing email address.",
+      "details": null,
+      "help": "Use different email address to register your account.",
+      "id": Any<String>,
+      "message": "Could not create an account, email is already in use.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Invitation try to accept with invite and existing email address 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "328",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Invitation try to accept without invite 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "181",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password 1: [body] 1`] = `
+Object {
+  "passwordreset": Array [
+    Object {
+      "message": "Password changed successfully.",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "64",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password: expired token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Password reset link expired.",
+      "details": null,
+      "help": "Request a new password reset via the login form.",
+      "id": Any<String>,
+      "message": "Cannot reset password.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password: expired token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "260",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password: generate reset token 1: [body] 1`] = `
+Object {
+  "passwordreset": Array [
+    Object {
+      "message": "Check your email for further instructions.",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password: generate reset token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "76",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password: invalid token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Invalid password reset link.",
+      "details": null,
+      "help": "Check if password reset link has been fully copied or request new password reset via the login form.",
+      "id": Any<String>,
+      "message": "Cannot reset password.",
+      "property": null,
+      "type": "UnauthorizedError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password: invalid token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "314",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Password reset reset password: unmatched token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Password reset link has already been used.",
+      "details": null,
+      "help": "Request a new password reset via the login form.",
+      "id": Any<String>,
+      "message": "Cannot reset password.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`Authentication API Password reset reset password: unmatched token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "274",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Authentication API Reset all passwords reset all passwords returns 200 1: [body] 1`] = `Object {}`;
+
+exports[`Authentication API Reset all passwords reset all passwords returns 200 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
