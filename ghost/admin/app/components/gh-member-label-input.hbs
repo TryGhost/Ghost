@@ -2,6 +2,7 @@
     @extra={{hash
         tokenComponent="gh-token-input/label-token"
     }}
+    @class="gh-member-label-input"
     @onChange={{this.updateLabels}}
     @onCreate={{this.createLabel}}
     @options={{this.availableLabels}}
@@ -9,5 +10,23 @@
     @selected={{this.selectedLabels}}
     @showCreateWhen={{this.hideCreateOptionOnMatchingLabel}}
     @triggerId={{this.triggerId}}
+    @selectedItemComponent="gh-token-input/label-selected-item"
     @disabled={{@disabled}}
-/>
+    @allowCreation={{@allowCreation}}
+    as |label|
+>
+    <div style="display: flex">
+        <span
+            class="dropdown-label"
+            style="flex-grow: 1"
+            title="{{label.name}}"
+            data-test-label-filter={{label.name}}>
+            {{label.name}}
+        </span>
+        {{#if label.slug}}
+            <span class="dropdown-action-icon" {{on "mouseup" (fn this.editLabel label)}}>
+                {{svg-jar "pen"}}
+            </span>
+        {{/if}}
+    </div>
+</GhTokenInput>
