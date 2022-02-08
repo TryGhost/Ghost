@@ -20,7 +20,7 @@ const path = require('path');
 const os = require('os');
 const uuid = require('uuid');
 
-const fixtures = require('./fixture-utils');
+const fixtureUtils = require('./fixture-utils');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
 const mockManager = require('./e2e-framework-mock-manager');
@@ -99,13 +99,13 @@ const initFixtures = async (...options) => {
         }
     }));
 
-    const fixtureOps = fixtures.getFixtureOps(options);
+    const fixtureOps = fixtureUtils.getFixtureOps(options);
 
     return sequence(fixtureOps);
 };
 
 const getFixture = (type, index = 0) => {
-    return fixtures.DataGenerator.forKnex[type][index];
+    return fixtureUtils.DataGenerator.forKnex[type][index];
 };
 
 const resetDb = async () => {
@@ -145,6 +145,7 @@ module.exports = {
     // DB State Manipulation
     fixtureManager: {
         get: getFixture,
+        getCurrentOwnerUser: fixtureUtils.getCurrentOwnerUser,
         init: initFixtures,
         reset: resetDb
     },
