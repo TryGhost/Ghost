@@ -113,6 +113,21 @@
                                     />
                                     <p>Redirect to this URL after signup for a free membership</p>
                                 </GhFormGroup>
+                            {{else}}
+                                <GhFormGroup>
+                                    <label for="welcomePage" class="fw6">Welcome page</label>
+                                    <GhUrlInput
+                                        @id="welcomePage"
+                                        @value={{readonly this.freeProduct.welcomePageURL}}
+                                        @baseUrl={{readonly this.siteUrl}}
+                                        @setResult={{this.setWelcomePageURL}}
+                                        @validateUrl={{this.validateWelcomePageURL}}
+                                        @placeholder={{readonly this.siteUrl}}
+                                    />
+                                    {{#if this.isFreeProduct}}
+                                        <p>Redirect to this URL after signup for a free membership</p>
+                                    {{/if}}
+                                </GhFormGroup>
                             {{/if}}
                         </div>
                         {{/liquid-if}}
