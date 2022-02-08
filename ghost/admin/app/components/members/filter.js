@@ -1,9 +1,10 @@
 import Component from '@glimmer/component';
-import EmberObject, {action} from '@ember/object';
 import nql from '@nexes/nql-lang';
 import {A} from '@ember/array';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
+
 const FILTER_PROPERTIES = [
     // Basic
     // {label: 'Name', name: 'name', group: 'Basic'},
@@ -100,10 +101,27 @@ const FILTER_VALUE_OPTIONS = {
         {label: 'Incomplete - Expired', name: 'incomplete_expired'}
     ]
 };
+
+class Filter {
+    @tracked type;
+    @tracked value;
+    @tracked relation;
+    @tracked relationOptions;
+
+    constructor(options) {
+        this.id = options.id;
+        this.type = options.type;
+        this.value = options.value;
+        this.relation = options.relation;
+        this.relationOptions = options.relationOptions;
+    }
+}
+
 export default class MembersFilter extends Component {
     @service session
+
     @tracked filters = A([
-        EmberObject.create({
+        new Filter({
             id: `filter-0`,
             type: 'label',
             relation: 'is',
@@ -112,16 +130,18 @@ export default class MembersFilter extends Component {
         })
     ]);
 
+    availableFilterProperties = FILTER_PROPERTIES;
+    availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
+    availableFilterValueOptions = FILTER_VALUE_OPTIONS;
+    nextFilterId = 1;
+
     get totalFilters() {
         return this.filters?.length;
     }
 
     constructor(...args) {
         super(...args);
-        this.availableFilterProperties = FILTER_PROPERTIES;
-        this.availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
-        this.availableFilterValueOptions = FILTER_VALUE_OPTIONS;
-        this.nextFilterId = 1;
+
         if (this.args.defaultFilterParam) {
             this.parseNqlFilter(this.args.defaultFilterParam);
         }
@@ -129,7 +149,7 @@ export default class MembersFilter extends Component {
 
     @action
     addFilter() {
-        this.filters.pushObject(EmberObject.create({
+        this.filters.pushObject(new Filter({
             id: `filter-${this.nextFilterId}`,
             type: 'label',
             relation: 'is',
@@ -166,10 +186,11 @@ export default class MembersFilter extends Component {
         const key = keys[0];
         const value = nqlFilter[key];
         const filterId = this.nextFilterId;
+
         if (typeof value === 'object') {
             if (value.$in !== undefined && key === 'label') {
                 this.nextFilterId = this.nextFilterId + 1;
-                return EmberObject.create({
+                return new Filter({
                     id: `filter-${filterId}`,
                     type: key,
                     relation: 'is',
@@ -179,7 +200,7 @@ export default class MembersFilter extends Component {
             }
             if (value.$nin !== undefined && key === 'label') {
                 this.nextFilterId = this.nextFilterId + 1;
-                return EmberObject.create({
+                return new Filter({
                     id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-not',
@@ -189,7 +210,7 @@ export default class MembersFilter extends Component {
             }
             if (value.$ne !== undefined) {
                 this.nextFilterId = this.nextFilterId + 1;
-                return EmberObject.create({
+                return new Filter({
                     id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-not',
@@ -199,7 +220,7 @@ export default class MembersFilter extends Component {
             }
             if (value.$gt !== undefined) {
                 this.nextFilterId = this.nextFilterId + 1;
-                return EmberObject.create({
+                return new Filter({
                     id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-greater',
@@ -210,7 +231,7 @@ export default class MembersFilter extends Component {
 
             if (value.$lt !== undefined) {
                 this.nextFilterId = this.nextFilterId + 1;
-                return EmberObject.create({
+                return new Filter({
                     id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-less',
@@ -218,10 +239,12 @@ export default class MembersFilter extends Component {
                     relationOptions: FILTER_RELATIONS_OPTIONS[key]
                 });
             }
+
             return null;
         } else {
             this.nextFilterId = this.nextFilterId + 1;
-            return EmberObject.create({
+
+            return new Filter({
                 id: `filter-${filterId}`,
                 type: key,
                 relation: 'is',
@@ -235,7 +258,9 @@ export default class MembersFilter extends Component {
         const validKeys = Object.keys(FILTER_RELATIONS_OPTIONS);
         const filters = nql.parse(filterParam);
         const filterKeys = Object.keys(filters);
+
         let filterData = [];
+
         if (filterKeys?.length === 1 && validKeys.includes(filterKeys[0])) {
             const filterObj = this.parseNqlFilterKey(filters);
             filterData = [filterObj];
@@ -284,16 +309,21 @@ export default class MembersFilter extends Component {
 
     @action
     setFilterType(filterId, newType) {
-        let defaultValue = this.availableFilterValueOptions[newType] ? this.availableFilterValueOptions[newType][0].name : '';
+        let defaultValue = this.availableFilterValueOptions[newType]
+            ? this.availableFilterValueOptions[newType][0].name
+            : '';
+
         if (newType === 'label' && !defaultValue) {
             defaultValue = [];
         }
+
         const filterToEdit = this.filters.findBy('id', filterId);
-        filterToEdit?.setProperties({
-            type: newType,
-            relationOptions: this.availableFilterRelationsOptions[newType],
-            value: defaultValue
-        });
+        if (filterToEdit) {
+            filterToEdit.type = newType;
+            filterToEdit.relationOptions = this.availableFilterRelationsOptions[newType];
+            filterToEdit.value = defaultValue;
+        }
+
         if (newType !== 'label' && defaultValue) {
             this.applySoftFilter();
         }
@@ -302,14 +332,14 @@ export default class MembersFilter extends Component {
     @action
     setFilterRelation(filterId, newRelation) {
         const filterToEdit = this.filters.findBy('id', filterId);
-        filterToEdit.set('relation', newRelation);
+        filterToEdit.relation = newRelation;
         this.applySoftFilter();
     }
 
     @action
     setFilterValue(filterType, filterId, filterValue) {
         const filterToEdit = this.filters.findBy('id', filterId);
-        filterToEdit.set('value', filterValue);
+        filterToEdit.value = filterValue;
         this.applySoftFilter();
     }
 
@@ -342,7 +372,7 @@ export default class MembersFilter extends Component {
     resetFilter() {
         this.nextFilterId = 1;
         this.filters = A([
-            EmberObject.create({
+            new Filter({
                 id: `filter-0`,
                 type: 'label',
                 relation: 'is',
