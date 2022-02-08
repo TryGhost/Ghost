@@ -10,7 +10,7 @@
     min-height: 130px;
     overflow: hidden;
     margin: 1.6em 0;
-    color: color-mod(var(--midgrey) l(-18%));
+    color: var(--middarkgrey);
     text-align: center;
     border-radius: 3px;
 }
@@ -73,6 +73,7 @@
 .gh-image-uploader .x-file-input {
     flex-grow: 1;
     display: flex;
+    width: 100%;
 }
 
 .gh-image-uploader .x-file-input label {

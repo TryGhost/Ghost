@@ -1089,6 +1089,30 @@ textarea.gh-member-details-textarea {
     min-height: 180px;
 }
 
+.gh-members-import-uploader svg {
+    width: 3.2rem;
+    height: 3.2rem;
+    margin-bottom: 1rem;
+}
+
+.gh-members-import-uploader svg path {
+    stroke: var(--midlightgrey);
+}
+
+.gh-members-import-uploader:hover svg path {
+    stroke: var(--midgrey-l1);
+}
+
+.gh-members-import-uploader .description {
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.gh-members-import-uploader:hover .description {
+    color: var(--midgrey-d2);
+}
+
 .gh-members-import-file {
     min-height: 180px;
 }
