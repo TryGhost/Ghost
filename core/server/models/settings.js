@@ -260,62 +260,60 @@ Settings = ghostBookshelf.Model.extend({
         await ghostBookshelf.knex.destroy();
         await ghostBookshelf.knex.initialize();
 
-        // fetch available columns to avoid populating columns not yet created by migrations
-        const columnInfo = await ghostBookshelf.knex.table('settings').columnInfo();
-        const columns = Object.keys(columnInfo);
+        const allSettings = await this.findAll(options);
 
-        // fetch other data that is used when inserting new settings
-        const date = ghostBookshelf.knex.raw('CURRENT_TIMESTAMP');
-        let owner;
-        try {
-            owner = await ghostBookshelf.model('User').getOwnerUser();
-        } catch (e) {
-            // in some tests the owner is deleted and not recreated before setup
-            if (e.errorType === 'NotFoundError') {
-                owner = {id: 1};
-            } else {
-                throw e;
+        const usedKeys = allSettings.models.map(function mapper(setting) {
+            return setting.get('key');
+        });
+
+        const settingsToInsert = [];
+
+        _.each(getDefaultSettings(), function forEachDefault(defaultSetting, defaultSettingKey) {
+            const isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
+            if (isMissingFromDB) {
+                defaultSetting.value = defaultSetting.getDefaultValue();
+                settingsToInsert.push(defaultSetting);
             }
+        });
+
+        if (settingsToInsert.length > 0) {
+            // fetch available columns to avoid populating columns not yet created by migrations
+            const columnInfo = await ghostBookshelf.knex.table('settings').columnInfo();
+            const columns = Object.keys(columnInfo);
+
+            // fetch other data that is used when inserting new settings
+            const date = ghostBookshelf.knex.raw('CURRENT_TIMESTAMP');
+            let owner;
+            try {
+                owner = await ghostBookshelf.model('User').getOwnerUser();
+            } catch (e) {
+                // in some tests the owner is deleted and not recreated before setup
+                if (e.errorType === 'NotFoundError') {
+                    owner = {id: 1};
+                } else {
+                    throw e;
+                }
+            }
+
+            const settingsDataToInsert = settingsToInsert.map((setting) => {
+                const settingValues = Object.assign({}, setting, {
+                    id: ObjectID().toHexString(),
+                    created_at: date,
+                    created_by: owner.id,
+                    updated_at: date,
+                    updated_by: owner.id
+                });
+
+                return _.pick(settingValues, columns);
+            });
+
+            await ghostBookshelf.knex
+                .batchInsert('settings', settingsDataToInsert);
+
+            return self.findAll(options);
         }
 
-        return this
-            .findAll(options)
-            .then(function checkAllSettings(allSettings) {
-                const usedKeys = allSettings.models.map(function mapper(setting) {
-                    return setting.get('key');
-                });
-
-                const insertOperations = [];
-
-                _.each(getDefaultSettings(), function forEachDefault(defaultSetting, defaultSettingKey) {
-                    const isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
-                    if (isMissingFromDB) {
-                        defaultSetting.value = defaultSetting.getDefaultValue();
-
-                        const settingValues = Object.assign({}, defaultSetting, {
-                            id: ObjectID().toHexString(),
-                            created_at: date,
-                            created_by: owner.id,
-                            updated_at: date,
-                            updated_by: owner.id
-                        });
-
-                        insertOperations.push(
-                            ghostBookshelf.knex
-                                .table('settings')
-                                .insert(_.pick(settingValues, columns))
-                        );
-                    }
-                });
-
-                if (insertOperations.length > 0) {
-                    return Promise.all(insertOperations).then(function fetchAllToReturn() {
-                        return self.findAll(options);
-                    });
-                }
-
-                return allSettings;
-            });
+        return allSettings;
     },
 
     permissible: function permissible(modelId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
