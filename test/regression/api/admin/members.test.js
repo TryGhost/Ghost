@@ -15,7 +15,7 @@ describe('Members API', function () {
     });
 
     before(async function () {
-        agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
+        agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await agent.loginAsOwner();
     });
