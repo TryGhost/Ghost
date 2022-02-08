@@ -4,7 +4,7 @@
         <p class="ma0 pa0">{{this.error.message}}</p>
     </div>
 {{/if}}
-<div class="upload-form bg-whitegrey-l2 ba b--whitegrey br3">
+<div class="upload-form br3">
     <section class="gh-image-uploader gh-members-import-uploader {{this.dragClass}}"
         {{on "drop" this.drop}}
         {{on "dragover" this.dragOver}}
@@ -12,8 +12,8 @@
     >
         <GhFileInput @multiple={{false}} @alt={{this.labelText}} @action={{this.fileSelected}} @accept={{this.accept}}>
         <div class="flex flex-column items-center">
-            {{svg-jar "upload" class="w9 h9 mb1 stroke-midgrey"}}
-            <div class="description midgrey">{{this.labelText}}</div>
+            {{svg-jar "upload"}}
+            <div class="description">{{this.labelText}}</div>
         </div>
         </GhFileInput>
     </section>
