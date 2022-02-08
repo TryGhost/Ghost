@@ -25,7 +25,7 @@
 
                     <GhFormGroup @classNames="gh-member-labels">
                         <label for="label-input">Labels</label>
-                        <GhMemberLabelInputLabs
+                        <GhMemberLabelInput
                             @onChange={{action "setLabels"}}
                             @onLabelEdit={{@onLabelEdit}}
                             @labels={{this.member.labels}}

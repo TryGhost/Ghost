@@ -281,11 +281,11 @@
     pointer-events: none;
 }
 
-.dropdown-menu .label-token-labs svg {
+.dropdown-menu .label-token svg {
     margin-right: 0;
 }
 
-.gh-member-label-input-labs .dropdown-action-icon {
+.gh-member-label-input .dropdown-action-icon {
     opacity: 0;
     transition: opacity ease-in-out 0.15s;
     padding: 4px;
@@ -295,20 +295,20 @@
     border-radius: 3px;
 }
 
-.gh-member-settings .gh-member-label-input-labs .dropdown-action-icon {
+.gh-member-settings .gh-member-label-input .dropdown-action-icon {
     margin-right: -8px;
     padding: 4px 6px;
 }
 
-.gh-member-label-input-labs li:hover .dropdown-action-icon {
+.gh-member-label-input li:hover .dropdown-action-icon {
     opacity: 1.0;
 }
 
-.gh-member-label-input-labs .dropdown-action-icon:hover {
+.gh-member-label-input .dropdown-action-icon:hover {
     background: var(--whitegrey-d1);
 }
 
-.gh-member-label-input-labs .dropdown-action-icon svg {
+.gh-member-label-input .dropdown-action-icon svg {
     margin: 0;
     height: 14px;
     width: 14px;
@@ -316,10 +316,10 @@
     fill: #667380;
 }
 
-.gh-member-label-input-labs .dropdown-action-icon svg path {
+.gh-member-label-input .dropdown-action-icon svg path {
     fill: var(--midgrey);
 }
 
-.gh-member-label-input-labs .dropdown-action-icon:hover svg path {
+.gh-member-label-input .dropdown-action-icon:hover svg path {
     fill: var(--darkgrey);
 }
