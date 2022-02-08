@@ -1761,10 +1761,10 @@
   dependencies:
     bluebird "^3.7.2"
 
-"@tryghost/request@0.1.13":
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.13.tgz#8e7a23512ffdf52029ab3044f859ccb27bea3d39"
-  integrity sha512-1ApVGrcjSdnjO677FmAxh+4Tri50aF0Cx7FsksHZLNnK+JTN54OHGcz/aHoObeXI/noxrOE2/soknwG9cQVxzA==
+"@tryghost/request@0.1.14":
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.14.tgz#8e2e3fd91f1f3397c9c09177a1ed32a5cdcd32ea"
+  integrity sha512-KMog38ZwJCKYrDWg/yRX+s9ufwVGur6rak3w5onFlXQW8oULeFHDfYCmc9lyHLCxfaNhNxwpyGFSolERbKfmFQ==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     "@tryghost/validator" "^0.1.12"
