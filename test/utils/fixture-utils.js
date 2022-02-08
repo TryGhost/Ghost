@@ -721,7 +721,13 @@ const getFixtureOps = (toDos) => {
     return fixtureOps;
 };
 
+const getCurrentOwnerUser = async () => {
+    return await models.User.getOwnerUser(context.internal);
+};
+
 module.exports = {
     fixtures,
-    getFixtureOps
+    getFixtureOps,
+    DataGenerator,
+    getCurrentOwnerUser
 };

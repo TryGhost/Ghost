@@ -7,7 +7,6 @@ const localUtils = require('./utils');
 const labs = require('../../../../core/shared/labs');
 
 let agent;
-let emailStub;
 
 describe('Members API', function () {
     before(function () {
@@ -21,7 +20,7 @@ describe('Members API', function () {
     });
 
     beforeEach(function () {
-        emailStub = mockManager.mockMail();
+        mockManager.mockMail();
     });
 
     afterEach(function () {
