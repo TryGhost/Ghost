@@ -6879,14 +6879,13 @@ ember-could-get-used-to-this@1.0.1:
     ember-cli-babel "^7.22.1"
     ember-cli-htmlbars "^4.2.0"
 
-ember-css-transitions@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-2.1.1.tgz#616069b8adef0175ec310cf504587587e8789f65"
-  integrity sha512-Kue3tMUHlmeEQvnV1YXoJSjk/wIKiywAT72ny89Yl7rRzEjgjOMcUD69HSg3ShsQNOpyzU0eOCANVtk00FjJig==
+ember-css-transitions@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-3.0.0.tgz#348d22d444a94611853ae06340422540d5a78050"
+  integrity sha512-yOa9LO4tNSHpcpv6u4rSQb1eLLtGwTTk/PbHIWcgzYj1EYLE4th3zdt4vKnM6ajBmlDFUSmjwLfDONTsWhizUg==
   dependencies:
-    ember-cli-babel "^7.22.1"
-    ember-cli-htmlbars "^5.3.1"
-    ember-modifier "^2.1.0"
+    ember-cli-babel "^7.26.11"
+    ember-modifier "^2.1.2 || ^3.1.0"
 
 ember-data@3.24.0:
   version "3.24.0"
@@ -7181,6 +7180,17 @@ ember-modifier@2.1.2, ember-modifier@^2.1.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-3.0.0.tgz#74466d32e4ef9b80004915676cc3bfd6e3fd7a3d"
   integrity sha512-ccXfMnjWhjEUCB5taeIPQmf0h1zPUIMbmsCV7W+JZ2BioPUZTLhE1WuHspmV0iEOiX3Fwx8jMOx6b74sFcKJ0g==
+  dependencies:
+    ember-cli-babel "^7.26.6"
+    ember-cli-normalize-entity-name "^1.0.0"
+    ember-cli-string-utils "^1.1.0"
+    ember-cli-typescript "^4.2.1"
+    ember-compatibility-helpers "^1.2.5"
+
+"ember-modifier@^2.1.2 || ^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-3.1.0.tgz#ba5b0941302accd787ed3dcfc8d20400b77ffc41"
+  integrity sha512-G5Lj9jVFsD2sVJcRNQfaGKG1p81wT4LGfClBhCuB4TgwP1NGJKdqI+Q8BW2MptONxQt/71UjjUH0YK7Gm9eahg==
   dependencies:
     ember-cli-babel "^7.26.6"
     ember-cli-normalize-entity-name "^1.0.0"
