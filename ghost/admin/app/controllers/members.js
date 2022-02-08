@@ -46,6 +46,7 @@ export default class MembersController extends Controller {
 
     @tracked members = A([]);
     @tracked searchParam = '';
+    @tracked searchIsFocused = false;
     @tracked filterParam = null;
     @tracked softFilterParam = null;
     @tracked paidParam = null;
@@ -97,6 +98,12 @@ export default class MembersController extends Controller {
         }
 
         return count;
+    }
+
+    get hideSearchBar() {
+        return !this.members.length
+            && !this.searchParam
+            && !this.searchIsFocused;
     }
 
     get showingAll() {
