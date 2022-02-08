@@ -100,7 +100,7 @@ const FILTER_VALUE_OPTIONS = {
         {label: 'Incomplete - Expired', name: 'incomplete_expired'}
     ]
 };
-export default class GhMembersFilter extends Component {
+export default class MembersFilter extends Component {
     @service session
     @tracked filters = A([
         EmberObject.create({

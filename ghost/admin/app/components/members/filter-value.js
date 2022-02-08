@@ -27,8 +27,9 @@ const FILTER_OPTIONS = {
     ]
 };
 
-export default class GhMembersFilterValue extends Component {
+export default class MembersFilterValue extends Component {
     @tracked filterValue;
+
     constructor(...args) {
         super(...args);
         this.availableFilterOptions = FILTER_OPTIONS;

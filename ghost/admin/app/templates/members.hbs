@@ -20,7 +20,7 @@
             </div>
 
             <div class="view-actions-top-row">
-                <GhMembersFilter
+                <Members::Filter
                     @isFiltered={{this.isFiltered}}
                     @onApplyFilter={{this.applyFilter}}
                     @defaultFilterParam={{this.filterParam}}
@@ -97,7 +97,11 @@
         </section>
     </GhCanvasHeader>
 
-    {{#unless this.members.loading}}
+    {{#if this.members.loading}}
+        <div class="gh-content">
+            <GhLoadingSpinner />
+        </div>
+    {{else}}
         <section class="view-container">
             {{#if this.members}}
                 <div class="gh-list-scrolling {{if (lt this.members.length 6) "gh-list-with-helpsection"}}">
@@ -169,11 +173,7 @@
                 </div>
             {{/if}}
         </section>
-    {{else}}
-        <div class="gh-content">
-            <GhLoadingSpinner />
-        </div>
-    {{/unless}}
+    {{/if}}
 </section>
 
 {{outlet}}
