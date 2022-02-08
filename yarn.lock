@@ -1944,10 +1944,10 @@
     leaky-bucket "^2.2.0"
     stripe "^8.174.0"
 
-"@tryghost/metrics@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.4.tgz#ec293974a6977bba42f267387c48ddf5182858f1"
-  integrity sha512-jpWLCpmiKXw+aiXd5RlrHQNvojmiN49Lp0RwNXIUNvLyZDiIDbBZlR9Zev6vJfiBqe4dhle5Ua3Y5U19cC2u9g==
+"@tryghost/metrics@1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.5.tgz#e2dcade6b638cebeba246ab1b9f0414dca9d2006"
+  integrity sha512-9ezB5wPLvQitQZlnDT6GWlgeGGJ0vPraha1KPqax6WmV1Wx+f1mbY+K9rA3o1mPb/bThs+7a7frG7pZ5PYWYKw==
   dependencies:
     "@tryghost/elasticsearch" "^1.0.3"
     "@tryghost/pretty-stream" "^0.1.5"
