@@ -22,33 +22,38 @@
     </span>
 
 {{else if (eq @filter.type 'email_count')}}
-    <GhTextInput
-        @value={{@filter.value}}
-        @type="number"
-        @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
-        @input={{fn this.setInputFilterValue @filter.type @filter.id}}
-        @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
-        @stopEnterKeyDownPropagation={{true}}
+    <input
+        type="number"
+        value={{@filter.value}}
+        class="gh-input"
+        aria-label="Email count filter value"
+        {{on "input" (fn this.setInputFilterValue @filter.type @filter.id)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter.type @filter.id)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter.id)}}
     />
 
 {{else if (eq @filter.type 'email_opened_count')}}
-    <GhTextInput
-        @value={{@filter.value}}
-        @type="number"
-        @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
-        @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
-        @input={{fn this.setInputFilterValue @filter.type @filter.id}}
+    <input
+        type="number"
+        value={{@filter.value}}
+        class="gh-input"
+        aria-label="Email opened count filter value"
+        {{on "input" (fn this.setInputFilterValue @filter.type @filter.id)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter.type @filter.id)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter.id)}}
     />
 
 {{else if (eq @filter.type 'email_open_rate')}}
     <div class="relative">
         <span class="gh-input-percentage-label">%</span>
-        <GhTextInput
-            @value={{@filter.value}}
-            @type="number"
-            @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
-            @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
-            @input={{fn this.setInputFilterValue @filter.type @filter.id}}
+        <input
+            type="number"
+            value={{@filter.value}}
+            class="gh-input"
+            aria-label="Email open rate filter value"
+            {{on "input" (fn this.setInputFilterValue @filter.type @filter.id)}}
+            {{on "blur" (fn this.updateInputFilterValue @filter.type @filter.id)}}
+            {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter.id)}}
         />
     </div>
 
@@ -90,11 +95,14 @@
         {{svg-jar "arrow-down-small"}}
     </span>
 {{else}}
-    <GhTextInput
-        @name={{@filter.id}}
-        @value={{@filter.value}}
-        @focus-out={{fn this.updateInputFilterValue @filter.type @filter.id}}
-        @keyPress={{fn this.updateInputFilterValueOnEnter @filter.type @filter.id}}
-        @input={{fn this.setInputFilterValue @filter.type @filter.id}}
+    <input
+        type="text"
+        value={{@filter.value}}
+        name={{@filter.id}}
+        class="gh-input"
+        aria-label="{{@filter.id}} filter value"
+        {{on "input" (fn this.setInputFilterValue @filter.type @filter.id)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter.type @filter.id)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter.id)}}
     />
 {{/if}}
