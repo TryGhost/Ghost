@@ -1,9 +1,7 @@
-const {expect} = require('chai');
-const {any, stringMatching} = require('expect');
-
+const {any, stringMatching} = require('@tryghost/jest-snapshot');
 const {agentProvider} = require('../../../utils/e2e-framework');
 
-describe('Config API', function () {
+describe('Site API', function () {
     let agent;
 
     before(async function () {
@@ -11,15 +9,15 @@ describe('Config API', function () {
     });
 
     it('can retrieve config and all expected properties', async function () {
-        const res = await agent
-            .get('site/');
-
-        expect(res.body.site).to.matchSnapshot({
-            version: stringMatching(/\d+\.\d+/)
-        });
-        expect(res.headers).to.matchSnapshot({
-            date: any(String),
-            etag: any(String)
-        });
+        await agent
+            .get('site/')
+            .matchBodySnapshot({
+                site: {
+                    version: stringMatching(/\d+\.\d+/)
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: any(String)
+            });
     });
 });
