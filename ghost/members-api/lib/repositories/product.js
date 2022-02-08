@@ -1,4 +1,11 @@
-const {UpdateCollisionError, NotFoundError, MethodNotAllowedError} = require('@tryghost/errors');
+const {UpdateCollisionError, NotFoundError, MethodNotAllowedError, ValidationError} = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    priceMustBeInteger: 'Tier prices must be an integer.',
+    priceIsNegative: 'Tier prices must not be negative',
+    maxPriceExceeded: 'Tier prices may not exceed 999999.99'
+};
 
 /**
  * @typedef {object} ProductModel
@@ -19,6 +26,26 @@ const {UpdateCollisionError, NotFoundError, MethodNotAllowedError} = require('@t
  * @typedef {object} BenefitInput
  * @param {string} name
  */
+
+function validatePrice(price) {
+    if (!Number.isInteger(price.amount)) {
+        throw new ValidationError({
+            message: tpl(messages.priceMustBeInteger)
+        });
+    }
+
+    if (price.amount < 0) {
+        throw new ValidationError({
+            message: tpl(messages.priceIsNegative)
+        });
+    }
+
+    if (price.amount > 9999999999) {
+        throw new ValidationError({
+            message: tpl(messages.maxPriceExceeded)
+        });
+    }
+}
 
 class ProductRepository {
     /**
@@ -133,6 +160,18 @@ class ProductRepository {
                     transacting
                 });
             });
+        }
+
+        if (data.monthly_price) {
+            validatePrice(data.monthly_price);
+        }
+
+        if (data.yearly_price) {
+            validatePrice(data.monthly_price);
+        }
+
+        if (data.stripe_prices) {
+            data.stripe_prices.forEach(validatePrice);
         }
 
         const productData = {
@@ -272,6 +311,19 @@ class ProductRepository {
                 });
             });
         }
+
+        if (data.monthly_price) {
+            validatePrice(data.monthly_price);
+        }
+
+        if (data.yearly_price) {
+            validatePrice(data.monthly_price);
+        }
+
+        if (data.stripe_prices) {
+            data.stripe_prices.forEach(validatePrice);
+        }
+
         const productId = data.id || options.id;
 
         const existingProduct = await this._Product.findOne({id: productId}, options);
