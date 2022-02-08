@@ -2,10 +2,15 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const assert = require('assert');
 
+// Helper services
+const configUtils = require('./configUtils');
+
 let mocks = {};
 let emailCount = 0;
 
+// Mockable services
 const mailService = require('../../core/server/services/mail/index');
+const labs = require('../../core/shared/labs');
 
 const mockMail = () => {
     mocks.mail = sinon
@@ -13,6 +18,17 @@ const mockMail = () => {
         .resolves('Mail is disabled');
 
     return mocks.mail;
+};
+
+const mockLabsEnabled = (flag, alpha = true) => {
+    mocks.labs = mocks.labs || {};
+
+    // We assume we should enable alpha experiments unless explicitly told not to!
+    if (!alpha) {
+        configUtils.set('enableDeveloperExperiments', true);
+    }
+
+    mocks.labs[flag] = sinon.stub(labs, 'isSet').withArgs(flag).returns(true);
 };
 
 const sentEmailCount = (count) => {
@@ -49,6 +65,7 @@ const sentEmail = (matchers) => {
 };
 
 const restore = () => {
+    configUtils.restore();
     sinon.restore();
     mocks = {};
     emailCount = 0;
@@ -56,6 +73,7 @@ const restore = () => {
 
 module.exports = {
     mockMail,
+    mockLabsEnabled,
     restore,
     assert: {
         sentEmailCount,

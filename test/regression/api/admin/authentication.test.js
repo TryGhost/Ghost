@@ -8,7 +8,6 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 
 // Requires needed to enable a labs flag
 const sinon = require('sinon');
-const configUtils = require('../../../utils/configUtils');
 
 describe('Authentication API', function () {
     let agent;
@@ -38,12 +37,7 @@ describe('Authentication API', function () {
 
         it('complete setup', async function () {
             // Enable the improvedOnboarding flag
-            configUtils.set('enableDeveloperExperiments', true);
-            sinon.stub(settingsCache, 'get');
-            settingsCache.get.withArgs('labs').returns({
-                improvedOnboarding: true
-            });
-            settingsCache.get.callThrough();
+            mockManager.mockLabsEnabled('improvedOnboarding');
 
             await agent
                 .post('authentication/setup')
@@ -234,7 +228,6 @@ describe('Authentication API', function () {
 
         before(async function () {
             agent = await agentProvider.getAdminAPIAgent();
-            // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await fixtureManager.init('invites');
             await agent.loginAsOwner();
         });

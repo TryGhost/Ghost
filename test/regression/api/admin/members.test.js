@@ -4,15 +4,10 @@ const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const {agentProvider, mockManager, fixtureManager} = require('../../../utils/e2e-framework');
 const localUtils = require('./utils');
-const labs = require('../../../../core/shared/labs');
 
 let agent;
 
 describe('Members API', function () {
-    before(function () {
-        sinon.stub(labs, 'isSet').withArgs('members').returns(true);
-    });
-
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
@@ -20,6 +15,7 @@ describe('Members API', function () {
     });
 
     beforeEach(function () {
+        mockManager.mockLabsEnabled('members');
         mockManager.mockMail();
     });
 
