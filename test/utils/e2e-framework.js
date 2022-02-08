@@ -113,17 +113,19 @@ const resetDb = async () => {
 };
 
 /**
- * Creates a TestAgent which is a drop-in substitution for supertest hooked into Ghost.
- * @param {String} apiURL
- * @returns {TestAgent}
+ * Creates a TestAgent which is a drop-in substitution for supertest
+ * It is automatically hooked up to the Admin API so you can make requests to e.g.
+ * agent.get('/posts/') without having to worry about URL paths
+ *
+ * @returns {TestAgent} agent
  */
-const getAgent = async (apiURL) => {
+const getAdminAPIAgent = async () => {
     try {
         const app = await startGhost();
         const originURL = configUtils.config.get('url');
 
         return new TestAgent(app, {
-            apiURL,
+            apiURL: '/ghost/api/canary/admin/',
             originURL
         });
     } catch (error) {
@@ -134,7 +136,7 @@ const getAgent = async (apiURL) => {
 module.exports = {
     // request agent
     agentProvider: {
-        getAgent
+        getAdminAPIAgent
     },
 
     // Mocks and Stubs

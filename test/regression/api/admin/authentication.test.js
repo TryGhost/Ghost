@@ -15,7 +15,7 @@ describe('Authentication API', function () {
 
     describe('Blog setup', function () {
         before(async function () {
-            agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
+            agent = await agentProvider.getAdminAPIAgent();
         });
 
         beforeEach(function () {
@@ -134,7 +134,7 @@ describe('Authentication API', function () {
 
     describe('Invitation', function () {
         before(async function () {
-            agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
+            agent = await agentProvider.getAdminAPIAgent();
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await fixtureManager.init('invites');
             await agent.loginAsOwner();
@@ -231,7 +231,7 @@ describe('Authentication API', function () {
         const user = testUtils.DataGenerator.forModel.users[0];
 
         before(async function () {
-            agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
+            agent = await agentProvider.getAdminAPIAgent();
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await fixtureManager.init('invites');
             await agent.loginAsOwner();
@@ -373,7 +373,7 @@ describe('Authentication API', function () {
 
     describe('Reset all passwords', function () {
         before(async function () {
-            agent = await agentProvider.getAgent('/ghost/api/canary/admin/');
+            agent = await agentProvider.getAdminAPIAgent();
             // NOTE: this order of fixture initialization boggles me. Ideally should not depend on agent/login sequence
             await fixtureManager.init('invites');
             await agent.loginAsOwner();
