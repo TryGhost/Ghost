@@ -1,32 +1,23 @@
-import $ from 'jquery';
-import Component from '@ember/component';
-import {computed} from '@ember/object';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
-import {run} from '@ember/runloop';
+import {tracked} from '@glimmer/tracking';
 
-export default Component.extend({
+export default class GhUnsplashPhoto extends Component {
+    @tracked height = 0;
+    @tracked width = 1200;
 
-    height: 0,
-    photo: null,
-    tagName: '',
-    width: 1200,
-    zoomed: false,
-
-    // closure actions
-    select() {},
-    zoom() {},
-
-    style: computed('zoomed', function () {
-        return htmlSafe(this.zoomed ? 'width: auto; margin: 0;' : '');
-    }),
+    get style() {
+        return htmlSafe(this.args.zoomed ? 'width: auto; margin: 0;' : '');
+    }
 
     // avoid "binding style attributes" warnings
-    containerStyle: computed('photo.color', 'zoomed', function () {
-        let styles = [];
-        let ratio = this.get('photo.ratio');
-        let zoomed = this.zoomed;
+    get containerStyle() {
+        const styles = [];
+        const ratio = this.args.photo.ratio;
+        const zoomed = this.args.zoomed;
 
-        styles.push(`background-color: ${this.get('photo.color')}`);
+        styles.push(`background-color: ${this.args.photo.color}`);
 
         if (zoomed) {
             styles.push(`cursor: zoom-out`);
@@ -35,118 +26,39 @@ export default Component.extend({
         }
 
         return htmlSafe(styles.join('; '));
-    }),
+    }
 
-    imageUrl: computed('photo.urls.regular', function () {
-        let url = this.get('photo.urls.regular');
+    get imageUrl() {
+        let url = this.args.photo.urls.regular;
 
         url = url.replace('&w=1080', '&w=1200');
 
         return url;
-    }),
-
-    didReceiveAttrs() {
-        this._super(...arguments);
-
-        this.set('height', this.width * this.photo.ratio);
-
-        if (this.zoomed && !this._zoomed) {
-            this._setZoomedSize();
-        }
-        this._zoomed = this.zoomed;
-
-        if (this.zoomed && !this._resizeHandler) {
-            this._setupResizeHandler();
-        } else if (!this.zoomed && this._resizeHandler) {
-            this._teardownResizeHandler();
-        }
-    },
-
-    didInsertElement() {
-        this._super(...arguments);
-        this._hasRendered = true;
-        if (this.zoomed) {
-            this._setZoomedSize();
-        }
-    },
-
-    willDestroyElement() {
-        this._super(...arguments);
-        this._teardownResizeHandler();
-    },
-
-    actions: {
-        select(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            this.select(this.photo);
-        },
-
-        zoom(event) {
-            let $target = $(event.target);
-
-            // only zoom when it wasn't one of the child links clicked
-            if (!$target.is('a') && $target.closest('a').hasClass('gh-unsplash-photo')) {
-                event.preventDefault();
-                this.zoom(this.photo);
-            }
-
-            // don't propagate otherwise we can trigger the closeZoom action on the overlay
-            event.stopPropagation();
-        }
-    },
-
-    _setZoomedSize() {
-        if (!this._hasRendered) {
-            return false;
-        }
-
-        let a = document.querySelector(`[data-unsplash-zoomed-photo="${this.photo.id}"]`);
-
-        a.style.width = '100%';
-        a.style.height = '100%';
-
-        let offsets = a.getBoundingClientRect();
-        let ratio = this.photo.ratio;
-
-        let maxHeight = {
-            width: offsets.height / ratio,
-            height: offsets.height
-        };
-
-        let maxWidth = {
-            width: offsets.width,
-            height: offsets.width * ratio
-        };
-
-        let usableSize = null;
-
-        if (ratio <= 1) {
-            usableSize = maxWidth.height > offsets.height ? maxHeight : maxWidth;
-        } else {
-            usableSize = maxHeight.width > offsets.width ? maxWidth : maxHeight;
-        }
-
-        a.style.width = `${usableSize.width}px`;
-        a.style.height = `${usableSize.height}px`;
-    },
-
-    _setupResizeHandler() {
-        if (this._resizeHandler) {
-            return;
-        }
-
-        this._resizeHandler = run.bind(this, this._handleResize);
-        window.addEventListener('resize', this._resizeHandler);
-    },
-
-    _teardownResizeHandler() {
-        window.removeEventListener('resize', this._resizeHandler);
-        this._resizeHandler = null;
-    },
-
-    _handleResize() {
-        this._throttleResize = run.throttle(this, this._setZoomedSize, 100);
     }
 
-});
+    constructor() {
+        super(...arguments);
+        this.height = this.width * this.args.photo.ratio;
+    }
+
+    @action
+    select(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.args.select(this.args.photo);
+    }
+
+    @action
+    zoom(event) {
+        const {target} = event;
+
+        // only zoom when it wasn't one of the child links clicked
+        if (!target.matches('a') && target.closest('a').classList.contains('gh-unsplash-photo')) {
+            event.preventDefault();
+            this.args.zoom(this.args.photo);
+        }
+
+        // don't propagate otherwise we can trigger the closeZoom action on the overlay
+        event.stopPropagation();
+    }
+}

@@ -1769,3 +1769,11 @@ remove|ember-template-lint|no-invalid-interactive|3|45|3|45|a6f8ead2f0f3f3bdd702
 remove|ember-template-lint|no-invalid-interactive|80|132|80|132|b6e7f26b5f7ac647dd8659b6a67fa0d0de27142f|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|27|24|27|24|b5cce16b65649e02f9ce2a14986a6f83e46cbd58|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|28|24|28|24|fb4c7afaa35fdebcf2f71540bdb1903fd70bb9d7|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash.hbs
+remove|ember-template-lint|no-action|1|46|1|46|7deb52aad96dd83886b4877b4042e1d7e173f96e|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash-photo.hbs
+remove|ember-template-lint|no-action|18|63|18|63|be51c27cc7a2bc76b71c185656c46f6d0496d6ad|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash-photo.hbs
+remove|ember-template-lint|no-nested-interactive|6|16|6|16|9b80f9fdc2a6a96bd2a8489ab62540b8d7d8e3b0|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash-photo.hbs
+remove|ember-template-lint|no-nested-interactive|7|16|7|16|e0cc49f31d676d97f88b72277592aef5c790ad15|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash-photo.hbs
+remove|ember-template-lint|no-nested-interactive|11|20|11|20|23958701600d242ed32febf00abfb86671b44ad3|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash-photo.hbs
+remove|ember-template-lint|no-nested-interactive|14|20|14|20|fbc1273324d6ef3210b3c903dda0e18daaf35bcd|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash-photo.hbs
+remove|ember-template-lint|no-nested-interactive|18|16|18|16|7c6cd3a62707e321896096224b805580adfe62a1|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash-photo.hbs
+remove|ember-template-lint|require-valid-alt-text|12|24|12|24|67be77b9e376bf354f1ea2b8eca8e987dd4bd9cf|1643760000000|1646352000000|1648940400000|app/components/gh-unsplash-photo.hbs
