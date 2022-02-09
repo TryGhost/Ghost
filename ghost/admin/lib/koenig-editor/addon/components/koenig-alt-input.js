@@ -1,41 +1,46 @@
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import {action, computed} from '@ember/object';
+import {classNameBindings, tagName} from '@ember-decorators/component';
 import {kgStyle} from '../helpers/kg-style';
 import {inject as service} from '@ember/service';
 
-export default Component.extend({
-    koenigUi: service(),
+@classic
+@tagName('figcaption')
+@classNameBindings('figCaptionClass')
+export default class KoenigAltInput extends Component {
+    @service koenigUi;
 
-    tagName: 'figcaption',
-    classNameBindings: ['figCaptionClass'],
+    alt = '';
+    placeholder = '';
 
-    alt: '',
-    placeholder: '',
+    update() {}
+    addParagraphAfterCard() {}
+    moveCursorToNextSection() {}
+    moveCursorToPrevSection() {}
 
-    update() {},
-    addParagraphAfterCard() {},
-    moveCursorToNextSection() {},
-    moveCursorToPrevSection() {},
-
-    figCaptionClass: computed(function () {
+    @computed
+    get figCaptionClass() {
         return `${kgStyle(['figcaption'])} w-100 relative`;
-    }),
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         this.element.querySelector('input').focus();
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         this.koenigUi.captionLostFocus(this);
-    },
+    }
 
-    onInput: action(function (event) {
+    @action
+    onInput(event) {
         this.update(event.target.value);
-    }),
+    }
 
-    onKeydown: action(function (event) {
+    @action
+    onKeydown(event) {
         let {selectionStart, selectionEnd, value} = event.target;
         let noSelection = selectionStart === selectionEnd;
 
@@ -78,5 +83,5 @@ export default Component.extend({
         default:
             break;
         }
-    })
-});
+    }
+}

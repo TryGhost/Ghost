@@ -1,5 +1,7 @@
 import Component from '@ember/component';
-import {computed} from '@ember/object';
+import classic from 'ember-classic-decorator';
+import {action, computed} from '@ember/object';
+import {attributeBindings, classNames} from '@ember-decorators/component';
 import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -19,42 +21,43 @@ export const TOOLBAR_MARGIN = 15;
 // TODO: handle via CSS?
 const TICK_ADJUSTMENT = 8;
 
-export default Component.extend({
-    feature: service(),
-
-    attributeBindings: ['style'],
-    classNames: ['absolute', 'z-999'],
+@classic
+@attributeBindings('style')
+@classNames('absolute', 'z-999')
+export default class KoenigToolbar extends Component {
+    @service feature;
 
     // public attrs
-    basicOnly: false,
-    editor: null,
-    editorRange: null,
-    activeMarkupTagNames: null,
-    activeSectionTagNames: null,
+    basicOnly = false;
+    editor = null;
+    editorRange = null;
+    activeMarkupTagNames = null;
+    activeSectionTagNames = null;
 
     // internal properties
-    showToolbar: false,
-    top: null,
-    left: -1000,
-    right: null,
+    showToolbar = false;
+    top = null;
+    left = -1000;
+    right = null;
 
     // private properties
-    _isMouseDown: false,
-    _hasSelectedRange: false,
-    _onMousedownHandler: null,
-    _onMousemoveHandler: null,
-    _onMouseupHandler: null,
-    _onResizeHandler: null,
+    _isMouseDown = false;
+    _hasSelectedRange = false;
+    _onMousedownHandler = null;
+    _onMousemoveHandler = null;
+    _onMouseupHandler = null;
+    _onResizeHandler = null;
 
     // closure actions
-    toggleMarkup() {},
-    toggleSection() {},
-    toggleHeaderSection() {},
-    editLink() {},
+    toggleMarkup() {}
+    toggleSection() {}
+    toggleHeaderSection() {}
+    editLink() {}
 
     /* computed properties -------------------------------------------------- */
 
-    style: computed('showToolbar', 'top', 'left', 'right', function () {
+    @computed('showToolbar', 'top', 'left', 'right')
+    get style() {
         let position = this.getProperties('top', 'left', 'right');
         let styles = Object.keys(position).map((style) => {
             if (position[style] !== null) {
@@ -70,12 +73,12 @@ export default Component.extend({
         }
 
         return htmlSafe(styles.compact().join('; '));
-    }),
+    }
 
     /* lifecycle hooks ------------------------------------------------------ */
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         // track mousedown/mouseup on the window so that we're sure to get the
         // events even when they start outside of this component or end outside
@@ -86,10 +89,10 @@ export default Component.extend({
         window.addEventListener('mouseup', this._onMouseupHandler);
         this._onResizeHandler = run.bind(this, this._handleResize);
         window.addEventListener('resize', this._onResizeHandler);
-    },
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
         let range = this.editorRange;
 
         if (range && !range.isCollapsed) {
@@ -101,67 +104,61 @@ export default Component.extend({
         if ((this._hasSelectedRange && !this.showToolbar) || (!this._hasSelectedRange && this.showToolbar)) {
             this._toggleVisibility.perform();
         }
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
         this._removeStyleElement();
         run.cancel(this._throttleResize);
         window.removeEventListener('mousedown', this._onMousedownHandler);
         window.removeEventListener('mousemove', this._onMousemoveHandler);
         window.removeEventListener('mouseup', this._onMouseupHandler);
         window.removeEventListener('resize', this._onResizeHandler);
-    },
+    }
 
-    actions: {
-        toggleMarkup(markupName) {
-            if (markupName === 'em' && this.activeMarkupTagNames.isI) {
-                markupName = 'i';
-            }
-
-            this.toggleMarkup(markupName);
-        },
-
-        toggleSection(sectionName) {
-            let range = this.editorRange;
-            this.editor.run((postEditor) => {
-                this.toggleSection(sectionName, postEditor);
-                postEditor.setRange(range);
-            });
-        },
-
-        toggleQuoteSection() {
-            let sectionName = 'blockquote';
-
-            if (this.activeSectionTagNames.isBlockquote) {
-                sectionName = 'aside';
-            } else if (this.activeSectionTagNames.isAside) {
-                sectionName = 'p';
-            }
-
-            const range = this.editorRange;
-            this.editor.run((postEditor) => {
-                this.toggleSection(sectionName, postEditor);
-                postEditor.setRange(range);
-            });
-        },
-
-        toggleHeaderSection(headingTagName) {
-            let range = this.editorRange;
-            this.editor.run((postEditor) => {
-                this.toggleHeaderSection(headingTagName, postEditor, {force: true});
-                postEditor.setRange(range);
-            });
-        },
-
-        editLink() {
-            this.editLink(this.editorRange);
+    @action
+    _toggleMarkup(markupName) {
+        if (markupName === 'em' && this.activeMarkupTagNames.isI) {
+            markupName = 'i';
         }
-    },
+
+        this.toggleMarkup(markupName);
+    }
+
+    @action
+    toggleQuoteSection() {
+        let sectionName = 'blockquote';
+
+        if (this.activeSectionTagNames.isBlockquote) {
+            sectionName = 'aside';
+        } else if (this.activeSectionTagNames.isAside) {
+            sectionName = 'p';
+        }
+
+        const range = this.editorRange;
+        this.editor.run((postEditor) => {
+            this.toggleSection(sectionName, postEditor);
+            postEditor.setRange(range);
+        });
+    }
+
+    @action
+    _toggleHeaderSection(headingTagName) {
+        let range = this.editorRange;
+        this.editor.run((postEditor) => {
+            this.toggleHeaderSection(headingTagName, postEditor, {force: true});
+            postEditor.setRange(range);
+        });
+    }
+
+    @action
+    _editLink() {
+        this.editLink(this.editorRange);
+    }
 
     /* private methods ------------------------------------------------------ */
 
-    _toggleVisibility: task(function* (skipMousemove = false) {
+    @(task(function* (skipMousemove = false) {
         // double-taps will often trigger before the selection change event so
         // we want to keep the truthy mousemove skip around so that re-triggers
         // within the 50ms timeout do not reset it
@@ -189,7 +186,8 @@ export default Component.extend({
         }
 
         this._skipMousemove = false;
-    }).restartable(),
+    }).restartable())
+    _toggleVisibility;
 
     _handleMousedown(event) {
         // we only care about the left mouse button
@@ -200,7 +198,7 @@ export default Component.extend({
                 event.preventDefault();
             }
         }
-    },
+    }
 
     _handleMousemove() {
         if (this._hasSelectedRange && !this.showToolbar) {
@@ -208,12 +206,12 @@ export default Component.extend({
         }
 
         this._removeMousemoveHandler();
-    },
+    }
 
     _removeMousemoveHandler() {
         window.removeEventListener('mousemove', this._onMousemoveHandler);
         this._onMousemoveHandler = null;
-    },
+    }
 
     _handleMouseup(event) {
         if (event.which === 1) {
@@ -223,13 +221,13 @@ export default Component.extend({
             // to wait for another mousemove before showing the toolbar
             this._toggleVisibility.perform(true);
         }
-    },
+    }
 
     _handleResize() {
         if (this.showToolbar) {
             this._throttleResize = run.throttle(this, this._positionToolbar, 100);
         }
-    },
+    }
 
     _showToolbar(skipMousemove) {
         this._positionToolbar();
@@ -245,7 +243,7 @@ export default Component.extend({
 
         // track displayed range so that we don't re-position unnecessarily
         this._lastRange = this.editorRange;
-    },
+    }
 
     _hideToolbar() {
         if (!this.isDestroyed || !this.isDestroying) {
@@ -253,7 +251,7 @@ export default Component.extend({
         }
         this._lastRange = null;
         this._removeMousemoveHandler();
-    },
+    }
 
     _positionToolbar() {
         let containerRect = this.element.offsetParent.getBoundingClientRect();
@@ -304,7 +302,7 @@ export default Component.extend({
 
         // update the toolbar position
         this.setProperties(newPosition);
-    },
+    }
 
     _addStyleElement(tickPosition) {
         let beforeStyle = `left: calc(${tickPosition}% - ${TICK_ADJUSTMENT + 2}px);`;
@@ -316,7 +314,7 @@ export default Component.extend({
             #${this.elementId} > ul:after { ${afterStyle} }
         `;
         document.head.appendChild(styleElement);
-    },
+    }
 
     _removeStyleElement() {
         let styleElement = document.querySelector(`#${this.elementId}-style`);
@@ -324,4 +322,4 @@ export default Component.extend({
             styleElement.remove();
         }
     }
-});
+}
