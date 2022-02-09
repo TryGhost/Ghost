@@ -3,8 +3,7 @@ import config from 'ghost-admin/config/environment';
 import {formatPostTime} from 'ghost-admin/helpers/gh-format-post-time';
 import {get} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhEditorPostStatusComponent extends Component {

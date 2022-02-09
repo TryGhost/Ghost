@@ -1,6 +1,6 @@
 import Service, {inject as service} from '@ember/service';
 import moment from 'moment';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const ONE_MINUTE = 1 * 60 * 1000;

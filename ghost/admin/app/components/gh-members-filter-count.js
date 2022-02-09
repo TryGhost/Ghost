@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhMembersFilterCountComponent extends Component {

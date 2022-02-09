@@ -4,7 +4,7 @@ import {action} from '@ember/object';
 import {isHostLimitError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class NewCustomIntegrationModalComponent extends Component {

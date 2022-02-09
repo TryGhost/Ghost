@@ -3,8 +3,7 @@ import fetch from 'fetch';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {isEmpty} from '@ember/utils';
-import {task, taskGroup} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
+import {task, taskGroup, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const API_URL = 'https://g1.tenor.com';

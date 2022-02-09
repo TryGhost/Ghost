@@ -12,7 +12,7 @@ import {guidFor} from '@ember/object/internals';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 export const AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'm4a'];
 export const AUDIO_MIME_TYPES = ['audio/mp3', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/vnd.wav', 'audio/wave', 'audio/x-wav', 'audio/mp4'];

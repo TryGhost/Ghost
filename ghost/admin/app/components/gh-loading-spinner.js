@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
-import {task} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhLoadingSpinnerComponent extends Component {

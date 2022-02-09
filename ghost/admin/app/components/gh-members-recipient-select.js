@@ -4,7 +4,7 @@ import {Promise} from 'rsvp';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const BASE_FILTERS = ['status:free', 'status:-free'];

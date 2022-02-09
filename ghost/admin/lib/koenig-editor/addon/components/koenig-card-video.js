@@ -9,7 +9,7 @@ import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {set} from '@ember/object';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export const VIDEO_EXTENSIONS = ['mp4', 'webm', 'ogv'];

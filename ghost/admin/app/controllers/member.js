@@ -3,7 +3,7 @@ import EmberObject, {action, defineProperty} from '@ember/object';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const SCRATCH_PROPS = ['name', 'email', 'note'];

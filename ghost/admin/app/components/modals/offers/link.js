@@ -2,8 +2,7 @@ import Component from '@glimmer/component';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 export default class ModalsOffersLinkComponent extends Component {
     @service config;

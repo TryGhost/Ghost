@@ -1,7 +1,7 @@
 import Service, {inject as service} from '@ember/service';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class CustomThemeSettingsServices extends Service {

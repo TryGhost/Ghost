@@ -3,7 +3,7 @@ import config from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {isThemeValidationError} from 'ghost-admin/services/ajax';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class ThemeManagementService extends Service {

@@ -3,7 +3,7 @@ import moment from 'moment';
 import {action} from '@ember/object';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhPublishMenuDraftComponent extends Component {

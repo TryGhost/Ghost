@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {bind} from '@ember/runloop';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {timeout} from 'ember-concurrency';
 
 const CARD_SPACING = 20;

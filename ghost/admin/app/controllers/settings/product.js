@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import EmberObject, {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class ProductController extends Controller {

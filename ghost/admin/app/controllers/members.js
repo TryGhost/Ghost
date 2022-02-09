@@ -9,8 +9,7 @@ import {capitalize} from '@ember/string';
 import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const PAID_PARAMS = [{

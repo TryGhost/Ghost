@@ -1,8 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
