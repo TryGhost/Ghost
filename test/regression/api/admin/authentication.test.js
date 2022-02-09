@@ -1,13 +1,10 @@
-const {expect} = require('chai');
+const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyEtag, anyDate, anyErrorId} = matchers;
 
-const security = require('@tryghost/security');
+const {tokens} = require('@tryghost/security');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
-
-// Requires needed to enable a labs flag
-const sinon = require('sinon');
 
 describe('Authentication API', function () {
     let agent;
@@ -67,7 +64,8 @@ describe('Authentication API', function () {
                 to: 'test@example.com'
             });
 
-            expect(await settingsCache.get('active_theme')).to.eq('dawn');
+            const activeTheme = await settingsCache.get('active_theme');
+            assert.equal(activeTheme, 'dawn', 'The theme dawn should have been isntalled');
         });
 
         it('is setup? yes', async function () {
@@ -243,14 +241,14 @@ describe('Authentication API', function () {
         it('reset password', async function () {
             const ownerUser = await fixtureManager.getCurrentOwnerUser();
 
-            const token = security.tokens.resetToken.generateHash({
+            const token = tokens.resetToken.generateHash({
                 expires: Date.now() + (1000 * 60),
                 email: email,
                 dbHash: settingsCache.get('db_hash'),
                 password: ownerUser.get('password')
             });
 
-            const res = await agent.put('authentication/passwordreset')
+            await agent.put('authentication/passwordreset')
                 .header('Accept', 'application/json')
                 .body({
                     passwordreset: [{
@@ -292,7 +290,7 @@ describe('Authentication API', function () {
             const ownerUser = await fixtureManager.getCurrentOwnerUser();
 
             const dateInThePast = Date.now() - (1000 * 60);
-            const token = security.tokens.resetToken.generateHash({
+            const token = tokens.resetToken.generateHash({
                 expires: dateInThePast,
                 email: email,
                 dbHash: settingsCache.get('db_hash'),
@@ -321,7 +319,7 @@ describe('Authentication API', function () {
         });
 
         it('reset password: unmatched token', async function () {
-            const token = security.tokens.resetToken.generateHash({
+            const token = tokens.resetToken.generateHash({
                 expires: Date.now() + (1000 * 60),
                 email: email,
                 dbHash: settingsCache.get('db_hash'),
@@ -395,12 +393,12 @@ describe('Authentication API', function () {
             // All users locked
             const users = await models.User.fetchAll();
             for (const user of users) {
-                expect(user.get('status')).to.equal('locked');
+                assert.equal(user.get('status'), 'locked', `Status should be locked for user ${user.get('email')}`);
             }
 
             // No session left
             const sessions = await models.Session.fetchAll();
-            expect(sessions.length).to.equal(0);
+            assert.equal(sessions.length, 0, 'There should be no sessions left in the DB');
 
             mockManager.assert.sentEmailCount(2);
 
