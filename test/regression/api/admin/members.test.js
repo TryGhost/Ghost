@@ -1,4 +1,3 @@
-const querystring = require('querystring');
 const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyString, anyArray, anyObjectId, anyEtag, anyUuid, anyErrorId, anyDate} = matchers;
@@ -50,7 +49,7 @@ describe('Members API', function () {
         };
 
         const {body} = await agent
-            .post(`members/?${querystring.stringify(queryParams)}`)
+            .post('/members/?send_email=true&email_type=signup')
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
