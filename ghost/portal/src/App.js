@@ -583,7 +583,7 @@ export default class App extends React.Component {
                         this.dispatchAction('openPopup', {
                             page: 'loading'
                         });
-                        this.dispatchAction('checkoutPlan', {plan: price.id, offerId});
+                        this.dispatchAction('signup', {plan: price.id, offerId});
                     } else {
                         this.dispatchAction('openPopup', {
                             page: 'offer',
