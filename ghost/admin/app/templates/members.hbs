@@ -85,7 +85,7 @@
                             </li>
                             <li class="divider"></li>
                             <li>
-                                <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.toggleDeleteMembersModal}}>
+                                <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
                                     <span class="red">Delete selected members ({{this.members.length}})</span>
                                 </button>
                             </li>
@@ -184,16 +184,6 @@
         @model={{hash memberCount=this.members.length}}
         @confirm={{this.unsubscribeMembers}}
         @close={{this.toggleUnsubscribeMembersModal}}
-        @modifier="action wide"
-    />
-{{/if}}
-
-{{#if this.showDeleteMembersModal}}
-    <GhFullscreenModal
-        @modal="delete-members"
-        @model={{hash memberCount=this.members.length}}
-        @confirm={{this.deleteMembers}}
-        @close={{this.toggleDeleteMembersModal}}
         @modifier="action wide"
     />
 {{/if}}
