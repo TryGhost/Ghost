@@ -44,13 +44,13 @@
                     <div class="no-posts">
                         {{#if this.showingAll}}
                             {{svg-jar "pages-placeholder" class="gh-pages-placeholder"}}
-                            <h3>You haven't created any pages yet!</h3>
-                            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary gh-btn-lg">
+                            <h4>Tell the world about yourself.</h4>
+                            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-green">
                                 <span>Create a new page</span>
                             </LinkTo>
                         {{else}}
                             <h3>No pages match the current filter</h3>
-                            <LinkTo @route="pages" @query={{hash type=null author=null tag=null}} class="gh-btn gh-btn-lg">
+                            <LinkTo @route="pages" @query={{hash type=null author=null tag=null}} class="gh-btn">
                                 <span>Show all pages</span>
                             </LinkTo>
                         {{/if}}

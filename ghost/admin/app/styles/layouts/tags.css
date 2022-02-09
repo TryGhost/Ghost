@@ -9,8 +9,8 @@ textarea.gh-tag-details-textarea {
 }
 
 .gh-tags-placeholder {
-    width: 118px;
-    margin: -30px 0 15px;
+    width: 60px;
+    fill: var(--lightgrey);
 }
 
 .gh-tag-list-slug {
