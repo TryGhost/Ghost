@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {resetQueryParams} from 'ghost-admin/helpers/reset-query-params';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 
 export default class CustomViewFormModal extends Component {
     @service customViews;

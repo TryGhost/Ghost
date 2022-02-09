@@ -6,7 +6,7 @@ import {getSymbol} from 'ghost-admin/utils/currency';
 import {ghPriceAmount} from '../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 

@@ -9,8 +9,7 @@ import {
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 export default class GhBrandSettingsFormComponent extends Component {
     @service ajax;

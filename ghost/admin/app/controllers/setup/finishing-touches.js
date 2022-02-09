@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 
 export default class SetupFinishingTouchesController extends Controller {
     @service modals;

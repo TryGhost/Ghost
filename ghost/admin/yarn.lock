@@ -6833,7 +6833,7 @@ ember-composable-helpers@5.0.0:
     ember-cli-babel "^7.26.3"
     resolve "^1.10.0"
 
-ember-concurrency-decorators@2.0.3, ember-concurrency-decorators@^2.0.0:
+ember-concurrency-decorators@^2.0.0:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/ember-concurrency-decorators/-/ember-concurrency-decorators-2.0.3.tgz#2816c9a0283b90ba5340fc5b4e0b92ea91f7d6e3"
   integrity sha512-r6O34YKI/slyYapVsuOPnmaKC4AsmBSwvgcadbdy+jHNj+mnryXPkm+3hhhRnFdlsKUKdEuXvl43lhjhYRLhhA==

@@ -6,7 +6,7 @@ import {
 import {action} from '@ember/object';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class UploadThemeModalComponent extends Component {

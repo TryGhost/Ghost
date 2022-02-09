@@ -3,8 +3,7 @@ import {action} from '@ember/object';
 import {camelize} from '@ember/string';
 import {guidFor} from '@ember/object/internals';
 import {htmlSafe} from '@ember/template';
-import {task} from 'ember-concurrency-decorators';
-import {timeout} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class CustomThemeSettingsColorComponent extends Component {

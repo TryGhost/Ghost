@@ -5,7 +5,7 @@ import {IMAGE_EXTENSIONS} from 'ghost-admin/components/gh-image-uploader';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class ModalEmailDesignSettings extends ModalComponent {
