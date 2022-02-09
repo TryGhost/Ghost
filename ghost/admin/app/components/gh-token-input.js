@@ -10,7 +10,7 @@ import {
 } from 'ember-power-select/utils/group-utils';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
-import {task} from 'ember-concurrency-decorators';
+import {task} from 'ember-concurrency';
 
 const {Handlebars} = Ember;
 
