@@ -6,11 +6,13 @@
             Email newsletter
         </h2>
         <section class="view-actions">
-            <GhTaskButton @buttonText="Save"
+            <GhTaskButton
+                @buttonText="Save"
                 @task={{this.saveSettings}}
                 @successText="Saved"
                 @runningText="Saving"
                 @class="gh-btn gh-btn-primary gh-btn-icon"
+                {{on-key "cmd+s"}}
                 data-test-button="save-members-settings"
             />
         </section>
