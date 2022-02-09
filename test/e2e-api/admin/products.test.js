@@ -4,16 +4,16 @@ const labs = require('../../../core/shared/labs');
 
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 
-describe('Tiers API', function() {
+describe('Tiers API', function () {
     let agent;
 
-    before(async function() {
+    before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await agent.loginAsOwner();
     });
 
-    beforeEach(function() {
+    beforeEach(function () {
         sinon.stub(labs, 'isSet').withArgs('multipleProducts').returns(false);
         const stripeService = require('../../../core/server/services/stripe');
         stripeService.api._configured = true;
