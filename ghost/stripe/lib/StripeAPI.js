@@ -20,6 +20,10 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {string} secretKey
  * @prop {string} publicKey
  * @prop {boolean} enablePromoCodes
+ * @prop {string} checkoutSessionSuccessUrl
+ * @prop {string} checkoutSessionCancelUrl
+ * @prop {string} checkoutSetupSessionSuccessUrl
+ * @prop {string} checkoutSetupSessionCancelUrl
  */
 
 module.exports = class StripeAPI {
@@ -353,8 +357,8 @@ module.exports = class StripeAPI {
         }
         const session = await this._stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            success_url: options.successUrl,
-            cancel_url: options.cancelUrl,
+            success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
+            cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
             customer_email: customerEmail,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
             allow_promotion_codes: discounts ? undefined : this._config.enablePromoCodes,
@@ -391,8 +395,8 @@ module.exports = class StripeAPI {
         const session = await this._stripe.checkout.sessions.create({
             mode: 'setup',
             payment_method_types: ['card'],
-            success_url: options.successUrl,
-            cancel_url: options.cancelUrl,
+            success_url: options.successUrl || this._config.checkoutSetupSessionSuccessUrl,
+            cancel_url: options.cancelUrl || this._config.checkoutSetupSessionCancelUrl,
             customer_email: customer.email,
             setup_intent_data: {
                 metadata: {

@@ -70,7 +70,11 @@ module.exports = class StripeService {
         this.api.configure({
             secretKey: config.secretKey,
             publicKey: config.publicKey,
-            enablePromoCodes: config.enablePromoCodes
+            enablePromoCodes: config.enablePromoCodes,
+            checkoutSessionSuccessUrl: config.checkoutSessionSuccessUrl,
+            checkoutSessionCancelUrl: config.checkoutSessionCancelUrl,
+            checkoutSetupSessionSuccessUrl: config.checkoutSetupSessionSuccessUrl,
+            checkoutSetupSessionCancelUrl: config.checkoutSetupSessionCancelUrl
         });
 
         await this.webhookManager.configure({

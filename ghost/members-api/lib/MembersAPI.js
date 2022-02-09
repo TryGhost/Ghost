@@ -28,7 +28,6 @@ module.exports = function MembersAPI({
         getSigninURL,
         tokenProvider
     },
-    paymentConfig,
     mail: {
         transporter,
         getText,
@@ -64,8 +63,6 @@ module.exports = function MembersAPI({
         publicKey,
         issuer
     });
-
-    const stripeConfig = paymentConfig && paymentConfig.stripe || {};
 
     const memberAnalyticsService = MemberAnalyticsService.create(MemberAnalyticEvent);
     memberAnalyticsService.eventHandler.setupSubscribers();
@@ -157,13 +154,7 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         sendEmailWithMagicLink,
-        labsService,
-        config: {
-            checkoutSuccessUrl: stripeConfig.checkoutSuccessUrl,
-            checkoutCancelUrl: stripeConfig.checkoutCancelUrl,
-            billingSuccessUrl: stripeConfig.billingSuccessUrl,
-            billingCancelUrl: stripeConfig.billingCancelUrl
-        }
+        labsService
     });
 
     const wellKnownController = new WellKnownController({
