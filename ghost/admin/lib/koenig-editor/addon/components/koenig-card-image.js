@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
@@ -12,36 +13,41 @@ import {inject as service} from '@ember/service';
 
 const {countWords} = ghostHelperUtils;
 
-export default Component.extend({
-    ui: service(),
+@classic
+export default class KoenigCardImage extends Component {
+    @service ui;
 
     // attrs
-    editor: null,
-    files: null,
-    payload: null,
-    isSelected: false,
-    isEditing: false,
-    imageExtensions: IMAGE_EXTENSIONS,
-    imageMimeTypes: IMAGE_MIME_TYPES,
+    editor = null;
+    files = null;
+    payload = null;
+    isSelected = false;
+    isEditing = false;
+    imageExtensions = IMAGE_EXTENSIONS;
+    imageMimeTypes = IMAGE_MIME_TYPES;
 
     // properties
-    handlesDragDrop: true,
-    isEditingAlt: false,
+    handlesDragDrop = true;
+    isEditingAlt = false;
 
     // closure actions
-    selectCard() {},
-    deselectCard() {},
-    editCard() {},
-    saveCard() {},
-    deleteCard() {},
-    moveCursorToNextSection() {},
-    moveCursorToPrevSection() {},
-    addParagraphAfterCard() {},
-    registerComponent() {},
+    selectCard() {}
+    deselectCard() {}
+    editCard() {}
+    saveCard() {}
+    deleteCard() {}
+    moveCursorToNextSection() {}
+    moveCursorToPrevSection() {}
+    addParagraphAfterCard() {}
+    registerComponent() {}
 
-    isEmpty: computed.not('payload.src'),
+    @computed('payload.src')
+    get isEmpty() {
+        return !this.payload.src;
+    }
 
-    imageSelector: computed('payload.imageSelector', function () {
+    @computed('payload.imageSelector')
+    get imageSelector() {
         let selector = this.payload.imageSelector;
         let imageSelectors = {
             unsplash: {
@@ -55,9 +61,10 @@ export default Component.extend({
         };
 
         return imageSelectors[selector];
-    }),
+    }
 
-    counts: computed('payload.{src,caption}', function () {
+    @computed('payload.{src,caption}')
+    get counts() {
         let wordCount = 0;
         let imageCount = 0;
 
@@ -70,9 +77,10 @@ export default Component.extend({
         }
 
         return {wordCount, imageCount};
-    }),
+    }
 
-    kgImgStyle: computed('payload.cardWidth', function () {
+    @computed('payload.cardWidth')
+    get kgImgStyle() {
         let cardWidth = this.payload.cardWidth;
 
         if (cardWidth === 'wide') {
@@ -84,9 +92,10 @@ export default Component.extend({
         }
 
         return 'image-normal';
-    }),
+    }
 
-    toolbar: computed('isEditingLink', 'payload.{cardWidth,src}', function () {
+    @computed('isEditingLink', 'payload.{cardWidth,src}')
+    get toolbar() {
         if (!this.payload.src || this.isEditingLink) {
             return false;
         }
@@ -133,10 +142,10 @@ export default Component.extend({
         }
 
         return {items: toolbarItems};
-    }),
+    }
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         if (!this.payload) {
             this.set('payload', {});
@@ -146,10 +155,10 @@ export default Component.extend({
         this.set('placeholder', placeholders[Math.floor(Math.random() * placeholders.length)]);
 
         this.registerComponent(this);
-    },
+    }
 
     didReceiveAttrs() {
-        this._super(...arguments);
+        super.didReceiveAttrs(...arguments);
 
         // `payload.files` can be set if we have an externaly set image that
         // should be uploaded. Typical example would be from a paste or drag/drop
@@ -166,10 +175,10 @@ export default Component.extend({
         if (!this.isSelected) {
             this.set('isEditingAlt', false);
         }
-    },
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
 
         if (this.payload.triggerBrowse && !this.payload.src && !this.payload.files) {
             // we don't want to persist this in the serialized payload
@@ -184,130 +193,140 @@ export default Component.extend({
         if (this.imageSelector) {
             this.scrollToCard();
         }
-    },
+    }
 
-    actions: {
-        updateSrc(images) {
-            let [image] = images;
+    @action
+    updateSrc(images) {
+        let [image] = images;
 
-            // create undo snapshot when image finishes uploading
-            this.editor.run(() => {
-                this._updatePayloadAttr('src', image.url);
-                if (this._imageWidth && this._imageHeight) {
-                    this._updatePayloadAttr('width', this._imageWidth);
-                    this._updatePayloadAttr('height', this._imageHeight);
-                }
-                this._imageWidth = null;
-                this._imageHeight = null;
-            });
-        },
-
-        /**
-         * Opens a file selection dialog - Triggered by "Upload Image" buttons,
-         * searches for the hidden file input within the .gh-setting element
-         * containing the clicked button then simulates a click
-         * @param  {MouseEvent} event - MouseEvent fired by the button click
-         */
-        triggerFileDialog(event) {
-            this._triggerFileDialog(event);
-        },
-
-        setPreviewSrc(files) {
-            let file = files[0];
-            if (file) {
-                let url = URL.createObjectURL(file);
-                this.set('previewSrc', url);
-
-                let imageElem = new Image();
-                imageElem.onload = () => {
-                    // store width/height for use later to avoid saving an image card with no `src`
-                    this._imageWidth = imageElem.naturalWidth;
-                    this._imageHeight = imageElem.naturalHeight;
-                };
-                imageElem.src = url;
+        // create undo snapshot when image finishes uploading
+        this.editor.run(() => {
+            this._updatePayloadAttr('src', image.url);
+            if (this._imageWidth && this._imageHeight) {
+                this._updatePayloadAttr('width', this._imageWidth);
+                this._updatePayloadAttr('height', this._imageHeight);
             }
-        },
-
-        resetSrcs() {
-            this.set('previewSrc', null);
             this._imageWidth = null;
             this._imageHeight = null;
+        });
+    }
 
-            // create undo snapshot when clearing
-            this.editor.run(() => {
-                this._updatePayloadAttr('src', null);
-                this._updatePayloadAttr('width', null);
-                this._updatePayloadAttr('height', null);
-            });
-        },
+    /**
+     * Opens a file selection dialog - Triggered by "Upload Image" buttons,
+     * searches for the hidden file input within the .gh-setting element
+     * containing the clicked button then simulates a click
+     * @param  {MouseEvent} event - MouseEvent fired by the button click
+     */
+    @action
+    triggerFileDialog(event) {
+        this._triggerFileDialog(event);
+    }
 
-        selectFromImageSelector({src, width, height, caption, alt, type}) {
-            let {payload, saveCard} = this;
-            let searchTerm;
+    @action
+    setPreviewSrc(files) {
+        let file = files[0];
+        if (file) {
+            let url = URL.createObjectURL(file);
+            this.set('previewSrc', url);
 
-            setProperties(payload, {src, width, height, caption, alt, type, searchTerm});
-
-            this.send('closeImageSelector');
-
-            // create undo snapshot when selecting an image
-            this.editor.run(() => {
-                saveCard(payload, false);
-            });
-            this.deselectCard();
-            this.selectCard();
-            this.scrollToCard();
-        },
-
-        closeImageSelector(reselectParagraph = true) {
-            if (!this.payload.src) {
-                if (!this.env.postModel.parent) {
-                    // card has been deleted by cleanup
-                    return;
-                }
-
-                return this.editor.run((postEditor) => {
-                    let {builder} = postEditor;
-                    let cardSection = this.env.postModel;
-                    let p = builder.createMarkupSection('p');
-
-                    postEditor.replaceSection(cardSection, p);
-
-                    if (reselectParagraph) {
-                        postEditor.setRange(p.tailPosition());
-                    }
-                });
-            }
-
-            set(this.payload, 'imageSelector', undefined);
-        },
-
-        updateHref(href) {
-            this._updatePayloadAttr('href', href);
-        },
-
-        cancelEditLink() {
-            this.set('isEditing', false);
-            this.set('isEditingLink', false);
-        },
-
-        onDeselect() {
-            if (this.imageSelector?.type === 'placeholder' && !this.payload.src) {
-                this.send('closeImageSelector', false);
-            }
+            let imageElem = new Image();
+            imageElem.onload = () => {
+                // store width/height for use later to avoid saving an image card with no `src`
+                this._imageWidth = imageElem.naturalWidth;
+                this._imageHeight = imageElem.naturalHeight;
+            };
+            imageElem.src = url;
         }
-    },
+    }
 
-    updateCaption: action(function (caption) {
+    @action
+    resetSrcs() {
+        this.set('previewSrc', null);
+        this._imageWidth = null;
+        this._imageHeight = null;
+
+        // create undo snapshot when clearing
+        this.editor.run(() => {
+            this._updatePayloadAttr('src', null);
+            this._updatePayloadAttr('width', null);
+            this._updatePayloadAttr('height', null);
+        });
+    }
+
+    @action
+    selectFromImageSelector({src, width, height, caption, alt, type}) {
+        let {payload, saveCard} = this;
+        let searchTerm;
+
+        setProperties(payload, {src, width, height, caption, alt, type, searchTerm});
+
+        this.send('closeImageSelector');
+
+        // create undo snapshot when selecting an image
+        this.editor.run(() => {
+            saveCard(payload, false);
+        });
+        this.deselectCard();
+        this.selectCard();
+        this.scrollToCard();
+    }
+
+    @action
+    closeImageSelector(reselectParagraph = true) {
+        if (!this.payload.src) {
+            if (!this.env.postModel.parent) {
+                // card has been deleted by cleanup
+                return;
+            }
+
+            return this.editor.run((postEditor) => {
+                let {builder} = postEditor;
+                let cardSection = this.env.postModel;
+                let p = builder.createMarkupSection('p');
+
+                postEditor.replaceSection(cardSection, p);
+
+                if (reselectParagraph) {
+                    postEditor.setRange(p.tailPosition());
+                }
+            });
+        }
+
+        set(this.payload, 'imageSelector', undefined);
+    }
+
+    @action
+    updateHref(href) {
+        this._updatePayloadAttr('href', href);
+    }
+
+    @action
+    cancelEditLink() {
+        this.set('isEditing', false);
+        this.set('isEditingLink', false);
+    }
+
+    @action
+    onDeselect() {
+        if (this.imageSelector?.type === 'placeholder' && !this.payload.src) {
+            this.send('closeImageSelector', false);
+        }
+    }
+
+    @action
+    updateCaption(caption) {
         this._updatePayloadAttr('caption', caption);
-    }),
+    }
 
-    toggleAltEditing: action(function () {
+    @action
+    toggleAltEditing() {
         this.toggleProperty('isEditingAlt');
-    }),
+    }
 
-    updateAlt: action(function (alt) {
+    @action
+    updateAlt(alt) {
         this._updatePayloadAttr('alt', alt);
-    }),
+    }
 
     dragOver(event) {
         if (!event.dataTransfer) {
@@ -325,12 +344,12 @@ export default Component.extend({
         event.preventDefault();
 
         this.set('isDraggedOver', true);
-    },
+    }
 
     dragLeave(event) {
         event.preventDefault();
         this.set('isDraggedOver', false);
-    },
+    }
 
     drop(event) {
         event.preventDefault();
@@ -339,14 +358,14 @@ export default Component.extend({
         if (event.dataTransfer.files) {
             this.set('files', [event.dataTransfer.files[0]]);
         }
-    },
+    }
 
     _changeCardWidth(cardWidth) {
         // create undo snapshot when changing image size
         this.editor.run(() => {
             this._updatePayloadAttr('cardWidth', cardWidth);
         });
-    },
+    }
 
     _updatePayloadAttr(attr, value) {
         let payload = this.payload;
@@ -356,7 +375,7 @@ export default Component.extend({
 
         // update the mobiledoc and stay in edit mode
         save(payload, false);
-    },
+    }
 
     _triggerFileDialog(event) {
         let target = event && event.target || this.element;
@@ -367,7 +386,7 @@ export default Component.extend({
             .closest('.__mobiledoc-card')
             .find('input[type="file"]')
             .click();
-    },
+    }
 
     _editLink(event) {
         event.preventDefault();
@@ -378,4 +397,4 @@ export default Component.extend({
         this.set('isEditing', true); // hide snippet icon in toolbar
         this.set('isEditingLink', true);
     }
-});
+}
