@@ -69,7 +69,7 @@
                         {{#if (and this.members.length this.isFiltered)}}
                             <li class="divider"></li>
                             <li>
-                                <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.toggleAddMembersLabelModal}}>
+                                <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
                                     <span>Add label for selected members ({{this.members.length}})</span>
                                 </button>
                             </li>
@@ -177,16 +177,6 @@
 </section>
 
 {{outlet}}
-
-{{#if this.showAddMembersLabelModal}}
-    <GhFullscreenModal
-        @modal="add-label-members"
-        @model={{hash memberCount=this.members.length}}
-        @confirm={{this.addLabelToMembers}}
-        @close={{this.toggleAddMembersLabelModal}}
-        @modifier="action wide"
-    />
-{{/if}}
 
 {{#if this.showRemoveMembersLabelModal}}
     <GhFullscreenModal
