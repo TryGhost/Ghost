@@ -16,7 +16,6 @@ module.exports = class RouterController {
      * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
      * @param {any} deps.tokenService
      * @param {{isSet(name: string): boolean}} deps.labsService
-     * @param {any} deps.config
      */
     constructor({
         offersAPI,
@@ -29,8 +28,7 @@ module.exports = class RouterController {
         stripeAPIService,
         tokenService,
         sendEmailWithMagicLink,
-        labsService,
-        config
+        labsService
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -43,7 +41,6 @@ module.exports = class RouterController {
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
         this.labsService = labsService;
-        this._config = config;
     }
 
     async ensureStripe(_req, res, next) {
@@ -105,8 +102,8 @@ module.exports = class RouterController {
         }
 
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
-            successUrl: req.body.successUrl || this._config.billingSuccessUrl,
-            cancelUrl: req.body.cancelUrl || this._config.billingCancelUrl,
+            successUrl: req.body.successUrl,
+            cancelUrl: req.body.cancelUrl,
             subscription_id: req.body.subscription_id
         });
         const publicKey = this._stripeAPIService.getPublicKey();
@@ -197,8 +194,8 @@ module.exports = class RouterController {
 
         const member = email ? await this._memberRepository.get({email}, {withRelated: ['stripeCustomers', 'products']}) : null;
 
-        let successUrl = req.body.successUrl || this._config.checkoutSuccessUrl;
-        let cancelUrl = req.body.cancelUrl || this._config.checkoutCancelUrl;
+        let successUrl = req.body.successUrl;
+        let cancelUrl = req.body.cancelUrl;
 
         if (!member && req.body.customerEmail && !req.body.successUrl) {
             const memberExistsForCustomer = await this._memberRepository.get({email: req.body.customerEmail});
