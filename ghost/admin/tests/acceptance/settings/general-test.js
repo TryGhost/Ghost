@@ -72,7 +72,7 @@ describe('Acceptance: Settings - General', function () {
             expect(
                 find('[data-test-button="save"]').textContent.trim(),
                 'save button text'
-            ).to.equal('Save settings');
+            ).to.equal('Save');
 
             await click('[data-test-toggle-pub-info]');
             await fillIn('[data-test-title-input]', 'New Blog Title');
