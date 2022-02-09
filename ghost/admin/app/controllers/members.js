@@ -56,7 +56,6 @@ export default class MembersController extends Controller {
     @tracked showLabelModal = false;
     @tracked showDeleteMembersModal = false;
     @tracked showUnsubscribeMembersModal = false;
-    @tracked showRemoveMembersLabelModal = false;
     @tracked filters = A([]);
     @tracked softFilters = A([]);
 
@@ -313,6 +312,18 @@ export default class MembersController extends Controller {
     }
 
     @action
+    bulkRemoveLabel() {
+        this.modals.open('modals/members/bulk-remove-label', {
+            query: this.getApiQueryObject(),
+            onComplete: () => {
+                // reset and reload
+                this.store.unloadAll('member');
+                this.reload();
+            }
+        });
+    }
+
+    @action
     changePaidParam(paid) {
         this.paidParam = paid.value;
     }
@@ -328,11 +339,6 @@ export default class MembersController extends Controller {
     }
 
     @action
-    toggleRemoveMembersLabelModal() {
-        this.showRemoveMembersLabelModal = !this.showRemoveMembersLabelModal;
-    }
-
-    @action
     deleteMembers() {
         return this.deleteMembersTask.perform();
     }
@@ -340,11 +346,6 @@ export default class MembersController extends Controller {
     @action
     unsubscribeMembers() {
         return this.unsubscribeMembersTask.perform();
-    }
-
-    @action
-    removeLabelFromMembers(selectedLabel) {
-        return this.removeLabelFromMembersTask.perform(selectedLabel);
     }
 
     // Tasks -------------------------------------------------------------------
@@ -480,29 +481,6 @@ export default class MembersController extends Controller {
         return response?.bulk?.meta;
     }
 
-    @task({drop: true})
-    *removeLabelFromMembersTask(selectedLabel) {
-        const query = new URLSearchParams(this.getApiQueryObject());
-        const removeLabelUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
-        const response = yield this.ajax.put(removeLabelUrl, {
-            data: {
-                bulk: {
-                    action: 'removeLabel',
-                    meta: {
-                        label: {
-                            id: selectedLabel
-                        }
-                    }
-                }
-            }
-        });
-
-        // reset and reload
-        this.store.unloadAll('member');
-        this.reload();
-
-        return response?.bulk?.meta;
-    }
     // Internal ----------------------------------------------------------------
 
     resetFilters(params) {
