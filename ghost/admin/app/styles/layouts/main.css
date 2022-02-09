@@ -1795,7 +1795,80 @@ section.gh-ds h2 {
 }
 
 
-/* Get started modal
+/* Finishing touches */
+/* ---------------------------------------------------- */
+
+@keyframes fadeUp {
+    0% {
+        opacity: 0;
+        transform: translateY(32px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gh-finishing-touches {
+    background: #DFDFDF;
+    flex-direction: column;
+}
+
+.gh-finishing-touches header {
+    padding: 32px 0 24px;
+}
+
+.gh-finishing-touches header h1 {
+    font-size: 4.1rem;
+    letter-spacing: -0.025em;
+    color: rgb(21, 23, 26);
+    margin: 0;
+}
+
+.gh-finishing-touches header p {   
+    font-size: 1.9rem;
+    line-height: 1.5em;
+    margin: 0.5rem 0 2rem;
+    color: rgb(112, 123, 139);
+}
+
+.gh-finishing-touches main {
+    background: #ffffff;
+    box-shadow: 0 0 30px rgba(0,0,0,0.075);
+    width: calc(100% - 32px);
+    border-radius: 8px;
+    margin: 0 16px 16px;
+
+    animation: fadeUp ease 300ms;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+
+.gh-finishing-touches .gh-nav-design-settings {
+    background: transparent;
+    padding-top: 31px;
+}
+
+.gh-finishing-touches .gh-setting-desc {
+    padding-right: 2rem;
+}
+
+.gh-finishing-touches .gh-browserpreview-previewcontainer {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    border-radius: 5px !important;
+    overflow: hidden;
+}
+
+.gh-finishing-touches .gh-browserpreview-browser .tabs {
+    background: #fff;
+}
+
+.gh-finishing-touches .gh-browserpreview-browser .tabs div {
+    display: none;
+}
+
+
+/* Get started modal */
 /* ---------------------------------------------------- */
 
 .gh-get-started-welcome {
@@ -1818,4 +1891,16 @@ section.gh-ds h2 {
 
 .gh-get-started-extras .br {
     border-color: var(--whitegrey);
+}
+
+.gh-get-started-extras .pa4:first-child {
+    padding-left: 0;
+    padding-bottom: 0;
+    padding-right: 3rem;
+}
+
+.gh-get-started-extras .pa4:last-child {
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 3rem;
 }
