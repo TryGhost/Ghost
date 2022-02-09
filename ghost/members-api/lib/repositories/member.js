@@ -80,7 +80,7 @@ module.exports = class MemberRepository {
     }
 
     isComplimentarySubscription(subscription) {
-        return subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
+        return subscription.plan && subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
     }
 
     async get(data, options) {
