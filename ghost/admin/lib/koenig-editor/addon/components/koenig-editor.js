@@ -1,3 +1,6 @@
+import classic from 'ember-classic-decorator';
+import {classNames, tagName} from '@ember-decorators/component';
+import {inject as service} from '@ember/service';
 /*
  * Based on ember-mobiledoc-editor
  * https://github.com/bustle/ember-mobiledoc-editor
@@ -6,7 +9,7 @@
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
-import EmberObject, {computed, get} from '@ember/object';
+import EmberObject, {action, computed, get} from '@ember/object';
 import Key from 'mobiledoc-kit/utils/key';
 import MobiledocRange from 'mobiledoc-kit/utils/cursor/range';
 import calculateReadingTime from '../utils/reading-time';
@@ -18,7 +21,6 @@ import registerTextExpansions from '../options/text-expansions';
 import validator from 'validator';
 import {A} from '@ember/array';
 import {TrackedObject} from 'tracked-built-ins';
-import {action} from '@ember/object';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
 import {canInsertCardsFromFiles, insertCardsFromFiles} from '../utils/insert-cards-from-files';
@@ -31,7 +33,6 @@ import {getParent} from '../lib/dnd/utils';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {guidFor} from '@ember/object/internals';
 import {run} from '@ember/runloop';
-import {inject as service} from '@ember/service';
 import {svgJar} from 'ghost-admin/helpers/svg-jar';
 import {task, waitForProperty} from 'ember-concurrency';
 
@@ -104,6 +105,7 @@ export function arrayToMap(array) {
 export function toggleSpecialFormatEditState(editor) {
     let {head, isCollapsed} = editor.range;
     if (isCollapsed) {
+        // eslint-disable-next-line no-shadow
         Object.keys(SPECIAL_MARKUPS).forEach((tagName) => {
             tagName = tagName.toLowerCase();
             if (head.marker && head.marker.hasMarkup(tagName) && editor._editState.activeMarkups.findBy('tagName', tagName)) {
@@ -121,56 +123,57 @@ export function toggleSpecialFormatEditState(editor) {
     }
 }
 
-export default Component.extend({
-    feature: service(),
-    koenigDragDropHandler: service(),
-    koenigUi: service(),
-
-    tagName: 'article',
-    classNames: ['koenig-editor', 'w-100', 'flex-grow', 'relative', 'center', 'mb0', 'mt0'],
+@classic
+@tagName('article')
+@classNames('koenig-editor', 'w-100', 'flex-grow', 'relative', 'center', 'mb0', 'mt0')
+export default class KoenigEditor extends Component {
+    @service feature;
+    @service koenigDragDropHandler;
+    @service koenigUi;
 
     // public attrs
-    mobiledoc: null,
-    placeholder: 'Write here...',
-    autofocus: false,
-    spellcheck: true,
-    options: null,
-    headerOffset: 0,
-    dropTargetSelector: null,
-    scrollContainerSelector: null,
-    scrollOffsetTopSelector: null,
-    scrollOffsetBottomSelector: null,
+    mobiledoc = null;
+    placeholder = 'Write here...';
+    autofocus = false;
+    spellcheck = true;
+    options = null;
+    headerOffset = 0;
+    dropTargetSelector = null;
+    scrollContainerSelector = null;
+    scrollOffsetTopSelector = null;
+    scrollOffsetBottomSelector = null;
 
     // internal properties
-    editor: null,
-    activeMarkupTagNames: null,
-    activeSectionTagNames: null,
-    selectedRange: null,
-    componentAtoms: null,
-    componentCards: null,
-    linkRange: null,
-    selectedCard: null,
+    editor = null;
+    activeMarkupTagNames = null;
+    activeSectionTagNames = null;
+    selectedRange = null;
+    componentAtoms = null;
+    componentCards = null;
+    linkRange = null;
+    selectedCard = null;
 
     // private properties
-    _localMobiledoc: null,
-    _upstreamMobiledoc: null,
-    _startedRunLoop: false,
-    _lastIsEditingDisabled: false,
-    _isRenderingEditor: false,
-    _skipCursorChange: false,
-    _modifierKeys: null,
+    _localMobiledoc = null;
+    _upstreamMobiledoc = null;
+    _startedRunLoop = false;
+    _lastIsEditingDisabled = false;
+    _isRenderingEditor = false;
+    _skipCursorChange = false;
+    _modifierKeys = null;
 
     // closure actions
-    willCreateEditor() {},
-    didCreateEditor() {},
-    onChange() {},
-    cursorDidExitAtTop() {},
-    wordCountDidChange() {},
+    willCreateEditor() {}
+    didCreateEditor() {}
+    onChange() {}
+    cursorDidExitAtTop() {}
+    wordCountDidChange() {}
 
     /* computed properties -------------------------------------------------- */
 
     // merge in named options with any passed in `options` property data-bag
-    editorOptions: computed(function () {
+    @computed
+    get editorOptions() {
         let options = this.options || {};
         let atoms = this.atoms || [];
         let cards = this.cards || [];
@@ -188,24 +191,27 @@ export default Component.extend({
             atoms,
             cards
         }, options);
-    }),
+    }
 
-    addSnippetIfPossible: computed('saveSnippet', function () {
+    @computed('saveSnippet')
+    get addSnippetIfPossible() {
         return this.saveSnippet ? this.addSnippet : undefined;
-    }),
+    }
 
-    saveCardAsSnippetIfPossible: computed('saveSnippet', function () {
+    @computed('saveSnippet')
+    get saveCardAsSnippetIfPossible() {
         return this.saveSnippet ? this.saveCardAsSnippet : undefined;
-    }),
+    }
 
-    allComponentCardsRegistered: computed('componentCards.@each.component', function () {
+    @computed('componentCards.@each.component')
+    get allComponentCardsRegistered() {
         return this.componentCards.every(card => typeof card.component === 'object');
-    }),
+    }
 
     /* lifecycle hooks ------------------------------------------------------ */
 
     init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.SPECIAL_MARKUPS = SPECIAL_MARKUPS;
 
         // set a blank mobiledoc if we didn't receive anything
@@ -237,10 +243,10 @@ export default Component.extend({
         window.addEventListener('mouseup', this._onMouseupHandler);
 
         this._startedRunLoop = false;
-    },
+    }
 
     willRender() {
-        this._super(...arguments);
+        super.willRender(...arguments);
         // use a default mobiledoc. If there are no changes then return early
         let mobiledoc = this.mobiledoc || BLANK_DOC;
         let mobiledocIsSame =
@@ -442,10 +448,10 @@ export default Component.extend({
 
         run.schedule('afterRender', this, this._registerCardReorderDragDropHandler);
         run.schedule('afterRender', this, this._calculateWordCount);
-    },
+    }
 
     didInsertElement() {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         let editorElement = this.element.querySelector('[data-kg="editor"]');
 
         this._pasteHandler = run.bind(this, this.handlePaste);
@@ -467,12 +473,12 @@ export default Component.extend({
         this._dropTarget.addEventListener('dragover', this._dragOverHandler);
         this._dropTarget.addEventListener('dragleave', this._dragLeaveHandler);
         this._dropTarget.addEventListener('drop', this._dropHandler);
-    },
+    }
 
     // our ember component has rendered, now we need to render the mobiledoc
     // editor itself if necessary
     didRender() {
-        this._super(...arguments);
+        super.didRender(...arguments);
         let editor = this.editor;
         if (!editor.hasRendered) {
             let editorElement = this.element.querySelector('[data-kg="editor"]');
@@ -480,10 +486,10 @@ export default Component.extend({
             editor.render(editorElement);
             this._isRenderingEditor = false;
         }
-    },
+    }
 
     willDestroyElement() {
-        this._super(...arguments);
+        super.willDestroyElement(...arguments);
 
         let {editor, _dropTarget, _cardDragDropContainer} = this;
 
@@ -501,230 +507,247 @@ export default Component.extend({
 
         editor.destroy();
 
-        this._super(...arguments);
-    },
+        super.willDestroyElement(...arguments);
+    }
 
-    actions: {
-        exitCursorAtTop() {
-            if (this.selectedCard) {
-                this.deselectCard(this.selectedCard);
-            }
-
-            this.cursorDidExitAtTop();
-        },
-
-        toggleMarkup(markupTagName, postEditor) {
-            (postEditor || this.editor).toggleMarkup(markupTagName);
-        },
-
-        toggleSection(sectionTagName, postEditor) {
-            (postEditor || this.editor).toggleSection(sectionTagName);
-        },
-
-        toggleHeaderSection(headingTagName, postEditor, options = {}) {
-            let editor = this.editor;
-
-            // skip toggle if we already have the same heading level
-            if (!options.force && editor.activeSection.tagName === headingTagName) {
-                return;
-            }
-
-            let operation = function (operationPostEditor) {
-                // strip all formatting aside from links
-                operationPostEditor.removeMarkupFromRange(
-                    editor.activeSection.toRange(),
-                    m => m.tagName !== 'a'
-                );
-
-                operationPostEditor.toggleSection(headingTagName);
-            };
-
-            this._performEdit(operation, postEditor);
-        },
-
-        replaceWithCardSection(cardName, range, payload) {
-            let editor = this.editor;
-            let {head: {section}} = range;
-
-            editor.run((postEditor) => {
-                let {builder} = postEditor;
-                let card = builder.createCardSection(cardName, payload);
-                let nextSection = section.next;
-                let needsTrailingParagraph = !nextSection;
-
-                postEditor.replaceSection(section, card);
-
-                // add an empty paragraph after if necessary so writing can continue
-                if (needsTrailingParagraph) {
-                    let newSection = postEditor.builder.createMarkupSection('p');
-                    postEditor.insertSectionAtEnd(newSection);
-                    postEditor.setRange(newSection.tailPosition());
-                } else {
-                    postEditor.setRange(nextSection.headPosition());
-                }
-            });
-
-            // cards are pushed on to the `componentCards` array so we can
-            // assume that the last card in the list is the one we want to
-            // select. Needs to be scheduled afterRender so that the new card
-            // is actually present
-            const editOrSelectCard = (card) => {
-                if (card.koenigOptions.hasEditMode) {
-                    this.editCard(card);
-                } else if (card.koenigOptions.selectAfterInsert) {
-                    this.selectCard(card);
-                }
-            };
-
-            run.schedule('afterRender', this, function () {
-                let card = this.componentCards.lastObject;
-
-                // Sentry was showing `card` being undefined at times (id: 2451728694).
-                // Retrying with logging to see if it's a case of multiple render loops
-                // or some other underlying issue
-                // TODO: check Sentry for issue occurence after 4.13.0
-                if (!card) {
-                    captureMessage('replaceWithCardSection: card was not present after first render');
-                    console.warn('replaceWithCardSection: card was not present after first render'); // eslint-disable-line
-
-                    run.schedule('afterRender', this, function () {
-                        card = this.componentCards.lastObject;
-
-                        if (!card) {
-                            captureMessage('replaceWithCardSection: card was not present after second render');
-                            console.warn('replaceWithCardSection: card was not present after second render'); // eslint-disable-line
-                        }
-
-                        editOrSelectCard(card);
-                    });
-                }
-
-                editOrSelectCard(card);
-            });
-        },
-
-        replaceWithPost(range, post) {
-            let {editor} = this;
-            let {head: {section}} = range;
-
-            editor.selectRange(range);
-
-            editor.run((postEditor) => {
-                let nextPosition = postEditor.deleteRange(section.toRange());
-                postEditor.setRange(nextPosition);
-
-                let blankSection = postEditor.builder.createMarkupSection('p');
-                postEditor.insertSectionBefore(editor.post.sections, blankSection);
-                postEditor.setRange(blankSection.toRange());
-
-                nextPosition = postEditor.insertPost(editor.range.head, post);
-                postEditor.setRange(nextPosition);
-            });
-        },
-
-        selectCard(card) {
-            this.selectCard(card);
-        },
-
-        editCard(card) {
-            this.editCard(card);
-        },
-
-        deselectCard(card) {
-            this.deselectCard(card);
-        },
-
-        scrollToCard(card) {
-            this.selectCard(card);
-            this._scrollCursorIntoView({jumpToCard: true});
-        },
-
-        // range should be set to the full extent of the selection or the
-        // appropriate <a> markup. If there's a selection when the link edit
-        // component renders it will re-select when finished which should
-        // trigger the normal toolbar
-        editLink(range, rect) {
-            let linkMarkup = getLinkMarkupFromRange(range);
-            if ((!range.isCollapsed || linkMarkup) && range.headSection.isMarkerable) {
-                this.set('linkRange', range);
-                this.set('linkRect', rect);
-            }
-        },
-
-        cancelEditLink() {
-            this.set('linkRange', null);
-            this.set('linkRect', null);
-        },
-
-        deleteCard(card, cursorMovement = CURSOR_AFTER) {
-            this.deleteCard(card, cursorMovement);
-        },
-
-        moveCursorToPrevSection(card) {
-            let section = this.getSectionFromCard(card);
-
-            if (section.prev) {
-                this.deselectCard(card);
-                this.moveCaretToTailOfSection(section.prev, false);
-            }
-        },
-
-        moveCursorToNextSection(card) {
-            let section = this.getSectionFromCard(card);
-
-            if (section.next) {
-                this.deselectCard(card);
-                this.moveCaretToHeadOfSection(section.next, false);
-            } else {
-                this.send('addParagraphAfterCard', card);
-            }
-        },
-
-        addParagraphAfterCard(card, {scrollIntoView = false} = {}) {
-            let editor = this.editor;
-            let section = this.getSectionFromCard(card);
-            let collection = section.parent.sections;
-            let nextSection = section.next;
-
-            this.deselectCard(card);
-
-            editor.run((postEditor) => {
-                let {builder} = postEditor;
-                let newPara = builder.createMarkupSection('p');
-
-                if (nextSection) {
-                    postEditor.insertSectionBefore(collection, newPara, nextSection);
-                } else {
-                    postEditor.insertSectionAtEnd(newPara);
-                }
-
-                postEditor.setRange(newPara.tailPosition());
-            });
-
-            if (scrollIntoView) {
-                run.schedule('afterRender', this, this._scrollCursorIntoView);
-            }
-        },
-
-        openSelectorComponent(componentName, range) {
-            if (range) {
-                this.editor.selectRange(range);
-            }
-
-            // wait 1ms for event loop to finish so mobiledoc-kit doesn't
-            // get hung up processing keyboard events when focus has switched
-            // to selector search input
-            run.later(() => {
-                this.set('activeSelectorComponent', componentName);
-            });
-        },
-
-        closeSelectorComponent() {
-            this.set('activeSelectorComponent', null);
+    @action
+    exitCursorAtTop() {
+        if (this.selectedCard) {
+            this.deselectCard(this.selectedCard);
         }
-    },
 
-    addSnippet: action(function (event) {
+        this.cursorDidExitAtTop();
+    }
+
+    @action
+    toggleMarkup(markupTagName, postEditor) {
+        (postEditor || this.editor).toggleMarkup(markupTagName);
+    }
+
+    @action
+    toggleSection(sectionTagName, postEditor) {
+        (postEditor || this.editor).toggleSection(sectionTagName);
+    }
+
+    @action
+    toggleHeaderSection(headingTagName, postEditor, options = {}) {
+        let editor = this.editor;
+
+        // skip toggle if we already have the same heading level
+        if (!options.force && editor.activeSection.tagName === headingTagName) {
+            return;
+        }
+
+        let operation = function (operationPostEditor) {
+            // strip all formatting aside from links
+            operationPostEditor.removeMarkupFromRange(
+                editor.activeSection.toRange(),
+                m => m.tagName !== 'a'
+            );
+
+            operationPostEditor.toggleSection(headingTagName);
+        };
+
+        this._performEdit(operation, postEditor);
+    }
+
+    @action
+    replaceWithCardSection(cardName, range, payload) {
+        let editor = this.editor;
+        let {head: {section}} = range;
+
+        editor.run((postEditor) => {
+            let {builder} = postEditor;
+            let card = builder.createCardSection(cardName, payload);
+            let nextSection = section.next;
+            let needsTrailingParagraph = !nextSection;
+
+            postEditor.replaceSection(section, card);
+
+            // add an empty paragraph after if necessary so writing can continue
+            if (needsTrailingParagraph) {
+                let newSection = postEditor.builder.createMarkupSection('p');
+                postEditor.insertSectionAtEnd(newSection);
+                postEditor.setRange(newSection.tailPosition());
+            } else {
+                postEditor.setRange(nextSection.headPosition());
+            }
+        });
+
+        // cards are pushed on to the `componentCards` array so we can
+        // assume that the last card in the list is the one we want to
+        // select. Needs to be scheduled afterRender so that the new card
+        // is actually present
+        const editOrSelectCard = (card) => {
+            if (card.koenigOptions.hasEditMode) {
+                this.editCard(card);
+            } else if (card.koenigOptions.selectAfterInsert) {
+                this.selectCard(card);
+            }
+        };
+
+        run.schedule('afterRender', this, function () {
+            let card = this.componentCards.lastObject;
+
+            // Sentry was showing `card` being undefined at times (id: 2451728694).
+            // Retrying with logging to see if it's a case of multiple render loops
+            // or some other underlying issue
+            // TODO: check Sentry for issue occurence after 4.13.0
+            if (!card) {
+                captureMessage('replaceWithCardSection: card was not present after first render');
+                console.warn('replaceWithCardSection: card was not present after first render'); // eslint-disable-line
+
+                run.schedule('afterRender', this, function () {
+                    card = this.componentCards.lastObject;
+
+                    if (!card) {
+                        captureMessage('replaceWithCardSection: card was not present after second render');
+                        console.warn('replaceWithCardSection: card was not present after second render'); // eslint-disable-line
+                    }
+
+                    editOrSelectCard(card);
+                });
+            }
+
+            editOrSelectCard(card);
+        });
+    }
+
+    @action
+    replaceWithPost(range, post) {
+        let {editor} = this;
+        let {head: {section}} = range;
+
+        editor.selectRange(range);
+
+        editor.run((postEditor) => {
+            let nextPosition = postEditor.deleteRange(section.toRange());
+            postEditor.setRange(nextPosition);
+
+            let blankSection = postEditor.builder.createMarkupSection('p');
+            postEditor.insertSectionBefore(editor.post.sections, blankSection);
+            postEditor.setRange(blankSection.toRange());
+
+            nextPosition = postEditor.insertPost(editor.range.head, post);
+            postEditor.setRange(nextPosition);
+        });
+    }
+
+    @action
+    _selectCard(card) {
+        this.selectCard(card);
+    }
+
+    @action
+    _editCard(card) {
+        this.editCard(card);
+    }
+
+    @action
+    _deselectCard(card) {
+        this.deselectCard(card);
+    }
+
+    @action
+    _scrollToCard(card) {
+        this.selectCard(card);
+        this._scrollCursorIntoView({jumpToCard: true});
+    }
+
+    // range should be set to the full extent of the selection or the
+    // appropriate <a> markup. If there's a selection when the link edit
+    // component renders it will re-select when finished which should
+    // trigger the normal toolbar
+    @action
+    editLink(range, rect) {
+        let linkMarkup = getLinkMarkupFromRange(range);
+        if ((!range.isCollapsed || linkMarkup) && range.headSection.isMarkerable) {
+            this.set('linkRange', range);
+            this.set('linkRect', rect);
+        }
+    }
+
+    @action
+    cancelEditLink() {
+        this.set('linkRange', null);
+        this.set('linkRect', null);
+    }
+
+    @action
+    _deleteCard(card, cursorMovement = CURSOR_AFTER) {
+        this.deleteCard(card, cursorMovement);
+    }
+
+    @action
+    moveCursorToPrevSection(card) {
+        let section = this.getSectionFromCard(card);
+
+        if (section.prev) {
+            this.deselectCard(card);
+            this.moveCaretToTailOfSection(section.prev, false);
+        }
+    }
+
+    @action
+    moveCursorToNextSection(card) {
+        let section = this.getSectionFromCard(card);
+
+        if (section.next) {
+            this.deselectCard(card);
+            this.moveCaretToHeadOfSection(section.next, false);
+        } else {
+            this.send('addParagraphAfterCard', card);
+        }
+    }
+
+    @action
+    addParagraphAfterCard(card, {scrollIntoView = false} = {}) {
+        let editor = this.editor;
+        let section = this.getSectionFromCard(card);
+        let collection = section.parent.sections;
+        let nextSection = section.next;
+
+        this.deselectCard(card);
+
+        editor.run((postEditor) => {
+            let {builder} = postEditor;
+            let newPara = builder.createMarkupSection('p');
+
+            if (nextSection) {
+                postEditor.insertSectionBefore(collection, newPara, nextSection);
+            } else {
+                postEditor.insertSectionAtEnd(newPara);
+            }
+
+            postEditor.setRange(newPara.tailPosition());
+        });
+
+        if (scrollIntoView) {
+            run.schedule('afterRender', this, this._scrollCursorIntoView);
+        }
+    }
+
+    @action
+    openSelectorComponent(componentName, range) {
+        if (range) {
+            this.editor.selectRange(range);
+        }
+
+        // wait 1ms for event loop to finish so mobiledoc-kit doesn't
+        // get hung up processing keyboard events when focus has switched
+        // to selector search input
+        run.later(() => {
+            this.set('activeSelectorComponent', componentName);
+        });
+    }
+
+    @action
+    closeSelectorComponent() {
+        this.set('activeSelectorComponent', null);
+    }
+
+    @action
+    addSnippet(event) {
         event.preventDefault();
         event.stopImmediatePropagation();
 
@@ -736,29 +759,31 @@ export default Component.extend({
 
         this.set('snippetRect', null);
         this.set('snippetRange', selectedRange);
-    }),
+    }
 
-    saveCardAsSnippet: action(function (card) {
+    @action
+    saveCardAsSnippet(card) {
         let section = this.getSectionFromCard(card);
         this.set('snippetRect', card.component.element.getBoundingClientRect());
         this.set('snippetRange', section.toRange());
-    }),
+    }
 
-    cancelAddSnippet: action(function () {
+    @action
+    cancelAddSnippet() {
         this.set('snippetRange', null);
         this.set('snippetRect', null);
-    }),
+    }
 
     /* public interface ----------------------------------------------------- */
     // TODO: find a better way to expose the public interface?
 
     skipNewline() {
         this._skipNextNewline = true;
-    },
+    }
 
     cleanup() {
         this._cleanupScheduled = true;
-    },
+    }
 
     /* mobiledoc event handlers --------------------------------------------- */
 
@@ -781,7 +806,7 @@ export default Component.extend({
         // TODO: can be made more performant by only refreshing when droppable
         // order changes or when sections are added/removed
         this._cardDragDropContainer.refresh();
-    },
+    }
 
     cursorDidChange(editor) {
         let {head, tail, direction, isCollapsed, head: {section}} = editor.range;
@@ -840,7 +865,7 @@ export default Component.extend({
         // pass the selected range through to the toolbar + menu components
         this.set('selectedRange', editor.range);
         this._scrollCursorIntoView();
-    },
+    }
 
     // fired when the active section(s) or markup(s) at the current cursor
     // position or selection have changed. We use this event to update the
@@ -873,14 +898,14 @@ export default Component.extend({
             this.set('activeMarkupTagNames', markupTags);
             this.set('activeSectionTagNames', sectionTags);
         }
-    },
+    }
 
     willHandleNewline(event) {
         if (this._skipNextNewline) {
             event.preventDefault();
             this._skipNextNewline = false;
         }
-    },
+    }
 
     /* custom event handlers ------------------------------------------------ */
 
@@ -938,7 +963,7 @@ export default Component.extend({
                 event.target.dispatchEvent(simEvent);
             }
         }
-    },
+    }
 
     handleKeyup(event) {
         let key = Key.fromEvent(event);
@@ -948,7 +973,7 @@ export default Component.extend({
             this._isGraveInput = false;
             this._triggerTextHandlers();
         }
-    },
+    }
 
     handlePaste(event) {
         let {editor} = this;
@@ -1088,20 +1113,20 @@ export default Component.extend({
 
             editor.triggerEvent(editor.element, 'paste', pasteEvent);
         }
-    },
+    }
 
     handleMousedown(event) {
         // we only care about the left mouse button
         if (event.which === 1) {
             this._isMouseDown = true;
         }
-    },
+    }
 
     handleMouseup(event) {
         if (event.which === 1) {
             this._isMouseDown = false;
         }
-    },
+    }
 
     handleDragOver(event) {
         if (!event.dataTransfer || event.target.closest('.__mobiledoc-card')) {
@@ -1118,11 +1143,11 @@ export default Component.extend({
         // indicate to the browser that we want to handle drop behaviour here
         event.stopPropagation();
         event.preventDefault();
-    },
+    }
 
     handleDragLeave(event) {
         event.preventDefault();
-    },
+    }
 
     handleDrop(event) {
         // drops on cards that are in an edit state should be cancelled
@@ -1144,14 +1169,14 @@ export default Component.extend({
             });
             this._scrollCursorIntoView({jumpToCard: true});
         }
-    },
+    }
 
     /* Ember event handlers ------------------------------------------------- */
 
     // disable dragging
     dragStart(event) {
         event.preventDefault();
-    },
+    }
 
     /* public methods ------------------------------------------------------- */
 
@@ -1181,7 +1206,7 @@ export default Component.extend({
         this._hideCursor();
         let section = this.getSectionFromCard(card);
         this.moveCaretToTailOfSection(section);
-    },
+    }
 
     editCard(card) {
         // no-op if card is already being edited
@@ -1193,7 +1218,7 @@ export default Component.extend({
         this.selectCard(card, true);
 
         this._cardDragDropContainer.disableDrag();
-    },
+    }
 
     deselectCard(card) {
         card.set('isEditing', false);
@@ -1201,7 +1226,7 @@ export default Component.extend({
         this.selectedCard = null;
         this._showCursor();
         this._cardDragDropContainer.enableDrag();
-    },
+    }
 
     deleteCard(card, cursorDirection) {
         let section = card.env.postModel;
@@ -1235,7 +1260,7 @@ export default Component.extend({
                 return postEditor.setRange(nextPosition);
             }
         });
-    },
+    }
 
     getCardFromSection(section) {
         if (!section || section.type !== 'card-section') {
@@ -1245,7 +1270,7 @@ export default Component.extend({
         let cardId = section.renderNode.element.querySelector('.__mobiledoc-card').firstChild.id;
 
         return this.componentCards.findBy('destinationElementId', cardId);
-    },
+    }
 
     getCardFromElement(element) {
         if (!element) {
@@ -1263,19 +1288,19 @@ export default Component.extend({
         if (cardId) {
             return this.componentCards.findBy('destinationElementId', cardId);
         }
-    },
+    }
 
     getSectionFromCard(card) {
         return card.env.postModel;
-    },
+    }
 
     moveCaretToHeadOfSection(section, skipCursorChange = true) {
         this.moveCaretToSection(section, 'head', skipCursorChange);
-    },
+    }
 
     moveCaretToTailOfSection(section, skipCursorChange = true) {
         this.moveCaretToSection(section, 'tail', skipCursorChange);
-    },
+    }
 
     moveCaretToSection(section, position, skipCursorChange = true) {
         let sectionPosition = position === 'head' ? section.headPosition() : section.tailPosition();
@@ -1287,11 +1312,11 @@ export default Component.extend({
         }
 
         this.editor.selectRange(range);
-    },
+    }
 
     /* internal methods ----------------------------------------------------- */
 
-    _cleanupTask: task(function* () {
+    @task(function* () {
         yield waitForProperty(this, 'allComponentCardsRegistered');
 
         this.componentCards.forEach((card) => {
@@ -1301,7 +1326,8 @@ export default Component.extend({
         });
 
         this._cleanupScheduled = false;
-    }),
+    })
+    _cleanupTask;
 
     // nested editor.run loops will create additional undo steps so this is a
     // shortcut for when we already have a postEditor
@@ -1313,15 +1339,15 @@ export default Component.extend({
                 editOperation(operationPostEditor);
             });
         }
-    },
+    }
 
     _hideCursor() {
         this.editor.element.style.caretColor = 'transparent';
-    },
+    }
 
     _showCursor() {
         this.editor.element.style.caretColor = 'auto';
-    },
+    }
 
     _updateModifiersFromKey(key, {isDown}) {
         if (key.isShiftKey()) {
@@ -1331,7 +1357,7 @@ export default Component.extend({
         } else if (key.isCtrlKey()) {
             this._modifierKeys.ctrl = isDown;
         }
-    },
+    }
 
     _scrollCursorIntoView(options = {jumpToCard: false}) {
         // disable auto-scroll if the mouse or shift key is being used to create
@@ -1426,7 +1452,7 @@ export default Component.extend({
                 }
             }
         }
-    },
+    }
 
     _registerCardReorderDragDropHandler() {
         let cardDragDropContainer = this.koenigDragDropHandler.registerContainer(this.editor.element, {
@@ -1441,11 +1467,11 @@ export default Component.extend({
         });
 
         this._cardDragDropContainer = cardDragDropContainer;
-    },
+    }
 
     _onDragStart() {
         this._cardDragDropContainer.refresh();
-    },
+    }
 
     _getDraggableInfo(draggableElement) {
         let card = this.getCardFromElement(draggableElement);
@@ -1462,7 +1488,7 @@ export default Component.extend({
             payload: card.payload,
             destinationElementId: card.destinationElementId
         };
-    },
+    }
 
     _createCardDragElement(draggableInfo) {
         let {cardName} = draggableInfo;
@@ -1487,7 +1513,7 @@ export default Component.extend({
 
         ghostElement.appendChild(iconElement);
         return ghostElement;
-    },
+    }
 
     _getDropIndicatorPosition(draggableInfo, droppableElem, position) {
         let droppables = Array.from(this.editor.element.querySelectorAll(':scope > *'));
@@ -1524,7 +1550,7 @@ export default Component.extend({
         }
 
         return false;
-    },
+    }
 
     _onCardDrop(draggableInfo) {
         if (draggableInfo.type !== 'card' && draggableInfo.type !== 'image') {
@@ -1577,7 +1603,7 @@ export default Component.extend({
                 return true;
             }
         }
-    },
+    }
 
     // TODO: more or less duplicated in koenig-card-gallery other than direction
     // - move to DnD container?
@@ -1602,7 +1628,7 @@ export default Component.extend({
         }
 
         return droppableIndex !== draggableIndex;
-    },
+    }
 
     // a card can be dropped into another card which means we need to remove the original
     _onDropEnd(draggableInfo, success) {
@@ -1613,13 +1639,13 @@ export default Component.extend({
 
         let card = this.getCardFromElement(draggableInfo.element);
         this.deleteCard(card, NO_CURSOR_MOVEMENT);
-    },
+    }
 
     // calculate the number of words in rich-text sections and query cards for
     // their own word and image counts. Image counts are used for reading-time
     _calculateWordCount() {
         run.throttle(this, this._throttledWordCount, 100, false);
-    },
+    }
 
     _throttledWordCount() {
         if (this.isDestroying || this.isDestroyed) {
@@ -1652,7 +1678,7 @@ export default Component.extend({
 
             this.wordCountDidChange({wordCount, imageCount, readingTime});
         }
-    },
+    }
 
     _triggerTextHandlers() {
         let {editor} = this;
@@ -1672,7 +1698,7 @@ export default Component.extend({
                 handler.run(editor, matches);
             }
         });
-    },
+    }
 
     // store a reference to the editor for the acceptance test helpers
     _setExpandoProperty(editor) {
@@ -1681,4 +1707,4 @@ export default Component.extend({
             this.element[TESTING_EXPANDO_PROPERTY] = editor;
         }
     }
-});
+}
