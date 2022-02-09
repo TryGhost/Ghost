@@ -285,17 +285,6 @@ export default class MembersController extends Controller {
     }
 
     @action
-    addLabel(e) {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        const newLabel = this.store.createRecord('label');
-        this.modalLabel = newLabel;
-        this.showLabelModal = !this.showLabelModal;
-    }
-
-    @action
     editLabel(label, e) {
         if (e) {
             e.preventDefault();
