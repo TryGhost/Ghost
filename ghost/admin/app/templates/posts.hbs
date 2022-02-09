@@ -50,13 +50,13 @@
                 <div class="no-posts">
                     {{#if this.showingAll}}
                         {{svg-jar "posts-placeholder" class="gh-posts-placeholder"}}
-                        <h3>You haven't written any posts yet!</h3>
-                        <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-green gh-btn-lg">
+                        <h4>Start creating content.</h4>
+                        <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-green">
                             <span>Write a new post</span>
                         </LinkTo>
                     {{else}}
                         <h3>No posts match the current filter</h3>
-                        <LinkTo @route="posts" @query={{hash type=null author=null tag=null}} class="gh-btn gh-btn-lg">
+                        <LinkTo @route="posts" @query={{hash type=null author=null tag=null}} class="gh-btn">
                             <span>Show all posts</span>
                         </LinkTo>
                     {{/if}}
