@@ -1,9 +1,9 @@
-<div class="gh-flow">
-    <div class="tc">
+<div class="gh-flow gh-finishing-touches">
+    <header class="tc">
         <h1>Finishing touches</h1>
-        <p>You chose a look, now it's time to make it your own.</p>
-    </div>
-    <div class="flex flex-row h-100">
+        <p>You chose a theme, now it's time to make it your own.</p>
+    </header>
+    <main class="flex flex-row h-100">
         <div class="gh-nav gh-nav-contextual gh-nav-design">
             <div class="flex flex-column h-100">
                 <div class="gh-nav-body">
@@ -16,9 +16,9 @@
                     </div>
                     <div class="pa4">
                         <GhTaskButton
-                            class="gh-btn gh-btn-black gh-btn-icon w-100"
+                            class="gh-btn gh-btn-large gh-btn-black gh-btn-icon w-100"
                             @task={{this.saveAndContinueTask}}
-                            @buttonText="Let's get writing →"
+                            @buttonText="Continue →"
                             @runningText="Saving..."
                             @showSuccess={{false}}
                             data-test-button="save-and-continue"
@@ -32,5 +32,5 @@
                 <GhHtmlIframe class="site-frame" @html={{this.themeManagement.previewHtml}} />
             </GhBrowserPreview>
         </div>
-    </div>
+    </main>
 </div>
