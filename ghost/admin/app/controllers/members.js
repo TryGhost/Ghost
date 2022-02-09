@@ -53,7 +53,6 @@ export default class MembersController extends Controller {
     @tracked orderParam = null;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
-    @tracked showUnsubscribeMembersModal = false;
     @tracked filters = A([]);
     @tracked softFilters = A([]);
 
@@ -301,11 +300,7 @@ export default class MembersController extends Controller {
     bulkAddLabel() {
         this.modals.open('modals/members/bulk-add-label', {
             query: this.getApiQueryObject(),
-            onComplete: () => {
-                // reset and reload
-                this.store.unloadAll('member');
-                this.reload();
-            }
+            onComplete: this.resetAndReloadMembers
         });
     }
 
@@ -313,12 +308,22 @@ export default class MembersController extends Controller {
     bulkRemoveLabel() {
         this.modals.open('modals/members/bulk-remove-label', {
             query: this.getApiQueryObject(),
-            onComplete: () => {
-                // reset and reload
-                this.store.unloadAll('member');
-                this.reload();
-            }
+            onComplete: this.resetAndReloadMembers
         });
+    }
+
+    @action
+    bulkUnsubscribe() {
+        this.modals.open('modals/members/bulk-unsubscribe', {
+            query: this.getApiQueryObject(),
+            onComplete: this.resetAndReloadMembers
+        });
+    }
+
+    @action
+    resetAndReloadMembers() {
+        this.store.unloadAll('member');
+        this.reload();
     }
 
     @action
@@ -326,7 +331,7 @@ export default class MembersController extends Controller {
         this.modals.open('modals/members/bulk-delete', {
             query: this.getApiQueryObject(),
             onComplete: () => {
-                // reset and reload
+                // reset, clear filters, and reload list and counts
                 this.store.unloadAll('member');
                 this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
                 this.membersStats.invalidate();
@@ -338,16 +343,6 @@ export default class MembersController extends Controller {
     @action
     changePaidParam(paid) {
         this.paidParam = paid.value;
-    }
-
-    @action
-    toggleUnsubscribeMembersModal() {
-        this.showUnsubscribeMembersModal = !this.showUnsubscribeMembersModal;
-    }
-
-    @action
-    unsubscribeMembers() {
-        return this.unsubscribeMembersTask.perform();
     }
 
     // Tasks -------------------------------------------------------------------
@@ -414,30 +409,6 @@ export default class MembersController extends Controller {
         }, {
             limit: 50
         });
-    }
-
-    @task({drop: true})
-    *unsubscribeMembersTask() {
-        const query = new URLSearchParams(this.getApiQueryObject());
-        const unsubscribeUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
-        // response contains details of which members failed to be unsubscribe
-        const response = yield this.ajax.put(unsubscribeUrl, {
-            data: {
-                bulk: {
-                    action: 'unsubscribe',
-                    meta: {}
-                }
-            }
-        });
-
-        // reset and reload
-        this.store.unloadAll('member');
-        this.reload();
-
-        this.membersStats.invalidate();
-        this.membersStats.fetchCounts();
-
-        return response?.bulk?.meta;
     }
 
     // Internal ----------------------------------------------------------------
