@@ -30,6 +30,7 @@ export default class MembersController extends Controller {
     @service feature;
     @service ghostPaths;
     @service membersStats;
+    @service modals;
     @service router;
     @service store;
     @service utils;
@@ -55,7 +56,6 @@ export default class MembersController extends Controller {
     @tracked showLabelModal = false;
     @tracked showDeleteMembersModal = false;
     @tracked showUnsubscribeMembersModal = false;
-    @tracked showAddMembersLabelModal = false;
     @tracked showRemoveMembersLabelModal = false;
     @tracked filters = A([]);
     @tracked softFilters = A([]);
@@ -312,6 +312,18 @@ export default class MembersController extends Controller {
     }
 
     @action
+    bulkAddLabel() {
+        this.modals.open('modals/members/bulk-add-label', {
+            query: this.getApiQueryObject(),
+            onComplete: () => {
+                // reset and reload
+                this.store.unloadAll('member');
+                this.reload();
+            }
+        });
+    }
+
+    @action
     changePaidParam(paid) {
         this.paidParam = paid.value;
     }
@@ -327,11 +339,6 @@ export default class MembersController extends Controller {
     }
 
     @action
-    toggleAddMembersLabelModal() {
-        this.showAddMembersLabelModal = !this.showAddMembersLabelModal;
-    }
-
-    @action
     toggleRemoveMembersLabelModal() {
         this.showRemoveMembersLabelModal = !this.showRemoveMembersLabelModal;
     }
@@ -344,11 +351,6 @@ export default class MembersController extends Controller {
     @action
     unsubscribeMembers() {
         return this.unsubscribeMembersTask.perform();
-    }
-
-    @action
-    addLabelToMembers(selectedLabel) {
-        return this.addLabelToMembersTask.perform(selectedLabel);
     }
 
     @action
@@ -485,30 +487,6 @@ export default class MembersController extends Controller {
 
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
-
-        return response?.bulk?.meta;
-    }
-
-    @task({drop: true})
-    *addLabelToMembersTask(selectedLabel) {
-        const query = new URLSearchParams(this.getApiQueryObject());
-        const addLabelUrl = `${this.ghostPaths.url.api('members/bulk')}?${query}`;
-        const response = yield this.ajax.put(addLabelUrl, {
-            data: {
-                bulk: {
-                    action: 'addLabel',
-                    meta: {
-                        label: {
-                            id: selectedLabel
-                        }
-                    }
-                }
-            }
-        });
-
-        // reset and reload
-        this.store.unloadAll('member');
-        this.reload();
 
         return response?.bulk?.meta;
     }
