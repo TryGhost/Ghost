@@ -185,7 +185,6 @@
     "@tryghost/express-test": "0.4.1",
     "@tryghost/jest-snapshot": "0.3.1",
     "c8": "7.11.0",
-    "chai": "4.3.6",
     "coffeescript": "2.6.1",
     "cssnano": "5.0.17",
     "eslint": "8.8.0",
