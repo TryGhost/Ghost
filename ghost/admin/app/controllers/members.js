@@ -1,6 +1,5 @@
 import Controller from '@ember/controller';
 import config from 'ghost-admin/config/environment';
-import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment';
 import {A} from '@ember/array';
@@ -54,7 +53,6 @@ export default class MembersController extends Controller {
     @tracked orderParam = null;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
-    @tracked showDeleteMembersModal = false;
     @tracked showUnsubscribeMembersModal = false;
     @tracked filters = A([]);
     @tracked softFilters = A([]);
@@ -324,23 +322,27 @@ export default class MembersController extends Controller {
     }
 
     @action
+    bulkDelete() {
+        this.modals.open('modals/members/bulk-delete', {
+            query: this.getApiQueryObject(),
+            onComplete: () => {
+                // reset and reload
+                this.store.unloadAll('member');
+                this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
+                this.membersStats.invalidate();
+                this.membersStats.fetchCounts();
+            }
+        });
+    }
+
+    @action
     changePaidParam(paid) {
         this.paidParam = paid.value;
     }
 
     @action
-    toggleDeleteMembersModal() {
-        this.showDeleteMembersModal = !this.showDeleteMembersModal;
-    }
-
-    @action
     toggleUnsubscribeMembersModal() {
         this.showUnsubscribeMembersModal = !this.showUnsubscribeMembersModal;
-    }
-
-    @action
-    deleteMembers() {
-        return this.deleteMembersTask.perform();
     }
 
     @action
@@ -412,49 +414,6 @@ export default class MembersController extends Controller {
         }, {
             limit: 50
         });
-    }
-
-    @task({drop: true})
-    *deleteMembersTask() {
-        const query = new URLSearchParams(this.getApiQueryObject());
-
-        // Trigger download before deleting. Uses the CSV export endpoint but
-        // needs to fetch the file and trigger a download directly rather than
-        // via an iframe. The iframe approach can't tell us when a download has
-        // started/finished meaning we could end up deleting the data before exporting it
-        const exportParams = new URLSearchParams(this.getApiQueryObject());
-        exportParams.set('limit', 'all');
-        const exportUrl = `${ghostPaths().url.api('members/upload')}?${exportParams.toString()}`;
-
-        yield fetch(exportUrl, {method: 'GET'})
-            .then(res => res.blob())
-            .then((blob) => {
-                const blobUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = `members.${moment().format('YYYY-MM-DD')}.csv`;
-                document.body.appendChild(a);
-                if (!this.isTesting) {
-                    a.click();
-                }
-                a.remove();
-                URL.revokeObjectURL(blobUrl);
-            });
-
-        // backup downloaded, continue with deletion
-
-        const deleteUrl = `${this.ghostPaths.url.api('members')}?${query}`;
-
-        // response contains details of which members failed to be deleted
-        const response = yield this.ajax.del(deleteUrl);
-
-        // reset and reload
-        this.store.unloadAll('member');
-        this.router.transitionTo('members.index', {queryParams: Object.assign(resetQueryParams('members.index'))});
-        this.membersStats.invalidate();
-        this.membersStats.fetchCounts();
-
-        return response.meta;
     }
 
     @task({drop: true})
