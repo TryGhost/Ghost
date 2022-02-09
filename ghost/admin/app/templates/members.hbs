@@ -74,7 +74,7 @@
                                 </button>
                             </li>
                             <li>
-                                <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.toggleRemoveMembersLabelModal}}>
+                                <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
                                     <span>Remove label from selected members ({{this.members.length}})</span>
                                 </button>
                             </li>
@@ -177,16 +177,6 @@
 </section>
 
 {{outlet}}
-
-{{#if this.showRemoveMembersLabelModal}}
-    <GhFullscreenModal
-        @modal="remove-label-members"
-        @model={{hash memberCount=this.members.length}}
-        @confirm={{this.removeLabelFromMembers}}
-        @close={{this.toggleRemoveMembersLabelModal}}
-        @modifier="action wide"
-    />
-{{/if}}
 
 {{#if this.showUnsubscribeMembersModal}}
     <GhFullscreenModal
