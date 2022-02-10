@@ -45,7 +45,7 @@ export default class GeneralController extends Controller {
 
     @action
     save() {
-        this.save.perform();
+        this.saveTask.perform();
     }
 
     @action
@@ -121,8 +121,8 @@ export default class GeneralController extends Controller {
             this.set('leaveSettingsTransition', transition);
 
             // if a save is running, wait for it to finish then transition
-            if (this.save.isRunning) {
-                return this.save.last.then(() => {
+            if (this.saveTask.isRunning) {
+                return this.saveTask.last.then(() => {
                     transition.retry();
                 });
             }
@@ -298,5 +298,5 @@ export default class GeneralController extends Controller {
             throw error;
         }
     })
-    save;
+    saveTask;
 }
