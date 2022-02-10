@@ -35,5 +35,5 @@ export default class ModalPostPreviewComponent extends ModalBase {
         closeModal() {
             this.close();
         }
-    }
+    };
 }

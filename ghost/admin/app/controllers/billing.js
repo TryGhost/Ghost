@@ -8,5 +8,5 @@ export default class BillingController extends Controller {
     action = null;
 
     @alias('model')
-    guid;
+        guid;
 }

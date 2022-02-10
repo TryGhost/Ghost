@@ -41,7 +41,7 @@ export default class ModalFreeMembershipSettings extends ModalBase {
         validateFreeSignupRedirect() {
             return this._validateSignupRedirect(this.freeSignupRedirect, 'membersFreeSignupRedirect');
         }
-    }
+    };
 
     @task({drop: true})
     *save() {

@@ -7,5 +7,5 @@ export default class IntegrationSerializer extends ApplicationSerializer.extend(
         webhooks: {embedded: 'always'},
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'}
-    }
+    };
 }

@@ -11,7 +11,7 @@ export default class SetupController extends Controller {
     @service router;
 
     @match('router.currentRouteName', /^setup\.(two|three)$/)
-    showBackLink;
+        showBackLink;
 
     @computed('router.currentRouteName')
     get backRoute() {

@@ -72,5 +72,5 @@ export default class UnsplashController extends Controller {
             throw error;
         }
     }).drop())
-    saveTask;
+        saveTask;
 }

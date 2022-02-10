@@ -243,7 +243,7 @@ export default class LabsController extends Controller {
         this.set('redirectFailure', null);
         return true;
     }).drop())
-    redirectUploadResult;
+        redirectUploadResult;
 
     @(task(function* (success) {
         this.set('routesSuccess', success);
@@ -255,7 +255,7 @@ export default class LabsController extends Controller {
         this.set('routesFailure', null);
         return true;
     }).drop())
-    routesUploadResult;
+        routesUploadResult;
 
     reset() {
         this.set('importErrors', null);

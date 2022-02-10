@@ -24,6 +24,7 @@ export default class EditRoute extends AuthenticatedRoute {
         }
 
         let query = {
+            // eslint-disable-next-line camelcase
             id: post_id
         };
 

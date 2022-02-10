@@ -1327,7 +1327,7 @@ export default class KoenigEditor extends Component {
 
         this._cleanupScheduled = false;
     })
-    _cleanupTask;
+        _cleanupTask;
 
     // nested editor.run loops will create additional undo steps so this is a
     // shortcut for when we already have a postEditor

@@ -32,7 +32,7 @@ export default class ModalProductPrice extends ModalBase {
     @tracked stripePlanError = '';
     @tracked benefits = emberA([]);
     @tracked newBenefit = null;
-    @tracked welcomePageURL
+    @tracked welcomePageURL;
 
     confirm() {}
 
@@ -99,6 +99,7 @@ export default class ModalProductPrice extends ModalBase {
         return this.config.get('blogUrl');
     }
 
+    // eslint-disable-next-line no-dupe-class-members
     get welcomePageURL() {
         return this.model.product.welcomePageURL;
     }
@@ -257,5 +258,5 @@ export default class ModalProductPrice extends ModalBase {
         closeModal() {
             this.close();
         }
-    }
+    };
 }

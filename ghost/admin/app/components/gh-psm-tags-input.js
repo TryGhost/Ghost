@@ -20,7 +20,7 @@ export default class GhPsmTagsInput extends Component {
         // ignorePunctuation means the # in internal tag names is ignored
         return tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true});
     })
-    availableTags;
+        availableTags;
 
     @computed('availableTags.@each.name')
     get availableTagNames() {

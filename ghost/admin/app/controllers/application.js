@@ -17,7 +17,7 @@ export default class ApplicationController extends Controller {
     @service ui;
 
     @reads('config.hostSettings.billing.enabled')
-    showBilling;
+        showBilling;
 
     @computed(
         'router.currentRouteName',

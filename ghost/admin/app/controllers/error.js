@@ -8,7 +8,7 @@ export default class ErrorController extends Controller {
     stack = false;
 
     @readOnly('model')
-    error;
+        error;
 
     @computed('error.status')
     get code() {

@@ -12,7 +12,7 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'},
         email: {embedded: 'always'}
-    }
+    };
 
     normalizeSingleResponse(store, primaryModelClass, payload) {
         let root = this.keyForAttribute(primaryModelClass.modelName);

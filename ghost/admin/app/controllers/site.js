@@ -5,5 +5,5 @@ import {alias} from '@ember/object/computed';
 @classic
 export default class SiteController extends Controller {
     @alias('model')
-    guid;
+        guid;
 }

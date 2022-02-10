@@ -24,10 +24,10 @@ export default class SlackController extends Controller {
     }
 
     @boundOneWay('settings.slack.firstObject')
-    slackSettings;
+        slackSettings;
 
     @empty('slackSettings.url')
-    testNotificationDisabled;
+        testNotificationDisabled;
 
     @action
     save() {
@@ -122,7 +122,7 @@ export default class SlackController extends Controller {
             }
         }
     }).drop())
-    saveTask;
+        saveTask;
 
     @(task(function* () {
         let notifications = this.notifications;
@@ -141,5 +141,5 @@ export default class SlackController extends Controller {
             }
         }
     }).drop())
-    sendTestNotification;
+        sendTestNotification;
 }

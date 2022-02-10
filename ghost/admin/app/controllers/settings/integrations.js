@@ -38,7 +38,7 @@ export default class IntegrationsController extends Controller {
     @task(function* () {
         return yield this.store.findAll('integration');
     })
-    fetchIntegrations;
+        fetchIntegrations;
 
     // used by individual integration routes' `model` hooks
     integrationModelHook(prop, value, route, transition) {

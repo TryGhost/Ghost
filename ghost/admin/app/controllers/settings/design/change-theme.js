@@ -102,7 +102,7 @@ export default class ChangeThemeController extends Controller {
         previewUrl: 'https://london.ghost.io',
         ref: 'TryGhost/London',
         image: 'assets/img/themes/London.jpg'
-    }]
+    }];
 
     get themesList() {
         const activeTheme = this.themes.findBy('active', true);

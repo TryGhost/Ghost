@@ -7,39 +7,39 @@ import {inject as service} from '@ember/service';
 @classic
 export default class PostsLoadingController extends Controller {
     @controller('posts')
-    postsController;
+        postsController;
 
     @service session;
     @service ui;
     @service config;
 
     @readOnly('postsController.availableTypes')
-    availableTypes;
+        availableTypes;
 
     @readOnly('postsController.selectedType')
-    selectedType;
+        selectedType;
 
     @readOnly('postsController.selectedVisibility')
-    selectedVisibility;
+        selectedVisibility;
 
     @readOnly('postsController.availableVisibilities')
-    availableVisibilities;
+        availableVisibilities;
 
     @readOnly('postsController.availableTags')
-    availableTags;
+        availableTags;
 
     @readOnly('postsController.selectedTag')
-    selectedTag;
+        selectedTag;
 
     @readOnly('postsController.availableAuthors')
-    availableAuthors;
+        availableAuthors;
 
     @readOnly('postsController.selectedAuthor')
-    selectedAuthor;
+        selectedAuthor;
 
     @readOnly('postsController.availableOrders')
-    availableOrders;
+        availableOrders;
 
     @readOnly('postsController.selectedOrder')
-    selectedOrder;
+        selectedOrder;
 }

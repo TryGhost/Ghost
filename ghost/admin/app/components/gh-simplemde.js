@@ -117,5 +117,5 @@ export default class GhSimplemde extends TextArea {
 
         this.onEditorInit(this._editor);
     })
-    initSimpleMDE;
+        initSimpleMDE;
 }

@@ -16,7 +16,7 @@ import {task} from 'ember-concurrency';
 @classic
 export default class SigninController extends Controller.extend(ValidationEngine) {
     @controller
-    application;
+        application;
 
     @service ajax;
     @service config;
@@ -40,7 +40,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
     }
 
     @alias('model')
-    signin;
+        signin;
 
     @computed('config.accent_color')
     get accentColor() {
@@ -106,7 +106,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
             return false;
         }
     }).drop())
-    authenticateTask;
+        authenticateTask;
 
     @(task(function* () {
         let signin = this.signin;
@@ -128,7 +128,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
             this.set('flowErrors', 'Please fill out the form to sign in.');
         }
     }).drop())
-    validateAndAuthenticate;
+        validateAndAuthenticate;
 
     @task(function* () {
         let email = this.get('signin.identification');
@@ -170,5 +170,5 @@ export default class SigninController extends Controller.extend(ValidationEngine
             }
         }
     })
-    forgotten;
+        forgotten;
 }

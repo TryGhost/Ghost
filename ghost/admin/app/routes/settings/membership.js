@@ -24,7 +24,7 @@ export default class MembershipSettingsRoute extends AdminRoute {
         willTransition(transition) {
             return this.controller.leaveRoute(transition);
         }
-    }
+    };
 
     buildRouteInfoMetadata() {
         return {

@@ -139,5 +139,5 @@ export default class ModalProductPrice extends ModalBase {
         closeModal() {
             this.close();
         }
-    }
+    };
 }

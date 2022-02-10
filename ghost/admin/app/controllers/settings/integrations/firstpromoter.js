@@ -72,5 +72,5 @@ export default class FirstpromoterController extends Controller {
             throw error;
         }
     }).drop())
-    saveTask;
+        saveTask;
 }

@@ -13,7 +13,6 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
     @service ghostPaths;
     @service settings;
     @service store;
-    @service settings;
 
     @tracked hasActiveStripeSubscriptions = false;
     @tracked showDisconnectStripeConnectModal = false;

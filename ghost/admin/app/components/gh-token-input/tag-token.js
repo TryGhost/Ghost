@@ -10,7 +10,7 @@ import {readOnly} from '@ember/object/computed';
 @classNameBindings('internal:tag-token--internal')
 export default class TagToken extends DraggableObject {
     @readOnly('content.isInternal')
-    internal;
+        internal;
 
     @computed('idx', 'internal')
     get primary() {

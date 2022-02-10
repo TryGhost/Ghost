@@ -42,7 +42,7 @@ export default class GhSearchInputComponent extends Component {
         fields: ['slug', 'name'],
         idField: 'slug',
         titleField: 'name'
-    }]
+    }];
 
     @action
     openSelected(selected) {

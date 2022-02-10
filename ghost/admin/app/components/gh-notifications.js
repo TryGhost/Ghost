@@ -11,5 +11,5 @@ export default class GhNotifications extends Component {
     @service notifications;
 
     @alias('notifications.notifications')
-    messages;
+        messages;
 }

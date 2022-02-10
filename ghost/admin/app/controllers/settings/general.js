@@ -298,5 +298,5 @@ export default class GeneralController extends Controller {
             throw error;
         }
     })
-    saveTask;
+        saveTask;
 }

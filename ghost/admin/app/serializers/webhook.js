@@ -5,5 +5,5 @@ export default class ActionSerializer extends ApplicationSerializer {
         lastTriggeredAtUTC: {key: 'last_triggered_at'},
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'}
-    }
+    };
 }

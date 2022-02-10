@@ -187,7 +187,7 @@ export default class KoenigToolbar extends Component {
 
         this._skipMousemove = false;
     }).restartable())
-    _toggleVisibility;
+        _toggleVisibility;
 
     _handleMousedown(event) {
         // we only care about the left mouse button

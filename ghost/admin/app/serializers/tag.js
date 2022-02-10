@@ -6,7 +6,7 @@ export default class TagSerializer extends ApplicationSerializer {
     attrs = {
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'}
-    }
+    };
 
     serialize(/*snapshot, options*/) {
         let json = super.serialize(...arguments);

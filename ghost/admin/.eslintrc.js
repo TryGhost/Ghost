@@ -1,12 +1,18 @@
 /* eslint-env node */
 module.exports = {
     root: true,
-    parser: 'babel-eslint',
+    parser: '@babel/eslint-parser',
     parserOptions: {
         ecmaVersion: 2018,
         sourceType: 'module',
+        allowImportExportEverywhere: false,
         ecmaFeatures: {
+            globalReturn: false,
             legacyDecorators: true
+        },
+        requireConfigFile: false,
+        babelOptions: {
+            plugins: ['@babel/plugin-proposal-class-properties', ['@babel/plugin-proposal-decorators', {legacy: true}]]
         }
     },
     plugins: [

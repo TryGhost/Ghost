@@ -48,7 +48,7 @@ export default class KoenigCardAudioComponent extends Component {
     audioMimeTypes = AUDIO_MIME_TYPES;
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
-    placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)]
+    placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
 
     payloadAudioAttrs = ['src', 'title', 'duration', 'mimeType', 'thumbnailSrc'];
 

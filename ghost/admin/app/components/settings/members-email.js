@@ -202,7 +202,7 @@ export default class MembersEmail extends Component {
             return false;
         }
     }).drop())
-    updateFromAddress;
+        updateFromAddress;
 
     _getDerivedRecipientsSelectValue() {
         const defaultEmailRecipients = this.settings.get('editorDefaultEmailRecipients');

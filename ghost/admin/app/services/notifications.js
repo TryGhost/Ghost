@@ -39,13 +39,13 @@ export default class NotificationsService extends Service {
         let status = get(notification, 'status');
         return status === 'alert';
     })
-    alerts;
+        alerts;
 
     @filter('content', function (notification) {
         let status = get(notification, 'status');
         return status === 'notification';
     })
-    notifications;
+        notifications;
 
     handleNotification(message, delayed) {
         // If this is an alert message from the server, treat it as html safe

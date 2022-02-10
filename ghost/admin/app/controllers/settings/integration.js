@@ -31,7 +31,7 @@ export default class IntegrationController extends Controller {
     }
 
     @alias('model')
-    integration;
+        integration;
 
     @computed
     get apiUrl() {
@@ -188,23 +188,23 @@ export default class IntegrationController extends Controller {
     @task(function* () {
         return yield this.integration.save();
     })
-    saveTask;
+        saveTask;
 
     @task(function* () {
         copyTextToClipboard(this.integration.contentKey.secret);
         yield timeout(this.isTesting ? 50 : 3000);
     })
-    copyContentKey;
+        copyContentKey;
 
     @task(function* () {
         copyTextToClipboard(this.integration.adminKey.secret);
         yield timeout(this.isTesting ? 50 : 3000);
     })
-    copyAdminKey;
+        copyAdminKey;
 
     @task(function* () {
         copyTextToClipboard(this.apiUrl);
         yield timeout(this.isTesting ? 50 : 3000);
     })
-    copyApiUrl;
+        copyApiUrl;
 }
