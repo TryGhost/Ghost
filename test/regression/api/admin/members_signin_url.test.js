@@ -1,21 +1,20 @@
-const path = require('path');
 const should = require('should');
 const supertest = require('supertest');
-const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
-const labs = require('../../../../core/shared/labs');
+
+const {mockManager} = require('../../../utils/e2e-framework');
 
 let request;
 
 describe('Members Sigin URL API', function () {
-    before(function () {
-        sinon.stub(labs, 'isSet').withArgs('members').returns(true);
+    beforeEach(function () {
+        mockManager.mockLabsEnabled('members');
     });
 
-    after(function () {
-        sinon.restore();
+    afterEach(function () {
+        mockManager.restore();
     });
 
     describe('As Owner', function () {

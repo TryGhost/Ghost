@@ -2,24 +2,15 @@ const path = require('path');
 const querystring = require('querystring');
 const should = require('should');
 const supertest = require('supertest');
-const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
-const labs = require('../../../../core/shared/labs');
-const mailService = require('../../../../core/server/services/mail');
+
+const {mockManager} = require('../../../utils/e2e-framework');
 
 let request;
 
 describe('Members Importer API', function () {
-    before(function () {
-        sinon.stub(labs, 'isSet').withArgs('members').returns(true);
-    });
-
-    after(function () {
-        sinon.restore();
-    });
-
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
@@ -27,11 +18,12 @@ describe('Members Importer API', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
+        mockManager.mockMail();
+        mockManager.mockLabsEnabled('members');
     });
 
     afterEach(function () {
-        sinon.restore();
+        mockManager.restore();
     });
 
     it('Can import CSV with minimum one field and labels', function () {
