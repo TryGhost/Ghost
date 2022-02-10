@@ -53,7 +53,7 @@ export default class TagController extends Controller {
 
     @action
     save() {
-        return this.save.perform();
+        return this.saveTask.perform();
     }
 
     @action
@@ -70,8 +70,8 @@ export default class TagController extends Controller {
             this.set('leaveScreenTransition', transition);
 
             // if a save is running, wait for it to finish then transition
-            if (this.save.isRunning) {
-                return this.save.last.then(() => {
+            if (this.saveTask.isRunning) {
+                return this.saveTask.last.then(() => {
                     transition.retry();
                 });
             }
@@ -111,7 +111,7 @@ export default class TagController extends Controller {
             }
         }
     }).drop())
-    save;
+    saveTask;
 
     @task(function* (slug) {
         this.set('isLoading', true);

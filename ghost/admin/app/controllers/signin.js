@@ -106,7 +106,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
             return false;
         }
     }).drop())
-    authenticate;
+    authenticateTask;
 
     @(task(function* () {
         let signin = this.signin;
@@ -122,7 +122,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
         try {
             yield this.validate({property: 'signin'});
-            return yield this.authenticate
+            return yield this.authenticateTask
                 .perform(authStrategy, [signin.get('identification'), signin.get('password')]);
         } catch (error) {
             this.set('flowErrors', 'Please fill out the form to sign in.');
