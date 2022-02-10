@@ -28,7 +28,26 @@ const mockLabsEnabled = (flag, alpha = true) => {
         configUtils.set('enableDeveloperExperiments', true);
     }
 
-    mocks.labs[flag] = sinon.stub(labs, 'isSet').withArgs(flag).returns(true);
+    if (mocks.labs[flag]) {
+        mocks.labs[flag].returns(true);
+    } else {
+        mocks.labs[flag] = sinon.stub(labs, 'isSet').withArgs(flag).returns(true);
+    }
+};
+
+const mockLabsDisabled = (flag, alpha = true) => {
+    mocks.labs = mocks.labs || {};
+
+    // We assume we should enable alpha experiments unless explicitly told not to!
+    if (!alpha) {
+        configUtils.set('enableDeveloperExperiments', true);
+    }
+
+    if (mocks.labs[flag]) {
+        mocks.labs[flag].returns(false);
+    } else {
+        mocks.labs[flag] = sinon.stub(labs, 'isSet').withArgs(flag).returns(false);
+    }
 };
 
 const sentEmailCount = (count) => {
@@ -74,6 +93,7 @@ const restore = () => {
 module.exports = {
     mockMail,
     mockLabsEnabled,
+    mockLabsDisabled,
     restore,
     assert: {
         sentEmailCount,
