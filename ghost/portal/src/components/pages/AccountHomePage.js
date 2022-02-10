@@ -285,6 +285,9 @@ const PaidAccountActions = () => {
             <>
                 <section>
                     <div className='gh-portal-list-detail'>
+                        {/* Shows the name of the tier if there are multiple tiers */}
+                        {/* <h3>Bronze</h3> */}
+                        {/* Shows "Plan" if there are no multiple tiers */}
                         <h3>Plan</h3>
                         <PlanLabel price={price} isComplimentary={isComplimentary} subscription={subscription} />
                     </div>
