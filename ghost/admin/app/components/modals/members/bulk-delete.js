@@ -5,6 +5,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
+import config from 'ghost-admin/config/environment';
 
 export default class MembersBulkDeleteModal extends Component {
     @service ajax;
@@ -47,9 +48,11 @@ export default class MembersBulkDeleteModal extends Component {
                     a.href = blobUrl;
                     a.download = `members.${moment().format('YYYY-MM-DD')}.csv`;
                     document.body.appendChild(a);
-                    if (!this.isTesting) {
+
+                    if (config.environment !== 'test') {
                         a.click();
                     }
+
                     a.remove();
                     URL.revokeObjectURL(blobUrl);
                 });
