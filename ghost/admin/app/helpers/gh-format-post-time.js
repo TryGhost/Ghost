@@ -3,7 +3,7 @@ import moment from 'moment';
 import {assert} from '@ember/debug';
 import {inject as service} from '@ember/service';
 
-export function formatPostTime(timeago, {timezone = 'ect/UTC', draft, scheduled, published}) {
+export function formatPostTime(timeago, {timezone = 'etc/UTC', draft, scheduled, published}) {
     if (draft) {
         // No special handling for drafts, just use moment.from
         return moment(timeago).from(moment.utc());
