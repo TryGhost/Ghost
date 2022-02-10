@@ -87,6 +87,9 @@ export default class FeatureService extends Service {
     @feature('tierWelcomePages')
     tierWelcomePages;
 
+    @feature('tierName')
+    tierName;
+
     _user = null;
 
     @computed('settings.labs')
