@@ -95,7 +95,7 @@ export default class IntegrationController extends Controller {
 
     @action
     save() {
-        return this.save.perform();
+        return this.saveTask.perform();
     }
 
     @action
@@ -112,8 +112,8 @@ export default class IntegrationController extends Controller {
             this.set('leaveScreenTransition', transition);
 
             // if a save is running, wait for it to finish then transition
-            if (this.save.isRunning) {
-                return this.save.last.then(() => {
+            if (this.saveTask.isRunning) {
+                return this.saveTask.last.then(() => {
                     transition.retry();
                 });
             }
@@ -188,7 +188,7 @@ export default class IntegrationController extends Controller {
     @task(function* () {
         return yield this.integration.save();
     })
-    save;
+    saveTask;
 
     @task(function* () {
         copyTextToClipboard(this.integration.contentKey.secret);

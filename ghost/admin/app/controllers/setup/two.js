@@ -33,7 +33,7 @@ export default class TwoController extends Controller.extend(ValidationEngine) {
 
     @action
     setup() {
-        this.setup.perform();
+        this.setupTask.perform();
     }
 
     @action
@@ -52,7 +52,7 @@ export default class TwoController extends Controller.extend(ValidationEngine) {
     @task(function* () {
         return yield this._passwordSetup();
     })
-    setup;
+    setupTask;
 
     @task(function* (authStrategy, authentication) {
         // we don't want to redirect after sign-in during setup

@@ -83,7 +83,7 @@
         <GhErrorMessage @errors={{this.errors}} @property="password" />
     </GhFormGroup>
 
-    <GhTaskButton @task={{this.setup}} @type="submit" @tabindex="5" @class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon" as |task|>
+    <GhTaskButton @task={{this.setupTask}} @type="submit" @tabindex="5" @class="gh-btn gh-btn-green gh-btn-lg gh-btn-block gh-btn-icon" as |task|>
         {{#if task.isRunning}}
             <span>{{svg-jar "spinner" class="gh-icon-spinner gh-btn-icon-no-margin"}}</span>
         {{else}}

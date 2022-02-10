@@ -1,5 +1,5 @@
 <section class="gh-canvas">
-    <form {{action (perform "save") on="submit"}}>
+    <form {{on "submit" (perform this.saveTask)}}>
         <GhCanvasHeader class="gh-canvas-header">
             <h2 class="gh-canvas-title" data-test-screen-title>
                 <LinkTo @route="settings">Settings</LinkTo>
