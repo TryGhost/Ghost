@@ -33,9 +33,6 @@ describe('Authentication API', function () {
         });
 
         it('complete setup', async function () {
-            // Enable the improvedOnboarding flag
-            mockManager.mockLabsEnabled('improvedOnboarding');
-
             await agent
                 .post('authentication/setup')
                 .body({

@@ -56,10 +56,7 @@ module.exports = {
                     }
                 })
                 .then((data) => {
-                    if (labs.isSet('improvedOnboarding')) {
-                        return auth.setup.installTheme(data, api);
-                    }
-                    return data;
+                    return auth.setup.installTheme(data, api);
                 })
                 .then((data) => {
                     return auth.setup.doSettings(data, api.settings);
