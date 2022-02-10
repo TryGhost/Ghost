@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 import ApplicationSerializer from 'ghost-admin/serializers/application';
 import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
-import {pluralize} from 'ember-inflector';
 
 export default class PostSerializer extends ApplicationSerializer.extend(EmbeddedRecordsMixin) {
     // settings for the EmbeddedRecordsMixin.
@@ -13,22 +12,6 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         updatedAtUTC: {key: 'updated_at'},
         email: {embedded: 'always'}
     };
-
-    normalizeSingleResponse(store, primaryModelClass, payload) {
-        let root = this.keyForAttribute(primaryModelClass.modelName);
-        let pluralizedRoot = pluralize(primaryModelClass.modelName);
-
-        if (payload[pluralizedRoot]) {
-            payload[root] = payload[pluralizedRoot][0];
-            delete payload[pluralizedRoot];
-        }
-
-        return super.normalizeSingleResponse(...arguments);
-    }
-
-    normalizeArrayResponse() {
-        return super.normalizeArrayResponse(...arguments);
-    }
 
     serialize(/*snapshot, options*/) {
         let json = super.serialize(...arguments);
