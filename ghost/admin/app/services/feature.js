@@ -88,7 +88,7 @@ export default class FeatureService extends Service {
         tierWelcomePages;
 
     @feature('tierName')
-    tierName;
+        tierName;
 
     _user = null;
 
