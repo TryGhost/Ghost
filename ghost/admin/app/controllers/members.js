@@ -1,5 +1,4 @@
 import Controller from '@ember/controller';
-import config from 'ghost-admin/config/environment';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment';
 import {A} from '@ember/array';
@@ -63,10 +62,6 @@ export default class MembersController extends Controller {
     constructor() {
         super(...arguments);
         this._availableLabels = this.store.peekAll('label');
-
-        if (this.isTesting === undefined) {
-            this.isTesting = config.environment === 'test';
-        }
     }
 
     // Computed properties -----------------------------------------------------
