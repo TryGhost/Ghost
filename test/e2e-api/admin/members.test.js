@@ -5,18 +5,19 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
-const labs = require('../../../core/shared/labs');
 const Papa = require('papaparse');
+
+const {mockManager} = require('../../utils/e2e-framework');
 
 describe('Members API', function () {
     let request;
 
     beforeEach(function () {
-        sinon.stub(labs, 'isSet').withArgs('multipleProducts').returns(false);
+        mockManager.mockLabsDisabled('multipleProducts');
     });
 
     afterEach(function () {
-        sinon.restore();
+        mockManager.restore();
     });
 
     before(async function () {
