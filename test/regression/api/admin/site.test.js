@@ -5,7 +5,7 @@ describe('Site API', function () {
     let agent;
 
     before(async function () {
-        agent = await agentProvider.getAdminAPIAgent('/ghost/api/canary/admin/');
+        agent = await agentProvider.getAdminAPIAgent();
     });
 
     it('can retrieve config and all expected properties', async function () {
