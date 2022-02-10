@@ -7,7 +7,7 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
         createdAtUTC: {key: 'created_at'},
         labels: {embedded: 'always'},
         emailRecipients: {embedded: 'always'}
-    }
+    };
 
     serialize(/*snapshot, options*/) {
         let json = super.serialize(...arguments);

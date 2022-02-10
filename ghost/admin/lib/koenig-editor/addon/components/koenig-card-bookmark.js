@@ -177,7 +177,7 @@ export default class KoenigCardBookmark extends Component {
             this.set('hasError', true);
         }
     }).drop())
-    convertUrl;
+        convertUrl;
 
     _focusInput() {
         let urlInput = this.element.querySelector('[name="url"]');

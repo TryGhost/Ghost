@@ -33,7 +33,7 @@ export default class KoenigCardFileComponent extends Component {
     // at which point it will be saved to the real payload and the preview deleted
     @tracked previewPayload = new TrackedObject({});
 
-    placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)]
+    placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
 
     payloadFileAttrs = ['src', 'fileName', 'fileTitle', 'fileCaption', 'fileSize', 'mimeType'];
 

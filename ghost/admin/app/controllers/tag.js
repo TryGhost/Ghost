@@ -17,7 +17,7 @@ export default class TagController extends Controller {
     showDeleteTagModal = false;
 
     @alias('model')
-    tag;
+        tag;
 
     @computed('tag')
     get scratchTag() {
@@ -111,7 +111,7 @@ export default class TagController extends Controller {
             }
         }
     }).drop())
-    saveTask;
+        saveTask;
 
     @task(function* (slug) {
         this.set('isLoading', true);
@@ -122,7 +122,7 @@ export default class TagController extends Controller {
             return tag;
         });
     })
-    fetchTag;
+        fetchTag;
 
     _saveTagProperty(propKey, newValue) {
         let tag = this.tag;

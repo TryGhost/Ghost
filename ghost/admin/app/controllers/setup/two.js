@@ -52,7 +52,7 @@ export default class TwoController extends Controller.extend(ValidationEngine) {
     @task(function* () {
         return yield this._passwordSetup();
     })
-    setupTask;
+        setupTask;
 
     @task(function* (authStrategy, authentication) {
         // we don't want to redirect after sign-in during setup
@@ -82,7 +82,7 @@ export default class TwoController extends Controller.extend(ValidationEngine) {
             }
         }
     })
-    authenticate;
+        authenticate;
 
     /**
      * Uploads the given data image, then sends the changed user image property to the server

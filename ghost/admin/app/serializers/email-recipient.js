@@ -9,5 +9,5 @@ export default class EmailRecipientSerializer extends ApplicationSerializer.exte
         openedAtUTC: {key: 'opened_at'},
         failedAtUTC: {key: 'failed_at'},
         email: {embedded: 'always'}
-    }
+    };
 }

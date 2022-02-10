@@ -6,7 +6,7 @@ import {alias} from '@ember/object/computed';
 @classic
 export default class NewController extends Controller {
     @alias('model')
-    webhook;
+        webhook;
 
     @action
     save() {

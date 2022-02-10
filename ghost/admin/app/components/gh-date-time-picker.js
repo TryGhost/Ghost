@@ -32,10 +32,10 @@ export default class GhDateTimePicker extends Component {
     setTypedDateError() {}
 
     @reads('settings.timezone')
-    blogTimezone;
+        blogTimezone;
 
     @or('dateError', 'timeError')
-    hasError;
+        hasError;
 
     @computed('_date', '_scratchDate')
     get dateValue() {

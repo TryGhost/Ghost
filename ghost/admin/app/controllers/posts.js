@@ -81,7 +81,7 @@ export default class PostsController extends Controller {
     }
 
     @alias('model')
-    postsInfinityModel;
+        postsInfinityModel;
 
     @computed('type', 'author', 'tag')
     get showingAll() {

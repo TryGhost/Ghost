@@ -3,7 +3,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class ProductRoute extends AdminRoute {
-    @service store
+    @service store;
     @service router;
 
     _requiresBackgroundRefresh = true;

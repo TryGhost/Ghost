@@ -18,7 +18,7 @@ export default class GhTimezoneSelect extends Component {
     update = () => {};
 
     @mapBy('availableTimezones', 'name')
-    availableTimezoneNames;
+        availableTimezoneNames;
 
     @computed('timezone', 'availableTimezoneNames')
     get hasTimezoneOverride() {

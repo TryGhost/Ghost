@@ -118,7 +118,7 @@ class Filter {
 }
 
 export default class MembersFilter extends Component {
-    @service session
+    @service session;
 
     @tracked filters = A([
         new Filter({

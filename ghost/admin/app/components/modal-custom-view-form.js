@@ -35,7 +35,7 @@ export default class ModalCustomViewForm extends ModalComponent {
         this.send('closeModal');
         return view;
     })
-    saveTask;
+        saveTask;
 
     @task(function* () {
         let view = yield this.customViews.deleteViewTask.perform(this.model);
@@ -44,7 +44,7 @@ export default class ModalCustomViewForm extends ModalComponent {
         this.router.transitionTo(routeName, {queryParams: resetQueryParams(routeName)});
         return view;
     })
-    deleteTask;
+        deleteTask;
 
     // this is a hack to get around radio buttons not working with liquid-fire.
     // The DOM is duplicated whilst animating-in so browsers end up setting the
@@ -54,5 +54,5 @@ export default class ModalCustomViewForm extends ModalComponent {
         yield timeout(200);
         this.set('delayedModelColor', this.model.color);
     })
-    _setDelayedModelColor;
+        _setDelayedModelColor;
 }

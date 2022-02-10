@@ -4,7 +4,7 @@ import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
 export default class CustomThemeSettingList extends ApplicationSerializer.extend(EmbeddedRecordsMixin) {
     attrs = {
         customThemeSettings: {embedded: 'always'}
-    }
+    };
 
     serializeIntoHash(hash, type, record, options) {
         // replace the whole request hash with the embedded custom_theme_settings array
