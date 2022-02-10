@@ -1811,3 +1811,4 @@ add|ember-template-lint|no-action|7|12|7|12|fada170dae44678cba8240b4ae3233c631db
 add|ember-template-lint|no-action|17|12|17|12|b75d66d02a33b108a64bb94d494fa194434c82f9|1644364800000|1646956800000|1649545200000|lib/koenig-editor/addon/components/koenig-toolbar.hbs
 add|ember-template-lint|no-action|28|16|28|16|e5e787868d089ae3141666004a914deff774b489|1644364800000|1646956800000|1649545200000|lib/koenig-editor/addon/components/koenig-toolbar.hbs
 add|ember-template-lint|no-action|70|12|70|12|03d2eaf613eae8cb3ea3c821ba63544c730364c8|1644364800000|1646956800000|1649545200000|lib/koenig-editor/addon/components/koenig-toolbar.hbs
+remove|ember-template-lint|no-action|2|10|2|10|e457c32ce0c6b34e5c4d6f62b960808c7025e08e|1643760000000|1646352000000|1648940400000|app/templates/settings/integration.hbs
