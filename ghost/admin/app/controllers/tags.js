@@ -12,7 +12,7 @@ export default class TagsController extends Controller {
     type = 'public';
 
     @alias('model')
-    tags;
+        tags;
 
     @computed('tags.@each.isNew', 'type')
     get filteredTags() {
@@ -26,7 +26,7 @@ export default class TagsController extends Controller {
         // ignorePunctuation means the # in internal tag names is ignored
         return tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true});
     })
-    sortedTags;
+        sortedTags;
 
     @action
     changeType(type) {

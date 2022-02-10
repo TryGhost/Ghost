@@ -7,7 +7,7 @@ import {inject as service} from '@ember/service';
 @classic
 export default class PagesLoadingController extends PostsLoadingController {
     @controller('pages')
-    postsController;
+        postsController;
 
     @service ui;
 }

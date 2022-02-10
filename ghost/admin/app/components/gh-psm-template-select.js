@@ -75,5 +75,5 @@ export default class GhPsmTemplateSelect extends Component {
 
         this.set('activeTheme', activeTheme);
     })
-    loadActiveTheme;
+        loadActiveTheme;
 }

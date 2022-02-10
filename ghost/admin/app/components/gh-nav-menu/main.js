@@ -34,27 +34,27 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     shortcuts = null;
 
     @match('router.currentRouteName', /^settings\.integration/)
-    isIntegrationRoute;
+        isIntegrationRoute;
 
     // HACK: {{link-to}} should be doing this automatically but there appears to
     // be a bug in Ember that's preventing it from working immediately after login
     @equal('router.currentRouteName', 'site')
-    isOnSite;
+        isOnSite;
 
     @or('session.user.isAdmin', 'session.user.isEditor')
-    showTagsNavigation;
+        showTagsNavigation;
 
     @and('config.clientExtensions.menu', 'session.user.isOwnerOnly')
-    showMenuExtension;
+        showMenuExtension;
 
     @and('config.clientExtensions.script', 'session.user.isOwnerOnly')
-    showScriptExtension;
+        showScriptExtension;
 
     @reads('config.hostSettings.billing.enabled')
-    showBilling;
+        showBilling;
 
     @reads('settings.stripeConnectAccountId')
-    isStripeConnected;
+        isStripeConnected;
 
     init() {
         super.init(...arguments);
@@ -123,7 +123,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
             return false;
         }
     })
-    _loadMemberCountsTask;
+        _loadMemberCountsTask;
 
     _setIconStyle() {
         let icon = this.icon;

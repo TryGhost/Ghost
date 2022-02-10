@@ -24,19 +24,19 @@ export default class IndexController extends Controller {
     }
 
     @alias('model')
-    currentUser;
+        currentUser;
 
     @sort('filteredInvites', 'inviteOrder')
-    sortedInvites;
+        sortedInvites;
 
     @sort('activeUsers', 'userOrder')
-    sortedActiveUsers;
+        sortedActiveUsers;
 
     @sort('suspendedUsers', 'userOrder')
-    sortedSuspendedUsers;
+        sortedSuspendedUsers;
 
     @filterBy('invites', 'isNew', false)
-    filteredInvites;
+        filteredInvites;
 
     @computed
     get invites() {
@@ -82,12 +82,12 @@ export default class IndexController extends Controller {
             this.send('error', error);
         }
     })
-    backgroundUpdate;
+        backgroundUpdate;
 
     @task(function* () {
         yield this.store.query('user', {limit: 'all'});
     })
-    fetchUsers;
+        fetchUsers;
 
     @task(function* () {
         if (this.currentUser.isAuthorOrContributor) {
@@ -101,5 +101,5 @@ export default class IndexController extends Controller {
 
         return yield this.store.query('invite', {limit: 'all'});
     })
-    fetchInvites;
+        fetchInvites;
 }

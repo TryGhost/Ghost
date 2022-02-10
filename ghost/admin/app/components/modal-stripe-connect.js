@@ -56,5 +56,5 @@ export default class ModalStripeConnect extends ModalBase {
         closeModal() {
             this.close();
         }
-    }
+    };
 }

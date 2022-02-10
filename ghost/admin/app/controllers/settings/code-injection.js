@@ -66,5 +66,5 @@ export default class CodeInjectionController extends Controller {
             throw error;
         }
     })
-    saveTask;
+        saveTask;
 }

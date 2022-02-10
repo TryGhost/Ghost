@@ -28,7 +28,7 @@ export default class ThemeManagementService extends Service {
     }, {
         name: 'post',
         label: 'Post'
-    }]
+    }];
 
     get latestPublishedPost() {
         return this.allPosts.toArray().filterBy('status', 'published').sort((a, b) => {

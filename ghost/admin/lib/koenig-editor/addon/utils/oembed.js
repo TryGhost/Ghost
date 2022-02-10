@@ -29,7 +29,9 @@ export default function providers() {
         let domain = hostname ? hostname.replace('www.', '') : '';
 
         return {
+            // eslint-disable-next-line camelcase
             provider_name,
+            // eslint-disable-next-line camelcase
             provider_url,
             schemes,
             domain,

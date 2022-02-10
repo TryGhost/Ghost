@@ -2,7 +2,7 @@ import BasicDropdown from 'ember-basic-dropdown/components/basic-dropdown';
 import {inject as service} from '@ember/service';
 
 class GhBasicDropdown extends BasicDropdown {
-    @service dropdown
+    @service dropdown;
 
     constructor() {
         super(...arguments);

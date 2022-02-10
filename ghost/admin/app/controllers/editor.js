@@ -123,15 +123,15 @@ export default class EditorController extends Controller {
     /* computed properties ---------------------------------------------------*/
 
     @alias('model')
-    post;
+        post;
 
     // store the desired post status locally without updating the model,
     // the model will only be updated when a save occurs
     @boundOneWay('post.isPublished')
-    willPublish;
+        willPublish;
 
     @boundOneWay('post.isScheduled')
-    willSchedule;
+        willSchedule;
 
     // updateSlugTask and saveTask should always be enqueued so that we don't run into
     // problems with concurrency, for example when Cmd-S is pressed whilst the
@@ -139,10 +139,10 @@ export default class EditorController extends Controller {
     // slug update and save resulting in ember data errors and inconsistent save
     // results
     @(taskGroup().enqueue())
-    saveTasks;
+        saveTasks;
 
     @mapBy('post.tags', 'name')
-    _tagNames;
+        _tagNames;
 
     @computed(...watchedProps)
     get hasDirtyAttributes() {
@@ -950,7 +950,7 @@ export default class EditorController extends Controller {
         yield timeout(AUTOSAVE_TIMEOUT);
         this.autosaveTask.perform();
     }).restartable())
-    _autosaveTask;
+        _autosaveTask;
 
     // save at 60 seconds even if the user doesn't stop typing
     @(task(function* () {
@@ -963,7 +963,7 @@ export default class EditorController extends Controller {
             this.autosaveTask.perform();
         }
     }).drop())
-    _timedSaveTask;
+        _timedSaveTask;
 
     /* Private methods -------------------------------------------------------*/
 

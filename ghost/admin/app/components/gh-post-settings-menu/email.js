@@ -26,16 +26,16 @@ export default class Email extends Component {
     close() {}
 
     @or('emailSubjectScratch', 'post.title')
-    emailSubject;
+        emailSubject;
 
     @alias('post.emailSubjectScratch')
-    emailSubjectScratch;
+        emailSubjectScratch;
 
     @oneWay('session.user.email')
-    testEmailAddress;
+        testEmailAddress;
 
     @not('mailgunIsEnabled')
-    mailgunError;
+        mailgunError;
 
     @computed(
         'settings.{mailgunApiKey,mailgunDomain,mailgunBaseUrl}',
@@ -109,7 +109,7 @@ export default class Email extends Component {
             }
         }
     }).drop())
-    sendTestEmail;
+        sendTestEmail;
 
     @task(function* () {
         let {email} = this.post;
@@ -136,5 +136,5 @@ export default class Email extends Component {
 
         return true;
     })
-    retryEmail;
+        retryEmail;
 }

@@ -19,7 +19,7 @@ class MemberActivity {
             iconClass: 'red-d2',
             tooltip: 'Email delivery failed'
         }
-    }
+    };
 
     constructor(props) {
         Object.assign(this, props);

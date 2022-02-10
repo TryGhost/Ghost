@@ -9,7 +9,7 @@ export default class MembersEmailController extends Controller {
     @service session;
     @service settings;
 
-    queryParams = ['showEmailDesignSettings']
+    queryParams = ['showEmailDesignSettings'];
 
     // from/supportAddress are set here so that they can be reset to saved values on save
     // to avoid it looking like they've been saved when they have a separate update process

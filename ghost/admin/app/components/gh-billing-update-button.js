@@ -15,7 +15,7 @@ export default class GhBillingUpdateButton extends Component {
     subscription = null;
 
     @reads('billing.subscription.isActiveTrial')
-    showUpgradeButton;
+        showUpgradeButton;
 
     @action
     openBilling() {

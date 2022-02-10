@@ -8,7 +8,7 @@ export default class UserSerializer extends ApplicationSerializer.extend(Embedde
         lastLoginUTC: {key: 'last_seen'},
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'}
-    }
+    };
 
     extractSingle(store, primaryType, payload) {
         let root = this.keyForAttribute(primaryType.modelName);

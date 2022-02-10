@@ -50,42 +50,42 @@ export default class FeatureService extends Service {
 
     // features
     @feature('emailAnalytics')
-    emailAnalytics;
+        emailAnalytics;
 
     // user-specific flags
     @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
-    nightShift;
+        nightShift;
 
     @feature('dashboardHideGettingStarted', {user: true})
-    dashboardHideGettingStarted;
+        dashboardHideGettingStarted;
 
     // labs flags
     @feature('multipleProducts')
-    multipleProducts;
+        multipleProducts;
 
     @feature('oauthLogin')
-    oauthLogin;
+        oauthLogin;
 
     @feature('membersActivity')
-    membersActivity;
+        membersActivity;
 
     @feature('urlCache')
-    urlCache;
+        urlCache;
 
     @feature('beforeAfterCard')
-    beforeAfterCard;
+        beforeAfterCard;
 
     @feature('tweetGridCard')
-    tweetGridCard;
+        tweetGridCard;
 
     @feature('membersActivityFeed')
-    membersActivityFeed;
+        membersActivityFeed;
 
     @feature('improvedOnboarding')
-    improvedOnboarding;
+        improvedOnboarding;
 
     @feature('tierWelcomePages')
-    tierWelcomePages;
+        tierWelcomePages;
 
     @feature('tierName')
     tierName;

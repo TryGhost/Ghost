@@ -233,5 +233,5 @@ export default class KoenigCardMarkdown extends Component {
         yield timeout(500);
         this.set('preventClick', false);
     })
-    _preventAccidentalClick;
+        _preventAccidentalClick;
 }

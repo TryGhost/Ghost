@@ -13,10 +13,10 @@ export default class Footer extends Component {
     @service feature;
 
     @and('config.clientExtensions.dropdown', 'session.user.isOwnerOnly')
-    showDropdownExtension;
+        showDropdownExtension;
 
     @match('router.currentRouteName', /^settings/)
-    isSettingsRoute;
+        isSettingsRoute;
 
     // equivalent to "left: auto; right: -20px"
     userDropdownPosition(trigger, dropdown) {

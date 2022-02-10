@@ -33,7 +33,7 @@ class CmEditorComponent extends Component {
     update = () => {};
 
     @boundOneWay('value')
-    _value; // make sure a value exists
+        _value; // make sure a value exists
 
     didReceiveAttrs() {
         super.didReceiveAttrs(...arguments);
@@ -77,7 +77,7 @@ class CmEditorComponent extends Component {
 
         scheduleOnce('afterRender', this, this._initCodeMirror);
     })
-    initCodeMirror;
+        initCodeMirror;
 
     _initCodeMirror() {
         let options = this.getProperties('lineNumbers', 'lineWrapping', 'indentUnit', 'mode', 'theme', 'autofocus');

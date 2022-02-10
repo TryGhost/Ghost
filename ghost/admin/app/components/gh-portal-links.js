@@ -77,7 +77,7 @@ export default class GhPortalLinks extends Component {
             });
         }
     })
-    fetchProducts;
+        fetchProducts;
 
     @task(function* (id) {
         this.set('copiedPrice', id);
@@ -90,7 +90,7 @@ export default class GhPortalLinks extends Component {
         copyTextToClipboard(data);
         yield timeout(this.isTesting ? 50 : 3000);
     })
-    copyStaticLink;
+        copyStaticLink;
 
     @task(function* (interval) {
         this.set('copiedSignupInterval', interval);
@@ -103,5 +103,5 @@ export default class GhPortalLinks extends Component {
         copyTextToClipboard(data);
         yield timeout(this.isTesting ? 50 : 3000);
     })
-    copyProductSignupLink;
+        copyProductSignupLink;
 }

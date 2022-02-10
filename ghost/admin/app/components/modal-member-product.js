@@ -105,5 +105,5 @@ export default class ModalMemberProduct extends ModalComponent {
         closeModal() {
             this.close();
         }
-    }
+    };
 }
