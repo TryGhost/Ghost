@@ -1,8 +1,6 @@
 const should = require('should');
-const sinon = require('sinon');
-const labs = require('../../../core/shared/labs');
 
-const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 
 describe('Tiers API', function () {
     let agent;
@@ -14,13 +12,13 @@ describe('Tiers API', function () {
     });
 
     beforeEach(function () {
-        sinon.stub(labs, 'isSet').withArgs('multipleProducts').returns(false);
+        mockManager.mockLabsDisabled('multipleProducts');
         const stripeService = require('../../../core/server/services/stripe');
         stripeService.api._configured = true;
     });
 
     afterEach(function () {
-        sinon.restore();
+        mockManager.restore();
         const stripeService = require('../../../core/server/services/stripe');
         stripeService.api._configured = false;
     });
