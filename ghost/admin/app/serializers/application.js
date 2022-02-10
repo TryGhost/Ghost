@@ -49,4 +49,16 @@ export default class Application extends RESTSerializer {
 
         return transform(key);
     }
+
+    normalizeQueryRecordResponse(store, primaryModelClass, payload) {
+        const root = this.keyForAttribute(primaryModelClass.modelName);
+        const pluralizedRoot = pluralize(root);
+
+        if (payload[pluralizedRoot] && root !== 'setting') {
+            payload[root] = payload[pluralizedRoot][0];
+            delete payload[pluralizedRoot];
+        }
+
+        return super.normalizeQueryRecordResponse(...arguments);
+    }
 }

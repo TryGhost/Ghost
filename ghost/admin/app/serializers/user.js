@@ -19,16 +19,4 @@ export default class UserSerializer extends ApplicationSerializer.extend(Embedde
 
         return super.extractSingle(...arguments);
     }
-
-    normalizeSingleResponse(store, primaryModelClass, payload) {
-        let root = this.keyForAttribute(primaryModelClass.modelName);
-        let pluralizedRoot = pluralize(primaryModelClass.modelName);
-
-        if (payload[pluralizedRoot]) {
-            payload[root] = payload[pluralizedRoot][0];
-            delete payload[pluralizedRoot];
-        }
-
-        return super.normalizeSingleResponse(...arguments);
-    }
 }
