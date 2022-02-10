@@ -13,7 +13,6 @@ const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const {deleteAllSessions} = require('../../services/auth/session');
-const labs = require('../../../shared/labs');
 
 const messages = {
     notTheBlogOwner: 'You are not the site owner.'
