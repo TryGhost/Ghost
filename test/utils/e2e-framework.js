@@ -125,7 +125,7 @@ const resetDb = async () => {
  * agent.get('/posts/') without having to worry about URL paths
  *
  * @param {Object} [options={}]
- * @param {Boolean} [options.membersApp] Include members in the boot process
+ * @param {Boolean} [options.members] Include members in the boot process
  * @returns {TestAgent} agent
  */
 const getAdminAPIAgent = async (options = {}) => {
