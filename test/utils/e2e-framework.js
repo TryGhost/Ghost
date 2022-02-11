@@ -29,7 +29,14 @@ const boot = require('../../core/boot');
 const TestAgent = require('./test-agent');
 const db = require('./db-utils');
 
-const startGhost = async () => {
+/**
+ * @param {Object} [options={}]
+ * @param {Boolean} [options.backend] Boot the backend
+ * @param {Boolean} [options.frontend] Boot the frontend
+ * @param {Boolean} [options.server] Start a server
+ * @returns {Express.Application} ghost
+ */
+const startGhost = async (options = {}) => {
     /**
      * We never use the root content folder for testing!
      * We use a tmp folder.
@@ -49,7 +56,7 @@ const startGhost = async () => {
     // Ensure the DB state
     await resetDb();
 
-    return boot(defaults);
+    return boot(Object.assign({}, defaults, options));
 };
 
 /**
@@ -113,15 +120,23 @@ const resetDb = async () => {
 };
 
 /**
- * Creates a TestAgent which is a drop-in substitution for supertest
+ * Creates a TestAgent which is a drop-in substitution for supertest.
  * It is automatically hooked up to the Admin API so you can make requests to e.g.
  * agent.get('/posts/') without having to worry about URL paths
  *
+ * @param {Object} [options={}]
+ * @param {Boolean} [options.membersApp] Include members in the boot process
  * @returns {TestAgent} agent
  */
-const getAdminAPIAgent = async () => {
+const getAdminAPIAgent = async (options = {}) => {
+    const bootOptions = {};
+
+    if (options.members) {
+        bootOptions.frontend = true;
+    }
+
     try {
-        const app = await startGhost();
+        const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
         return new TestAgent(app, {
