@@ -149,10 +149,36 @@ const getAdminAPIAgent = async (options = {}) => {
     }
 };
 
+/**
+ * Creates a TestAgent which is a drop-in substitution for supertest
+ * It is automatically hooked up to the Members API so you can make requests to e.g.
+ * agent.get('/webhooks/stripe/') without having to worry about URL paths
+ *
+ * @returns {Promise<TestAgent>} agent
+ */
+const getMembersAPIAgent = async () => {
+    const bootOptions = {
+        frontend: true
+    };
+    try {
+        const app = await startGhost(bootOptions);
+        const originURL = configUtils.config.get('url');
+
+        return new TestAgent(app, {
+            apiURL: '/members/',
+            originURL
+        });
+    } catch (error) {
+        error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
+    }
+};
+
 module.exports = {
     // request agent
     agentProvider: {
-        getAdminAPIAgent
+        getAdminAPIAgent,
+        getMembersAPIAgent
     },
 
     // Mocks and Stubs
