@@ -7,7 +7,7 @@ export default class GhMemberLabelInput extends Component {
 
     get availableLabels() {
         return this._availableLabels.toArray().sort((labelA, labelB) => {
-            return labelA.name.localeCompare(labelB.name, undefined, {ignorePunctuation: true});
+            return (labelA.name || '').localeCompare((labelB.name || ''), undefined, {ignorePunctuation: true});
         });
     }
 
