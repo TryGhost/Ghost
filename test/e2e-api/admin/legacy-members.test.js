@@ -9,7 +9,7 @@ const Papa = require('papaparse');
 
 const {mockManager} = require('../../utils/e2e-framework');
 
-describe('Members API', function () {
+describe('Legacy Members API', function () {
     let request;
 
     beforeEach(function () {
