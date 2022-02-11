@@ -1,4 +1,4 @@
-const {agentProvider, matchers} = require('../../../utils/e2e-framework');
+const {agentProvider, matchers} = require('../../utils/e2e-framework');
 const {anyString, stringMatching} = matchers;
 
 describe('Site API', function () {
