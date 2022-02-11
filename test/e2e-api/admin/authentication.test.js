@@ -1,10 +1,10 @@
 const assert = require('assert');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyDate, anyErrorId} = matchers;
 
 const {tokens} = require('@tryghost/security');
-const models = require('../../../../core/server/models');
-const settingsCache = require('../../../../core/shared/settings-cache');
+const models = require('../../../core/server/models');
+const settingsCache = require('../../../core/shared/settings-cache');
 
 describe('Authentication API', function () {
     let agent;
