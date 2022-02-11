@@ -32,7 +32,7 @@ describe('Authentication API', function () {
                 });
         });
 
-        it('complete setup', async function () {
+        it.only('complete setup', async function () {
             await agent
                 .post('authentication/setup')
                 .body({
@@ -62,7 +62,7 @@ describe('Authentication API', function () {
             });
 
             const activeTheme = await settingsCache.get('active_theme');
-            assert.equal(activeTheme, 'dawn', 'The theme dawn should have been isntalled');
+            assert.equal(activeTheme, 'dawn', 'The theme dawn should have been installed');
         });
 
         it('is setup? yes', async function () {

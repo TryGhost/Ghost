@@ -170,15 +170,18 @@ async function installTheme(data, api) {
             context: {internal: true}
         });
     } catch (e) {
+        // temp
+        console.error(e);
+        throw e;
         //Fallback to Casper by doing nothing as the theme setting update is the last step
 
-        await api.notifications.add({
-            notifications: [{
-                custom: true, //avoids update-check from deleting the notification
-                type: 'warn',
-                message: 'The installation of the theme you have selected wasn\'t successful.'
-            }]
-        }, {context: {internal: true}});
+        // await api.notifications.add({
+        //     notifications: [{
+        //         custom: true, //avoids update-check from deleting the notification
+        //         type: 'warn',
+        //         message: 'The installation of the theme you have selected wasn\'t successful.'
+        //     }]
+        // }, {context: {internal: true}});
     }
 
     return data;
