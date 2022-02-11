@@ -409,8 +409,8 @@ ul.nostyle li {
         height: calc(100vh - 193px);
         margin-left: -4vw;
         margin-right: -4vw;
-        padding-left: 4vw;
-        padding-right: 4vw;
+        padding-left: 48px;
+        padding-right: 0;
     }
 }
 
