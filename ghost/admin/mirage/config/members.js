@@ -154,6 +154,23 @@ export default function mockMembers(server) {
         }, '');
     });
 
+    server.post('/members/upload/', function ({labels}, request) {
+        const label = labels.create();
+
+        // TODO: parse CSV and create member records
+        for (const kvPair of request.requestBody.entries()) {
+            const [key, value] = kvPair;
+            console.log({key, value}); // eslint-disable-line
+        }
+
+        return new Response(201, {}, {
+            meta: {
+                import_label: label,
+                stats: {imported: 1, invalid: []}
+            }
+        });
+    });
+
     server.get('/members/events/', function ({memberActivityEvents}, {queryParams}) {
         let {limit} = queryParams;
 
