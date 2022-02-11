@@ -20,7 +20,7 @@ export default class SettingsMembersSubscriptionAccess extends Component {
             icon_color: 'blue'
         }, {
             name: 'Nobody',
-            description: 'No one will be able to subscribe or sign in',
+            description: 'Disable all member features, including newsletters',
             value: 'none',
             icon: 'no-members',
             icon_color: 'midlightgrey-d2'
