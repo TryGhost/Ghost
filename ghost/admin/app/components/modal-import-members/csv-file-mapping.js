@@ -7,10 +7,8 @@ import {tracked} from '@glimmer/tracking';
 
 export default class CsvFileMapping extends Component {
     @tracked error = null;
-
     @tracked fileData = null;
-
-    mappingResult = {};
+    @tracked labels = null;
 
     constructor(...args) {
         super(...args);
