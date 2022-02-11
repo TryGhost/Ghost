@@ -7,6 +7,7 @@ export default class GhMembersNoMembersComponent extends Component {
     @service session;
     @service store;
     @service notifications;
+    @service settings;
 
     @action
     addYourself() {

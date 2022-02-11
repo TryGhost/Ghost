@@ -1,100 +1,102 @@
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header break tablet members-header">
         <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
-        <section class="view-actions">
-            <div class="view-actions-bottom-row {{if this.hideSearchBar "hidden"}}">
-                <div class="relative gh-members-header-search">
-                    {{svg-jar "search" class="gh-input-search-icon"}}
-                    <input
-                        type="text"
-                        placeholder="Search members..."
-                        value={{this.searchParam}}
-                        aria-label="Search members"
-                        class="gh-input gh-members-list-searchfield {{if this.searchParam "active"}}"
-                        {{on "input" this.search}}
-                        {{on "focus" (fn (mut this.searchIsFocused) true)}}
-                        {{on "blur" (fn (mut this.searchIsFocused) false)}}
-                        {{will-destroy (fn (mut this.searchIsFocused) false)}}
-                    />
+        {{#if (not-eq this.settings.membersSignupAccess "none")}}
+            <section class="view-actions">
+                <div class="view-actions-bottom-row {{if this.hideSearchBar "hidden"}}">
+                    <div class="relative gh-members-header-search">
+                        {{svg-jar "search" class="gh-input-search-icon"}}
+                        <input
+                            type="text"
+                            placeholder="Search members..."
+                            value={{this.searchParam}}
+                            aria-label="Search members"
+                            class="gh-input gh-members-list-searchfield {{if this.searchParam "active"}}"
+                            {{on "input" this.search}}
+                            {{on "focus" (fn (mut this.searchIsFocused) true)}}
+                            {{on "blur" (fn (mut this.searchIsFocused) false)}}
+                            {{will-destroy (fn (mut this.searchIsFocused) false)}}
+                        />
+                    </div>
                 </div>
-            </div>
 
-            <div class="view-actions-top-row">
-                <Members::Filter
-                    @isFiltered={{this.isFiltered}}
-                    @onApplyFilter={{this.applyFilter}}
-                    @defaultFilterParam={{this.filterParam}}
-                    @onApplySoftFilter={{this.applySoftFilter}}
-                    @onResetSoftFilter={{this.resetSoftFilter}}
-                    @onResetFilter={{this.resetFilter}}
-                    @onLabelEdit={{this.editLabel}}
-                />
-                <span class="dropdown">
-                    <GhDropdownButton
-                        @dropdownName="members-actions-menu"
-                        @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
-                        @title="Members Actions"
-                        data-test-button="members-actions"
-                    >
-                        <span>
-                            {{svg-jar "settings"}}
-                            <span class="hidden">Actions</span>
-                        </span>
-                    </GhDropdownButton>
-                    <GhDropdown
-                        @name="members-actions-menu"
-                        @tagName="ul"
-                        @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
-                    >
-                        <li>
-                            <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
-                                <span>Import members</span>
-                            </LinkTo>
-                        </li>
-                        <li class="{{if this.members.length "" "disabled"}}">
-                            {{#if this.members.length}}
-                                <button class="mr2" type="button" {{on "click" this.exportData}}>
-                                    {{#if this.showingAll}}
-                                        <span>Export all members</span>
-                                    {{else}}
-                                    <span>Export selected members ({{this.members.length}})</span>
-                                    {{/if}}
-                                </button>
-                            {{else}}
-                                <button class="mr2" disabled="true" type="button">
-                                    <span>Export selected members (0)</span>
-                                </button>
+                <div class="view-actions-top-row">
+                    <Members::Filter
+                        @isFiltered={{this.isFiltered}}
+                        @onApplyFilter={{this.applyFilter}}
+                        @defaultFilterParam={{this.filterParam}}
+                        @onApplySoftFilter={{this.applySoftFilter}}
+                        @onResetSoftFilter={{this.resetSoftFilter}}
+                        @onResetFilter={{this.resetFilter}}
+                        @onLabelEdit={{this.editLabel}}
+                    />
+                    <span class="dropdown">
+                        <GhDropdownButton
+                            @dropdownName="members-actions-menu"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
+                            @title="Members Actions"
+                            data-test-button="members-actions"
+                        >
+                            <span>
+                                {{svg-jar "settings"}}
+                                <span class="hidden">Actions</span>
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="members-actions-menu"
+                            @tagName="ul"
+                            @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
+                        >
+                            <li>
+                                <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
+                                    <span>Import members</span>
+                                </LinkTo>
+                            </li>
+                            <li class="{{if this.members.length "" "disabled"}}">
+                                {{#if this.members.length}}
+                                    <button class="mr2" type="button" {{on "click" this.exportData}}>
+                                        {{#if this.showingAll}}
+                                            <span>Export all members</span>
+                                        {{else}}
+                                        <span>Export selected members ({{this.members.length}})</span>
+                                        {{/if}}
+                                    </button>
+                                {{else}}
+                                    <button class="mr2" disabled="true" type="button">
+                                        <span>Export selected members (0)</span>
+                                    </button>
+                                {{/if}}
+                            </li>
+                            {{#if (and this.members.length this.isFiltered)}}
+                                <li class="divider"></li>
+                                <li>
+                                    <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
+                                        <span>Add label for selected members ({{this.members.length}})</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
+                                        <span>Remove label from selected members ({{this.members.length}})</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
+                                        <span>Unsubscribe selected members ({{this.members.length}})</span>
+                                    </button>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
+                                        <span class="red">Delete selected members ({{this.members.length}})</span>
+                                    </button>
+                                </li>
                             {{/if}}
-                        </li>
-                        {{#if (and this.members.length this.isFiltered)}}
-                            <li class="divider"></li>
-                            <li>
-                                <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
-                                    <span>Add label for selected members ({{this.members.length}})</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
-                                    <span>Remove label from selected members ({{this.members.length}})</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
-                                    <span>Unsubscribe selected members ({{this.members.length}})</span>
-                                </button>
-                            </li>
-                            <li class="divider"></li>
-                            <li>
-                                <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
-                                    <span class="red">Delete selected members ({{this.members.length}})</span>
-                                </button>
-                            </li>
-                        {{/if}}
-                    </GhDropdown>
-                </span>
-                <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>
-            </div>
-        </section>
+                        </GhDropdown>
+                    </span>
+                    <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>
+                </div>
+            </section>
+        {{/if}}
     </GhCanvasHeader>
 
     {{#if this.members.loading}}
