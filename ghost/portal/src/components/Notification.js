@@ -49,6 +49,12 @@ const NotificationText = ({type, status, context}) => {
                 You've successfully subscribed to <br /><strong>{context.site.title}</strong>
             </p>
         );
+    } else if (type === 'signup-paid' && status === 'success') {
+        return (
+            <p>
+                You've successfully subscribed to <br /><strong>{context.site.title}</strong>
+            </p>
+        );
     } else if (type === 'updateEmail' && status === 'success') {
         return (
             <p>
@@ -62,6 +68,12 @@ const NotificationText = ({type, status, context}) => {
             </p>
         );
     } else if (type === 'signup' && status === 'error') {
+        return (
+            <p>
+                Signup error: Invalid link <br /><a href={singupPortalLink} target="_parent">Click here to retry</a>
+            </p>
+        );
+    } else if (type === 'signup-paid' && status === 'error') {
         return (
             <p>
                 Signup error: Invalid link <br /><a href={singupPortalLink} target="_parent">Click here to retry</a>
