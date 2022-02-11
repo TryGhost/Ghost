@@ -1812,3 +1812,10 @@ add|ember-template-lint|no-action|17|12|17|12|b75d66d02a33b108a64bb94d494fa19443
 add|ember-template-lint|no-action|28|16|28|16|e5e787868d089ae3141666004a914deff774b489|1644364800000|1646956800000|1649545200000|lib/koenig-editor/addon/components/koenig-toolbar.hbs
 add|ember-template-lint|no-action|70|12|70|12|03d2eaf613eae8cb3ea3c821ba63544c730364c8|1644364800000|1646956800000|1649545200000|lib/koenig-editor/addon/components/koenig-toolbar.hbs
 remove|ember-template-lint|no-action|2|10|2|10|e457c32ce0c6b34e5c4d6f62b960808c7025e08e|1643760000000|1646352000000|1648940400000|app/templates/settings/integration.hbs
+remove|ember-template-lint|no-invalid-interactive|150|54|150|54|9a561777b1d35423829ee8f9599601869a0a2cb5|1643760000000|1646352000000|1648940400000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-invalid-interactive|2|4|2|4|80a5de37311a90ba4ec099260c4727d4259c457b|1643760000000|1646352000000|1648940400000|app/components/gh-posts-list-item.hbs
+remove|ember-template-lint|no-invalid-interactive|127|46|127|46|a35e455300c074e3963d201ce32ad8f2117e63e1|1643760000000|1646352000000|1648940400000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-invalid-interactive|134|46|134|46|4ad7f6bd069828b74910791513cd21de3db7a188|1643760000000|1646352000000|1648940400000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-invalid-interactive|141|46|141|46|dc3a0826d71522512799c650db29247eaa5d28a0|1643760000000|1646352000000|1648940400000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-invalid-interactive|159|46|159|46|25a012ac1658c40850fc7509fbcc324d6a66f6f8|1643760000000|1646352000000|1648940400000|app/components/gh-post-settings-menu.hbs
+add|ember-template-lint|no-invalid-interactive|2|4|2|4|07ed10079a06774ee9528c2b13dc8178744f0a97|1644537600000|1647129600000|1649718000000|app/components/gh-posts-list-item.hbs
