@@ -18,6 +18,7 @@ const urlService = require('../../core/server/services/url');
 const settingsService = require('../../core/server/services/settings');
 const routeSettingsService = require('../../core/server/services/route-settings');
 const themeService = require('../../core/server/services/themes');
+const themeStorage = require('../../core/server/services/themes/storage');
 const limits = require('../../core/server/services/limits');
 const customRedirectsService = require('../../core/server/services/redirects');
 
@@ -69,6 +70,7 @@ const prepareContentFolder = (options) => {
      * We use a tmp folder.
      */
     configUtils.set('paths:contentPath', contentFolderForTests);
+    themeStorage.updateStoragePath(configUtils.config.getContentPath('themes'));
 
     fs.ensureDirSync(contentFolderForTests);
     fs.ensureDirSync(path.join(contentFolderForTests, 'data'));
