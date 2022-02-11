@@ -26,6 +26,8 @@ const configUtils = require('./configUtils');
 const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
 
+const themeStorage = require('../../core/server/services/themes/storage');
+
 const boot = require('../../core/boot');
 const TestAgent = require('./test-agent');
 const db = require('./db-utils');
@@ -42,14 +44,15 @@ const settingsService = require('../../core/server/services/settings');
  */
 const startGhost = async (options = {}) => {
     /**
-     * We never use the root content folder for testing!
-     * We use a tmp folder.
-     */
+         * We never use the root content folder for testing!
+         * We use a tmp folder.
+         */
     const contentFolder = path.join(os.tmpdir(), uuid.v4(), 'ghost-test');
     await prepareContentFolder({contentFolder});
 
     // NOTE: need to pass this config to the server instance
     configUtils.set('paths:contentPath', contentFolder);
+    themeStorage.updateStoragePath(configUtils.config.getContentPath('themes'));
 
     const defaults = {
         backend: true,
