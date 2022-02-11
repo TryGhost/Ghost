@@ -50,7 +50,7 @@
     right: 0;
     margin: 5px 0 20px 0;
     padding: 0px;
-    width: 336px;
+    width: 344px;
     background-color: #fff;
     background-clip: padding-box;
     border-radius: 4px;
@@ -141,6 +141,10 @@
 .gh-publishmenu-section {
     padding: 0 20px;
     border-top: var(--whitegrey) 1px solid;
+}
+
+.gh-publishmenu-section.no-border {
+    border-top: 0;
 }
 
 .gh-publishmenu-radio-button {
