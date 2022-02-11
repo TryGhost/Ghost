@@ -84,6 +84,9 @@ testemail@example.com,Test Email,This is a test template for importing your memb
 
         expect(findAll(`#${dropdownContentId} li.ember-power-select-option`).length, '# of label options').to.equal(1);
 
+        // label input doesn't allow editing from the import modal
+        expect(findAll(`#${dropdownContentId} [data-test-edit-label]`).length, '# of label edit buttons').to.equal(0);
+
         await click(find(`#${dropdownContentId} li.ember-power-select-option`));
 
         expect(findAll(`${labelInput} .ember-power-select-multiple-options li`).length, '# of selected labels').to.equal(1);

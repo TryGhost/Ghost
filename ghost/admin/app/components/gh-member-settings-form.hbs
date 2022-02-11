@@ -27,6 +27,7 @@
                         <label for="label-input">Labels</label>
                         <GhMemberLabelInput
                             @onChange={{action "setLabels"}}
+                            @allowEdit={{true}}
                             @onLabelEdit={{@onLabelEdit}}
                             @labels={{this.member.labels}}
                             @triggerId="label-input"
