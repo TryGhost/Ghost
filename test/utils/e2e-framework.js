@@ -130,6 +130,7 @@ const getAdminAPIAgent = async () => {
         });
     } catch (error) {
         error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
     }
 };
 
