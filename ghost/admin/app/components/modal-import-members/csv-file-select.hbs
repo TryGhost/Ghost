@@ -10,7 +10,7 @@
         {{on "dragover" this.dragOver}}
         {{on "dragleave" this.dragLeave}}
     >
-        <GhFileInput @multiple={{false}} @alt={{this.labelText}} @action={{this.fileSelected}} @accept={{this.accept}}>
+        <GhFileInput @multiple={{false}} @alt={{this.labelText}} @action={{this.fileSelected}} @accept={{this.accept}} data-test-fileinput="members-csv">
         <div class="flex flex-column items-center">
             {{svg-jar "upload"}}
             <div class="description">{{this.labelText}}</div>

@@ -28,7 +28,7 @@ export default class GhFileInput extends XFileInput {
     * @param {$.Event || Event}
     */
     files(e) {
-        return (e.originalEvent || e).testingFiles || e.target.files;
+        return (e.originalEvent || e).testingFiles || e.originalEvent?.files || e.target.files;
     }
 
     /**

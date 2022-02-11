@@ -117,7 +117,7 @@
             <button class="gh-btn" data-test-button="restart-import-members" type="button" {{action "reset"}}>
                 <span>Start over</span>
             </button>
-            <button class="gh-btn gh-btn-green {{unless this.mappingResult.membersCount "disabled"}}" type="button" {{action "upload"}}>
+            <button class="gh-btn gh-btn-green {{unless this.mappingResult.membersCount "disabled"}}" type="button" {{action "upload"}} data-test-button="perform-import">
                 {{#if this.mappingResult.membersCount}}
                     <span>Import {{format-number this.mappingResult.membersCount}} {{gh-pluralize this.mappingResult.membersCount 'member' without-count=true}}</span>
                 {{else}}
@@ -137,7 +137,7 @@
 
         {{#if (eq this.state 'COMPLETE')}}
             {{#if this.importResponse.errorCount}}
-                <a href="{{this.importResponse.errorCsvUrl}}" download="{{this.importResponse.errorCsvName}}" class="gh-btn" data-test-button="restart-import-members">
+                <a href="{{this.importResponse.errorCsvUrl}}" download="{{this.importResponse.errorCsvName}}" class="gh-btn" data-test-button="download-import-errors">
                     <span>Download error file</span>
                 </a>
                 {{#if (eq this.importResponse.importedCount 0)}}
