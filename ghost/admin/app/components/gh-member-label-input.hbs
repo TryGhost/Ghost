@@ -23,10 +23,10 @@
             data-test-label-filter={{label.name}}>
             {{label.name}}
         </span>
-        {{#if label.slug}}
-            <span class="dropdown-action-icon" {{on "mouseup" (fn this.editLabel label)}}>
+        {{#if (and @allowEdit label.slug)}}
+            <button type="button" class="dropdown-action-icon" {{on "mouseup" (fn this.editLabel label)}} aria-label="Edit label {{label.name}}" data-test-edit-label={{label.name}}>
                 {{svg-jar "pen"}}
-            </span>
+            </button>
         {{/if}}
     </div>
 </GhTokenInput>
