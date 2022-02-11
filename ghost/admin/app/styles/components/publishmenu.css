@@ -116,7 +116,7 @@
     border-radius: 3px !important;
 }
 
-.gh-publishmenu-content {
+.gh-publishmenu-content:not(.gh-publishmenu-content.no-border) {
     border-bottom: var(--whitegrey) 1px solid;
 }
 
