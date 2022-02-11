@@ -23,6 +23,7 @@ const uuid = require('uuid');
 const fixtureUtils = require('./fixture-utils');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
+const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
 
 const boot = require('../../core/boot');
@@ -34,7 +35,7 @@ const db = require('./db-utils');
  * @param {Boolean} [options.backend] Boot the backend
  * @param {Boolean} [options.frontend] Boot the frontend
  * @param {Boolean} [options.server] Start a server
- * @returns {Express.Application} ghost
+ * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
     /**
@@ -56,7 +57,15 @@ const startGhost = async (options = {}) => {
     // Ensure the DB state
     await resetDb();
 
-    return boot(Object.assign({}, defaults, options));
+    const bootOptions = Object.assign({}, defaults, options);
+
+    const ghostServer = await boot(bootOptions);
+
+    if (bootOptions.frontend) {
+        await urlServiceUtils.isFinished();
+    }
+
+    return ghostServer;
 };
 
 /**
