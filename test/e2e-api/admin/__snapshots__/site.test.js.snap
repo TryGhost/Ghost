@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Site API can retrieve config and all expected properties 1: [body] 1`] = `
+Object {
+  "site": Object {
+    "accent_color": "#FF1A75",
+    "description": "Thoughts, stories and ideas",
+    "icon": null,
+    "logo": null,
+    "title": "Ghost",
+    "url": "http://127.0.0.1:2369/",
+    "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+/,
+  },
+}
+`;
+
+exports[`Site API can retrieve config and all expected properties 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "167",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
