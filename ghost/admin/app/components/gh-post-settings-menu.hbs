@@ -124,38 +124,38 @@
                 {{/unless}}
 
                 <ul class="nav-list nav-list-block">
-                    <li class="nav-list-item" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
-                        <button type="button">
+                    <li class="nav-list-item">
+                        <button type="button" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
                             <b>Meta data</b>
                             <span>Extra content for search engines</span>
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
-                    <li class="nav-list-item" {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
-                        <button type="button">
+                    <li class="nav-list-item">
+                        <button type="button"  {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
                             <b>Twitter card</b>
                             <span>Customize structured data for Twitter</span>
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
-                    <li class="nav-list-item" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
-                        <button type="button">
+                    <li class="nav-list-item">
+                        <button type="button" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
                             <b>Facebook card</b>
                             <span>Customize Open Graph data</span>
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
                     {{#if (and this.post.isPost this.showEmailNewsletter (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
-                        <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
-                            <button type="button">
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
                                 <b>Email newsletter</b>
                                 <span>Customize email settings</span>
                             </button>
                             {{svg-jar "arrow-right"}}
                         </li>
                     {{/if}}
-                    <li class="nav-list-item" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
-                        <button type="button">
+                    <li class="nav-list-item">
+                        <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
                             <b>Code injection</b>
                             <span>Add styles/scripts to the header &amp; footer</span>
                         </button>

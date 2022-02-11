@@ -16,7 +16,6 @@
     position: relative;
     display: block;
     margin: 0;
-    padding: 9px 40px 10px 12px;
     color: var(--darkgrey);
 }
 
@@ -40,6 +39,8 @@
 }
 
 .nav-list-item button {
+    width: 100%;
+    padding: 9px 40px 10px 12px;
     text-align: left;
 }
 
