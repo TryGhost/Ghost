@@ -145,16 +145,14 @@
                         </button>
                         {{svg-jar "arrow-right"}}
                     </li>
-                    {{#if (and this.post.isPost this.showEmailNewsletter)}}
-                        {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
-                            <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
-                                <button type="button">
-                                    <b>Email newsletter</b>
-                                    <span>Customize email settings</span>
-                                </button>
-                                {{svg-jar "arrow-right"}}
-                            </li>
-                        {{/if}}
+                    {{#if (and this.post.isPost this.showEmailNewsletter (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
+                        <li class="nav-list-item" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
+                            <button type="button">
+                                <b>Email newsletter</b>
+                                <span>Customize email settings</span>
+                            </button>
+                            {{svg-jar "arrow-right"}}
+                        </li>
                     {{/if}}
                     <li class="nav-list-item" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
                         <button type="button">

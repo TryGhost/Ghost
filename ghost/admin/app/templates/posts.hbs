@@ -31,12 +31,10 @@
             {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
                     <div class="gh-list-header gh-posts-title-header">Title</div>
-                    {{#if (and (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
-                        {{#if this.feature.emailAnalytics}}
+                        {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) this.feature.emailAnalytics)}}
                             <div class="gh-list-header gh-posts-sends-header">Sends</div>
                             <div class="gh-list-header gh-posts-opens-header">Opens</div>
                         {{/if}}
-                    {{/if}}
                     <div class="gh-list-header gh-posts-status-header">Status</div>
                 </li>
             {{/if}}

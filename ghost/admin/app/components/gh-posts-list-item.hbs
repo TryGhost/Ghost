@@ -42,7 +42,7 @@
         </LinkTo>
     {{/if}}
 
-    {{#if (and (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
+    {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
         {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
             <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
                 <div class="flex fw4">
