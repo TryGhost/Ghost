@@ -148,8 +148,5 @@ module.exports = {
         let result = await getStorage().delete(themeName);
         list.del(themeName);
         return result;
-    },
-    updateStoragePath: function (storagePath) {
-        getStorage().storagePath = storagePath;
     }
 };
