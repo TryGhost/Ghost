@@ -42,6 +42,9 @@ function checkPostAccess(post, member) {
 
     let visibility = post.visibility === 'paid' ? 'status:-free' : post.visibility;
     if (visibility === 'tiers') {
+        if (!post.tiers) {
+            return BLOCK_ACCESS;
+        }
         visibility = post.tiers.map((product) => {
             return `product:${product.slug}`;
         }).join(',');
