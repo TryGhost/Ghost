@@ -30,9 +30,9 @@ module.exports = {
     },
 
     /**
-     * Shutdown the cache, used in force boot during testing
+     * Restore the cache, used during e2e testing only
      */
-    shutdown() {
+    reset() {
         SettingsCache.reset(events);
     },
 

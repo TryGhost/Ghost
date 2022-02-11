@@ -155,7 +155,7 @@ const freshModeGhostStart = async (options) => {
     await stopGhost();
 
     // Reset the settings cache and disable listeners so they don't get triggered further
-    settingsService.shutdown();
+    settingsService.reset();
 
     await dbUtils.reset();
 
