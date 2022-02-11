@@ -30,6 +30,9 @@ const boot = require('../../core/boot');
 const TestAgent = require('./test-agent');
 const db = require('./db-utils');
 
+// Services that need resetting
+const settingsService = require('../../core/server/services/settings');
+
 /**
  * @param {Object} [options={}]
  * @param {Boolean} [options.backend] Boot the backend
@@ -54,8 +57,8 @@ const startGhost = async (options = {}) => {
         server: false
     };
 
-    // Ensure the DB state
-    await resetDb();
+    // Ensure the state of all data, including DB and caches
+    await resetData();
 
     const bootOptions = Object.assign({}, defaults, options);
 
@@ -124,8 +127,18 @@ const getFixture = (type, index = 0) => {
     return fixtureUtils.DataGenerator.forKnex[type][index];
 };
 
-const resetDb = async () => {
-    await db.reset();
+/**
+ * This function ensures that Ghost's data is reset back to "factory settings"
+ *
+ */
+const resetData = async () => {
+    // Calling reset on the database also causes the fixtures to be re-run
+    // We need to unhook the settings events and restore the cache before we do this
+    // Otherwise, the fixtures being restored will refer to the old settings cache data
+    settingsService.reset();
+
+    // Clear out the database
+    await db.reset({truncate: true});
 };
 
 /**
@@ -198,7 +211,7 @@ module.exports = {
         get: getFixture,
         getCurrentOwnerUser: fixtureUtils.getCurrentOwnerUser,
         init: initFixtures,
-        reset: resetDb
+        restore: resetData
     },
     matchers: {
         anyString: any(String),
