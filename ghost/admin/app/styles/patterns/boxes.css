@@ -69,6 +69,10 @@
     border-radius: 3px;
 }
 
+.gh-content-box a {
+    color: var(--green-d1);
+}
+
 .gh-content-box.pa { padding: 16px; }
 .gh-content-box.pt { padding-top: 16px; }
 .gh-content-box.pr { padding-right: 16px; }
