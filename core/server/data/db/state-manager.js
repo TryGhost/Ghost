@@ -101,3 +101,6 @@ class DatabaseStateManager {
 }
 
 module.exports = DatabaseStateManager;
+// Exported for testing purposes
+// @TODO refactor this so it can be managed within the state manager
+module.exports.STATES = states;

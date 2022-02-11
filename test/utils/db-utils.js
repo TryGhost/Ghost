@@ -14,6 +14,7 @@ const schemaTables = Object.keys(schema);
 
 // Other Test Utilities
 const urlServiceUtils = require('./url-service-utils');
+const DatabaseStateManager = require('../../core/server/data/db/state-manager');
 
 const dbHash = Date.now();
 
@@ -37,7 +38,11 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
             await fs.copyFile(filename, filenameOrig);
         }
     } else {
-        if (truncate) {
+        const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
+        const state = await dbStateManager.getState();
+
+        // If truncate mode was requested check the current state is fully initialised as an empty DB cannot be truncated
+        if (truncate && state === DatabaseStateManager.STATES.READY) {
             // Perform a fast reset by tearing down all the tables and
             // inserting the fixtures
             await module.exports.teardown();
