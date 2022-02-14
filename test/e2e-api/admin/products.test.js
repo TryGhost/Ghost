@@ -64,4 +64,34 @@ describe('Tiers API', function () {
             .body({products: [tier]})
             .expectStatus(422);
     });
+
+    it('Errors when a benefit has an empty name', async function () {
+        const tier = {
+            name: 'Blah',
+            monthly_price: {
+                amount: 10
+            },
+            benefits: [{
+                name: ''
+            }]
+        };
+
+        await agent
+            .post('/products/')
+            .body({products: [tier]})
+            .expectStatus(422);
+    });
+
+    it('Errors when a product is edited with a benefit that has an empty name', async function () {
+        const tier = {
+            benefits: [{
+                name: ''
+            }]
+        };
+
+        await agent
+            .put('/products/' + fixtureManager.get('products', 0).id)
+            .body({products: [tier]})
+            .expectStatus(422);
+    });
 });
