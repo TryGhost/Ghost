@@ -163,6 +163,7 @@ class I18n {
         const options = merge({log: true}, opts || {});
         let candidateString;
         let matchingString;
+        msgPath = msgPath.toString();
 
         // no path? no string
         if (msgPath.length === 0 || !isString(msgPath)) {
