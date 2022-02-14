@@ -43,13 +43,9 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        if (!props.testState) {
-            // Setup custom trigger button handling
-            this.setupCustomTriggerButton();
-        }
+        this.setupCustomTriggerButton(props);
 
-        // testState is used by App.test to pass custom default state for testing
-        this.state = props.testState || {
+        this.state = {
             site: null,
             member: null,
             page: 'loading',
@@ -62,10 +58,7 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
-        /** Ignores API init when in test mode */
-        if (!this.props.testState) {
-            this.initSetup();
-        }
+        this.initSetup();
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -104,7 +97,10 @@ export default class App extends React.Component {
     }
 
     /** Setup custom trigger buttons handling on page */
-    setupCustomTriggerButton() {
+    setupCustomTriggerButton(props) {
+        if (hasMode(['test'])) {
+            return;
+        }
         // Handler for custom buttons
         this.clickHandler = (event) => {
             event.preventDefault();
@@ -134,7 +130,7 @@ export default class App extends React.Component {
     handleCustomTriggerClassUpdate() {
         const popupOpenClass = 'gh-portal-open';
         const popupCloseClass = 'gh-portal-close';
-        this.customTriggerButtons.forEach((customButton) => {
+        this.customTriggerButtons?.forEach((customButton) => {
             const elAddClass = this.state.showPopup ? popupOpenClass : popupCloseClass;
             const elRemoveClass = this.state.showPopup ? popupCloseClass : popupOpenClass;
             customButton.classList.add(elAddClass);
@@ -159,6 +155,7 @@ export default class App extends React.Component {
                 action: 'init:success',
                 initStatus: 'success'
             };
+
             this.handleSignupQuery({site, pageQuery, member});
 
             this.setState(state);
@@ -187,7 +184,6 @@ export default class App extends React.Component {
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
         let page = '';
-
         return {
             member,
             page,
@@ -215,6 +211,13 @@ export default class App extends React.Component {
         // Setup custom dev mode data from fixtures
         if (hasMode(['dev']) && !this.state.customSiteUrl) {
             return DEV_MODE_DATA;
+        }
+
+        // Setup test mode data
+        if (hasMode(['test'])) {
+            return {
+                showPopup: true
+            };
         }
         return {};
     }
@@ -432,8 +435,9 @@ export default class App extends React.Component {
     /** Fetch site and member session data with Ghost Apis  */
     async fetchApiData() {
         const {siteUrl, customSiteUrl} = this.props;
+
         try {
-            this.GhostApi = setupGhostApi({siteUrl});
+            this.GhostApi = this.props.api || setupGhostApi({siteUrl});
             const {site, member} = await this.GhostApi.init();
 
             const colorOverride = this.getColorOverride();
@@ -448,12 +452,16 @@ export default class App extends React.Component {
             if (hasMode(['dev', 'test'], {customSiteUrl})) {
                 return {};
             }
+
             throw e;
         }
     }
 
     /** Setup Sentry */
     setupSentry({site}) {
+        if (hasMode(['test'])) {
+            return null;
+        }
         const {portal_sentry: portalSentry, portal_version: portalVersion, version: ghostVersion} = site;
         const appVersion = process.env.REACT_APP_VERSION || portalVersion;
         const releaseTag = `portal@${appVersion}|ghost@${ghostVersion}`;
@@ -477,6 +485,9 @@ export default class App extends React.Component {
 
     /** Setup Firstpromoter script */
     setupFirstPromoter({site, member}) {
+        if (hasMode(['test'])) {
+            return null;
+        }
         const firstPromoterId = getFirstpromoterId({site});
         const siteDomain = getSiteDomain({site});
         if (firstPromoterId && siteDomain) {
