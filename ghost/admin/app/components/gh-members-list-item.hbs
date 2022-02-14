@@ -22,7 +22,18 @@
                 </div>
             </div>
         </LinkTo>
+        {{#if (feature "membersTableStatus")}}
+            {{!-- One line: Free tier, or premium tier if there is only one premium tier --}}
+            {{!-- <LinkTo @route="member" @model={{@member}} class="gh-list-data">
+                <div>Free</div>
+            </LinkTo>--}}
 
+            {{!-- Two lines: Premium tier if there are multiple premium tiers --}}
+            {{!-- <LinkTo @route="member" @model={{@member}} class="gh-list-data">
+                <div>Paid</div>
+                <div class="midgrey">Bronze</div>
+            </LinkTo> --}}
+        {{/if}}
         {{#if @newsletterEnabled}}
             {{#if (feature "emailAnalytics")}}
                 <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}">
