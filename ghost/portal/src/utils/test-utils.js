@@ -34,6 +34,16 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
     };
 };
 
+export const appRender = (ui, {options = {}} = {}) => {
+    const mockOnActionFn = jest.fn();
+
+    const utils = render(ui, options);
+    return {
+        ...utils,
+        mockOnActionFn
+    };
+};
+
 // re-export everything
 export * from '@testing-library/react';
 

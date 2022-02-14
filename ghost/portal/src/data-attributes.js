@@ -3,6 +3,9 @@
 const {getQueryPrice} = require('./utils/helpers');
 
 function handleDataAttributes({siteUrl, site, member}) {
+    if (!siteUrl) {
+        return;
+    }
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
