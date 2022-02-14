@@ -1836,9 +1836,9 @@ section.gh-ds h2 {
     background: #ffffff;
     box-shadow: 0 0 30px rgb(0 0 0 / 4%);
     width: calc(100% - 32px);
+    height: calc(100% - 179px);
     border-radius: 8px;
     margin: 0 16px 16px;
-
     animation: fadeUp ease 300ms;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
@@ -1865,6 +1865,17 @@ section.gh-ds h2 {
 
 .gh-finishing-touches .gh-browserpreview-browser .tabs div {
     display: none;
+}
+
+.gh-finishing-touches .gh-finishing-touches-button {
+    position: sticky;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    height: 96px;
+    margin-bottom: -24px;
+    background: #fff;
 }
 
 
