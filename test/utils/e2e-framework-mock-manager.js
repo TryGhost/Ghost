@@ -1,6 +1,7 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const assert = require('assert');
+const nock = require('nock');
 
 // Helper services
 const configUtils = require('./configUtils');
@@ -11,6 +12,7 @@ let emailCount = 0;
 // Mockable services
 const mailService = require('../../core/server/services/mail/index');
 const labs = require('../../core/shared/labs');
+const settingsCache = require('../../core/shared/settings-cache');
 
 const mockMail = () => {
     mocks.mail = sinon
@@ -18,6 +20,22 @@ const mockMail = () => {
         .resolves('Mail is disabled');
 
     return mocks.mail;
+};
+
+const mockStripe = () => {
+    mocks.settings = sinon.stub(settingsCache, 'get').callsFake(function (key, ...args) {
+        if (key === 'stripe_connect_secret_key') {
+            return 'sk_test_blah';
+        }
+        if (key === 'stripe_connect_publishable_key') {
+            return 'pk_test_blah';
+        }
+        if (key === 'stripe_connect_account_name') {
+            return 'Test Account';
+        }
+        return settingsCache.get.wrappedMethod.call(settingsCache, key, ...args);
+    });
+    nock.disableNetConnect();
 };
 
 const mockLabsEnabled = (flag, alpha = true) => {
@@ -88,10 +106,13 @@ const restore = () => {
     sinon.restore();
     mocks = {};
     emailCount = 0;
+    nock.cleanAll();
+    nock.enableNetConnect();
 };
 
 module.exports = {
     mockMail,
+    mockStripe,
     mockLabsEnabled,
     mockLabsDisabled,
     restore,
