@@ -1834,7 +1834,7 @@ section.gh-ds h2 {
 
 .gh-finishing-touches main {
     background: #ffffff;
-    box-shadow: 0 0 30px rgba(0,0,0,0.075);
+    box-shadow: 0 0 30px rgb(0 0 0 / 4%);
     width: calc(100% - 32px);
     border-radius: 8px;
     margin: 0 16px 16px;
@@ -1854,7 +1854,7 @@ section.gh-ds h2 {
 }
 
 .gh-finishing-touches .gh-browserpreview-previewcontainer {
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 30px rgb(0 0 0 / 8%);
     border-radius: 5px !important;
     overflow: hidden;
 }
@@ -1871,36 +1871,84 @@ section.gh-ds h2 {
 /* Get started modal */
 /* ---------------------------------------------------- */
 
+@keyframes reveal {
+    from {
+        opacity: 0;
+        transform: translateY(32px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.epm-modal .modal-content.gh-get-started {
+    padding: 0;
+    background-image: url(img/get-started.jpg);
+    background-repeat: no-repeat;
+    background-position: top right;
+    background-size: cover;
+    border-radius: 6px;
+    overflow: hidden;
+    animation: reveal 275ms normal 800ms forwards ease-out;
+    opacity: 0;
+    transform: translateY(32px);
+}
+
+.modal-content.gh-get-started .close svg {
+    fill: #fff;
+}
+
 .gh-get-started-welcome {
-    padding-top: 1rem;
+    padding: 4rem 6rem 2rem 4rem;
+    width: 66%;
+    background: #fff;
 }
 
-.gh-get-started-welcome svg {
-    width: 48px;
-    height: 48px;
+.gh-get-started-welcome header p:first-of-type {
+    margin-bottom: 1.75rem;
+    font-size: 1.5rem;
+    color: var(--midgrey);
 }
 
-.gh-get-started-extras svg {
-    width: 40px;
-    height: 40px;
+.gh-get-started-welcome footer {
+    margin: 10rem 0 0;
 }
 
-.gh-get-started-extras p:last-of-type {
-    margin-bottom: 0.75rem;
+.gh-get-started-welcome footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.gh-get-started-extras .br {
-    border-color: var(--whitegrey);
+.gh-get-started-welcome footer li {
+    margin: 0 0 0.5rem;
+    padding: 0 0 0 40px;
+    background: transparent;
+    background-repeat: no-repeat;
+    background-position: center left;
+    background-size: 20px;
 }
 
-.gh-get-started-extras .pa4:first-child {
-    padding-left: 0;
-    padding-bottom: 0;
-    padding-right: 3rem;
+.gh-get-started-welcome footer li:last-of-type {
+    margin-bottom: 0;
 }
 
-.gh-get-started-extras .pa4:last-child {
-    padding-right: 0;
-    padding-bottom: 0;
-    padding-left: 3rem;
+.gh-get-started-welcome footer li:first-of-type {
+    background-image: url(icons/get-started-members.svg);
+}
+
+.gh-get-started-welcome footer li:last-of-type {
+    background-image: url(icons/get-started-import.svg);
+}
+
+.gh-get-started-welcome footer a {
+    display: inline-block;
+    margin: 0 0 0.25rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.gh-get-started-welcome footer p {
+    color: var(--midgrey);
 }

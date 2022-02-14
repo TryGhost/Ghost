@@ -1,25 +1,23 @@
 <div class="modal-content gh-get-started" data-test-modal="get-started">
     <button type="button" class="close" role="button" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
-    <div class="tc f4 gh-get-started-welcome">
-        {{svg-jar "get-started"}}
-        <h1>Great work!</h1>
-        <p>Your site is ready to start publishing content.</p>
-        <p><LinkTo @route="dashboard" class="gh-btn gh-btn-large gh-btn-green" {{on "click" @close}}><span>Start writing</span></LinkTo></p>
-    </div>
-
-    <div class="flex flex-row f8 gh-get-started-extras">
-        <div class="pa4 w-50 tc br">
-            {{svg-jar "get-started-members"}}
-            <h4>Paid memberships</h4>
-            <p>Build sustainable recurring revenue using Stripe.</p>
-            <p><LinkTo @route="settings.membership" class="gh-btn" {{on "click" @close}}><span>Connect Stripe</span></LinkTo></p>
-        </div>
-        <div class="pa4 w-50 tc">
-            {{svg-jar "get-started-migrations"}}
-            <h4>Migrating data</h4>
-            <p>Import content from other tools into Ghost with ease.</p>
-            <p><a href=" https://ghost.org/docs/migration/" class="gh-btn" target="_blank" rel="noopener noreferrer" {{on "click" @close}}><span>Learn more</span></a></p>
-        </div>
-    </div>
+    <section class="gh-get-started-welcome">
+        <header>
+            <h1>All set up!</h1>
+            <p>Your site is now ready to start publishing content.</p>
+            <p><LinkTo @route="dashboard" class="gh-btn gh-btn-green" {{on "click" @close}}><span>Start writing</span></LinkTo></p>
+        </header>
+        <footer>
+            <ul>
+                <li>
+                    <LinkTo @route="settings.membership" {{on "click" @close}}>Connect Stripe →</LinkTo>
+                    <p>Build a sustainable business.</p>
+                </li>
+                <li>
+                    <a href="https://ghost.org/docs/migration/" target="_blank" rel="noopener noreferrer" {{on "click" @close}}>Import members →</a>
+                    <p>Migrate your people to us.</p>
+                </li>
+            </ul>
+        </footer>
+    </section>
 </div>
