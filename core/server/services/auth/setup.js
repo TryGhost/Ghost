@@ -12,7 +12,8 @@ const messages = {
     setupUnableToRun: 'Database missing fixture data. Please reset database and try again.',
     sampleBlogDescription: 'Thoughts, stories and ideas.',
     yourNewGhostBlog: 'Your New Ghost Site',
-    unableToSendWelcomeEmail: 'Unable to send welcome email, your site will continue to function.'
+    unableToSendWelcomeEmail: 'Unable to send welcome email, your site will continue to function.',
+    failedThemeInstall: 'Theme {themeName} didn\'t install because of the error: {error}'
 };
 
 /**
@@ -169,8 +170,9 @@ async function installTheme(data, api) {
             name: theme.name,
             context: {internal: true}
         });
-    } catch (e) {
+    } catch (error) {
         //Fallback to Casper by doing nothing as the theme setting update is the last step
+        logging.warn(tpl(messages.failedThemeInstall, {themeName, error: error.message}));
 
         await api.notifications.add({
             notifications: [{
