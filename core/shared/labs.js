@@ -33,7 +33,8 @@ const ALPHA_FEATURES = [
     'membersActivityFeed',
     'improvedOnboarding',
     'tierWelcomePages',
-    'tierName'
+    'tierName',
+    'membersTableStatus'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
