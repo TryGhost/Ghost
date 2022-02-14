@@ -16,6 +16,7 @@
                             {{on "focus" (fn (mut this.searchIsFocused) true)}}
                             {{on "blur" (fn (mut this.searchIsFocused) false)}}
                             {{will-destroy (fn (mut this.searchIsFocused) false)}}
+                            data-test-input="members-search"
                         />
                     </div>
                 </div>
@@ -54,15 +55,15 @@
                             </li>
                             <li class="{{if this.members.length "" "disabled"}}">
                                 {{#if this.members.length}}
-                                    <button class="mr2" type="button" {{on "click" this.exportData}}>
+                                    <button class="mr2" type="button" {{on "click" this.exportData}} data-test-button="export-members">
                                         {{#if this.showingAll}}
                                             <span>Export all members</span>
                                         {{else}}
-                                        <span>Export selected members ({{this.members.length}})</span>
+                                            <span>Export selected members ({{this.members.length}})</span>
                                         {{/if}}
                                     </button>
                                 {{else}}
-                                    <button class="mr2" disabled="true" type="button">
+                                    <button class="mr2" disabled="true" type="button" data-test-button="export-members">
                                         <span>Export selected members (0)</span>
                                     </button>
                                 {{/if}}
@@ -80,7 +81,7 @@
                                     </button>
                                 </li>
                                 <li>
-                                    <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
+                                    <button class="mr2" data-test-button="unsubscribe-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
                                         <span>Unsubscribe selected members ({{this.members.length}})</span>
                                     </button>
                                 </li>
@@ -106,7 +107,7 @@
     {{else}}
         <section class="view-container {{if (or (not this.members) (lt this.members.length 6)) "members-list-container-stretch"}}">
             {{#if this.members}}
-                <div class="gh-list-scrolling {{if (lt this.members.length 6) "gh-list-with-helpsection"}}">
+                <div class="gh-list-scrolling {{if (lt this.members.length 6) "gh-list-with-helpsection"}}" daat-test-table="members">
                     <table class="gh-list">
                         <thead>
                             <tr>
@@ -137,10 +138,10 @@
                 {{#if this.showingAll}}
                     <GhMembersNoMembers @afterCreate={{this.refreshData}} @members={{this.members}} />
                 {{else}}
-                    <div class="gh-members-empty">
+                    <div class="gh-members-empty" data-test-no-matching-members>
                         {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
                         <h4>No members match the current filter</h4>
-                        <LinkTo @route="members" @query={{reset-query-params "members.index"}} class="gh-btn mt4">
+                        <LinkTo @route="members" @query={{reset-query-params "members.index"}} class="gh-btn mt4" data-test-button="show-all-members">
                             <span>Show all members</span>
                         </LinkTo>
                     </div>

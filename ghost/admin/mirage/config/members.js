@@ -68,12 +68,12 @@ export default function mockMembers(server) {
     });
 
     server.get('/members/', function ({members}, {queryParams}) {
-        let {filter, page, limit} = queryParams;
+        let {filter, search, page, limit} = queryParams;
 
         page = +page || 1;
         limit = +limit || 15;
 
-        let labelFilter = extractFilterParam('label', filter);
+        const labelFilter = extractFilterParam('label', filter);
 
         let collection = members.all().filter((member) => {
             let matchesLabel = true;
@@ -90,6 +90,15 @@ export default function mockMembers(server) {
 
             return matchesLabel;
         });
+
+        if (search) {
+            const query = search.toLowerCase();
+
+            collection = collection.filter((member) => {
+                return member.name.toLowerCase().indexOf(query) !== -1
+                    || member.email.toLowerCase().indexOf(query) !== -1;
+            });
+        }
 
         return paginateModelCollection('members', collection, page, limit);
     });
