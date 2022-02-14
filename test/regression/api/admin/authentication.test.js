@@ -1,3 +1,4 @@
+const nock = require('nock');
 const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyEtag, anyDate, anyErrorId} = matchers;
@@ -20,6 +21,7 @@ describe('Authentication API', function () {
 
         afterEach(function () {
             mockManager.restore();
+            nock.cleanAll();
         });
 
         it('is setup? no', async function () {
@@ -33,6 +35,11 @@ describe('Authentication API', function () {
         });
 
         it('complete setup', async function () {
+            const requestMock = nock('https://api.github.com')
+                .get('/repos/tryghost/dawn/zipball')
+                .query(true)
+                .replyWithFile(200, __dirname + '/../../../utils/fixtures/themes/valid.zip');
+
             await agent
                 .post('authentication/setup')
                 .body({
@@ -60,9 +67,10 @@ describe('Authentication API', function () {
                 subject: 'Your New Ghost Site',
                 to: 'test@example.com'
             });
+            assert.equal(requestMock.isDone(), true, 'The dawn github URL should have been used');
 
             const activeTheme = await settingsCache.get('active_theme');
-            assert.equal(activeTheme, 'dawn', 'The theme dawn should have been isntalled');
+            assert.equal(activeTheme, 'dawn', 'The theme dawn should have been installed');
         });
 
         it('is setup? yes', async function () {
