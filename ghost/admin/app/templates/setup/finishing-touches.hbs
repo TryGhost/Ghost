@@ -9,22 +9,22 @@
                 <div class="gh-nav-body">
                     <div class="gh-nav-design-settings">
                         <div class="gh-stack">
-                            <Settings::FormFields::AccentColor class="gh-stack-item gh-setting-first" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
-                            <Settings::FormFields::PublicationCover class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
                             <Settings::FormFields::SiteDescription class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            <Settings::FormFields::AccentColor class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            <Settings::FormFields::PublicationCover class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
                         </div>
                     </div>
-                    <div class="pa4">
-                        <GhTaskButton
-                            class="gh-btn gh-btn-large gh-btn-black gh-btn-icon w-100"
-                            @task={{this.saveAndContinueTask}}
-                            @buttonText="Continue →"
-                            @runningText="Saving..."
-                            @showSuccess={{false}}
-                            data-test-button="save-and-continue"
-                        />
-                    </div>
                 </div>
+            </div>
+            <div class="pa4 gh-finishing-touches-button">
+                <GhTaskButton
+                    class="gh-btn gh-btn-large gh-btn-black gh-btn-icon w-100"
+                    @task={{this.saveAndContinueTask}}
+                    @buttonText="Ready to go →"
+                    @runningText="Saving..."
+                    @showSuccess={{false}}
+                    data-test-button="save-and-continue"
+                />
             </div>
         </div>
         <div class="flex-grow-1 pa10">
