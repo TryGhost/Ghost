@@ -1,0 +1,167 @@
+/* eslint-disable no-unused-vars*/
+import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getTestSite} from './fixtures-generator';
+
+export const testSite = getTestSite();
+
+const products = [
+    getFreeProduct({
+        name: 'Free',
+        // description: 'Free tier description which is actually a pretty long description',
+        description: '',
+        numOfBenefits: 0
+    })
+    ,
+    getProductData({
+        name: 'Bronze',
+        // description: 'Access to all members articles',
+        description: '',
+        monthlyPrice: getPriceData({
+            interval: 'month',
+            amount: 700
+        }),
+        yearlyPrice: getPriceData({
+            interval: 'year',
+            amount: 7000
+        }),
+        numOfBenefits: 2
+    })
+    // ,
+    // getProductData({
+    //     name: 'Silver',
+    //     description: 'Access to all members articles and weekly podcast',
+    //     monthlyPrice: getPriceData({
+    //         interval: 'month',
+    //         amount: 1200
+    //     }),
+    //     yearlyPrice: getPriceData({
+    //         interval: 'year',
+    //         amount: 12000
+    //     }),
+    //     numOfBenefits: 3
+    // })
+
+    // getProductData({
+    //     name: 'Friends of the Blueprint',
+    //     description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
+    //     monthlyPrice: getPriceData({
+    //         interval: 'month',
+    //         amount: 18000
+    //     }),
+    //     yearlyPrice: getPriceData({
+    //         interval: 'year',
+    //         amount: 17000
+    //     }),
+    //     numOfBenefits: 4
+    // })
+];
+
+const basicSite = getSiteData({
+    title: 'The Blueprint',
+    description: 'Thoughts, stories and ideas.',
+    logo: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
+    icon: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
+    accentColor: '#45C32E',
+    url: 'https://portal.localhost',
+    plans: {
+        monthly: 5000,
+        yearly: 150000,
+        currency: 'USD'
+    },
+
+    // Simulate pre-multiple-tiers state:
+    // products: [products.find(d => d.type === 'paid')],
+    // portalProducts: null,
+
+    // Simulate multiple-tiers state:
+    products,
+    portalProducts: products.map(p => p.id),
+
+    //
+    allowSelfSignup: true,
+    membersSignupAccess: 'all',
+    freePriceName: 'Free',
+    freePriceDescription: 'Free preview',
+    isStripeConfigured: true,
+    portalButton: true,
+    portalName: true,
+    portalPlans: ['free', 'monthly', 'yearly'],
+    portalButtonIcon: 'icon-1',
+    portalButtonSignupText: 'Subscribe now',
+    portalButtonStyle: 'icon-and-text',
+    membersSupportAddress: 'support@example.com'
+});
+
+const tiersDisabledSite = {
+    ...basicSite,
+    portal_products: undefined,
+    products: [products.find(d => d.type === 'paid')]
+};
+
+export const site = {
+    tiersDisabled: {
+        basic: tiersDisabledSite,
+        onlyFreePlan: {
+            ...tiersDisabledSite,
+            portal_plans: 'free'
+        },
+        withoutName: {
+            ...tiersDisabledSite,
+            portal_name: false
+        }
+    }
+};
+
+export const offer = getOfferData({
+    tierId: basicSite.products[0]?.id
+});
+
+export const member = {
+    free: getMemberData({
+        name: 'Jamie Larson',
+        email: 'jamie@example.com',
+        firstname: 'Jamie',
+        subscriptions: [],
+        paid: false,
+        avatarImage: '',
+        subscribed: true
+    }),
+    paid: getMemberData({
+        paid: true,
+        subscriptions: [
+            getSubscriptionData({
+                status: 'active',
+                currency: 'USD',
+                interval: 'year',
+                amount: 5000,
+                cardLast4: '4242',
+                startDate: '2021-10-05T03:18:30.000Z',
+                currentPeriodEnd: '2022-10-05T03:18:30.000Z',
+                cancelAtPeriodEnd: false
+            })
+        ]
+    }),
+    complimentary: getMemberData({
+        paid: true,
+        subscriptions: []
+    }),
+    complimentaryWithSubscription: getMemberData({
+        paid: true,
+        subscriptions: [
+            getSubscriptionData({
+                amount: 0
+            })
+        ]
+    }),
+    preview: getMemberData({
+        paid: true,
+        subscriptions: [
+            getSubscriptionData({
+                amount: 1500,
+                startDate: '2019-05-01T11:42:40.000Z',
+                currentPeriodEnd: '2021-06-05T11:42:40.000Z'
+            })
+        ]
+    })
+};
+/* eslint-enable no-unused-vars*/
+
