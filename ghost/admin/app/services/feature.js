@@ -90,6 +90,9 @@ export default class FeatureService extends Service {
     @feature('tierName')
         tierName;
 
+     @feature('membersTableStatus')
+        membersTableStatus;
+
     _user = null;
 
     @computed('settings.labs')
