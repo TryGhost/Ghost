@@ -1849,8 +1849,16 @@ section.gh-ds h2 {
     padding-top: 31px;
 }
 
+.gh-nav-design-settings .gh-stack {
+    padding-bottom: 96px;
+}
+
 .gh-finishing-touches .gh-setting-desc {
     padding-right: 2rem;
+}
+
+.gh-finishing-touches .gh-nav-design .gh-setting-action {
+    margin-bottom: 12px;
 }
 
 .gh-finishing-touches .gh-browserpreview-previewcontainer {
