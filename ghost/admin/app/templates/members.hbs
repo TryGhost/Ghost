@@ -111,6 +111,9 @@
                         <thead>
                             <tr>
                                 <th>{{this.listHeader}}</th>
+                                {{#if (feature "membersTableStatus")}}
+                                    <th>Status</th>
+                                {{/if}}
                                 {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
                                     <th>Open rate</th>
                                 {{/if}}
