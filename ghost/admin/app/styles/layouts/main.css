@@ -1810,7 +1810,7 @@ section.gh-ds h2 {
 }
 
 .gh-finishing-touches {
-    background: #DFDFDF;
+    background: linear-gradient(315deg,#efefef,#fff);
     flex-direction: column;
 }
 
@@ -1821,7 +1821,7 @@ section.gh-ds h2 {
 .gh-finishing-touches header h1 {
     font-size: 4.1rem;
     letter-spacing: -0.025em;
-    color: rgb(21, 23, 26);
+    color: var(--black);
     margin: 0;
 }
 
@@ -1829,11 +1829,11 @@ section.gh-ds h2 {
     font-size: 1.9rem;
     line-height: 1.5em;
     margin: 0.5rem 0 2rem;
-    color: rgb(112, 123, 139);
+    color: var(--midgrey);
 }
 
 .gh-finishing-touches main {
-    background: #ffffff;
+    background: var(--white);
     box-shadow: 0 0 30px rgb(0 0 0 / 4%);
     width: calc(100% - 32px);
     height: calc(100% - 179px);
@@ -1868,7 +1868,7 @@ section.gh-ds h2 {
 }
 
 .gh-finishing-touches .gh-browserpreview-browser .tabs {
-    background: #fff;
+    background: var(--white);
 }
 
 .gh-finishing-touches .gh-browserpreview-browser .tabs div {
@@ -1883,7 +1883,7 @@ section.gh-ds h2 {
     align-items: center;
     height: 96px;
     margin-bottom: -24px;
-    background: #fff;
+    background: var(--white);
 }
 
 
@@ -1915,13 +1915,13 @@ section.gh-ds h2 {
 }
 
 .modal-content.gh-get-started .close svg {
-    fill: #fff;
+    fill: var(--white);
 }
 
 .gh-get-started-welcome {
     padding: 4rem 6rem 2rem 4rem;
     width: 66%;
-    background: #fff;
+    background: var(--white);
 }
 
 .gh-get-started-welcome header p:first-of-type {
@@ -1966,6 +1966,11 @@ section.gh-ds h2 {
     margin: 0 0 0.25rem;
     font-size: 1.5rem;
     font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-get-started-welcome footer a:hover {
+    color: var(--blackgrey);
 }
 
 .gh-get-started-welcome footer p {
