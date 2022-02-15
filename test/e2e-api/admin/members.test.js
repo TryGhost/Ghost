@@ -1,6 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyDate, anyString, anyArray} = matchers;
 
+const nock = require('nock');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -11,6 +12,8 @@ let agent;
 describe('Members API', function () {
     let request;
     before(async function () {
+        process.env.WEBHOOK_SECRET = 'baguette';
+        mockManager.setupStripe();
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await agent.loginAsOwner();
@@ -18,6 +21,7 @@ describe('Members API', function () {
 
     beforeEach(function () {
         mockManager.mockLabsEnabled('multipleProducts');
+        mockManager.mockStripe();
     });
 
     afterEach(function () {
@@ -413,8 +417,29 @@ describe('Members API', function () {
         should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
     });
 
-    it('Can add a subcription', async function () {
+    it.only('Can add a subcription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
+
+        const scope = nock('https://api.stripe.com')
+            .persist()
+            .get(/v1\/.*/)
+            .reply((uri, body) => {
+                console.log('nock request', uri, body);
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
+
+                if (!match) {
+                    return [500];
+                }
+
+                if (resource === 'customers') {
+                    return [200, {customer: 123}];
+                }
+
+                if (resource === 'subscriptions') {
+                    return [200, {subscription: 123}];
+                }
+            });
+
         await agent
             .post(`/members/${memberId}/subscriptions/`)
             .body({
@@ -425,5 +450,7 @@ describe('Members API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
+
+        scope.persist(false);
     });
 });
