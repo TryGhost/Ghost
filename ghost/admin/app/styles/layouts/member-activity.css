@@ -166,3 +166,33 @@
     height: 16px;
     width: 16px;
 }
+
+.gh-member-filter-search-trigger {
+    width: 240px;
+}
+
+.gh-member-filter-search-dropdown li {
+    height: 7rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-left: 17px;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-member-filter-search-dropdown li:last-child {
+    border-bottom: none;
+}
+
+.gh-member-filter-search-dropdown li strong {
+    color: var(--black);
+    display: inline-block;
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+}
+
+.gh-member-filter-search-dropdown li span {
+    font-weight: 400;
+    color: var(--middarkgrey);
+}
