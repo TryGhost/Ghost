@@ -49,6 +49,8 @@ function getIcon(event) {
     }
 
     if (event.type === 'subscription_event') {
+        icon = 'started-subscription';
+
         if (event.data.from_plan === null) {
             icon = 'started-subscription';
         }
@@ -56,8 +58,6 @@ function getIcon(event) {
         if (event.data.to_plan === null) {
             icon = 'canceled-subscription';
         }
-
-        icon = 'started-subscription';
     }
 
     if (event.type === 'email_opened_event') {
