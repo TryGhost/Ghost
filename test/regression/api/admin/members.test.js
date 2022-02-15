@@ -1,4 +1,5 @@
 const assert = require('assert');
+const nock = require('nock');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyString, anyArray, anyObjectId, anyEtag, anyUuid, anyErrorId, anyDate} = matchers;
 
@@ -20,19 +21,58 @@ const memberMatcherShallowIncludes = {
     labels: anyArray
 };
 
-describe('Members API', function () {
+describe('Members API without Stripe', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await agent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
         mockManager.mockLabsEnabled('members');
         mockManager.mockMail();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
+        mockManager.restore();
+    });
+
+    it('Add should fail when comped flag is passed in but Stripe is not enabled', async function () {
+        const newMember = {
+            email: 'memberTestAdd@test.com',
+            comped: true
+        };
+
+        await agent
+            .post(`members/`)
+            .body({members: [newMember]})
+            .expectStatus(422)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+});
+
+describe('Members API with Stripe', function () {
+    before(async function () {
+        mockManager.setupStripe();
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init('members');
+        await agent.loginAsOwner();
+    });
+
+    beforeEach(async function () {
+        mockManager.mockLabsEnabled('members');
+        mockManager.mockMail();
+        mockManager.mockStripe();
+    });
+
+    afterEach(async function () {
         mockManager.restore();
     });
 
@@ -191,59 +231,39 @@ describe('Members API', function () {
             });
     });
 
-    it('Add should fail when comped flag is passed in but Stripe is not enabled', async function () {
-        const newMember = {
-            email: 'memberTestAdd@test.com',
-            comped: true
-        };
+    it.only('Can delete a member without cancelling Stripe Subscription', async function () {
+        let subscriptionCanceled = false;
+        nock('https://api.stripe.com')
+            .persist()
+            .delete(/v1\/.*/)
+            .reply((uri) => {
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
-        await agent
-            .post(`members/`)
-            .body({members: [newMember]})
-            .expectStatus(422)
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
+                if (match && resource === 'subscriptions') {
+                    subscriptionCanceled = true;
+                    return [200, {
+                        id,
+                        status: 'canceled'
+                    }];
+                }
 
-    it('Can delete a member without cancelling Stripe Subscription', async function () {
-        const newMember = {
-            name: 'Member 2 Delete',
-            email: 'Member2Delete@test.com'
-        };
-
-        // @TODO: use a fixture member in the right state using fixtureManager.get('members', x)
-        // @TODO: instead of creating a new member as this wastes a request
-        const createdMember = await agent
-            .post(`members/`)
-            .body({members: [newMember]})
-            .expectStatus(201)
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                location: anyString
-            })
-            .matchBodySnapshot({
-                members: [
-                    memberMatcherNoIncludes
-                ]
-            })
-            .then(({body}) => {
-                return body.members[0];
+                return [500];
             });
 
+        // TODO This is wrong because it changes the state for teh rest of the tests
+        // We need to add a member via a fixture and then remove them OR work out how
+        // to reapply fixtures before each test
+        const memberToDelete = fixtureManager.get('members', 2);
+
         await agent
-            .delete(`members/${createdMember.id}/`)
+            .delete(`members/${memberToDelete.id}/`)
             .expectStatus(204)
             .matchHeaderSnapshot({
                 etag: anyEtag
             })
             .matchBodySnapshot();
-        // @TODO: assert side effect - stripe subscription is not cancelled
+
+        assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
     });
 
     it('Errors when fetching stats with unknown days param value', async function () {
