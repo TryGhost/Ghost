@@ -66,6 +66,12 @@ describe('Front-end members behaviour', function () {
                 .expect(400);
         });
 
+        it('should fail processing a webhook endpoint with stripe header', async function () {
+            await request.post('/members/webhooks/stripe')
+                .set('Stripe-Signature', 'test-invalid-signature')
+                .expect(401);
+        });
+
         it('should return no content for invalid token passed in session', async function () {
             await request.get('/members/api/session')
                 .expect(204);

@@ -1670,10 +1670,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.4.tgz#ae11560e16ca9438778a8e9e8034e4c6e7507f6d"
   integrity sha512-i1/6SAgfdLRoJX6OCAh7mNm50TzKbWM6hf5W6yGUSAz1M99y+7VypnTkGoy+0XPefS3OgjBTEThYWnz4aimcbQ==
 
-"@tryghost/express-test@0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.4.1.tgz#b409da2ba3e5fdca28ed25006eec432e1334b9e6"
-  integrity sha512-Uv8oZ4TbbOWz5LJzfRXiTVnhnUMwlSzNwPOtaRssH7dL0QvwvrZ4AIZg0ejUssyGXcek5jzTVzGt6sKytf2pWg==
+"@tryghost/express-test@0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.4.2.tgz#ca29050423d353631d11c01aeaf38767d0277e76"
+  integrity sha512-/97blrkjie14U53KQJsbg0SSO/XwmLXjL6c2VN7HmV+Mr2C9NQuvonbwI6BoAifsHjIcAKDpUA7TJ1bURiHxQg==
   dependencies:
     "@tryghost/jest-snapshot" "^0.3.1"
     cookiejar "^2.1.3"
