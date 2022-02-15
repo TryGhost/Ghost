@@ -37,7 +37,7 @@ function getIcon(event) {
     }
 
     if (event.type === 'payment_event') {
-        icon = 'made-a-payment';
+        icon = 'changed-subscription';
     }
 
     if (event.type === 'newsletter_event') {
