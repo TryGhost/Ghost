@@ -1,5 +1,3 @@
-const assert = require('assert');
-const nock = require('nock');
 const stripe = require('stripe');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 
