@@ -42,7 +42,10 @@ export default class MembersFilterValue extends Component {
     }
 
     @action
-    updateInputFilterValue(filterType, filterId) {
+    updateInputFilterValue(filterType, filterId, event) {
+        if (event.type === 'blur') {
+            this.filterValue = event.target.value;
+        }
         this.args.setFilterValue(filterType, filterId, this.filterValue);
     }
 
