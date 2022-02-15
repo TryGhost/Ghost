@@ -19,7 +19,7 @@ class OfferStatus extends ValueObject {
         return new OfferStatus(status);
     }
 
-    static InvalidOfferStatus = InvalidOfferStatus
+    static InvalidOfferStatus = InvalidOfferStatus;
 }
 
 module.exports = OfferStatus;

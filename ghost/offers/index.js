@@ -1,3 +1,6 @@
+/* eslint-disable max-lines */
+// @TODO: Reduce file length and remove the line above
+
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('./lib/domain/events/OfferCodeChange');
 const OfferCreatedEvent = require('./lib/domain/events/OfferCreated');

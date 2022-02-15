@@ -53,13 +53,13 @@ class MembersSSR {
         } = options;
 
         if (!getMembersApi) {
-            throw new IncorrectUsageError('Missing option getMembersApi');
+            throw new IncorrectUsageError({message: 'Missing option getMembersApi'});
         }
 
         this._getMembersApi = getMembersApi;
 
         if (!cookieKeys) {
-            throw new IncorrectUsageError('Missing option cookieKeys');
+            throw new IncorrectUsageError({message: 'Missing option cookieKeys'});
         }
 
         this.sessionCookieName = cookieName;
@@ -288,7 +288,9 @@ class MembersSSR {
  */
 module.exports = function create(options) {
     if (!options) {
-        throw new IncorrectUsageError('Must pass options');
+        throw new IncorrectUsageError({
+            message: 'Must pass options'
+        });
     }
     return new MembersSSR(options);
 };
