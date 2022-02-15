@@ -6,7 +6,6 @@
         @labels={{@filter.value}}
         @allowCreation={{false}}
         @allowEdit={{true}}
-        data-test-input=""
     />
 
 {{else if (eq @filter.type 'status')}}
@@ -18,6 +17,7 @@
             @optionLabelPath="label"
             @optionTargetPath="name"
             @update={{fn this.setFilterValue @filter.type @filter.id}}
+            data-test-select="members-filter-value"
         />
         {{svg-jar "arrow-down-small"}}
     </span>
@@ -31,6 +31,7 @@
         {{on "input" (fn this.setInputFilterValue @filter.type @filter.id)}}
         {{on "blur" (fn this.updateInputFilterValue @filter.type @filter.id)}}
         {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter.id)}}
+        data-test-input="members-filter-value"
     />
 
 {{else if (eq @filter.type 'email_opened_count')}}
@@ -42,6 +43,7 @@
         {{on "input" (fn this.setInputFilterValue @filter.type @filter.id)}}
         {{on "blur" (fn this.updateInputFilterValue @filter.type @filter.id)}}
         {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter.id)}}
+        data-test-input="members-filter-value"
     />
 
 {{else if (eq @filter.type 'email_open_rate')}}
@@ -55,6 +57,7 @@
             {{on "input" (fn this.setInputFilterValue @filter.type @filter.id)}}
             {{on "blur" (fn this.updateInputFilterValue @filter.type @filter.id)}}
             {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter.id)}}
+        data-test-input="members-filter-value"
         />
     </div>
 
@@ -67,6 +70,7 @@
             @optionLabelPath="label"
             @optionTargetPath="name"
             @update={{fn this.setFilterValue @filter.type @filter.id}}
+            data-test-select="members-filter-value"
         />
         {{svg-jar "arrow-down-small"}}
     </span>
@@ -80,9 +84,11 @@
             @optionLabelPath="label"
             @optionTargetPath="name"
             @update={{fn this.setFilterValue @filter.type @filter.id}}
+            data-test-select="members-filter-value"
         />
         {{svg-jar "arrow-down-small"}}
     </span>
+
 {{else if (eq @filter.type 'subscribed')}}
     <span class="gh-select">
         <OneWaySelect
@@ -92,9 +98,11 @@
             @optionLabelPath="label"
             @optionTargetPath="name"
             @update={{fn this.setFilterValue @filter.type @filter.id}}
+            data-test-select="members-filter-value"
         />
         {{svg-jar "arrow-down-small"}}
     </span>
+
 {{else}}
     <input
         type="text"

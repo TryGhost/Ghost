@@ -11,7 +11,7 @@ export default Factory.extend({
     email: faker.internet.email,
     status: 'free',
     subscribed: true,
-    createdAt() { return randomDate(); },
+    createdAt() { return moment(randomDate()).format('YYYY-MM-DD HH:mm:ss'); },
 
     free: trait({
         status: 'free'

@@ -1,8 +1,9 @@
 import faker from 'faker';
 import moment from 'moment';
+import nql from '@nexes/nql';
 import {Response} from 'ember-cli-mirage';
 import {extractFilterParam, paginateModelCollection} from '../utils';
-import {isEmpty} from '@ember/utils';
+import {underscore} from '@ember/string';
 
 export function mockMembersStats(server) {
     server.get('/members/stats/count', function (db, {queryParams}) {
@@ -73,23 +74,44 @@ export default function mockMembers(server) {
         page = +page || 1;
         limit = +limit || 15;
 
-        const labelFilter = extractFilterParam('label', filter);
+        let collection = members.all();
 
-        let collection = members.all().filter((member) => {
-            let matchesLabel = true;
-
-            if (!isEmpty(labelFilter)) {
-                matchesLabel = false;
-
-                labelFilter.forEach((slug) => {
-                    if (member.labels.models.find(l => l.slug === slug)) {
-                        matchesLabel = true;
+        if (filter) {
+            const nqlFilter = nql(filter, {
+                expansions: [
+                    {
+                        key: 'label',
+                        replacement: 'labels.slug'
                     }
-                });
-            }
+                ]
+            });
 
-            return matchesLabel;
-        });
+            console.log(nqlFilter.toJSON());
+
+            collection = collection.filter((member) => {
+                const serializedMember = {};
+
+                // mirage model keys match our main model keys so we need to transform
+                // camelCase to underscore to match the filter format
+                Object.keys(member.attrs).forEach((key) => {
+                    serializedMember[underscore(key)] = member.attrs[key];
+                });
+
+                // similar deal for associated label models
+                serializedMember.labels = [];
+                member.labels.models.forEach((label) => {
+                    const serializedLabel = {};
+                    Object.keys(label.attrs).forEach((key) => {
+                        serializedLabel[underscore(key)] = label.attrs[key];
+                    });
+                    serializedMember.labels.push(serializedLabel);
+                });
+
+                console.log({serializedMember});
+
+                return nqlFilter.queryJSON(serializedMember);
+            });
+        }
 
         if (search) {
             const query = search.toLowerCase();
