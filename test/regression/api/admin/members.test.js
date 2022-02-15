@@ -125,8 +125,8 @@ describe('Members API', function () {
                 .matchBodySnapshot({
                     members: new Array(8).fill(memberMatcherShallowIncludes)
                 })
-                .expect(({ body }) => {
-                    const { members } = body;
+                .expect(({body}) => {
+                    const {members} = body;
                     assert.equal(members[0].email_open_rate > members[1].email_open_rate, true, 'Expected the first member to have a greater open rate than the second.');
                 });
 
@@ -139,8 +139,8 @@ describe('Members API', function () {
                 .matchBodySnapshot({
                     members: new Array(8).fill(memberMatcherShallowIncludes)
                 })
-                .expect(({ body }) => {
-                    const { members } = body;
+                .expect(({body}) => {
+                    const {members} = body;
                     assert.equal(members[0].email_open_rate < members[1].email_open_rate, true, 'Expected the first member to have a smaller open rate than the second.');
                 });
         });
@@ -202,7 +202,7 @@ describe('Members API', function () {
 
             await agent
                 .put(`members/${paidMember.id}/`)
-                .body({ members: [memberChanged] })
+                .body({members: [memberChanged]})
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     etag: anyEtag
@@ -220,7 +220,7 @@ describe('Members API', function () {
 
             await agent
                 .post(`members/?send_email=true&email_type=lel`)
-                .body({ members: [newMember] })
+                .body({members: [newMember]})
                 .expectStatus(422)
                 .matchHeaderSnapshot({
                     etag: anyEtag
