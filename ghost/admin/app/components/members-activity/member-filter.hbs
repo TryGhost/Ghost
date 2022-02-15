@@ -11,12 +11,14 @@
         @search={{perform this.searchMembersTask}}
         @selected={{@selected}}
         @onChange={{@onChange}}
+        @triggerClass="gh-member-filter-search-trigger"
+        @dropdownClass="gh-member-filter-search-dropdown"
         @triggerComponent="gh-input-with-select/trigger"
         @placeholder="Search members"
         @extra={{hash showSearchMessage=false}}
         as |member|
     >
-        <strong>{{member.name}}</strong><br>
-        {{member.email}}
+        {{#if member.name}}<strong>{{member.name}}</strong>{{/if}}
+        <span>{{member.email}}</span>
     </PowerSelect>
 {{/if}}
