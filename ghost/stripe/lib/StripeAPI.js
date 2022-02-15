@@ -303,7 +303,7 @@ module.exports = class StripeAPI {
                 enabled_events: events
             });
             if (webhook.api_version !== STRIPE_API_VERSION) {
-                throw new VersionMismatchError('Webhook has incorrect api_version');
+                throw new VersionMismatchError({message: 'Webhook has incorrect api_version'});
             }
             debug(`updateWebhook(${id}, ${url}) -> Success`);
             return webhook;

@@ -120,14 +120,14 @@ module.exports = class MemberRepository {
         const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products']);
 
         if (memberData.products && memberData.products.length > 1) {
-            throw new errors.BadRequestError(tpl(messages.moreThanOneProduct));
+            throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
         }
 
         if (memberData.products) {
             for (const productData of memberData.products) {
                 const product = await this._productRepository.get(productData);
                 if (product.get('active') !== true) {
-                    throw new errors.BadRequestError(tpl(messages.tierArchived));
+                    throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
                 }
             }
         }
@@ -223,7 +223,7 @@ module.exports = class MemberRepository {
             const incomingProductIds = data.products.map(product => product.id);
 
             if (incomingProductIds.length > 1 && incomingProductIds.length > existingProductIds.length) {
-                throw new errors.BadRequestError(tpl(messages.moreThanOneProduct));
+                throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
             }
 
             productsToAdd = _.differenceWith(incomingProductIds, existingProductIds);
@@ -237,7 +237,7 @@ module.exports = class MemberRepository {
                 });
 
                 if (existingActiveSubscriptions.length) {
-                    throw new errors.BadRequestError(tpl(messages.existingSubscriptions));
+                    throw new errors.BadRequestError({message: tpl(messages.existingSubscriptions)});
                 }
             }
 
@@ -257,7 +257,7 @@ module.exports = class MemberRepository {
         for (const productId of productsToAdd) {
             const product = await this._productRepository.get({id: productId}, sharedOptions);
             if (product.get('active') !== true) {
-                throw new errors.BadRequestError(tpl(messages.tierArchived));
+                throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
             }
         }
 
@@ -512,7 +512,7 @@ module.exports = class MemberRepository {
 
     async linkStripeCustomer(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'link Stripe Customer'}));
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'link Stripe Customer'})});
         }
         const customer = await this._stripeAPIService.getCustomer(data.customer_id);
 
@@ -546,7 +546,7 @@ module.exports = class MemberRepository {
 
     async linkSubscription(data, options = {}) {
         if (!this._stripeAPIService.configured) {
-            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'link Stripe Subscription'}));
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'link Stripe Subscription'})});
         }
 
         if (!options.transacting) {
@@ -569,7 +569,7 @@ module.exports = class MemberRepository {
 
         if (!customer) {
             // Maybe just link the customer?
-            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound));
+            throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound)});
         }
 
         const subscription = await this._stripeAPIService.getSubscription(data.subscription.id);
@@ -802,7 +802,7 @@ module.exports = class MemberRepository {
 
     async getSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'get Stripe Subscription'}));
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'get Stripe Subscription'})});
         }
 
         const member = await this._Member.findOne({
@@ -816,7 +816,7 @@ module.exports = class MemberRepository {
         }).fetchOne(options);
 
         if (!subscription) {
-            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id}));
+            throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id})});
         }
 
         return subscription.toJSON();
@@ -824,7 +824,7 @@ module.exports = class MemberRepository {
 
     async cancelSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'update Stripe Subscription'}));
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'update Stripe Subscription'})});
         }
 
         let findQuery = null;
@@ -835,7 +835,7 @@ module.exports = class MemberRepository {
         }
 
         if (!findQuery) {
-            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound));
+            throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound)});
         }
 
         const member = await this._Member.findOne(findQuery);
@@ -847,7 +847,7 @@ module.exports = class MemberRepository {
         }).fetchOne(options);
 
         if (!subscription) {
-            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id}));
+            throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id})});
         }
 
         const updatedSubscription = await this._stripeAPIService.cancelSubscription(data.subscription.subscription_id);
@@ -860,7 +860,7 @@ module.exports = class MemberRepository {
 
     async updateSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'update Stripe Subscription'}));
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'update Stripe Subscription'})});
         }
 
         let findQuery = null;
@@ -871,7 +871,7 @@ module.exports = class MemberRepository {
         }
 
         if (!findQuery) {
-            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound));
+            throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound)});
         }
 
         const member = await this._Member.findOne(findQuery);
@@ -883,7 +883,7 @@ module.exports = class MemberRepository {
         }).fetchOne(options);
 
         if (!subscriptionModel) {
-            throw new errors.NotFoundError(tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id}));
+            throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound, {id: data.subscription.subscription_id})});
         }
 
         let updatedSubscription;
@@ -927,7 +927,7 @@ module.exports = class MemberRepository {
 
     async createSubscription(data, options) {
         if (!this._stripeAPIService.configured) {
-            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'create Stripe Subscription'}));
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'create Stripe Subscription'})});
         }
         const member = await this._Member.findOne({
             id: data.id
@@ -978,7 +978,7 @@ module.exports = class MemberRepository {
         }
 
         if (!this._stripeAPIService.configured) {
-            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'create Complimentary Subscription'}));
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'create Complimentary Subscription'})});
         }
         const member = await this._Member.findOne({
             id: data.id
@@ -1000,7 +1000,7 @@ module.exports = class MemberRepository {
         const defaultProduct = productPage && productPage.data && productPage.data[0] && productPage.data[0].toJSON();
 
         if (!defaultProduct) {
-            throw new errors.NotFoundError(tpl(messages.productNotFound));
+            throw new errors.NotFoundError({message: tpl(messages.productNotFound)});
         }
 
         const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
@@ -1098,7 +1098,7 @@ module.exports = class MemberRepository {
 
     async cancelComplimentarySubscription(data) {
         if (!this._stripeAPIService.configured) {
-            throw new errors.BadRequestError(tpl(messages.noStripeConnection, {action: 'cancel Complimentary Subscription'}));
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'cancel Complimentary Subscription'})});
         }
 
         const member = await this._Member.findOne({

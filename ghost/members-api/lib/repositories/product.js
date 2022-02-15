@@ -125,7 +125,7 @@ class ProductRepository {
             return await this._Product.findOne({slug: data.slug}, options);
         }
 
-        throw new NotFoundError('Missing id, slug, stripe_product_id or stripe_price_id from data');
+        throw new NotFoundError({message: 'Missing id, slug, stripe_product_id or stripe_price_id from data'});
     }
 
     /**
@@ -596,7 +596,7 @@ class ProductRepository {
     }
 
     async destroy() {
-        throw new MethodNotAllowedError('Cannot destroy products, yet...');
+        throw new MethodNotAllowedError({message: 'Cannot destroy products, yet...'});
     }
 }
 

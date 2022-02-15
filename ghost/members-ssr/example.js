@@ -52,7 +52,7 @@ const server = require('http').createServer(async (req, res) => {
 server.listen(0, '127.0.0.1', () => {
     const addressInfo = server.address();
     if (addressInfo === null || typeof addressInfo === 'string') {
-        throw new TypeError(`Unexpected return value from server.address(): ${addressInfo}`);
+        throw new TypeError(`Unexpected return value from server.address(): ${addressInfo}`); /* eslint-disable-line no-restricted-syntax */
     }
     const {address, port} = addressInfo;
     const url = `http://${address}:${port}`;

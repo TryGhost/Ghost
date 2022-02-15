@@ -31,7 +31,7 @@ class MagicLink {
      */
     constructor(options) {
         if (!options || !options.transporter || !options.tokenProvider || !options.getSigninURL) {
-            throw new IncorrectUsageError('Missing options. Expects {transporter, tokenProvider, getSigninURL}');
+            throw new IncorrectUsageError({message: 'Missing options. Expects {transporter, tokenProvider, getSigninURL}'});
         }
         this.transporter = options.transporter;
         this.tokenProvider = options.tokenProvider;

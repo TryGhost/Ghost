@@ -43,6 +43,7 @@ module.exports = class JWTTokenProvider {
         });
 
         if (!claims || typeof claims === 'string') {
+            // @TODO: throw a detailed error message here
             throw new UnauthorizedError();
         }
 

@@ -88,7 +88,7 @@ class AnalyticEvent {
         } else if (typeof data.memberId === 'string') {
             memberId = new ObjectID(data.memberId);
         } else {
-            throw new errors.IncorrectUsageError(tpl(messages.missingMemberId));
+            throw new errors.IncorrectUsageError({mesage: tpl(messages.missingMemberId)});
         }
 
         let entryId;
@@ -102,19 +102,19 @@ class AnalyticEvent {
 
         const name = data.name;
         if (typeof name !== 'string') {
-            throw new errors.IncorrectUsageError(tpl(messages.invalidEventName));
+            throw new errors.IncorrectUsageError({message: tpl(messages.invalidEventName)});
         }
 
         const timestamp = data.timestamp || new Date();
 
         const sourceUrl = data.sourceUrl;
         if (!sourceUrl) {
-            throw new errors.IncorrectUsageError(tpl(messages.missingSourceUrl));
+            throw new errors.IncorrectUsageError({message: tpl(messages.missingSourceUrl)});
         }
 
         const memberStatus = data.memberStatus;
         if (memberStatus !== 'free' && memberStatus !== 'paid' && memberStatus !== 'comped') {
-            throw new errors.IncorrectUsageError(tpl(messages.invalidMemberStatus));
+            throw new errors.IncorrectUsageError({message: tpl(messages.invalidMemberStatus)});
         }
 
         const metadata = data.metadata || null;
