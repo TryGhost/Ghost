@@ -410,6 +410,8 @@ export default class KoenigEditor extends Component {
             if (this._cleanupScheduled) {
                 run.schedule('afterRender', this, this._cleanupTask.perform);
             }
+
+            this._setExpandoProperty(editor);
         });
 
         editor.postDidChange(() => {
