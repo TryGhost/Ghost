@@ -23,6 +23,10 @@ const mockMail = () => {
 };
 
 const mockStripe = () => {
+    nock.disableNetConnect();
+};
+
+const setupStripe = () => {
     mocks.settings = sinon.stub(settingsCache, 'get').callsFake(function (key, ...args) {
         if (key === 'stripe_connect_secret_key') {
             return 'sk_test_blah';
@@ -35,7 +39,6 @@ const mockStripe = () => {
         }
         return settingsCache.get.wrappedMethod.call(settingsCache, key, ...args);
     });
-    nock.disableNetConnect();
 };
 
 const mockLabsEnabled = (flag, alpha = true) => {
@@ -112,6 +115,7 @@ const restore = () => {
 
 module.exports = {
     mockMail,
+    setupStripe,
     mockStripe,
     mockLabsEnabled,
     mockLabsDisabled,
