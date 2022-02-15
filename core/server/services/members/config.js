@@ -134,44 +134,18 @@ class MembersConfigProvider {
         return this.getActiveStripeKeys() !== null;
     }
 
-    getStripeUrlConfig() {
-        const siteUrl = this._urlUtils.getSiteUrl();
-
-        const checkoutSuccessUrl = new URL(siteUrl);
-        checkoutSuccessUrl.searchParams.set('stripe', 'success');
-        const checkoutCancelUrl = new URL(siteUrl);
-        checkoutCancelUrl.searchParams.set('stripe', 'cancel');
-
-        const billingSuccessUrl = new URL(siteUrl);
-        billingSuccessUrl.searchParams.set('stripe', 'billing-update-success');
-        const billingCancelUrl = new URL(siteUrl);
-        billingCancelUrl.searchParams.set('stripe', 'billing-update-cancel');
-
-        return {
-            checkoutSuccess: checkoutSuccessUrl.href,
-            checkoutCancel: checkoutCancelUrl.href,
-            billingSuccess: billingSuccessUrl.href,
-            billingCancel: billingCancelUrl.href
-        };
-    }
-
     getStripePaymentConfig() {
         if (!this.isStripeConnected()) {
             return null;
         }
 
         const stripeApiKeys = this.getActiveStripeKeys();
-        const urls = this.getStripeUrlConfig();
 
         if (!stripeApiKeys) {
             return null;
         }
 
         return {
-            checkoutSuccessUrl: urls.checkoutSuccess,
-            checkoutCancelUrl: urls.checkoutCancel,
-            billingSuccessUrl: urls.billingSuccess,
-            billingCancelUrl: urls.billingCancel,
             product: {
                 name: this._settingsCache.get('stripe_product_name')
             },
