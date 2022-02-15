@@ -6,9 +6,20 @@ These files are used throughout our tests to mock themes in various states.
 The casper fixture is a partial copy of the content/themes/casper folder.
 It should not include any files that aren't needed to run the theme.
 
-To update it, make sure you are in side this folder (the fixtures/themes directory) and run:
+To update it:
 
-`rsync -rv --exclude '.git*' --exclude 'assets/css*' --exclude 'assets/js*' --exclude 'gulpfile.js' --exclude 'yarn.lock' --exlcude 'README.md' ../../../../content/themes/casper .`
+1. Ensure your `content/themes/casper` folder is on the latest released version e.g.
+
+- Run `yarn main`
+- `cd content/themes/casper`
+- `git log -20` - find the latest tag
+- `git checkout vx.y.z` - checkout the latest tag
+
+2. Ensure you are in side this folder (the fixtures/themes directory), remove casper entirely and then copy it across fresh:
+
+- `cd tests/utils/fixtures/themes`
+- `rm -rf casper`
+- `rsync -rv --exclude '.git*' --exclude 'assets/css*' --exclude 'assets/js*' --exclude 'gulpfile.js' --exclude 'yarn.lock' --exclude 'README.md' ../../../../content/themes/casper .`
 
 ### Modifying theme fixtures
 When a new rule is introduced in gscan one of these fixture files might break and you'll have to update a "zip" which isn't as easy as opening a text editor... It could become that one day but for now here are some commands to help out with the edit process
