@@ -5,7 +5,7 @@ const {isEqual} = require('lodash');
 */
 class ValueObject {
     /** @type {{value: T}} */
-    props
+    props;
 
     /** @type T */
     get value() {

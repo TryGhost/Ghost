@@ -83,7 +83,7 @@ module.exports = class MembersCSVImporter {
         const pathExists = await fs.pathExists(outputFilePath);
 
         if (pathExists) {
-            throw new errors.DataImportError(tpl(messages.filenameCollision));
+            throw new errors.DataImportError({message: tpl(messages.filenameCollision)});
         }
 
         const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
@@ -115,7 +115,7 @@ module.exports = class MembersCSVImporter {
         const job = await this.getJob(id);
 
         if (job.status === 'complete') {
-            throw new errors.BadRequestError(tpl(messages.jobAlreadyComplete));
+            throw new errors.BadRequestError({message: tpl(messages.jobAlreadyComplete)});
         }
 
         const rows = membersCSV.parse(job.filename);

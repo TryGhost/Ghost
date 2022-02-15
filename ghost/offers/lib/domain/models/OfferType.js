@@ -19,11 +19,11 @@ class OfferType extends ValueObject {
         return new OfferType(type);
     }
 
-    static InvalidOfferType = InvalidOfferType
+    static InvalidOfferType = InvalidOfferType;
 
-    static Percentage = new OfferType('percent')
+    static Percentage = new OfferType('percent');
 
-    static Fixed = new OfferType('fixed')
+    static Fixed = new OfferType('fixed');
 }
 
 module.exports = OfferType;
