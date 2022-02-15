@@ -35,7 +35,8 @@
                 type="button"
                 title="Heading Two"
                 class="dib dim-lite link h9 w9 nudge-top--1"
-                {{action "toggleHeaderSection" "h3"}}
+                {{action "_toggleHeaderSection" "h3"}}
+                data-test-button="toolbar-h3"
             >
                 {{svg-jar "koenig/kg-heading-2" class=(concat (if this.activeSectionTagNames.isH3 "fill-green-l2" "fill-white") " w4 h4")}}
             </button>
