@@ -204,6 +204,30 @@ describe('Match helper', function () {
             }, hash);
         });
 
+        describe('Explicit Greater Or Equal To', function () {
+            runTests({
+                // String to string comparison
+                '{{match string ">=" "Hello world"}}': 'true',
+                '{{match "b" ">=" "a"}}': 'true',
+                '{{match "b" ">=" "b"}}': 'true',
+                '{{match "a" ">=" "b"}}': 'false',
+                '{{match "a" ">=" "3"}}': 'true',
+
+                // String to number comparisons
+                '{{match "5" ">=" 3}}': 'true',
+                '{{match "3" ">=" 3}}': 'true',
+                '{{match "3" ">=" 5}}': 'false',
+
+                '{{match "hello" ">=" 5}}': 'false',
+                '{{match 5 ">=" "hello"}}': 'false',
+
+                // Number to Number comparison
+                '{{match zero ">=" 1}}': 'false',
+                '{{match one ">=" 0}}': 'true',
+                '{{match zero ">=" 0}}': 'true'
+            }, hash);
+        });
+
         // SafeStrings represent the original value as an object for example:
         // SafeString { string: true } vs SafeString { string: 'true' }
         // allows us to know if the original value was a boolean or a string
