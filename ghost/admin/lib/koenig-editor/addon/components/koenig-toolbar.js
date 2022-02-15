@@ -117,7 +117,9 @@ export default class KoenigToolbar extends Component {
     }
 
     @action
-    _toggleMarkup(markupName) {
+    _toggleMarkup(markupName, event) {
+        event?.preventDefault();
+
         if (markupName === 'em' && this.activeMarkupTagNames.isI) {
             markupName = 'i';
         }
@@ -126,7 +128,9 @@ export default class KoenigToolbar extends Component {
     }
 
     @action
-    toggleQuoteSection() {
+    toggleQuoteSection(event) {
+        event?.preventDefault();
+
         let sectionName = 'blockquote';
 
         if (this.activeSectionTagNames.isBlockquote) {
@@ -143,7 +147,9 @@ export default class KoenigToolbar extends Component {
     }
 
     @action
-    _toggleHeaderSection(headingTagName) {
+    _toggleHeaderSection(headingTagName, event) {
+        event?.preventDefault();
+
         let range = this.editorRange;
         this.editor.run((postEditor) => {
             this.toggleHeaderSection(headingTagName, postEditor, {force: true});
@@ -152,7 +158,9 @@ export default class KoenigToolbar extends Component {
     }
 
     @action
-    _editLink() {
+    _editLink(event) {
+        event?.preventDefault();
+
         this.editLink(this.editorRange);
     }
 

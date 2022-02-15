@@ -4,7 +4,7 @@
             type="button"
             title="Bold"
             class="dib dim-lite link h9 w9 nudge-top--1"
-            {{action "_toggleMarkup" "strong"}}
+            {{on "click" (fn this._toggleMarkup "strong")}}
         >
             {{svg-jar "koenig/kg-bold" class=(concat (if this.activeMarkupTagNames.isStrong "fill-green-l2" "fill-white") " w4 h4")}}
         </button>
@@ -14,7 +14,7 @@
             type="button"
             title="Italic"
             class="dib dim-lite link h9 w9 nudge-top--1"
-            {{action "_toggleMarkup" "em"}}
+            {{on "click" (fn this._toggleMarkup "em")}}
         >
             {{svg-jar "koenig/kg-italic" class=(concat (if (or this.activeMarkupTagNames.isEm this.activeMarkupTagNames.isI) "fill-green-l2" "fill-white") " w4 h4")}}
         </button>
@@ -25,7 +25,7 @@
                 type="button"
                 title="Heading One"
                 class="dib dim-lite link h9 w9 nudge-top--1"
-                {{action "_toggleHeaderSection" "h2"}}
+                {{on "click" (fn this._toggleHeaderSection "h2")}}
             >
                 {{svg-jar "koenig/kg-heading-1" class=(concat (if this.activeSectionTagNames.isH2 "fill-green-l2" "fill-white") " w4 h4")}}
             </button>
@@ -35,7 +35,7 @@
                 type="button"
                 title="Heading Two"
                 class="dib dim-lite link h9 w9 nudge-top--1"
-                {{action "_toggleHeaderSection" "h3"}}
+                {{on "click" (fn this._toggleHeaderSection "h3")}}
                 data-test-button="toolbar-h3"
             >
                 {{svg-jar "koenig/kg-heading-2" class=(concat (if this.activeSectionTagNames.isH3 "fill-green-l2" "fill-white") " w4 h4")}}
@@ -51,7 +51,7 @@
                 type="button"
                 title="Quote"
                 class="dib dim-lite link h9 w9 nudge-top--1"
-                {{action "toggleQuoteSection"}}
+                {{on "click" this.toggleQuoteSection}}
             >
                 {{#if this.activeSectionTagNames.isBlockquote}}
                     {{svg-jar "koenig/kg-quote-1" class="fill-green w4 h4"}}
@@ -68,7 +68,7 @@
             type="button"
             title="Link"
             class="dib dim-lite link h9 w9 nudge-top--1"
-            {{action "_editLink"}}
+            {{on "click" this._editLink}}
         >
             {{svg-jar "koenig/kg-link" class=(concat (if this.activeMarkupTagNames.isA "fill-green-l2" "fill-white") " w4 h4")}}
         </button>
