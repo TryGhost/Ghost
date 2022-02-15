@@ -10,16 +10,17 @@
         {{!-- NOTE: re-using ember-power-select-options styles --}}
         <ul class="ember-power-select-options" role="listbox">
             {{#each this.eventTypes as |type idx|}}
-                <li class="ember-power-select-option {{if type.isSelected "selected"}}">
-                    <label for="type-{{idx}}">
-                        <span>
-                            <input type="checkbox" checked={{type.isSelected}} id="type-{{idx}}" name="eventTypes" {{on "input" (fn this.toggleEventType type.event)}}>
-                            {{svg-jar type.icon class="gh-member-activity-actions-icon"}}
-                            {{type.name}}
-                        </span>
-                        {{#if type.isSelected}}
-                            {{svg-jar "selected" class="gh-member-activity-actions-tick"}}
-                        {{/if}}
+                <li class="form-group ember-power-select-option mb0 for-checkbox">
+                    <label class="checkbox" for="type-{{idx}}">
+                        <input
+                            type="checkbox"
+                            checked={{type.isSelected}}
+                            id="type-{{idx}}"
+                            name="eventTypes"
+                            class="gh-input post-settings-featured"
+                            {{on "input" (fn this.toggleEventType type.event)}}>
+                        <span class="input-toggle-component"></span>
+                        <p>{{type.name}}</p>
                     </label>
                 </li>
             {{/each}}

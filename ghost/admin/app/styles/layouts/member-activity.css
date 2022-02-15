@@ -88,10 +88,10 @@
 }
 
 .gh-member-activity-actions-menu {
-    top: calc(100% + 16px);
+    top: auto;
     left: auto;
-    right: 10px;
     padding: 2rem;
+    margin-top: 8px;
 }
 
 .gh-member-activity-actions-menu h3 {
@@ -110,19 +110,32 @@
     padding: 4px 0;
 }
 
+.gh-member-activity-actions-menu .ember-power-select-option:first-child {
+    padding-top: 0;
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option:last-child {
+    padding-bottom: 0;
+}
+
 .gh-member-activity-actions-menu .ember-power-select-option label {
-    padding: 0.75rem 2rem 0.75rem 0;
+    padding: 0.25rem 2rem 0.25rem 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     color: var(--midlightgrey);
     cursor: pointer;
 }
 
-.gh-member-activity-actions-menu .ember-power-select-option label span {
+.gh-member-activity-actions-menu .ember-power-select-option label p {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    color: #394047;
+    font-weight: 500;
+    font-size: 1.4rem;
+    padding: 0.125rem 6rem 0 0.25rem;
+    margin: 0;
 }
 
 .gh-member-activity-actions-menu .ember-power-select-option input {
