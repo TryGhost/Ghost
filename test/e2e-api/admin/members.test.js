@@ -412,4 +412,18 @@ describe('Members API', function () {
         should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
         should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
     });
+
+    it('Can add a subcription', async function () {
+        const memberId = testUtils.DataGenerator.Content.members[0].id;
+        await agent
+            .post(`/members/${memberId}/subscriptions/`)
+            .body({
+                stripe_price_id: testUtils.DataGenerator.Content.stripe_prices[0].id
+            })
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 });
