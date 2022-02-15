@@ -1,5 +1,5 @@
 import hbs from 'htmlbars-inline-precompile';
-import {TESTING_EXPANDO_PROPERTY, getBlankMobileDoc} from 'koenig-editor/components/koenig-editor';
+import {TESTING_EXPANDO_PROPERTY} from 'koenig-editor/components/koenig-editor';
 import {click, find, render} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
