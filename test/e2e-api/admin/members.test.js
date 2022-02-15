@@ -420,25 +420,27 @@ describe('Members API', function () {
     it.only('Can add a subcription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
 
-        const scope = nock('https://api.stripe.com')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri, body) => {
-                console.log('nock request', uri, body);
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
+        // const scope = nock('https://api.stripe.com')
+        //     .persist()
+        //     .get(/v1\/.*/)
+        //     .reply((uri, body) => {
+        //         console.log('nock request', uri, body);
+        //         const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
-                if (!match) {
-                    return [500];
-                }
+        //         if (!match) {
+        //             return [500];
+        //         }
 
-                if (resource === 'customers') {
-                    return [200, {customer: 123}];
-                }
+        //         if (resource === 'customers') {
+        //             return [200, {customer: 123}];
+        //         }
 
-                if (resource === 'subscriptions') {
-                    return [200, {subscription: 123}];
-                }
-            });
+        //         if (resource === 'subscriptions') {
+        //             return [200, {subscription: 123}];
+        //         }
+        //     });
+
+        nock.recorder.rec();
 
         await agent
             .post(`/members/${memberId}/subscriptions/`)
@@ -451,6 +453,6 @@ describe('Members API', function () {
                 etag: anyEtag
             });
 
-        scope.persist(false);
+        // scope.persist(false);
     });
 });
