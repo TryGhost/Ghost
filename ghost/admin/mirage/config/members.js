@@ -86,8 +86,6 @@ export default function mockMembers(server) {
                 ]
             });
 
-            console.log(nqlFilter.toJSON());
-
             collection = collection.filter((member) => {
                 const serializedMember = {};
 
@@ -106,8 +104,6 @@ export default function mockMembers(server) {
                     });
                     serializedMember.labels.push(serializedLabel);
                 });
-
-                console.log({serializedMember});
 
                 return nqlFilter.queryJSON(serializedMember);
             });
