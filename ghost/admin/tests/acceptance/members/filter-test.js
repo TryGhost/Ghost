@@ -24,6 +24,7 @@ describe('Acceptance: Members filtering', function () {
         await visit('/members');
 
         // members are listed
+        expect(find('[data-test-table="members"]')).to.exist;
         expect(findAll('[data-test-list="members-list-item"]').length, '# of member rows').to.equal(7);
 
         // export is available
