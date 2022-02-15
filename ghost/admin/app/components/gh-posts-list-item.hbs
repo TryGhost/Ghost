@@ -49,7 +49,7 @@
                     {{#if (or @post.email @post.willEmail)}}
                         {{#if (eq @post.email.status "submitted")}}
                             <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
-                                <span class="darkgrey fw5 gh-content-email-stats">{{@post.email.emailCount}}</span>
+                                <span class="darkgrey fw5 gh-content-email-stats">{{format-number @post.email.emailCount}}</span>
                                 <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
                             </span>
                         {{/if}}
@@ -62,7 +62,7 @@
                     <div class="flex">
                         <span class="darkgrey fw5 gh-content-email-stats">
                             {{#if this.isHovered}}
-                                {{@post.email.openedCount}}
+                                {{format-number @post.email.openedCount}}
                             {{else}}
                                 {{@post.email.openRate}}%&nbsp;
                             {{/if}}
