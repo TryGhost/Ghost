@@ -6,8 +6,41 @@ const messages = {
 };
 
 // @TODO Refactor to a class w/ constructor
+
+/**
+ * @typedef {object} StripeURLConfig
+ * @prop {string} checkoutSessionSuccessUrl
+ * @prop {string} checkoutSessionCancelUrl
+ * @prop {string} checkoutSetupSessionSuccessUrl
+ * @prop {string} checkoutSetupSessionCancelUrl
+ */
+
 module.exports = {
     getConfig(settings, config, urlUtils) {
+        /**
+         * @returns {StripeURLConfig}
+         */
+        function getStripeUrlConfig() {
+            const siteUrl = urlUtils.getSiteUrl();
+
+            const checkoutSuccessUrl = new URL(siteUrl);
+            checkoutSuccessUrl.searchParams.set('stripe', 'success');
+            const checkoutCancelUrl = new URL(siteUrl);
+            checkoutCancelUrl.searchParams.set('stripe', 'cancel');
+
+            const billingSuccessUrl = new URL(siteUrl);
+            billingSuccessUrl.searchParams.set('stripe', 'billing-update-success');
+            const billingCancelUrl = new URL(siteUrl);
+            billingCancelUrl.searchParams.set('stripe', 'billing-update-cancel');
+
+            return {
+                checkoutSessionSuccessUrl: checkoutSuccessUrl.href,
+                checkoutSessionCancelUrl: checkoutCancelUrl.href,
+                checkoutSetupSessionSuccessUrl: billingSuccessUrl.href,
+                checkoutSetupSessionCancelUrl: billingCancelUrl.href
+            };
+        }
+
         /**
          * @param {'direct' | 'connect'} type - The "type" of keys to fetch from settings
          * @returns {{publicKey: string, secretKey: string} | null}
@@ -61,9 +94,11 @@ module.exports = {
 
         const webhookHandlerUrl = new URL('members/webhooks/stripe/', urlUtils.getSiteUrl());
 
+        const urls = getStripeUrlConfig();
+
         return {
-            secretKey: keys.secretKey,
-            publicKey: keys.publicKey,
+            ...keys,
+            ...urls,
             enablePromoCodes: config.get('enableStripePromoCodes'),
             webhookSecret: webhookSecret,
             webhookHandlerUrl: webhookHandlerUrl.href
