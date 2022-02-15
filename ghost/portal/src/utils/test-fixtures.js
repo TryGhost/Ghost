@@ -1,13 +1,10 @@
 /* eslint-disable no-unused-vars*/
 import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getTestSite} from './fixtures-generator';
 
-export const testSite = getTestSite();
-
-const products = [
+const singleSiteTier = [
     getFreeProduct({
         name: 'Free',
-        // description: 'Free tier description which is actually a pretty long description',
-        description: '',
+        description: 'Free tier description',
         numOfBenefits: 0
     })
     ,
@@ -25,37 +22,39 @@ const products = [
         }),
         numOfBenefits: 2
     })
-    // ,
-    // getProductData({
-    //     name: 'Silver',
-    //     description: 'Access to all members articles and weekly podcast',
-    //     monthlyPrice: getPriceData({
-    //         interval: 'month',
-    //         amount: 1200
-    //     }),
-    //     yearlyPrice: getPriceData({
-    //         interval: 'year',
-    //         amount: 12000
-    //     }),
-    //     numOfBenefits: 3
-    // })
-
-    // getProductData({
-    //     name: 'Friends of the Blueprint',
-    //     description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
-    //     monthlyPrice: getPriceData({
-    //         interval: 'month',
-    //         amount: 18000
-    //     }),
-    //     yearlyPrice: getPriceData({
-    //         interval: 'year',
-    //         amount: 17000
-    //     }),
-    //     numOfBenefits: 4
-    // })
 ];
 
-const basicSite = getSiteData({
+const multipleSiteTiers = [
+    ...singleSiteTier,
+    getProductData({
+        name: 'Silver',
+        description: 'Access to all members articles and weekly podcast',
+        monthlyPrice: getPriceData({
+            interval: 'month',
+            amount: 1200
+        }),
+        yearlyPrice: getPriceData({
+            interval: 'year',
+            amount: 12000
+        }),
+        numOfBenefits: 3
+    }),
+    getProductData({
+        name: 'Friends of the Blueprint',
+        description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
+        monthlyPrice: getPriceData({
+            interval: 'month',
+            amount: 18000
+        }),
+        yearlyPrice: getPriceData({
+            interval: 'year',
+            amount: 17000
+        }),
+        numOfBenefits: 4
+    })
+];
+
+const baseSingleTierSite = getSiteData({
     title: 'The Blueprint',
     description: 'Thoughts, stories and ideas.',
     logo: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
@@ -67,16 +66,8 @@ const basicSite = getSiteData({
         yearly: 150000,
         currency: 'USD'
     },
-
-    // Simulate pre-multiple-tiers state:
-    // products: [products.find(d => d.type === 'paid')],
-    // portalProducts: null,
-
-    // Simulate multiple-tiers state:
-    products,
-    portalProducts: products.map(p => p.id),
-
-    //
+    products: singleSiteTier,
+    portalProducts: singleSiteTier.filter(p => p.type === 'paid').map(p => p.id),
     allowSelfSignup: true,
     membersSignupAccess: 'all',
     freePriceName: 'Free',
@@ -91,28 +82,61 @@ const basicSite = getSiteData({
     membersSupportAddress: 'support@example.com'
 });
 
-const tiersDisabledSite = {
-    ...basicSite,
-    portal_products: undefined,
-    products: [products.find(d => d.type === 'paid')]
-};
+const baseMultiTierSite = getSiteData({
+    title: 'The Blueprint',
+    description: 'Thoughts, stories and ideas.',
+    logo: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
+    icon: 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
+    accentColor: '#45C32E',
+    url: 'https://portal.localhost',
+    plans: {
+        monthly: 5000,
+        yearly: 150000,
+        currency: 'USD'
+    },
+    products: multipleSiteTiers,
+    portalProducts: multipleSiteTiers.filter(p => p.type === 'paid').map(p => p.id),
+    allowSelfSignup: true,
+    membersSignupAccess: 'all',
+    freePriceName: 'Free',
+    freePriceDescription: 'Free preview',
+    isStripeConfigured: true,
+    portalButton: true,
+    portalName: true,
+    portalPlans: ['free', 'monthly', 'yearly'],
+    portalButtonIcon: 'icon-1',
+    portalButtonSignupText: 'Subscribe now',
+    portalButtonStyle: 'icon-and-text',
+    membersSupportAddress: 'support@example.com'
+});
 
 export const site = {
-    tiersDisabled: {
-        basic: tiersDisabledSite,
+    singleTier: {
+        basic: baseSingleTierSite,
         onlyFreePlan: {
-            ...tiersDisabledSite,
-            portal_plans: 'free'
+            ...baseSingleTierSite,
+            portal_plans: ['free']
         },
         withoutName: {
-            ...tiersDisabledSite,
+            ...baseSingleTierSite,
+            portal_name: false
+        }
+    },
+    multipleTiers: {
+        basic: baseMultiTierSite,
+        onlyFreePlan: {
+            ...baseMultiTierSite,
+            portal_plans: ['free']
+        },
+        withoutName: {
+            ...baseMultiTierSite,
             portal_name: false
         }
     }
 };
 
 export const offer = getOfferData({
-    tierId: basicSite.products[0]?.id
+    tierId: baseSingleTierSite.products[0]?.id
 });
 
 export const member = {
