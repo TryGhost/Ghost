@@ -21,24 +21,24 @@ const memberMatcherShallowIncludes = {
     labels: anyArray
 };
 
-describe('Members API', function() {
-    describe('without Stripe', function() {
-        before(async function() {
+describe('Members API', function () {
+    describe('without Stripe', function () {
+        before(async function () {
             agent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('members');
             await agent.loginAsOwner();
         });
 
-        beforeEach(function() {
+        beforeEach(function () {
             mockManager.mockLabsEnabled('members');
             mockManager.mockMail();
         });
 
-        afterEach(function() {
+        afterEach(function () {
             mockManager.restore();
         });
 
-        it('Add should fail when comped flag is passed in but Stripe is not enabled', async function() {
+        it('Add should fail when comped flag is passed in but Stripe is not enabled', async function () {
             const newMember = {
                 email: 'memberTestAdd@test.com',
                 comped: true
@@ -46,7 +46,7 @@ describe('Members API', function() {
 
             await agent
                 .post(`members/`)
-                .body({ members: [newMember] })
+                .body({members: [newMember]})
                 .expectStatus(422)
                 .matchHeaderSnapshot({
                     etag: anyEtag
@@ -59,25 +59,25 @@ describe('Members API', function() {
         });
     });
 
-    describe('Members API with Stripe', function() {
-        before(async function() {
+    describe('Members API with Stripe', function () {
+        before(async function () {
             mockManager.setupStripe();
             agent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('members');
             await agent.loginAsOwner();
         });
 
-        beforeEach(function() {
+        beforeEach(function () {
             mockManager.mockLabsEnabled('members');
             mockManager.mockMail();
             mockManager.mockStripe();
         });
 
-        afterEach(function() {
+        afterEach(function () {
             mockManager.restore();
         });
 
-        it('Can add and send a signup confirmation email', async function() {
+        it('Can add and send a signup confirmation email', async function () {
             const member = {
                 name: 'Send Me Confirmation',
                 email: 'member_getting_confirmation@test.com',
@@ -89,9 +89,9 @@ describe('Members API', function() {
                 email_type: 'signup'
             };
 
-            const { body } = await agent
+            const {body} = await agent
                 .post('/members/?send_email=true&email_type=signup')
-                .body({ members: [member] })
+                .body({members: [member]})
                 .expectStatus(201)
                 .matchBodySnapshot({
                     members: [memberMatcherNoIncludes]
@@ -115,7 +115,7 @@ describe('Members API', function() {
                 .expectStatus(204);
         });
 
-        it('Can order by email_open_rate', async function() {
+        it('Can order by email_open_rate', async function () {
             await agent
                 .get('members/?order=email_open_rate%20desc')
                 .expectStatus(200)
@@ -145,7 +145,7 @@ describe('Members API', function() {
                 });
         });
 
-        it('Sarch by case-insensitive name egg receives member with name Mr Egg', async function() {
+        it('Sarch by case-insensitive name egg receives member with name Mr Egg', async function () {
             await agent
                 .get('members/?search=egg')
                 .expectStatus(200)
@@ -157,7 +157,7 @@ describe('Members API', function() {
                 });
         });
 
-        it('Search by case-insensitive email MEMBER2 receives member with email member2@test.com', async function() {
+        it('Search by case-insensitive email MEMBER2 receives member with email member2@test.com', async function () {
             await agent
                 .get('members/?search=MEMBER2')
                 .expectStatus(200)
@@ -169,7 +169,7 @@ describe('Members API', function() {
                 });
         });
 
-        it('Sarch for paid members retrieves member with email paid@test.com', async function() {
+        it('Sarch for paid members retrieves member with email paid@test.com', async function () {
             await agent
                 .get('members/?search=egon&paid=true')
                 .expectStatus(200)
@@ -181,7 +181,7 @@ describe('Members API', function() {
                 });
         });
 
-        it('Search for non existing member returns empty result set', async function() {
+        it('Search for non existing member returns empty result set', async function () {
             await agent
                 .get('members/?search=do_not_exist')
                 .expectStatus(200)
@@ -193,7 +193,7 @@ describe('Members API', function() {
                 });
         });
 
-        it('Can update a member with subscription included, change name to "Updated name"', async function() {
+        it('Can update a member with subscription included, change name to "Updated name"', async function () {
             const memberChanged = {
                 name: 'Updated name'
             };
@@ -212,7 +212,7 @@ describe('Members API', function() {
                 });
         });
 
-        it('Add should fail when passing incorrect email_type query parameter', async function() {
+        it('Add should fail when passing incorrect email_type query parameter', async function () {
             const newMember = {
                 name: 'test',
                 email: 'memberTestAdd@test.com'
@@ -232,7 +232,7 @@ describe('Members API', function() {
                 });
         });
 
-        it('Can delete a member without cancelling Stripe Subscription', async function() {
+        it('Can delete a member without cancelling Stripe Subscription', async function () {
             let subscriptionCanceled = false;
             nock('https://api.stripe.com')
                 .persist()
@@ -267,7 +267,7 @@ describe('Members API', function() {
             assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
         });
 
-        it('Errors when fetching stats with unknown days param value', async function() {
+        it('Errors when fetching stats with unknown days param value', async function () {
             await agent
                 .get('members/stats/?days=nope')
                 .expectStatus(422)
