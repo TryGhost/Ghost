@@ -172,14 +172,8 @@ jobs:
 
       - run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
 
-      - run: yarn test:e2e
-        env:
-          database__connection__filename: /dev/shm/ghost-test.db
-      - run: yarn test:integration
-        env:
-          database__connection__filename: /dev/shm/ghost-test.db
-      - run: yarn test:unit
-      - run: yarn test:regression
+      - name: Run tests
+        run: yarn test:ci
         env:
           database__connection__filename: /dev/shm/ghost-test.db
 
