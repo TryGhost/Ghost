@@ -431,6 +431,7 @@ describe('Members API', function () {
             }
 
             if (resource === 'subscriptions') {
+                const now = Math.floor(Date.now() / 1000);
                 return [200, {id: 'sub_123', customer: 'cus_123', cancel_at_period_end: false, items: {
                     data: [{price: {
                         id: price.stripe_price_id,
@@ -440,7 +441,7 @@ describe('Members API', function () {
                         unit_amount: price.amount,
                         currency: price.currency.toLowerCase()
                     }}]
-                }, status: 'active'}];
+                }, status: 'active', current_period_end: now + 24 * 3600, start_date: now}];
             }
         }
 
