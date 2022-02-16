@@ -1,5 +1,6 @@
 require('should');
 const sinon = require('sinon');
+const path = require('path');
 const configUtils = require('../../../../utils/configUtils');
 const controller = require('../../../../../core/server/web/admin/controller');
 
@@ -14,6 +15,7 @@ describe('Admin App', function () {
             };
 
             configUtils.restore();
+            configUtils.set('paths:adminViews', path.resolve('test/utils/fixtures/admin-views'));
         });
 
         afterEach(function () {
