@@ -10,9 +10,7 @@ const Papa = require('papaparse');
 let agent;
 
 describe('Members API', function () {
-    let request;
     before(async function () {
-        process.env.WEBHOOK_SECRET = 'baguette';
         mockManager.setupStripe();
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
@@ -417,42 +415,72 @@ describe('Members API', function () {
         should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
     });
 
-    it.only('Can add a subcription', async function () {
+    it('Can add a subcription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
+        const price = testUtils.DataGenerator.Content.stripe_prices[0];
 
-        // const scope = nock('https://api.stripe.com')
-        //     .persist()
-        //     .get(/v1\/.*/)
-        //     .reply((uri, body) => {
-        //         console.log('nock request', uri, body);
-        //         const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
+        function nockCallback(method, uri, body) {
+            const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))?/) || [null];
 
-        //         if (!match) {
-        //             return [500];
-        //         }
+            if (!match) {
+                return [500];
+            }
 
-        //         if (resource === 'customers') {
-        //             return [200, {customer: 123}];
-        //         }
+            if (resource === 'customers') {
+                return [200, {id: 'cus_123', email: 'member1@test.com'}];
+            }
 
-        //         if (resource === 'subscriptions') {
-        //             return [200, {subscription: 123}];
-        //         }
-        //     });
+            if (resource === 'subscriptions') {
+                return [200, {id: 'sub_123', customer: 'cus_123', cancel_at_period_end: false, items: {
+                    data: [{price: {
+                        id: price.stripe_price_id,
+                        recurring: {
+                            interval: price.interval
+                        },
+                        unit_amount: price.amount,
+                        currency: price.currency.toLowerCase()
+                    }}]
+                }, status: 'active'}];
+            }
+        }
 
-        nock.recorder.rec();
+        nock('https://api.stripe.com:443')
+            .persist()
+            .post(/v1\/.*/)
+            .reply((uri, body) => nockCallback('POST', uri, body));
+
+        nock('https://api.stripe.com:443')
+            .persist()
+            .get(/v1\/.*/)
+            .reply((uri, body) => nockCallback('GET', uri, body));
 
         await agent
             .post(`/members/${memberId}/subscriptions/`)
             .body({
-                stripe_price_id: testUtils.DataGenerator.Content.stripe_prices[0].id
+                stripe_price_id: price.id
             })
             .expectStatus(200)
-            .matchBodySnapshot()
+            .matchBodySnapshot({
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyDate,
+                    updated_at: anyDate,
+                    labels: anyArray,
+                    subscriptions: [{
+                        start_date: anyString,
+                        current_period_end: anyString,
+                        price: {
+                            price_id: anyObjectId,
+                            product: {
+                                product_id: anyObjectId
+                            }
+                        }
+                    }]
+                })
+            })
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
-
-        // scope.persist(false);
     });
 });
