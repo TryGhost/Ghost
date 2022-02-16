@@ -1,7 +1,11 @@
 const semver = require('semver');
 
-module.exports = function (inputString, {ghostVersion = '4.0', type = 'mobiledoc'} = {}) {
+module.exports = function (inputString = '', {ghostVersion = '4.0', type = 'mobiledoc'} = {}) {
     const version = semver.coerce(ghostVersion);
+
+    if (typeof inputString !== 'string' || (inputString || '').trim() === '') {
+        return '';
+    }
 
     if (semver.satisfies(version, '<4.x')) {
         if (type === 'markdown') {

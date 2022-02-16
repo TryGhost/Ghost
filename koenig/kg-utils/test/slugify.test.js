@@ -5,6 +5,12 @@ require('./utils');
 const slugify = require('../lib/slugify');
 
 describe('slugify()', function () {
+    it('handles non-string input', function () {
+        slugify(null, 'null input').should.eql('');
+        slugify(undefined, 'undefined input').should.eql('');
+        slugify({}, '{} input').should.eql('');
+    });
+
     describe('<4.x markdown', function () {
         it('replaces all whitespace with empty string', function () {
             slugify('test one\ttwo', {ghostVersion: '2.0', type: 'markdown'})
