@@ -66,7 +66,6 @@ export default class SetupFinishingTouchesController extends Controller {
     @task
     *saveAndContinueTask() {
         yield this.settings.save();
-        this.modals.open('modals/get-started');
         this.router.transitionTo('home');
     }
 }
