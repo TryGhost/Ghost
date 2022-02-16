@@ -1,6 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyDate, anyString, anyArray} = matchers;
 
+const nock = require('nock');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -9,8 +10,8 @@ const Papa = require('papaparse');
 let agent;
 
 describe('Members API', function () {
-    let request;
     before(async function () {
+        mockManager.setupStripe();
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await agent.loginAsOwner();
@@ -18,6 +19,7 @@ describe('Members API', function () {
 
     beforeEach(function () {
         mockManager.mockLabsEnabled('multipleProducts');
+        mockManager.mockStripe();
     });
 
     afterEach(function () {
@@ -411,5 +413,75 @@ describe('Members API', function () {
         should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
         should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
         should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
+    });
+
+    it('Can add a subcription', async function () {
+        const memberId = testUtils.DataGenerator.Content.members[0].id;
+        const price = testUtils.DataGenerator.Content.stripe_prices[0];
+
+        function nockCallback(method, uri, body) {
+            const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))?/) || [null];
+
+            if (!match) {
+                return [500];
+            }
+
+            if (resource === 'customers') {
+                return [200, {id: 'cus_123', email: 'member1@test.com'}];
+            }
+
+            if (resource === 'subscriptions') {
+                const now = Math.floor(Date.now() / 1000);
+                return [200, {id: 'sub_123', customer: 'cus_123', cancel_at_period_end: false, items: {
+                    data: [{price: {
+                        id: price.stripe_price_id,
+                        recurring: {
+                            interval: price.interval
+                        },
+                        unit_amount: price.amount,
+                        currency: price.currency.toLowerCase()
+                    }}]
+                }, status: 'active', current_period_end: now + 24 * 3600, start_date: now}];
+            }
+        }
+
+        nock('https://api.stripe.com:443')
+            .persist()
+            .post(/v1\/.*/)
+            .reply((uri, body) => nockCallback('POST', uri, body));
+
+        nock('https://api.stripe.com:443')
+            .persist()
+            .get(/v1\/.*/)
+            .reply((uri, body) => nockCallback('GET', uri, body));
+
+        await agent
+            .post(`/members/${memberId}/subscriptions/`)
+            .body({
+                stripe_price_id: price.id
+            })
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyDate,
+                    updated_at: anyDate,
+                    labels: anyArray,
+                    subscriptions: [{
+                        start_date: anyString,
+                        current_period_end: anyString,
+                        price: {
+                            price_id: anyObjectId,
+                            product: {
+                                product_id: anyObjectId
+                            }
+                        }
+                    }]
+                })
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 });
