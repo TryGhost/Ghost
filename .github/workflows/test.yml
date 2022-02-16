@@ -93,7 +93,37 @@ jobs:
       - run: yarn knex-migrator rollback --v 4.0 --force
       - run: yarn knex-migrator migrate --force
 
-  test:
+  unit-tests:
+    runs-on: ubuntu-18.04
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    strategy:
+      matrix:
+        node: [ '12.22.1', '14.17.0', '16.13.0' ]
+    name: Unit Tests (Node ${{ matrix.node }})
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: yarn
+
+      - run: yarn
+      - run: yarn test:unit
+
+      - name: Unit test coverage
+        run: yarn cov:unit
+      - uses: codecov/codecov-action@v2
+
+      - uses: daniellockyer/action-slack-build@master
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  database-tests:
     runs-on: ubuntu-18.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
@@ -193,10 +223,6 @@ jobs:
               }
             }
 
-      - name: Unit test coverage
-        run: yarn cov:unit
-      - uses: codecov/codecov-action@v2
-
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -267,7 +293,7 @@ jobs:
 
   canary:
     runs-on: ubuntu-18.04
-    needs: [lint, migrations, test, ghost-cli]
+    needs: [lint, migrations, unit-tests, database-tests, ghost-cli]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     steps:
