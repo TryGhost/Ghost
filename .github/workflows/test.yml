@@ -54,7 +54,7 @@ jobs:
       database__connection__user: root
       database__connection__password: root
       database__connection__database: ghost_testing
-    name: Migrations - ${{ matrix.env.DB }}
+    name: Migrations (${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v2
         with:
@@ -140,7 +140,7 @@ jobs:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
       database__connection__password: root
-    name: Node ${{ matrix.node }} - ${{ matrix.env.DB }}
+    name: Database Tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
