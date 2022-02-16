@@ -117,6 +117,10 @@ export const site = {
             ...baseSingleTierSite,
             portal_plans: ['free']
         },
+        onlyPaidPlan: {
+            ...baseSingleTierSite,
+            portal_plans: ['monthly', 'yearly']
+        },
         withoutName: {
             ...baseSingleTierSite,
             portal_name: false
@@ -136,7 +140,7 @@ export const site = {
 };
 
 export const offer = getOfferData({
-    tierId: baseSingleTierSite.products[0]?.id
+    tierId: singleSiteTier.find(p => p.type === 'paid')?.id
 });
 
 export const member = {
