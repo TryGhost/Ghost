@@ -37,10 +37,10 @@ describe('Header card', function () {
                 buttonEnabled: false,
                 buttonText: 'The button',
                 buttonUrl: 'https://example.com/',
-                header: '',
+                header: null,
                 size: 'small',
                 style: 'dark',
-                subheader: ''
+                subheader: null
             }
         };
 
@@ -60,7 +60,7 @@ describe('Header card', function () {
                 header: 'hi',
                 size: 'small',
                 style: 'dark',
-                subheader: ''
+                subheader: null
             }
         };
 
