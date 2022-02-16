@@ -1975,7 +1975,7 @@
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
   integrity sha1-oTwCOHP5vBG55OKERJxs++zMgBE=
 
-"@nexes/nql@^0.6.0":
+"@nexes/nql@0.6.0":
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.6.0.tgz#aec2d36d0ff5300b79e950a37f8c29b195f8152b"
   integrity sha512-iI5fQPVfBAX9iM6P3S35XQhp7z7OS+7Ju7GMJGPxouBSDOkppNKh3zc4QGnrt9oMwbUN4hkZ2dsMwLs9VLmDAQ==
