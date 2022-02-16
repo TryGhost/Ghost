@@ -130,7 +130,7 @@
             "type": "array"
         },
         "secondary_navigation": {
-            "defaultValue": "[{\"label\":\"Sign up\",\"url\":\"/#/portal/\"}]",
+            "defaultValue": "[{\"label\":\"Sign up\",\"url\":\"#/portal/\"}]",
             "type": "array"
         },
         "meta_title": {

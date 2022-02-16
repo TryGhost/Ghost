@@ -552,7 +552,8 @@
                 {
                     "title": "Coming soon",
                     "slug": "coming-soon",
-                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[],\"markups\":[[\"a\",[\"href\",\"__GHOST_URL__/#/portal/\",\"rel\",\"noopener noreferrer\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"This is a brand new site that's just getting started. Things will be up and running here shortly, but you can \"],[0,[0],1,\"subscribe\"],[0,[],0,\" in the meantime if you'd like to stay up to date and receive emails when new content is published!\"]]]],\"ghostVersion\":\"4.0\"}",
+                    "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+                    "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[],\"markups\":[[\"a\",[\"href\",\"#/portal/\",\"rel\",\"noopener noreferrer\"]]],\"sections\":[[1,\"p\",[[0,[],0,\"This is a brand new site that's just getting started. Things will be up and running here shortly, but you can \"],[0,[0],1,\"subscribe\"],[0,[],0,\" in the meantime if you'd like to stay up to date and receive emails when new content is published!\"]]]],\"ghostVersion\":\"4.0\"}",
                     "featured": false,
                     "type": "post",
                     "status": "published",
