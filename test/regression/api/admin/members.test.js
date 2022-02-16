@@ -1,7 +1,7 @@
 const assert = require('assert');
 const nock = require('nock');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
-const {anyString, anyArray, anyObjectId, anyEtag, anyUuid, anyErrorId, anyDate} = matchers;
+const {anyString, anyArray, anyObjectId, anyEtag, anyUuid, anyErrorId, anyDate, anyLocationFor} = matchers;
 
 let agent;
 
@@ -98,7 +98,7 @@ describe('Members API', function () {
                 })
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    location: anyString
+                    location: anyLocationFor('members')
                 });
 
             mockManager.assert.sentEmail({
