@@ -221,6 +221,9 @@ module.exports = {
         anyObjectId: stringMatching(/[a-f0-9]{24}/),
         anyErrorId: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
         anyUuid: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
+        anyLocationFor: (resource) => {
+            return stringMatching(new RegExp(`https?://.*?/${resource}/[a-f0-9]{24}/`));
+        },
         stringMatching
     }
 };

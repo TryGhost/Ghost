@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyDate, anyString, anyArray} = matchers;
+const {anyEtag, anyObjectId, anyUuid, anyDate, anyString, anyArray, anyLocationFor} = matchers;
 
 const nock = require('nock');
 const should = require('should');
@@ -176,7 +176,7 @@ describe('Members API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                location: anyString //TODO: validate the exact string?
+                location: anyLocationFor('members')
             });
 
         await agent
@@ -249,7 +249,7 @@ describe('Members API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                location: anyString //TODO: validate the exact string?
+                location: anyLocationFor('members')
             });
 
         const newMember = body.members[0];
@@ -304,7 +304,7 @@ describe('Members API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                location: anyString //TODO: validate the exact string?
+                location: anyLocationFor('members')
             });
 
         const newMember = body.members[0];
@@ -350,7 +350,7 @@ describe('Members API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                location: anyString //TODO: validate the exact string?
+                location: anyLocationFor('members')
             });
 
         const newMember = body.members[0];
