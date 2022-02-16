@@ -1814,12 +1814,13 @@ section.gh-ds h2 {
 }
 
 .gh-finishing-touches header {
-    padding: 32px 0 24px;
+    padding: 0 0 24px;
+    margin-top: -4px;
 }
 
 .gh-finishing-touches header h1 {
-    font-size: 4.1rem;
-    letter-spacing: -0.025em;
+    font-size: 3.1rem;
+    letter-spacing: -0.015em;
     color: var(--black);
     margin: 0;
 }
@@ -1834,10 +1835,9 @@ section.gh-ds h2 {
 .gh-finishing-touches main {
     background: var(--white);
     box-shadow: 0 0 30px rgb(0 0 0 / 4%);
-    width: calc(100% - 32px);
-    height: calc(100% - 179px);
-    border-radius: 8px;
-    margin: 0 16px 16px;
+    width: 100%;
+    height: 100%;
+    margin: 0;
     animation: fadeUp ease 300ms;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
@@ -1860,18 +1860,24 @@ section.gh-ds h2 {
     margin-bottom: 12px;
 }
 
+.gh-finishing-touches-preview {
+    flex-grow: 1;
+    padding: 10vmin;
+    background: var(--whitegrey-l2);
+}
+
 .gh-finishing-touches .gh-browserpreview-previewcontainer {
-    box-shadow: 0 8px 30px rgb(0 0 0 / 8%);
     border-radius: 5px !important;
     overflow: hidden;
 }
 
-.gh-finishing-touches .gh-browserpreview-browser .tabs {
-    background: var(--white);
-}
-
 .gh-finishing-touches .gh-browserpreview-browser .tabs div {
     display: none;
+}
+
+.gh-finishing-touches .gh-stack-item .gh-btn {
+    background: var(--whitegrey);
+    box-shadow: none;
 }
 
 .gh-finishing-touches .gh-finishing-touches-button {
@@ -1880,9 +1886,12 @@ section.gh-ds h2 {
     z-index: 9999;
     display: flex;
     align-items: center;
-    height: 96px;
-    margin-bottom: -24px;
     background: var(--white);
+    padding: 32px;
+}
+
+.gh-finishing-touches .gh-nav {
+    flex: 0 0 420px !important;
 }
 
 
