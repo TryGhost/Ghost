@@ -22,6 +22,7 @@ describe('Members API', function () {
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     it('Can browse', async function () {
@@ -184,7 +185,6 @@ describe('Members API', function () {
 
     it('Can add complimentary subscription', async function () {
         const stripeService = require('../../../core/server/services/stripe');
-        stripeService.api._configured = true;
         const fakePrice = {
             id: 'price_1',
             product: '',
@@ -269,8 +269,6 @@ describe('Members API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
-
-        stripeService.api._configured = false;
     });
 
     it('Can edit by id', async function () {
