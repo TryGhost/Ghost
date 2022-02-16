@@ -4,15 +4,27 @@
         <p>You chose a theme, now it's time to make it your own.</p>
     </header>
     <main class="flex flex-row h-100">
+        {{!-- {{this.activeTheme.name}} --}}
         <div class="gh-nav gh-nav-contextual gh-nav-design">
             <div class="flex flex-column h-100">
                 <div class="gh-nav-body">
                     <div class="gh-nav-design-settings">
                         <div class="gh-stack">
-                            <Settings::FormFields::SiteDescription class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
-                            <Settings::FormFields::AccentColor class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
-                            <Settings::FormFields::PublicationLogo class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
-                            <Settings::FormFields::PublicationCover class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            {{#if this.descriptionVisible}}
+                                <Settings::FormFields::SiteDescription class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            {{/if}}
+                            
+                            {{#if this.colorVisible}}
+                                <Settings::FormFields::AccentColor class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            {{/if}}
+
+                            {{#if this.logoVisible}}
+                                <Settings::FormFields::PublicationLogo class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            {{/if}}
+
+                            {{#if this.coverImageVisible}}
+                                <Settings::FormFields::PublicationCover class="gh-stack-item gh-setting" @didUpdate={{perform this.themeManagement.updatePreviewHtmlTask}} />
+                            {{/if}}
                         </div>
                     </div>
                 </div>
