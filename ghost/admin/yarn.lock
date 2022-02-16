@@ -2149,7 +2149,12 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/kg-clean-basic-html@2.2.8", "@tryghost/kg-clean-basic-html@^2.2.8":
+"@tryghost/kg-clean-basic-html@2.2.9":
+  version "2.2.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.9.tgz#46986ef646f4466f9c32fafdc650c6b4fdfef0b3"
+  integrity sha512-E1AkMBrpkXoPgqLlqkfqONqo9c11947K3ev5R5MIxGeCTDl2Ef+9kuRGXDzzsGGFeV5a+eUsOIthfsklrpNVJA==
+
+"@tryghost/kg-clean-basic-html@^2.2.8":
   version "2.2.8"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.8.tgz#527d5f4271657ce097f23f3d0ee9c0435c1a21f8"
   integrity sha512-Zhix9GnlDCgTZ/w6wI5YqgHQZNPil++TIehMOl7ty2i9nV4vbf/MYPO3bwEIT9vNz4gcSb8mhnhXsJKN/3OTdA==
