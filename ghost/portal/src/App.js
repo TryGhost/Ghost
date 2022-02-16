@@ -85,6 +85,7 @@ export default class App extends React.Component {
         this.customTriggerButtons && this.customTriggerButtons.forEach((customTriggerButton) => {
             customTriggerButton.removeEventListener('click', this.clickHandler);
         });
+        window.removeEventListener('hashchange', this.hashHandler, false);
     }
 
     sendPortalReadyEvent() {
