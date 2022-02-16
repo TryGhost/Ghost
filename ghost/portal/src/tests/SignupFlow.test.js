@@ -1,8 +1,70 @@
 import React from 'react';
 import App from '../App.js';
-import {fireEvent, appRender, within} from '../utils/test-utils';
-import {site as FixtureSite} from '../utils/test-fixtures';
+import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
+import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
+
+const offerSetup = async ({site, member = null, offer}) => {
+    const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+    ghostApi.init = jest.fn(() => {
+        return Promise.resolve({
+            site,
+            member
+        });
+    });
+
+    ghostApi.member.sendMagicLink = jest.fn(() => {
+        return Promise.resolve('success');
+    });
+
+    ghostApi.site.offer = jest.fn(() => {
+        return Promise.resolve({
+            offers: [offer]
+        });
+    });
+
+    ghostApi.member.checkoutPlan = jest.fn(() => {
+        return Promise.resolve();
+    });
+
+    const utils = appRender(
+        <App api={ghostApi} />
+    );
+
+    const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
+    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupIframeDocument = popupFrame.contentDocument;
+    const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
+    const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
+    const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+    const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
+    const siteTitle = within(popupIframeDocument).queryByText(site.title);
+    const offerName = within(popupIframeDocument).queryByText(offer.name);
+    const offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
+
+    const freePlanTitle = within(popupIframeDocument).queryByText('Free');
+    const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
+    const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
+    const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    return {
+        ghostApi,
+        popupIframeDocument,
+        popupFrame,
+        triggerButtonFrame,
+        siteTitle,
+        emailInput,
+        nameInput,
+        signinButton,
+        submitButton,
+        freePlanTitle,
+        monthlyPlanTitle,
+        yearlyPlanTitle,
+        fullAccessTitle,
+        offerName,
+        offerDescription,
+        ...utils
+    };
+};
 
 const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -15,6 +77,10 @@ const setup = async ({site, member = null}) => {
 
     ghostApi.member.sendMagicLink = jest.fn(() => {
         return Promise.resolve('success');
+    });
+
+    ghostApi.member.checkoutPlan = jest.fn(() => {
+        return Promise.resolve();
     });
 
     const utils = appRender(
@@ -64,6 +130,10 @@ const multiTierSetup = async ({site, member = null}) => {
         return Promise.resolve('success');
     });
 
+    ghostApi.member.checkoutPlan = jest.fn(() => {
+        return Promise.resolve();
+    });
+
     const utils = appRender(
         <App api={ghostApi} />
     );
@@ -100,9 +170,9 @@ const multiTierSetup = async ({site, member = null}) => {
     };
 };
 
-describe('Single tier site', () => {
-    describe('Signup page', () => {
-        test('renders with default settings', async () => {
+describe('Signup', () => {
+    describe('as free member on single tier site', () => {
+        test('with default settings', async () => {
             const {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
                 siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
@@ -137,7 +207,7 @@ describe('Single tier site', () => {
             expect(magicLink).toBeInTheDocument();
         });
 
-        test('renders without portal name', async () => {
+        test('without name field', async () => {
             const {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
                 siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
@@ -173,7 +243,7 @@ describe('Single tier site', () => {
             expect(magicLink).toBeInTheDocument();
         });
 
-        test('renders with only free plan', async () => {
+        test('with only free plan', async () => {
             let {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
                 siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
@@ -212,11 +282,211 @@ describe('Single tier site', () => {
             expect(magicLink).toBeInTheDocument();
         });
     });
+
+    describe('as paid member on single tier site', () => {
+        test('with default settings on monthly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(freePlanTitle).toBeInTheDocument();
+            expect(monthlyPlanTitle).toBeInTheDocument();
+            expect(yearlyPlanTitle).toBeInTheDocument();
+            expect(fullAccessTitle).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+
+            const monthlyPlanContainer = within(popupIframeDocument).queryByText(/Monthly$/);
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            const benefitText = singleTierProduct.benefits[0].name;
+
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            fireEvent.click(monthlyPlanContainer.parentNode);
+            await within(popupIframeDocument).findByText(benefitText);
+            expect(emailInput).toHaveValue('jamie@example.com');
+            expect(nameInput).toHaveValue('Jamie Larsen');
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                name: 'Jamie Larsen',
+                offerId: undefined,
+                plan: singleTierProduct.monthlyPrice.id
+            });
+        });
+
+        test('with default settings on yearly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+            } = await setup({
+                site: FixtureSite.singleTier.basic
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(freePlanTitle).toBeInTheDocument();
+            expect(monthlyPlanTitle).toBeInTheDocument();
+            expect(yearlyPlanTitle).toBeInTheDocument();
+            expect(fullAccessTitle).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+
+            const yearlyPlanContainer = within(popupIframeDocument).queryByText(/Yearly$/);
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            const benefitText = singleTierProduct.benefits[0].name;
+
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            fireEvent.click(yearlyPlanContainer.parentNode);
+            await within(popupIframeDocument).findByText(benefitText);
+            expect(emailInput).toHaveValue('jamie@example.com');
+            expect(nameInput).toHaveValue('Jamie Larsen');
+            fireEvent.click(submitButton);
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                name: 'Jamie Larsen',
+                offerId: undefined,
+                plan: singleTierProduct.yearlyPrice.id
+            });
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+        });
+
+        test('without name field on monthly plan', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+            } = await setup({
+                site: FixtureSite.singleTier.withoutName
+            });
+
+            const monthlyPlanContainer = within(popupIframeDocument).queryByText(/Monthly$/);
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+            const benefitText = singleTierProduct.benefits[0].name;
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).not.toBeInTheDocument();
+            expect(freePlanTitle).toBeInTheDocument();
+            expect(monthlyPlanTitle).toBeInTheDocument();
+            expect(yearlyPlanTitle).toBeInTheDocument();
+            expect(fullAccessTitle).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            fireEvent.click(monthlyPlanContainer.parentNode);
+            await within(popupIframeDocument).findByText(benefitText);
+
+            expect(emailInput).toHaveValue('jamie@example.com');
+            fireEvent.click(submitButton);
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                name: '',
+                offerId: undefined,
+                plan: singleTierProduct.monthlyPrice.id
+            });
+        });
+
+        test('with only paid plans available', async () => {
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle
+            } = await setup({
+                site: FixtureSite.singleTier.onlyPaidPlan
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(freePlanTitle).not.toBeInTheDocument();
+            expect(monthlyPlanTitle).toBeInTheDocument();
+            expect(yearlyPlanTitle).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+
+            expect(emailInput).toHaveValue('jamie@example.com');
+            expect(nameInput).toHaveValue('Jamie Larsen');
+
+            fireEvent.click(submitButton);
+            const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                name: 'Jamie Larsen',
+                offerId: undefined,
+                plan: singleTierProduct.monthlyPrice.id
+            });
+        });
+
+        test('to an offer via link', async () => {
+            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle,
+                offerName, offerDescription
+            } = await offerSetup({
+                site: FixtureSite.singleTier.basic,
+                offer: FixtureOffer
+            });
+            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let offerId = FixtureOffer.id;
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+
+            expect(emailInput).toHaveValue('jamie@example.com');
+            fireEvent.click(submitButton);
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                name: 'Jamie Larsen',
+                offerId,
+                plan: planId
+            });
+
+            window.location.hash = '';
+        });
+    });
 });
 
-describe('Multiple tiers site', () => {
-    describe('Signup page', () => {
-        test('renders with default settings', async () => {
+describe('Signup', () => {
+    describe('as free member on multi tier site', () => {
+        test('with default settings', async () => {
             const {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
                 siteTitle, popupIframeDocument, freePlanTitle
@@ -248,7 +518,7 @@ describe('Multiple tiers site', () => {
             expect(magicLink).toBeInTheDocument();
         });
 
-        test('renders without portal name', async () => {
+        test('without name field', async () => {
             const {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
                 siteTitle, popupIframeDocument, freePlanTitle
@@ -281,7 +551,7 @@ describe('Multiple tiers site', () => {
             expect(magicLink).toBeInTheDocument();
         });
 
-        test('renders with only free plan', async () => {
+        test('with only free plan available', async () => {
             let {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
                 siteTitle, popupIframeDocument, freePlanTitle
@@ -315,6 +585,86 @@ describe('Multiple tiers site', () => {
             // Check if magic link page is shown
             const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
             expect(magicLink).toBeInTheDocument();
+        });
+    });
+
+    describe('as paid member on multi tier site', () => {
+        test('with default settings', async () => {
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle, popupIframeDocument, freePlanTitle
+            } = await multiTierSetup({
+                site: FixtureSite.multipleTiers.basic
+            });
+
+            const firstPaidTier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            const regex = new RegExp(`${firstPaidTier.name}$`);
+            const tierContainer = within(popupIframeDocument).queryAllByText(regex);
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(freePlanTitle[0]).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            expect(emailInput).toHaveValue('jamie@example.com');
+            expect(nameInput).toHaveValue('Jamie Larsen');
+
+            fireEvent.click(tierContainer[0]);
+            const labelText = popupIframeDocument.querySelector('.gh-portal-discount-label');
+            await waitFor(() => {
+                expect(labelText).toBeInTheDocument();
+            });
+
+            // added fake timeout for react state delay in setting plan
+            await new Promise(r => setTimeout(r, 10));
+            fireEvent.click(submitButton);
+            await waitFor(() => expect(ghostApi.member.checkoutPlan).toHaveBeenCalledTimes(1));
+        });
+
+        test('to an offer via link', async () => {
+            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle,
+                offerName, offerDescription
+            } = await offerSetup({
+                site: FixtureSite.multipleTiers.basic,
+                offer: FixtureOffer
+            });
+            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let offerId = FixtureOffer.id;
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+
+            expect(emailInput).toHaveValue('jamie@example.com');
+            fireEvent.click(submitButton);
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                name: 'Jamie Larsen',
+                offerId,
+                plan: planId
+            });
+
+            window.location.hash = '';
         });
     });
 });
