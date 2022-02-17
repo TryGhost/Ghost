@@ -12,7 +12,7 @@ import './App.css';
 import NotificationParser from './utils/notifications';
 import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
-const handleDataAttributes = require('./data-attributes');
+const {handleDataAttributes} = require('./data-attributes');
 const React = require('react');
 
 const DEV_MODE_DATA = {
