@@ -196,11 +196,47 @@ const getMembersAPIAgent = async () => {
     }
 };
 
+/**
+ *
+ * @returns {Promise<{adminAgent: TestAgent, membersAgent: TestAgent}>} agent
+ */
+const getAgentsForMembers = async () => {
+    let membersAgent;
+    let adminAgent;
+
+    const bootOptions = {
+        frontend: true
+    };
+
+    try {
+        const app = await startGhost(bootOptions);
+        const originURL = configUtils.config.get('url');
+
+        membersAgent = new TestAgent(app, {
+            apiURL: '/members/',
+            originURL
+        });
+        adminAgent = new TestAgent(app, {
+            apiURL: '/ghost/api/canary/admin/',
+            originURL
+        });
+    } catch (error) {
+        error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
+    }
+
+    return {
+        adminAgent,
+        membersAgent
+    };
+};
+
 module.exports = {
     // request agent
     agentProvider: {
         getAdminAPIAgent,
-        getMembersAPIAgent
+        getMembersAPIAgent,
+        getAgentsForMembers
     },
 
     // Mocks and Stubs
