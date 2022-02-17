@@ -80,6 +80,8 @@ describe('Members API', function () {
         mockManager.restore();
     });
 
+    // List Members
+
     it('Can browse', async function () {
         await agent
             .get('/members/')
@@ -156,6 +158,87 @@ describe('Members API', function () {
             });
     });
 
+    it('Can order by email_open_rate', async function () {
+        await agent
+            .get('members/?order=email_open_rate%20desc')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-length': anyString
+            })
+            .matchBodySnapshot({
+                members: new Array(8).fill(memberMatcherShallowIncludes)
+            })
+            .expect(({body}) => {
+                const {members} = body;
+                assert.equal(members[0].email_open_rate > members[1].email_open_rate, true, 'Expected the first member to have a greater open rate than the second.');
+            });
+
+        await agent
+            .get('members/?order=email_open_rate%20asc')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                members: new Array(8).fill(memberMatcherShallowIncludes)
+            })
+            .expect(({body}) => {
+                const {members} = body;
+                assert.equal(members[0].email_open_rate < members[1].email_open_rate, true, 'Expected the first member to have a smaller open rate than the second.');
+            });
+    });
+
+    it('Sarch by case-insensitive name egg receives member with name Mr Egg', async function () {
+        await agent
+            .get('members/?search=egg')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [memberMatcherShallowIncludes]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Search by case-insensitive email MEMBER2 receives member with email member2@test.com', async function () {
+        await agent
+            .get('members/?search=MEMBER2')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [memberMatcherShallowIncludes]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Sarch for paid members retrieves member with email paid@test.com', async function () {
+        await agent
+            .get('members/?search=egon&paid=true')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [memberMatcherShallowIncludes]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Search for non existing member returns empty result set', async function () {
+        await agent
+            .get('members/?search=do_not_exist')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                members: []
+            });
+    });
+
+    // Read a member
+
     it('Can read', async function () {
         await agent
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/`)
@@ -194,15 +277,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Can fetch member counts stats', async function () {
-        await agent
-            .get(`/members/stats/count/`)
-            .expectStatus(200)
-            .matchBodySnapshot()
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
+    // Create a member
 
     it('Can add', async function () {
         const member = {
@@ -237,6 +312,66 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(422);
     });
+
+    it('Can add and send a signup confirmation email', async function () {
+        const member = {
+            name: 'Send Me Confirmation',
+            email: 'member_getting_confirmation@test.com',
+            subscribed: true
+        };
+
+        const queryParams = {
+            send_email: true,
+            email_type: 'signup'
+        };
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [memberMatcherNoIncludes]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyString
+            });
+
+        mockManager.assert.sentEmail({
+            subject: '🙌 Complete your sign up to Ghost!',
+            to: 'member_getting_confirmation@test.com'
+        });
+
+        // @TODO: do we really need to delete this member here?
+        await agent
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .expectStatus(204);
+    });
+
+    it('Add should fail when passing incorrect email_type query parameter', async function () {
+        const newMember = {
+            name: 'test',
+            email: 'memberTestAdd@test.com'
+        };
+
+        await agent
+            .post(`members/?send_email=true&email_type=lel`)
+            .body({members: [newMember]})
+            .expectStatus(422)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
+    // Edit a member
 
     it('Can add complimentary subscription', async function () {
         const stripeService = require('../../../core/server/services/stripe');
@@ -381,93 +516,6 @@ describe('Members API', function () {
             });
     });
 
-    it('Can destroy', async function () {
-        const member = {
-            name: 'test',
-            email: 'memberTestDestroy@test.com'
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyDate,
-                    updated_at: anyDate,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const newMember = body.members[0];
-
-        await agent
-            .delete(`/members/${newMember.id}`)
-            .expectStatus(204)
-            .matchBodySnapshot()
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-
-        await agent
-            .get(`/members/${newMember.id}/`)
-            .expectStatus(404)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyUuid
-                }]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Can export CSV', async function () {
-        const res = await agent
-            .get(`/members/upload/`)
-            .expectStatus(200)
-            .matchBodySnapshot()
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-length': anyString, //For some reason the content-length changes between 1220 and 1317
-                'content-disposition': anyString
-            });
-
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
-
-        const csv = Papa.parse(res.text, {header: true});
-        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
-        should.exist(csv.data.find(row => row.name === 'Egon Spengler'));
-        should.exist(csv.data.find(row => row.name === 'Ray Stantz'));
-        should.exist(csv.data.find(row => row.email === 'member2@test.com'));
-    });
-
-    it('Can export a filtered CSV', async function () {
-        const res = await agent
-            .get(`/members/upload/?search=Egg`)
-            .expectStatus(200)
-            .matchBodySnapshot()
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-disposition': anyString
-            });
-
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
-
-        const csv = Papa.parse(res.text, {header: true});
-        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
-        should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
-        should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
-        should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
-    });
-
     it('Can add a subcription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
         const price = testUtils.DataGenerator.Content.stripe_prices[0];
@@ -538,140 +586,53 @@ describe('Members API', function () {
             });
     });
 
-    it('Can add and send a signup confirmation email', async function () {
-        const member = {
-            name: 'Send Me Confirmation',
-            email: 'member_getting_confirmation@test.com',
-            subscribed: true
-        };
+    // Delete a member
 
-        const queryParams = {
-            send_email: true,
-            email_type: 'signup'
+    it('Can destroy', async function () {
+        const member = {
+            name: 'test',
+            email: 'memberTestDestroy@test.com'
         };
 
         const {body} = await agent
-            .post('/members/?send_email=true&email_type=signup')
+            .post(`/members/`)
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: [memberMatcherNoIncludes]
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyDate,
+                    updated_at: anyDate,
+                    labels: anyArray,
+                    subscriptions: anyArray
+                })
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                location: anyString
+                location: anyLocationFor('members')
             });
 
-        mockManager.assert.sentEmail({
-            subject: '🙌 Complete your sign up to Ghost!',
-            to: 'member_getting_confirmation@test.com'
-        });
-
-        // @TODO: do we really need to delete this member here?
-        await agent
-            .delete(`members/${body.members[0].id}/`)
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            })
-            .expectStatus(204);
-    });
-
-    it('Can order by email_open_rate', async function () {
-        await agent
-            .get('members/?order=email_open_rate%20desc')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                'content-length': anyString
-            })
-            .matchBodySnapshot({
-                members: new Array(11).fill(memberMatcherShallowIncludes)
-            })
-            .expect(({body}) => {
-                const {members} = body;
-                assert.equal(members[0].email_open_rate > members[1].email_open_rate, true, 'Expected the first member to have a greater open rate than the second.');
-            });
+        const newMember = body.members[0];
 
         await agent
-            .get('members/?order=email_open_rate%20asc')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                members: new Array(11).fill(memberMatcherShallowIncludes)
-            })
-            .expect(({body}) => {
-                const {members} = body;
-                assert.equal(members[0].email_open_rate < members[1].email_open_rate, true, 'Expected the first member to have a smaller open rate than the second.');
-            });
-    });
-
-    it('Sarch by case-insensitive name egg receives member with name Mr Egg', async function () {
-        await agent
-            .get('members/?search=egg')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
-            })
+            .delete(`/members/${newMember.id}`)
+            .expectStatus(204)
+            .matchBodySnapshot()
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
-    });
-
-    it('Search by case-insensitive email MEMBER2 receives member with email member2@test.com', async function () {
-        await agent
-            .get('members/?search=MEMBER2')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Sarch for paid members retrieves member with email paid@test.com', async function () {
-        await agent
-            .get('members/?search=egon&paid=true')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Search for non existing member returns empty result set', async function () {
-        await agent
-            .get('members/?search=do_not_exist')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                members: []
-            });
-    });
-
-    it('Add should fail when passing incorrect email_type query parameter', async function () {
-        const newMember = {
-            name: 'test',
-            email: 'memberTestAdd@test.com'
-        };
 
         await agent
-            .post(`members/?send_email=true&email_type=lel`)
-            .body({members: [newMember]})
-            .expectStatus(422)
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            })
+            .get(`/members/${newMember.id}/`)
+            .expectStatus(404)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyErrorId
+                    id: anyUuid
                 }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
             });
     });
 
@@ -708,6 +669,59 @@ describe('Members API', function () {
             .matchBodySnapshot();
 
         assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
+    });
+
+    // Export members to CSV
+
+    it('Can export CSV', async function () {
+        const res = await agent
+            .get(`/members/upload/`)
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-length': anyString, //For some reason the content-length changes between 1220 and 1317
+                'content-disposition': anyString
+            });
+
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
+
+        const csv = Papa.parse(res.text, {header: true});
+        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
+        should.exist(csv.data.find(row => row.name === 'Winston Zeddemore'));
+        should.exist(csv.data.find(row => row.name === 'Ray Stantz'));
+        should.exist(csv.data.find(row => row.email === 'member2@test.com'));
+    });
+
+    it('Can export a filtered CSV', async function () {
+        const res = await agent
+            .get(`/members/upload/?search=Egg`)
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-disposition': anyString
+            });
+
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
+
+        const csv = Papa.parse(res.text, {header: true});
+        should.exist(csv.data.find(row => row.name === 'Mr Egg'));
+        should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
+        should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
+        should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
+    });
+
+    // Get stats
+
+    it('Can fetch member counts stats', async function () {
+        await agent
+            .get(`/members/stats/count/`)
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 
     it('Errors when fetching stats with unknown days param value', async function () {
