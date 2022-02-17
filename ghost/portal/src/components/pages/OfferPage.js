@@ -217,11 +217,11 @@ export const OfferPageStyles = `
 export default class OfferPage extends React.Component {
     static contextType = AppContext;
 
-    constructor(props) {
-        super(props);
+    constructor(props, context) {
+        super(props, context);
         this.state = {
-            name: '',
-            email: '',
+            name: context?.member?.name || '',
+            email: context?.member?.email || '',
             plan: 'free'
         };
     }
