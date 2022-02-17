@@ -1,10 +1,11 @@
 name: Browser Tests
 on:
   workflow_dispatch:
-    site_url:
-      description: 'Site URL to test'
-      required: true
-      type: string
+    inputs:
+      site_url:
+        description: 'Site URL to test'
+        required: true
+        type: string
 jobs:
   test:
     timeout-minutes: 60
