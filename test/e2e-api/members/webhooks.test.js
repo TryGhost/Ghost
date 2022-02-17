@@ -223,8 +223,6 @@ describe('Members API', function () {
                     .reply((uri, body) => {
                         const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
-                        console.log({resource, id});
-
                         if (!match) {
                             return [500];
                         }
