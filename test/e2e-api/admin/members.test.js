@@ -178,7 +178,8 @@ describe('Members API', function () {
             .get('members/?order=email_open_rate%20asc')
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-length': anyString
             })
             .matchBodySnapshot({
                 members: new Array(8).fill(memberMatcherShallowIncludes)
