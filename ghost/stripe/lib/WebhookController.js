@@ -152,6 +152,10 @@ module.exports = class WebhookController {
                 customer_id: setupIntent.metadata.customer_id
             });
 
+            if (!member) {
+                return;
+            }
+
             await this.api.attachPaymentMethodToCustomer(
                 setupIntent.metadata.customer_id,
                 setupIntent.payment_method
