@@ -86,7 +86,7 @@
     "@tryghost/members-importer": "0.5.1",
     "@tryghost/members-offers": "0.10.7",
     "@tryghost/members-ssr": "1.0.20",
-    "@tryghost/members-stripe-service": "0.8.1",
+    "@tryghost/members-stripe-service": "0.8.2",
     "@tryghost/metrics": "1.0.5",
     "@tryghost/minifier": "0.1.10",
     "@tryghost/mw-error-handler": "0.1.2",
