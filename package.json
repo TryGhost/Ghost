@@ -83,7 +83,7 @@
     "@tryghost/logging": "2.0.3",
     "@tryghost/magic-link": "1.0.18",
     "@tryghost/members-api": "5.0.2",
-    "@tryghost/members-importer": "0.5.1",
+    "@tryghost/members-importer": "0.5.2",
     "@tryghost/members-offers": "0.10.7",
     "@tryghost/members-ssr": "1.0.20",
     "@tryghost/members-stripe-service": "0.8.2",
