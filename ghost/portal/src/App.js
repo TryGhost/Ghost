@@ -98,7 +98,7 @@ export default class App extends React.Component {
     }
 
     /** Setup custom trigger buttons handling on page */
-    setupCustomTriggerButton(props) {
+    setupCustomTriggerButton() {
         if (hasMode(['test'])) {
             return;
         }
@@ -595,7 +595,11 @@ export default class App extends React.Component {
                         this.dispatchAction('openPopup', {
                             page: 'loading'
                         });
-                        this.dispatchAction('signup', {plan: price.id, offerId});
+                        if (member) {
+                            this.dispatchAction('checkoutPlan', {plan: price.id, offerId});
+                        } else {
+                            this.dispatchAction('signup', {plan: price.id, offerId});
+                        }
                     } else {
                         this.dispatchAction('openPopup', {
                             page: 'offer',
