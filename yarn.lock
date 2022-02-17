@@ -1657,19 +1657,27 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
+"@tryghost/errors@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.2.tgz#643009ba20770279577fe2778cdf1f816ad13e90"
+  integrity sha512-81PnsWWayCLQgeBYpslyrMRmSIuflarxxR4tz7ZOIuptybAiKaD3S4GhTZLAXUOi38S62wJBoS/qTzRF6sIzng==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
 "@tryghost/express-dynamic-redirects@0.2.5":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.5.tgz#3a8ab59cc4fc3dd652058958b61800616ea96ccf"
   integrity sha512-Qz2KHt1KdWvIx96fcu/cYPPSEdG52xke3/KrQXCVGp00a3FjQq3WYxWl/p6eMp/30mjExg2UQhcqoCj7hJLX6g==
 
-"@tryghost/express-test@0.4.2":
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.4.2.tgz#ca29050423d353631d11c01aeaf38767d0277e76"
-  integrity sha512-/97blrkjie14U53KQJsbg0SSO/XwmLXjL6c2VN7HmV+Mr2C9NQuvonbwI6BoAifsHjIcAKDpUA7TJ1bURiHxQg==
+"@tryghost/express-test@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.5.0.tgz#dce1f7af34b540eb4954acc5c1349ba91b0b4520"
+  integrity sha512-yiSgkzwIwPbL8PrhUv+5QGN7DB1wMy/wPwbvsHV1+FQXdxWwB0V7i/Z9jRpEIpBjavMSuTbSjZLI9c6W5sceRg==
   dependencies:
-    "@tryghost/jest-snapshot" "^0.3.1"
+    "@tryghost/jest-snapshot" "^0.3.2"
     cookiejar "^2.1.3"
-    reqresnext "^1.6.6"
+    reqresnext "^1.7.0"
 
 "@tryghost/helpers@1.1.56":
   version "1.1.56"
@@ -1706,12 +1714,21 @@
   optionalDependencies:
     sharp "^0.29.0"
 
-"@tryghost/jest-snapshot@0.3.1", "@tryghost/jest-snapshot@^0.3.1":
+"@tryghost/jest-snapshot@0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.3.1.tgz#0fdc1a272cea407bb3e2af23a2ce3cd4d07431fe"
   integrity sha512-pXxp+jigNVt3OTMFaX5BpmFufRjPj0en7cU8IAoVOkNa5Jt7cG7DL2l8QkPaMNu1GbJM6inMjqCYoeEw3ZjHIg==
   dependencies:
     "@tryghost/errors" "^1.2.1"
+    expect "^27.5.0"
+    jest-snapshot "^27.5.0"
+
+"@tryghost/jest-snapshot@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.3.2.tgz#11c20b3f8dee5918d5754634b9cef4b1ef3b6a60"
+  integrity sha512-mevHniOmAuqfWKtHKtKuU/+INmYOiE4GJyuntJcTr4MncgZCtQqRCOU+EiAvUqE/BU36n9lvAfQ2j/p4Ji9bYw==
+  dependencies:
+    "@tryghost/errors" "^1.2.2"
     expect "^27.5.0"
     jest-snapshot "^27.5.0"
 
@@ -10183,10 +10200,10 @@ repeat-string@^1.5.4, repeat-string@^1.6.1:
   resolved "https://registry.yarnpkg.com/repeat-string/-/repeat-string-1.6.1.tgz#8dcae470e1c88abc2d600fff4a776286da75e637"
   integrity sha1-jcrkcOHIirwtYA//Sndihtp15jc=
 
-reqresnext@^1.6.6:
-  version "1.6.6"
-  resolved "https://registry.yarnpkg.com/reqresnext/-/reqresnext-1.6.6.tgz#ac35485e5910823b33ccd5153c298ce9558eb65f"
-  integrity sha512-gP3U2ZbjmICAAEPA923eeRgsFh1M1WLioa9Sqsphyu4wA2vcmoKzRC8olM7XfABxnt4guCMdujhm0aXJdDKlPg==
+reqresnext@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/reqresnext/-/reqresnext-1.7.0.tgz#1cec2e39d808b9e8cd8a4a90f16e4bc9f9806c90"
+  integrity sha512-TS/B8FKRf7j1oowoAYB1Hv+Ga92Y6vY6NvxVF0fqw11KFdwe+DI6jSWB7XHa1Hf21lRqT6vmwy+6KOkLBF6GkQ==
   dependencies:
     express "^4.17.2"
     lodash "^4.17.21"
