@@ -8,7 +8,6 @@ let adminAgent;
 
 describe('Members API', function () {
     before(async function () {
-        process.env.WEBHOOK_SECRET = 'pissoff';
         // Weird - most of the mocks happen after getting the agent
         // but to mock stripe we want to fake the stripe keys in the settings.
         // And it's initialised at boot - so mocking it before
