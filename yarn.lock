@@ -1958,6 +1958,14 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
+"@tryghost/errors@1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.2.tgz#643009ba20770279577fe2778cdf1f816ad13e90"
+  integrity sha512-81PnsWWayCLQgeBYpslyrMRmSIuflarxxR4tz7ZOIuptybAiKaD3S4GhTZLAXUOi38S62wJBoS/qTzRF6sIzng==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
 "@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.14":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
@@ -2243,7 +2251,17 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.8.1", "@tryghost/members-stripe-service@^0.8.1":
+"@tryghost/members-stripe-service@0.8.2":
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.8.2.tgz#9a59b6ba95e523750d1989e14f5d6e5f354938bb"
+  integrity sha512-Tnkqaqqk5wWwDxcknZ+lqRNmbMwu8GbwzV4bFblymBdV/lOy87CMFMhw324pVSDagTLx/cWqoDkkfoF1aM93dw==
+  dependencies:
+    "@tryghost/debug" "^0.1.4"
+    "@tryghost/errors" "1.2.2"
+    leaky-bucket "^2.2.0"
+    stripe "^8.174.0"
+
+"@tryghost/members-stripe-service@^0.8.1":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.8.1.tgz#5af1be427a524ca5d016205117c1322914c0fbbf"
   integrity sha512-GFjm/GjtCsn3M1nhAB4p+0zoJZFw3Ca+djtp3pGqvJSiN2muPaa4N5aZsqf51QTDgAv+5TTkGIBf4HGVUQsY/w==
