@@ -33,4 +33,8 @@ export const isAccountPage = function ({page}) {
     return page.includes('account');
 };
 
+export const isOfferPage = function ({page}) {
+    return page.includes('offer');
+};
+
 export default Pages;
