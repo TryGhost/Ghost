@@ -14,8 +14,11 @@ describe('Members API', function () {
         // And it's initialised at boot - so mocking it before
         // Probably wanna replace this with a settinfs fixture mock or smth??
         mockManager.setupStripe();
-        membersAgent = await agentProvider.getMembersAPIAgent();
-        adminAgent = await agentProvider.getAdminAPIAgent();
+
+        const agents = await agentProvider.getAgentsForMembers();
+        membersAgent = agents.membersAgent;
+        adminAgent = agents.adminAgent;
+
         await fixtureManager.init('members');
         await adminAgent.loginAsOwner();
     });
