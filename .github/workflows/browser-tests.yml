@@ -26,7 +26,7 @@ jobs:
     - name: Run Playwright tests
       run: yarn test:browser
       env:
-        TEST_URL: ${{ inputs.site_url }}
+        TEST_URL: ${{ github.event.inputs.site_url }}
 
     - uses: actions/upload-artifact@v2
       if: always()
