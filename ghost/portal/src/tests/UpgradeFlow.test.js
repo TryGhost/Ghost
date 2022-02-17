@@ -31,8 +31,8 @@ const offerSetup = async ({site, member = null, offer}) => {
         <App api={ghostApi} />
     );
 
-    const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
+    const popupFrame = await utils.findByTitle(/portal-popup/i);
+    const triggerButtonFrame = utils.queryByTitle(/portal-trigger/i);
     const popupIframeDocument = popupFrame.contentDocument;
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
@@ -276,6 +276,45 @@ describe('Logged-in free member', () => {
                 email: 'jimmie@example.com',
                 name: 'Jimmie Larson',
                 offerId,
+                plan: planId
+            });
+
+            window.location.hash = '';
+        });
+
+        test('to an offer via link with portal disabled', async () => {
+            let site = {
+                ...FixtureSite.singleTier.basic,
+                portal_button: false
+            };
+
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
+            const {
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                siteTitle,
+                offerName, offerDescription
+            } = await offerSetup({
+                site: site,
+                member: FixtureMember.altFree,
+                offer: FixtureOffer
+            });
+            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let offerId = FixtureOffer.id;
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).not.toBeInTheDocument();
+            expect(siteTitle).not.toBeInTheDocument();
+            expect(emailInput).not.toBeInTheDocument();
+            expect(nameInput).not.toBeInTheDocument();
+            expect(signinButton).not.toBeInTheDocument();
+            expect(submitButton).not.toBeInTheDocument();
+            expect(offerName).not.toBeInTheDocument();
+            expect(offerDescription).not.toBeInTheDocument();
+
+            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
+                metadata: {
+                    checkoutType: 'upgrade'
+                },
+                offerId: offerId,
                 plan: planId
             });
 
