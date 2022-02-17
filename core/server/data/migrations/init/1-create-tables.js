@@ -7,7 +7,10 @@ const schemaTables = Object.keys(schema);
 module.exports.up = async (options) => {
     const connection = options.connection;
 
-    await Promise.mapSeries(schemaTables, async (table) => {
+    const existingTables = await commands.getTables(connection);
+    const missingTables = schemaTables.filter(t => !existingTables.includes(t));
+
+    await Promise.mapSeries(missingTables, async (table) => {
         logging.info('Creating table: ' + table);
         await commands.createTable(table, connection);
     });

@@ -311,25 +311,18 @@ async function addPrimaryKey(tableName, columns, transaction) {
  * createTableIfNotExists can throw error if indexes are already in place
  */
 function createTable(table, transaction, tableSpec = schema[table]) {
-    return (transaction || db.knex).schema.hasTable(table)
-        .then(function (exists) {
-            if (exists) {
-                return;
-            }
+    return (transaction || db.knex).schema.createTable(table, function (t) {
+        Object.keys(tableSpec)
+            .filter(column => !(column.startsWith('@@')))
+            .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
 
-            return (transaction || db.knex).schema.createTable(table, function (t) {
-                Object.keys(tableSpec)
-                    .filter(column => !(column.startsWith('@@')))
-                    .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
-
-                if (tableSpec['@@INDEXES@@']) {
-                    tableSpec['@@INDEXES@@'].forEach(index => t.index(index));
-                }
-                if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
-                    tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
-                }
-            });
-        });
+        if (tableSpec['@@INDEXES@@']) {
+            tableSpec['@@INDEXES@@'].forEach(index => t.index(index));
+        }
+        if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
+            tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
+        }
+    });
 }
 
 function deleteTable(table, transaction) {

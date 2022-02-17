@@ -137,6 +137,7 @@ jobs:
           - DB: mysql8
             NODE_ENV: testing-mysql
     env:
+      DEBUG: 'ghost:test*,ghost:boot'
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
       database__connection__password: root
@@ -154,14 +155,14 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql5' || matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: daniellockyer/mysql-action@test
         if: matrix.env.DB == 'mysql5'
         with:
           mysql version: '5.7'
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: daniellockyer/mysql-action@test
         if: matrix.env.DB == 'mysql8'
         with:
           mysql version: '8.0'

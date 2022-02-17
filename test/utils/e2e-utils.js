@@ -151,15 +151,25 @@ const freshModeGhostStart = async (options) => {
         debug('Fresh Start Mode');
     }
 
+    debug('stopping server');
+
     // Stop the server (forceStart Mode)
     await stopGhost();
+
+    debug('resetting settings service');
 
     // Reset the settings cache and disable listeners so they don't get triggered further
     settingsService.reset();
 
+    debug('resetting DB');
+
     await dbUtils.reset();
 
+    debug('init settings service');
+
     await settingsService.init();
+
+    debug('about to boot Ghost');
 
     // Actually boot Ghost
     ghostServer = await boot({

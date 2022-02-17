@@ -38,6 +38,8 @@ module.exports = function (Bookshelf) {
                 return baseOptions.concat('shallow', 'columns', 'previous');
             case 'destroy':
                 return baseOptions.concat(extraOptions, ['id', 'destroyBy', 'require']);
+            case 'add':
+                return baseOptions.concat(extraOptions, ['autoRefresh']);
             case 'edit':
                 return baseOptions.concat(extraOptions, ['id', 'require']);
             case 'findOne':

@@ -71,7 +71,8 @@ class FixtureManager {
     async addAllFixtures(options) {
         const localOptions = _.merge({
             context: {internal: true},
-            migrating: true
+            migrating: true,
+            autoRefresh: false
         }, options);
 
         await Promise.mapSeries(this.fixtures.models, (model) => {
