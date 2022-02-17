@@ -12,7 +12,6 @@
 
 const debug = require('@tryghost/debug')('bridge');
 const errors = require('@tryghost/errors');
-const config = require('./shared/config');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
@@ -83,11 +82,8 @@ class Bridge {
     }
 
     getFrontendApiVersion() {
-        if (this.getActiveTheme()) {
-            return this.getActiveTheme().engine('ghost-api');
-        } else {
-            return config.get('api:versions:default');
-        }
+        // @NOTE: we've pinned the frontend to canary in a step towards removing API versions
+        return 'canary';
     }
 
     getCardAssetConfig() {
