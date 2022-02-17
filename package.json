@@ -33,6 +33,7 @@
     "test:integration": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/integration' --timeout=5000",
     "test:e2e": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/e2e-api' './test/e2e-frontend' './test/e2e-server' --timeout=10000",
     "test:regression": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/regression' --timeout=60000",
+    "test:browser": "playwright test --browser=all test/e2e-browser",
     "test:ci": "yarn test:e2e -b && yarn test:integration -b && yarn test:regression -b",
     "test:unit:slow": "yarn test:unit --reporter=mocha-slow-test-reporter",
     "test:int:slow": "yarn test:integration --reporter=mocha-slow-test-reporter",
@@ -183,6 +184,7 @@
   },
   "devDependencies": {
     "@lodder/grunt-postcss": "3.1.1",
+    "@playwright/test": "1.18.1",
     "@tryghost/express-test": "0.5.0",
     "@tryghost/jest-snapshot": "0.3.2",
     "c8": "7.11.0",
