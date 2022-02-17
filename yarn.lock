@@ -1714,16 +1714,7 @@
   optionalDependencies:
     sharp "^0.29.0"
 
-"@tryghost/jest-snapshot@0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.3.1.tgz#0fdc1a272cea407bb3e2af23a2ce3cd4d07431fe"
-  integrity sha512-pXxp+jigNVt3OTMFaX5BpmFufRjPj0en7cU8IAoVOkNa5Jt7cG7DL2l8QkPaMNu1GbJM6inMjqCYoeEw3ZjHIg==
-  dependencies:
-    "@tryghost/errors" "^1.2.1"
-    expect "^27.5.0"
-    jest-snapshot "^27.5.0"
-
-"@tryghost/jest-snapshot@^0.3.2":
+"@tryghost/jest-snapshot@0.3.2", "@tryghost/jest-snapshot@^0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.3.2.tgz#11c20b3f8dee5918d5754634b9cef4b1ef3b6a60"
   integrity sha512-mevHniOmAuqfWKtHKtKuU/+INmYOiE4GJyuntJcTr4MncgZCtQqRCOU+EiAvUqE/BU36n9lvAfQ2j/p4Ji9bYw==
