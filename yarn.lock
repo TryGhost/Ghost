@@ -2239,10 +2239,10 @@
     "@tryghost/domain-events" "^0.1.7"
     "@tryghost/members-offers" "^0.10.7"
 
-"@tryghost/members-ssr@1.0.20":
-  version "1.0.20"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.20.tgz#bea6d66b80e14f4cb9ec50fa2fc81adf6e62ebae"
-  integrity sha512-B/Ne1EH7JJb0rhBO5f9yNdaSIATcuoHegqsOJHqJkU55jE62WbbBj3vmdKW1/GBT+tvRuPsN7l73NEwfNLt5QQ==
+"@tryghost/members-ssr@1.0.21":
+  version "1.0.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.21.tgz#3f076143c829d99db80dd5b0cca96f3527adb9dd"
+  integrity sha512-bpODwwo8jNpmR+jjatLGXARKY41JXIQocSXFFgVNmtFIyFBGuireWOMDoUsnLakJ8HzUEPM+P3Fk37opvsTyjw==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^1.1.0"
