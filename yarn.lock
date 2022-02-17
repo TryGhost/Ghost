@@ -1958,7 +1958,7 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.2":
+"@tryghost/errors@1.2.2", "@tryghost/errors@^1.2.2":
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.2.tgz#643009ba20770279577fe2778cdf1f816ad13e90"
   integrity sha512-81PnsWWayCLQgeBYpslyrMRmSIuflarxxR4tz7ZOIuptybAiKaD3S4GhTZLAXUOi38S62wJBoS/qTzRF6sIzng==
@@ -1973,14 +1973,6 @@
   dependencies:
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
-
-"@tryghost/errors@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.2.tgz#643009ba20770279577fe2778cdf1f816ad13e90"
-  integrity sha512-81PnsWWayCLQgeBYpslyrMRmSIuflarxxR4tz7ZOIuptybAiKaD3S4GhTZLAXUOi38S62wJBoS/qTzRF6sIzng==
-  dependencies:
-    lodash "^4.17.21"
-    uuid "^8.3.2"
 
 "@tryghost/express-dynamic-redirects@0.2.5":
   version "0.2.5"
@@ -2238,10 +2230,10 @@
     "@tryghost/domain-events" "^0.1.7"
     "@tryghost/members-offers" "^0.10.7"
 
-"@tryghost/members-ssr@1.0.20":
-  version "1.0.20"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.20.tgz#bea6d66b80e14f4cb9ec50fa2fc81adf6e62ebae"
-  integrity sha512-B/Ne1EH7JJb0rhBO5f9yNdaSIATcuoHegqsOJHqJkU55jE62WbbBj3vmdKW1/GBT+tvRuPsN7l73NEwfNLt5QQ==
+"@tryghost/members-ssr@1.0.21":
+  version "1.0.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.21.tgz#3f076143c829d99db80dd5b0cca96f3527adb9dd"
+  integrity sha512-bpODwwo8jNpmR+jjatLGXARKY41JXIQocSXFFgVNmtFIyFBGuireWOMDoUsnLakJ8HzUEPM+P3Fk37opvsTyjw==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^1.1.0"
