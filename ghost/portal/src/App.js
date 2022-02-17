@@ -5,8 +5,8 @@ import PopupModal from './components/PopupModal';
 import setupGhostApi from './utils/api';
 import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
-import {getActivePage, isAccountPage} from './pages';
 import * as Fixtures from './utils/fixtures';
+import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
@@ -728,7 +728,7 @@ export default class App extends React.Component {
     getContextMember({page, member, customSiteUrl}) {
         if (hasMode(['dev', 'preview'], {customSiteUrl})) {
             /** Use dummy member(free or paid) for account pages in dev/preview mode*/
-            if (isAccountPage({page})) {
+            if (isAccountPage({page}) || isOfferPage({page})) {
                 if (hasMode(['dev'], {customSiteUrl})) {
                     return member || Fixtures.member.free;
                 } else if (hasMode(['preview'])) {

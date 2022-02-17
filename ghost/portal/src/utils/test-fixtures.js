@@ -153,6 +153,15 @@ export const member = {
         avatarImage: '',
         subscribed: true
     }),
+    altFree: getMemberData({
+        name: 'Jimmie Larson',
+        email: 'jimmie@example.com',
+        firstname: 'Jimmie',
+        subscriptions: [],
+        paid: false,
+        avatarImage: '',
+        subscribed: true
+    }),
     paid: getMemberData({
         paid: true,
         subscriptions: [
