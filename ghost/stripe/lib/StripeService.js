@@ -64,6 +64,8 @@ module.exports = class StripeService {
             stripe_coupon_id: null
         });
         await this.webhookManager.stop();
+
+        this.api.configure(null);
     }
 
     async configure(config) {
