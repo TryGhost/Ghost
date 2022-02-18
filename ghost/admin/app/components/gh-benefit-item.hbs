@@ -21,19 +21,22 @@
             @input={{action "updateLabel" value="target.value"}}
             @keyPress={{action "clearLabelErrors"}}
             @stopEnterKeyDownPropagation={{true}}
-            @focus-out={{action "updateLabel" this.name}} data-test-input="name" />
+            @focus-out={{action "updateLabel" this.name}}
+            data-test-input="benefit-label" />
+
         <GhErrorMessage
             @errors={{this.benefitItem.errors}}
-            @property="name" data-test-error="name" />
+            @property="name"
+            data-test-error="benefit-label" />
     </GhValidationStatusContainer>
 </div>
 
 {{#if this.benefitItem.isNew}}
-    <button type="button" class="gh-blognav-add" {{action "addItem" this.benefitItem}}>
+    <button type="button" class="gh-blognav-add" {{action "addItem" this.benefitItem}} data-test-button="add-benefit">
         {{svg-jar "add"}}<span class="sr-only">Add</span>
     </button>
 {{else}}
-    <button type="button" class="gh-blognav-delete" {{action "deleteItem" this.benefitItem}}>
+    <button type="button" class="gh-blognav-delete" {{action "deleteItem" this.benefitItem}} data-test-button="delete-benefit">
         {{svg-jar "trash"}}<span class="sr-only">Delete</span>
     </button>
 {{/if}}

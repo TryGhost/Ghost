@@ -12,7 +12,6 @@ export default class extends Component {
     @service config;
 
     @tracked showProductModal = false;
-    @tracked productModel = null;
 
     get product() {
         return this.args.product;

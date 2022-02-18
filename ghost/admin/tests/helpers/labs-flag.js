@@ -10,7 +10,8 @@ export function enableLabsFlag(server, flag) {
     const config = server.schema.configs.first();
     config.update({enableDeveloperExperiments: true});
 
-    const labsSetting = {};
+    const existingSetting = server.db.settings.findBy({key: 'labs'}).value;
+    const labsSetting = existingSetting ? JSON.parse(existingSetting) : {};
     labsSetting[flag] = true;
 
     server.db.settings.update({key: 'labs'}, {value: JSON.stringify(labsSetting)});
