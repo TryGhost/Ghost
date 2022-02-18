@@ -42,8 +42,14 @@ let agent;
 describe('Members API without Stripe', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('members');
+        await fixtureManager.init();
         await agent.loginAsOwner();
+    });
+
+    before(async function () {
+        await agent
+            .delete('/settings/stripe/connect/')
+            .expectStatus(200);
     });
 
     beforeEach(function () {
