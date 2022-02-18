@@ -1,7 +1,7 @@
 import React from 'react';
 import App from '../App.js';
-import {fireEvent, appRender, within, waitFor, prettyDOM} from '../utils/test-utils';
-import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';
+import {fireEvent, appRender, within} from '../utils/test-utils';
+import {site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 
 const setup = async ({site, member = null}) => {
