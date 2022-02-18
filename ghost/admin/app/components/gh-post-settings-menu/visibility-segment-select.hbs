@@ -6,12 +6,11 @@
     @allowCreation={{false}}
     @renderInPlace={{this.renderInPlace}}
     @onChange={{this.setSegment}}
-    @disabled={{@disabled}}
     @class="select-members"
     @placeholder="Select a tier"
     as |option|
 >
-    {{option.name}}
+    <span data-test-visibility-segment-option={{option.name}}>{{option.name}}</span>
 </GhTokenInput>
 
 <GhMembersSegmentCount

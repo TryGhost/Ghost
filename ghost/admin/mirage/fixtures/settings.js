@@ -222,5 +222,35 @@ export default [
         updated_at: '2021-11-01T15:44:43.494Z',
         updated_by: 1,
         value: 'casper'
+    },
+    {
+        id: 28,
+        created_at: '2022-02-16T09:38:00.000Z',
+        created_by: 1,
+        key: 'members_signup_access',
+        group: 'members',
+        updated_at: '2022-02-16T09:38:00.000Z',
+        updated_by: 1,
+        value: 'all'
+    },
+    {
+        id: 29,
+        created_at: '2022-02-16T09:38:00.000Z',
+        created_by: 1,
+        key: 'default_content_visibility',
+        group: 'members',
+        updated_at: '2022-02-16T09:38:00.000Z',
+        updated_by: 1,
+        value: 'public'
+    },
+    {
+        id: 30,
+        created_at: '2022-02-16T09:38:00.000Z',
+        created_by: 1,
+        key: 'default_content_visibility_tiers',
+        group: 'members',
+        updated_at: '2022-02-16T09:38:00.000Z',
+        updated_by: 1,
+        value: '[]'
     }
 ];

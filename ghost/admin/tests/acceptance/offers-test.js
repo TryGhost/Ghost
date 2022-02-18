@@ -42,8 +42,9 @@ describe('Acceptance: Offers', function () {
         });
 
         it('it renders, can be navigated, can edit offer', async function () {
-            let offer1 = this.server.create('offer', {createdAt: moment.utc().subtract(1, 'day').valueOf()});
-            this.server.create('offer', {createdAt: moment.utc().subtract(2, 'day').valueOf()});
+            const product = this.server.create('product');
+            let offer1 = this.server.create('offer', {tier: {id: product.id}, createdAt: moment.utc().subtract(1, 'day').valueOf()});
+            this.server.create('offer', {tier: {id: product.id}, createdAt: moment.utc().subtract(2, 'day').valueOf()});
 
             await visit('/offers');
 

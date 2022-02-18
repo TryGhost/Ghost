@@ -1,21 +1,21 @@
-<div class="gh-main-content-card gh-product-card">
+<div class="gh-main-content-card gh-product-card" data-test-product-card={{@product.slug}}>
     <div class="gh-product-card-block title-block">
-        <h3 class="gh-product-card-name">
-            {{this.product.name}}
+        <h3 class="gh-product-card-name" data-test-name>
+            {{@product.name}}
         </h3>
-        <p class="gh-product-card-description">
-        {{#if this.product.description.length}}
-            {{this.product.description}}
+        <p class="gh-product-card-description" data-test-description>
+        {{#if @product.description.length}}
+            {{@product.description}}
         {{else}}
             No description added for this tier.
         {{/if}}
         </p>
     </div>
-    <div class="gh-product-card-block benefits-block">
-        <h4>Benefits <span class="counter">({{if this.product.benefits.length this.product.benefits.length "0"}})</span></h4>
-        {{#if this.product.benefits.length}}
+    <div class="gh-product-card-block benefits-block" data-test-benefits>
+        <h4>Benefits <span class="counter">({{or @product.benefits.length "0"}})</span></h4>
+        {{#if @product.benefits.length}}
             <ul class="benefits">
-                {{#each this.product.benefits as |benefit|}}
+                {{#each @product.benefits as |benefit|}}
                     <li>{{svg-jar "check"}} {{benefit.name}} </li>
                 {{/each}}
             </ul>
@@ -23,10 +23,10 @@
             <p class="gh-product-card-description">No benefits added for this tier.</p>
         {{/if}}
     </div>
-    {{#if (eq this.product.type "free" )}}
+    {{#if (eq @product.type "free" )}}
         <div class="gh-product-card-block">
             <div class="gh-product-price-container">
-                <div class="gh-product-card-price">
+                <div class="gh-product-card-price" data-test-free-price>
                     <div class="flex items-start">
                         <span class="currency">{{currency-symbol this.productCurrency}}</span>
                         <span class="amount">0</span>
@@ -35,31 +35,31 @@
             </div>
         </div>
     {{/if}}
-    {{#if (eq this.product.type "paid" )}}
+    {{#if (eq @product.type "paid" )}}
         <div class="gh-product-card-block">
             <div class="gh-product-price-container">
-                <div class="gh-product-card-price">
+                <div class="gh-product-card-price" data-test-monthly-price>
                     <div class="flex items-start">
                         <span class="currency">{{currency-symbol this.productCurrency}}</span>
-                        <span class="amount">{{gh-price-amount this.product.monthlyPrice.amount}}</span>
+                        <span class="amount">{{gh-price-amount @product.monthlyPrice.amount}}</span>
                     </div>
                     <div class="period">Monthly</div>
                 </div>
-                <div class="gh-product-card-price">
+                <div class="gh-product-card-price" data-test-yearly-price>
                     <div class="flex items-start">
                         <span class="currency">{{currency-symbol this.productCurrency}}</span>
-                        <span class="amount">{{gh-price-amount this.product.yearlyPrice.amount}}</span>
+                        <span class="amount">{{gh-price-amount @product.yearlyPrice.amount}}</span>
                     </div>
                     <div class="period">Yearly</div>
                 </div>
             </div>
         </div>
     {{/if}}
-    {{#if (eq this.product.type "paid" )}}
+    {{#if (eq @product.type "paid" )}}
     <div class="gh-product-card-button-container">
         <span class="dropdown">
             <GhDropdownButton
-                @dropdownName="tiers-actions-menu-{{this.product.name}}"
+                @dropdownName="tiers-actions-menu-{{@product.name}}"
                 @classNames="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-actions-button icon-only"
                 @title="Tiers Actions"
                 data-test-button="tiers-actions"
@@ -70,19 +70,19 @@
                 </span>
             </GhDropdownButton>
                 <GhDropdown
-                    @name="tiers-actions-menu-{{this.product.name}}"
+                    @name="tiers-actions-menu-{{@product.name}}"
                     @tagName="ul"
                     @classNames="gh-tier-actions-menu dropdown-menu dropdown-triangle-top-right"
                 >
                     <li>
-                        <button class="mr2" type="button" {{on "click" (fn this.openEditProduct this.product)}}>
+                        <button class="mr2" type="button" {{on "click" (fn this.openEditProduct @product)}}>
                             <span>Edit</span>
                         </button>
                     </li>
                     {{#if this.showArchiveOption}}
                         <li>
                             <Settings::Members::ArchiveTier
-                                @product={{this.product}}
+                                @product={{@product}}
                                 @onUnarchive={{@onUnarchive}}
                             />
                         </li>
@@ -92,7 +92,7 @@
     </div>
     {{else}}
     <div class="gh-product-card-button-container">
-        <button type="button" {{on "click" (fn this.openEditProduct this.product)}} class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-edit-button icon-only">
+        <button type="button" {{on "click" (fn this.openEditProduct @product)}} class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-edit-button icon-only" data-test-button="edit-product">
             <span>
                 {{svg-jar "pen"}}
             </span>

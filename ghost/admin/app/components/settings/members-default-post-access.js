@@ -46,7 +46,7 @@ export default class SettingsMembersDefaultPostAccess extends Component {
 
     get visibilityTiers() {
         const visibilityTiersData = this.settings.get('defaultContentVisibilityTiers');
-        return visibilityTiersData.map((id) => {
+        return (visibilityTiersData || []).map((id) => {
             return {id};
         });
     }

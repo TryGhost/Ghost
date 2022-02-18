@@ -2,8 +2,8 @@
     {{svg-jar "close"}}
 </button>
 
-<div class="gh-product-modal-content">
-    <header class="modal-header" data-test-modal="webhook-form">
+<div class="gh-product-modal-content" data-test-modal="edit-product">
+    <header class="modal-header">
         <h1 data-test-text="title">{{this.title}}</h1>
     </header>
 
@@ -14,7 +14,7 @@
                 <h4 class="gh-main-section-header small bn">Basic</h4>
                 <div class="gh-main-section-content grey gh-product-priceform-block">
                     {{#unless this.isFreeProduct}}
-                        <GhFormGroup @errors={{this.errors}} @property="name">
+                        <GhFormGroup @errors={{this.errors}} @property="name" data-test-formgroup="name">
                             <label for="name" class="fw6">Name</label>
                             <GhTextInput
                                 @value={{readonly this.product.name}}
@@ -22,11 +22,13 @@
                                 @name="name"
                                 @placeholder="Bronze"
                                 @id="name"
-                                @class="gh-input" />
+                                @class="gh-input"
+                                data-test-input="product-name" />
                             <GhErrorMessage @errors={{this.errors}} @property="name" />
                         </GhFormGroup>
                     {{/unless}}
-                    <GhFormGroup @errors={{this.errors}} @property="description">
+
+                    <GhFormGroup @errors={{this.errors}} @property="description" data-test-formgroup="description">
                         <label for="description" class="fw6">Description</label>
                         {{#if this.isFreeProduct}}
                             <GhTextInput
@@ -35,7 +37,8 @@
                                 @name="description"
                                 @placeholder="Free preview of {{this.settings.title}}"
                                 @id="description"
-                                @class="gh-input" />
+                                @class="gh-input"
+                                data-test-input="free-product-description" />
                         {{else}}
                             <GhTextInput
                                 @value={{readonly this.product.description}}
@@ -43,12 +46,14 @@
                                 @name="description"
                                 @placeholder="Full access to premium content"
                                 @id="description"
-                                @class="gh-input" />
+                                @class="gh-input"
+                                data-test-input="product-description" />
                         {{/if}}
                         <GhErrorMessage @errors={{this.errors}} @property="description" />
                     </GhFormGroup>
+
                     {{#unless this.isFreeProduct}}
-                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices" data-test-formgroup="prices">
                             <div class="gh-settings-members-pricelabelcont">
                                 <label for="monthlyPrice">Prices</label>
                                 <span>–</span>
@@ -138,7 +143,7 @@
                                             @focusItem={{action "focusItem"}}
                                             @deleteItem={{action "deleteBenefit"}}
                                             @updateLabel={{action "updateLabel"}}
-                                            data-test-navitem={{index}} />
+                                            data-test-benefit-item={{index}} />
                                     </DraggableObject>
                                 {{/each}}
                             </SortableObjects>
@@ -148,45 +153,45 @@
                                 @addItem={{action "addBenefit"}}
                                 @deleteItem={{action "deleteBenefit"}}
                                 @updateLabel={{action "updateLabel"}}
-                                data-test-navitem="new" />
+                                data-test-benefit-item="new" />
                         </form>
                     </div>
                 </div>
             </div>
-            <div class="gh-main-section-block gh-product-form-tierpreview">
+            <div class="gh-main-section-block gh-product-form-tierpreview" data-test-tierpreview>
                 <div class="gh-product-form-tierpreview-content">
                     {{#if this.isFreeProduct}}
-                        <h4 class="gh-main-section-header small bn">Free Membership Preview</h4>
+                        <h4 class="gh-main-section-header small bn" data-test-tierpreview-title>Free Membership Preview</h4>
                     {{else}}
-                        <h4 class="gh-main-section-header small bn">Tier Preview</h4>
+                        <h4 class="gh-main-section-header small bn" data-test-tierpreview-title>Tier Preview</h4>
                     {{/if}}
                     <div class="gh-main-section-content" style="border-color: {{this.settings.accentColor}}">
                         <span class="checkmark" style="background-color: {{this.settings.accentColor}}"></span>
 
                         {{#if this.product.name}}
-                            <h4>{{this.product.name}}</h4>
+                            <h4 data-test-tierpreview-name>{{this.product.name}}</h4>
                         {{else}}
-                            <h4 class="placeholder">Bronze</h4>
+                            <h4 class="placeholder" data-test-tierpreview-name>Bronze</h4>
                         {{/if}}
 
                         {{#if this.product.description}}
-                            <p>{{this.product.description}}</p>
+                            <p data-test-tierpreview-description>{{this.product.description}}</p>
                         {{else}}
                             {{#if this.isFreeProduct}}
-                                <p class="placeholder">Free preview of {{this.settings.title}}</p>
+                                <p class="placeholder" data-test-tierpreview-description>Free preview of {{this.settings.title}}</p>
                             {{else}}
-                                <p class="placeholder">Full access to premium content</p>
+                                <p class="placeholder" data-test-tierpreview-description>Full access to premium content</p>
                             {{/if}}
                         {{/if}}
 
                         {{#if this.benefits}}
-                            <ul>
+                            <ul data-test-tierpreview-benefits>
                             {{#each this.benefits as |benefitItem index|}}
                                 <li>{{svg-jar "check-2"}} <span>{{benefitItem.name}}</span></li>
                             {{/each}}
                             </ul>
                         {{else}}
-                            <ul class="placeholder">
+                            <ul class="placeholder" data-test-tierpreview-benefits>
                                 {{#if this.isFreeProduct}}
                                     <li>{{svg-jar "check-2"}} <span>Access to all public posts</span></li>
                                 {{else}}
@@ -194,12 +199,12 @@
                                 {{/if}}
                             </ul>
                         {{/if}}
-                        <div class="price">
+                        <div class="price" data-test-tierpreview-price>
                             {{#if this.isFreeProduct}}
-                            <span class="monthly-price">
-                                <span class="currency">{{currency-symbol this.currency}}</span>
-                                0
-                            </span>
+                                <span class="monthly-price">
+                                    <span class="currency">{{currency-symbol this.currency}}</span>
+                                    0
+                                </span>
                             {{else}}
                                 {{#if this.stripeMonthlyAmount}}
                                     <span class="monthly-price">
