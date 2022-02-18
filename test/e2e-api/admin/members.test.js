@@ -190,7 +190,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Sarch by case-insensitive name egg receives member with name Mr Egg', async function () {
+    it('Search by case-insensitive name egg receives member with name Mr Egg', async function () {
         await agent
             .get('members/?search=egg')
             .expectStatus(200)
@@ -214,7 +214,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Sarch for paid members retrieves member with email paid@test.com', async function () {
+    it('Search for paid members retrieves member with email paid@test.com', async function () {
         await agent
             .get('members/?search=egon&paid=true')
             .expectStatus(200)
@@ -517,7 +517,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Can add a subcription', async function () {
+    it('Can add a subscription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
         const price = testUtils.DataGenerator.Content.stripe_prices[0];
 
