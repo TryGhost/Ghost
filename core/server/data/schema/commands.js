@@ -307,29 +307,28 @@ async function addPrimaryKey(tableName, columns, transaction) {
 }
 
 /**
- * https://github.com/tgriesser/knex/issues/1303
- * createTableIfNotExists can throw error if indexes are already in place
+ * Adds a table according to the provided spec, or falls back to the current schema
+ *
+ * NOTE: this function does NOT check if the table already exists - use the migration
+ * utils if you want that
+ *
+ * @param {String} table - name of the table to create
+ * @param {import('knex').Transaction} transaction - connection to the DB
+ * @param {Object} [tableSpec] - table schema to generate table with
  */
 function createTable(table, transaction, tableSpec = schema[table]) {
-    return (transaction || db.knex).schema.hasTable(table)
-        .then(function (exists) {
-            if (exists) {
-                return;
-            }
+    return (transaction || db.knex).schema.createTable(table, function (t) {
+        Object.keys(tableSpec)
+            .filter(column => !(column.startsWith('@@')))
+            .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
 
-            return (transaction || db.knex).schema.createTable(table, function (t) {
-                Object.keys(tableSpec)
-                    .filter(column => !(column.startsWith('@@')))
-                    .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
-
-                if (tableSpec['@@INDEXES@@']) {
-                    tableSpec['@@INDEXES@@'].forEach(index => t.index(index));
-                }
-                if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
-                    tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
-                }
-            });
-        });
+        if (tableSpec['@@INDEXES@@']) {
+            tableSpec['@@INDEXES@@'].forEach(index => t.index(index));
+        }
+        if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
+            tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
+        }
+    });
 }
 
 function deleteTable(table, transaction) {
