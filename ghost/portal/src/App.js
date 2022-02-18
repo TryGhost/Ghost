@@ -99,9 +99,6 @@ export default class App extends React.Component {
 
     /** Setup custom trigger buttons handling on page */
     setupCustomTriggerButton() {
-        if (hasMode(['test'])) {
-            return;
-        }
         // Handler for custom buttons
         this.clickHandler = (event) => {
             event.preventDefault();
@@ -217,7 +214,7 @@ export default class App extends React.Component {
         // Setup test mode data
         if (hasMode(['test'])) {
             return {
-                showPopup: true
+                showPopup: this.props.showPopup !== undefined ? this.props.showPopup : true
             };
         }
         return {};
