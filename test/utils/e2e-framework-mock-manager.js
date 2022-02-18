@@ -12,7 +12,6 @@ let emailCount = 0;
 // Mockable services
 const mailService = require('../../core/server/services/mail/index');
 const labs = require('../../core/shared/labs');
-const settingsCache = require('../../core/shared/settings-cache');
 
 const mockMail = () => {
     mocks.mail = sinon
@@ -24,24 +23,6 @@ const mockMail = () => {
 
 const mockStripe = () => {
     nock.disableNetConnect();
-};
-
-const setupStripe = () => {
-    mocks.settings = sinon.stub(settingsCache, 'get').callsFake(function (key, ...args) {
-        if (key === 'stripe_connect_secret_key') {
-            return 'sk_test_blah';
-        }
-        if (key === 'stripe_connect_publishable_key') {
-            return 'pk_test_blah';
-        }
-        if (key === 'stripe_connect_account_name') {
-            return 'Test Account';
-        }
-        if (key === 'theme_session_secret') {
-            return '1337_h4xx0r_53cR37';
-        }
-        return settingsCache.get.wrappedMethod.call(settingsCache, key, ...args);
-    });
 };
 
 const mockLabsEnabled = (flag, alpha = true) => {
@@ -114,7 +95,6 @@ const restore = () => {
 
 module.exports = {
     mockMail,
-    setupStripe,
     mockStripe,
     mockLabsEnabled,
     mockLabsDisabled,

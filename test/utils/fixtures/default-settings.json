@@ -290,11 +290,11 @@
             "type": "array"
         },
         "stripe_connect_publishable_key": {
-            "defaultValue": null,
+            "defaultValue": "pk_test_for_stripe",
             "type": "string"
         },
         "stripe_connect_secret_key": {
-            "defaultValue": null,
+            "defaultValue": "sk_test_for_stripe",
             "type": "string"
         },
         "stripe_connect_livemode": {
