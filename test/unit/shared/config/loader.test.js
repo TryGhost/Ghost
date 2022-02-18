@@ -104,7 +104,7 @@ describe('Config Loader', function () {
                 'helperTemplates',
                 'adminViews',
                 'defaultViews',
-                'defaultSettings',
+                'defaultRouteSettings',
                 'internalAppPath',
                 'internalAdaptersPath',
                 'migrationPath',

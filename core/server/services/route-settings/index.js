@@ -22,7 +22,7 @@ module.exports = {
             type: 'routes',
             extension: '.yaml',
             destinationFolderPath: config.getContentPath('settings'),
-            sourceFolderPath: config.get('paths').defaultSettings
+            sourceFolderPath: config.get('paths').defaultRouteSettings
         });
 
         return await defaultSettingsManager.ensureSettingsFileExists();
