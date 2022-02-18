@@ -1,7 +1,6 @@
 import App from '../App';
 import {site as FixturesSite, member as FixtureMember} from '../utils/test-fixtures';
 import {fireEvent, appRender, within} from '../utils/test-utils';
-import {site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api';
 const {formSubmitHandler, planClickHandler} = require('../data-attributes');
 
@@ -275,7 +274,7 @@ describe('Portal Data attributes:', () => {
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: FixtureSite.singleTier.basic,
+                site: FixturesSite.singleTier.basic,
                 showPopup: false
             });
             expect(popupFrame).not.toBeInTheDocument();
@@ -295,7 +294,7 @@ describe('Portal Data attributes:', () => {
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: FixtureSite.singleTier.basic,
+                site: FixturesSite.singleTier.basic,
                 showPopup: false
             });
             expect(popupFrame).not.toBeInTheDocument();
@@ -317,7 +316,7 @@ describe('Portal Data attributes:', () => {
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: FixtureSite.singleTier.basic,
+                site: FixturesSite.singleTier.basic,
                 showPopup: false
             });
             expect(popupFrame).not.toBeInTheDocument();
@@ -339,7 +338,7 @@ describe('Portal Data attributes:', () => {
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: FixtureSite.singleTier.basic,
+                site: FixturesSite.singleTier.basic,
                 member: FixtureMember.free,
                 showPopup: false
             });
@@ -362,7 +361,7 @@ describe('Portal Data attributes:', () => {
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: FixtureSite.singleTier.basic,
+                site: FixturesSite.singleTier.basic,
                 member: FixtureMember.free,
                 showPopup: false
             });
@@ -385,7 +384,7 @@ describe('Portal Data attributes:', () => {
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: FixtureSite.singleTier.basic,
+                site: FixturesSite.singleTier.basic,
                 member: FixtureMember.free,
                 showPopup: false
             });
