@@ -1974,14 +1974,6 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
-"@tryghost/errors@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.2.tgz#643009ba20770279577fe2778cdf1f816ad13e90"
-  integrity sha512-81PnsWWayCLQgeBYpslyrMRmSIuflarxxR4tz7ZOIuptybAiKaD3S4GhTZLAXUOi38S62wJBoS/qTzRF6sIzng==
-  dependencies:
-    lodash "^4.17.21"
-    uuid "^8.3.2"
-
 "@tryghost/express-dynamic-redirects@0.2.5":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.5.tgz#3a8ab59cc4fc3dd652058958b61800616ea96ccf"
@@ -2173,10 +2165,10 @@
     "@tryghost/domain-events" "^0.1.7"
     "@tryghost/member-events" "^0.3.5"
 
-"@tryghost/members-api@5.0.2":
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.0.2.tgz#0b5b52091239865ca2728dbf8565e06dd808066d"
-  integrity sha512-PXcavQMx7MaHvbMEZYEo1W89zaZFcFTvDq7EQauTIQK/2BESb4KF86QhfvNtmnH9QIpipLN6veHGftu9mHM0rw==
+"@tryghost/members-api@5.0.3":
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.0.3.tgz#9331432410de8a92bb7f7796ee5b600ac2475449"
+  integrity sha512-ievsCslzxE01QMgDCJ7mysDdykN8IX53MN57QxIjjMpkt0MY02fZ6aNDigdjis9G/ndD2yon0xwnH6pElVwbqQ==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
@@ -2188,7 +2180,7 @@
     "@tryghost/member-events" "^0.3.5"
     "@tryghost/members-analytics-ingress" "^0.1.10"
     "@tryghost/members-payments" "^0.1.9"
-    "@tryghost/members-stripe-service" "^0.8.2"
+    "@tryghost/members-stripe-service" "^0.8.3"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
@@ -2251,10 +2243,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.8.2", "@tryghost/members-stripe-service@^0.8.2":
-  version "0.8.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.8.2.tgz#9a59b6ba95e523750d1989e14f5d6e5f354938bb"
-  integrity sha512-Tnkqaqqk5wWwDxcknZ+lqRNmbMwu8GbwzV4bFblymBdV/lOy87CMFMhw324pVSDagTLx/cWqoDkkfoF1aM93dw==
+"@tryghost/members-stripe-service@0.8.3", "@tryghost/members-stripe-service@^0.8.3":
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.8.3.tgz#460dc41ec87464c4fe8ea814f931719f0bc8265d"
+  integrity sha512-mTSjy3UWmpdTNqIPjfwM8FeT4nUqBGaSJ4473vRxqJY53KnmM3CPnyjZjzczoE6x4NYYW/WkNKkgLQGpwykO7g==
   dependencies:
     "@tryghost/debug" "^0.1.4"
     "@tryghost/errors" "1.2.2"
