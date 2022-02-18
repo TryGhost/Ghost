@@ -8,12 +8,6 @@ let adminAgent;
 
 describe('Members API', function () {
     before(async function () {
-        // Weird - most of the mocks happen after getting the agent
-        // but to mock stripe we want to fake the stripe keys in the settings.
-        // And it's initialised at boot - so mocking it before
-        // Probably wanna replace this with a settinfs fixture mock or smth??
-        mockManager.setupStripe();
-
         const agents = await agentProvider.getAgentsForMembers();
         membersAgent = agents.membersAgent;
         adminAgent = agents.adminAgent;
