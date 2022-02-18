@@ -191,7 +191,7 @@ describe('Exporter', function () {
             const {
                 SETTING_KEYS_BLOCKLIST
             } = require('../../../../../core/server/data/exporter/table-lists.js');
-            const defaultSettings = require('../../../../../core/server/data/schema/default-settings.json');
+            const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
 
             const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr, index) => {
                 return acc + Object.keys(defaultSettings[curr]).length;
