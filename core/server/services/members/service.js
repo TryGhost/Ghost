@@ -39,7 +39,6 @@ const membersStats = new MembersStats({
 });
 
 let membersApi;
-let ssr;
 let membersSettings;
 let verificationTrigger;
 
@@ -126,11 +125,10 @@ module.exports = {
             });
         }
 
-        ssr = MembersSSR({
+        module.exports.ssr = MembersSSR({
             cookieSecure: urlUtils.isSSL(urlUtils.getSiteUrl()),
             cookieKeys: [settingsCache.get('theme_session_secret')],
             cookieName: 'ghost-members-ssr',
-            cookieCacheName: 'ghost-members-ssr-cache',
             getMembersApi: () => module.exports.api
         });
 
@@ -190,9 +188,7 @@ module.exports = {
         return membersSettings;
     },
 
-    get ssr() {
-        return ssr;
-    },
+    ssr: null,
 
     stripeConnect: require('./stripe-connect'),
 
