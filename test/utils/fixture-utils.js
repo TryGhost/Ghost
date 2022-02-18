@@ -513,6 +513,27 @@ const fixtures = {
             return Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_customer_subscriptions), function (subscription) {
                 return models.StripeCustomerSubscription.add(subscription, context.internal);
             });
+        }).then(async function () {
+            const members = (await models.Member.findAll({
+                withRelated: [
+                    'labels',
+                    'stripeSubscriptions',
+                    'stripeSubscriptions.customer',
+                    'stripeSubscriptions.stripePrice',
+                    'stripeSubscriptions.stripePrice.stripeProduct',
+                    'products',
+                    'offerRedemptions'
+                ]
+            })).toJSON();
+
+            for (const member of members) {
+                for (const subscription of member.subscriptions) {
+                    const product = subscription.price.product.product_id;
+                    await models.Member.edit({products: member.products.concat({
+                        id: product
+                    })}, {id: member.id});
+                }
+            }
         });
     },
 
