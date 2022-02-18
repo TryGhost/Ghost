@@ -469,7 +469,7 @@ const fixtures = {
                 }
             });
         }).then(function () {
-            return models.Product.findOne({}, context.internal);
+            return models.Product.findOne({type: 'paid'}, context.internal);
         }).then(function (product) {
             return Promise.props({
                 stripeProducts: Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_products), function (stripeProduct) {
