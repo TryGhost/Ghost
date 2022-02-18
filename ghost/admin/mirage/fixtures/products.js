@@ -1,24 +1,31 @@
 /* eslint-disable camelcase */
 export default [
     {
-        id: 1,
-        name: 'Test Product',
-        slug: 'test-product',
-        monthly_price: {
-            interval: 'month',
-            nickname: 'Monthly',
-            currency: 'usd',
-            amount: 500
-        },
-        yearly_price: {
-            interval: 'year',
-            nickname: 'Yearly',
-            currency: 'usd',
-            amount: 5000
-        },
-        created_at: '2015-11-13T16:01:29.131Z',
-        created_by: 1,
-        updated_at: '2015-11-13T16:01:29.131Z',
-        updated_by: 1
+        id: '1',
+        active: true,
+        benefits: [],
+        createdAt: '2022-02-04T13:11:40.000Z',
+        description: null,
+        monthlyPrice: null,
+        name: 'Free',
+        slug: 'free',
+        type: 'free',
+        updatedAt: '2022-02-04T13:34:53.000Z',
+        welcomePageUrl: null,
+        yearlyPrice: null
+    },
+    {
+        id: '2',
+        active: true,
+        benefits: [],
+        createdAt: '2022-02-04T13:11:40.000Z',
+        description: null,
+        monthlyPrice: null,
+        name: 'Default Product',
+        slug: 'default-product',
+        type: 'paid',
+        updatedAt: '2022-02-04T13:11:40.000Z',
+        welcomePageUrl: null,
+        yearlyPrice: null
     }
 ];
