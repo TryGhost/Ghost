@@ -7,7 +7,7 @@ const path = require('path');
 const {config} = require('../../../../utils/configUtils');
 const schema = require('../../../../../core/server/data/schema/schema');
 const fixtures = require('../../../../../core/server/data/schema/fixtures/fixtures.json');
-const defaultSettings = require('../../../../../core/server/data/schema/default-settings.json');
+const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
 
 // Routes are yaml so we can require the file directly
 const routeSettings = require('../../../../../core/server/services/route-settings');

@@ -17,6 +17,7 @@
     "paths": {
         "contentPath": "content/",
         "fixtures": "core/server/data/schema/fixtures/fixtures",
+        "defaultSettings": "core/server/data/schema/default-settings/default-settings",
         "assetSrc": "core/frontend/src"
     },
     "adapters": {
