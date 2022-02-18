@@ -8,6 +8,19 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const Papa = require('papaparse');
 
+const models = require('../../../core/server/models');
+
+async function assertEvents({eventType, eventName, quantity, asserts}) {
+    const events = await models[eventType].findAll();
+    assert.equal(events.models.length, quantity, `Only one ${eventType} should have been added after ${eventName}.`);
+    const event = events.models[events.models.length - 1].toJSON();
+    Object.keys(asserts).map((key) => {
+        const attribute = key;
+        const value = asserts[key];
+        assert.equal(event[attribute], value, `The ${attribute} attribute of ${eventType} should have been ${value}`);
+    });
+}
+
 const memberMatcherNoIncludes = {
     id: anyObjectId,
     uuid: anyUuid,
@@ -312,6 +325,13 @@ describe('Members API', function () {
             .post(`/members/`)
             .body({members: [member]})
             .expectStatus(422);
+
+        await assertEvents({
+            eventName: 'creating a subscription',
+            eventType: 'MemberStatusEvent',
+            quantity: 1,
+            asserts: {from_status: null, to_status: 'free'}
+        });
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -343,6 +363,26 @@ describe('Members API', function () {
             to: 'member_getting_confirmation@test.com'
         });
 
+        await assertEvents({
+            eventName: 'creating a subscription',
+            eventType: 'MemberStatusEvent',
+            quantity: 2,
+            asserts: {
+                from_status: null,
+                to_status: 'free'
+            }
+        });
+
+        await assertEvents({
+            eventName: 'creating a subscription',
+            eventType: 'MemberSubscribeEvent',
+            quantity: 1,
+            asserts: {
+                subscribed: true,
+                source: 'admin'
+            }
+        });
+
         // @TODO: do we really need to delete this member here?
         await agent
             .delete(`members/${body.members[0].id}/`)
@@ -350,6 +390,9 @@ describe('Members API', function () {
                 etag: anyEtag
             })
             .expectStatus(204);
+
+        const events = await models.MemberSubscribeEvent.findAll();
+        assert.equal(events.models.length, 0, 'There should be no MemberSubscribeEvent remaining.');
     });
 
     it('Add should fail when passing incorrect email_type query parameter', async function () {
@@ -370,6 +413,9 @@ describe('Members API', function () {
                     id: anyErrorId
                 }]
             });
+
+        const statusEvents = await models.MemberStatusEvent.findAll();
+        assert.equal(statusEvents.models.length, 1, 'No MemberStatusEvent should have been added after failing to create a subscription.');
     });
 
     // Edit a member
@@ -460,6 +506,26 @@ describe('Members API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
+
+        await assertEvents({
+            eventName: 'creating a subscription',
+            eventType: 'MemberStatusEvent',
+            quantity: 2,
+            asserts: {
+                from_status: null,
+                to_status: 'free'
+            }
+        });
+
+        await assertEvents({
+            eventName: 'creating a subscription',
+            eventType: 'MemberSubscribeEvent',
+            quantity: 1,
+            asserts: {
+                subscribed: true,
+                source: 'admin'
+            }
+        });
     });
 
     it('Can edit by id', async function () {
@@ -496,6 +562,25 @@ describe('Members API', function () {
                 location: anyLocationFor('members')
             });
 
+        await assertEvents({
+            eventName: 'creating a subscription',
+            eventType: 'MemberSubscribeEvent',
+            quantity: 2,
+            asserts: {
+                subscribed: true,
+                source: 'admin'
+            }
+        });
+        await assertEvents({
+            eventName: 'updating a memer',
+            eventType: 'MemberStatusEvent',
+            quantity: 3,
+            asserts: {
+                from_status: null,
+                to_status: 'free'
+            }
+        });
+
         const newMember = body.members[0];
 
         await agent
@@ -515,6 +600,25 @@ describe('Members API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
+
+        await assertEvents({
+            eventName: 'updating a member email',
+            eventType: 'MemberEmailChangeEvent',
+            quantity: 1,
+            asserts: {
+                from_email: memberToChange.email,
+                to_email: memberChanged.email
+            }
+        });
+        await assertEvents({
+            eventName: 'removing a subscription',
+            eventType: 'MemberSubscribeEvent',
+            quantity: 3,
+            asserts: {
+                subscribed: false,
+                source: 'admin'
+            }
+        });
     });
 
     it('Can add a subscription', async function () {
@@ -743,4 +847,3 @@ describe('Members API', function () {
             });
     });
 });
-
