@@ -77,7 +77,6 @@ describe('Members API without Stripe', function () {
 
 describe('Members API', function () {
     before(async function () {
-        mockManager.setupStripe();
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await agent.loginAsOwner();
