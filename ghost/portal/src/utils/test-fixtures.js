@@ -113,6 +113,10 @@ const baseMultiTierSite = getSiteData({
 export const site = {
     singleTier: {
         basic: baseSingleTierSite,
+        inviteOnly: {
+            ...baseSingleTierSite,
+            portal_plans: []
+        },
         onlyFreePlan: {
             ...baseSingleTierSite,
             portal_plans: ['free']
@@ -165,6 +169,31 @@ export const member = {
     paid: getMemberData({
         paid: true,
         subscriptions: [
+            getSubscriptionData({
+                status: 'active',
+                currency: 'USD',
+                interval: 'year',
+                amount: 5000,
+                cardLast4: '4242',
+                startDate: '2021-10-05T03:18:30.000Z',
+                currentPeriodEnd: '2022-10-05T03:18:30.000Z',
+                cancelAtPeriodEnd: false
+            })
+        ]
+    }),
+    paidWithCanceledSubscription: getMemberData({
+        paid: true,
+        subscriptions: [
+            getSubscriptionData({
+                status: 'canceled',
+                currency: 'USD',
+                interval: 'year',
+                amount: 5000,
+                cardLast4: '4242',
+                startDate: '2021-10-05T03:18:30.000Z',
+                currentPeriodEnd: '2022-10-05T03:18:30.000Z',
+                cancelAtPeriodEnd: false
+            }),
             getSubscriptionData({
                 status: 'active',
                 currency: 'USD',
