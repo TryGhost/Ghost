@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyDate, anyString, anyArray, anyLocationFor, anyErrorId} = matchers;
+const {anyEtag, anyObjectId, anyUuid, anyDate, anyShortDate, anyString, anyArray, anyLocationFor, anyErrorId} = matchers;
 
 const assert = require('assert');
 const nock = require('nock');
@@ -719,7 +719,11 @@ describe('Members API', function () {
         await agent
             .get(`/members/stats/count/`)
             .expectStatus(200)
-            .matchBodySnapshot()
+            .matchBodySnapshot({
+                data: [{
+                    date: anyShortDate
+                }]
+            })
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
