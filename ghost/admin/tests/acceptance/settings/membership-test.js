@@ -20,6 +20,8 @@ describe('Acceptance: Settings - Membership', function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('products');
 
+        this.server.db.configs.update(1, {blogUrl: 'http://localhost:2368'})
+
         const role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
 
@@ -207,7 +209,7 @@ describe('Acceptance: Settings - Membership', function () {
 
         expect(find('[data-test-input="free-welcome-page"]')).to.exist;
         expect(find('[data-test-input="free-welcome-page"]'))
-            .to.have.value('http://localhost:4200/not%20a%20url');
+            .to.have.value('http://localhost:2368/not%20a%20url');
 
         // it can manage free tier description and benefits
 
