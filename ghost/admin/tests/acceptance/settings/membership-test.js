@@ -20,7 +20,7 @@ describe('Acceptance: Settings - Membership', function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('products');
 
-        this.server.db.configs.update(1, {blogUrl: 'http://localhost:2368'})
+        this.server.db.configs.update(1, {blogUrl: 'http://localhost:2368'});
 
         const role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
