@@ -2,7 +2,6 @@ const membersService = require('../../../core/server/services/members');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 
 let membersAgent;
-let adminAgent;
 
 describe('Members Signin', function () {
     before(async function () {
@@ -14,10 +13,8 @@ describe('Members Signin', function () {
 
         const agents = await agentProvider.getAgentsForMembers();
         membersAgent = agents.membersAgent;
-        adminAgent = agents.adminAgent;
 
         await fixtureManager.init('members');
-        await adminAgent.loginAsOwner();
     });
 
     beforeEach(function () {
@@ -41,7 +38,7 @@ describe('Members Signin', function () {
         const magicLinkUrl = new URL(magicLink);
         const token = magicLinkUrl.searchParams.get('token');
 
-        const res = await membersAgent.get(`/?token=${token}`)
+        await membersAgent.get(`/?token=${token}`)
             .expectStatus(302)
             .expectHeader('Location', /\?\w*success=true/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
