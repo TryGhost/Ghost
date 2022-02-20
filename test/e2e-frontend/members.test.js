@@ -338,11 +338,11 @@ describe('Front-end members behaviour', function () {
                     .expect(assertContentIsAbsent);
             });
 
-            it('cannot read product-only post content', async function () {
+            it('can read product-only post content', async function () {
                 await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
-                    .expect(assertContentIsAbsent);
+                    .expect(assertContentIsPresent);
             });
         });
 
@@ -392,11 +392,11 @@ describe('Front-end members behaviour', function () {
                     .expect(assertContentIsAbsent);
             });
 
-            it('cannot read product-only post content', async function () {
+            it('can read product-only post content', async function () {
                 await request
                     .get('/thou-must-have-default-product/')
                     .expect(200)
-                    .expect(assertContentIsAbsent);
+                    .expect(assertContentIsPresent);
             });
         });
 

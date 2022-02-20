@@ -37,6 +37,9 @@ const setupStripe = () => {
         if (key === 'stripe_connect_account_name') {
             return 'Test Account';
         }
+        if (key === 'theme_session_secret') {
+            return '1337_h4xx0r_53cR37';
+        }
         return settingsCache.get.wrappedMethod.call(settingsCache, key, ...args);
     });
 };

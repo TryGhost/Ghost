@@ -198,7 +198,7 @@ const createSessionFromMagicLink = async function (req, res, next) {
 
         const action = req.query.action;
 
-        if (action === 'signup' || action === 'signup-paid') {
+        if (action === 'signup' || action === 'signup-paid' || action === 'subscribe') {
             let customRedirect = '';
             const mostRecentActiveSubscription = subscriptions
                 .sort((a, b) => {
