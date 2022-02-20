@@ -125,6 +125,13 @@ module.exports = {
             });
         }
 
+        module.exports.ssr = MembersSSR({
+            cookieSecure: urlUtils.isSSL(urlUtils.getSiteUrl()),
+            cookieKeys: [settingsCache.get('theme_session_secret')],
+            cookieName: 'ghost-members-ssr',
+            getMembersApi: () => module.exports.api
+        });
+
         verificationTrigger = new VerificationTrigger({
             configThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
             isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
@@ -181,13 +188,7 @@ module.exports = {
         return membersSettings;
     },
 
-    ssr: MembersSSR({
-        cookieSecure: urlUtils.isSSL(urlUtils.getSiteUrl()),
-        cookieKeys: [settingsCache.get('theme_session_secret')],
-        cookieName: 'ghost-members-ssr',
-        cookieCacheName: 'ghost-members-ssr-cache',
-        getMembersApi: () => module.exports.api
-    }),
+    ssr: null,
 
     stripeConnect: require('./stripe-connect'),
 
