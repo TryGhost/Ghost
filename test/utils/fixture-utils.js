@@ -461,13 +461,24 @@ const fixtures = {
         return Promise.map(DataGenerator.forKnex.labels, function (label) {
             return models.Label.add(label, context.internal);
         }).then(function () {
-            let productsToInsert = fixtureManager.findModelFixtures('Product').entries;
-            return Promise.map(productsToInsert, async (product) => {
+            let coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
+            return Promise.map(coreProductFixtures, async (product) => {
                 const found = await models.Product.findOne(product, context.internal);
                 if (!found) {
                     await models.Product.add(product, context.internal);
                 }
             });
+        }).then(async function () {
+            let testProductFixtures = DataGenerator.forKnex.products;
+            for (const productFixture of testProductFixtures) {
+                if (productFixture.id) { // Not currently used - this is used to add new text fixtures, e.g. a Bronze/Silver/Gold Tier
+                    await models.Product.add(productFixture, context.internal);
+                } else { // Used to update the core fixtures
+                    // If it doesn't exist we have invalid fixtures, so require: true to ensure we throw
+                    const existing = await models.Product.findOne({slug: productFixture.slug}, {...context.internal, require: true});
+                    await models.Product.edit(productFixture, {...context.internal, id: existing.id});
+                }
+            }
         }).then(function () {
             return models.Product.findOne({type: 'paid'}, context.internal);
         }).then(function (product) {

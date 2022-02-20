@@ -367,16 +367,16 @@ DataGenerator.Content = {
 
     products: [
         {
-            id: ObjectId().toHexString(),
-            name: 'Free',
+            // No ID because these are in the core fixtures.json
             slug: 'free',
-            type: 'free'
+            // slug is to match the product, the below are updated for the product
+            welcome_page_url: '/welcome-free'
         },
         {
-            id: ObjectId().toHexString(),
-            name: 'Ghost Product',
-            slug: 'ghost-product',
-            type: 'paid'
+            // No ID because these are in the core fixtures.json
+            slug: 'default-product',
+            // slug is to match the product, the below are updated for the product
+            welcome_page_url: '/welcome-paid'
         }
     ],
 
@@ -1271,7 +1271,8 @@ DataGenerator.forKnex = (function () {
     ];
 
     const products = [
-        createBasic(DataGenerator.Content.products[0])
+        DataGenerator.Content.products[0],
+        DataGenerator.Content.products[1]
     ];
 
     const members_stripe_customers = [

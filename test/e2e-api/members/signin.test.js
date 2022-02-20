@@ -52,14 +52,6 @@ describe('Members Signin', function () {
         const magicLinkUrl = new URL(magicLink);
         const token = magicLinkUrl.searchParams.get('token');
 
-        const {body: {products}} = await adminAgent.get('/products/');
-
-        const freeProduct = products.find(product => product.type === 'free');
-
-        await adminAgent.put(`/products/${freeProduct.id}/`).body({
-            products: [{...freeProduct, welcome_page_url: '/welcome-free'}]
-        });
-
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
             .expectHeader('Location', /\/welcome-free\/$/)
@@ -71,14 +63,6 @@ describe('Members Signin', function () {
         const magicLinkUrl = new URL(magicLink);
         const token = magicLinkUrl.searchParams.get('token');
 
-        const {body: {products}} = await adminAgent.get('/products/');
-
-        const paidProduct = products.find(product => product.type === 'paid');
-
-        const res = await adminAgent.put(`/products/${paidProduct.id}/`).body({
-            products: [{...paidProduct, welcome_page_url: '/welcome-paid'}]
-        });
-
         await membersAgent.get(`/?token=${token}&action=signup-paid`)
             .expectStatus(302)
             .expectHeader('Location', /\/welcome-paid\/$/)
@@ -89,14 +73,6 @@ describe('Members Signin', function () {
         const magicLink = await membersService.api.getMagicLink('member1@test.com');
         const magicLinkUrl = new URL(magicLink);
         const token = magicLinkUrl.searchParams.get('token');
-
-        const {body: {products}} = await adminAgent.get('/products/');
-
-        const freeProduct = products.find(product => product.type === 'free');
-
-        await adminAgent.put(`/products/${freeProduct.id}/`).body({
-            products: [{...freeProduct, welcome_page_url: '/welcome-free'}]
-        });
 
         await membersAgent.get(`/?token=${token}&action=subscribe`)
             .expectStatus(302)
