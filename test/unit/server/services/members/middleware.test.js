@@ -8,6 +8,7 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 
 describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {
+        let oldSSR;
         let req;
         let res;
         let next;
@@ -20,13 +21,17 @@ describe('Members Service Middleware', function () {
             res.redirect = sinon.stub().returns('');
 
             // Stub the members Service, handle this in separate tests
-            membersService.ssr.exchangeTokenForSession = sinon.stub();
+            oldSSR = membersService.ssr;
+            membersService.ssr = {
+                exchangeTokenForSession: sinon.stub()
+            };
 
             sinon.stub(urlUtils, 'getSubdir').returns('/blah');
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
         });
 
         afterEach(function () {
+            membersService.ssr = oldSSR;
             sinon.restore();
         });
 
