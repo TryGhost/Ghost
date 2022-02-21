@@ -1974,6 +1974,14 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
+"@tryghost/errors@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.3.tgz#dccfcd09e175e4f0e437039a2653119f84b41e70"
+  integrity sha512-6vd5s2tKX4uQoKjwyP7rICPVY3jj9balc5XLcmwQjUm4yuRAL9AAcpbf1O4AwNN1gs/cN+Wknxjk/LeeIvGbGA==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
 "@tryghost/express-dynamic-redirects@0.2.5":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.5.tgz#3a8ab59cc4fc3dd652058958b61800616ea96ccf"
@@ -2424,6 +2432,13 @@
   dependencies:
     lodash.template "^4.5.0"
 
+"@tryghost/tpl@^0.1.12":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.12.tgz#78e65ba202bcab56acd3582af6de4ce890f29b46"
+  integrity sha512-/Xsnn84VhAueWiA7LJRfvRyB9g5MlBXxbZxS1NJTiCIW0eO9T5nm6qJA53Pta1KrhnO6ZVEvThIQVuCe473iQQ==
+  dependencies:
+    lodash.template "^4.5.0"
+
 "@tryghost/update-check-service@0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.3.1.tgz#20a36ac6b6bbb4a1fcb0891ad950f0cb4ba339f4"
@@ -2449,7 +2464,18 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/validator@0.1.13", "@tryghost/validator@^0.1.13":
+"@tryghost/validator@0.1.14":
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.14.tgz#27b24864619d5b7fc421a4fa76ed3344f0fc5e42"
+  integrity sha512-NSokfN3Qc7P2zzygXJ4vJL+9QCdbvae067p/XGwYBmS1UmOfZ4LPMSDrdf9C1LYMdp0869B6bIdHXU7vhq0s7w==
+  dependencies:
+    "@tryghost/errors" "^1.2.3"
+    "@tryghost/tpl" "^0.1.12"
+    lodash "^4.17.21"
+    moment-timezone "0.5.23"
+    validator "7.2.0"
+
+"@tryghost/validator@^0.1.13":
   version "0.1.13"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.13.tgz#61586e37eabfc4ebdf87b4ce6bf610e4d7d61628"
   integrity sha512-1O8Gyiak/QFU9oALW/EO7PLwHbI3PltU14G9b8rpm917q5zxP3uMYuz+xUNGaBSe4mPkAi5msAPwuvV/ozBNfA==
