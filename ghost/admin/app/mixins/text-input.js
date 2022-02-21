@@ -35,6 +35,10 @@ export default Mixin.create({
         }
     },
 
+    input(event) {
+        this['on-input']?.(event);
+    },
+
     keyDown(event) {
         // stop event propagation when pressing "enter"
         // most useful in the case when undesired (global) keyboard shortcuts
