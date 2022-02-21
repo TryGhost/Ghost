@@ -1,4 +1,4 @@
-const Agent = require('@tryghost/express-test');
+const TestAgent = require('./test-agent');
 const errors = require('@tryghost/errors');
 const DataGenerator = require('./fixtures/data-generator');
 
@@ -14,15 +14,9 @@ const ownerUser = {
  * @param {String} options.apiURL
  * @param {String} options.originURL
  */
-class AdminAPITestAgent extends Agent {
+class AdminAPITestAgent extends TestAgent {
     constructor(app, options) {
-        super(app, {
-            baseUrl: options.apiURL,
-            headers: {
-                host: options.originURL.replace(/http:\/\//, ''),
-                origin: options.originURL
-            }
-        });
+        super(app, options);
     }
 
     async loginAs(email, password) {
