@@ -27,7 +27,8 @@ const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
 
 const boot = require('../../core/boot');
-const TestAgent = require('./test-agent');
+const AdminAPITestAgent = require('./admin-api-test-agent');
+const MembersAPITestAgent = require('./members-api-test-agent');
 const db = require('./db-utils');
 
 // Services that need resetting
@@ -161,7 +162,7 @@ const getAdminAPIAgent = async (options = {}) => {
         const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
-        return new TestAgent(app, {
+        return new AdminAPITestAgent(app, {
             apiURL: '/ghost/api/canary/admin/',
             originURL
         });
@@ -186,7 +187,7 @@ const getMembersAPIAgent = async () => {
         const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
-        return new TestAgent(app, {
+        return new MembersAPITestAgent(app, {
             apiURL: '/members/',
             originURL
         });
@@ -198,7 +199,7 @@ const getMembersAPIAgent = async () => {
 
 /**
  *
- * @returns {Promise<{adminAgent: TestAgent, membersAgent: TestAgent}>} agent
+ * @returns {Promise<{adminAgent: AdminAPITestAgent, membersAgent: MembersAPITestAgent}>} agents
  */
 const getAgentsForMembers = async () => {
     let membersAgent;
@@ -212,11 +213,11 @@ const getAgentsForMembers = async () => {
         const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
-        membersAgent = new TestAgent(app, {
+        membersAgent = new MembersAPITestAgent(app, {
             apiURL: '/members/',
             originURL
         });
-        adminAgent = new TestAgent(app, {
+        adminAgent = new AdminAPITestAgent(app, {
             apiURL: '/ghost/api/canary/admin/',
             originURL
         });
