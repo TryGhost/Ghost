@@ -42,6 +42,8 @@ module.exports = {
                         password: frame.data.setup[0].password,
                         blogTitle: frame.data.setup[0].blogTitle,
                         theme: frame.data.setup[0].theme,
+                        accentColor: frame.data.setup[0].accentColor,
+                        description: frame.data.setup[0].description,
                         status: 'active'
                     };
 
