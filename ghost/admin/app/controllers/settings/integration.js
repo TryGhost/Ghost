@@ -186,7 +186,16 @@ export default class IntegrationController extends Controller {
     }
 
     @task(function* () {
-        return yield this.integration.save();
+        try {
+            return yield this.integration.save();
+        } catch (e) {
+            if (e === undefined) {
+                // validation error
+                return false;
+            }
+
+            throw e;
+        }
     })
         saveTask;
 
