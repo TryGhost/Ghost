@@ -125,7 +125,7 @@ export default class MembersEmail extends Component {
         if (event) {
             event.preventDefault();
         }
-        this.set('settings.emailTrackOpens', !this.emailTrackOpens);
+        this.set('settings.emailTrackOpens', !this.settings.get('emailTrackOpens'));
     }
 
     @action
