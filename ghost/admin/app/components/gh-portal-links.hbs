@@ -10,7 +10,7 @@
                     <td>
                         <div class='toggle-header'>
                             <h4>{{this.sectionHeaderLabel}}</h4>
-                            <h4 class='gh-portal-links-cell toggle' onclick={{action "toggleShowLinks"}}>{{this.toggleValue}}</h4>
+                            <h4 role="button" class='gh-portal-links-cell toggle' {{on "click" this.toggleShowLinks}}>{{this.toggleValue}}</h4>
                         </div>
                     </td>
                 </tr>
@@ -344,7 +344,7 @@
                     <td>
                         <div class='toggle-header'>
                             <h4>{{this.sectionHeaderLabel}}</h4>
-                            <h4 class='gh-portal-links-cell toggle' onclick={{action "toggleShowLinks"}}>{{this.toggleValue}}</h4>
+                            <h4 role="button" class='gh-portal-links-cell toggle' {{on "click" this.toggleShowLinks}}>{{this.toggleValue}}</h4>
                         </div>
                     </td>
                 </tr>
@@ -364,7 +364,7 @@
                                     data-portal
                                 {{/if}}
                             </div>
-                            <button type="button" {{action (perform this.copyStaticLink '')}} class="gh-portal-setting-copy">
+                            <button type="button" {{on "click" (fn this.copyStaticLink '')}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice ""))}}
                                     {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                 {{else}}
@@ -388,7 +388,7 @@
                                     data-portal="signin"
                                 {{/if}}
                             </div>
-                            <button type="button" {{action (perform this.copyStaticLink "signin")}} class="gh-portal-setting-copy">
+                            <button type="button" {{on "click" (fn this.copyStaticLink 'signin')}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signin"))}}
                                     {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                 {{else}}
@@ -409,7 +409,7 @@
                                     data-portal="signup"
                                 {{/if}}
                             </div>
-                            <button type="button" {{action (perform this.copyStaticLink "signup")}} class="gh-portal-setting-copy">
+                            <button type="button" {{on "click" (fn this.copyStaticLink 'signup')}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup"))}}
                                     {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                 {{else}}
@@ -438,7 +438,7 @@
                                         @optionValuePath="name"
                                         @optionLabelPath="label"
                                         @value={{this.selectedProduct}}
-                                        @update={{action "setSelectedProduct"}}
+                                        @update={{this.setSelectedProduct}}
                                     />
                                     {{svg-jar "arrow-down-small"}}
                                 </span>
@@ -455,7 +455,7 @@
                                         data-portal="signup{{this.selectedProductIdPath}}/monthly"
                                     {{/if}}
                                 </div>
-                                <button type="button" {{action (perform this.copyProductSignupLink "monthly")}} class="gh-portal-setting-copy">
+                                <button type="button" {{on "click" (fn this.copyProductSignupLink 'monthly')}} class="gh-portal-setting-copy">
                                     {{#if (and this.copyProductSignupLink.isRunning (eq this.copiedSignupInterval "monthly"))}}
                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                     {{else}}
@@ -476,7 +476,7 @@
                                         data-portal="signup{{this.selectedProductIdPath}}/yearly"
                                     {{/if}}
                                 </div>
-                                <button type="button" {{action (perform this.copyProductSignupLink "yearly")}} class="gh-portal-setting-copy">
+                                <button type="button" {{on "click" (fn this.copyProductSignupLink 'yearly')}} class="gh-portal-setting-copy">
                                     {{#if (and this.copyProductSignupLink.isRunning (eq this.copiedSignupInterval "yearly"))}}
                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                     {{else}}
@@ -497,7 +497,7 @@
                                         data-portal="signup/free"
                                     {{/if}}
                                 </div>
-                                <button type="button" {{action (perform this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
+                                <button type="button" {{on "click" (fn this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
                                     {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/free"))}}
                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                     {{else}}
@@ -519,7 +519,7 @@
                                         data-portal="signup/monthly"
                                     {{/if}}
                                 </div>
-                                <button type="button" {{action (perform this.copyStaticLink "signup/monthly")}} class="gh-portal-setting-copy">
+                                <button type="button" {{on "click" (fn this.copyStaticLink "signup/monthly")}} class="gh-portal-setting-copy">
                                     {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/monthly"))}}
                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                     {{else}}
@@ -540,7 +540,7 @@
                                         data-portal="signup/yearly"
                                     {{/if}}
                                 </div>
-                                <button type="button" {{action (perform this.copyStaticLink "signup/yearly")}} class="gh-portal-setting-copy">
+                                <button type="button" {{on "click" (fn this.copyStaticLink "signup/yearly")}} class="gh-portal-setting-copy">
                                     {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/yearly"))}}
                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                     {{else}}
@@ -561,7 +561,7 @@
                                         data-portal="signup/free"
                                     {{/if}}
                                 </div>
-                                <button type="button" {{action (perform this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
+                                <button type="button" {{on "click" (fn this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
                                     {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/free"))}}
                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                     {{else}}
@@ -586,7 +586,7 @@
                                     data-portal="account"
                                 {{/if}}
                             </div>
-                            <button type="button" {{action (perform this.copyStaticLink "account")}} class="gh-portal-setting-copy">
+                            <button type="button" {{on "click" (fn this.copyStaticLink "account")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account"))}}
                                     {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                 {{else}}
@@ -607,7 +607,7 @@
                                     data-portal="account/plans"
                                 {{/if}}
                             </div>
-                            <button type="button" {{action (perform this.copyStaticLink "account/plans")}} class="gh-portal-setting-copy">
+                            <button type="button" {{on "click" (fn this.copyStaticLink "account/plans")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account/plans"))}}
                                     {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                 {{else}}
@@ -628,7 +628,7 @@
                                     data-portal="account/profile"
                                 {{/if}}
                             </div>
-                            <button type="button" {{action (perform this.copyStaticLink "account/profile")}} class="gh-portal-setting-copy">
+                            <button type="button" {{on "click" (fn this.copyStaticLink "account/profile")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account/profile"))}}
                                     {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                 {{else}}
