@@ -106,7 +106,8 @@ module.exports = {
             before(frame) {
                 const errors = [];
 
-                frame.data.settings.map((setting) => {
+                // Using eslint disable line here as we are about to drop v2 - no point in fixing
+                frame.data.settings.map((setting) => { /* eslint-disable-line array-callback-return */
                     if (setting.group === 'core' && !(frame.options.context && frame.options.context.internal)) {
                         errors.push(new NoPermissionError({
                             message: tpl(messages.accessCoreSettingFromExtReq)

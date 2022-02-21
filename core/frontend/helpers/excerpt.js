@@ -12,6 +12,7 @@ const getMetaDataExcerpt = metaData.getMetaDataExcerpt;
 
 module.exports = function excerpt(options) {
     let truncateOptions = (options || {}).hash || {};
+
     let excerptText;
 
     if (this.custom_excerpt) {
@@ -24,10 +25,12 @@ module.exports = function excerpt(options) {
         excerptText = '';
     }
 
-    truncateOptions = _.pick(truncateOptions, ['words', 'characters']);
-    _.keys(truncateOptions).map(function (key) {
-        truncateOptions[key] = parseInt(truncateOptions[key], 10);
-    });
+    truncateOptions = _.reduce(truncateOptions, (_truncateOptions, value, key) => {
+        if (['words', 'characters'].includes(key)) {
+            _truncateOptions[key] = parseInt(value, 10);
+        }
+        return _truncateOptions;
+    }, {});
 
     if (!_.isEmpty(this.custom_excerpt)) {
         truncateOptions.characters = this.custom_excerpt.length;

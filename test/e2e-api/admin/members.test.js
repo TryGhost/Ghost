@@ -14,11 +14,11 @@ async function assertEvents({eventType, eventName, quantity, asserts}) {
     const events = await models[eventType].findAll();
     assert.equal(events.models.length, quantity, `Only one ${eventType} should have been added after ${eventName}.`);
     const event = events.models[events.models.length - 1].toJSON();
-    Object.keys(asserts).map((key) => {
-        const attribute = key;
-        const value = asserts[key];
+
+    for (const attribute of Object.keys(assert)) {
+        const value = asserts[attribute];
         assert.equal(event[attribute], value, `The ${attribute} attribute of ${eventType} should have been ${value}`);
-    });
+    }
 }
 
 const memberMatcherNoIncludes = {
