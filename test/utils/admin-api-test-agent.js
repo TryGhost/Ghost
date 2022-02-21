@@ -14,7 +14,7 @@ const ownerUser = {
  * @param {String} options.apiURL
  * @param {String} options.originURL
  */
-class TestAgent extends Agent {
+class AdminAPITestAgent extends Agent {
     constructor(app, options) {
         super(app, {
             baseUrl: options.apiURL,
@@ -53,4 +53,4 @@ class TestAgent extends Agent {
     }
 }
 
-module.exports = TestAgent;
+module.exports = AdminAPITestAgent;
