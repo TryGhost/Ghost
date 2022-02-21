@@ -48,7 +48,9 @@ describe('Authentication API', function () {
                         email: 'test@example.com',
                         password: 'thisissupersafe',
                         blogTitle: 'a test blog',
-                        theme: 'TryGhost/Dawn'
+                        theme: 'TryGhost/Dawn',
+                        accentColor: '#85FF00',
+                        description: 'Custom Site Description on Setup &mdash; great for everyone'
                     }]
                 })
                 .expectStatus(201)
@@ -70,7 +72,11 @@ describe('Authentication API', function () {
             assert.equal(requestMock.isDone(), true, 'The dawn github URL should have been used');
 
             const activeTheme = await settingsCache.get('active_theme');
+            const accentColor = await settingsCache.get('accent_color');
+            const description = await settingsCache.get('description');
             assert.equal(activeTheme, 'dawn', 'The theme dawn should have been installed');
+            assert.equal(accentColor, '#85FF00', 'The accent color should have been set');
+            assert.equal(description, 'Custom Site Description on Setup &mdash; great for everyone', 'The site description should have been set');
         });
 
         it('is setup? yes', async function () {

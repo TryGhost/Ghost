@@ -77,6 +77,7 @@ async function doSettings(data, settingsAPI) {
     const context = {context: {user: data.user.id}};
     const user = data.user;
     const blogTitle = data.userData.blogTitle;
+    const description = data.userData.description;
 
     let userSettings;
 
@@ -84,10 +85,20 @@ async function doSettings(data, settingsAPI) {
         return user;
     }
 
+    if (!description || typeof description !== 'string') {
+        return user;
+    }
+
     userSettings = [
         {key: 'title', value: blogTitle.trim()},
-        {key: 'description', value: tpl(messages.sampleBlogDescription)}
+        {key: 'description', value: description.trim() || tpl(messages.sampleBlogDescription)}
     ];
+
+    if (data.userData.accentColor) {
+        userSettings.push({
+            key: 'accent_color', value: data.userData.accentColor
+        });
+    }
 
     await settingsAPI.edit({settings: userSettings}, context);
 
