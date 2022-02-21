@@ -6921,10 +6921,10 @@ ember-could-get-used-to-this@1.0.1:
     ember-cli-babel "^7.22.1"
     ember-cli-htmlbars "^4.2.0"
 
-ember-css-transitions@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-3.0.0.tgz#348d22d444a94611853ae06340422540d5a78050"
-  integrity sha512-yOa9LO4tNSHpcpv6u4rSQb1eLLtGwTTk/PbHIWcgzYj1EYLE4th3zdt4vKnM6ajBmlDFUSmjwLfDONTsWhizUg==
+ember-css-transitions@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-3.1.0.tgz#8003c2efc6c6850c1f700bc13cfac97e606e9a52"
+  integrity sha512-4mbcjOZ5gWLpd60ccWWYe3zgx7IMHb+EH+asbI7MhRMrExeZdt16va4GlhB9o4zXBMO86JW5PX+zAi/at3eW/Q==
   dependencies:
     ember-cli-babel "^7.26.11"
     ember-modifier "^2.1.2 || ^3.1.0"
