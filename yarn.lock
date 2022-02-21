@@ -1958,6 +1958,14 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
+"@tryghost/errors@1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.3.tgz#dccfcd09e175e4f0e437039a2653119f84b41e70"
+  integrity sha512-6vd5s2tKX4uQoKjwyP7rICPVY3jj9balc5XLcmwQjUm4yuRAL9AAcpbf1O4AwNN1gs/cN+Wknxjk/LeeIvGbGA==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
 "@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.14":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
