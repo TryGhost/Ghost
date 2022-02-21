@@ -531,8 +531,14 @@
 .gh-portal-page-url-container .page-url-label {
     max-width: 470px;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.gh-portal-page-url-container .page-url-label .page-url-label-inner {
+    overflow-y: hidden;
+    overflow-x: scroll;
+    margin: 0 0 -80px 0!important;
+    padding: 0 0 80px 0;
 }
 
 .gh-show-modal-link-form .page-url-label {
@@ -540,7 +546,7 @@
 }
 
 .gh-portal-page-url-container .page-url-disabled {
-    color: var(--midlightgrey);
+    color: var(--midgrey);
     font-weight: 400;
 }
 

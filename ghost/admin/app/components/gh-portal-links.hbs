@@ -111,11 +111,13 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if this.isLink}}
-                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup{{this.selectedProductIdPath}}/monthly</span>
-                                {{else}}
-                                    data-portal="signup{{this.selectedProductIdPath}}/monthly"
-                                {{/if}}
+                                <div class="page-url-label-inner">
+                                    {{#if this.isLink}}
+                                        <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup{{this.selectedProductIdPath}}/monthly</span>
+                                    {{else}}
+                                        data-portal="signup{{this.selectedProductIdPath}}/monthly"
+                                    {{/if}}
+                                </div>
                             </div>
                             <button type="button" {{action (perform this.copyProductSignupLink "monthly")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyProductSignupLink.isRunning (eq this.copiedSignupInterval "monthly"))}}
@@ -132,11 +134,13 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if this.isLink}}
-                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup{{this.selectedProductIdPath}}/yearly</span>
-                                {{else}}
-                                    data-portal="signup{{this.selectedProductIdPath}}/yearly"
-                                {{/if}}
+                                <div class="page-url-label-inner">
+                                    {{#if this.isLink}}
+                                        <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup{{this.selectedProductIdPath}}/yearly</span>
+                                    {{else}}
+                                        data-portal="signup{{this.selectedProductIdPath}}/yearly"
+                                    {{/if}}
+                                </div>
                             </div>
                             <button type="button" {{action (perform this.copyProductSignupLink "yearly")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyProductSignupLink.isRunning (eq this.copiedSignupInterval "yearly"))}}
@@ -153,11 +157,13 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if this.isLink}}
-                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
-                                {{else}}
-                                    data-portal="signup/free"
-                                {{/if}}
+                                <div class="page-url-label-inner">
+                                    {{#if this.isLink}}
+                                        <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
+                                    {{else}}
+                                        data-portal="signup/free"
+                                    {{/if}}
+                                </div>
                             </div>
                             <button type="button" {{action (perform this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/free"))}}
@@ -175,11 +181,13 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if this.isLink}}
-                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/monthly</span>
-                                {{else}}
-                                    data-portal="signup/monthly"
-                                {{/if}}
+                                <div class="page-url-label-inner">
+                                    {{#if this.isLink}}
+                                        <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/monthly</span>
+                                    {{else}}
+                                        data-portal="signup/monthly"
+                                    {{/if}}
+                                </div>
                             </div>
                             <button type="button" {{action (perform this.copyStaticLink "signup/monthly")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/monthly"))}}
@@ -196,11 +204,13 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if this.isLink}}
-                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/yearly</span>
-                                {{else}}
-                                    data-portal="signup/yearly"
-                                {{/if}}
+                                <div class="page-url-label-inner">
+                                    {{#if this.isLink}}
+                                        <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/yearly</span>
+                                    {{else}}
+                                        data-portal="signup/yearly"
+                                    {{/if}}
+                                </div>
                             </div>
                             <button type="button" {{action (perform this.copyStaticLink "signup/yearly")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/yearly"))}}
@@ -217,11 +227,13 @@
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
                             <div class="page-url-label">
-                                {{#if this.isLink}}
-                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
-                                {{else}}
-                                    data-portal="signup/free"
-                                {{/if}}
+                                <div class="page-url-label-inner">
+                                    {{#if this.isLink}}
+                                        <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/signup/free</span>
+                                    {{else}}
+                                        data-portal="signup/free"
+                                    {{/if}}
+                                </div>
                             </div>
                             <button type="button" {{action (perform this.copyStaticLink "signup/free")}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "signup/free"))}}
@@ -242,11 +254,13 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if this.isLink}}
-                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account</span>
-                            {{else}}
-                                data-portal="account"
-                            {{/if}}
+                            <div class="page-url-label-inner">
+                                {{#if this.isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account</span>
+                                {{else}}
+                                    data-portal="account"
+                                {{/if}}
+                            </div>
                         </div>
                         <button type="button" {{action (perform this.copyStaticLink "account")}} class="gh-portal-setting-copy">
                             {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account"))}}
@@ -263,11 +277,13 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if this.isLink}}
-                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account/plans</span>
-                            {{else}}
-                                data-portal="account/plans"
-                            {{/if}}
+                            <div class="page-url-label-inner">
+                                {{#if this.isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account/plans</span>
+                                {{else}}
+                                    data-portal="account/plans"
+                                {{/if}}
+                            </div>
                         </div>
                         <button type="button" {{action (perform this.copyStaticLink "account/plans")}} class="gh-portal-setting-copy">
                             {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account/plans"))}}
@@ -284,11 +300,13 @@
                 <td class='page-url'>
                     <div class="gh-portal-page-url-container">
                         <div class="page-url-label">
-                            {{#if this.isLink}}
-                                <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account/profile</span>
-                            {{else}}
-                                data-portal="account/profile"
-                            {{/if}}
+                            <div class="page-url-label-inner">
+                                {{#if this.isLink}}
+                                    <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal/account/profile</span>
+                                {{else}}
+                                    data-portal="account/profile"
+                                {{/if}}
+                            </div>
                         </div>
                         <button type="button" {{action (perform this.copyStaticLink "account/profile")}} class="gh-portal-setting-copy">
                             {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account/profile"))}}
