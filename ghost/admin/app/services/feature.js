@@ -93,6 +93,9 @@ export default class FeatureService extends Service {
     @feature('membersTableStatus')
         membersTableStatus;
 
+    @feature('membersLastSeenFilter')
+        membersLastSeenFilter;
+
     _user = null;
 
     @computed('settings.labs')
