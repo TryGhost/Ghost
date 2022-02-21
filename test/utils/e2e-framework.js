@@ -143,13 +143,13 @@ const resetData = async () => {
 };
 
 /**
- * Creates a TestAgent which is a drop-in substitution for supertest.
+ * Creates a AdminAPITestAgent which is a drop-in substitution for supertest.
  * It is automatically hooked up to the Admin API so you can make requests to e.g.
  * agent.get('/posts/') without having to worry about URL paths
  *
  * @param {Object} [options={}]
  * @param {Boolean} [options.members] Include members in the boot process
- * @returns {TestAgent} agent
+ * @returns {Promise<AdminAPITestAgent>} agent
  */
 const getAdminAPIAgent = async (options = {}) => {
     const bootOptions = {};
@@ -173,11 +173,11 @@ const getAdminAPIAgent = async (options = {}) => {
 };
 
 /**
- * Creates a TestAgent which is a drop-in substitution for supertest
+ * Creates a MembersAPITestAgent which is a drop-in substitution for supertest
  * It is automatically hooked up to the Members API so you can make requests to e.g.
  * agent.get('/webhooks/stripe/') without having to worry about URL paths
  *
- * @returns {Promise<TestAgent>} agent
+ * @returns {Promise<MembersAPITestAgent>} agent
  */
 const getMembersAPIAgent = async () => {
     const bootOptions = {
