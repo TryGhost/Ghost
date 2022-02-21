@@ -278,7 +278,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             ).to.equal('/settings/integrations/1');
         });
 
-        it.skip('can manage an integration', async function () {
+        it('can manage an integration', async function () {
             this.server.create('integration');
 
             await visit('/settings/integrations/1');
