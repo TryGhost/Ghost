@@ -191,7 +191,7 @@
     "coffeescript": "2.6.1",
     "cssnano": "5.0.17",
     "eslint": "8.9.0",
-    "eslint-plugin-ghost": "2.12.0",
+    "eslint-plugin-ghost": "2.13.0",
     "grunt": "1.4.1",
     "grunt-bg-shell": "2.3.3",
     "grunt-contrib-clean": "2.0.0",
