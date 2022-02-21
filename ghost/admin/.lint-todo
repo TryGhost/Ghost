@@ -1836,3 +1836,4 @@ remove|ember-template-lint|no-nested-landmark|126|24|126|24|a19c12d5f0d5fa9b8909
 remove|ember-template-lint|no-duplicate-attributes|9|4|9|4|6b5f76f812df2b84f2ed9ee5a557ca1bf98710df|1643760000000|1646352000000|1648940400000|app/components/gh-post-settings-menu/visibility-segment-select.hbs
 add|ember-template-lint|no-duplicate-landmark-elements|131|24|131|24|9eb7d301f1f50334e793aafab8f6b9e8905125ab|1645142400000|1647734400000|1650322800000|app/components/modal-product.hbs
 add|ember-template-lint|no-nested-landmark|131|24|131|24|9eb7d301f1f50334e793aafab8f6b9e8905125ab|1645142400000|1647734400000|1650322800000|app/components/modal-product.hbs
+remove|ember-template-lint|table-groups|5|8|5|8|9b53737f259340d2970119c70be1af3a83081cab|1643760000000|1646352000000|1648940400000|app/components/gh-portal-links.hbs
