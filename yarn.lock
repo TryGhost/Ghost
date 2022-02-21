@@ -1912,6 +1912,14 @@
     "@tryghost/root-utils" "^0.3.10"
     debug "^4.3.1"
 
+"@tryghost/debug@^0.1.13":
+  version "0.1.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.13.tgz#daf23fb9caedadfb919d3444faf9c84ed549beae"
+  integrity sha512-B5/fIvee1OqxIvB1gEZRqrjeN/hHbIFmmklqLm1I3yRBWyothStVnkaGm8taIoumgIluHv6h2BsYiFKIWQx65Q==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.11"
+    debug "^4.3.1"
+
 "@tryghost/domain-events@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.7.tgz#dd6fa48886961c3e27889672a234bb516770d491"
@@ -1931,6 +1939,14 @@
   dependencies:
     "@elastic/elasticsearch" "7.17.0"
     "@tryghost/debug" "^0.1.12"
+
+"@tryghost/elasticsearch@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-1.0.4.tgz#6a3e72715a11a3c35e7ff49091eebaaaf54b1d44"
+  integrity sha512-Z7Ce6MCI1x0ksHyZ6v/YEHgrSOtuf7RUDaTKLcnYglSwGHZ5NixRqBQhDP5A9tle9WNo+fGaIbH+7+vPl1slHQ==
+  dependencies:
+    "@elastic/elasticsearch" "7.17.0"
+    "@tryghost/debug" "^0.1.13"
 
 "@tryghost/email-analytics-provider-mailgun@1.0.7":
   version "1.0.7"
@@ -2116,15 +2132,15 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.0.1", "@tryghost/logging@2.0.3", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.3.tgz#46990446695fc2042036371180df3b21d5182827"
-  integrity sha512-TPbAVz7ohRAUFqCHWEZddX3NqxIPsyM8ozlrnPI0pRI5M3BKaDs1ouM/4zFsZwFLwPz7H9rv9jZfp7yuOLJrJg==
+"@tryghost/logging@2.0.1", "@tryghost/logging@2.0.4", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.0.4.tgz#7fadc8557fb548729a9296eed2dbff41904c38c2"
+  integrity sha512-XYiWv4kAjdpW5wYWUsOvkov5pQa25OwPUUADE0s7G3pFHV+pQbLxbOaj0xQEPUTuMPOOCTG4ZBkZsjqs0OyKtA==
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch" "^1.0.3"
-    "@tryghost/pretty-stream" "^0.1.5"
-    "@tryghost/root-utils" "^0.3.10"
+    "@tryghost/elasticsearch" "^1.0.4"
+    "@tryghost/pretty-stream" "^0.1.6"
+    "@tryghost/root-utils" "^0.3.11"
     bunyan "^1.8.15"
     bunyan-loggly "^1.4.2"
     fs-extra "^10.0.0"
@@ -2338,6 +2354,15 @@
     moment "^2.29.1"
     prettyjson "1.2.5"
 
+"@tryghost/pretty-stream@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.6.tgz#39ee1806aa92ee8430b0614864ff93ce36edefc7"
+  integrity sha512-upkb42htFwmHmdWyr/2h1lJW0rhT4i5ciRD6RGAN0TvCMDlSDmAmCqj5C2qefscr+pOVdinbBE27VUQdDTib+g==
+  dependencies:
+    lodash "^4.17.21"
+    moment "^2.29.1"
+    prettyjson "1.2.5"
+
 "@tryghost/promise@0.1.14":
   version "0.1.14"
   resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.14.tgz#1e256d7d179ba73569fff5b2c78db6481fe31ae4"
@@ -2368,6 +2393,14 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.1.0.tgz#7578cb5e57953316fef58edd43a152a86b719a8f"
   integrity sha512-zy3PSviwytjvjdMso86RYZLE2I4e2yL/s83fIEf/g17C8V8hsCcgE83cFOpCw3ISWDFX3Qi0IX9kI3or2pfGLg==
+  dependencies:
+    caller "^1.0.1"
+    find-root "^1.1.0"
+
+"@tryghost/root-utils@^0.3.11":
+  version "0.3.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.11.tgz#4c3a045c89c75301435b1d1db1946072b3ee3adf"
+  integrity sha512-1q01HsaqQSpFPVcq7tqkIUXa/L1P7yXNGbGJCeZ/IyfrSd/OdgQTluwz0BYzJc1mBP+5lIumqARr+XdbE/ZbAQ==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
