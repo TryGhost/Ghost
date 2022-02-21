@@ -2322,14 +2322,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.27.tgz#325e01252b52d9bdcab810e739f3803b103cc590"
   integrity sha512-+3al2q0lOR+xtAuhuaqPRrdhgO4OFeqFRoe+rvL8OjBI6Y5QLj6S7rr6XYcmAexWLIqRsCAKJbjgVZwo4PK/Nw==
 
-"@tryghost/nodemailer@0.3.12":
-  version "0.3.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.12.tgz#989df29da2d21bca4d15dd0622fb2e30667cd71c"
-  integrity sha512-2Z6VyPTOMjRPDtwSjmJh5g9pytEWKiC5LOUe7WspxdIQPW6vjMqT7u44T4yz7xZXpwYBU5Gb413iWFDs4q9Rhg==
+"@tryghost/nodemailer@0.3.13":
+  version "0.3.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.13.tgz#d11e713bdf0bd267bb6e4d810b8a8406145fcfb5"
+  integrity sha512-RYk1TLX5dN8i6NbJmEhmR51gwYJWz7Jb3KVJZPwoTHFIpC87kiRtfBC3IkfyxgbVUVrDlittMRvNUR1yJj3aoQ==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
     "@aws-sdk/credential-provider-node" "^3.31.0"
-    "@tryghost/errors" "^1.2.2"
+    "@tryghost/errors" "^1.2.3"
     nodemailer "^6.6.3"
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
