@@ -35,7 +35,8 @@ const ALPHA_FEATURES = [
     'tierWelcomePages',
     'tierName',
     'membersTableStatus',
-    'membersLastSeenFilter'
+    'membersLastSeenFilter',
+    'selectablePortalLinks'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
