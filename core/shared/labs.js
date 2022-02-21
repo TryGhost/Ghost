@@ -34,7 +34,8 @@ const ALPHA_FEATURES = [
     'improvedOnboarding',
     'tierWelcomePages',
     'tierName',
-    'membersTableStatus'
+    'membersTableStatus',
+    'membersLastSeenFilter'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
