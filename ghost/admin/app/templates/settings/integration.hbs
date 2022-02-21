@@ -29,7 +29,7 @@
 
                                 <GhUploader
                                     @extensions={{this.imageExtensions}}
-                                    @onComplete={{action "setIconImage"}}
+                                    @onComplete={{this.setIconImage}}
                                     as |uploader|
                                 >
                                     {{#if uploader.isUploading}}
@@ -40,7 +40,7 @@
                                         <button
                                             type="button"
                                             class="child app-custom-icon-uploadlabel"
-                                            {{action "triggerIconFileDialog"}}
+                                            {{on "click" this.triggerIconFileDialog}}
                                         >
                                             Upload
                                         </button>
@@ -68,8 +68,8 @@
                                     @class="gh-input mt1 mb1"
                                     @type="text"
                                     @value={{readonly this.integration.name}}
-                                    @input={{action (mut this.integration.name) value="target.value"}}
-                                    @focus-out={{action "validate" "name" target=this.integration}}
+                                    @on-input={{fn this.updateProperty "name"}}
+                                    @focus-out={{fn this.validateProperty "name"}}
                                     data-test-input="name"
                                 />
                                 <GhErrorMessage @errors={{this.integration.errors}} @property="name" data-test-error="name" class="ma0" />
@@ -87,8 +87,8 @@
                                     @class="gh-input mt1"
                                     @type="text"
                                     @value={{readonly this.integration.description}}
-                                    @input={{action (mut this.integration.description) value="target.value"}}
-                                    @focus-out={{action "validate" "description" target=this.integration}}
+                                    @on-input={{fn this.updateProperty "description"}}
+                                    @focus-out={{fn this.validateProperty "description"}}
                                     data-test-input="description"
                                 />
                                 <GhErrorMessage @errors={{this.integration.errors}} @property="description" data-test-error="description" class="ma0" />
@@ -104,10 +104,10 @@
                                                     {{this.integration.contentKey.secret}}
                                                 </span>
                                                 <div class="app-api-buttons child">
-                                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.contentKey}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                    <button type="button" {{on "click" (fn this.confirmRegenerateKeyModal this.integration.contentKey)}} class="app-button-regenerate" data-tooltip="Regenerate">
                                                         {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                                     </button>
-                                                    <button type="button" {{action (perform this.copyContentKey)}} class="app-button-copy">
+                                                    <button type="button" {{on "click" (perform this.copyContentKey)}} class="app-button-copy">
                                                         {{#if this.copyContentKey.isRunning}}
                                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                                         {{else}}
@@ -129,10 +129,10 @@
                                                     {{this.integration.adminKey.secret}}
                                                 </span>
                                                 <div class="app-api-buttons child">
-                                                    <button type="button" {{action "confirmRegenerateKeyModal" this.integration.adminKey}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                                    <button type="button" {{on "click" (fn this.confirmRegenerateKeyModal this.integration.adminKey)}} class="app-button-regenerate" data-tooltip="Regenerate">
                                                         {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                                     </button>
-                                                    <button type="button" {{action (perform this.copyAdminKey)}} class="app-button-copy">
+                                                    <button type="button" {{on "click" (perform this.copyAdminKey)}} class="app-button-copy">
                                                         {{#if this.copyAdminKey.isRunning}}
                                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                                         {{else}}
@@ -154,7 +154,7 @@
                                                     {{this.apiUrl}}
                                                 </span>
                                                 <div class="app-api-buttons child">
-                                                    <button type="button" {{action (perform this.copyApiUrl)}} class="app-button-copy">
+                                                    <button type="button" {{on "click" (perform this.copyApiUrl)}} class="app-button-copy">
                                                         {{#if this.copyApiUrl.isRunning}}
                                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                                         {{else}}
@@ -199,7 +199,7 @@
                                     <LinkTo @route="settings.integration.webhooks.edit" @models={{array this.integration webhook}} data-test-link="edit-webhook">
                                         {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
                                     </LinkTo>
-                                    <button data-test-button="delete-webhook" type="button" {{action "confirmWebhookDeletion" webhook}}>
+                                    <button data-test-button="delete-webhook" type="button" {{on "click" (fn this.confirmWebhookDeletion webhook)}}>
                                         {{svg-jar "trash" class="w6 fill-red pa1"}}
                                     </button>
                                 </div>
@@ -243,7 +243,7 @@
 
     <section class="gh-main-section">
         <div class="gh-main-section-block">
-            <button class="gh-btn gh-btn-red gh-btn-icon" type="button" {{action "confirmIntegrationDeletion"}}>
+            <button class="gh-btn gh-btn-red gh-btn-icon" type="button" {{on "click" this.confirmIntegrationDeletion}}>
                 <span> Delete integration </span>
             </button>
         </div>
@@ -252,8 +252,8 @@
 
 {{#if this.showUnsavedChangesModal}}
     <GhFullscreenModal @modal="leave-settings"
-        @confirm={{action "leaveScreen"}}
-        @close={{action "toggleUnsavedChangesModal"}}
+        @confirm={{this.leaveScreen}}
+        @close={{this.toggleUnsavedChangesModal}}
         @modifier="action wide" />
 {{/if}}
 
@@ -263,22 +263,22 @@
             apiKey=this.selectedApiKey
             integration=this.integration
         }}
-        @confirm={{action "regenerateKey"}}
-        @close={{action "cancelRegenerateKeyModal"}}
+        @confirm={{this.regenerateKey}}
+        @close={{this.cancelRegenerateKeyModal}}
         @modifier="action wide" />
 {{/if}}
 
 {{#if this.showDeleteIntegrationModal}}
     <GhFullscreenModal @modal="delete-integration"
-        @confirm={{action "deleteIntegration"}}
-        @close={{action "cancelIntegrationDeletion"}}
+        @confirm={{this.deleteIntegration}}
+        @close={{this.cancelIntegrationDeletion}}
         @modifier="action wide" />
 {{/if}}
 
 {{#if this.webhookToDelete}}
     <GhFullscreenModal @modal="delete-webhook"
-        @confirm={{action "deleteWebhook"}}
-        @close={{action "cancelWebhookDeletion"}}
+        @confirm={{this.deleteWebhook}}
+        @close={{this.cancelWebhookDeletion}}
         @modifier="action wide" />
 {{/if}}
 

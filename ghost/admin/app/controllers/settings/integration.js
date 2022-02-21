@@ -1,39 +1,41 @@
 import Controller from '@ember/controller';
-import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
-import {action, computed} from '@ember/object';
-import {alias} from '@ember/object/computed';
+import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-@classic
 export default class IntegrationController extends Controller {
     @service config;
     @service ghostPaths;
 
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
-    showRegenerateKeyModal = false;
-    selectedApiKey = null;
-    isApiKeyRegenerated = false;
 
-    init() {
-        super.init(...arguments);
+    @tracked showDeleteIntegrationModal = false;
+    @tracked showRegenerateKeyModal = false;
+    @tracked showUnsavedChangesModal = false;
+    @tracked selectedApiKey = null;
+    @tracked isApiKeyRegenerated = false;
+    @tracked webhookToDelete;
+
+    constructor() {
+        super(...arguments);
         if (this.isTesting === undefined) {
             this.isTesting = config.environment === 'test';
         }
     }
 
-    @alias('model')
-        integration;
+    get integration() {
+        return this.model;
+    }
 
-    @computed
     get apiUrl() {
         let origin = window.location.origin;
         let subdir = this.ghostPaths.subdir;
@@ -42,20 +44,17 @@ export default class IntegrationController extends Controller {
         return url.replace(/\/$/, '');
     }
 
-    @computed('isApiKeyRegenerated', 'selectedApiKey')
     get regeneratedKeyType() {
         if (this.isApiKeyRegenerated) {
-            return this.get('selectedApiKey.type');
+            return this.selectedApiKey.type;
         }
         return null;
     }
 
-    @computed
     get allWebhooks() {
         return this.store.peekAll('webhook');
     }
 
-    @computed('integration.id', 'allWebhooks.@each.{isNew,isDeleted}')
     get filteredWebhooks() {
         return this.allWebhooks.filter((webhook) => {
             let matchesIntegration = webhook.belongsTo('integration').id() === this.integration.id;
@@ -66,7 +65,6 @@ export default class IntegrationController extends Controller {
         });
     }
 
-    @computed('integration.iconImage')
     get iconImageStyle() {
         let url = this.integration.iconImage;
         if (url) {
@@ -83,9 +81,20 @@ export default class IntegrationController extends Controller {
     }
 
     @action
-    triggerIconFileDialog() {
+    triggerIconFileDialog(event) {
+        event.preventDefault();
         let input = document.querySelector('input[type="file"][name="iconImage"]');
         input.click();
+    }
+
+    @action
+    updateProperty(property, event) {
+        this.integration.set(property, event.target.value);
+    }
+
+    @action
+    validateProperty(property) {
+        this.integration.validate({property});
     }
 
     @action
@@ -103,13 +112,13 @@ export default class IntegrationController extends Controller {
         let leaveTransition = this.leaveScreenTransition;
 
         if (!transition && this.showUnsavedChangesModal) {
-            this.set('leaveScreenTransition', null);
-            this.set('showUnsavedChangesModal', false);
+            this.leaveScreenTransition = null;
+            this.showUnsavedChangesModal = false;
             return;
         }
 
         if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.set('leaveScreenTransition', transition);
+            this.leaveScreenTransition = transition;
 
             // if a save is running, wait for it to finish then transition
             if (this.saveTask.isRunning) {
@@ -119,12 +128,13 @@ export default class IntegrationController extends Controller {
             }
 
             // we genuinely have unsaved data, show the modal
-            this.set('showUnsavedChangesModal', true);
+            this.showUnsavedChangesModal = true;
         }
     }
 
     @action
-    leaveScreen() {
+    leaveScreen(event) {
+        event?.preventDefault();
         let transition = this.leaveScreenTransition;
 
         if (!transition) {
@@ -139,53 +149,63 @@ export default class IntegrationController extends Controller {
     }
 
     @action
-    deleteIntegration() {
+    deleteIntegration(event) {
+        event?.preventDefault();
         this.integration.destroyRecord();
     }
 
     @action
-    confirmIntegrationDeletion() {
-        this.set('showDeleteIntegrationModal', true);
+    confirmIntegrationDeletion(event) {
+        event?.preventDefault();
+        this.showDeleteIntegrationModal = true;
     }
 
     @action
-    cancelIntegrationDeletion() {
-        this.set('showDeleteIntegrationModal', false);
+    cancelIntegrationDeletion(event) {
+        event?.preventDefault();
+        this.showDeleteIntegrationModal = false;
     }
 
     @action
-    confirmRegenerateKeyModal(apiKey) {
-        this.set('showRegenerateKeyModal', true);
-        this.set('isApiKeyRegenerated', false);
-        this.set('selectedApiKey', apiKey);
+    confirmRegenerateKeyModal(apiKey, event) {
+        event?.preventDefault();
+        this.showRegenerateKeyModal = true;
+        this.isApiKeyRegenerated = false;
+        this.selectedApiKey = apiKey;
     }
 
     @action
-    cancelRegenerateKeyModal() {
-        this.set('showRegenerateKeyModal', false);
+    cancelRegenerateKeyModal(event) {
+        event?.preventDefault();
+        this.showRegenerateKeyModal = false;
     }
 
     @action
-    regenerateKey() {
-        this.set('isApiKeyRegenerated', true);
+    regenerateKey(event) {
+        event?.preventDefault();
+        this.isApiKeyRegenerated = true;
     }
 
     @action
-    confirmWebhookDeletion(webhook) {
-        this.set('webhookToDelete', webhook);
+    confirmWebhookDeletion(webhook, event) {
+        event?.preventDefault();
+        this.webhookToDelete = webhook;
     }
 
     @action
-    cancelWebhookDeletion() {
-        this.set('webhookToDelete', null);
+    cancelWebhookDeletion(event) {
+        event?.preventDefault();
+        this.webhookToDelete = null;
     }
 
     @action
-    deleteWebhook() {
+    deleteWebhook(event) {
+        event?.preventDefault();
         return this.webhookToDelete.destroyRecord();
     }
 
-    @task(function* () {
+    @task
+    *saveTask() {
         try {
             return yield this.integration.save();
         } catch (e) {
@@ -196,24 +216,23 @@ export default class IntegrationController extends Controller {
 
             throw e;
         }
-    })
-        saveTask;
+    }
 
-    @task(function* () {
+    @task
+    *copyContentKey() {
         copyTextToClipboard(this.integration.contentKey.secret);
         yield timeout(this.isTesting ? 50 : 3000);
-    })
-        copyContentKey;
+    }
 
-    @task(function* () {
+    @task
+    *copyAdminKey() {
         copyTextToClipboard(this.integration.adminKey.secret);
         yield timeout(this.isTesting ? 50 : 3000);
-    })
-        copyAdminKey;
+    }
 
-    @task(function* () {
+    @task
+    *copyApiUrl() {
         copyTextToClipboard(this.apiUrl);
         yield timeout(this.isTesting ? 50 : 3000);
-    })
-        copyApiUrl;
+    }
 }
