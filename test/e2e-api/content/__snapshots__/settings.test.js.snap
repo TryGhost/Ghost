@@ -1,0 +1,92 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Settings Content API Can request settings 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Object {
+    "accent_color": "#FF1A75",
+    "codeinjection_foot": null,
+    "codeinjection_head": null,
+    "cover_image": "https://static.ghost.org/v4.0.0/images/publication-cover.jpg",
+    "description": "Thoughts, stories and ideas",
+    "facebook": "ghost",
+    "icon": null,
+    "lang": "en",
+    "locale": "en",
+    "logo": null,
+    "members_support_address": "noreply",
+    "meta_description": null,
+    "meta_title": null,
+    "navigation": Array [
+      Object {
+        "label": "Home",
+        "url": "/",
+      },
+      Object {
+        "label": "About",
+        "url": "/about/",
+      },
+      Object {
+        "label": "Collection",
+        "url": "/tag/getting-started/",
+      },
+      Object {
+        "label": "Author",
+        "url": "/author/ghost/",
+      },
+      Object {
+        "label": "Portal",
+        "url": "/portal/",
+      },
+    ],
+    "og_description": null,
+    "og_image": null,
+    "og_title": null,
+    "secondary_navigation": Array [
+      Object {
+        "label": "Data & privacy",
+        "url": "/privacy/",
+      },
+      Object {
+        "label": "Contact",
+        "url": "/contact/",
+      },
+      Object {
+        "label": "Contribute →",
+        "url": "/contribute/",
+      },
+    ],
+    "timezone": "Etc/UTC",
+    "title": "Ghost",
+    "twitter": "@ghost",
+    "twitter_description": null,
+    "twitter_image": null,
+    "twitter_title": null,
+    "url": "http://127.0.0.1:2369/",
+  },
+}
+`;
+
+exports[`Settings Content API Can request settings 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "942",
+  "content-type": "application/json; charset=utf-8",
+  "etag": "W/\\"3ae-FBGPtlUjSvGtTGLOj2sW5Rbn33s\\"",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings Content API Can request settings 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "942",
+  "content-type": "application/json; charset=utf-8",
+  "etag": "W/\\"3ae-FBGPtlUjSvGtTGLOj2sW5Rbn33s\\"",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
