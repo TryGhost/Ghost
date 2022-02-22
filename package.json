@@ -95,7 +95,7 @@
     "@tryghost/package-json": "1.0.15",
     "@tryghost/promise": "0.1.14",
     "@tryghost/request": "0.1.15",
-    "@tryghost/root-utils": "0.3.10",
+    "@tryghost/root-utils": "0.3.11",
     "@tryghost/security": "0.2.14",
     "@tryghost/session-service": "0.1.37",
     "@tryghost/settings-path-manager": "0.1.3",
