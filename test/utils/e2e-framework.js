@@ -29,6 +29,7 @@ const mockManager = require('./e2e-framework-mock-manager');
 const boot = require('../../core/boot');
 const AdminAPITestAgent = require('./admin-api-test-agent');
 const MembersAPITestAgent = require('./members-api-test-agent');
+const ContentAPITestAgent = require('./content-api-test-agent');
 const db = require('./db-utils');
 
 // Services that need resetting
@@ -143,6 +144,27 @@ const resetData = async () => {
 };
 
 /**
+ * Creates a ContentAPITestAgent which is a drop-in substitution for supertest.
+ * It is automatically hooked up to the Content API so you can make requests to e.g.
+ * agent.get('/posts/') without having to worry about URL paths
+ * @returns {Promise<ContentAPITestAgent>} agent
+ */
+const getContentAPIAgent = async () => {
+    try {
+        const app = await startGhost();
+        const originURL = configUtils.config.get('url');
+
+        return new ContentAPITestAgent(app, {
+            apiURL: '/ghost/api/canary/content/',
+            originURL
+        });
+    } catch (error) {
+        error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
+    }
+};
+
+/**
  * Creates a AdminAPITestAgent which is a drop-in substitution for supertest.
  * It is automatically hooked up to the Admin API so you can make requests to e.g.
  * agent.get('/posts/') without having to worry about URL paths
@@ -237,6 +259,7 @@ module.exports = {
     agentProvider: {
         getAdminAPIAgent,
         getMembersAPIAgent,
+        getContentAPIAgent,
         getAgentsForMembers
     },
 
