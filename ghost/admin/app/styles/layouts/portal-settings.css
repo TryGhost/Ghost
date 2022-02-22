@@ -523,6 +523,15 @@
     width: 100%;
 }
 
+.gh-portal-page-url-container .page-url-field {
+    font-size: 1.4rem;
+    border: none;
+    padding-left: 0;
+    padding-right: 40px;
+    color: var(--middarkgrey) !important;
+    background: none;
+}
+
 .gh-portal-page-url-container .page-url-slash {
     color: var(--midlightgrey);
     font-weight: 400;
