@@ -5,6 +5,7 @@ import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
 export default class MemberSerializer extends ApplicationSerializer.extend(EmbeddedRecordsMixin) {
     attrs = {
         createdAtUTC: {key: 'created_at'},
+        lastSeenAtUTC: {key: 'last_seen_at'},
         labels: {embedded: 'always'},
         emailRecipients: {embedded: 'always'}
     };

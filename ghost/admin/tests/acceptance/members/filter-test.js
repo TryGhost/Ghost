@@ -520,6 +520,12 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen less than 6 days ago')
                 .to.equal(4);
 
+            // table shows last seen column+data
+            expect(find('[data-test-table-column="last_seen_at"]')).to.exist;
+            expect(findAll('[data-test-table-data="last_seen_at"]').length).to.equal(4);
+            expect(find('[data-test-table-data="last_seen_at"]')).to.contain.text('5 Feb 2022');
+            expect(find('[data-test-table-data="last_seen_at"]')).to.contain.text('5 days ago');
+
             await fillIn(valueInput, '11'); // last seen less than 11 days ago
             await blur(valueInput);
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen less than 11 days ago')
