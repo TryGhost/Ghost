@@ -8,6 +8,35 @@
         @allowEdit={{true}}
     />
 
+{{else if (eq @filter.type 'subscribed')}}
+    <span class="gh-select">
+        <OneWaySelect
+            @value={{@filter.value}}
+            @options={{this.availableFilterOptions.subscribed}}
+            @optionValuePath="name"
+            @optionLabelPath="label"
+            @optionTargetPath="name"
+            @update={{fn this.setFilterValue @filter.type @filter.id}}
+            data-test-select="members-filter-value"
+        />
+        {{svg-jar "arrow-down-small"}}
+    </span>
+
+{{else if (eq @filter.type 'last_seen_at')}}
+    <div class="relative">
+        <span class="gh-input-percentage-label">days ago</span>
+        <input
+            type="number"
+            value={{@filter.value}}
+            class="gh-input"
+            aria-label="Number of days ago"
+            {{on "input" (fn this.setInputFilterValue @filter.type @filter.id)}}
+            {{on "blur" (fn this.updateInputFilterValue @filter.type @filter.id)}}
+            {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter.id)}}
+            data-test-input="members-filter-value"
+        />
+    </div>
+
 {{else if (eq @filter.type 'status')}}
     <span class="gh-select">
         <OneWaySelect
@@ -80,20 +109,6 @@
         <OneWaySelect
             @value={{@filter.value}}
             @options={{this.availableFilterOptions.subscriptionStripeStatus}}
-            @optionValuePath="name"
-            @optionLabelPath="label"
-            @optionTargetPath="name"
-            @update={{fn this.setFilterValue @filter.type @filter.id}}
-            data-test-select="members-filter-value"
-        />
-        {{svg-jar "arrow-down-small"}}
-    </span>
-
-{{else if (eq @filter.type 'subscribed')}}
-    <span class="gh-select">
-        <OneWaySelect
-            @value={{@filter.value}}
-            @options={{this.availableFilterOptions.subscribed}}
             @optionValuePath="name"
             @optionLabelPath="label"
             @optionTargetPath="name"

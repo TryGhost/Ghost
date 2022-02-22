@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import moment from 'moment';
 import nql from '@nexes/nql-lang';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
@@ -12,6 +13,7 @@ const FILTER_PROPERTIES = [
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
+    {label: 'Last seen', name: 'last_seen_at', group: 'Basic', feature: 'membersLastSeenFilter'},
 
     // Member subscription
     {label: 'Member status', name: 'status', group: 'Subscription'},
@@ -32,17 +34,25 @@ const FILTER_PROPERTIES = [
 ];
 
 const FILTER_RELATIONS_OPTIONS = {
+    // name: [
+    //     {label: 'is', name: 'is'},
+    //     {label: 'is not', name: 'is-not'}
+    // ],
+    // email: [
+    //     {label: 'is', name: 'is'},
+    //     {label: 'is not', name: 'is-not'}
+    // ],
+    label: [
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
+    ],
     subscribed: [
         {label: 'is', name: 'is'},
         {label: 'is not', name: 'is-not'}
     ],
-    name: [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
-    ],
-    email: [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
+    last_seen_at: [
+        {label: 'less than', name: 'is-less'},
+        {label: 'more than', name: 'is-greater'}
     ],
     status: [
         {label: 'is', name: 'is'},
@@ -53,10 +63,6 @@ const FILTER_RELATIONS_OPTIONS = {
         {label: 'is not', name: 'is-not'}
     ],
     'subscriptions.status': [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
-    ],
-    label: [
         {label: 'is', name: 'is'},
         {label: 'is not', name: 'is-not'}
     ],
@@ -118,6 +124,7 @@ class Filter {
 }
 
 export default class MembersFilter extends Component {
+    @service feature;
     @service session;
 
     @tracked filters = A([
@@ -130,10 +137,14 @@ export default class MembersFilter extends Component {
         })
     ]);
 
-    availableFilterProperties = FILTER_PROPERTIES;
     availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
     availableFilterValueOptions = FILTER_VALUE_OPTIONS;
     nextFilterId = 1;
+
+    get availableFilterProperties() {
+        // exclude any filters that are behind disabled feature flags
+        return FILTER_PROPERTIES.filter(prop => !prop.feature || this.feature[prop.feature]);
+    }
 
     get totalFilters() {
         return this.filters?.length;
@@ -171,6 +182,13 @@ export default class MembersFilter extends Component {
             if (filter.type === 'label' && filter.value?.length) {
                 const relationStr = filter.relation === 'is-not' ? '-' : '';
                 const filterValue = '[' + filter.value.join(',') + ']';
+                query += `${filter.type}:${relationStr}${filterValue}+`;
+            } else if (filter.type === 'last_seen_at') {
+                // is-greater = more than x days ago = <date
+                // is-less = less than x days ago = >date
+                const relationStr = filter.relation === 'is-greater' ? '<=' : '>=';
+                const daysAgoMoment = moment.utc().subtract(filter.value, 'days');
+                const filterValue = `'${daysAgoMoment.format('YYYY-MM-DD HH:mm:ss')}'`;
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else {
                 const relationStr = this.getFilterRelationOperator(filter.relation);

@@ -1,5 +1,8 @@
+import moment from 'moment';
+import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support/helpers';
 import {setupApplicationTest} from 'ember-mocha';
@@ -10,13 +13,21 @@ describe('Acceptance: Members filtering', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    let clock;
+
     beforeEach(async function () {
         this.server.loadFixtures('configs');
+
+        enableLabsFlag(this.server, 'membersLastSeenFilter');
 
         let role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
 
         return await authenticateSession();
+    });
+
+    afterEach(function () {
+        clock?.restore();
     });
 
     it('has a known base-state', async function () {
@@ -442,6 +453,80 @@ describe('Acceptance: Members filtering', function () {
             await click('[data-test-delete-members-filter="0"]');
 
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows after delete')
+                .to.equal(7);
+        });
+
+        it('can filter by last seen date', async function () {
+            clock = sinon.useFakeTimers({
+                now: moment('2022-02-10 11:50:00.000Z').toDate(),
+                shouldAdvanceTime: true
+            });
+
+            // add some members to filter
+            this.server.createList('member', 3, {lastSeenAt: moment('2022-02-01 12:00:00').format('YYYY-MM-DD HH:mm:ss')});
+            this.server.createList('member', 4, {lastSeenAt: moment('2022-02-05 12:00:00').format('YYYY-MM-DD HH:mm:ss')});
+
+            await visit('/members');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(7);
+
+            await click('[data-test-button="members-filter-actions"]');
+
+            const filterSelector = `[data-test-members-filter="0"]`;
+
+            await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'last_seen_at');
+
+            const operatorSelector = `${filterSelector} [data-test-select="members-filter-operator"]`;
+
+            // has the right operators
+            const operatorOptions = findAll(`${operatorSelector} option`);
+            expect(operatorOptions).to.have.length(2);
+            expect(operatorOptions[0]).to.have.value('is-less');
+            expect(operatorOptions[1]).to.have.value('is-greater');
+
+            const valueInput = `${filterSelector} [data-test-input="members-filter-value"]`;
+
+            // has no default filter
+            expect(find(valueInput)).to.have.value('');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - default')
+                .to.equal(7);
+
+            // can focus/blur value input without issue
+            await focus(valueInput);
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - after blur')
+                .to.equal(7);
+
+            // can change filter
+            await fillIn(valueInput, '2'); // last seen less than 2 days ago
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen less than 2 days ago')
+                .to.equal(0);
+
+            await fillIn(valueInput, '6'); // last seen less than 6 days ago
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen less than 6 days ago')
+                .to.equal(4);
+
+            await fillIn(valueInput, '11'); // last seen less than 11 days ago
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen less than 11 days ago')
+                .to.equal(7);
+
+            // can change operator
+            await fillIn(operatorSelector, 'is-greater');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen more than 11 days ago')
+                .to.equal(0);
+
+            await fillIn(valueInput, '6'); // last seen more than 6 days ago
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen more than 6 days ago')
+                .to.equal(3);
+
+            await fillIn(valueInput, '2'); // last seen more than 2 days ago
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen more than 2 days ago')
                 .to.equal(7);
         });
 
