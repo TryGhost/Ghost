@@ -27,12 +27,14 @@
                                 <input class="gh-input page-url-field"
                                     type="text" 
                                     value="{{this.siteUrl}}/#/portal" 
-                                    disabled="true">    
+                                    disabled="true"
+                                    aria-label="Default Portal link">
                             {{else}}
                                 <input class="gh-input page-url-field"
                                     type="text" 
                                     value="data-portal" 
-                                    disabled="true">
+                                    disabled="true"
+                                    aria-label="Default Portal data attribute">
                             {{/if}}
 
                             <button type="button" {{action (perform this.copyStaticLink '')}} class="gh-portal-setting-copy">
