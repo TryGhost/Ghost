@@ -621,6 +621,38 @@ describe('Acceptance: Members filtering', function () {
             expect(currentURL()).to.equal('/members');
             expect(find('[data-test-button="members-filter-actions"] span'), 'filter button').to.not.have.class('gh-btn-label-green');
         });
+
+        it('resets filter operator when changing filter type', async function () {
+            // BUG: changing the filter type was not resetting the filter operator
+            // meaning you could have an "is-greater" operator applied to an
+            // "is/is-not" filter type
+
+            this.server.createList('member', 3, {subscriptions: [{status: 'active'}]});
+            this.server.createList('member', 4, {emailCount: 10});
+
+            await visit('/members');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(7);
+
+            await click('[data-test-button="members-filter-actions"]');
+
+            const filter = '[data-test-members-filter="0"]';
+
+            await fillIn(`${filter} [data-test-select="members-filter"]`, 'email_count');
+            await fillIn(`${filter} [data-test-select="members-filter-operator"]`, 'is-greater');
+            await fillIn(`${filter} [data-test-input="members-filter-value"]`, '9');
+            await blur(`${filter} [data-test-input="members-filter-value"]`);
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of members after email_count filter')
+                .to.equal(4);
+
+            await fillIn(`${filter} [data-test-select="members-filter"]`, 'subscriptions.status');
+
+            expect(find(`${filter} [data-test-select="members-filter-operator"]`)).to.have.value('is');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of members after email_count filter')
+                .to.equal(3);
+        });
     });
 
     describe('search', function () {

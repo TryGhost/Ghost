@@ -339,6 +339,7 @@ export default class MembersFilter extends Component {
         if (filterToEdit) {
             filterToEdit.type = newType;
             filterToEdit.relationOptions = this.availableFilterRelationsOptions[newType];
+            filterToEdit.relation = filterToEdit.relationOptions[0].name;
             filterToEdit.value = defaultValue;
         }
 
