@@ -2188,7 +2188,7 @@ p.theme-validation-details {
 .gh-settings-members-pricelabelcont span,
 .gh-settings-members-pricelabelcont div {
     display: inline-block;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .gh-settings-members-pricelabelcont .gh-select svg {
@@ -2227,12 +2227,12 @@ p.theme-validation-details {
     position: absolute;
     display: flex !important;
     align-items: center;
-    top: 1px;
+    top: 0px;
     left: 0px;
     background: var(--main-color-content-greybg);
     height: 20px;
     font-weight: 500;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--middarkgrey);
     text-transform: uppercase;
     pointer-events: none;
