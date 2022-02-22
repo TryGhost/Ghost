@@ -84,6 +84,7 @@ export default class GhPortalLinks extends Component {
         let data = '';
         if (this.isLink) {
             data = id ? `#/portal/${id}` : `#/portal/`;
+            data = this.siteUrl + `/` + data;
         } else {
             data = id ? `data-portal="${id}"` : `data-portal`;
         }
@@ -97,6 +98,7 @@ export default class GhPortalLinks extends Component {
         let data = '';
         if (this.isLink) {
             data = `#/portal/signup${this.selectedProductIdPath}/${interval}`;
+            data = this.siteUrl + `/` + data;
         } else {
             data = `data-portal="signup${this.selectedProductIdPath}/${interval}"`;
         }
