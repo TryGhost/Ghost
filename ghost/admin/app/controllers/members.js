@@ -173,7 +173,10 @@ export default class MembersController extends Controller {
             'subscriptions.status': 'Subscription Status'
         };
         return this.filterColumns.map((d) => {
-            return filterColumnLabelMap[d] ? filterColumnLabelMap[d] : capitalize(d.replace(/_/g, ' '));
+            return {
+                name: d,
+                label: filterColumnLabelMap[d] ? filterColumnLabelMap[d] : capitalize(d.replace(/_/g, ' '))
+            };
         });
     }
 
