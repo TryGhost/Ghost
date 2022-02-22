@@ -1974,17 +1974,25 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
+"@tryghost/errors@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.3.tgz#dccfcd09e175e4f0e437039a2653119f84b41e70"
+  integrity sha512-6vd5s2tKX4uQoKjwyP7rICPVY3jj9balc5XLcmwQjUm4yuRAL9AAcpbf1O4AwNN1gs/cN+Wknxjk/LeeIvGbGA==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
 "@tryghost/express-dynamic-redirects@0.2.5":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.5.tgz#3a8ab59cc4fc3dd652058958b61800616ea96ccf"
   integrity sha512-Qz2KHt1KdWvIx96fcu/cYPPSEdG52xke3/KrQXCVGp00a3FjQq3WYxWl/p6eMp/30mjExg2UQhcqoCj7hJLX6g==
 
-"@tryghost/express-test@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.5.0.tgz#dce1f7af34b540eb4954acc5c1349ba91b0b4520"
-  integrity sha512-yiSgkzwIwPbL8PrhUv+5QGN7DB1wMy/wPwbvsHV1+FQXdxWwB0V7i/Z9jRpEIpBjavMSuTbSjZLI9c6W5sceRg==
+"@tryghost/express-test@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.6.0.tgz#72e621868e9d75361f8bbdbcc7ebd93b96930a5a"
+  integrity sha512-9mhOg0obEgf/J8/7/QH53gckYjZkXVqDFkHIeGQVLPC1J9eBtbuzb2FLwmvF+9a5Ssd2vOrR1Y8hNFJzQ+IpEw==
   dependencies:
-    "@tryghost/jest-snapshot" "^0.3.2"
+    "@tryghost/jest-snapshot" "^0.3.3"
     cookiejar "^2.1.3"
     reqresnext "^1.7.0"
 
@@ -2023,12 +2031,12 @@
   optionalDependencies:
     sharp "^0.29.0"
 
-"@tryghost/jest-snapshot@0.3.2", "@tryghost/jest-snapshot@^0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.3.2.tgz#11c20b3f8dee5918d5754634b9cef4b1ef3b6a60"
-  integrity sha512-mevHniOmAuqfWKtHKtKuU/+INmYOiE4GJyuntJcTr4MncgZCtQqRCOU+EiAvUqE/BU36n9lvAfQ2j/p4Ji9bYw==
+"@tryghost/jest-snapshot@^0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.3.3.tgz#820538c1779f0f999ff2e39db876ae168c825db4"
+  integrity sha512-inB9gaY+RsbgoDiZSdFxKgWHNY0T3kJaSCsqV7aeJY8R3qjOtFfNyg+BfLzrNp3i/92SR/SJYK07TgZA003ssQ==
   dependencies:
-    "@tryghost/errors" "^1.2.2"
+    "@tryghost/errors" "^1.2.3"
     expect "^27.5.0"
     jest-snapshot "^27.5.0"
 

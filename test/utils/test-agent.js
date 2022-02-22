@@ -14,7 +14,8 @@ class TestAgent extends Agent {
             headers: {
                 host: options.originURL.replace(/http:\/\//, ''),
                 origin: options.originURL
-            }
+            },
+            queryParams: options.queryParams
         });
     }
 }
