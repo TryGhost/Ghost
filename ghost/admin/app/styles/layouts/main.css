@@ -1652,12 +1652,6 @@
 
 @media (max-width: 1450px) {
     .gh-canvas-header.break.tablet .gh-canvas-header-content {
-        border-bottom: 1px solid var(--main-color-area-divider);
-    }
-
-    .gh-canvas-header.break.tablet .gh-canvas-header-content {
-        height: 128px;
-        border-bottom: 1px solid var(--main-color-area-divider);
         align-items: flex-start;
     }
 
