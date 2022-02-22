@@ -60,13 +60,13 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: calc(100vh - 96px); /*Height of top menu*/
-    padding-bottom: 48px;
+    min-height: calc(100vh - 144px); /*Height of top menu + negative margin*/
+    padding-bottom: 0;
 }
 
 @media (max-width: 1450px) {
     .members-list-container-stretch {
-        min-height: calc(100vh - 128px);
+        min-height: calc(100vh - 176px);
     }
 }
 
