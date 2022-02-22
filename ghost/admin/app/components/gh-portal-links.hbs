@@ -23,15 +23,18 @@
                     <td class="pagename">Default</td>
                     <td class='page-url'>
                         <div class="gh-portal-page-url-container">
-                            <div class="page-url-label">
-                                <div class="page-url-label-inner">
-                                    {{#if this.isLink}}
-                                        <span class="page-url-disabled">{{this.siteUrl}}/</span><span>#/portal</span>
-                                    {{else}}
-                                        data-portal
-                                    {{/if}}
-                                </div>
-                            </div>
+                            {{#if this.isLink}}
+                                <input class="gh-input page-url-field"
+                                    type="text" 
+                                    value="{{this.siteUrl}}/#/portal" 
+                                    disabled="true">    
+                            {{else}}
+                                <input class="gh-input page-url-field"
+                                    type="text" 
+                                    value="data-portal" 
+                                    disabled="true">
+                            {{/if}}
+
                             <button type="button" {{action (perform this.copyStaticLink '')}} class="gh-portal-setting-copy">
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice ""))}}
                                     {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
