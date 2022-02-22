@@ -11,7 +11,7 @@
         <div class="gh-list-data"></div>
         {{/each}}
     {{else}}
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data">
+        <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="details">
             <div class="flex items-center">
                 <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
                 <div class="w-80">
@@ -36,7 +36,7 @@
         {{/if}}
         {{#if @newsletterEnabled}}
             {{#if (feature "emailAnalytics")}}
-                <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}">
+                <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}" data-test-table-data="open-rate">
                     {{#if (not (is-empty @member.emailOpenRate))}}
                         <span>{{@member.emailOpenRate}}%</span>
                     {{else}}
@@ -46,7 +46,7 @@
             {{/if}}
         {{/if}}
 
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}">
+        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}" data-test-table-data="location">
             {{#if (and @member.geolocation @member.geolocation.country)}}
                 {{#if (and (eq @member.geolocation.country_code "US") @member.geolocation.region)}}
                     {{@member.geolocation.region}}, US
@@ -62,7 +62,7 @@
             {{/if}}
         </LinkTo>
 
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8">
+        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data="created-at">
             {{#if @member.createdAtUTC}}
                 <div>{{moment-format @member.createdAtUTC "D MMM YYYY"}}</div>
                 <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now @member.createdAtUTC}}</div>
