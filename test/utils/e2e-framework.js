@@ -14,7 +14,7 @@
 // The output state checker is responsible for checking the response from the app after performing a request.
 const _ = require('lodash');
 const {sequence} = require('@tryghost/promise');
-const {any, stringMatching} = require('@tryghost/jest-snapshot');
+const {any, stringMatching} = require('@tryghost/express-test').snapshot;
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
