@@ -1652,6 +1652,7 @@
 
 @media (max-width: 1450px) {
     .gh-canvas-header.break.tablet .gh-canvas-header-content {
+        height: 128px;
         align-items: flex-start;
     }
 
