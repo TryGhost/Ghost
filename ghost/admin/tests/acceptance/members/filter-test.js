@@ -53,6 +53,9 @@ describe('Acceptance: Members filtering', function () {
         expect(find('[data-test-input="members-search"]'), 'search input').to.exist;
         expect(find('[data-test-input="members-search"]'), 'search input').to.not.have.class('active');
         expect(find('[data-test-button="members-filter-actions"] span'), 'filter button').to.not.have.class('gh-btn-label-green');
+
+        // standard columns are shown
+        expect(findAll('[data-test-table="members"] [data-test-table-column]').length).to.equal(3);
     });
 
     describe('filtering', function () {
@@ -93,6 +96,7 @@ describe('Acceptance: Members filtering', function () {
 
             expect(findAll('[data-test-list="members-list-item"]').length, `# of filtered member rows - ${label.name}`)
                 .to.equal(3);
+            expect(find('[data-test-table-column="label"]')).to.exist;
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');
@@ -137,6 +141,7 @@ describe('Acceptance: Members filtering', function () {
             await fillIn(`${filterSelector} [data-test-select="members-filter-value"]`, 'false');
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - false')
                 .to.equal(4);
+            expect(find('[data-test-table-column="subscribed"]')).to.exist;
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');
@@ -183,6 +188,7 @@ describe('Acceptance: Members filtering', function () {
             await fillIn(`${filterSelector} [data-test-select="members-filter-value"]`, 'comped');
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - comped')
                 .to.equal(2);
+            expect(find('[data-test-table-column="status"]')).to.exist;
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');
@@ -227,6 +233,7 @@ describe('Acceptance: Members filtering', function () {
             await fillIn(`${filterSelector} [data-test-select="members-filter-value"]`, 'year');
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - year')
                 .to.equal(4);
+            expect(find('[data-test-table-column="subscriptions.plan_interval"]')).to.exist;
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');
@@ -276,6 +283,7 @@ describe('Acceptance: Members filtering', function () {
             await fillIn(`${filterSelector} [data-test-select="members-filter-value"]`, 'trialing');
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - trialing')
                 .to.equal(4);
+            expect(find('[data-test-table-column="subscriptions.status"]')).to.exist;
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');
@@ -325,6 +333,7 @@ describe('Acceptance: Members filtering', function () {
             await blur(valueInput);
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - false')
                 .to.equal(3);
+            expect(find('[data-test-table-column="email_count"]')).to.exist;
 
             // can clear filter
             await fillIn(valueInput, '');
@@ -380,6 +389,7 @@ describe('Acceptance: Members filtering', function () {
             await blur(valueInput);
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - input 5')
                 .to.equal(3);
+            expect(find('[data-test-table-column="email_opened_count"]')).to.exist;
 
             // can clear filter
             await fillIn(valueInput, '');
@@ -437,6 +447,7 @@ describe('Acceptance: Members filtering', function () {
             await blur(valueInput);
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - value 50')
                 .to.equal(3);
+            expect(find('[data-test-table-column="email_open_rate"]')).to.exist;
 
             // can change operator
             await fillIn(operatorSelector, 'is-greater');
@@ -557,6 +568,10 @@ describe('Acceptance: Members filtering', function () {
                 .to.equal(3);
 
             await click('[data-test-button="members-apply-filter"]');
+
+            // all filtered columns are shown
+            expect(find('[data-test-table-column="email_open_rate"]')).to.exist;
+            expect(find('[data-test-table-column="subscriptions.status"]')).to.exist;
 
             // bulk actions are shown
             expect(find('[data-test-button="add-label-selected"]'), 'add label to selected button').to.exist;
