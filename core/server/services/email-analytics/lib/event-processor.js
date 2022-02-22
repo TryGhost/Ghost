@@ -1,5 +1,5 @@
 const {EventProcessor} = require('@tryghost/email-analytics-service');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 class GhostEventProcessor extends EventProcessor {
     constructor({db}) {
@@ -86,6 +86,17 @@ class GhostEventProcessor extends EventProcessor {
             .where('member_email', '=', event.recipientEmail)
             .update({
                 opened_at: this.db.knex.raw('COALESCE(opened_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
+            });
+
+        const {value: timezone} = await this.db.knex('settings').first('value').where('key', 'timezone');
+        await this.db.knex('members')
+            .where('email', '=', event.recipientEmail)
+            .andWhere(builder => builder
+                .where('last_seen_at', '<', moment.utc(event.timestamp).tz(timezone).startOf('day').format('YYYY-MM-DD HH:mm:ss'))
+                .orWhereNull('last_seen_at')
+            )
+            .update({
+                last_seen_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
 
         return updateResult > 0;

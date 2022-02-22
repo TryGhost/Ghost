@@ -2190,6 +2190,11 @@
     "@tryghost/tpl" "^0.1.4"
     bson-objectid "^2.0.1"
 
+"@tryghost/member-events@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.0.tgz#6bef156f477cefa780b9c1651c41a1503ace4247"
+  integrity sha512-i4URWIo6gV4zUCa9rCMYBYK3L8WGt1jONa4uGEEqlXHOf0YW40rLhdqlDhIzF/T5hSsLDZhFwkUx43+sGSOPwA==
+
 "@tryghost/member-events@^0.3.5":
   version "0.3.5"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.3.5.tgz#f51e4e86b39792cfc9a1be0f7644da480ae274dc"
@@ -2246,6 +2251,15 @@
     lodash "^4.17.21"
     papaparse "5.3.1"
     pump "^3.0.0"
+
+"@tryghost/members-events-service@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.1.2.tgz#e8bc9dac1eca98f0cbe0372bc2460573b24f21bf"
+  integrity sha512-VbMAejI6daUiTyQCsA3FOhno7bPQNMWugbihAObwfyQayjoas8hYfrjk9/z9QMYh4N0A5JQugvXkL1gDQpbeLA==
+  dependencies:
+    "@tryghost/domain-events" "0.1.8"
+    "@tryghost/member-events" "0.4.0"
+    moment-timezone "0.5.34"
 
 "@tryghost/members-importer@0.5.2":
   version "0.5.2"
@@ -9138,7 +9152,7 @@ mock-knex@0.4.10:
     lodash "^4.14.2"
     semver "^5.3.0"
 
-moment-timezone@0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
+moment-timezone@0.5.23, moment-timezone@0.5.34, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
