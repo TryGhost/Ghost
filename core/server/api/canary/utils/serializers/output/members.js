@@ -124,6 +124,7 @@ function serializeMember(member, options) {
         email_opened_count: json.email_opened_count,
         email_open_rate: json.email_open_rate,
         email_recipients: json.email_recipients,
+        last_seen_at: json.last_seen_at,
         status: json.status
     };
 

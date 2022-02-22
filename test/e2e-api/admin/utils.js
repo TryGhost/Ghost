@@ -147,6 +147,7 @@ const expectedProperties = {
         'updated_at',
         'avatar_image',
         'comped',
+        'last_seen_at',
         'labels'
     ],
     member_signin_url: ['member_id', 'url'],
