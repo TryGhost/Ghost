@@ -3,5 +3,5 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 
 require('../../core/server/overrides');
 
-const {mochaHooks} = require('@tryghost/jest-snapshot');
+const {mochaHooks} = require('@tryghost/express-test').snapshot;
 exports.mochaHooks = mochaHooks;
