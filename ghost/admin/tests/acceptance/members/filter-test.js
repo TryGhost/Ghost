@@ -96,7 +96,11 @@ describe('Acceptance: Members filtering', function () {
 
             expect(findAll('[data-test-list="members-list-item"]').length, `# of filtered member rows - ${label.name}`)
                 .to.equal(3);
+
+            // table shows labels column+data
             expect(find('[data-test-table-column="label"]')).to.exist;
+            expect(findAll('[data-test-table-data="label"]').length).to.equal(3);
+            expect(find('[data-test-table-data="label"]')).to.contain.text(label.name);
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');
