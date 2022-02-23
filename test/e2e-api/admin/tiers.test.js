@@ -2,10 +2,7 @@ const {
     agentProvider,
     fixtureManager,
     mockManager,
-    matchers: {
-        anyUuid,
-        anyObjectId
-    }
+    matchers
 } = require('../../utils/e2e-framework');
 
 describe('Tiers API', function () {
@@ -31,7 +28,9 @@ describe('Tiers API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 tiers: Array(2).fill({
-                    id: anyObjectId
+                    id: matchers.anyObjectId,
+                    created_at: matchers.anyDate,
+                    updated_at: matchers.anyDate
                 })
             });
     });
@@ -50,7 +49,7 @@ describe('Tiers API', function () {
             .expectStatus(422)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyUuid
+                    id: matchers.anyUuid
                 }]
             });
     });
@@ -69,7 +68,7 @@ describe('Tiers API', function () {
             .expectStatus(422)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyUuid
+                    id: matchers.anyUuid
                 }]
             });
     });
@@ -88,7 +87,7 @@ describe('Tiers API', function () {
             .expectStatus(422)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyUuid
+                    id: matchers.anyUuid
                 }]
             });
     });
