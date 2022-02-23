@@ -43,6 +43,10 @@ module.exports = {
         return require('./products');
     },
 
+    get tiers() {
+        return require('./tiers');
+    },
+
     get webhooks() {
         return require('./webhooks');
     }

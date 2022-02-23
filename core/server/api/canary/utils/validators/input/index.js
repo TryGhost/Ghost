@@ -27,6 +27,10 @@ module.exports = {
         return require('./members');
     },
 
+    get tiers() {
+        return require('./tiers');
+    },
+
     get media() {
         return require('./media');
     },
