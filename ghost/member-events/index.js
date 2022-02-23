@@ -5,5 +5,6 @@ module.exports = {
     MemberSignupEvent: require('./lib/MemberSignupEvent'),
     MemberPaidConverstionEvent: require('./lib/MemberPaidConversionEvent'),
     MemberPaidCancellationEvent: require('./lib/MemberPaidCancellationEvent'),
+    MemberPageViewEvent: require('./lib/MemberPageViewEvent'),
     SubscriptionCreatedEvent: require('./lib/SubscriptionCreatedEvent')
 };
