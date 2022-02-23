@@ -1,230 +1,169 @@
-const should = require('should');
-const supertest = require('supertest');
-const _ = require('lodash');
-const url = require('url');
+const assert = require('assert');
 const cheerio = require('cheerio');
 const moment = require('moment');
-const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
-const config = require('../../../core/shared/config');
-const localUtils = require('./utils');
+
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyArray, anyEtag, anyUuid, anyDateWithTimezoneOffset} = matchers;
+
+const postMatcher = {
+    published_at: anyDateWithTimezoneOffset,
+    created_at: anyDateWithTimezoneOffset,
+    updated_at: anyDateWithTimezoneOffset,
+    uuid: anyUuid
+};
+
+const postMatcheShallowIncludes = Object.assign(
+    {},
+    postMatcher, {
+        tags: anyArray,
+        authors: anyArray
+    }
+);
 
 describe('Posts Content API', function () {
-    let request;
+    let agent;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await testUtils.initFixtures('owner:post', 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
+        agent = await agentProvider.getContentAPIAgent();
+        await fixtureManager.init('owner:post', 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
+        agent.authenticate();
     });
-
-    afterEach(function () {
-        configUtils.restore();
-    });
-
-    const validKey = localUtils.getValidKey();
 
     it('Can request posts', async function () {
-        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        const res = await agent.get('posts/')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(11)
+                    .fill(postMatcher)
+            });
 
-        res.headers.vary.should.eql('Accept-Encoding');
-        should.exist(res.headers['access-control-allow-origin']);
-        should.not.exist(res.headers['x-cache-invalidate']);
-
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
-        localUtils.API.checkResponse(jsonResponse, 'posts');
-        jsonResponse.posts.should.have.length(11);
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-        _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
-
-        // Default order 'published_at desc' check
-        jsonResponse.posts[0].slug.should.eql('welcome');
-        jsonResponse.posts[6].slug.should.eql('integrations');
-
-        // check meta response for this test
-        jsonResponse.meta.pagination.page.should.eql(1);
-        jsonResponse.meta.pagination.limit.should.eql(15);
-        jsonResponse.meta.pagination.pages.should.eql(1);
-        jsonResponse.meta.pagination.total.should.eql(11);
-        jsonResponse.meta.pagination.hasOwnProperty('next').should.be.true();
-        jsonResponse.meta.pagination.hasOwnProperty('prev').should.be.true();
-        should.not.exist(jsonResponse.meta.pagination.next);
-        should.not.exist(jsonResponse.meta.pagination.prev);
+        assert.equal(res.body.posts[0].slug, 'welcome', 'Default order "published_at desc" check');
+        assert.equal(res.body.posts[6].slug, 'integrations', 'Default order "published_at desc" check');
 
         // kitchen sink
-        res.body.posts[9].slug.should.eql(testUtils.DataGenerator.Content.posts[1].slug);
+        assert.equal(res.body.posts[9].slug, fixtureManager.get('posts', 1).slug);
 
-        let urlParts = url.parse(res.body.posts[9].feature_image);
-        should.exist(urlParts.protocol);
-        should.exist(urlParts.host);
+        let urlParts = new URL(res.body.posts[9].feature_image);
+        assert.equal(urlParts.protocol, 'http:');
+        assert.equal(urlParts.host, '127.0.0.1:2369');
 
-        urlParts = url.parse(res.body.posts[9].url);
-        should.exist(urlParts.protocol);
-        should.exist(urlParts.host);
+        urlParts = new URL(res.body.posts[9].url);
+        assert.equal(urlParts.protocol, 'http:');
+        assert.equal(urlParts.host, '127.0.0.1:2369');
 
         const $ = cheerio.load(res.body.posts[9].html);
-        urlParts = url.parse($('img').attr('src'));
-        should.exist(urlParts.protocol);
-        should.exist(urlParts.host);
+        urlParts = new URL($('img').attr('src'));
+        assert.equal(urlParts.protocol, 'http:');
+        assert.equal(urlParts.host, '127.0.0.1:2369');
 
-        res.body.posts[7].slug.should.eql('not-so-short-bit-complex');
-        res.body.posts[7].html.should.match(/<a href="http:\/\/127.0.0.1:2369\/about#nowhere" title="Relative URL/);
-        res.body.posts[9].slug.should.eql('ghostly-kitchen-sink');
-        res.body.posts[9].html.should.match(/<img src="http:\/\/127.0.0.1:2369\/content\/images\/lol.jpg"/);
+        assert.equal(res.body.posts[7].slug, 'not-so-short-bit-complex');
+        assert.match(res.body.posts[7].html, /<a href="http:\/\/127.0.0.1:2369\/about#nowhere" title="Relative URL/);
+        assert.equal(res.body.posts[9].slug, 'ghostly-kitchen-sink');
+        assert.match(res.body.posts[9].html, /<img src="http:\/\/127.0.0.1:2369\/content\/images\/lol.jpg"/);
     });
 
     it('Can filter posts by tag', async function () {
-        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=tag:kitchen-sink,featured:true&include=tags`))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        const res = await agent.get('posts/?filter=tag:kitchen-sink,featured:true&include=tags')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(4)
+                    .fill(postMatcher)
+            });
 
         const jsonResponse = res.body;
-        const ids = _.map(jsonResponse.posts, 'id');
+        const ids = jsonResponse.posts.map(p => p.id);
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        should.exist(jsonResponse.posts);
-        localUtils.API.checkResponse(jsonResponse, 'posts');
-        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+        assert.equal(jsonResponse.posts.length, 4);
+        assert.deepEqual(ids, [
+            fixtureManager.get('posts', 4).id,
+            fixtureManager.get('posts', 2).id,
+            fixtureManager.get('posts', 1).id,
+            fixtureManager.get('posts', 0).id
+        ], 'Should have content filtered and ordered');
 
-        // should content filtered data and order
-        jsonResponse.posts.should.have.length(4);
-        ids.should.eql([
-            testUtils.DataGenerator.Content.posts[4].id,
-            testUtils.DataGenerator.Content.posts[2].id,
-            testUtils.DataGenerator.Content.posts[1].id,
-            testUtils.DataGenerator.Content.posts[0].id
-        ]);
-
-        // Each post must either be featured or have the tag 'kitchen-sink'
-        _.each(jsonResponse.posts, (post) => {
+        jsonResponse.posts.forEach((post) => {
             if (post.featured) {
-                post.featured.should.equal(true);
+                assert.equal(post.featured, true, `Each post must either be featured or have the tag 'kitchen-sink'`);
             } else {
-                const tags = _.map(post.tags, 'slug');
-                tags.should.containEql('kitchen-sink');
+                const tag = post.tags
+                    .map(t => t.slug)
+                    .filter(s => s === 'kitchen-sink');
+                assert.equal(tag, 'kitchen-sink', `Each post must either be featured or have the tag 'kitchen-sink'`);
             }
         });
-
-        // The meta object should contain the right detail
-        jsonResponse.meta.should.have.property('pagination');
-        jsonResponse.meta.pagination.should.be.an.Object().with.properties(['page', 'limit', 'pages', 'total', 'next', 'prev']);
-        jsonResponse.meta.pagination.page.should.eql(1);
-        jsonResponse.meta.pagination.limit.should.eql(15);
-        jsonResponse.meta.pagination.pages.should.eql(1);
-        jsonResponse.meta.pagination.total.should.eql(4);
-        should.equal(jsonResponse.meta.pagination.next, null);
-        should.equal(jsonResponse.meta.pagination.prev, null);
     });
 
     it('Can filter posts by authors', async function () {
-        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors:[joe-bloggs,pat,ghost,slimer-mcectoplasm]&include=authors`))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        const res = await agent
+            .get('posts/?filter=authors:[joe-bloggs,pat,ghost,slimer-mcectoplasm]&include=authors')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(11)
+                    .fill(postMatcher)
+            });
 
         const jsonResponse = res.body;
-        const ids = _.map(jsonResponse.posts, 'id');
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        should.exist(jsonResponse.posts);
-        localUtils.API.checkResponse(jsonResponse, 'posts');
-        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
+        assert.equal(jsonResponse.posts[0].slug, 'not-so-short-bit-complex', 'The API orders by number of matched authors');
 
-        // 2. The data part of the response should be correct
-        // We should have 2 matching items
-        jsonResponse.posts.should.be.an.Array().with.lengthOf(11);
-
-        // The API orders by number of matched authors.
-        jsonResponse.posts[0].slug.should.eql('not-so-short-bit-complex');
-
-        // Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author
-        const primaryAuthors = _.map(jsonResponse.posts, function (post) {
+        const primaryAuthors = jsonResponse.posts.map((post) => {
             return post.primary_author.slug;
         });
-
-        primaryAuthors.should.matchAny(/joe-bloggs|ghost'/);
-        _.filter(primaryAuthors, (value) => {
+        const ghostPrimaryAuthors = primaryAuthors.filter((value) => {
             return value === 'ghost';
-        }).length.should.eql(7);
-
-        _.filter(primaryAuthors, (value) => {
+        });
+        const joePrimaryAuthors = primaryAuthors.filter((value) => {
             return value === 'joe-bloggs';
-        }).length.should.eql(4);
+        });
+
+        assert.equal(ghostPrimaryAuthors.length, 7, `Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author`);
+        assert.equal(joePrimaryAuthors.length, 4, `Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author`);
     });
 
     it('Can request fields of posts', async function () {
-        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&fields=url`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        const jsonResponse = res.body;
-
-        should.exist(jsonResponse.posts);
-
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', false, false, ['url']);
-        res.body.posts[0].url.should.eql('http://127.0.0.1:2369/welcome/');
+        await agent
+            .get('posts/?&fields=url')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot();
     });
 
     it('Can include relations', async function () {
-        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=tags,authors`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.exist(res.body.posts);
-
-        // kitchen sink
-        res.body.posts[9].slug.should.eql(testUtils.DataGenerator.Content.posts[1].slug);
-
-        should.exist(res.body.posts[9].tags);
-        should.exist(res.body.posts[9].tags[0].url);
-        should.exist(url.parse(res.body.posts[9].tags[0].url).protocol);
-        should.exist(url.parse(res.body.posts[9].tags[0].url).host);
-
-        should.exist(res.body.posts[9].primary_tag);
-        should.exist(res.body.posts[9].primary_tag.url);
-        should.exist(url.parse(res.body.posts[9].primary_tag.url).protocol);
-        should.exist(url.parse(res.body.posts[9].primary_tag.url).host);
-
-        should.exist(res.body.posts[9].authors);
-        should.exist(res.body.posts[9].authors[0].url);
-        should.exist(url.parse(res.body.posts[9].authors[0].url).protocol);
-        should.exist(url.parse(res.body.posts[9].authors[0].url).host);
-
-        should.exist(res.body.posts[9].primary_author);
-        should.exist(res.body.posts[9].primary_author.url);
-        should.exist(url.parse(res.body.posts[9].primary_author.url).protocol);
-        should.exist(url.parse(res.body.posts[9].primary_author.url).host);
+        await agent
+            .get('posts/?include=tags,authors')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(11)
+                    .fill(postMatcheShallowIncludes)
+            });
     });
 
     it('Can request posts from different origin', async function () {
-        const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
-            .set('Origin', 'https://example.com')
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        res.headers.vary.should.eql('Accept-Encoding');
-        should.exist(res.headers['access-control-allow-origin']);
-        should.not.exist(res.headers['x-cache-invalidate']);
-
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
-        localUtils.API.checkResponse(jsonResponse, 'posts');
-        jsonResponse.posts.should.have.length(11);
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
-        localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-        _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+        await agent
+            .get('posts/')
+            .header('Origin', 'https://example.com')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(11)
+                    .fill(postMatcher)
+            });
     });
 
     it('Can filter by published date', async function () {
@@ -234,58 +173,61 @@ describe('Posts Content API', function () {
             return encodeURIComponent('published_at:' + op + '\'' + publishedAt + '\'');
         }
 
-        const res = await request
-            .get(localUtils.API.getApiQuery(`posts/?key=${validKey}&limit=1`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        const res = await agent
+            .get('posts/?limit=1')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(1)
+                    .fill(postMatcher)
+            });
 
-        should.exist(res.body.posts[0]);
         const post = res.body.posts[0];
         const publishedAt = moment(post.published_at).format('YYYY-MM-DD HH:mm:ss');
 
-        post.title.should.eql('Start here for a quick overview of everything you need to know');
+        const res2 = await agent
+            .get(`posts/?limit=1&filter=${createFilter(publishedAt, `<`)}`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(1)
+                    .fill(postMatcher)
+            });
 
-        const res2 = await request
-            .get(localUtils.API.getApiQuery(`posts/?key=${validKey}&limit=1&filter=${createFilter(publishedAt, `<`)}`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.exist(res2.body.posts[0]);
         const post2 = res2.body.posts[0];
         const publishedAt2 = moment(post2.published_at).format('YYYY-MM-DD HH:mm:ss');
 
-        post2.title.should.eql('Customizing your brand and design settings');
+        assert.equal(post2.title, 'Customizing your brand and design settings');
 
-        const res3 = await request
-            .get(localUtils.API.getApiQuery(`posts/?key=${validKey}&limit=1&filter=${createFilter(publishedAt2, `>`)}`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        const res3 = await agent
+            .get(`posts/?limit=1&filter=${createFilter(publishedAt2, `>`)}`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(1)
+                    .fill(postMatcher)
+            });
 
-        should.exist(res3.body.posts[0]);
         const post3 = res3.body.posts[0];
-
-        post3.title.should.eql('Start here for a quick overview of everything you need to know');
+        assert.equal(post3.title, 'Start here for a quick overview of everything you need to know');
     });
 
     it('Can request a single post', async function () {
-        const res = await request
-            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[0].id}/?key=${validKey}`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
-        should.not.exist(jsonResponse.meta);
-        jsonResponse.posts.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+        await agent
+            .get(`posts/${fixtureManager.get('posts', 0).id}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(1)
+                    .fill(postMatcher)
+            });
     });
 });
