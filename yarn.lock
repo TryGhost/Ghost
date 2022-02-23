@@ -2451,7 +2451,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.28.tgz#d6cc1e3664c0b827c6713b8a488fa1a129f3c894"
   integrity sha512-fnWQyyb/ed6PZw82nOjrRF3hnllDA1dRFJKcpRk19i0wa4J5oD/pNVSeddCYK9nntmU1uKbb0H8MBW5HXDNKWg==
 
-"@tryghost/string@0.1.22", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
+"@tryghost/string@0.1.23":
+  version "0.1.23"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.23.tgz#7d5f556b7e99b7c5d5e4c6966626afc048b21290"
+  integrity sha512-EEX2EdjWl9QJuZxd3iv+OCa5eUGt3r6bx0RbvpbdVG44wWYyWelXsiHLLquGGr6h5z1BHOTVsEyEqFFPVIyVBA==
+  dependencies:
+    unidecode "^0.1.8"
+
+"@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.22"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.22.tgz#50a78c5eb1a79c88ccaa7b7012a3c0e5885baf03"
   integrity sha512-GnlEUPMj2eLFoJcRe7bI4UG6yjcdCuh1vazbsuQfA3pBf4rVSIiqE0/oY4UKNVZATVc8EpXsEfAqdHYQGPysvw==
