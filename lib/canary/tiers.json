@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tiers.canary",
+  "title": "tiers",
+  "description": "Base Tier definitions",
+  "definitions": {
+    "tier": {
+      "description": "A Ghost Tier",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 191
+        },
+        "slug": {
+          "type": ["string", "null"],
+          "maxLength": 191
+        },
+        "welcome_page_url": {
+          "type": ["string", "null"],
+          "maxLength": 2000
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "updated_at": {
+          "strip": true
+        },
+        "created_at": {
+          "strip": true
+        },
+        "monthly_price": {
+          "$ref": "#/definitions/tier-price"
+        },
+        "yearly_price": {
+          "$ref": "#/definitions/tier-price"
+        },
+        "benefits": {
+          "type": ["array", "null"],
+          "items": {
+            "$ref": "#/definitions/tier-benefit"
+          }
+        }
+      }
+    },
+    "tier-price": {
+      "description": "A Stripe Price associated with a Tier",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "stripe_product_id": {
+          "type": ["string", "null"],
+          "maxLength": 255
+        },
+        "stripe_price_id": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "nickname": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "currency": {
+          "type": "string",
+          "maxLength": 3
+        },
+        "amount": {
+          "type": "number"
+        },
+        "active": {
+          "type": "boolean",
+          "default": true
+        },
+        "type": {
+          "type": "string",
+          "enum": ["recurring", "one_time"]
+        },
+        "interval": {
+          "type": ["string", "null"],
+          "enum": ["year", "month", "week", "day"]
+        },
+        "updated_at": {
+          "strip": true
+        },
+        "created_at": {
+          "strip": true
+        }
+      }
+    },
+    "tier-benefit": {
+      "description": "A Benefit associated with a Tier",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 191
+        },
+        "slug": {
+          "type": "string",
+          "maxLength": 191
+        },
+        "updated_at": {
+          "strip": true
+        },
+        "created_at": {
+          "strip": true
+        }
+      },
+      "anyOf": [
+        { "required": ["id"] },
+        { "required": ["name"] },
+        { "required": ["slug"] }
+      ]
+    }
+  }
+}

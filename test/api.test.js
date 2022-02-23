@@ -1,6 +1,8 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
+const fs = require('fs');
+const path = require('path');
 const apiSchema = require('@tryghost/admin-api-schema');
 
 describe('Exposes a correct API', function () {
@@ -73,9 +75,12 @@ describe('Exposes a correct API', function () {
         });
 
         describe('list', function () {
-            it('Returns names of all available definitions for default version', function () {
+            it('Returns names of all available definitions for default version', async function () {
                 const definitions = apiSchema.list();
-                definitions.length.should.eql(19);
+                const files = fs.readdirSync(path.resolve(__dirname, '../lib/canary'));
+                // We only export the "action" files rather than definition, e.g. posts-add.json, not posts.json
+                const exportedFiles = files.filter(file => /\w+-\w+.json/.test(file));
+                definitions.length.should.eql(exportedFiles.length);
                 definitions.includes('posts-add').should.equal(true);
             });
         });
