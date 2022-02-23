@@ -62,11 +62,7 @@ export function mockMembersStats(server) {
 }
 
 export default function mockMembers(server) {
-    server.post('/members/', function ({members}) {
-        let attrs = this.normalizedRequestAttrs();
-
-        return members.create(Object.assign({}, attrs, {id: 99}));
-    });
+    server.post('/members/');
 
     server.get('/members/', function ({members}, {queryParams}) {
         let {filter, search, page, limit} = queryParams;

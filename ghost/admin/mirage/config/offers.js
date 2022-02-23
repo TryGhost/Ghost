@@ -1,11 +1,7 @@
 import {paginatedResponse} from '../utils';
 
 export default function mockOffers(server) {
-    server.post('/offers/', function ({offers}) {
-        let attrs = this.normalizedRequestAttrs();
-
-        return offers.create(Object.assign({}, attrs, {id: 99}));
-    });
+    server.post('/offers/');
 
     server.get('/offers/', paginatedResponse('offers'));
 
