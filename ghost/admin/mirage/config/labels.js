@@ -1,12 +1,7 @@
 import {paginatedResponse} from '../utils';
 
 export default function mockLabels(server) {
-    server.post('/labels/', function ({labels}) {
-        let attrs = this.normalizedRequestAttrs();
-
-        return labels.create(Object.assign({}, attrs, {id: 99}));
-    });
-
+    server.post('/labels/');
     server.get('/labels/', paginatedResponse('labels'));
 
     server.get('/labels/:id/', function ({labels}, {params}) {
