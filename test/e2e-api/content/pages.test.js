@@ -1,68 +1,57 @@
-const url = require('url');
-const should = require('should');
-const supertest = require('supertest');
-const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
-const config = require('../../../core/shared/config');
-const localUtils = require('./utils');
+const assert = require('assert');
+
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyEtag, anyUuid, anyDateWithTimezoneOffset} = matchers;
+
+const pageMatcher = {
+    published_at: anyDateWithTimezoneOffset,
+    created_at: anyDateWithTimezoneOffset,
+    updated_at: anyDateWithTimezoneOffset,
+    uuid: anyUuid
+};
 
 describe('Pages Content API', function () {
-    let request;
+    let agent;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
-    });
-
-    afterEach(function () {
-        configUtils.restore();
+        agent = await agentProvider.getContentAPIAgent();
+        await fixtureManager.init('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
+        agent.authenticate();
     });
 
     it('Can request pages', async function () {
-        const key = localUtils.getValidKey();
-        const res = await request.get(localUtils.API.getApiQuery(`pages/?key=${key}`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        const res = await agent.get(`pages/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                pages: new Array(5)
+                    .fill(pageMatcher)
+            });
 
-        res.headers.vary.should.eql('Accept-Encoding');
-        should.exist(res.headers['access-control-allow-origin']);
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.body.pages[0].slug, 'about');
 
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.pages);
-        should.exist(jsonResponse.meta);
-        jsonResponse.pages.should.have.length(5);
-
-        res.body.pages[0].slug.should.eql('about');
-
-        const urlParts = url.parse(res.body.pages[0].url);
-        should.exist(urlParts.protocol);
-        should.exist(urlParts.host);
+        const urlParts = new URL(res.body.pages[0].url);
+        assert.equal(urlParts.protocol, 'http:');
+        assert.equal(urlParts.host, '127.0.0.1:2369');
     });
 
     it('Can request page', async function () {
-        const key = localUtils.getValidKey();
-        const res = await request.get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[5].id}/?key=${key}`))
-            .set('Origin', testUtils.API.getURL())
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        const res = await agent.get(`pages/${fixtureManager.get('posts', 5).id}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                pages: new Array(1)
+                    .fill(pageMatcher)
+            });
 
-        res.headers.vary.should.eql('Accept-Encoding');
-        should.exist(res.headers['access-control-allow-origin']);
-        should.not.exist(res.headers['x-cache-invalidate']);
+        assert.equal(res.body.pages[0].slug, fixtureManager.get('posts', 5).slug);
 
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.pages);
-        jsonResponse.pages.should.have.length(1);
-
-        res.body.pages[0].slug.should.eql(testUtils.DataGenerator.Content.posts[5].slug);
-
-        const urlParts = url.parse(res.body.pages[0].url);
-        should.exist(urlParts.protocol);
-        should.exist(urlParts.host);
+        const urlParts = new URL(res.body.pages[0].url);
+        assert.equal(urlParts.protocol, 'http:');
+        assert.equal(urlParts.host, '127.0.0.1:2369');
     });
 });
