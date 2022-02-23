@@ -88,10 +88,17 @@ module.exports = function apiRoutes() {
     router.del('/tags/:id', mw.authAdminApi, http(api.tags.destroy));
 
     // Products
+    // TODO Remove
     router.get('/products', mw.authAdminApi, http(api.products.browse));
     router.post('/products', mw.authAdminApi, http(api.products.add));
     router.get('/products/:id', mw.authAdminApi, http(api.products.read));
     router.put('/products/:id', mw.authAdminApi, http(api.products.edit));
+
+    // Tiers
+    router.get('/tiers', mw.authAdminApi, http(api.tiers.browse));
+    router.post('/tiers', mw.authAdminApi, http(api.tiers.add));
+    router.get('/tiers/:id', mw.authAdminApi, http(api.tiers.read));
+    router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 
     // ## Members
     router.get('/members', mw.authAdminApi, http(api.members.browse));

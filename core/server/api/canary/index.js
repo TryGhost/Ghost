@@ -93,6 +93,10 @@ module.exports = {
         return shared.pipeline(require('./products'), localUtils);
     },
 
+    get tiers() {
+        return shared.pipeline(require('./tiers'), localUtils);
+    },
+
     get memberSigninUrls() {
         return shared.pipeline(require('./memberSigninUrls.js'), localUtils);
     },
