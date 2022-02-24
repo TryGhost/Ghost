@@ -1920,6 +1920,11 @@
     "@tryghost/root-utils" "^0.3.10"
     debug "^4.3.1"
 
+"@tryghost/domain-events@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.8.tgz#754af77b05336a689135971811ee438edda04876"
+  integrity sha512-PalAdGOADidoxXg54F/QJEc1C9PwlQvWnIF1MksWY2Pp8XiH5mzeHisNnqXfXO3dEEopPPreIj7Lx/y6U9NAyQ==
+
 "@tryghost/domain-events@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.7.tgz#dd6fa48886961c3e27889672a234bb516770d491"
@@ -2252,10 +2257,10 @@
     papaparse "5.3.1"
     pump "^3.0.0"
 
-"@tryghost/members-events-service@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.1.2.tgz#e8bc9dac1eca98f0cbe0372bc2460573b24f21bf"
-  integrity sha512-VbMAejI6daUiTyQCsA3FOhno7bPQNMWugbihAObwfyQayjoas8hYfrjk9/z9QMYh4N0A5JQugvXkL1gDQpbeLA==
+"@tryghost/members-events-service@0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.3.1.tgz#209758435bd6aebe46426a440e68d76541ce095e"
+  integrity sha512-bpjKYSzp1UjR6IPzzVLjoeSCbKT0rC7dr1SCwziavTD/2IuUA+ZKqxpPBeiGiQW+YFEvY6/NKXME+dr68fO6fw==
   dependencies:
     "@tryghost/domain-events" "0.1.8"
     "@tryghost/member-events" "0.4.0"

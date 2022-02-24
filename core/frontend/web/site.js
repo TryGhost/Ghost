@@ -4,6 +4,8 @@ const express = require('../../shared/express');
 const cors = require('cors');
 const {URL} = require('url');
 const errors = require('@tryghost/errors');
+const DomainEvents = require('@tryghost/domain-events');
+const {MemberPageViewEvent} = require('@tryghost/member-events');
 
 // App requires
 const config = require('../../shared/config');
@@ -169,6 +171,14 @@ module.exports = function setupSiteApp(options = {}) {
         } else {
             return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
         }
+    });
+
+    siteApp.use(function (req, res, next) {
+        if (req.member) {
+            // This event needs memberLastSeenAt to avoid doing un-necessary database queries when updating `last_seen_at`
+            DomainEvents.dispatch(MemberPageViewEvent.create({url: req.url, memberId: req.member.id, memberLastSeenAt: req.member.last_seen_at}, new Date()));
+        }
+        next();
     });
 
     debug('General middleware done');
