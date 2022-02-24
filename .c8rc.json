@@ -1,5 +1,15 @@
 {
   "all": true,
+  "check-coverage": true,
+  "reporter": [
+    "html",
+    "text-summary",
+    "cobertura"
+  ],
+  "statements": 56,
+  "branches": 85,
+  "functions": 51,
+  "lines": 56,
   "include": [
     "core/{*.js,frontend,server,shared}"
   ],
