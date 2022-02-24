@@ -1456,10 +1456,10 @@
   resolved "https://registry.yarnpkg.com/@panva/asn1.js/-/asn1.js-1.0.0.tgz#dd55ae7b8129e02049f009408b97c61ccf9032f6"
   integrity sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==
 
-"@playwright/test@1.19.1":
-  version "1.19.1"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.19.1.tgz#92bc39e2693d461841d376f3e210daf8f802ba64"
-  integrity sha512-NGWqJWP4N2HFyXlOSDwQSfgmige94p9KQvml62fJ5wg4sknfkyw+CnFeLUze8qvnGlS0PbVISMRV5JOE8EdxjQ==
+"@playwright/test@1.19.2":
+  version "1.19.2"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.19.2.tgz#429d1aa70f5e4cd521cdc8a5d9861ae4fcda3f7c"
+  integrity sha512-5oCmlYHjtOL662OxSkZBYGnoHWIQui7b4YHWNeSCYwhQjmjVcV5njRc8oBZlU8IwJgG7ZH2yhDk1haU96ygbWw==
   dependencies:
     "@babel/code-frame" "7.16.7"
     "@babel/core" "7.16.12"
@@ -1493,7 +1493,7 @@
     open "8.4.0"
     pirates "4.0.4"
     pixelmatch "5.2.1"
-    playwright-core "1.19.1"
+    playwright-core "1.19.2"
     pngjs "6.0.0"
     rimraf "3.0.2"
     source-map-support "0.4.18"
@@ -10089,10 +10089,10 @@ pkg-up@^3.1.0:
   dependencies:
     find-up "^3.0.0"
 
-playwright-core@1.19.1:
-  version "1.19.1"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.19.1.tgz#d41939730170d53df26f5c8c16f5821e6328b24d"
-  integrity sha512-+ByjhWX39PlINVRXr4ef9Kle85mk5QzA2WLioCoMQc3bSUtZpLV1mbeUDtRp/bvFw6YDIEyptj4QvzzRTXN3vg==
+playwright-core@1.19.2:
+  version "1.19.2"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.19.2.tgz#90b9209554f174c649abf495952fcb4335437218"
+  integrity sha512-OsL3sJZIo1UxKNWSP7zW7sk3FyUGG06YRHxHeBw51eIOxTCQRx5t+hXd0cvXashN2CHnd3hIZTs2aKa/im4hZQ==
   dependencies:
     commander "8.3.0"
     debug "4.3.3"
