@@ -153,6 +153,11 @@ export default class MembersFilter extends Component {
             availableFilters = availableFilters.reject(prop => prop.group === 'Subscription');
         }
 
+        // exclude email filters if email functionality is disabled
+        if (this.settings.get('editorDefaultEmailRecipients') === 'disabled') {
+            availableFilters = availableFilters.reject(prop => prop.group === 'Email');
+        }
+
         return availableFilters;
     }
 
