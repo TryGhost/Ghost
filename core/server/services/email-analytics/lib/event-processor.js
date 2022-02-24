@@ -92,7 +92,7 @@ class GhostEventProcessor extends EventProcessor {
         await this.db.knex('members')
             .where('email', '=', event.recipientEmail)
             .andWhere(builder => builder
-                .where('last_seen_at', '<', moment.utc(event.timestamp).tz(timezone).startOf('day').format('YYYY-MM-DD HH:mm:ss'))
+                .where('last_seen_at', '<', moment.utc(event.timestamp).tz(timezone).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss'))
                 .orWhereNull('last_seen_at')
             )
             .update({
