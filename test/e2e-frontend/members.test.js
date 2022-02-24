@@ -1,3 +1,4 @@
+const assert = require('assert');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
@@ -5,6 +6,9 @@ const moment = require('moment');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const settingsCache = require('../../core/shared/settings-cache');
+const DomainEvents = require('@tryghost/domain-events');
+const {MemberPageViewEvent} = require('@tryghost/member-events');
+const models = require('../../core/server/models');
 
 function assertContentIsPresent(res) {
     res.text.should.containEql('<h2 id="markdown">markdown</h2>');
@@ -233,6 +237,18 @@ describe('Front-end members behaviour', function () {
                     .expect(200)
                     .expect(assertContentIsAbsent);
             });
+
+            it('doesn\'t generate a MemberPageView event', async function () {
+                const spy = sinon.spy();
+                DomainEvents.subscribe(MemberPageViewEvent, spy);
+
+                await request
+                    .get('/free-to-see/')
+                    .expect(200)
+                    .expect(assertContentIsPresent);
+
+                assert(spy.notCalled, 'A page view from a non-member shouldn\'t generate a MemberPageViewEvent event');
+            });
         });
 
         describe('as free member', function () {
@@ -277,8 +293,9 @@ describe('Front-end members behaviour', function () {
         });
 
         describe('as free member with vip label', function () {
+            const email = 'vip@test.com';
             before(async function () {
-                await loginAsMember('vip@test.com');
+                await loginAsMember(email);
             });
 
             it('can read label-only post content', async function () {
@@ -287,15 +304,37 @@ describe('Front-end members behaviour', function () {
                     .expect(200)
                     .expect(assertContentIsPresent);
             });
+
+            it('generates a MemberPageView event', async function () {
+                const spy = sinon.spy();
+                DomainEvents.subscribe(MemberPageViewEvent, spy);
+
+                // Reset last_seen_at property
+                let member = await models.Member.findOne({email});
+                await models.Member.edit({last_seen_at: null}, {id: member.get('id')});
+
+                member = await models.Member.findOne({email});
+                assert.equal(member.get('last_seen_at'), null, 'The member shouldn\'t have a `last_seen_at` property set before this test.');
+
+                await request
+                    .get('/free-to-see/')
+                    .expect(200)
+                    .expect(assertContentIsPresent);
+
+                assert(spy.calledOnce, 'A page view from a member should generate a MemberPageViewEvent event');
+                member = await models.Member.findOne({email});
+                assert.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after having visited a page while logged-in.');
+            });
         });
 
         describe('as paid member', function () {
+            const email = 'paid@test.com';
             before(async function () {
                 // membersService needs to be required after Ghost start so that settings
                 // are pre-populated with defaults
                 const membersService = require('../../core/server/services/members');
 
-                const signinLink = await membersService.api.getMagicLink('paid@test.com');
+                const signinLink = await membersService.api.getMagicLink(email);
                 const signinURL = new URL(signinLink);
                 // request needs a relative path rather than full url with host
                 const signinPath = `${signinURL.pathname}${signinURL.search}`;
@@ -343,6 +382,27 @@ describe('Front-end members behaviour', function () {
                     .get('/thou-must-have-default-product/')
                     .expect(200)
                     .expect(assertContentIsPresent);
+            });
+
+            it('generates a MemberPageView event', async function () {
+                const spy = sinon.spy();
+                DomainEvents.subscribe(MemberPageViewEvent, spy);
+
+                // Reset last_seen_at property
+                let member = await models.Member.findOne({email});
+                await models.Member.edit({last_seen_at: null}, {id: member.get('id')});
+
+                member = await models.Member.findOne({email});
+                assert.equal(member.get('last_seen_at'), null, 'The member shouldn\'t have a `last_seen_at` property set before this test.');
+
+                await request
+                    .get('/free-to-see/')
+                    .expect(200)
+                    .expect(assertContentIsPresent);
+
+                assert(spy.calledOnce, 'A page view from a member should generate a MemberPageViewEvent event');
+                member = await models.Member.findOne({email});
+                assert.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after having visited a page while logged-in.');
             });
         });
 
