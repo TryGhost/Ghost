@@ -17,10 +17,18 @@ describe('Acceptance: Members filtering', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
+        this.server.loadFixtures('settings');
         enableLabsFlag(this.server, 'membersLastSeenFilter');
 
-        // enable stripe by default
-        this.server.create('setting', {group: 'members', key: 'stripe_connect_account_id', value: 'stripe_connected'});
+        // test with stripe connected and email turned on
+        // TODO: add these settings to default fixtures
+        this.server.db.settings.find({key: 'stripe_connect_account_id'})
+            ? this.server.db.settings.update({key: 'stripe_connect_account_id'}, {value: 'stripe_connected'})
+            : this.server.create('setting', {key: 'stripe_connect_account_id', value: 'stripe_connected', group: 'members'});
+
+        this.server.db.settings.find({key: 'editor_default_email_recipients'})
+            ? this.server.db.settings.update({key: 'editor_default_email_recipients'}, {value: 'visibility'})
+            : this.server.create('setting', {key: 'editor_default_email_recipients', value: 'visibility', group: 'editor'});
 
         let role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
@@ -171,6 +179,10 @@ describe('Acceptance: Members filtering', function () {
 
             const filterSelector = `[data-test-members-filter="0"]`;
 
+            expect(
+                find(`${filterSelector} [data-test-select="members-filter"] option[value="status"]`),
+                'status filter option'
+            ).to.exist;
             await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'status');
 
             // has the right operators
@@ -700,6 +712,27 @@ describe('Acceptance: Members filtering', function () {
             expect(filterOptions).to.not.include('status');
             expect(filterOptions).to.not.include('subscriptions.plan_interval');
             expect(filterOptions).to.not.include('subscriptions.status');
+        });
+
+        it('hides email filters when email is disabled', async function () {
+            // disable email
+            this.server.db.settings.update({key: 'editor_default_email_recipients'}, {value: 'disabled'});
+            this.server.createList('member', 10);
+
+            await visit('/members');
+            await click('[data-test-button="members-filter-actions"]');
+
+            expect(
+                find('[data-test-members-filter="0"] [data-test-select="members-filter"] optgroup[label="Email"]'),
+                'Email option group doesn\'t exist'
+            ).to.not.exist;
+
+            const filterOptions = findAll('[data-test-members-filter="0"] [data-test-select="members-filter"] option')
+                .map(option => option.value);
+
+            expect(filterOptions).to.not.include('email_count');
+            expect(filterOptions).to.not.include('email_opened_count');
+            expect(filterOptions).to.not.include('email_open_rate');
         });
     });
 
