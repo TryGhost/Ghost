@@ -126,6 +126,7 @@ class Filter {
 export default class MembersFilter extends Component {
     @service feature;
     @service session;
+    @service settings;
 
     @tracked filters = A([
         new Filter({
@@ -142,8 +143,17 @@ export default class MembersFilter extends Component {
     nextFilterId = 1;
 
     get availableFilterProperties() {
+        let availableFilters = FILTER_PROPERTIES;
+
         // exclude any filters that are behind disabled feature flags
-        return FILTER_PROPERTIES.filter(prop => !prop.feature || this.feature[prop.feature]);
+        availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
+
+        // exclude subscription filters if Stripe isn't connected
+        if (!this.settings.get('stripeConnectAccountId')) {
+            availableFilters = availableFilters.reject(prop => prop.group === 'Subscription');
+        }
+
+        return availableFilters;
     }
 
     get totalFilters() {

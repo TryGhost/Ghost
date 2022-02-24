@@ -17,8 +17,10 @@ describe('Acceptance: Members filtering', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
-
         enableLabsFlag(this.server, 'membersLastSeenFilter');
+
+        // enable stripe by default
+        this.server.create('setting', {group: 'members', key: 'stripe_connect_account_id', value: 'stripe_connected'});
 
         let role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
@@ -677,6 +679,27 @@ describe('Acceptance: Members filtering', function () {
             expect(find(`${filter} [data-test-select="members-filter-operator"]`)).to.have.value('is');
             expect(findAll('[data-test-list="members-list-item"]').length, '# of members after email_count filter')
                 .to.equal(3);
+        });
+
+        it('hides paid filters when stripe isn\'t connected', async function () {
+            // disconnect stripe
+            this.server.db.settings.update({key: 'stripe_connect_account_id'}, {value: null});
+            this.server.createList('member', 10);
+
+            await visit('/members');
+            await click('[data-test-button="members-filter-actions"]');
+
+            expect(
+                find('[data-test-members-filter="0"] [data-test-select="members-filter"] optgroup[label="Subscription"]'),
+                'Subscription option group doesn\'t exist'
+            ).to.not.exist;
+
+            const filterOptions = findAll('[data-test-members-filter="0"] [data-test-select="members-filter"] option')
+                .map(option => option.value);
+
+            expect(filterOptions).to.not.include('status');
+            expect(filterOptions).to.not.include('subscriptions.plan_interval');
+            expect(filterOptions).to.not.include('subscriptions.status');
         });
     });
 
