@@ -112,8 +112,6 @@ jobs:
       - run: yarn
       - run: yarn test:unit
 
-      - name: Unit test coverage
-        run: yarn cov:unit
       - uses: codecov/codecov-action@v2
 
       - uses: daniellockyer/action-slack-build@master
