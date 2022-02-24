@@ -53,6 +53,7 @@ describe('Members API without Stripe', function () {
     });
 
     beforeEach(function () {
+        mockManager.mockLabsEnabled('membersLastSeenFilter');
         mockManager.mockMail();
     });
 
@@ -90,6 +91,7 @@ describe('Members API', function () {
 
     beforeEach(function () {
         mockManager.mockLabsEnabled('multipleProducts');
+        mockManager.mockLabsEnabled('membersLastSeenFilter');
         mockManager.mockStripe();
         mockManager.mockMail();
     });
