@@ -14,6 +14,7 @@ describe('Legacy Members API', function () {
 
     beforeEach(function () {
         mockManager.mockLabsDisabled('multipleProducts');
+        mockManager.mockLabsEnabled('membersLastSeenFilter');
     });
 
     afterEach(function () {
