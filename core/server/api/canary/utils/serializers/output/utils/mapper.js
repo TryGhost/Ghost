@@ -6,6 +6,7 @@ const gating = require('./post-gating');
 const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
+const postsGameSchema = require('../../../../../../data/schema').tables.posts_game;
 const mega = require('../../../../../../services/mega');
 const labsService = require('../../../../../../../shared/labs');
 
@@ -74,6 +75,17 @@ const mapPost = async (model, frame) => {
         jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || defaultValue;
     });
     delete jsonModel.posts_meta;
+
+    let gameAttrs = _.keys(_.omit(postsGameSchema, ['id', 'post_id']));
+    _(gameAttrs).filter((k) => {
+        return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
+    }).each((attr) => {
+        // NOTE: the default of `email_only` is `false` which is why we default to `false` instead of `null`
+        //       The undefined value is possible because `posts_game` table is lazily created only one of the
+        //       values is assigned.
+        jsonModel[attr] = _.get(jsonModel.posts_game, attr) || null;
+    });
+    delete jsonModel.posts_game;
 
     clean.post(jsonModel, frame);
 

@@ -31,7 +31,10 @@ const RESOURCES = {
     },
     authors: {
         alias: 'authorsPublic'
-    }
+    },
+    games: {
+        alias: 'gamesPublic'
+    },
 };
 
 // Short forms of paths which we should understand

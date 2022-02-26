@@ -6,6 +6,7 @@ const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const postsGameSchema = require('../../../../../data/schema').tables.posts_game;
 
 const replacePageWithType = mapNQLKeyValues({
     key: {
@@ -76,6 +77,12 @@ function handlePostsMeta(frame) {
     let metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
     let meta = _.pick(frame.data.posts[0], metaAttrs);
     frame.data.posts[0].posts_meta = meta;
+}
+
+function handlePostsGame(frame) {
+    let metaAttrs = _.keys(_.omit(postsGameSchema, ['id', 'post_id']));
+    let meta = _.pick(frame.data.posts[0], metaAttrs);
+    frame.data.posts[0].posts_game = meta;
 }
 
 /**
@@ -207,6 +214,7 @@ module.exports = {
 
         transformLegacyEmailRecipientFilters(frame);
         handlePostsMeta(frame);
+        handlePostsGame(frame);
         defaultFormat(frame);
         defaultRelations(frame);
     },

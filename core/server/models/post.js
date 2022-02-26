@@ -81,14 +81,15 @@ Post = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta', 'tiers'],
+    relationships: ['tags', 'authors', 'mobiledoc_revisions', 'posts_meta', 'tiers', 'posts_game'],
 
     // NOTE: look up object, not super nice, but was easy to implement
     relationshipBelongsTo: {
         tags: 'tags',
         tiers: 'products',
         authors: 'users',
-        posts_meta: 'posts_meta'
+        posts_meta: 'posts_meta',
+        posts_game: 'posts_game'
     },
 
     relationsMeta: {
@@ -99,7 +100,11 @@ Post = ghostBookshelf.Model.extend({
         email: {
             targetTableName: 'emails',
             foreignKey: 'post_id'
-        }
+        },
+        posts_game: {
+            targetTableName: 'posts_game',
+            foreignKey: 'post_id'
+        },
     },
 
     tiers() {
@@ -230,8 +235,9 @@ Post = ghostBookshelf.Model.extend({
 
         // extend ordered keys with post_meta keys
         let postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
+        let postsGameKeys = _.without(ghostBookshelf.model('PostsGame').prototype.orderAttributes(), 'posts_game.id', 'posts_game.post_id');
 
-        return [...keys, ...postsMetaKeys];
+        return [...keys, ...postsMetaKeys, ...postsGameKeys];
     },
 
     orderRawQuery: function orderRawQuery(field, direction, withRelated) {
@@ -304,6 +310,11 @@ Post = ghostBookshelf.Model.extend({
             },
             posts_meta: {
                 tableName: 'posts_meta',
+                type: 'oneToOne',
+                joinFrom: 'post_id'
+            },
+            posts_game: {
+                tableName: 'posts_game',
                 type: 'oneToOne',
                 joinFrom: 'post_id'
             }
@@ -581,6 +592,18 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
+        if (!_.isUndefined(this.get('posts_game')) && !_.isNull(this.get('posts_game'))) {
+            let postsGameData = this.get('posts_game');
+            let relatedModelId = model.related('posts_game').get('id');
+            let hasNoData = !_.values(postsGameData).some(x => !!x);
+            if (relatedModelId && !_.isEmpty(postsGameData)) {
+                postsGameData.id = relatedModelId;
+                this.set('posts_game', postsGameData);
+            } else if (_.isEmpty(postsGameData) || hasNoData) {
+                this.set('posts_game', null);
+            }
+        }
+
         this.handleAttachedModels(model);
 
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
@@ -805,6 +828,10 @@ Post = ghostBookshelf.Model.extend({
         return this.hasOne('PostsMeta', 'post_id');
     },
 
+    posts_game: function postsGame() {
+        return this.hasOne('PostsGame', 'post_id');
+    },
+
     email: function email() {
         return this.hasOne('Email', 'post_id');
     },
@@ -888,8 +915,9 @@ Post = ghostBookshelf.Model.extend({
         }
 
         const postMetaChanged = this.relations.posts_meta && this.relations.posts_meta._changed && Object.keys(this.relations.posts_meta._changed).length;
+        const postGameChanged = this.relations.posts_game && this.relations.posts_game._changed && Object.keys(this.relations.posts_game._changed).length;
 
-        if (!Object.keys(this._changed).length && !postMetaChanged) {
+        if (!Object.keys(this._changed).length && !postMetaChanged && !postGameChanged) {
             return false;
         }
 
@@ -1040,6 +1068,14 @@ Post = ghostBookshelf.Model.extend({
             options.withRelated = _.union(['posts_meta'], options.withRelated || []);
         }
 
+        const GAME_ATTRIBUTES = _.without(ghostBookshelf.model('PostsGame').prototype.permittedAttributes(), 'id', 'post_id');
+
+        // NOTE: only include post_meta relation when requested in 'columns' or by default
+        //       optimization is needed to be able to perform .findAll on large SQLite datasets
+        if (!options.columns || (options.columns && _.intersection(GAME_ATTRIBUTES, options.columns).length)) {
+            options.withRelated = _.union(['posts_game'], options.withRelated || []);
+        }
+
         return options;
     },
 
@@ -1104,6 +1140,9 @@ Post = ghostBookshelf.Model.extend({
                                 //       Keeping track of them is needed to check if anything was changed in post's resource.
                                 if (found.relations.posts_meta) {
                                     found.relations.posts_meta._changed = post.relations.posts_meta._changed;
+                                }
+                                if (found.relations.posts_game) {
+                                    found.relations.posts_game._changed = post.relations.posts_game._changed;
                                 }
 
                                 return found;

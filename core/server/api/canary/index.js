@@ -203,5 +203,9 @@ module.exports = {
 
     get productsPublic() {
         return shared.pipeline(require('./products-public'), localUtils, 'content');
-    }
+    },
+
+    get gamesPublic() {
+        return shared.pipeline(require('./games-public'), localUtils, 'content');
+    },
 };

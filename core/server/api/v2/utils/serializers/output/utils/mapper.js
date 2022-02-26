@@ -6,6 +6,7 @@ const gating = require('./post-gating');
 const clean = require('./clean');
 const extraAttrs = require('./extra-attrs');
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
+const postsGameSchema = require('../../../../../../data/schema').tables.posts_game;
 
 const mapUser = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -60,6 +61,14 @@ const mapPost = (model, frame) => {
         }
     });
     delete jsonModel.posts_meta;
+
+    let gameAttrs = _.keys(_.omit(postsGameSchema, ['id', 'post_id']));
+    _(gameAttrs).filter((k) => {
+        return (!frame.options.columns || (frame.options.columns && frame.options.columns.includes(k)));
+    }).each((attr) => {
+        jsonModel[attr] = _.get(jsonModel.posts_game, attr) || null;
+    });
+    delete jsonModel.posts_game;
 
     clean.post(jsonModel, frame);
 

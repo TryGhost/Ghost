@@ -35,5 +35,10 @@ module.exports = function apiRoutes() {
 
     router.get('/products', mw.authenticatePublic, http(api.productsPublic.browse));
 
+    // ## Posts
+    router.get('/games', mw.authenticatePublic, http(api.gamesPublic.browse));
+    router.get('/games/:id', mw.authenticatePublic, http(api.gamesPublic.read));
+    router.get('/games/slug/:slug', mw.authenticatePublic, http(api.gamesPublic.read));
+
     return router;
 };

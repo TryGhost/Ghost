@@ -49,6 +49,7 @@ const TABLES_ALLOWLIST = [
     'posts',
     'posts_authors',
     'posts_meta',
+    'posts_game',
     'posts_tags',
     'roles',
     'roles_users',

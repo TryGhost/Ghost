@@ -32,7 +32,9 @@ module.exports = [
                 'twitter_title',
                 'twitter_description',
                 'custom_template',
-                'locale'
+                'locale',
+                // 'is_game',
+                // 'game_url'
             ],
             withRelated: ['tags', 'authors'],
             withRelatedPrimary: {
@@ -79,7 +81,11 @@ module.exports = [
                 'tags',
                 'authors',
                 'primary_tag',
-                'primary_author'
+                'primary_author',
+                'is_game',
+                'game_url',
+                'is_video',
+                'video_url'
             ],
             filter: 'status:published+type:page'
         },

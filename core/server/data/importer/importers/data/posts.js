@@ -5,14 +5,16 @@ const BaseImporter = require('./base');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 const validator = require('@tryghost/validator');
 const postsMetaSchema = require('../../../schema').tables.posts_meta;
+const postsGameSchema = require('../../../schema').tables.posts_game;
 const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
+const gameAttrs = _.keys(_.omit(postsGameSchema, ['id']));
 
 class PostsImporter extends BaseImporter {
     constructor(allDataFromFile) {
         super(allDataFromFile, {
             modelName: 'Post',
             dataKeyToImport: 'posts',
-            requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors', 'posts_meta'],
+            requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors', 'posts_meta', 'posts_game'],
             requiredImportedData: ['tags'],
             requiredExistingData: ['tags']
         });
@@ -55,6 +57,20 @@ class PostsImporter extends BaseImporter {
         }), postsMetaFromFile);
         model.posts_meta = postsMetaData;
         _.each(metaAttrs, (attr) => {
+            delete model[attr];
+        });
+    }
+
+    /**
+     * Sanitizes post metadata, picking data from sepearate table(for >= v3) or post itself(for < v3)
+     */
+    sanitizePostsGame(model) {
+        let postsMetaFromFile = _.find(this.requiredFromFile.posts_game, {post_id: model.id}) || _.pick(model, gameAttrs);
+        let postsMetaData = Object.assign({}, _.mapValues(postsMetaSchema, (value) => {
+            return Reflect.has(value, 'defaultTo') ? value.defaultTo : null;
+        }), postsMetaFromFile);
+        model.posts_game = postsMetaData;
+        _.each(gameAttrs, (attr) => {
             delete model[attr];
         });
     }
@@ -241,6 +257,7 @@ class PostsImporter extends BaseImporter {
                 model.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(model.mobiledoc));
             }
             this.sanitizePostsMeta(model);
+            this.sanitizePostsGame(model);
         });
 
         // NOTE: We only support removing duplicate posts within the file to import.

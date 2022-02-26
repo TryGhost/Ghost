@@ -1,7 +1,7 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const allowedIncludes = ['tags', 'authors', 'tiers', 'posts_game'];
+const allowedIncludes = ['tags', 'authors', 'tiers'];
 
 const messages = {
     postNotFound: 'Post not found.'
@@ -34,6 +34,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
+            console.log(frame.options)
             return models.Post.findPage(frame.options);
         }
     },

@@ -19,7 +19,7 @@ const queryDefaults = {
  */
 const defaultQueryOptions = {
     options: {
-        include: 'authors,tags,tiers'
+        include: 'authors,tags,tiers,posts_game'
     }
 };
 

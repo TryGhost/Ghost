@@ -77,6 +77,14 @@ module.exports = {
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         email_only: {type: 'bool', nullable: false, defaultTo: false}
     },
+    posts_game: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', unique: true},
+        is_game: {type: 'bool', nullable: false, defaultTo: false},
+        game_url: {type: 'text', maxlength: 2000, nullable: true},
+        is_video: {type: 'bool', nullable: false, defaultTo: false},
+        video_url: {type: 'text', maxlength: 2000, nullable: true},
+    },
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},

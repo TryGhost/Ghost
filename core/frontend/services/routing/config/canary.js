@@ -43,7 +43,15 @@ module.exports.QUERY = {
         options: {
             slug: '%s'
         }
-    }
+    },
+    game: {
+        controller: 'gamesPublic',
+        type: 'read',
+        resource: 'games',
+        options: {
+            slug: '%s'
+        }
+    },
 };
 
 module.exports.TAXONOMIES = {
@@ -56,6 +64,11 @@ module.exports.TAXONOMIES = {
         filter: 'authors:\'%s\'',
         editRedirect: '#/settings/staff/:slug/',
         resource: 'authors'
+    },
+    game: {
+        filter: 'posts_game:\'%s\'',
+        editRedirect: '#/games/:slug/',
+        resource: 'posts_game'
     }
 };
 /* eslint-enable */

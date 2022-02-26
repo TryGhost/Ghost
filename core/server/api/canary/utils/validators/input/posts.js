@@ -1,11 +1,14 @@
 const jsonSchema = require('../utils/json-schema');
 const models = require('../../../../../models');
 const {ValidationError} = require('@tryghost/errors');
+const omit = require('lodash/omit');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid filter in visibility_filter property'
 };
+
+const IGNORE_FIELDS = ['game_url', 'is_game', 'is_video', 'video_url'];
 
 const validateVisibility = async function (frame) {
     if (!frame.data.posts || !frame.data.posts[0]) {
@@ -35,13 +38,27 @@ const validateVisibility = async function (frame) {
 
 module.exports = {
     add(apiConfig, frame) {
-        return jsonSchema.validate(...arguments).then(() => {
-            return validateVisibility(frame);
+        const f = {
+            ...frame,
+            data: {
+                posts: [omit(frame.data.posts[0], IGNORE_FIELDS)]
+            }
+        };
+
+        return jsonSchema.validate(apiConfig, f).then(() => {
+            return validateVisibility(f);
         });
     },
     edit(apiConfig, frame) {
-        return jsonSchema.validate(...arguments).then(() => {
-            return validateVisibility(frame);
+        const f = {
+            ...frame,
+            data: {
+                posts: [omit(frame.data.posts[0], IGNORE_FIELDS)]
+            }
+        };
+
+        return jsonSchema.validate(apiConfig, f).then(() => {
+            return validateVisibility(f);
         });
     }
 };
