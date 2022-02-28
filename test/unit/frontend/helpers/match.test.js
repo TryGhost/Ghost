@@ -204,27 +204,54 @@ describe('Match helper', function () {
             }, hash);
         });
 
-        describe('Explicit Greater Or Equal To', function () {
+        describe('Explicit Greater Than', function () {
             runTests({
-                // String to string comparison
+                // Number to Number comparisons
+                '{{match zero ">" 1}}': 'false',
+                '{{match one ">" 0}}': 'true',
+                '{{match zero ">" 0}}': 'false'
+            }, hash);
+        });
+
+        describe('Explicit Less Than', function () {
+            runTests({
+                // Number to Number comparisons
+                '{{match zero "<" 1}}': 'true',
+                '{{match one "<" 0}}': 'false',
+                '{{match zero "<" 0}}': 'false'
+            }, hash);
+        });
+
+        describe('Explicit Greater Than Or Equal To', function () {
+            runTests({
+                // Number to Number comparisons
+                '{{match zero ">=" 1}}': 'false',
+                '{{match one ">=" 0}}': 'true',
+                '{{match zero ">=" 0}}': 'true',
+
+                // String to String comparisons
                 '{{match string ">=" "Hello world"}}': 'true',
                 '{{match "b" ">=" "a"}}': 'true',
                 '{{match "b" ">=" "b"}}': 'true',
                 '{{match "a" ">=" "b"}}': 'false',
                 '{{match "a" ">=" "3"}}': 'true',
 
-                // String to number comparisons
+                // String to Number comparisons
                 '{{match "5" ">=" 3}}': 'true',
                 '{{match "3" ">=" 3}}': 'true',
                 '{{match "3" ">=" 5}}': 'false',
 
                 '{{match "hello" ">=" 5}}': 'false',
-                '{{match 5 ">=" "hello"}}': 'false',
+                '{{match 5 ">=" "hello"}}': 'false'
+            }, hash);
+        });
 
-                // Number to Number comparison
-                '{{match zero ">=" 1}}': 'false',
-                '{{match one ">=" 0}}': 'true',
-                '{{match zero ">=" 0}}': 'true'
+        describe('Explicit Less Than Or Equal To', function () {
+            runTests({
+                // Number to Number comparisons
+                '{{match zero "<=" 1}}': 'true',
+                '{{match one "<=" 0}}': 'false',
+                '{{match zero "<=" 0}}': 'true'
             }, hash);
         });
 
