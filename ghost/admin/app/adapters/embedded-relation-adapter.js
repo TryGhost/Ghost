@@ -109,7 +109,7 @@ export default class EmbeddedRelationAdapter extends BaseAdapter {
                     deDupe[include] = true;
                 });
 
-                query.include = Object.keys(deDupe).join(',');
+                query.include = Object.keys(deDupe).map(underscore).join(',');
             }
         }
 
