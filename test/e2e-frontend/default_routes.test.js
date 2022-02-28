@@ -378,6 +378,8 @@ describe('Default Frontend routing', function () {
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
                     res.text.should.match(/urlset/);
+                    // CASE: the index page should always be present in pages sitemap
+                    res.text.should.containEql('<loc>http://127.0.0.1:2369/</loc>');
                     res.text.should.not.containEql('__GHOST_URL__');
                 });
         });
