@@ -54,7 +54,8 @@ module.exports = {
             'order',
             'debug',
             'page',
-            'search'
+            'search',
+            'include'
         ],
         permissions: true,
         validation: {},
