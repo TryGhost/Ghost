@@ -170,13 +170,21 @@ export default class MembersController extends Controller {
         const filterColumnLabelMap = {
             'subscriptions.plan_interval': 'Billing period',
             subscribed: 'Subscribed to email',
-            'subscriptions.status': 'Subscription Status'
+            'subscriptions.status': 'Subscription Status',
+            product: 'Tiers'
         };
         return this.filterColumns.map((d) => {
             return {
                 name: d,
                 label: filterColumnLabelMap[d] ? filterColumnLabelMap[d] : capitalize(d.replace(/_/g, ' '))
             };
+        });
+    }
+
+    includeProductQuery() {
+        const availableFilters = this.filters.length ? this.filters : this.softFilters;
+        return availableFilters.some((f) => {
+            return f.type === 'product';
         });
     }
 
@@ -391,8 +399,12 @@ export default class MembersController extends Controller {
                 extraFilters: [`created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`]
             });
             const order = orderParam ? `${orderParam} desc` : `created_at desc`;
-
+            const includes = ['labels'];
+            if (this.includeProductQuery()) {
+                includes.push('products');
+            }
             query = Object.assign({
+                include: includes.join(','),
                 order,
                 limit: range.length,
                 page: range.page
