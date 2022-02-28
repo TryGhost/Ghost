@@ -115,6 +115,14 @@
     margin: 2px !important;
 }
 
+.gh-filter-block .token-segment-product {
+    margin: 2px !important;
+}
+
+.gh-filter-block .token-segment-product .ember-power-select-multiple-remove-btn svg {
+    margin-right: 0!important;
+}
+
 .gh-filter-builder .ember-power-select-multiple-trigger {
     padding: 2px;
 }

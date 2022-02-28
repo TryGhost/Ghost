@@ -8,6 +8,16 @@
         @allowEdit={{true}}
     />
 
+{{else if (eq @filter.type 'product')}}
+    <div class="relative">
+        <Tiers::SegmentSelect
+            @onChange={{fn this.setProductsFilterValue @filter.type @filter.id}}
+            @tiers={{this.productFilterValue}}
+            @renderInPlace={{true}}
+            @hideOptionsWhenAllSelected={{true}}
+        />
+    </div>
+
 {{else if (eq @filter.type 'subscribed')}}
     <span class="gh-select">
         <OneWaySelect

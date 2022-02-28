@@ -4,6 +4,7 @@ import nql from '@nexes/nql-lang';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const FILTER_PROPERTIES = [
@@ -12,6 +13,7 @@ const FILTER_PROPERTIES = [
     // {label: 'Email', name: 'email', group: 'Basic'},
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic'},
+    {label: 'Tiers', name: 'product', group: 'Basic', feature: 'multipleProducts'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Last seen', name: 'last_seen_at', group: 'Basic', feature: 'membersLastSeenFilter'},
 
@@ -43,6 +45,10 @@ const FILTER_RELATIONS_OPTIONS = {
     //     {label: 'is not', name: 'is-not'}
     // ],
     label: [
+        {label: 'is', name: 'is'},
+        {label: 'is not', name: 'is-not'}
+    ],
+    product: [
         {label: 'is', name: 'is'},
         {label: 'is not', name: 'is-not'}
     ],
@@ -127,7 +133,9 @@ export default class MembersFilter extends Component {
     @service feature;
     @service session;
     @service settings;
+    @service store;
 
+    @tracked productsList;
     @tracked filters = A([
         new Filter({
             id: `filter-0`,
@@ -144,9 +152,16 @@ export default class MembersFilter extends Component {
 
     get availableFilterProperties() {
         let availableFilters = FILTER_PROPERTIES;
+        const hasMultipleProducts = this.productsList?.length > 1;
 
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
+
+        // exclude tiers filter if site has only single tier
+        availableFilters = availableFilters
+            .filter((filter) => {
+                return filter.name === 'product' ? hasMultipleProducts : true;
+            });
 
         // exclude subscription filters if Stripe isn't connected
         if (!this.settings.get('stripeConnectAccountId')) {
@@ -174,6 +189,11 @@ export default class MembersFilter extends Component {
     }
 
     @action
+    setup() {
+        this.fetchProducts.perform();
+    }
+
+    @action
     addFilter() {
         this.filters.pushObject(new Filter({
             id: `filter-${this.nextFilterId}`,
@@ -195,6 +215,10 @@ export default class MembersFilter extends Component {
         let query = '';
         filters.forEach((filter) => {
             if (filter.type === 'label' && filter.value?.length) {
+                const relationStr = filter.relation === 'is-not' ? '-' : '';
+                const filterValue = '[' + filter.value.join(',') + ']';
+                query += `${filter.type}:${relationStr}${filterValue}+`;
+            } else if (filter.type === 'product' && filter.value?.length) {
                 const relationStr = filter.relation === 'is-not' ? '-' : '';
                 const filterValue = '[' + filter.value.join(',') + ']';
                 query += `${filter.type}:${relationStr}${filterValue}+`;
@@ -221,7 +245,7 @@ export default class MembersFilter extends Component {
         const filterId = this.nextFilterId;
 
         if (typeof value === 'object') {
-            if (value.$in !== undefined && key === 'label') {
+            if (value.$in !== undefined && ['label', 'product'].includes(key)) {
                 this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
                     id: `filter-${filterId}`,
@@ -231,7 +255,7 @@ export default class MembersFilter extends Component {
                     relationOptions: FILTER_RELATIONS_OPTIONS[key]
                 });
             }
-            if (value.$nin !== undefined && key === 'label') {
+            if (value.$nin !== undefined && ['label', 'product'].includes(key)) {
                 this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
                     id: `filter-${filterId}`,
@@ -350,6 +374,10 @@ export default class MembersFilter extends Component {
             defaultValue = [];
         }
 
+        if (newType === 'product' && !defaultValue) {
+            defaultValue = [];
+        }
+
         const filterToEdit = this.filters.findBy('id', filterId);
         if (filterToEdit) {
             filterToEdit.type = newType;
@@ -359,6 +387,10 @@ export default class MembersFilter extends Component {
         }
 
         if (newType !== 'label' && defaultValue) {
+            this.applySoftFilter();
+        }
+
+        if (newType !== 'product' && defaultValue) {
             this.applySoftFilter();
         }
     }
@@ -383,6 +415,9 @@ export default class MembersFilter extends Component {
             if (fil.type === 'label') {
                 return fil.value?.length;
             }
+            if (fil.type === 'product') {
+                return fil.value?.length;
+            }
             return fil.value;
         });
         const query = this.generateNqlFilter(validFilters);
@@ -392,7 +427,7 @@ export default class MembersFilter extends Component {
     @action
     applyFilter() {
         const validFilters = this.filters.filter((fil) => {
-            if (fil.type === 'label') {
+            if (['label', 'product'].includes(fil.type)) {
                 return fil.value?.length;
             }
             return fil.value;
@@ -415,5 +450,11 @@ export default class MembersFilter extends Component {
             })
         ]);
         this.args.onResetFilter();
+    }
+
+    @task({drop: true})
+    *fetchProducts() {
+        const response = yield this.store.query('product', {filter: 'type:paid'});
+        this.productsList = response;
     }
 }

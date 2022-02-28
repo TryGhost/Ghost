@@ -78,6 +78,10 @@ export default function mockMembers(server) {
                     {
                         key: 'label',
                         replacement: 'labels.slug'
+                    },
+                    {
+                        key: 'product',
+                        replacement: 'products.slug'
                     }
                 ]
             });
@@ -99,6 +103,16 @@ export default function mockMembers(server) {
                         serializedLabel[underscore(key)] = label.attrs[key];
                     });
                     serializedMember.labels.push(serializedLabel);
+                });
+
+                // similar deal for associated product models
+                serializedMember.products = [];
+                member.products.models.forEach((product) => {
+                    const serializedProduct = {};
+                    Object.keys(product.attrs).forEach((key) => {
+                        serializedProduct[underscore(key)] = product.attrs[key];
+                    });
+                    serializedMember.products.push(serializedProduct);
                 });
 
                 return nqlFilter.queryJSON(serializedMember);
