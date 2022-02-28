@@ -3,6 +3,11 @@
         <span class="gh-members-list-labels">{{this.labels}}</span>
     </LinkTo>
 
+{{else if (eq @filterColumn 'product')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data wrap middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        <span class="gh-members-list-labels">{{this.products}}</span>
+    </LinkTo>
+
 {{else if (eq @filterColumn 'status')}}
     <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
         {{#if (not (is-empty @member.status))}}

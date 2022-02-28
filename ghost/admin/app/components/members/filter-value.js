@@ -36,6 +36,18 @@ export default class MembersFilterValue extends Component {
         this.filterValue = this.args.filter.value;
     }
 
+    get productFilterValue() {
+        if (this.args.filter?.type === 'product') {
+            const tiers = this.args.filter?.value || [];
+            return tiers.map((tier) => {
+                return {
+                    slug: tier
+                };
+            });
+        }
+        return [];
+    }
+
     @action
     setInputFilterValue(filterType, filterId, event) {
         this.filterValue = event.target.value;
@@ -60,6 +72,11 @@ export default class MembersFilterValue extends Component {
     @action
     setLabelsFilterValue(filterType, filterId, labels) {
         this.args.setFilterValue(filterType, filterId, labels.map(label => label.slug));
+    }
+
+    @action
+    setProductsFilterValue(filterType, filterId, tiers) {
+        this.args.setFilterValue(filterType, filterId, tiers.map(tier => tier.slug));
     }
 
     @action

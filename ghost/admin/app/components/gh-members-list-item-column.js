@@ -10,6 +10,11 @@ export default class GhMembersListItemColumn extends Component {
         return labelData.map(label => label.name).join(', ');
     }
 
+    get products() {
+        const productData = this.args.member.get('products') || [];
+        return productData.map(product => product.name).join(', ');
+    }
+
     get subscriptionStatus() {
         const subscriptions = this.args.member.get('subscriptions') || [];
         return subscriptions[0]?.status;
