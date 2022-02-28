@@ -628,6 +628,17 @@ describe('Members API', function () {
         });
     });
 
+    it('Can edit a member by sending the full member payload back', async function () {
+        const {body: {members: [member, ...others]}} = await agent
+            .get('/members/')
+            .expectStatus(200);
+
+        await agent
+            .put(`/members/${member.id}/`)
+            .body({members: [member]})
+            .expectStatus(200);
+    });
+
     it('Can add a subscription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
         const price = testUtils.DataGenerator.Content.stripe_prices[0];
