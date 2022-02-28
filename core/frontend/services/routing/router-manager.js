@@ -35,7 +35,7 @@ class RouterManager {
     routerCreated(router) {
         // NOTE: this event should be become an "internal frontend even"
         //       and should not be consumed by the modules outside the frontend
-        events.emit('router.created', this);
+        events.emit('router.created', router);
 
         // CASE: there are router types which do not generate resource urls
         //       e.g. static route router, in this case we don't want ot notify the URL service
