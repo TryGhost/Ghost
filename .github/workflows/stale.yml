@@ -6,7 +6,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v4
+      - uses: actions/stale@v5
         with:
           stale-issue-message: |
             Our bot has automatically marked this issue as stale because there has not been any activity here in some time.
