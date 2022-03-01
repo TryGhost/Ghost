@@ -1,12 +1,12 @@
 const assert = require('assert');
 
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyUuid, anyDateWithTimezoneOffset} = matchers;
+const {anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const pageMatcher = {
-    published_at: anyDateWithTimezoneOffset,
-    created_at: anyDateWithTimezoneOffset,
-    updated_at: anyDateWithTimezoneOffset,
+    published_at: anyISODateTimeWithTZ,
+    created_at: anyISODateTimeWithTZ,
+    updated_at: anyISODateTimeWithTZ,
     uuid: anyUuid
 };
 
