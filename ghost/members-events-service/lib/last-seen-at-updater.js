@@ -11,7 +11,7 @@ class LastSeenAtUpdater {
      * @param {Object} deps.models The list of model dependencies
      * @param {any} deps.models.Member The Member model
      * @param {Object} deps.services The list of service dependencies
-     * @param {any} deps.services.domainEvent The DomainEvent service
+     * @param {any} deps.services.domainEvents The DomainEvents service
      * @param {any} deps.services.settingsCache The settings service
      */
     constructor({
@@ -19,12 +19,12 @@ class LastSeenAtUpdater {
             Member
         },
         services: {
-            domainEvent,
+            domainEvents,
             settingsCache
         }
     }) {
         this._memberModel = Member;
-        this._domainEventsService = domainEvent;
+        this._domainEventsService = domainEvents;
         this._settingsCacheService = settingsCache;
 
         this._domainEventsService.subscribe(MemberPageViewEvent, async (event) => {
