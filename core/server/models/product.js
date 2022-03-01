@@ -5,7 +5,8 @@ const Product = ghostBookshelf.Model.extend({
     tableName: 'products',
 
     defaults: {
-        active: true
+        active: true,
+        visible: false
     },
 
     relationships: ['benefits'],
