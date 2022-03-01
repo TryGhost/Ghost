@@ -95,4 +95,15 @@ module.exports = class DatabaseInfo {
     isMySQL() {
         return ['mysql', 'mysql2'].includes(this._driver);
     }
+
+    /**
+     * This allows you to use a different DB connection than the one we initialized the lib with
+     *
+     * @param {import('knex')} knex
+     *
+     * @returns DatabaseInfo
+     */
+    connection(knex) {
+        return new DatabaseInfo(knex);
+    }
 };
