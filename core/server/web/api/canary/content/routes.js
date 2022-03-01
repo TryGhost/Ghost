@@ -34,6 +34,7 @@ module.exports = function apiRoutes() {
     router.get('/settings', mw.authenticatePublic, http(api.publicSettings.browse));
 
     router.get('/products', mw.authenticatePublic, http(api.productsPublic.browse));
+    router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
 
     return router;
 };
