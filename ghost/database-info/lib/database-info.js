@@ -3,11 +3,11 @@ module.exports = class DatabaseInfo {
      * @param {import('knex')} knex
      */
     constructor(knex) {
-        this.knex = knex;
-        this.client = this.knex.client;
-        this.driver = this.client.config.client;
+        this._knex = knex;
+        this._client = this.knex.client;
+        this._driver = this.client.config.client;
 
-        this.databaseDetails = {
+        this._databaseDetails = {
             // The underlying driver that `knex` uses
             // ie. `sqlite3`, `mysql` or `mysql2`
             driver: this.driver,
@@ -24,37 +24,37 @@ module.exports = class DatabaseInfo {
     }
 
     async init() {
-        switch (this.driver) {
+        switch (this._driver) {
         case 'sqlite3':
-            this.databaseDetails.database = 'SQLite';
-            this.databaseDetails.engine = 'sqlite3';
-            this.databaseDetails.version = this.client.driver.VERSION;
+            this._databaseDetails.database = 'SQLite';
+            this._databaseDetails.engine = 'sqlite3';
+            this._databaseDetails.version = this._client.driver.VERSION;
             break;
         case 'mysql':
         case 'mysql2':
             try {
-                const version = await this.knex.raw('SELECT version() as version;');
+                const version = await this._knex.raw('SELECT version() as version;');
                 const mysqlVersion = version[0][0].version;
 
                 if (mysqlVersion.includes('MariaDB')) {
-                    this.databaseDetails.database = 'MariaDB';
-                    this.databaseDetails.engine = 'mariadb';
-                    this.databaseDetails.version = mysqlVersion.split('-')[0];
+                    this._databaseDetails.database = 'MariaDB';
+                    this._databaseDetails.engine = 'mariadb';
+                    this._databaseDetails.version = mysqlVersion.split('-')[0];
                 } else {
-                    this.databaseDetails.database = 'MySQL';
+                    this._databaseDetails.database = 'MySQL';
 
                     if (mysqlVersion.startsWith('5')) {
-                        this.databaseDetails.engine = 'mysql5';
+                        this._databaseDetails.engine = 'mysql5';
                     } else if (mysqlVersion.startsWith('8')) {
-                        this.databaseDetails.engine = 'mysql8';
+                        this._databaseDetails.engine = 'mysql8';
                     } else {
-                        this.databaseDetails.engine = 'mysql';
+                        this._databaseDetails.engine = 'mysql';
                     }
 
-                    this.databaseDetails.version = mysqlVersion;
+                    this._databaseDetails.version = mysqlVersion;
                 }
             } catch (err) {
-                return this.databaseDetails;
+                return this._databaseDetails;
             }
             break;
         default:
@@ -63,34 +63,36 @@ module.exports = class DatabaseInfo {
             break;
         }
 
-        return this.databaseDetails;
+        return this._databaseDetails;
     }
 
     getDriver() {
-        return this.databaseDetails.driver;
+        return this._databaseDetails.driver;
     }
 
     getDatabase() {
-        return this.databaseDetails.database;
+        return this._databaseDetails.database;
     }
 
     getEngine() {
-        return this.databaseDetails.engine;
+        return this._databaseDetails.engine;
     }
 
     getVersion() {
-        return this.databaseDetails.version;
+        return this._databaseDetails.version;
     }
 
-    isSqlite() {
-        return this.databaseDetails.database === 'SQLite';
+    /**
+     * Returns if the driver used is for SQLite
+     */
+    isSQLite() {
+        return ['sqlite3'].includes(this._driver);
     }
 
-    isMysql() {
-        return this.databaseDetails.database === 'MySQL';
-    }
-
-    isMariadb() {
-        return this.databaseDetails.database === 'MariaDB';
+    /**
+     * Returns if the driver used is for MySQL
+     */
+    isMySQL() {
+        return ['mysql', 'mysql2'].includes(this._driver);
     }
 };
