@@ -97,6 +97,7 @@
 .gh-product-card-empty-state p {
     margin-bottom: 0;
     padding: 3.2rem;
+    color: var(--midgrey);
 }
 
 .gh-product-card-description {
