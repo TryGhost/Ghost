@@ -1,4 +1,3 @@
-const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
 const moment = require('moment-timezone');
 
@@ -12,6 +11,7 @@ class LastSeenAtUpdater {
      * @param {Object} deps.models The list of model dependencies
      * @param {any} deps.models.Member The Member model
      * @param {Object} deps.services The list of service dependencies
+     * @param {any} deps.services.domainEvent The DomainEvent service
      * @param {any} deps.services.settingsCache The settings service
      */
     constructor({
@@ -19,12 +19,15 @@ class LastSeenAtUpdater {
             Member
         },
         services: {
+            domainEvent,
             settingsCache
         }
     }) {
         this._memberModel = Member;
+        this._domainEventsService = domainEvent;
         this._settingsCacheService = settingsCache;
-        DomainEvents.subscribe(MemberPageViewEvent, async (event) => {
+
+        this._domainEventsService.subscribe(MemberPageViewEvent, async (event) => {
             await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
         });
     }
