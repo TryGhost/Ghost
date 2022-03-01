@@ -1,10 +1,11 @@
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
 const {addUnique} = require('../../../schema/commands');
+const DatabaseInfo = require('@tryghost/database-info');
 
 module.exports = createTransactionalMigration(
     async function up(connection) {
-        if (connection.client.config.client !== 'sqlite3') {
+        if (!DatabaseInfo.isSQLite(connection)) {
             return logging.warn('Skipping adding unique constraint for members_stripe_customers_subscriptions and members_stripe_customers - database is not SQLite3');
         }
 
