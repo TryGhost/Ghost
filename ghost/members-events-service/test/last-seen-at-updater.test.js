@@ -25,7 +25,7 @@ describe('LastSeenAtUpdater', function () {
                 settingsCache: {
                     get: settingsCache
                 },
-                domainEvent: DomainEvents
+                domainEvents: DomainEvents
             }
         });
         DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
@@ -51,7 +51,7 @@ describe('LastSeenAtUpdater', function () {
                 settingsCache: {
                     get: settingsCache
                 },
-                domainEvent: DomainEvents
+                domainEvents: DomainEvents
             }
         });
         DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
@@ -73,7 +73,7 @@ describe('LastSeenAtUpdater', function () {
                 settingsCache: {
                     get: settingsCache
                 },
-                domainEvent: DomainEvents
+                domainEvents: DomainEvents
             }
         });
         DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
@@ -99,7 +99,7 @@ describe('LastSeenAtUpdater', function () {
                 settingsCache: {
                     get: settingsCache
                 },
-                domainEvent: DomainEvents
+                domainEvents: DomainEvents
             }
         });
         DomainEvents.dispatch(MemberPageViewEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
@@ -120,7 +120,7 @@ describe('LastSeenAtUpdater', function () {
                 settingsCache: {
                     get: settingsCache
                 },
-                domainEvent: DomainEvents
+                domainEvents: DomainEvents
             }
         });
         DomainEvents.dispatch(MemberSubscribeEvent.create({memberId: '1', source: 'api'}, now.toDate()));
