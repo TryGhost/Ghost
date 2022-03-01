@@ -35,8 +35,8 @@ describe('Authentication API', function () {
         });
 
         it('complete setup', async function () {
-            const email = 'test@example.com'
-            const password = 'thisissupersafe'
+            const email = 'test@example.com';
+            const password = 'thisissupersafe';
 
             const requestMock = nock('https://api.github.com')
                 .get('/repos/tryghost/dawn/zipball')
@@ -82,12 +82,12 @@ describe('Authentication API', function () {
             assert.equal(description, 'Custom Site Description on Setup &mdash; great for everyone', 'The site description should have been set');
 
             // Test that we would not show any notifications (errors) to the user
-            await agent.loginAs(email, password)
+            await agent.loginAs(email, password);
             await agent
                 .get('notifications/')
                 .expectStatus(200)
                 .expect(({body}) => {
-                    assert.deepEqual(body.notifications, [], "The setup should not create notifications");
+                    assert.deepEqual(body.notifications, [], 'The setup should not create notifications');
                 });
         });
 
@@ -150,17 +150,17 @@ describe('Authentication API', function () {
         });
 
         it('complete setup with default theme', async function () {
-            const agent = await agentProvider.getAdminAPIAgent()
+            const cleanAgent = await agentProvider.getAdminAPIAgent();
 
-            const email = 'test@example.com'
-            const password = 'thisissupersafe'
+            const email = 'test@example.com';
+            const password = 'thisissupersafe';
 
             const requestMock = nock('https://api.github.com')
                 .get('/repos/tryghost/casper/zipball')
                 .query(true)
                 .replyWithFile(200, __dirname + '/../../../utils/fixtures/themes/valid.zip');
 
-            await agent
+            await cleanAgent
                 .post('authentication/setup')
                 .body({
                     setup: [{
@@ -199,12 +199,12 @@ describe('Authentication API', function () {
             assert.equal(description, 'Custom Site Description on Setup &mdash; great for everyone', 'The site description should have been set');
 
             // Test that we would not show any notifications (errors) to the user
-            await agent.loginAs(email, password)
-            await agent
+            await cleanAgent.loginAs(email, password);
+            await cleanAgent
                 .get('notifications/')
                 .expectStatus(200)
                 .expect(({body}) => {
-                    assert.deepEqual(body.notifications, [], "The setup should not create notifications");
+                    assert.deepEqual(body.notifications, [], 'The setup should not create notifications');
                 });
         });
     });
