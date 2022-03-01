@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const DatabaseInfo = require('@tryghost/database-info');
 
 module.exports = {
     config: {
@@ -6,7 +7,7 @@ module.exports = {
     },
 
     async up({transacting: knex}) {
-        if (knex.client.config.client !== 'mysql') {
+        if (!DatabaseInfo.isMySQL(knex)) {
             logging.warn('Skipping cleanup of duplicate customers - database is not MySQL');
             return;
         }
