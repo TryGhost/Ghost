@@ -29,8 +29,8 @@ describe('Tiers API', function () {
             .matchBodySnapshot({
                 tiers: Array(2).fill({
                     id: matchers.anyObjectId,
-                    created_at: matchers.anyDate,
-                    updated_at: matchers.anyDate
+                    created_at: matchers.anyISODateTime,
+                    updated_at: matchers.anyISODateTime
                 })
             });
     });

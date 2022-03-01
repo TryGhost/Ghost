@@ -3,12 +3,12 @@ const cheerio = require('cheerio');
 const moment = require('moment');
 
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyArray, anyEtag, anyUuid, anyDateWithTimezoneOffset} = matchers;
+const {anyArray, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const postMatcher = {
-    published_at: anyDateWithTimezoneOffset,
-    created_at: anyDateWithTimezoneOffset,
-    updated_at: anyDateWithTimezoneOffset,
+    published_at: anyISODateTimeWithTZ,
+    created_at: anyISODateTimeWithTZ,
+    updated_at: anyISODateTimeWithTZ,
     uuid: anyUuid
 };
 

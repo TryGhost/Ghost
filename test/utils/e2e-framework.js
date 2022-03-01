@@ -276,9 +276,9 @@ module.exports = {
     matchers: {
         anyString: any(String),
         anyArray: any(Array),
-        anyDate: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
-        anyShortDate: stringMatching(/\d{4}-\d{2}-\d{2}/),
-        anyDateWithTimezoneOffset: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000\+\d{2}:\d{2}/),
+        anyISODateTime: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
+        anyISODate: stringMatching(/\d{4}-\d{2}-\d{2}/),
+        anyISODateTimeWithTZ: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000\+\d{2}:\d{2}/),
         anyEtag: stringMatching(/(?:W\/)?"(?:[ !#-\x7E\x80-\xFF]*|\r\n[\t ]|\\.)*"/),
         anyObjectId: stringMatching(/[a-f0-9]{24}/),
         anyErrorId: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
