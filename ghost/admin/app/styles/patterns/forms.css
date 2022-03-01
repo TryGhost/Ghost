@@ -93,7 +93,7 @@ input[type=number] {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--midgrey-d2);
+    color: var(--midgrey-d1);
     font-size: 1.25rem;
     font-weight: 400;
 }

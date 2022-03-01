@@ -1,6 +1,6 @@
 {{#if this.activities}}<h4 class="gh-main-section-header small bn">Activity</h4>{{/if}}
-<div class="gh-main-section-content bordered {{if this.activities "" "mt8"}}">
-    <div class="gh-member-feed" ...attributes>
+<div class="gh-main-section-content grey {{if this.activities "" "mt8"}}">
+    <div class="gh-member-feed {{if this.activities "" "gh-member-feed-no-data"}}" ...attributes>
         <div class="flex-auto flex flex-column items-stretch {{if this.activities "justify-between" "h-100 justify-center"}}">
             <div>
                 {{#if this.activities}}

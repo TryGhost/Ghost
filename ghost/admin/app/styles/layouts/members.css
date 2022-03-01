@@ -24,6 +24,7 @@
 .gh-member-avatar-label {
     display: block;
     color: #fff;
+    font-weight: 500;
 }
 
 .gh-member-avatar-image {
@@ -661,28 +662,96 @@ label[for="member-description"] + p {
     margin: 0 0 4px;
 }
 
-.gh-member-detail-overview {
-    padding: 32px 0 0;
+.gh-member-settings .gh-main-section.columns-3 {
+    grid-column-gap: 48px;
 }
 
-.gh-member-detail-overview h3 {
-    font-size: 1.7rem;
+.gh-member-details {
+    position: sticky;
+    top: 96px;
+    left: 0;
+    height: max-content;
+}
+
+.gh-member-details h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.6rem;
     font-weight: 600;
-    padding: 0;
-    margin: 0;
-    padding: 0;
 }
 
-.gh-member-detail-overview p {
+.gh-member-details p {
     margin: 0;
     padding: 0;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    color: var(--darkgrey-l1);
+}
+
+.gh-member-details a,
+.gh-member-details a:hover {
+    color: var(--darkgrey-l1);
+}
+
+.gh-member-details-identity {
+    display: flex;
+    align-items: center;
+    margin-left: -4px;
+}
+
+.gh-member-details-meta {
+    display: grid;
+    padding: 3.2rem 0;
+}
+
+.gh-member-details-meta p {
+    display: flex;
+    align-items: center;
+}
+
+.gh-member-details-meta .gh-member-last-seen {
+    margin-top: -1px;
+}
+
+.gh-member-details-meta svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: .8rem;
+}
+
+.gh-member-details-meta svg path {
+    stroke: var(--midgrey);
+}
+
+.gh-member-details-stats-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-member-details-stats {
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-member-details-stat {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.6rem;
+}
+
+.gh-member-details-stats-container .gh-main-section-header {
+    margin-bottom: 1.6rem;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-member-details-stat.open-rate span {
+    margin-left: 2px;
+    font-size: 1.8rem;
+}
+
+.gh-members-no-stats p {
     color: var(--midgrey);
-}
-
-.gh-member-detail-overview a,
-.gh-member-detail-overview a:hover {
-    color: var(--black);
+    font-size: 1.3rem;
+    line-height: 1.5em;
 }
 
 textarea.gh-member-details-textarea {
@@ -831,31 +900,28 @@ textarea.gh-member-details-textarea {
 }
 
 @media (max-width: 1160px) {
-    .gh-member-settings {
+    .gh-member-settings .gh-main-section {
         display: flex;
         flex-direction: column;
     }
 
-    .gh-member-settings > div {
+    .gh-member-settings .gh-main-section > div {
         float: none;
         width: 100%;
     }
-
+    
     .gh-member-details {
-        order: 1;
+        position: relative;
+        top: unset;
+        left: unset;
     }
+}
 
-    .gh-member-feed {
-        order: 4;
-    }
-
-    .gh-member-internal-info {
-        order: 2;
-        margin-top: 3.2rem;
-    }
-
-    .gh-member-stripe {
-        order: 3;
+@media (min-width: 960px) and (max-width: 1160px),
+(min-width: 600px) and (max-width: 800px) {
+    .gh-member-details-stats {
+        flex-direction: row;
+        justify-content: space-between;
     }
 }
 
@@ -894,11 +960,10 @@ textarea.gh-member-details-textarea {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin: 32px 0;
 }
 
 .gh-members-no-data svg {
-    width: 76px;
+    width: 56px;
     height: auto;
     margin-bottom: 8px;
 }
@@ -916,10 +981,10 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-members-no-data p {
+    margin: 0 40px .3rem;
+    color: var(--midgrey);
     font-size: 1.3rem;
     line-height: 1.5em;
-    margin: 4px 44px 0;
-    color: var(--midgrey);
 }
 
 .gh-members-no-list h4 {
@@ -931,8 +996,8 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-members-no-subs svg {
-    width: 64px;
-    margin-left: 18px;
+    width: 52px;
+    margin-left: 12px;
 }
 
 .gh-members-no-subs svg path,
@@ -943,19 +1008,40 @@ textarea.gh-member-details-textarea {
 
 .gh-member-feed-container {
     display: flex;
+    flex-grow: 1;
     flex-direction: row;
     align-items: center;
-    padding: 1rem 0;
+    padding: 1.6rem 0;
 }
 
 .gh-member-feed {
     margin: -12px 0 -8px;
 }
 
+.gh-member-settings .gh-member-feed-labs {
+    margin: 0;
+    padding: 16px 20px;
+    background: var(--white);
+    box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
+    border-radius: 3px;
+}
+
+.gh-member-settings .gh-member-feed-no-data {
+    margin: 0;
+    padding: 24px 0 28px;
+    background: transparent;
+    box-shadow: none;
+}
+
 .gh-member-feed-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    height: 52px;
     padding: 0;
+}
+
+.gh-member-feed-row-labs {
+    height: unset;
 }
 
 .gh-member-feed-activity {
@@ -1011,7 +1097,7 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-btn-expandfeed {
-    margin: 8px 0;
+    margin-top: 16px;
 }
 
 .gh-member-feed-row:first-child .gh-member-feed-container {
@@ -1024,7 +1110,14 @@ textarea.gh-member-details-textarea {
 
 .gh-member-feed-detail {
     display: flex;
-    flex-direction: column;
+    flex-grow: 1;
+    justify-content: space-between;
+}
+
+@media (max-width: 600px) {
+    .gh-member-feed-detail {
+        flex-direction: column;
+    }
 }
 
 .gh-member-feed-event {
@@ -1040,14 +1133,20 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-feed-icon {
+    flex-shrink: 0;
     width: 24px;
     height: 24px;
-    margin: 0 1rem 1rem 0;
+    margin-right: 1rem;
 }
 
 .gh-member-feed-icon svg {
     width: 100%;
     height: 100%;
+}
+
+.gh-member-settings .gh-members-activity-description {
+    color: var(--darkgrey-l1);
+    font-weight: 400;
 }
 
 .gh-member-feed-time {
@@ -1923,6 +2022,13 @@ p.gh-members-import-errordetail:first-of-type {
     grid-gap: 24px;
 }
 
+@media (max-width: 600px) {
+    .gh-cp-member-email-name {
+        grid-template-columns: 1fr;
+        grid-gap: 0;
+    }
+}
+
 .gh-cp-data-summary:not(:last-of-type) {
     margin-bottom: 24px;
 }
@@ -1990,7 +2096,8 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-memberproduct-created {
-    color: var(--midgrey);
+    color: var(--midgrey-d1);
+    font-size: 1.25rem;
 }
 
 .gh-memberproduct-archived .gh-memberproduct-name {
@@ -2018,9 +2125,13 @@ p.gh-members-import-errordetail:first-of-type {
     max-width: 700px;
 }
 
+.gh-btn-addproduct svg {
+    width: .8em;
+    height: .8em;
+}
+
 .gh-btn-addproduct svg path {
     fill: var(--green);
-    stroke: none !important;
 }
 
 .gh-member-product-memberdetails {
@@ -2049,9 +2160,9 @@ p.gh-members-import-errordetail:first-of-type {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 1.4rem;
+    padding: 24px 0 28px;
     color: var(--midgrey);
-    padding: 48px 0;
+    font-size: 1.4rem;
 }
 
 .gh-cp-memberproduct-noproduct .gh-loading-content {
@@ -2070,8 +2181,12 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-memberproduct-subscription {
     position: relative;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
+}
+
+.gh-cp-memberproduct-renewal {
+    color: var(--darkgrey-l1);
 }
 
 .gh-memberproduct-price-container {
