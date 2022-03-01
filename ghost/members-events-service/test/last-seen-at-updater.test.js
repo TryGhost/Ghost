@@ -18,7 +18,7 @@ describe('LastSeenAtUpdater', function () {
         new LastSeenAtUpdater({
             models: {
                 Member: {
-                    update: spy
+                    edit: spy
                 }
             },
             services: {
@@ -44,7 +44,7 @@ describe('LastSeenAtUpdater', function () {
         new LastSeenAtUpdater({
             models: {
                 Member: {
-                    update: spy
+                    edit: spy
                 }
             },
             services: {
@@ -66,7 +66,7 @@ describe('LastSeenAtUpdater', function () {
         new LastSeenAtUpdater({
             models: {
                 Member: {
-                    update: spy
+                    edit: spy
                 }
             },
             services: {
@@ -92,7 +92,7 @@ describe('LastSeenAtUpdater', function () {
         new LastSeenAtUpdater({
             models: {
                 Member: {
-                    update: spy
+                    edit: spy
                 }
             },
             services: {
@@ -113,7 +113,7 @@ describe('LastSeenAtUpdater', function () {
         new LastSeenAtUpdater({
             models: {
                 Member: {
-                    update: spy
+                    edit: spy
                 }
             },
             services: {
