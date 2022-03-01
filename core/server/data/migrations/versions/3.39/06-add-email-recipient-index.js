@@ -1,11 +1,12 @@
 const logging = require('@tryghost/logging');
 const {createNonTransactionalMigration} = require('../../utils');
+const DatabaseInfo = require('@tryghost/database-info');
 
 module.exports = createNonTransactionalMigration(
     async function up(knex) {
         let hasIndex = false;
 
-        if (knex.client.config.client === 'sqlite3') {
+        if (DatabaseInfo.isSQLite(knex)) {
             const result = await knex.raw(`select * from sqlite_master where type = 'index' and tbl_name = 'email_recipients' and name = 'email_recipients_email_id_member_email_index'`);
             hasIndex = result.length !== 0;
         } else {
@@ -27,7 +28,7 @@ module.exports = createNonTransactionalMigration(
     async function down(knex) {
         let missingIndex = false;
 
-        if (knex.client.config.client === 'sqlite3') {
+        if (DatabaseInfo.isSQLite(knex)) {
             const result = await knex.raw(`select * from sqlite_master where type = 'index' and tbl_name = 'email_recipients' and name = 'email_recipients_email_id_member_email_index'`);
             missingIndex = result.length === 0;
         } else {
@@ -42,7 +43,7 @@ module.exports = createNonTransactionalMigration(
 
         logging.info('Dropping composite index on email_recipients for [email_id, member_email]');
 
-        if (knex.client.config.client === 'mysql') {
+        if (DatabaseInfo.isMySQL(knex)) {
             await knex.schema.table('email_recipients', (table) => {
                 table.dropForeign('email_id');
                 table.dropIndex(['email_id', 'member_email']);

@@ -1,8 +1,9 @@
 const {createIrreversibleMigration} = require('../../utils');
 const logging = require('@tryghost/logging');
+const DatabaseInfo = require('@tryghost/database-info');
 
 module.exports = createIrreversibleMigration(async function up(connection) {
-    if (connection.client.config.client === 'mysql') {
+    if (DatabaseInfo.isMySQL(connection)) {
         logging.info('Skipping removal of orphaned stripe records for MySQL');
         return;
     }

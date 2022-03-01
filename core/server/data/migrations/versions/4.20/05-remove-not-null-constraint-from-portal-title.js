@@ -1,6 +1,7 @@
 const logging = require('@tryghost/logging');
 const {createNonTransactionalMigration} = require('../../utils');
 const {addUnique} = require('../../../schema/commands');
+const DatabaseInfo = require('@tryghost/database-info');
 
 module.exports = createNonTransactionalMigration(
     async function up(knex) {
@@ -14,7 +15,7 @@ module.exports = createNonTransactionalMigration(
             table.string('portal_title', 191).nullable();
         });
 
-        if (knex.client.config.client === 'sqlite3') {
+        if (DatabaseInfo.isSQLite(knex)) {
             // eslint-disable-next-line no-restricted-syntax
             for (const column of ['name', 'code', 'stripe_coupon_id']) {
                 await addUnique('offers', column, knex);
@@ -32,7 +33,7 @@ module.exports = createNonTransactionalMigration(
             table.string('portal_title', 191).notNullable();
         });
 
-        if (knex.client.config.client === 'sqlite3') {
+        if (DatabaseInfo.isSQLite(knex)) {
             // eslint-disable-next-line no-restricted-syntax
             for (const column of ['name', 'code', 'stripe_coupon_id']) {
                 await addUnique('offers', column, knex);

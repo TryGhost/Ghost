@@ -1,10 +1,10 @@
 const logging = require('@tryghost/logging');
-
 const {createTransactionalMigration} = require('../../utils');
+const DatabaseInfo = require('@tryghost/database-info');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
-        if (knex.client.config.client !== 'mysql') {
+        if (!DatabaseInfo.isMySQL(knex)) {
             logging.warn('Skipping cleanup of duplicate offer redemptions - database is not MySQL');
             return;
         }

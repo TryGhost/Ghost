@@ -4,6 +4,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const db = require('../db');
+const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
 const clients = require('./clients');
 
@@ -135,9 +136,7 @@ async function dropUnique(tableName, columns, transaction = db.knex) {
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
 async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction = db.knex}) {
-    const client = transaction.client.config.client;
-
-    if (client !== 'sqlite3') {
+    if (!DatabaseInfo.isSQLite(transaction)) {
         throw new errors.InternalServerError({
             message: tpl(messages.hasForeignSQLite3)
         });
@@ -162,8 +161,7 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
 async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDelete = false, transaction = db.knex}) {
-    const isSQLite = transaction.client.config.client === 'sqlite3';
-    if (isSQLite) {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const foreignKeyExists = await hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction});
         if (foreignKeyExists) {
             logging.warn(`Skipped adding foreign key from ${fromTable}.${fromColumn} to ${toTable}.${toColumn} - foreign key already exists`);
@@ -175,7 +173,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
 
         //disable and re-enable foreign key checks on sqlite because of https://github.com/knex/knex/issues/4155
         let foreignKeysEnabled;
-        if (isSQLite) {
+        if (DatabaseInfo.isSQLite(transaction)) {
             foreignKeysEnabled = await db.knex.raw('PRAGMA foreign_keys;');
             if (foreignKeysEnabled[0].foreign_keys) {
                 await db.knex.raw('PRAGMA foreign_keys = OFF;');
@@ -190,7 +188,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
             }
         });
 
-        if (isSQLite) {
+        if (DatabaseInfo.isSQLite(transaction)) {
             if (foreignKeysEnabled[0].foreign_keys) {
                 await db.knex.raw('PRAGMA foreign_keys = ON;');
             }
@@ -215,8 +213,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
 async function dropForeign({fromTable, fromColumn, toTable, toColumn, transaction = db.knex}) {
-    const isSQLite = transaction.client.config.client === 'sqlite3';
-    if (isSQLite) {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const foreignKeyExists = await hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction});
         if (!foreignKeyExists) {
             logging.warn(`Skipped dropping foreign key from ${fromTable}.${fromColumn} to ${toTable}.${toColumn} - foreign key does not exist`);
@@ -228,7 +225,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
 
         //disable and re-enable foreign key checks on sqlite because of https://github.com/knex/knex/issues/4155
         let foreignKeysEnabled;
-        if (isSQLite) {
+        if (DatabaseInfo.isSQLite(transaction)) {
             foreignKeysEnabled = await db.knex.raw('PRAGMA foreign_keys;');
             if (foreignKeysEnabled[0].foreign_keys) {
                 await db.knex.raw('PRAGMA foreign_keys = OFF;');
@@ -239,7 +236,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
             table.dropForeign(fromColumn);
         });
 
-        if (isSQLite) {
+        if (DatabaseInfo.isSQLite(transaction)) {
             if (foreignKeysEnabled[0].foreign_keys) {
                 await db.knex.raw('PRAGMA foreign_keys = ON;');
             }
@@ -260,9 +257,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
  * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function hasPrimaryKeySQLite(tableName, transaction = db.knex) {
-    const client = transaction.client.config.client;
-
-    if (client !== 'sqlite3') {
+    if (!DatabaseInfo.isSQLite(transaction)){
         throw new errors.InternalServerError({
             message: tpl(messages.hasPrimaryKeySQLiteError)
         });
@@ -282,8 +277,7 @@ async function hasPrimaryKeySQLite(tableName, transaction = db.knex) {
  * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function addPrimaryKey(tableName, columns, transaction = db.knex) {
-    const isSQLite = transaction.client.config.client === 'sqlite3';
-    if (isSQLite) {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const primaryKeyExists = await hasPrimaryKeySQLite(tableName, transaction);
         if (primaryKeyExists) {
             logging.warn(`Primary key constraint for: ${columns} already exists for table: ${tableName}`);
@@ -366,7 +360,7 @@ function getColumns(table, transaction = db.knex) {
 function checkTables(transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'mysql') {
+    if (DatabaseInfo.isMySQL(transaction)) {
         return clients[client].checkPostTable();
     }
 }

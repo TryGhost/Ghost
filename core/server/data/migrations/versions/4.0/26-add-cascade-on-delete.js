@@ -1,9 +1,10 @@
 const logging = require('@tryghost/logging');
 const {createIrreversibleMigration} = require('../../utils');
 const {addForeign, dropForeign} = require('../../../schema/commands');
+const DatabaseInfo = require('@tryghost/database-info');
 
 module.exports = createIrreversibleMigration(async (knex) => {
-    if (knex.client.config.client !== 'sqlite3') {
+    if (!DatabaseInfo.isSQLite(knex)) {
         return logging.warn('Skipping adding "on delete cascade" - database is not SQLite3');
     }
 
