@@ -107,9 +107,9 @@
                         </li>
 
                         {{#if (and this.isStripeConnected (not-eq this.settings.membersSignupAccess "none"))}}
-                        <li>
-                            <LinkTo @route="offers" @alt="Offers">{{svg-jar "percentage"}}Offers</LinkTo>
-                        </li>
+                            <li>
+                                <LinkTo @route="offers" @alt="Offers">{{svg-jar "percentage"}}Offers</LinkTo>
+                            </li>
                         {{/if}}
                     {{/if}}
                 </ul>

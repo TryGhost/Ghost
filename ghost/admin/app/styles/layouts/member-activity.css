@@ -1,6 +1,25 @@
-.gh-members-activity .gh-member-detail-overview {
+.gh-member-details-activity {
     padding: 32px 0;
     border-top: 1px solid var(--whitegrey);
+}
+
+.gh-member-details-activity h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.7rem;
+    font-weight: 600;
+}
+
+.gh-member-details-activity p {
+    margin: 0;
+    padding: 0;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+.gh-member-details-activity a,
+.gh-member-details-activity a:hover {
+    color: var(--black);
 }
 
 .gh-members-activity .gh-list-scrolling {
