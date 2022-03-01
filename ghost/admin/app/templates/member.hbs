@@ -13,10 +13,40 @@
         <section class="view-actions">
             {{#if this.session.user.isAdmin}}
                 {{#unless this.member.isNew}}
-                    <button
-                        class="gh-btn gh-btn-white gh-btn-icon mr2" type="button" {{on "click" this.toggleImpersonateMemberModal}}>
-                        <span>Impersonate</span>
-                    </button>
+                    <span class="dropdown">
+                        <GhDropdownButton
+                            @dropdownName="members-actions-menu"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
+                            @title="Members Actions"
+                        >
+                            <span>
+                                {{svg-jar "settings"}}
+                                <span class="hidden">Actions</span>
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="members-actions-menu"
+                            @tagName="ul"
+                            @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
+                        >
+                            <li>
+                                <button
+                                    class="mr2" type="button" {{on "click" this.toggleImpersonateMemberModal}}>
+                                    <span>Impersonate</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{on "click" this.toggleDeleteMemberModal}}
+                                    data-test-button="delete-member"
+                                >
+                                    <span class="red">Delete member</span>
+                                </button>
+                            </li>
+                        </GhDropdown>
+                    </span>
                 {{/unless}}
             {{/if}}
 
@@ -35,21 +65,6 @@
                 @isSaveRunning={{this.saveTask.isRunning}}
                 @isLoading={{this.isLoading}} />
         </form>
-
-        {{#unless this.member.isNew}}
-            <div class="gh-main-section">
-                <div class="gh-main-section-block">
-                    <button
-                        type="button"
-                        class="gh-btn gh-btn-red gh-btn-icon"
-                        {{on "click" this.toggleDeleteMemberModal}}
-                        data-test-button="delete-member"
-                    >
-                        <span>Delete member</span>
-                    </button>
-                </div>
-            </div>
-        {{/unless}}
     </div>
 </section>
 

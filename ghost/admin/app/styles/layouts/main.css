@@ -1201,6 +1201,10 @@
     padding-top: 0;
 }
 
+.gh-main-section-header.pt5 {
+    padding-top: 20px;
+}
+
 .gh-main-section-description {
     color: var(--middarkgrey);
     border-bottom: 1px solid var(--whitegrey);

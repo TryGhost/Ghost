@@ -961,6 +961,14 @@ input:focus,
     stroke: #fff;
 }
 
+.gh-member-settings .gh-member-feed {
+    background: transparent;
+}
+
+.gh-member-feed-row {
+    border-bottom: 1px solid var(--lightgrey-l1);
+}
+
 /* Offers */
 .gh-offers-list-cta .discount-bubble {
     color: var(--midgrey-d2);

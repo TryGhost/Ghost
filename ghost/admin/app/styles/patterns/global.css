@@ -374,19 +374,19 @@ h6 {
 }
 
 .gh-data-summary {
-    font-size: 3.9rem;
-    line-height: 4rem;
-    font-weight: 600;
     color: var(--black);
+    font-size: 4rem;
+    line-height: 4.4rem;
+    font-weight: 600;
 }
 
 .gh-data-unavailable-label {
-    font-size: 1.3rem;
-    line-height: 1.4em;
-    font-weight: 400;
-    color: var(--midgrey);
+    max-width: 320px;
     margin: 4px 0;
-    max-width: 330px;
+    color: var(--midgrey);
+    font-size: 1.25rem;
+    line-height: 1.35em;
+    font-weight: 400;
 }
 
 p,

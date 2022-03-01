@@ -90,6 +90,10 @@ export default class extends Component {
         return null;
     }
 
+    get isStripeConnected() {
+        return this.settings.get('stripeConnectAccountId');
+    }
+
     @action
     setup() {
         this.fetchProducts.perform();
