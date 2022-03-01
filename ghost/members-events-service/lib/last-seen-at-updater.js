@@ -40,7 +40,7 @@ class LastSeenAtUpdater {
      */
     async updateLastSeenAt(memberId, memberLastSeenAt, timestamp) {
         const timezone = this._settingsCacheService.get('timezone');
-        if (memberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(moment.utc(memberLastSeenAt).tz(timezone).startOf('day'))) {
+        if (memberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(memberLastSeenAt)) {
             await this._memberModel.update({
                 last_seen_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')
             }, {
