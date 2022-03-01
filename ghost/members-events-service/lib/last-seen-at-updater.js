@@ -1,6 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 /**
  * Listen for `MemberViewEvent` to update the `member.last_seen_at` timestamp
@@ -9,10 +9,21 @@ class LastSeenAtUpdater {
     /**
      * Initializes the event subscriber
      * @param {Object} deps dependencies
-     * @param {any} deps.memberModel The member model
+     * @param {Object} deps.models The list of model dependencies
+     * @param {any} deps.models.Member The Member model
+     * @param {Object} deps.services The list of service dependencies
+     * @param {any} deps.services.settingsCache The settings service
      */
-    constructor({memberModel}) {
-        this._memberModel = memberModel;
+    constructor({
+        models: {
+            Member
+        },
+        services: {
+            settingsCache
+        }
+    }) {
+        this._memberModel = Member;
+        this._settingsCacheService = settingsCache;
         DomainEvents.subscribe(MemberPageViewEvent, async (event) => {
             await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
         });
@@ -28,7 +39,8 @@ class LastSeenAtUpdater {
      * @param {Date} timestamp The event timestamp
      */
     async updateLastSeenAt(memberId, memberLastSeenAt, timestamp) {
-        if (memberLastSeenAt === null || moment(moment.utc(timestamp).startOf('day')).isAfter(moment.utc(memberLastSeenAt).startOf('day'))) {
+        const timezone = this._settingsCacheService.get('timezone');
+        if (memberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(moment.utc(memberLastSeenAt).tz(timezone).startOf('day'))) {
             await this._memberModel.update({
                 last_seen_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')
             }, {

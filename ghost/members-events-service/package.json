@@ -27,6 +27,6 @@
   "dependencies": {
     "@tryghost/domain-events": "^0.1.7",
     "@tryghost/member-events": "^0.3.5",
-    "moment": "^2.29.1"
+    "moment-timezone": "^0.5.34"
   }
 }
