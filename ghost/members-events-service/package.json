@@ -25,8 +25,8 @@
     "sinon": "13.0.1"
   },
   "dependencies": {
-    "@tryghost/domain-events": "^0.1.8",
-    "@tryghost/member-events": "^0.4.0",
-    "moment-timezone": "^0.5.34"
+    "@tryghost/domain-events": "0.1.8",
+    "@tryghost/member-events": "0.4.0",
+    "moment-timezone": "0.5.34"
   }
 }
