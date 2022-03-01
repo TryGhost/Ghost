@@ -4,13 +4,13 @@ module.exports = class DatabaseInfo {
      */
     constructor(knex) {
         this._knex = knex;
-        this._client = this.knex.client;
-        this._driver = this.client.config.client;
+        this._client = this._knex.client;
+        this._driver = this._client.config.client;
 
         this._databaseDetails = {
             // The underlying driver that `knex` uses
             // ie. `sqlite3`, `mysql` or `mysql2`
-            driver: this.driver,
+            driver: this._driver,
 
             // A capitalized version of the specific database used
             database: 'unknown',
