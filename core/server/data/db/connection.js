@@ -32,9 +32,10 @@ function configure(dbConfig) {
         process.env.BTHREADS_BACKEND = 'child_process';
     }
 
-    if (client === 'mysql') {
+    if (client === 'mysql2') {
         dbConfig.connection.timezone = 'Z';
         dbConfig.connection.charset = 'utf8mb4';
+        dbConfig.connection.decimalNumbers = true;
 
         // NOTE: disabled so that worker processes can use the db without
         // requiring logging and causing file desriptor leaks.
