@@ -81,7 +81,8 @@ function serializeTier(tier, options, apiType) {
         stripe_prices: json.stripePrices ? json.stripePrices.map(price => serializeStripePrice(price, hideStripeData)) : null,
         monthly_price: serializeStripePrice(json.monthlyPrice, hideStripeData),
         yearly_price: serializeStripePrice(json.yearlyPrice, hideStripeData),
-        benefits: json.benefits || null
+        benefits: json.benefits || null,
+        visible: json.visible
     };
 
     return serialized;
