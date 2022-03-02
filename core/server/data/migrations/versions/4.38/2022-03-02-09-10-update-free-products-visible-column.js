@@ -59,6 +59,5 @@ module.exports = createTransactionalMigration(
             logging.warn('portal_products setting is invalid - skipping migration');
             return;
         }
-
     }
 );
