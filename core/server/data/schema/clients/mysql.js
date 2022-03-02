@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const db = require('../../../data/db');
 
-const doRawAndFlatten = function doRaw(query, transaction, flattenFn) {
-    return (transaction || db.knex).raw(query).then(function (response) {
+const doRawAndFlatten = function doRaw(query, transaction = db.knex, flattenFn) {
+    return transaction.raw(query).then(function (response) {
         return _.flatten(flattenFn(response));
     });
 };
@@ -31,8 +31,8 @@ const getColumns = function getColumns(table, transaction) {
 // a wrong datatype in schema.js some installations using mysql could have been created using the
 // data type text instead of mediumtext.
 // For details see: https://github.com/TryGhost/Ghost/issues/1947
-const checkPostTable = function checkPostTable(transaction) {
-    return (transaction || db.knex).raw('SHOW FIELDS FROM posts where Field ="html" OR Field = "markdown"').then(function (response) {
+const checkPostTable = function checkPostTable(transaction = db.knex) {
+    return transaction.raw('SHOW FIELDS FROM posts where Field ="html" OR Field = "markdown"').then(function (response) {
         return _.flatten(_.map(response[0], function (entry) {
             if (entry.Type.toLowerCase() !== 'mediumtext') {
                 return (transaction || db.knex).raw('ALTER TABLE posts MODIFY ' + entry.Field + ' MEDIUMTEXT');

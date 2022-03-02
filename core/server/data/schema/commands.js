@@ -58,14 +58,14 @@ function addTableColumn(tableName, table, columnName, columnSpec = schema[tableN
     }
 }
 
-function addColumn(tableName, column, transaction, columnSpec) {
-    return (transaction || db.knex).schema.table(tableName, function (table) {
+function addColumn(tableName, column, transaction = db.knex, columnSpec) {
+    return transaction.schema.table(tableName, function (table) {
         addTableColumn(tableName, table, column, columnSpec);
     });
 }
 
-function dropColumn(tableName, column, transaction) {
-    return (transaction || db.knex).schema.table(tableName, function (table) {
+function dropColumn(tableName, column, transaction = db.knex) {
+    return transaction.schema.table(tableName, function (table) {
         table.dropColumn(column);
     });
 }
@@ -77,11 +77,11 @@ function dropColumn(tableName, column, transaction) {
  * @param {string|[string]} columns - column(s) to form unique constraint with
  * @param {import('knex')} transaction - connection object containing knex reference
  */
-async function addUnique(tableName, columns, transaction) {
+async function addUnique(tableName, columns, transaction = db.knex) {
     try {
         logging.info(`Adding unique constraint for: ${columns} in table ${tableName}`);
 
-        return await (transaction || db.knex).schema.table(tableName, function (table) {
+        return await transaction.schema.table(tableName, function (table) {
             table.unique(columns);
         });
     } catch (err) {
@@ -104,11 +104,11 @@ async function addUnique(tableName, columns, transaction) {
  * @param {string|[string]} columns - column(s) unique constraint was formed
  * @param {import('knex')} transaction - connection object containing knex reference
  */
-async function dropUnique(tableName, columns, transaction) {
+async function dropUnique(tableName, columns, transaction = db.knex) {
     try {
         logging.info(`Dropping unique constraint for: ${columns} in table: ${tableName}`);
 
-        return await (transaction || db.knex).schema.table(tableName, function (table) {
+        return await transaction.schema.table(tableName, function (table) {
             table.dropUnique(columns);
         });
     } catch (err) {
@@ -134,9 +134,8 @@ async function dropUnique(tableName, columns, transaction) {
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
-async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction}) {
-    const knex = (transaction || db.knex);
-    const client = knex.client.config.client;
+async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction = db.knex}) {
+    const client = transaction.client.config.client;
 
     if (client !== 'sqlite3') {
         throw new errors.InternalServerError({
@@ -144,7 +143,7 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
         });
     }
 
-    const foreignKeys = await knex.raw(`PRAGMA foreign_key_list('${fromTable}');`);
+    const foreignKeys = await transaction.raw(`PRAGMA foreign_key_list('${fromTable}');`);
 
     const hasForeignKey = foreignKeys.some(foreignKey => foreignKey.table === toTable && foreignKey.from === fromColumn && foreignKey.to === toColumn);
 
@@ -162,8 +161,8 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {Boolean} configuration.cascadeDelete - adds the "on delete cascade" option if true
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
-async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDelete = false, transaction}) {
-    const isSQLite = db.knex.client.config.client === 'sqlite3';
+async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDelete = false, transaction = db.knex}) {
+    const isSQLite = transaction.client.config.client === 'sqlite3';
     if (isSQLite) {
         const foreignKeyExists = await hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction});
         if (foreignKeyExists) {
@@ -183,7 +182,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
             }
         }
 
-        await (transaction || db.knex).schema.table(fromTable, function (table) {
+        await transaction.schema.table(fromTable, function (table) {
             if (cascadeDelete) {
                 table.foreign(fromColumn).references(`${toTable}.${toColumn}`).onDelete('CASCADE');
             } else {
@@ -215,8 +214,8 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
-async function dropForeign({fromTable, fromColumn, toTable, toColumn, transaction}) {
-    const isSQLite = db.knex.client.config.client === 'sqlite3';
+async function dropForeign({fromTable, fromColumn, toTable, toColumn, transaction = db.knex}) {
+    const isSQLite = transaction.client.config.client === 'sqlite3';
     if (isSQLite) {
         const foreignKeyExists = await hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction});
         if (!foreignKeyExists) {
@@ -236,7 +235,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
             }
         }
 
-        await (transaction || db.knex).schema.table(fromTable, function (table) {
+        await transaction.schema.table(fromTable, function (table) {
             table.dropForeign(fromColumn);
         });
 
@@ -260,9 +259,8 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
  * @param {string} tableName - name of the table to check primary key constraint on
  * @param {import('knex')} transaction - connection object containing knex reference
  */
-async function hasPrimaryKeySQLite(tableName, transaction) {
-    const knex = (transaction || db.knex);
-    const client = knex.client.config.client;
+async function hasPrimaryKeySQLite(tableName, transaction = db.knex) {
+    const client = transaction.client.config.client;
 
     if (client !== 'sqlite3') {
         throw new errors.InternalServerError({
@@ -270,7 +268,7 @@ async function hasPrimaryKeySQLite(tableName, transaction) {
         });
     }
 
-    const rawConstraints = await knex.raw(`PRAGMA index_list('${tableName}');`);
+    const rawConstraints = await transaction.raw(`PRAGMA index_list('${tableName}');`);
     const tablePrimaryKey = rawConstraints.find(c => c.origin === 'pk');
 
     return tablePrimaryKey;
@@ -283,8 +281,8 @@ async function hasPrimaryKeySQLite(tableName, transaction) {
  * @param {string|[string]} columns - column(s) to form primary key constraint with
  * @param {import('knex')} transaction - connection object containing knex reference
  */
-async function addPrimaryKey(tableName, columns, transaction) {
-    const isSQLite = db.knex.client.config.client === 'sqlite3';
+async function addPrimaryKey(tableName, columns, transaction = db.knex) {
+    const isSQLite = transaction.client.config.client === 'sqlite3';
     if (isSQLite) {
         const primaryKeyExists = await hasPrimaryKeySQLite(tableName, transaction);
         if (primaryKeyExists) {
@@ -294,7 +292,7 @@ async function addPrimaryKey(tableName, columns, transaction) {
     }
     try {
         logging.info(`Adding primary key constraint for: ${columns} in table ${tableName}`);
-        return await (transaction || db.knex).schema.table(tableName, function (table) {
+        return await transaction.schema.table(tableName, function (table) {
             table.primary(columns);
         });
     } catch (err) {
@@ -316,8 +314,8 @@ async function addPrimaryKey(tableName, columns, transaction) {
  * @param {import('knex').Transaction} transaction - connection to the DB
  * @param {Object} [tableSpec] - table schema to generate table with
  */
-function createTable(table, transaction, tableSpec = schema[table]) {
-    return (transaction || db.knex).schema.createTable(table, function (t) {
+function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
+    return transaction.schema.createTable(table, function (t) {
         Object.keys(tableSpec)
             .filter(column => !(column.startsWith('@@')))
             .forEach(column => addTableColumn(table, t, column, tableSpec[column]));
@@ -331,12 +329,12 @@ function createTable(table, transaction, tableSpec = schema[table]) {
     });
 }
 
-function deleteTable(table, transaction) {
-    return (transaction || db.knex).schema.dropTableIfExists(table);
+function deleteTable(table, transaction = db.knex) {
+    return transaction.schema.dropTableIfExists(table);
 }
 
-function getTables(transaction) {
-    const client = (transaction || db.knex).client.config.client;
+function getTables(transaction = db.knex) {
+    const client = transaction.client.config.client;
 
     if (_.includes(_.keys(clients), client)) {
         return clients[client].getTables(transaction);
@@ -345,8 +343,8 @@ function getTables(transaction) {
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
-function getIndexes(table, transaction) {
-    const client = (transaction || db.knex).client.config.client;
+function getIndexes(table, transaction = db.knex) {
+    const client = transaction.client.config.client;
 
     if (_.includes(_.keys(clients), client)) {
         return clients[client].getIndexes(table, transaction);
@@ -355,8 +353,8 @@ function getIndexes(table, transaction) {
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
-function getColumns(table, transaction) {
-    const client = (transaction || db.knex).client.config.client;
+function getColumns(table, transaction = db.knex) {
+    const client = transaction.client.config.client;
 
     if (_.includes(_.keys(clients), client)) {
         return clients[client].getColumns(table);
@@ -365,8 +363,8 @@ function getColumns(table, transaction) {
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
-function checkTables(transaction) {
-    const client = (transaction || db.knex).client.config.client;
+function checkTables(transaction = db.knex) {
+    const client = transaction.client.config.client;
 
     if (client === 'mysql') {
         return clients[client].checkPostTable();
