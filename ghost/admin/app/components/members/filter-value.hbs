@@ -47,6 +47,14 @@
         />
     </div>
 
+{{else if (eq @filter.type 'created_at')}}
+    <GhDatePicker
+        @value={{@filter.value}}
+        @maxDate={{now}}
+        @onChange={{fn @setFilterValue @filter.type @filter.id}}
+        data-test-input="members-filter-value"
+    />
+
 {{else if (eq @filter.type 'status')}}
     <span class="gh-select">
         <OneWaySelect
