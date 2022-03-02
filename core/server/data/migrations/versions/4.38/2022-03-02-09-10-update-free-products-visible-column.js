@@ -45,7 +45,8 @@ module.exports = createTransactionalMigration(
 
             if (freeTier.visible) {
                 if (existingSettingData.includes('free')) {
-                    settingData = existingSettingData;
+                    logging.info('portal_plans setting already contains "free" - skipping update');
+                    return;
                 } else {
                     settingData = existingSettingData.concat('free');
                 }
