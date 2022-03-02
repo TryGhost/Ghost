@@ -369,12 +369,5 @@ describe('Acceptance: Setup', function () {
             await visit('/?firstStart=true');
             expect(currentURL()).to.equal('/setup/done');
         });
-
-        it('transitions to dashboard with get-started modal on save', async function () {
-            await visit('/?firstStart=true');
-            await click('[data-test-button="save-and-continue"]');
-            expect(currentURL()).to.equal('/dashboard');
-            expect(find('[data-test-modal="get-started"]')).to.exist;
-        });
     });
 });
