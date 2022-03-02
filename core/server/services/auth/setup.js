@@ -164,6 +164,11 @@ async function installTheme(data, api) {
         return data;
     }
 
+    if (themeName.toLowerCase() === 'tryghost/casper') {
+        logging.warn('Skipping theme install as Casper is the default theme.');
+        return data;
+    }
+
     // Use the api instead of the services as the api performs extra logic
     try {
         const installResults = await api.themes.install({
