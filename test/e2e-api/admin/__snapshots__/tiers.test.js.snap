@@ -24,6 +24,7 @@ Object {
       "stripe_prices": null,
       "type": "free",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "visible": false,
       "welcome_page_url": "/welcome-free",
     },
     Object {
@@ -37,6 +38,7 @@ Object {
       "stripe_prices": null,
       "type": "paid",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "visible": false,
       "welcome_page_url": "/welcome-paid",
     },
   ],
