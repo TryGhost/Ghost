@@ -54,9 +54,13 @@ const checkUrlProtocol = function checkUrlProtocol(url) {
  * https://github.com/indexzero/nconf/issues/235#issuecomment-257606507
  */
 const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
+    if (nconf.get('database:client') === 'mysql') {
+        nconf.set('database:client', 'mysql2');
+    }
+
     const database = nconf.get('database');
 
-    if (nconf.get('database:client') === 'mysql') {
+    if (nconf.get('database:client') === 'mysql2') {
         delete database.connection.filename;
     } else {
         delete database.connection.host;

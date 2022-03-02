@@ -81,6 +81,7 @@ jobs:
       - uses: daniellockyer/mysql-action@main
         if: matrix.env.DB == 'mysql8'
         with:
+          authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
           mysql database: 'ghost_testing'
           mysql root password: 'root'
@@ -162,6 +163,7 @@ jobs:
       - uses: daniellockyer/mysql-action@main
         if: matrix.env.DB == 'mysql8'
         with:
+          authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
           mysql database: 'ghost_testing'
           mysql root password: 'root'
