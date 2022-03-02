@@ -74,6 +74,7 @@ function serializeProduct(product, options, apiType) {
         description: json.description,
         slug: json.slug,
         active: json.active,
+        visible: json.visible,
         type: json.type,
         welcome_page_url: json.welcome_page_url,
         created_at: json.created_at,
