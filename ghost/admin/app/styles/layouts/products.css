@@ -503,6 +503,14 @@
     align-items: center;
 }
 
+.gh-product-benefits .gh-blognav-item.gh-blognav-item--error {
+    align-items: start;
+}
+
+.gh-blognav-item--error button.gh-blognav-add {
+    margin-top: 12px;
+}
+
 .gh-product-benefits .gh-blognav-label {
     margin-right: 0;
 }
