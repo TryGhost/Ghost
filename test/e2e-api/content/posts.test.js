@@ -1,6 +1,8 @@
 const assert = require('assert');
 const cheerio = require('cheerio');
 const moment = require('moment');
+const testUtils = require('../../utils');
+const models = require('../../../core/server/models');
 
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
@@ -229,5 +231,77 @@ describe('Posts Content API', function () {
                 posts: new Array(1)
                     .fill(postMatcher)
             });
+    });
+
+    it('Can include free and paid tiers for public post', async function () {
+        const publicPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: 'free-to-see',
+            visibility: 'public',
+            published_at: moment().add(15, 'seconds').toDate() // here to ensure sorting is not modified
+        });
+        await models.Post.add(publicPost, {context: {internal: true}});
+
+        const publicPostRes = await agent
+            .get(`posts/${publicPost.id}/?include=tiers`)
+            .expectStatus(200);
+        const publicPostData = publicPostRes.body.posts[0];
+        publicPostData.tiers.length.should.eql(2);
+    });
+
+    it('Can include free and paid tiers for members only post', async function () {
+        const membersPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: 'thou-shalt-not-be-seen',
+            visibility: 'members',
+            published_at: moment().add(45, 'seconds').toDate() // here to ensure sorting is not modified
+        });
+        await models.Post.add(membersPost, {context: {internal: true}});
+
+        const membersPostRes = await agent
+            .get(`posts/${membersPost.id}/?include=tiers`)
+            .expectStatus(200);
+        const membersPostData = membersPostRes.body.posts[0];
+        membersPostData.tiers.length.should.eql(2);
+    });
+
+    it('Can include only paid tier for paid post', async function () {
+        const paidPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: 'thou-shalt-be-paid-for',
+            visibility: 'paid',
+            published_at: moment().add(30, 'seconds').toDate() // here to ensure sorting is not modified
+        });
+        await models.Post.add(paidPost, {context: {internal: true}});
+
+        const paidPostRes = await agent
+            .get(`posts/${paidPost.id}/?include=tiers`)
+            .expectStatus(200);
+        const paidPostData = paidPostRes.body.posts[0];
+        paidPostData.tiers.length.should.eql(1);
+    });
+
+    it('Can include specific tier for post with tiers visibility', async function () {
+        const res = await agent
+            .get(`products/`)
+            .expectStatus(200);
+
+        const jsonResponse = res.body;
+        const paidTier = jsonResponse.products.find(p => p.type === 'paid');
+
+        const tiersPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: 'thou-shalt-be-for-specific-tiers',
+            visibility: 'tiers',
+            published_at: moment().add(30, 'seconds').toDate() // here to ensure sorting is not modified
+        });
+
+        tiersPost.tiers = [paidTier];
+
+        await models.Post.add(tiersPost, {context: {internal: true}});
+
+        const tiersPostRes = await agent
+            .get(`posts/${tiersPost.id}/?include=tiers`)
+            .expectStatus(200);
+
+        const tiersPostData = tiersPostRes.body.posts[0];
+
+        tiersPostData.tiers.length.should.eql(1);
     });
 });

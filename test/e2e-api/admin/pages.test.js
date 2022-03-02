@@ -1,5 +1,6 @@
 const should = require('should');
 const supertest = require('supertest');
+const moment = require('moment');
 const _ = require('lodash');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
@@ -73,6 +74,88 @@ describe('Pages API', function () {
 
         modelJson.posts_meta.feature_image_alt.should.eql(page.feature_image_alt);
         modelJson.posts_meta.feature_image_caption.should.eql(page.feature_image_caption);
+    });
+
+    it('Can include free and paid tiers for public page', async function () {
+        const publicPost = testUtils.DataGenerator.forKnex.createPost({
+            type: 'page',
+            slug: 'free-to-see',
+            visibility: 'public',
+            published_at: moment().add(15, 'seconds').toDate() // here to ensure sorting is not modified
+        });
+        await models.Post.add(publicPost, {context: {internal: true}});
+
+        const publicPostRes = await request
+            .get(localUtils.API.getApiQuery(`pages/${publicPost.id}/`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+        const publicPostData = publicPostRes.body.pages[0];
+        publicPostData.tiers.length.should.eql(2);
+    });
+
+    it('Can include free and paid tiers for members only page', async function () {
+        const membersPost = testUtils.DataGenerator.forKnex.createPost({
+            type: 'page',
+            slug: 'thou-shalt-not-be-seen',
+            visibility: 'members',
+            published_at: moment().add(45, 'seconds').toDate() // here to ensure sorting is not modified
+        });
+        await models.Post.add(membersPost, {context: {internal: true}});
+
+        const membersPostRes = await request
+            .get(localUtils.API.getApiQuery(`pages/${membersPost.id}/`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+        const membersPostData = membersPostRes.body.pages[0];
+        membersPostData.tiers.length.should.eql(2);
+    });
+
+    it('Can include only paid tier for paid page', async function () {
+        const paidPost = testUtils.DataGenerator.forKnex.createPost({
+            type: 'page',
+            slug: 'thou-shalt-be-paid-for',
+            visibility: 'paid',
+            published_at: moment().add(30, 'seconds').toDate() // here to ensure sorting is not modified
+        });
+        await models.Post.add(paidPost, {context: {internal: true}});
+
+        const paidPostRes = await request
+            .get(localUtils.API.getApiQuery(`pages/${paidPost.id}/`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+        const paidPostData = paidPostRes.body.pages[0];
+        paidPostData.tiers.length.should.eql(1);
+    });
+
+    it('Can include specific tier for page with tiers visibility', async function () {
+        const res = await request.get(localUtils.API.getApiQuery('products/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const jsonResponse = res.body;
+
+        const paidTier = jsonResponse.products.find(p => p.type === 'paid');
+
+        const tiersPage = testUtils.DataGenerator.forKnex.createPost({
+            type: 'page',
+            slug: 'thou-shalt-be-for-specific-tiers',
+            visibility: 'tiers',
+            published_at: moment().add(30, 'seconds').toDate() // here to ensure sorting is not modified
+        });
+
+        tiersPage.tiers = [paidTier];
+
+        await models.Post.add(tiersPage, {context: {internal: true}});
+
+        const tiersPageRes = await request
+            .get(localUtils.API.getApiQuery(`pages/${tiersPage.id}/`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+        const tiersPageData = tiersPageRes.body.pages[0];
+
+        tiersPageData.tiers.length.should.eql(1);
     });
 
     it('Can update a page', async function () {

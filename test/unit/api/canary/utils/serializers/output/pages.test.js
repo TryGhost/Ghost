@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const mapper = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/mapper');
+const membersService = require('../../../../../../../core/server/services/members');
 const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
 
 describe('Unit: canary/utils/serializers/output/pages', function () {
@@ -11,6 +12,16 @@ describe('Unit: canary/utils/serializers/output/pages', function () {
         pageModel = (data) => {
             return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
+
+        sinon.stub(membersService, 'api').get(() => {
+            return {
+                productRepository: {
+                    list: () => {
+                        return {data: null};
+                    }
+                }
+            };
+        });
 
         sinon.stub(mapper, 'mapPage').returns({});
     });
@@ -47,6 +58,6 @@ describe('Unit: canary/utils/serializers/output/pages', function () {
         await serializers.output.pages.all(ctrlResponse, apiConfig, frame);
 
         mapper.mapPage.callCount.should.equal(2);
-        mapper.mapPage.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
+        mapper.mapPage.getCall(0).args.should.eql([ctrlResponse.data[0], frame, {tiers: []}]);
     });
 });

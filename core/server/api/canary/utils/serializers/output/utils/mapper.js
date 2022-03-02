@@ -31,7 +31,8 @@ const mapTag = (model, frame) => {
     return jsonModel;
 };
 
-const mapPost = async (model, frame) => {
+const mapPost = async (model, frame, options = {}) => {
+    const {tiers: tiersData} = options || {};
     const extendedOptions = Object.assign(_.cloneDeep(frame.options), {
         extraProperties: ['canonical_url']
     });
@@ -45,12 +46,21 @@ const mapPost = async (model, frame) => {
     // Attach tiers to custom nql visibility filter
     if (labsService.isSet('multipleProducts')
         && jsonModel.visibility
-        && !['members', 'public', 'paid', 'tiers'].includes(jsonModel.visibility)
     ) {
-        const tiers = await postsService.getProductsFromVisibilityFilter(jsonModel.visibility);
+        if (['members', 'public'].includes(jsonModel.visibility) && jsonModel.tiers) {
+            jsonModel.tiers = tiersData || [];
+        }
 
-        jsonModel.visibility = 'tiers';
-        jsonModel.tiers = tiers;
+        if (jsonModel.visibility === 'paid' && jsonModel.tiers) {
+            jsonModel.tiers = tiersData ? tiersData.filter(t => t.type === 'paid') : [];
+        }
+
+        if (!['members', 'public', 'paid', 'tiers'].includes(jsonModel.visibility)) {
+            const tiers = await postsService.getProductsFromVisibilityFilter(jsonModel.visibility);
+
+            jsonModel.visibility = 'tiers';
+            jsonModel.tiers = tiers;
+        }
     }
 
     if (utils.isContentAPI(frame)) {
@@ -103,8 +113,8 @@ const mapPost = async (model, frame) => {
     return jsonModel;
 };
 
-const mapPage = async (model, frame) => {
-    const jsonModel = await mapPost(model, frame);
+const mapPage = async (model, frame, options) => {
+    const jsonModel = await mapPost(model, frame, options);
 
     delete jsonModel.email_subject;
     delete jsonModel.email_recipient_filter;
