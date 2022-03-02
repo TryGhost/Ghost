@@ -31,6 +31,9 @@ const RESOURCES = {
     },
     authors: {
         alias: 'authorsPublic'
+    },
+    tiers: {
+        alias: 'tiersPublic'
     }
 };
 
