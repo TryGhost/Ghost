@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "c8": "7.11.0",
+    "knex": "1.0.3",
     "mocha": "9.1.4",
     "should": "13.2.3",
     "sinon": "12.0.1"
