@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const next_post = require('../../../../core/frontend/helpers/prev_post');
 const api = require('../../../../core/server/api');
+const should = require('should');
 
 describe('{{next_post}} helper', function () {
     const apiVersion = 'canary';
@@ -450,6 +451,57 @@ describe('{{next_post}} helper', function () {
                     done();
                 })
                 .catch(done);
+        });
+    });
+
+    describe('auth', function () {
+        let member;
+
+        beforeEach(function () {
+            member = {uuid: 'test'};
+            browsePostsStub = sinon.stub().callsFake(function (options) {
+                return Promise.resolve({
+                    posts: [{slug: '/next/', title: 'post 3'}]
+                });
+            });
+            locals = {
+                root: {
+                    _locals: {
+                        apiVersion: apiVersion
+                    },
+                    context: ['post']
+                },
+                member
+            };
+        });
+
+        it('should pass the member context', async function () {
+            const fn = sinon.spy();
+            const inverse = sinon.spy();
+            const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse};
+
+            await next_post
+                .call({
+                    html: 'content',
+                    status: 'published',
+                    mobiledoc: markdownToMobiledoc('ff'),
+                    title: 'post2',
+                    slug: 'current',
+                    published_at: new Date(0),
+                    url: '/current/'
+                }, optionsData);
+
+            fn.calledOnce.should.be.true();
+            inverse.calledOnce.should.be.false();
+
+            fn.firstCall.args.should.have.lengthOf(2);
+            fn.firstCall.args[0].should.have.properties('slug', 'title');
+            fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
+            browsePostsStub.calledOnce.should.be.true();
+            browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
+            
+            // Check context passed
+            browsePostsStub.firstCall.args[0].context.member.should.eql(member);
         });
     });
 });
