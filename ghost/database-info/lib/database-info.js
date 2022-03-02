@@ -1,4 +1,27 @@
-module.exports = class DatabaseInfo {
+/**
+ * @param {import('knex')} knex
+ */
+module.exports = (knex) => {
+    const driver = knex.client.config.client;
+
+    return {
+        /**
+         * Returns if the driver used is for SQLite
+         */
+        isSQLite: () => {
+            return ['sqlite3'].includes(driver);
+        },
+
+        /**
+         * Returns if the driver used is for MySQL
+         */
+        isMySQL: () => {
+            return ['mysql', 'mysql2'].includes(driver);
+        }
+    };
+};
+
+module.exports.DatabaseInfo = class DatabaseInfo {
     /**
      * @param {import('knex')} knex
      */
@@ -80,30 +103,5 @@ module.exports = class DatabaseInfo {
 
     getVersion() {
         return this._databaseDetails.version;
-    }
-
-    /**
-     * Returns if the driver used is for SQLite
-     */
-    isSQLite() {
-        return ['sqlite3'].includes(this._driver);
-    }
-
-    /**
-     * Returns if the driver used is for MySQL
-     */
-    isMySQL() {
-        return ['mysql', 'mysql2'].includes(this._driver);
-    }
-
-    /**
-     * This allows you to use a different DB connection than the one we initialized the lib with
-     *
-     * @param {import('knex')} knex
-     *
-     * @returns DatabaseInfo
-     */
-    connection(knex) {
-        return new DatabaseInfo(knex);
     }
 };
