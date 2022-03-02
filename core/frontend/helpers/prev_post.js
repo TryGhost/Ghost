@@ -49,6 +49,11 @@ const buildApiOptions = function buildApiOptions(options, post) {
     return apiOptions;
 };
 
+/**
+ * @param {*} options 
+ * @param {*} data 
+ * @returns {Promise<any>}
+ */
 const fetch = function fetch(options, data) {
     const self = this;
     const apiOptions = buildApiOptions(options, this);
@@ -78,6 +83,10 @@ const fetch = function fetch(options, data) {
 // If prevNext method is called without valid post data then we must return a promise, if there is valid post data
 // then the promise is handled in the api call.
 
+/**
+ * @param {*} options 
+ * @returns {Promise<any>}
+ */
 module.exports = function prevNext(options) {
     options = options || {};
 
