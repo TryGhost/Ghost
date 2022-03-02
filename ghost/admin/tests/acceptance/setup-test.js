@@ -365,9 +365,9 @@ describe('Acceptance: Setup', function () {
             await authenticateSession();
         });
 
-        it('transitions to finishing-touches screen', async function () {
+        it('transitions to done screen', async function () {
             await visit('/?firstStart=true');
-            expect(currentURL()).to.equal('/setup/finishing-touches');
+            expect(currentURL()).to.equal('/setup/done');
         });
 
         it('transitions to dashboard with get-started modal on save', async function () {

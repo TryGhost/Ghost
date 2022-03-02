@@ -1808,31 +1808,38 @@ section.gh-ds h2 {
     }
 }
 
-.gh-finishing-touches {
+.gh-done {
     background: linear-gradient(315deg,#efefef,#fff);
     flex-direction: column;
 }
 
-.gh-finishing-touches header {
-    padding: 0 0 24px;
+.gh-done header {
+    padding: 0 0 48px;
     margin-top: -4px;
+    margin-left: 3px;
 }
 
-.gh-finishing-touches header h1 {
+.gh-done header h1 {
     font-size: 3.1rem;
     letter-spacing: -0.015em;
     color: var(--black);
-    margin: 0;
+    margin: 0 0 0.5rem;
 }
 
-.gh-finishing-touches header p {   
+.gh-done header p {   
     font-size: 1.9rem;
     line-height: 1.5em;
     margin: 0.5rem 0 2rem;
+    padding: 0 4rem 0 0;
     color: var(--midgrey);
 }
 
-.gh-finishing-touches main {
+.gh-done section h2 {
+    font-size: 1.8rem;
+    margin: 0 0 4rem;
+}
+
+.gh-done main {
     background: var(--white);
     box-shadow: 0 0 30px rgb(0 0 0 / 4%);
     width: 100%;
@@ -1843,44 +1850,123 @@ section.gh-ds h2 {
     animation-fill-mode: forwards;
 }
 
-.gh-finishing-touches .gh-nav-design-settings {
-    background: transparent;
-    padding-top: 31px;
+.gh-done section a {
+    display: grid;
+    grid-template-columns: 56px auto;
+    grid-template-areas:
+        "icon top"
+        "icon content";
+    margin: 0 0 3.5rem;
+    padding: 0;
 }
 
-.gh-nav-design-settings .gh-stack {
+.gh-done section span {
+    grid-area: icon;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    background: #fff;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 999px;
+    color: #fff;
+    margin: 0 8px 0 0;
+}
+
+.gh-done section a.gh-done-yellow span {
+    background: #ffb41f;
+
+    /* color: #ffb41f;
+    border: 1px solid #ffb41f; */
+}
+
+.gh-done section a.gh-done-blue span {
+    background: #14b8ff;
+
+    /* color: #14b8ff;
+    border: 1px solid #14b8ff; */
+}
+
+.gh-done section a.gh-done-green span {
+    background: #30cf43;
+
+    /* color: #30cf43;
+    border: 1px solid #30cf43; */
+}
+
+.gh-done section a.gh-done-pink span {
+    background: #fb2d8d;
+
+    /* color: #fb2d8d;
+    border: 1px solid #fb2d8d; */
+}
+
+.gh-done section a:hover span {
+    opacity: 0.8;
+}
+
+.gh-done section a svg {
+    width: 16px;
+    height: 16px;
+}
+
+.gh-done section a h6 {
+    grid-area: top;
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+}
+
+.gh-done section a p {
+    color: #7c8b9a;
+    grid-area: content;
+    margin: 0;
+    padding: 0 4rem 0 0;
+}
+
+.gh-done .gh-done-panel {
+    margin: 8px 0 24px;
+    padding: 52px var(--main-layout-area-padding) 16px;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.gh-done .gh-done-panel .gh-stack {
     padding-bottom: 96px;
 }
 
-.gh-finishing-touches .gh-setting-desc {
+.gh-done .gh-setting-desc {
     padding-right: 2rem;
 }
 
-.gh-finishing-touches .gh-nav-design .gh-setting-action {
+.gh-done .gh-nav-design .gh-setting-action {
     margin-bottom: 12px;
 }
 
-.gh-finishing-touches-preview {
+.gh-done-preview {
     flex-grow: 1;
-    padding: 10vmin;
-    background: var(--whitegrey-l2);
+    padding: 48px;
 }
 
-.gh-finishing-touches .gh-browserpreview-previewcontainer {
+.gh-done .gh-browserpreview-previewcontainer {
     border-radius: 5px !important;
     overflow: hidden;
 }
 
-.gh-finishing-touches .gh-browserpreview-browser .tabs div {
+.gh-done .gh-browserpreview-browser .tabs div {
     display: none;
 }
 
-.gh-finishing-touches .gh-stack-item .gh-btn {
+.gh-done .gh-stack-item .gh-btn {
     background: var(--whitegrey);
     box-shadow: none;
 }
 
-.gh-finishing-touches .gh-finishing-touches-button {
+.gh-done .gh-done-button {
     position: sticky;
     bottom: 0;
     z-index: 9999;
@@ -1890,8 +1976,8 @@ section.gh-ds h2 {
     padding: 32px;
 }
 
-.gh-finishing-touches .gh-nav {
-    flex: 0 0 420px !important;
+.gh-done .gh-nav {
+    flex: 0 0 360px !important;
 }
 
 

@@ -9,7 +9,7 @@ export default class HomeRoute extends Route {
         super.beforeModel(...arguments);
 
         if (this.feature.improvedOnboarding && transition.to?.queryParams?.firstStart === 'true') {
-            return this.transitionTo('setup.finishing-touches');
+            return this.transitionTo('setup.done');
         }
 
         this.transitionTo('dashboard');
