@@ -197,7 +197,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
             }
         }
     } catch (err) {
-        if (err.code === 'ER_DUP_KEY') {
+        if (err.code === 'ER_DUP_KEY' || err.code === 'ER_FK_DUP_KEY' || err.code === 'ER_FK_DUP_NAME') {
             logging.warn(`Skipped adding foreign key from ${fromTable}.${fromColumn} to ${toTable}.${toColumn} - foreign key already exists`);
             return;
         }
