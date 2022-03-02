@@ -3,6 +3,7 @@ const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:ti
 const _ = require('lodash');
 
 const allowedIncludes = ['monthly_price', 'yearly_price'];
+const utils = require('../../../../shared/utils');
 
 module.exports = {
     browse: createSerializer('browse', paginatedTiers),
@@ -22,7 +23,7 @@ module.exports = {
  */
 function paginatedTiers(page, _apiConfig, frame) {
     const requestedQueryIncludes = frame.original && frame.original.query && frame.original.query.include && frame.original.query.include.split(',') || [];
-    const requestedOptionsIncludes = frame.original && frame.original.options && frame.original.options.include || [];
+    const requestedOptionsIncludes = utils.options.trimAndLowerCase(frame.original && frame.original.options && frame.original.options.include || []);
     return {
         tiers: page.data.map((model) => {
             return cleanIncludes(
