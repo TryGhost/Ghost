@@ -21,7 +21,7 @@ module.exports = createTransactionalMigration(
             logging.info(`Updating free products to visible`);
             await knex('products').update('visible', true).where('type', 'free');
         } catch (err) {
-            logging.warn('portal_products setting is invalid - skipping migration');
+            logging.warn('portal_plans setting is invalid - skipping migration');
             return;
         }
     },
@@ -57,7 +57,7 @@ module.exports = createTransactionalMigration(
             logging.info(`Updating portal_plans to ${settingData}`);
             await knex('settings').update('value', JSON.stringify(settingData)).where('key', 'portal_plans');
         } catch (err) {
-            logging.warn('portal_products setting is invalid - skipping migration');
+            logging.warn('portal_plans setting is invalid - skipping migration');
             return;
         }
     }
