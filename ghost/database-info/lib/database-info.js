@@ -1,27 +1,4 @@
-/**
- * @param {import('knex')} knex
- */
-module.exports = (knex) => {
-    const driver = knex.client.config.client;
-
-    return {
-        /**
-         * Returns if the driver used is for SQLite
-         */
-        isSQLite: () => {
-            return ['sqlite3'].includes(driver);
-        },
-
-        /**
-         * Returns if the driver used is for MySQL
-         */
-        isMySQL: () => {
-            return ['mysql', 'mysql2'].includes(driver);
-        }
-    };
-};
-
-module.exports.DatabaseInfo = class DatabaseInfo {
+module.exports = class DatabaseInfo {
     /**
      * @param {import('knex')} knex
      */
@@ -103,5 +80,25 @@ module.exports.DatabaseInfo = class DatabaseInfo {
 
     getVersion() {
         return this._databaseDetails.version;
+    }
+
+    /**
+     * Returns if the driver used is for SQLite
+     *
+     * @param {import('knex')} knex
+     */
+    static isSQLite(knex) {
+        const driver = knex.client.config.client;
+        return ['sqlite3', 'better-sqlite3'].includes(driver);
+    }
+
+    /**
+     * Returns if the driver used is for MySQL
+     *
+     * @param {import('knex')} knex
+     */
+    static isMySQL(knex) {
+        const driver = knex.client.config.client;
+        return ['mysql', 'mysql2'].includes(driver);
     }
 };
