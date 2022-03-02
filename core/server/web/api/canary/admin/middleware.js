@@ -31,6 +31,8 @@ const notImplemented = function (req, res, next) {
         members: ['GET', 'PUT', 'DELETE', 'POST'],
         config: ['GET'],
         schedules: ['PUT'],
+        files: ['POST'],
+        media: ['POST'],
         db: ['POST']
     };
 
