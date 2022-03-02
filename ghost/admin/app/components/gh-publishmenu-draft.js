@@ -66,6 +66,19 @@ export default class GhPublishMenuDraftComponent extends Component {
         return post.validate();
     }
 
+    // the date-time-picker component has it's own error handling for
+    // invalid date and times but in this case we want the values to make it
+    // to the model to make that invalid
+    @action
+    dateInputDidError(date) {
+        this.setDate(date);
+    }
+
+    @action
+    timeInputDidError(time) {
+        this.setTime(time);
+    }
+
     @task
     *countTotalMembersTask() {
         const user = yield this.session.user;

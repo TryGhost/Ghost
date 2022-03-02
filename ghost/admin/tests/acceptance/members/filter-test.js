@@ -2,6 +2,7 @@ import moment from 'moment';
 import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
+import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support/helpers';
@@ -19,6 +20,7 @@ describe('Acceptance: Members filtering', function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
         enableLabsFlag(this.server, 'membersLastSeenFilter');
+        enableLabsFlag(this.server, 'membersTimeFilters');
         enableLabsFlag(this.server, 'multipleProducts');
 
         // test with stripe connected and email turned on
@@ -611,6 +613,81 @@ describe('Acceptance: Members filtering', function () {
             await blur(valueInput);
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen more than 2 days ago')
                 .to.equal(7);
+        });
+
+        it('can filter by created at date', async function () {
+            clock = sinon.useFakeTimers({
+                now: moment('2022-03-01 09:00:00.000Z').toDate(),
+                shouldAdvanceTime: true
+            });
+
+            // add some members to filter
+            this.server.createList('member', 3, {createdAt: moment('2022-02-01 12:00:00').format('YYYY-MM-DD HH:mm:ss')});
+            this.server.createList('member', 4, {createdAt: moment('2022-02-05 12:00:00').format('YYYY-MM-DD HH:mm:ss')});
+
+            await visit('/members');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(7);
+
+            await click('[data-test-button="members-filter-actions"]');
+
+            const filterSelect = `[data-test-members-filter="0"]`;
+            const typeSelect = `${filterSelect} [data-test-select="members-filter"]`;
+            const operatorSelect = `${filterSelect} [data-test-select="members-filter-operator"]`;
+
+            expect(find(`${filterSelect} [data-test-select="members-filter"] option[value="created_at"]`), 'created_at filter option').to.exist;
+
+            await fillIn(typeSelect, 'created_at');
+
+            // has the right operators
+            const operatorOptions = findAll(`${operatorSelect} option`);
+            expect(operatorOptions).to.have.length(4);
+            expect(operatorOptions[0]).to.have.value('is-less');
+            expect(operatorOptions[1]).to.have.value('is-or-less');
+            // expect(operatorOptions[2]).to.have.value('is');
+            // expect(operatorOptions[3]).to.have.value('is-not');
+            expect(operatorOptions[2]).to.have.value('is-greater');
+            expect(operatorOptions[3]).to.have.value('is-or-greater');
+
+            const valueDateInput = `${filterSelect} [data-test-input="members-filter-value"] [data-test-date-picker-input]`;
+            const valueDatePicker = `${filterSelect} [data-test-input="members-filter-value"]`;
+
+            // operator defaults to before
+            expect(find(operatorSelect)).to.have.value('is-less');
+
+            // value defaults to today's date
+            expect(find(valueDateInput)).to.have.value('2022-03-01');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - default')
+                .to.equal(7);
+
+            // can change date
+            await datepickerSelect(valueDatePicker, moment.utc('2022-02-03').toDate());
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - default')
+                .to.equal(3);
+
+            // can change operator
+            await fillIn(operatorSelect, 'is-greater');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - default')
+                .to.equal(4);
+
+            // can populate filter from URL
+            // TODO: leaving screen is needed, suggests component is not fully reactive and needs to be torn down.
+            // - see <Members::Filter> constructor
+            await visit(`/`);
+            const filter = encodeURIComponent(`created_at:<='2022-02-01 23:59:59'`);
+            await visit(`/members?filter=${filter}`);
+            await click('[data-test-button="members-filter-actions"]');
+
+            expect(find(typeSelect), 'type select - from URL').to.have.value('created_at');
+            expect(find(operatorSelect), 'operator select - from URL').to.have.value('is-or-less');
+            expect(find(valueDateInput), 'date input - from URL').to.have.value('2022-02-01');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - from URL')
+                .to.equal(3);
+
+            // it does not add extra column to table
+            expect(find('[data-test-table-column="created_at"]')).to.not.exist;
         });
 
         it('can handle multiple filters', async function () {

@@ -1,4 +1,4 @@
-<div class="gh-date-time-picker">
+<div class="gh-date-time-picker" data-test-component="gh-date-time-picker">
     <PowerDatepicker
         @selected={{this._date}}
         @center={{this._date}}
@@ -6,7 +6,7 @@
         @renderInPlace={{true}}
         @disabled={{this.disabled}} as |dp|
     >
-        <dp.Trigger @tabindex="-1" data-test-date-time-picker-datepicker={{true}}>
+        <dp.Trigger @tabindex="-1" data-test-date-time-picker-datepicker>
             <div class="gh-date-time-picker-date {{if this.dateError "error"}}">
                 <input type="text"
                     placeholder={{this.dateFormat}}
@@ -35,7 +35,7 @@
             {{did-insert this.registerTimeInput}}
             data-test-date-time-picker-time-input
         >
-        <small class="gh-date-time-picker-timezone">({{this.timezone}})</small>
+        <small class="gh-date-time-picker-timezone" data-test-date-time-picker-timezone>({{this.timezone}})</small>
     </div>
 </div>
 {{#if this.hasError}}

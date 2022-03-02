@@ -157,7 +157,7 @@ export default class MembersController extends Controller {
     }
 
     get filterColumns() {
-        const defaultColumns = ['name', 'email'];
+        const defaultColumns = ['name', 'email', 'created_at'];
         const availableFilters = this.filters.length ? this.filters : this.softFilters;
         return availableFilters.map((filter) => {
             return filter.type;

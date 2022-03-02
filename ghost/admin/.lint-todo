@@ -1864,3 +1864,5 @@ remove|ember-template-lint|no-action|280|17|280|17|989fbbea271b49165ed76435745c4
 remove|ember-template-lint|no-action|281|15|281|15|6466c92ea49ac23d994c08c504e6d4ffefcadbff|1643760000000|1646352000000|1648940400000|app/templates/settings/integration.hbs
 add|ember-template-lint|simple-unless|19|34|19|34|ca177565b6e1c5a6175982047708732f5dde7e59|1645401600000|1647993600000|1650582000000|app/components/gh-member-details-activity.hbs
 add|ember-template-lint|no-implicit-this|2|50|2|50|bd48f6e7d00782426eb9404abb796a62e1b1fddd|1646092800000|1648681200000|1651273200000|app/components/member/activity-feed.hbs
+remove|ember-template-lint|no-invalid-interactive|22|88|22|88|ef47bac5b5a1607201caa5962ff6e6e2b80fe871|1643760000000|1646352000000|1648940400000|app/components/gh-publishmenu-draft.hbs
+add|ember-template-lint|no-invalid-interactive|22|88|22|88|0f147010e9192fd3e2236d824b4e60aeeff4bd31|1646179200000|1648767600000|1651359600000|app/components/gh-publishmenu-draft.hbs

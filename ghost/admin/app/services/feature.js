@@ -96,6 +96,9 @@ export default class FeatureService extends Service {
     @feature('membersLastSeenFilter')
         membersLastSeenFilter;
 
+    @feature('membersTimeFilters')
+        membersTimeFilters;
+
     @feature('selectablePortalLinks')
         selectablePortalLinks;
 
