@@ -88,7 +88,13 @@ class GhostEventProcessor extends EventProcessor {
                 opened_at: this.db.knex.raw('COALESCE(opened_at, ?)', [moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')])
             });
 
-        const {value: timezone} = await this.db.knex('settings').first('value').where('key', 'timezone');
+        // Using the default timezone set in https://github.com/TryGhost/Ghost/blob/2c5643623db0fc4db390f6997c81a73dca7ccacd/core/server/data/schema/default-settings/default-settings.json#L105
+        let timezone = 'Etc/UTC';
+        const timezoneData = await this.db.knex('settings').first('value').where('key', 'timezone');
+        if (timezoneData && timezoneData.value) {
+            timezone = timezoneData.value;
+        }
+
         await this.db.knex('members')
             .where('email', '=', event.recipientEmail)
             .andWhere(builder => builder
