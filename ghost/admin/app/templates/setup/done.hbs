@@ -1,0 +1,55 @@
+<div class="gh-flow gh-done">
+    <main class="flex flex-row h-100">
+        <div class="gh-nav gh-nav-contextual gh-nav-design">
+            <div class="flex flex-column h-100">
+                <div class="gh-nav-body">
+                    <div class="gh-done-panel">
+                        <div class="gh-stack">
+                            <header>
+                                <h1>All done!</h1>
+                                <p>Your brand new publication is set up and ready to go.</p>
+                            </header>
+                            <section>
+                                <LinkTo class="gh-done-yellow" @route="editor.new" @model="post">
+                                    <span>{{svg-jar "posts"}}</span>
+                                    <h6>Write your first post</h6>
+                                    <p>Test out the editor and get a feel for creating content inside Ghost.</p>
+                                </LinkTo>
+                                <LinkTo class="gh-done-green" @route="settings.design">
+                                    <span>{{svg-jar "paint-palette"}}</span>
+                                    <h6>Customise your design</h6>
+                                    <p>Drop into the theme editor to tweak your site and make it your own.</p>
+                                </LinkTo>
+                                <a class="gh-done-blue" href="https://ghost.org/docs/migration/">
+                                    <span>{{svg-jar "members"}}</span>
+                                    <h6>Import members</h6>
+                                    <p>Learn how to move over to Ghost from other tools with our migration guides.</p>
+                                </a>
+                                <LinkTo class="gh-done-pink" @route="dashboard">
+                                   <span>{{svg-jar "house"}}</span>
+                                    <h6>Explore Ghost admin</h6>
+                                    <p>See the dashboard, click around and explore Ghost for yourself.</p>
+                                </LinkTo>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{!-- <div class="gh-done-button">
+                <GhTaskButton
+                    class="gh-btn gh-btn-large gh-btn-black gh-btn-icon w-100"
+                    @task={{this.saveAndContinueTask}}
+                    @buttonText="Let me just explore →"
+                    @runningText="Saving..."
+                    @showSuccess={{false}}
+                    data-test-button="save-and-continue"
+                />
+            </div> --}}
+        </div>
+        <div class="gh-done-preview">
+            <GhBrowserPreview>
+                <GhHtmlIframe class="site-frame" @html={{this.themeManagement.previewHtml}} />
+            </GhBrowserPreview>
+        </div>
+    </main>
+</div>

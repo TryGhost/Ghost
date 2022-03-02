@@ -15,7 +15,7 @@ Router.map(function () {
         this.route('two');
         this.route('three');
     });
-    this.route('setup.finishing-touches', {path: '/setup/finishing-touches'});
+    this.route('setup.done', {path: '/setup/done'});
 
     this.route('signin');
     this.route('signout');
