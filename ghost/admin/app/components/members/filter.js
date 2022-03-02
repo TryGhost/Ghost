@@ -16,6 +16,7 @@ const FILTER_PROPERTIES = [
     {label: 'Tiers', name: 'product', group: 'Basic', feature: 'multipleProducts'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Last seen', name: 'last_seen_at', group: 'Basic', feature: 'membersLastSeenFilter'},
+    {label: 'Created at', name: 'created_at', group: 'Basic', valueType: 'date', feature: 'membersTimeFilters'},
 
     // Member subscription
     {label: 'Member status', name: 'status', group: 'Subscription'},
@@ -59,6 +60,16 @@ const FILTER_RELATIONS_OPTIONS = {
     last_seen_at: [
         {label: 'less than', name: 'is-less'},
         {label: 'more than', name: 'is-greater'}
+    ],
+    created_at: [
+        {label: 'before', name: 'is-less'},
+        {label: 'on or before', name: 'is-or-less'},
+        // TODO: these cause problems because they require multiple NQL statements, eg:
+        // created_at:>='2022-03-02 00:00'+created_at:<'2022-03-03 00:00'
+        // {label: 'on', name: 'is'},
+        // {label: 'not on', name: 'is-not'},
+        {label: 'after', name: 'is-greater'},
+        {label: 'on or after', name: 'is-or-greater'}
     ],
     status: [
         {label: 'is', name: 'is'},
@@ -123,9 +134,15 @@ class Filter {
     constructor(options) {
         this.id = options.id;
         this.type = options.type;
-        this.value = options.value;
         this.relation = options.relation;
         this.relationOptions = options.relationOptions;
+
+        const filterProperty = FILTER_PROPERTIES.find(prop => this.type === prop.name);
+        const value = filterProperty.valueType === 'date'
+            ? moment(options.value).toDate()
+            : options.value;
+
+        this.value = value;
     }
 }
 
@@ -212,8 +229,22 @@ export default class MembersFilter extends Component {
     }
 
     generateNqlFilter(filters) {
+        // TODO: unify operator naming
+        const relationMap = {
+            'is-less': '<',
+            'is-or-less': '<=',
+            is: '',
+            'is-not': '-',
+            'is-greater': '>',
+            'is-or-greater': '>='
+        };
+
+        const nqlDateFormat = 'YYYY-MM-DD HH:mm:ss';
+
         let query = '';
         filters.forEach((filter) => {
+            const filterProperty = FILTER_PROPERTIES.find(prop => prop.name === filter.type);
+
             if (filter.type === 'label' && filter.value?.length) {
                 const relationStr = filter.relation === 'is-not' ? '-' : '';
                 const filterValue = '[' + filter.value.join(',') + ']';
@@ -227,7 +258,30 @@ export default class MembersFilter extends Component {
                 // is-less = less than x days ago = >date
                 const relationStr = filter.relation === 'is-greater' ? '<=' : '>=';
                 const daysAgoMoment = moment.utc().subtract(filter.value, 'days');
-                const filterValue = `'${daysAgoMoment.format('YYYY-MM-DD HH:mm:ss')}'`;
+                const filterValue = `'${daysAgoMoment.format(nqlDateFormat)}'`;
+                query += `${filter.type}:${relationStr}${filterValue}+`;
+            } else if (filterProperty.valueType === 'date') {
+                const operator = relationMap[filter.relation];
+                let relationStr;
+                let filterValue;
+
+                if (operator === '>') {
+                    relationStr = '>';
+                    filterValue = `'${moment(filter.value).set({hour: 23, minute: 59, second: 59}).format(nqlDateFormat)}'`;
+                }
+                if (operator === '>=') {
+                    relationStr = '>=';
+                    filterValue = `'${moment(filter.value).set({hour: 0, minute: 0, second: 0}).format(nqlDateFormat)}`;
+                }
+                if (operator === '<') {
+                    relationStr = '<';
+                    filterValue = `'${moment(filter.value).set({hour: 0, minute: 0, second: 0}).format(nqlDateFormat)}'`;
+                }
+                if (operator === '<=') {
+                    relationStr = '<=';
+                    filterValue = `'${moment(filter.value).set({hour: 23, minute: 59, second: 59}).format(nqlDateFormat)}'`;
+                }
+
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else {
                 const relationStr = this.getFilterRelationOperator(filter.relation);
@@ -255,6 +309,7 @@ export default class MembersFilter extends Component {
                     relationOptions: FILTER_RELATIONS_OPTIONS[key]
                 });
             }
+
             if (value.$nin !== undefined && ['label', 'product'].includes(key)) {
                 this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
@@ -265,6 +320,7 @@ export default class MembersFilter extends Component {
                     relationOptions: FILTER_RELATIONS_OPTIONS[key]
                 });
             }
+
             if (value.$ne !== undefined) {
                 this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
@@ -275,13 +331,27 @@ export default class MembersFilter extends Component {
                     relationOptions: FILTER_RELATIONS_OPTIONS[key]
                 });
             }
+
             if (value.$gt !== undefined) {
                 this.nextFilterId = this.nextFilterId + 1;
+
                 return new Filter({
                     id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-greater',
-                    value: value.$gt ,
+                    value: value.$gt,
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                });
+            }
+
+            if (value.$gte !== undefined) {
+                this.nextFilterId = this.nextFilterId + 1;
+
+                return new Filter({
+                    id: `filter-${filterId}`,
+                    type: key,
+                    relation: 'is-or-greater',
+                    value: value.$gte,
                     relationOptions: FILTER_RELATIONS_OPTIONS[key]
                 });
             }
@@ -293,6 +363,17 @@ export default class MembersFilter extends Component {
                     type: key,
                     relation: 'is-less',
                     value: value.$lt,
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                });
+            }
+
+            if (value.$lte !== undefined) {
+                this.nextFilterId = this.nextFilterId + 1;
+                return new Filter({
+                    id: `filter-${filterId}`,
+                    type: key,
+                    relation: 'is-or-less',
+                    value: value.$lte,
                     relationOptions: FILTER_RELATIONS_OPTIONS[key]
                 });
             }
@@ -370,12 +451,17 @@ export default class MembersFilter extends Component {
             ? this.availableFilterValueOptions[newType][0].name
             : '';
 
+        // TODO: move default values to filter type definitions
         if (newType === 'label' && !defaultValue) {
             defaultValue = [];
         }
 
         if (newType === 'product' && !defaultValue) {
             defaultValue = [];
+        }
+
+        if (newType === 'created_at' && !defaultValue) {
+            defaultValue = new Date();
         }
 
         const filterToEdit = this.filters.findBy('id', filterId);

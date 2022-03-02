@@ -221,3 +221,18 @@
 .ember-power-datepicker-trigger:focus {
     outline: none;
 }
+
+/* Input+Datepicker component */
+.gh-date-picker {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+svg.gh-date-picker-cal-icon {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 9px;
+    font-size: 1.3rem;
+}

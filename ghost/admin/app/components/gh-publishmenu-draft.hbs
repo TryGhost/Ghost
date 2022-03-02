@@ -28,6 +28,8 @@
                         @time={{@post.publishedAtBlogTime}}
                         @setDate={{this.setDate}}
                         @setTime={{this.setTime}}
+                        @onDateError={{this.dateInputDidError}}
+                        @onTimeError={{this.timeInputDidError}}
                         @setTypedDateError={{@setTypedDateError}}
                         @errors={{@post.errors}}
                         @dateErrorProperty="publishedAtBlogDate"
@@ -53,7 +55,7 @@
                                 <p class="gh-box gh-content-box">
                                     <LinkTo @route="members">
                                         Add members
-                                    </LinkTo> 
+                                    </LinkTo>
                                     to start sending newsletters!
                                 </p>
                             {{else}}
