@@ -2345,10 +2345,10 @@
     "@tryghost/debug" "^0.1.9"
     "@tryghost/tpl" "^0.1.8"
 
-"@tryghost/mw-session-from-token@0.1.27":
-  version "0.1.27"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.27.tgz#325e01252b52d9bdcab810e739f3803b103cc590"
-  integrity sha512-+3al2q0lOR+xtAuhuaqPRrdhgO4OFeqFRoe+rvL8OjBI6Y5QLj6S7rr6XYcmAexWLIqRsCAKJbjgVZwo4PK/Nw==
+"@tryghost/mw-session-from-token@0.1.28":
+  version "0.1.28"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.28.tgz#6cddffa53e07a19c13cfc5a72071e59f42e65719"
+  integrity sha512-1BXi+twPQVBbfm4NMRa9Ms5mHHZg0P8Z4oq1s0tnkJ+iNIWol2fkuJ5m6Mi6qXiWD0lPqpOL/as/aBGJsyoe7A==
 
 "@tryghost/nodemailer@0.3.13":
   version "0.3.13"
