@@ -695,6 +695,34 @@ describe('Acceptance: Members filtering', function () {
             expect(find('[data-test-table-column="created_at"]')).to.not.exist;
         });
 
+        it('uses site timezone when filtering by date', async function () {
+            // with a site timezone UTC-5 (Eastern Time Zone) we would expect date-based NQL filter strings
+            // to be adjusted to UTC.
+            //
+            // Eg. "created at on or after 2022-02-22" = `created_at:>='2022-02-21 19:00:00'
+            //
+            // we also need to convert back when parsing the NQL-based query param and make sure dates
+            // shown in the members table match site timezone
+
+            // UTC-5 timezone
+            this.server.db.settings.update({key: 'timezone'}, {value: 'America/New_York'});
+
+            // 2022-02-21 signups
+            this.server.createList('member', 3, {createdAt: moment.utc('2022-02-22 04:00:00.000Z').format('YYYY-MM-DD HH:mm:ss')});
+            // 2022-02-22 signups
+            this.server.createList('member', 4, {createdAt: moment.utc('2022-02-22 05:00:00.000Z').format('YYYY-MM-DD HH:mm:ss')});
+
+            await visit('/members');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(7);
+
+            // created dates in table should match the date in site timezone not UTC (in UTC they would all be 21st)
+            const createdAtFields = findAll('[data-test-list="members-list-item"] [data-test-table-data="created-at"]');
+            expect(createdAtFields.filter(el => el.textContent.match(/21 Feb 2022/)).length).to.equal(3);
+            expect(createdAtFields.filter(el => el.textContent.match(/22 Feb 2022/)).length).to.equal(4);
+        });
+
         it('can handle multiple filters', async function () {
             // add some members to filter
             this.server.createList('member', 1, {subscriptions: [{status: 'active'}]});
