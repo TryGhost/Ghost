@@ -176,8 +176,8 @@ describe('Authentication API', function () {
                 .expectStatus(201)
                 .matchBodySnapshot({
                     users: [{
-                        created_at: anyDate,
-                        updated_at: anyDate
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
                     }]
                 })
                 .matchHeaderSnapshot({
