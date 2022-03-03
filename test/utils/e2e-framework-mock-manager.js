@@ -11,6 +11,7 @@ let emailCount = 0;
 
 // Mockable services
 const mailService = require('../../core/server/services/mail/index');
+const stripeService = require('../../core/server/services/stripe/index');
 const labs = require('../../core/shared/labs');
 
 const mockMail = () => {
@@ -23,6 +24,20 @@ const mockMail = () => {
 
 const mockStripe = () => {
     nock.disableNetConnect();
+    mocks.stripe = sinon
+        .stub(stripeService.api, 'createProduct')
+        .resolves({
+            id: 'prod_LFPlH9BDDwXcZ1'
+        });
+
+    mocks.stripe = sinon
+        .stub(stripeService.api, 'createPrice')
+        .resolves({
+            id: 'price_1KYpK92eZvKYlo2C86IrYSPM',
+            currency: 'usd',
+            nickname: null,
+            unit_amount: 299
+        });
 };
 
 const mockLabsEnabled = (flag, alpha = true) => {

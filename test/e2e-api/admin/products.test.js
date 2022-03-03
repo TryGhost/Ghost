@@ -15,6 +15,7 @@ describe('Tiers API', function () {
         mockManager.mockLabsDisabled('multipleProducts');
         const stripeService = require('../../../core/server/services/stripe');
         stripeService.api._configured = true;
+        mockManager.mockStripe();
     });
 
     afterEach(function () {
@@ -63,6 +64,23 @@ describe('Tiers API', function () {
             .post('/products/')
             .body({products: [tier]})
             .expectStatus(422);
+    });
+
+    it('Create a new tier with benefits', async function () {
+        const tier = {
+            name: 'Blah',
+            monthly_price: {
+                amount: 10
+            },
+            benefits: [{
+                name: 'This is a benefit'
+            }]
+        };
+
+        await agent
+            .post('/products/')
+            .body({products: [tier]})
+            .expectStatus(201);
     });
 
     it('Errors when a benefit has an empty name', async function () {
