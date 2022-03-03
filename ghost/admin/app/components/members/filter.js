@@ -24,6 +24,7 @@ const FILTER_PROPERTIES = [
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
     {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
     {label: 'Start date', name: 'subscriptions.start_date', valueType: 'date', group: 'Subscription', feature: 'membersTimeFilters'},
+    {label: 'Next billing date', name: 'subscriptions.current_period_end', valueType: 'date', group: 'Subscription', feature: 'membersTimeFilters'},
 
     // Emails
     {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
@@ -85,6 +86,16 @@ const FILTER_RELATIONS_OPTIONS = {
         {label: 'is not', name: 'is-not'}
     ],
     'subscriptions.start_date': [
+        {label: 'before', name: 'is-less'},
+        {label: 'on or before', name: 'is-or-less'},
+        // TODO: these cause problems because they require multiple NQL statements, eg:
+        // created_at:>='2022-03-02 00:00'+created_at:<'2022-03-03 00:00'
+        // {label: 'on', name: 'is'},
+        // {label: 'not on', name: 'is-not'},
+        {label: 'after', name: 'is-greater'},
+        {label: 'on or after', name: 'is-or-greater'}
+    ],
+    'subscriptions.current_period_end': [
         {label: 'before', name: 'is-less'},
         {label: 'on or before', name: 'is-or-less'},
         // TODO: these cause problems because they require multiple NQL statements, eg:
