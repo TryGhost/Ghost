@@ -9,9 +9,9 @@
                 <fieldset class="gh-portal-settings-form">
                     <div class="gh-portal-setting-section {{if (not-eq this.settings.membersSignupAccess "all") "disabled-overlay"}}" onclick={{action "switchPreviewPage" "signup"}}>
                         <h3 class="gh-portal-setting-sectionheading gh-stripe-connect">Signup options
-                            {{#if (not this.membersUtils.isStripeEnabled)}}
-                                <a class="gh-btn gh-btn-link black {{unless this.session.user.isAdmin "disabled"}}" type="button" {{on "click" (action "openStripeSettings")}}>Connect to Stripe</a>
-                            {{/if}}
+                            {{#unless this.membersUtils.isStripeEnabled}}
+                                <button class="gh-btn gh-btn-link {{unless this.session.user.isAdmin "disabled"}}" type="button" {{on "click" (action "openStripeSettings")}}>Connect to Stripe</button>
+                            {{/unless}}
                         </h3>
                         <GhFormGroup @classNames="gh-members-subscribed-checkbox gh-portal-setting-first mb0">
                             <div class="flex justify-between items-center">
