@@ -156,6 +156,7 @@ module.exports = function get(resource, options) {
 
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
+    apiOptions.context = {member: data.member};
 
     // @TODO: https://github.com/TryGhost/Ghost/issues/10548
     return controller[action](apiOptions).then(function success(result) {

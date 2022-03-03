@@ -295,4 +295,33 @@ describe('{{#get}} helper', function () {
             browseStub.firstCall.args[0].limit.should.eql(2);
         });
     });
+
+    describe('auth', function () {
+        /**
+         * @type sinon.SinonStub<any[], any>
+         */
+        let browseStub;
+        let member;
+
+        beforeEach(function () {
+            browseStub = sinon.stub().resolves();
+            member = {uuid: 'test'};
+
+            sinon.stub(api, 'postsPublic').get(() => {
+                return {
+                    browse: browseStub
+                };
+            });
+        });
+
+        it('should pass the member context', async function () {
+            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+            await get.call(
+                {},
+                'posts',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            );
+            browseStub.firstCall.args[0].context.member.should.eql(member);
+        });
+    });
 });
