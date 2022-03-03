@@ -16,7 +16,7 @@ const FILTER_PROPERTIES = [
     {label: 'Tiers', name: 'product', group: 'Basic', feature: 'multipleProducts'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Last seen', name: 'last_seen_at', group: 'Basic', feature: 'membersLastSeenFilter'},
-    {label: 'Created at', name: 'created_at', group: 'Basic', valueType: 'date', feature: 'membersTimeFilters'},
+    {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date', feature: 'membersTimeFilters'},
 
     // Member subscription
     {label: 'Member status', name: 'status', group: 'Subscription'},
