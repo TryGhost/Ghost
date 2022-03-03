@@ -38,7 +38,7 @@ jobs:
 
       - run: grunt release --skip-update
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ghost-canary
           path: .dist/release/*
