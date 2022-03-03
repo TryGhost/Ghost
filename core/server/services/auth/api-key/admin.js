@@ -3,6 +3,7 @@ const url = require('url');
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
 const limitService = require('../../../services/limits');
+const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 
@@ -139,12 +140,20 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
         const secret = Buffer.from(apiKey.get('secret'), 'hex');
 
         const {pathname} = url.parse(req.originalUrl);
-        const [hasMatch, version = 'v4', api = 'admin'] = pathname.match(/ghost\/api\/([^/]+)\/([^/]+)\/(.+)*/); // eslint-disable-line no-unused-vars
+        const [hasMatch, version, api] = pathname.match(/ghost\/api\/([^/]+)\/([^/]+)\/(.+)*/); // eslint-disable-line no-unused-vars
 
-        // ensure the token was meant for this api version
-        const options = Object.assign({
-            audience: new RegExp(`\/?${version}\/${api}\/?$`) // eslint-disable-line no-useless-escape
-        }, JWT_OPTIONS);
+        // ensure the token was meant for this api
+        let options;
+        if (!config.get('api:versions:all').includes(version)) {
+            // CASE: non-versioned api request
+            options = Object.assign({
+                audience: new RegExp(`\/?${version}\/?$`) // eslint-disable-line no-useless-escape
+            }, JWT_OPTIONS);
+        } else {
+            options = Object.assign({
+                audience: new RegExp(`\/?${version}\/${api}\/?$`) // eslint-disable-line no-useless-escape
+            }, JWT_OPTIONS);
+        }
 
         try {
             jwt.verify(token, secret, options);
