@@ -2337,10 +2337,10 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mw-error-handler@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.1.2.tgz#6dd2475d45f502d414fd1b932ff29810a89fd54d"
-  integrity sha512-sABAUa8PH/A5Bky7YdmDXsZ7u7/MBv5W/j1LztNwn0fDAv8zzTY9qv1nXRV1Tv9jxNv7anDQamDuYDDZfMvlPQ==
+"@tryghost/mw-error-handler@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.1.3.tgz#aa6e29c196578e91627c0e1d8ab60b9edc0b56b3"
+  integrity sha512-cJFnCJxHNurc478UK1rL+mxDeusIbUldgTAtqvR4dx1ZNT9+bfGzGCT9pGzZ+lgDbx1o5kX7llGCKRmXa2w/TA==
   dependencies:
     "@tryghost/debug" "^0.1.9"
     "@tryghost/tpl" "^0.1.8"
