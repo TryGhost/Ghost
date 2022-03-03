@@ -30,7 +30,8 @@ module.exports = function author(options) {
         if (autolink) {
             output = templates.link({
                 url: urlService.getUrlByResourceId(this.author.id, {withSubdirectory: true}),
-                text: escapeExpression(this.author.name)
+                text: escapeExpression(this.author.name),
+                className: 'post-author'
             });
         } else {
             output = escapeExpression(this.author.name);

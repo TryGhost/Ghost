@@ -29,7 +29,7 @@ templates.execute = function execute(name, context, data) {
 };
 
 templates.asset = _.template('<%= source %>?v=<%= version %>');
-templates.link = _.template('<a href="<%= url %>"><%= text %></a>');
+templates.link = _.template('<a class="<%= className %>" href="<%= url %>"><%= text %></a>');
 templates.script = _.template('<script src="<%= source %>?v=<%= version %>"></script>');
 templates.input = _.template('<input class="<%= className %>" type="<%= type %>" name="<%= name %>" <%= extras %> />');
 

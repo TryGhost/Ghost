@@ -1,0 +1,297 @@
+<!-- LAYOUT ITEM -->
+<div class="layout-item gutter-big">
+  <!-- POST OPEN -->
+  <div class="post-open gaming-news">
+    {{#if is_video}}
+      <!-- POST OPEN MEDIA WRAP -->
+        <div class="post-open-media-wrap">
+          <!-- POST OPEN MEDIA -->
+          <div class="post-open-media">
+            <iframe src="{{video_url}}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <!-- /POST OPEN MEDIA -->
+        </div>
+      <!-- /POST OPEN MEDIA WRAP -->
+    {{else}}
+      <!-- POST OPEN IMG -->
+      <figure class="post-open-img liquid">
+        <img src="{{img_url feature_image}}" alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}">
+      </figure>
+      <!-- /POST OPEN IMG -->
+    {{/if}}
+
+    <!-- POST OPEN CONTENT -->
+    <div class="post-open-content">
+      <!-- POST OPEN BODY  -->
+      <div class="post-open-body">
+        <!-- TAG LIST -->
+        <div class="tag-list">
+          <a href="news-v1.html" class="tag-ornament">Gaming News</a>
+        </div>
+        <!-- /TAG LIST -->
+
+        <!-- POST OPEN TITLE -->
+        <p class="post-open-title">{{title}}</p>
+        <!-- /POST OPEN TITLE -->
+
+        <!-- POST AUTHOR INFO -->
+        <div class="post-author-info-wrap">
+          <p class="post-author-info small light">By {{#has author="count:>2"}}Multiple authors{{else}}{{authors}}{{/has}}<span class="separator">|</span><time datetime="{{date format="YYYY-MM-DD"}}">{{date}}</time></p>
+        </div>
+        <!-- /POST AUTHOR INFO -->
+
+        <!-- POST OPEN TEXT -->
+        {{#if custom_excerpt}}
+          <p class="post-open-text bold">{{custom_excerpt}}</p>
+        {{/if}}
+        <!-- /POST OPEN TEXT -->
+
+        <div class="post-open-text-content">
+          {{content}}
+        </div>
+      </div>
+      <!-- /POST OPEN BODY -->
+
+      <!-- POST OPEN SIDEBAR -->
+      <div class="post-open-sidebar">
+        <!-- SOCIAL LINKS -->
+        <div class="social-links medium vertical animated">
+          <!-- BUBBLE ORNAMENT -->
+          <a href="#" class="bubble-ornament big fb">
+            <!-- FACEBOOK ICON -->
+            <svg class="facebook-icon big">
+              <use xlink:href="#svg-facebook"></use>
+            </svg>
+            <!-- /FACEBOOK ICON -->
+            <p class="bubble-ornament-text">120</p>
+            <p class="bubble-ornament-text hover-replace">Share</p>
+          </a>
+          <!-- /BUBBLE ORNAMENT -->
+
+          <!-- BUBBLE ORNAMENT -->
+          <a href="#" class="bubble-ornament big twt">
+            <!-- TWITTER ICON -->
+            <svg class="twitter-icon big">
+              <use xlink:href="#svg-twitter"></use>
+            </svg>
+            <!-- /TWITTER ICON -->
+            <p class="bubble-ornament-text">63</p>
+            <p class="bubble-ornament-text hover-replace">Share</p>
+          </a>
+          <!-- /BUBBLE ORNAMENT -->
+
+          <!-- BUBBLE ORNAMENT -->
+          <a href="#" class="bubble-ornament big gplus">
+            <!-- GPLUS ICON -->
+            <svg class="gplus-icon big">
+              <use xlink:href="#svg-gplus"></use>
+            </svg>
+            <!-- /GPLUS ICON -->
+            <p class="bubble-ornament-text">46</p>
+            <p class="bubble-ornament-text hover-replace">Share</p>
+          </a>
+          <!-- /BUBBLE ORNAMENT -->
+        </div>
+        <!-- /SOCIAL LINKS -->
+      </div>
+      <!-- /POST OPEN SIDEBAR -->
+    </div>
+    <!-- /POST OPEN CONTENT -->
+
+    <!-- POST OPEN TAGS -->
+    <div class="post-open-tags">
+      <!-- TAG LIST -->
+      <div class="tag-list">
+        <!-- TAG ITEM -->
+        <a href="search-results.html" class="tag-item">Gaming</a>
+        <!-- /TAG ITEM -->
+
+        <!-- TAG ITEM -->
+        <a href="search-results.html" class="tag-item">Video Reviews</a>
+        <!-- /TAG ITEM -->
+
+        <!-- TAG ITEM -->
+        <a href="search-results.html" class="tag-item">Previews</a>
+        <!-- /TAG ITEM -->
+
+        <!-- TAG ITEM -->
+        <a href="search-results.html" class="tag-item">Movie Reviews</a>
+        <!-- /TAG ITEM -->
+
+        <!-- TAG ITEM -->
+        <a href="search-results.html" class="tag-item">Movie News</a>
+        <!-- /TAG ITEM -->
+
+        <!-- TAG ITEM -->
+        <a href="search-results.html" class="tag-item">Critic</a>
+        <!-- /TAG ITEM -->
+
+        <!-- TAG ITEM -->
+        <a href="search-results.html" class="tag-item">Ratings</a>
+        <!-- /TAG ITEM -->
+
+        <!-- TAG ITEM -->
+        <a href="search-results.html" class="tag-item">Funtendo</a>
+        <!-- /TAG ITEM -->
+      </div>
+      <!-- /TAG LIST -->
+    </div>
+    <!-- /POST OPEN TAGS -->
+  </div>
+  <!-- /POST OPEN -->
+
+  <!-- WIDGET NEWS -->
+  <div class="widget-news">
+    <!-- SECTION TITLE WRAP -->
+    <div class="section-title-wrap blue">
+      <h2 class="section-title medium">Related News</h2>
+      <div class="section-title-separator"></div>
+    </div>
+    <!-- /SECTION TITLE WRAP -->
+
+    <!-- POST PREVIEW SHOWCASE -->
+    <div class="post-preview-showcase grid-3col centered">
+      <!-- POST PREVIEW -->
+      <div class="post-preview gaming-news">
+        <!-- POST PREVIEW IMG WRAP -->
+        <a href="post-v1.html">
+          <div class="post-preview-img-wrap">
+            <!-- POST PREVIEW IMG -->
+            <figure class="post-preview-img liquid">
+              <img src="img/posts/09.jpg" alt="post-09">
+            </figure>
+            <!-- /POST PREVIEW IMG -->
+          </div>
+        </a>
+        <!-- /POST PREVIEW IMG WRAP -->
+
+        <!-- TAG ORNAMENT -->
+        <a href="news-v1.html" class="tag-ornament">Gaming news</a>
+        <!-- /TAG ORNAMENT -->
+
+        <!-- POST PREVIEW TITLE -->
+        <a href="post-v1.html" class="post-preview-title">New "Rizen" game is gonna be released in summer 2019</a>
+        <!-- POST AUTHOR INFO -->
+        <div class="post-author-info-wrap">
+          <p class="post-author-info small light">By <a href="search-results.html" class="post-author">Vellatrix</a><span class="separator">|</span>December 15th, 2018</p>
+        </div>
+        <!-- /POST AUTHOR INFO -->
+        <!-- POST PREVIEW TEXT -->
+        <p class="post-preview-text">Lorem ipsum dolor sit amet, consectetur bere adipisicing elit, sed do eiusmod tempor lorem incididunt ut labore et dolore magna.</p>
+      </div>
+      <!-- /POST PREVIEW -->
+
+      <!-- POST PREVIEW -->
+      <div class="post-preview geeky-news">
+        <!-- POST PREVIEW IMG WRAP -->
+        <a href="post-v4.html">
+          <div class="post-preview-img-wrap">
+            <!-- POST PREVIEW IMG -->
+            <figure class="post-preview-img liquid">
+              <img src="img/posts/02.jpg" alt="post-02">
+            </figure>
+            <!-- /POST PREVIEW IMG -->
+          </div>
+        </a>
+        <!-- /POST PREVIEW IMG WRAP -->
+
+        <!-- TAG ORNAMENT -->
+        <a href="news-v4.html" class="tag-ornament">Geeky news</a>
+        <!-- /TAG ORNAMENT -->
+
+        <!-- POST PREVIEW TITLE -->
+        <a href="post-v4.html" class="post-preview-title">Jessica Tam to star in the new "Charlotte" series</a>
+        <!-- POST AUTHOR INFO -->
+        <div class="post-author-info-wrap">
+          <p class="post-author-info small light">By <a href="search-results.html" class="post-author">Vellatrix</a><span class="separator">|</span>December 15th, 2018</p>
+        </div>
+        <!-- /POST AUTHOR INFO -->
+        <!-- POST PREVIEW TEXT -->
+        <p class="post-preview-text">Lorem ipsum dolor sit amet, consectetur bere adipisicing elit, sed do eiusmod tempor lorem incididunt ut labore et dolore magna.</p>
+      </div>
+      <!-- /POST PREVIEW -->
+
+      <!-- POST PREVIEW -->
+      <div class="post-preview movie-news">
+        <!-- POST PREVIEW IMG WRAP -->
+        <a href="post-v3.html">
+          <div class="post-preview-img-wrap">
+            <!-- POST PREVIEW IMG -->
+            <figure class="post-preview-img liquid">
+              <img src="img/posts/12.jpg" alt="post-12">
+            </figure>
+            <!-- /POST PREVIEW IMG -->
+
+            <!-- RATING ORNAMENT -->
+            <div class="rating-ornament">
+              <!-- RATING ORNAMENT ITEM -->
+              <div class="rating-ornament-item">
+                <!-- RATING ORNAMENT ICON -->
+                <svg class="rating-ornament-icon">
+                  <use xlink:href="#svg-star"></use>
+                </svg>
+              </div>
+              <!-- /RATING ORNAMENT ITEM -->
+
+              <!-- RATING ORNAMENT ITEM -->
+              <div class="rating-ornament-item">
+                <!-- RATING ORNAMENT ICON -->
+                <svg class="rating-ornament-icon">
+                  <use xlink:href="#svg-star"></use>
+                </svg>
+              </div>
+              <!-- /RATING ORNAMENT ITEM -->
+
+                <!-- RATING ORNAMENT ITEM -->
+              <div class="rating-ornament-item">
+                <!-- RATING ORNAMENT ICON -->
+                <svg class="rating-ornament-icon">
+                  <use xlink:href="#svg-star"></use>
+                </svg>
+              </div>
+              <!-- /RATING ORNAMENT ITEM -->
+
+                <!-- RATING ORNAMENT ITEM -->
+              <div class="rating-ornament-item">
+                <!-- RATING ORNAMENT ICON -->
+                <svg class="rating-ornament-icon empty">
+                  <use xlink:href="#svg-star"></use>
+                </svg>
+              </div>
+              <!-- /RATING ORNAMENT ITEM -->
+
+                <!-- RATING ORNAMENT ITEM -->
+              <div class="rating-ornament-item">
+                <!-- RATING ORNAMENT ICON -->
+                <svg class="rating-ornament-icon empty">
+                  <use xlink:href="#svg-star"></use>
+                </svg>
+              </div>
+              <!-- /RATING ORNAMENT ITEM -->
+            </div>
+            <!-- /RATING ORNAMENT -->
+          </div>
+        </a>
+        <!-- /POST PREVIEW IMG WRAP -->
+
+        <!-- TAG ORNAMENT -->
+        <a href="news-v3.html" class="tag-ornament">Movie news</a>
+        <!-- /TAG ORNAMENT -->
+
+        <!-- POST PREVIEW TITLE -->
+        <a href="post-v3.html" class="post-preview-title">We reviewed the "Guardians of the Universe" movie</a>
+        <!-- POST AUTHOR INFO -->
+        <div class="post-author-info-wrap">
+          <p class="post-author-info small light">By <a href="search-results.html" class="post-author">Faye V.</a><span class="separator">|</span>December 15th, 2018</p>
+        </div>
+        <!-- /POST AUTHOR INFO -->
+        <!-- POST PREVIEW TEXT -->
+        <p class="post-preview-text">Lorem ipsum dolor sit amet, consectetur bere adipisicing elit, sed do eiusmod tempor lorem incididunt ut labore et dolore magna.</p>
+      </div>
+      <!-- /POST PREVIEW -->
+    </div>
+    <!-- /POST PREVIEW SHOWCASE -->
+  </div>
+  <!-- /WIDGET NEWS -->
+</div>
+<!-- /LAYOUT ITEM -->

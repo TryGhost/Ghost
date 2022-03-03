@@ -1,0 +1,32 @@
+{{!< default}}
+
+{{> "breadcrumb" heading="Blog posts"}}
+
+<!-- blog begin -->
+<div class="news blog-page" id="blog">
+    <div class="container">
+        <div class="row justify-content-sm-center justify-content-md-start">
+          {{#foreach posts}}
+            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-10">
+              <div class="single-news">
+                <div class="part-img">
+                  <img src="{{img_url feature_image}}"
+                    alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}">
+                </div>
+                <div class="part-text">
+                  <h3 class="title">{{title}}</h3>
+                  <p>
+                    {{excerpt}}
+                  </p>
+                  <a href="{{url}}" class="def-btn def-small">
+                    Read More
+                  </a>
+                </div>
+              </div>
+            </div>
+          {{/foreach}}
+        </div>
+        {{pagination}}
+    </div>
+</div>
+<!-- blog end -->

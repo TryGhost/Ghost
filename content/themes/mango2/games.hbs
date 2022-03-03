@@ -1,0 +1,40 @@
+{{!< default}}
+
+{{> "breadcrumb" heading="All Games"}}
+
+<!-- game begin -->
+<div class="games game-page">
+  <div class="container">
+    <div class="row">
+      <div class="col-xl-3 col-lg-3 col-md-4">
+        {{> "sidebar-game"}}
+      </div>
+      <div class="col-xl-9 col-lg-9 col-md-8">
+        <div class="all-games anim-change">
+          <div class="row miscoo-row">
+            {{#foreach posts}}
+            <div class="col-xl-3 col-lg-4 col-sm-2">
+              {{> "game-card"}}
+            </div>
+            {{/foreach}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- game end -->
+<!-- cta begin -->
+<div class="cta">
+  <div class="container">
+    <div class="row justify-content-xl-between justify-content-lg-between justify-content-sm-center">
+      <div class="col-xl-7 col-lg-7 col-md-8 col-sm-10">
+        <h2>Mango Gaming - Where everything are <br /> possible with online gaming </h2>
+      </div>
+      <div class="col-xl-4 col-lg-4 col-md-4 col-sm-10">
+        <a href="/games" class="def-btn play-now-btn">Play Now</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- cta end -->

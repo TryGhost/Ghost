@@ -1,0 +1,63 @@
+{{!< default}}
+
+<!-- BANNER WRAP -->
+<div class="banner-wrap shop-banner">
+  <!-- BANNER -->
+  <div class="banner grid-limit">
+    <h2 class="banner-title">New Games</h2>
+    <p class="banner-sections">
+      <span class="banner-section">Home</span>
+      <!-- ARROW ICON -->
+      <svg class="arrow-icon">
+        <use xlink:href="#svg-arrow"></use>
+      </svg>
+      <!-- /ARROW ICON -->
+      <span class="banner-section">New Games</span>
+    </p>
+  </div>
+  <!-- /BANNER -->
+</div>
+<!-- /BANNER WRAP -->
+
+{{> "live-news"}}
+
+<!-- LAYOUT CONTENT FULL -->
+<div class="layout-content-full layout-item gutter-big grid-limit">
+  <!-- WIDGET ITEM -->
+  <div class="widget-item">
+    <!-- GRID 4COL -->
+    <div class="grid-6col_1 centered gutter-mid">
+      {{#foreach posts}}
+        {{> "game-card"}}
+      {{/foreach}}
+    </div>
+    <!-- /GRID 4COL -->
+  </div>
+  <!-- /WIDGET ITEM -->
+
+  <!-- LAYOUT ITEM -->
+  <div class="layout-item centered load-more-wrap">
+    <!-- BUTTON -->
+    <a href="#" class="button violet">
+      Load more Items...
+      <!-- BUTTON ORNAMENT -->
+      <div class="button-ornament">
+        <!-- ARROW ICON -->
+        <svg class="arrow-icon medium">
+          <use xlink:href="#svg-arrow-medium"></use>
+        </svg>
+        <!-- /ARROW ICON -->
+
+        <!-- CROSS ICON -->
+        <svg class="cross-icon small">
+          <use xlink:href="#svg-cross-small"></use>
+        </svg>
+        <!-- /CROSS ICON -->
+      </div>
+      <!-- /BUTTON ORNAMENT -->
+    </a>
+    <!-- /BUTTON -->
+  </div>
+  <!-- /LAYOUT ITEM -->
+</div>
+<!-- LAYOUT CONTENT FULL -->

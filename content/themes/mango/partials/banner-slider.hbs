@@ -1,0 +1,66 @@
+<!-- BANNER SLIDER -->
+  <div id="banner-slider-3" class="banner-slider v3">
+    <!-- SLIDER ITEMS -->
+    <div class="slider-items">
+      {{#get "posts" filter="posts_game.is_game:true" include="authors" limit="5" as | more_posts|}}
+        {{#if more_posts}}
+          {{#foreach more_posts}}
+            <!-- POST PREVIEW -->
+              <div class="post-preview picture big game-review">
+                <!-- POST PREVIEW IMG -->
+                <a href="{{url}}">
+                  <div class="post-preview-img-wrap">
+                    <!-- POST PREVIEW IMG WRAP -->
+                    <figure class="post-preview-img liquid">
+                      <img src="{{img_url feature_image}}"
+                        alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}">
+                    </figure>
+                    <!-- /POST PREVIEW IMG -->
+
+                    <!-- POST PREVIEW IMG OVERLAY -->
+                    <div class="post-preview-img-overlay"></div>
+                    <!-- /POST PREVIEW IMG OVERLAY -->
+
+                    <!-- POST PREVIEW OVERLAY -->
+                    <div class="post-preview-overlay">
+                      <!-- TAG ORNAMENT -->
+                      <span class="tag-ornament">Game Reviews</span>
+                      <!-- /TAG ORNAMENT -->
+
+                      <!-- POST PREVIEW TITLE -->
+                      <p class="post-preview-title">We reviewed the new Magimons game</p>
+                      <!-- POST PREVIEW TEXT -->
+                      <p class="post-preview-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt dutor et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud citation loso laboris tempora aliquip.</p>
+                    </div>
+                    <!-- /POST PREVIEW OVERLAY -->
+                  </div>
+                </a>
+                <!-- /POST PREVIEW IMG WRAP -->
+              </div>
+              <!-- /POST PREVIEW -->
+          {{/foreach}}
+        {{/if}}
+      {{/get}}
+    </div>
+    <!-- /SLIDER ITEMS -->
+
+    <!-- BANNER SLIDER CONTROLS -->
+    <div id="banner-slider-3-controls" class="banner-slider-controls">
+      <div class="control-previous">
+        <!-- ARROW ICON -->
+        <svg class="arrow-icon medium">
+          <use xlink:href="#svg-arrow-medium"></use>
+        </svg>
+        <!-- /ARROW ICON -->
+      </div>
+      <div class="control-next">
+        <!-- ARROW ICON -->
+        <svg class="arrow-icon medium">
+          <use xlink:href="#svg-arrow-medium"></use>
+        </svg>
+        <!-- /ARROW ICON -->
+      </div>
+    </div>
+    <!-- /BANNER SLIDER CONTROLS -->
+  </div>
+  <!-- /BANNER SLIDER -->

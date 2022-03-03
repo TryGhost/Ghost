@@ -1,0 +1,99 @@
+{{#contentFor "pageScripts"}}
+<script src="{{asset "js/game.js"}}"></script>
+{{/contentFor}}
+
+{{> "breadcrumb" heading="Start Playing"}}
+
+<!-- game details begin -->
+<div class="game-details">
+  <div class="container">
+    <div class="row">
+      <div class="col-xl-10 col-lg-10">
+        <!-- GAME PART -->
+        <div class="game-part">
+          <!-- GAME CONTAINER -->
+          <div class="game-container">
+            <!-- GAME READY -->
+            <div class="game-ready">
+              <div class="ready-warp">
+                <p class="ready-app-name">{{title}}</p>
+                <div class="ready-app-icon">
+                  <img src="{{img_url feature_image}}" alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}" class="ready-app-img show">
+                </div>
+                <button class="ready-play" id="ready-play">PLAY GAME</button>
+                <p class="ready-tips">Game will start after a short ad. Thank you for your support.</p>
+              </div>
+              <div class="ready-bg bg-center" style="background-image: url({{img_url feature_image}});"></div>
+            </div>
+            <!-- GAME READY -->
+            <!-- GAME IFRAME -->
+            <div class="game-iframe">
+              <div class="iframe-warp landscape">
+                <iframe src="{{game_url}}" id="gameIframe"></iframe>
+                <p class="iframe-toast text-cut"></p>
+              </div>
+              <div class="game-float">
+                <div class="exit-full">
+                  <button class="exit-btn" title="Play Game in Normal Size">
+                    <img src="{{asset "img/close-icon.png"}}">
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- GAME IFRAME -->
+          </div>
+        </div>
+
+        <div class="game-descr">
+          <div class="details-tabs-menu">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="fullscreen-btn" href="javascript:void(0)">Fullscreen</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/games">Play {{title}}</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="https://www.youtube.com/channel/UCW7TRqEAjqmuaJq5RArZ08A">How To Play?</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {{#get "posts" filter="posts_game.is_game:true+id:-{{id}}" limit="20" as | more_posts|}}
+          {{#if more_posts}}
+            <div class="games more-games">
+              <div class="all-games anim-change">
+                <div class="row miscoo-row">
+                {{#foreach more_posts}}
+                  <div class="col-xl-3 col-lg-4 col-sm-2">
+                    {{> "game-card"}}
+                  </div>
+                {{/foreach}}
+                </div>
+              </div>
+            </div>
+          {{/if}}
+        {{/get}}
+      </div>
+      <div class="col-xl-2 col-lg-2">
+        {{#get "posts" filter="posts_game.is_game:true+id:-{{id}}+featured:true" limit="5" as | featured_posts|}}
+          {{#if featured_posts}}
+            <div class="games featured-games">
+              <div class="all-games anim-change">
+                <div class="row miscoo-row">
+                {{#foreach featured_posts}}
+                  <div class="col-xl-12 col-lg-12 col-sm-12">
+                    {{> "game-card"}}
+                  </div>
+                {{/foreach}}
+                </div>
+              </div>
+            </div>
+          {{/if}}
+        {{/get}}
+      </div>
+    </div>
+  </div>
+</div>
+<!-- game details end -->

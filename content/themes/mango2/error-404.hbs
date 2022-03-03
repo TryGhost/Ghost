@@ -1,0 +1,48 @@
+{{!< default}}
+
+{{!--
+
+There are two error files in this theme, one for 404s and one for all other errors.
+This file is the former, and handles all 404 Page Not Found errors.
+
+The 404 error is the most common error that a visitor might see, for example when
+following a broken link
+
+Keep this template as lightweight as you can!
+
+--}}
+
+<section class="error-content">
+    <div class="container">
+        <section class="error-message">
+            <h1 class="error-code">{{statusCode}}</h1>
+            <p class="error-description">{{message}}</p>
+            <a class="error-link" href="{{@site.url}}">Go to the front page →</a>
+        </section>
+    </div>
+</section>
+<!-- blog begin -->
+<div class="news error-news" id="blog">
+  <div class="container news-container">
+    <div class="row justify-content-center">
+      <div class="col-xl-6 col-lg-7 col-sm-10">
+        <div class="section-title style-2">
+          <h2>Mango Gaming Latest News</h2>
+          <p>Mango Gaming has hundreds of free online games for all generation. Play action, racing, sports, and other fun games for free at Mango Gaming</p>
+        </div>
+      </div>
+    </div>
+    <div class="row justify-content-sm-center justify-content-md-start">
+      {{#get "posts" filter="tag:[game-news]" limit="3" as | more_posts|}}
+        {{#if more_posts}}
+          {{#foreach more_posts}}
+            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-10">
+              {{> "post-card"}}
+            </div>
+          {{/foreach}}
+        {{/if}}
+      {{/get}}
+    </div>
+  </div>
+</div>
+<!-- blog end -->

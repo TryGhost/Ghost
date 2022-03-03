@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="{{@site.locale}}" {{#match @custom.color_scheme "Dark"}} class="dark-mode" {{/match}}{{#match @custom.color_scheme "Auto"}} class="auto-color" {{/match}}>
+  <head>
+    {{!-- Basic meta - advanced meta is output with {ghost_head} below --}}
+    <title>{{meta_title}}</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            {{#if @custom.header_button_background}}
+            --button-bg-color: {{@custom.header_button_background}};
+            {{/if}}
+            --button-text-color: {{#match @custom.header_button_text_color "Light"}}#fff{{else}}var(--color-darkgrey){{/match}};
+        }
+    </style>
+    {{!-- Theme assets - use the {asset} helper to reference styles & scripts,
+    this will take care of caching and cache-busting automatically --}}
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="{{asset "css/bootstrap.min.css"}}">
+    <!-- fontawesome icon  -->
+    <link rel="stylesheet" href="{{asset "css/fontawesome.min.css"}}">
+    <!-- flaticon css -->
+    <link rel="stylesheet" href="{{asset "fonts/flaticon.css"}}">
+    <!-- animate.css -->
+    <link rel="stylesheet" href="{{asset "css/animate.css"}}">
+    <!-- Owl Carousel -->
+    <link rel="stylesheet" href="{{asset "css/owl.carousel.css"}}">
+    <!-- <link rel="stylesheet" href="{{asset "css/owl.carousel.min.css"}}"> -->
+    <link rel="stylesheet" href="{{asset "css/owl.carousel.css"}}">
+    <!-- magnific popup -->
+    <link rel="stylesheet" href="{{asset "css/modal-video.min.css"}}">
+    <!-- stylesheet -->
+    <link rel="stylesheet" href="{{asset "css/style.css"}}">
+    <!-- responsive -->
+    <link rel="stylesheet" href="{{asset "css/responsive.css"}}">
+    {{!-- This tag outputs all your advanced SEO meta, structured data, and other important settings,
+    it should always be the last tag before the closing head tag --}}
+    {{ghost_head}}
+  </head>
+  <body data-spy="scroll" data-target="#navbar" data-offset="0">
+    <!-- preloader begin -->
+    <div class="preloader">
+      <img src="{{asset "img/preloader.gif"}}" alt="">
+    </div>
+    <!-- preloader end -->
+    <!-- header section begin -->
+    <div class="header">
+      <div class="row">
+        <div class="overflow-hidden col-xl-3 col-lg-3 d-xl-flex d-lg-flex d-block align-items-center">
+          <div class="row">
+            <div class="col-xl-12 col-lg-12 col-7 d-xl-block d-lg-block">
+              <div class="logo">
+                <a href="/">
+                  <img src="{{@site.logo}}" alt="{{@site.title}}">
+                </a>
+              </div>
+            </div>
+            <div class="d-xl-none d-lg-none col-5 d-flex align-items-center justify-content-end">
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-9 col-lg-9">
+          <div class="bottom-header">
+            <div class="row">
+              <div class="col-xl-12 col-lg-12">
+                <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+                  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto">
+                      <li class="nav-item">
+                        <a class="nav-link {{#match @site.currentUrl "=" "/"}}active{{/match}}" href="/">home</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link {{#match @site.currentUrl "=" "/about/"}}active{{/match}}" href="/about">about</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link {{#match @site.currentUrl "=" "/games/"}}active{{/match}}" href="/games">Games</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link {{#match @site.currentUrl "=" "/videos/"}}active{{/match}}" href="/videos">Videos</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link {{#match @site.currentUrl "=" "/news/"}}active{{/match}}" href="/news">News</a>
+                      </li>
+                    </ul>
+                  </div>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- header section end -->
+    {{{body}}}
+    <!-- footer begin -->
+    <div class="footer">
+      <div class="footer-top">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-xl-4 col-lg-4 col-sm-10">
+              <div class="about-widget">
+                <a href="/" class="logo">
+                  <img src="{{@site.logo}}" alt="{{@site.title}}">
+                </a>
+                <p>{{@site.description}}</p>
+                {{> "social-links"}}
+              </div>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-sm-10">
+              <div class="link-widget">
+                <h4 class="title"> Mango Gaming </h4>
+                <ul>
+                  <li>
+                    <a href="/about" class="single-link"> About </a>
+                  </li>
+                  <li>
+                    <a href="/games" class="single-link"> Games </a>
+                  </li>
+                  <li>
+                    <a href="/videos" class="single-link"> Videos </a>
+                  </li>
+                  <li>
+                    <a href="/news" class="single-link"> News </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-xl-6 col-lg-6 col-sm-10">
+              <div class="newsletter-widget">
+                <h4 class="title"> Subscribe To Our Newsletter </h4>
+                <form class="newsletter-form">
+                  <input type="text" placeholder="Enter Your Mail Address">
+                  <button class="def-btn def-small"> Subscribe </button>
+                </form>
+                <p>Mango Gaming has hundreds of free online games for all generation. Play action, racing, sports, and other fun games for free at Mango Gaming</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="copyright-area">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-8">
+              <p>Copyright © <a href="/">Mango Gaming</a> - 2022. All Rights Reserved </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- footer end -->
+    <!-- jquery -->
+    <script src="{{asset "js/jquery.js"}}"></script>
+    <!-- bootstrap -->
+    <script src="{{asset "js/bootstrap.min.js"}}"></script>
+    <!-- owl carousel -->
+    <script src="{{asset "js/owl.carousel.min.js"}}"></script>
+    <!-- magnific popup -->
+    <script src="{{asset "js/jquery-modal-video.min.js"}}"></script>
+    <!-- filterizr js -->
+    <script src="{{asset "js/jquery.filterizr.min.js"}}"></script>
+    <!-- way poin js-->
+    <script src="{{asset "js/waypoints.min.js"}}"></script>
+    <!-- wow js-->
+    <script src="{{asset "js/wow.min.js"}}"></script>
+    <!-- main -->
+    <script src="{{asset "js/main.js"}}"></script>
+    {{{block "pageScripts"}}} {{!-- Ghost outputs required functional scripts with this tag - it should always be the last thing before the closing body tag --}}
+    {{ghost_foot}}
+  </body>
+</html>

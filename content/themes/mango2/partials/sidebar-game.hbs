@@ -1,0 +1,28 @@
+<div class="game-menu">
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link {{#match @site.currentUrl "=" "/games/"}}active{{/match}}" href="/games">
+        <span class="icon icon-8"></span>
+        <span class="text">News Games</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {{#match @site.currentUrl "=" "/games/popular/"}}active{{/match}}" href="/games/popular">
+        <span class="icon icon-9"></span>
+        <span class="text">Most Popular</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {{#match @site.currentUrl "=" "/games/girl/"}}active{{/match}}" href="/games/girl">
+        <span class="icon icon-11 icon-girl-games"></span>
+        <span class="text">Girl Games</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {{#match @site.currentUrl "=" "/games/mmorpg/"}}active{{/match}}" href="/games/mmorpg">
+        <span class="icon icon-3"></span>
+        <span class="text">MMORPG</span>
+      </a>
+    </li>
+  </ul>
+</div>

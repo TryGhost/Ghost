@@ -1,0 +1,102 @@
+{{!< default}}
+
+<!-- BANNER WRAP -->
+  <div class="banner-wrap pixel-videos">
+    <!-- BANNER -->
+    <div class="banner grid-limit">
+      <h2 class="banner-title">Pixel Videos</h2>
+      <p class="banner-sections">
+        <span class="banner-section">Home</span>
+        <!-- ARROW ICON -->
+        <svg class="arrow-icon">
+          <use xlink:href="#svg-arrow"></use>
+        </svg>
+        <!-- /ARROW ICON -->
+        <span class="banner-section">Pixel Videos</span>
+      </p>
+    </div>
+    <!-- /BANNER -->
+  </div>
+  <!-- /BANNER WRAP -->
+
+  {{> "live-news"}}
+
+  <!-- LAYOUT CONTENT 1 -->
+  <div class="layout-content-1 layout-item-3-1 grid-limit">
+    <!-- LAYOUT BODY -->
+    <div class="layout-body">
+      <!-- SECTION TITLE WRAP -->
+      <div class="section-title-wrap cyan small-space">
+        <h2 class="section-title medium">Browse Videos</h2>
+        <div class="section-title-separator"></div>
+      </div>
+      <!-- /SECTION TITLE WRAP -->
+
+      <!-- POST PREVIEW SHOWCASE -->
+      <div class="post-preview-showcase grid-3col centered">
+        {{#foreach posts}}
+
+          <!-- POST PREVIEW -->
+          <div class="post-preview video gaming-news no-hover">
+            <!-- POST PREVIEW IMG WRAP -->
+            <a href="{{url}}">
+              <div class="post-preview-img-wrap">
+                <!-- POST PREVIEW IMG -->
+                <figure class="post-preview-img liquid">
+                  <img srcset="{{img_url feature_image size="s"}} 300w,
+                    {{img_url feature_image size="m"}} 600w,
+                    {{img_url feature_image size="l"}} 1000w,
+                    {{img_url feature_image size="xl"}} 2000w"
+                    sizes="(max-width: 1000px) 400px, 800px"
+                    src="{{img_url feature_image size="m"}}"
+                    alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}"
+                    loading="lazy">
+                </figure>
+                <!-- /POST PREVIEW IMG -->
+
+                <!-- POST PREVIEW OVERLAY -->
+                <div class="post-preview-overlay">
+                  <!-- PLAY BUTTON -->
+                  <div class="play-button">
+                    <!-- PLAY BUTTON ICON -->
+                    <svg class="play-button-icon">
+                      <use xlink:href="#svg-play"></use>
+                    </svg>
+                    <!-- /PLAY BUTTON ICON -->
+                  </div>
+                  <!-- /PLAY BUTTON -->
+                </div>
+                <!-- /POST PREVIEW OVERLAY -->
+              </div>
+            </a>
+            <!-- /POST PREVIEW IMG WRAP -->
+
+            <!-- TAG LIST -->
+            <div class="tag-list">
+              <a href="browse-videos.html" class="tag-ornament video">Video</a>
+              <a href="news-v1.html" class="tag-ornament">Gaming News</a>
+            </div>
+            <!-- /TAG LIST -->
+
+            <!-- POST PREVIEW TITLE -->
+            <a href="{{url}}" class="post-preview-title">{{title}}</a>
+            <!-- POST AUTHOR INFO -->
+            <div class="post-author-info-wrap">
+              <p class="post-author-info small light">By {{#has author="count:>2"}}<a>Multiple authors</a>{{else}}{{authors}}{{/has}}<span class="separator">|</span><time datetime="{{date format="YYYY-MM-DD"}}">{{date}}</time></p>
+            </div>
+            <!-- /POST AUTHOR INFO -->
+            <!-- POST PREVIEW TEXT -->
+            <p class="post-preview-text">{{excerpt}}...</p>
+          </div>
+          <!-- /POST PREVIEW -->
+
+        {{/foreach}}
+
+        </div>
+        <!-- /POST PREVIEW SHOWCASE -->
+      </div>
+      <!-- /WIDGET SIDEBAR -->
+    </div>
+    <!-- /LAYOUT SIDEBAR -->
+  </div>
+  <!-- /LAYOUT CONTENT 1 -->

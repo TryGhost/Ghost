@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 368 368" style="enable-background:new 0 0 368 368;" xml:space="preserve" width="512" height="512" class=""><g><g>
+	<g>
+		<g>
+			<path d="M184,60c4.4,0,8-3.6,8-8v-4c0-4.4-3.6-8-8-8c-4.4,0-8,3.6-8,8v4C176,56.4,179.6,60,184,60z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+			<path d="M184,308c-4.4,0-8,3.6-8,8v4c0,4.4,3.6,8,8,8c4.4,0,8-3.6,8-8v-4C192,311.6,188.4,308,184,308z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+			<path d="M52,176h-4c-4.4,0-8,3.6-8,8c0,4.4,3.6,8,8,8h4c4.4,0,8-3.6,8-8C60,179.6,56.4,176,52,176z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+			<path d="M320,176h-4c-4.4,0-8,3.6-8,8c0,4.4,3.6,8,8,8h4c4.4,0,8-3.6,8-8C328,179.6,324.4,176,320,176z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+			<path d="M93.6,82.4c-3.2-3.2-8-3.2-11.2,0c-3.2,3.2-3.2,8,0,11.2l2.8,2.8c1.6,1.6,3.6,2.4,5.6,2.4s4-0.8,5.6-2.4     c3.2-3.2,3.2-8,0-11.2L93.6,82.4z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+			<path d="M85.2,271.6l-2.8,2.8c-3.2,3.2-3.2,8,0,11.2C84,287.2,86,288,88,288s4-0.8,5.6-2.4l2.8-2.8c3.2-3.2,3.2-8,0-11.2     S88.4,268.4,85.2,271.6z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+			<path d="M274.4,82.4l-2.8,2.8c-3.2,3.2-3.2,8,0,11.2c1.6,1.6,3.6,2.4,5.6,2.4s4-0.8,5.6-2.4l2.8-2.8c3.2-3.2,3.2-8,0-11.2     C282.4,79.2,277.6,79.2,274.4,82.4z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+			<path d="M192,180.8V108c0-4.4-3.6-8-8-8c-4.4,0-8,3.6-8,8v76c0,2,0.8,4,2.4,5.6l87.6,87.6c1.6,1.6,3.6,2.4,5.6,2.4s4-0.8,5.6-2.4     c3.2-3.2,3.2-8,0-11.2L192,180.8z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+			<path d="M184,0C82.4,0,0,82.4,0,184s82.4,184,184,184s184-82.4,184-184S285.6,0,184,0z M184,352c-92.8,0-168-75.2-168-168     S91.2,16,184,16s168,75.2,168,168S276.8,352,184,352z" data-original="#000000" class="active-path" data-old_color="#000000" style="fill:#FFFFFF"/>
+		</g>
+	</g>
+</g></g> </svg>

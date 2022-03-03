@@ -1,0 +1,1616 @@
+@media only screen and (min-width: 992px) and (max-width: 1199px) {
+    /* header */
+    .header {
+        padding: 0 30px;
+    }
+    .header .bottom-header .navbar .navbar-nav:after {
+        left: -30px;
+    }
+    .header .logo {
+        padding-right: 50px;
+    }
+
+    /* banner */
+    .banner .banner-txt h1 {
+        font-size: 60px;
+        line-height: 80px;
+    }
+
+    /* about */
+    .feature:before {
+        left: 0;
+        right: 0;
+    }
+    .feature .single-feature h4.feature-title {
+        font-size: 20px;
+        line-height: 26px; 
+    }
+    .feature .single-feature .part-icon {
+        height: 70px;
+    }
+    .about .part-txt {
+        margin-right: -50px;
+    }
+    .about .part-txt.right {
+        margin: 0;
+        margin-left: -30px;
+    }
+
+    /* iqn */
+    .partner .part-partner-logo .single-logo a {
+        width: 60px;
+    }
+
+    /* news */
+    .news .news-container:before, .news .news-container:after {
+        display: none;
+    }
+
+    /* contact */
+    .contact .container-contact:before, .contact .container-contact:after {
+        display: none;
+    }
+
+    
+    /* recent activity */
+    .recent-activity .single-col .activity-list .single-activity {
+        padding: 15px;
+        display: block;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-img {
+        height: 55px;
+        width: 55px;
+        float: left;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text {
+        display: flow-root;
+    }
+    .recent-activity .single-col .activity-list.top-winner .single-activity .part-img {
+        height: 55px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text p br {
+        display: none;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .single-activity .part-text p br, .recent-activity .single-col .activity-list.top-winner .single-activity .part-text p br {
+        display: block;
+    }
+    .recent-activity .single-col h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+
+    /* bet summery */
+    .latest-summury .game-menu {
+        margin-right: 0;
+    }
+    .latest-summury .all-bets {
+        margin-left: 0;
+    }
+    .latest-summury .all-bets .single-result .part-top .user-img {
+        display: none;
+    }
+    
+    /* table */
+    .latest-summury .all-bets .table-cover {
+        overflow-y: hidden;
+        overflow-x: scroll;
+    }
+    .latest-summury .all-bets .table {
+        width: 945px;
+    }
+    .latest-summury .all-bets .table tbody tr:hover {
+        transform: scale(1.0);
+        box-shadow: none;
+    }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+    /* header */
+    .header {
+        padding: 0 15px;
+    }
+    .header .logo {
+        display: inline-block;
+        padding-right: 0;
+        padding: 15px 0;
+    }
+    .header .logo:after {
+        display: none;
+    }
+    .header .logo {
+        width: 120px;
+    }
+    .header .logo img {
+        width: 100%;
+    }
+    .header .navbar-toggler {
+        font-size: 25px;
+        color: #fff;
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        float: right;
+        cursor: pointer;
+        outline: none;
+        background: -webkit-linear-gradient(130deg, #ff416c, #ff4b2b);
+    }
+    .header .top-header {
+        display: none;
+    }
+    .header.header-fixed {
+        position: initial;
+        box-shadow: none;
+    }
+    .header .bottom-header .navbar .navbar-nav:after {
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item {
+        padding: 10px 15px;
+        background: #111;
+        margin-bottom: 1px;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item:last-child {
+        margin-bottom: 15px;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item .nav-link:before {
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item.dropdown .dropdown-menu {
+        margin-top: 10px;
+        opacity: 1;
+        visibility: visible;
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item.dropdown:hover .dropdown-menu {
+        margin-top: 10px;
+        display: block;
+    }
+
+    /* banner */
+    .banner .banner-txt {
+        padding: 120px 0!important;
+    }
+    .banner .banner-txt h1 {
+        font-size: 40px;
+        line-height: 54px;    
+        letter-spacing: 0.5px;
+        text-transform: capitalize;
+        margin-bottom: 34px;
+    }
+    .banner .banner-txt h4 {
+        font-size: 20px;
+        line-height: 30px;
+        letter-spacing: 0.5px;
+        text-transform: capitalize;    
+        margin-top: -7px;
+        margin-bottom: 15px;
+    }
+
+    /* about */
+    .about {
+        padding: 60px 0;
+    }
+    .about .part-txt h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -9px;
+        letter-spacing: .5px;
+    }
+    .about .part-txt h3 {
+        font-size: 24px;
+        line-height: 34px; 
+        margin-top: -9px;
+        letter-spacing: .5px;
+    }
+    .about .part-txt.right {
+        margin: 0;
+    }
+    .about .part-img .single-img {
+        display: none;
+    }
+    .about .part-txt p span:after {
+        left: 0px;
+        right: 0;
+    }
+
+    /* feature */
+    .feature {
+        margin-top: 0!important;
+        display: none;
+    }
+
+    /* iqn */
+    .iq-feature {
+        padding: 50px 0 20px;
+    }
+    .iq-feature .part-text h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .iq-feature .part-features .single-feature h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .iq-feature .part-features .single-feature .icon {
+        height: 50px;
+    }
+    .iq-feature .part-img {
+        margin: 0;
+        margin-bottom: 30px;
+    }
+    .iq-feature .part-text {
+        margin-bottom: 30px;
+    }
+
+    /* games */
+    .games {
+        padding: 50px 0 20px;
+    }
+    .section-title {
+        margin-bottom: 32px;
+    }
+    .section-title h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .games .game-menu {
+        margin-bottom: 30px;
+    }
+
+    /* partner */
+    .partner {
+        padding: 50px 0;
+    }
+    .partner .part-text h2.title {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .partner .part-partner-logo .single-logo a {
+        width: 50px;
+    }
+    .partner .part-partner-logo {
+        margin-top: 40px;
+    }
+
+    /* news */
+    .news {
+        padding: 50px 0 10px;
+    }
+    .news .news-container:before, .news .news-container:after {
+        display: none;
+    }
+    .news .single-news .part-text {
+        padding: 30px;
+    }
+    .news .single-news .part-text h3.title {
+        font-size: 20px;
+        line-height: 30px;
+    }
+    .news .single-news .part-text a {
+        margin-top: 6px;
+    } 
+
+    /* payment gateway */
+    .payment-gateway {
+        padding: 50px 0;
+    }
+    .payment-gateway .part-text h2.title {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+
+    /* testimonial */
+    .testimonial {
+        padding: 50px 0;
+    }
+
+    /* contact */
+    .contact {
+        padding: 50px 0;
+    }
+    .contact .container-contact:before, .contact .container-contact:after {
+        display: none;
+    }
+    .contact .bg-tamim {
+        padding: 50px;
+        padding-bottom: 20px;
+    }
+    .contact .part-address .addressing .single-address:last-child {
+        margin-bottom: 0;
+    }
+    .contact .part-form form input {
+        height: 40px;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .contact .part-form form textarea {
+        height: 140px;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+    }
+    .contact .part-address .addressing .single-address h4 {
+        font-size: 18px;
+        line-height: 28px;
+        margin-bottom: 5px;
+    }
+
+    /* footer */
+    .footer .footer-top {
+        padding: 50px 0 45px;
+    }
+    .footer .about-widget a.logo {
+        width: 130px;
+        margin-bottom: 22px;
+    }
+    .footer .about-widget {
+        margin-bottom: 40px;
+    }
+    .footer .link-widget h4.title {
+        font-size: 20px;
+        line-height: 30px;
+        margin-top: -7px;
+        margin-bottom: 13px;
+    }
+    .footer .link-widget {
+        margin-bottom: 30px;
+    }
+    .footer .newsletter-widget p {
+        margin-bottom: 0;
+    }
+    
+    /* recent activity */
+    .recent-activity .single-col .activity-list .single-activity {
+        padding: 30px;
+        display: block;
+        margin-bottom: 30px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-img {
+        height: 55px;
+        width: 55px;
+        float: left;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text {
+        display: flow-root;
+    }
+    .recent-activity .single-col .activity-list.top-winner .single-activity .part-img {
+        height: 55px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text p br {
+        display: block;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .single-activity .part-text p br, .recent-activity .single-col .activity-list.top-winner .single-activity .part-text p br {
+        display: block;
+    }
+    .recent-activity .single-col {
+        margin-bottom: 10px;
+    }
+    .recent-activity .single-col h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .recent-activity {
+        padding: 60px 0 20px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text .winning-amount {
+        font-size: 20px;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .winning-amount {
+        font-size: 20px!important;
+    }
+
+    /* cta */
+    .cta:after {
+        left: -45%;
+    }
+    .cta:before {
+        left: 35%;
+        width: 100%;
+    }
+    .cta {
+        padding: 60px 0;
+    }
+    .cta h2 {
+        font-size: 35px;
+        line-height: 50px;
+        margin-top: -12px;    
+        letter-spacing: 0.5px;
+    } 
+    .cta h2 br {
+        display: none;
+    }
+    .cta .play-now-btn {
+        padding: 0 50px;
+    }  
+    
+    /* bet summery */
+    .latest-summury {
+        padding: 60px 0;
+    }
+    .latest-summury .game-menu {
+        margin-right: 0;
+        margin-bottom: 40px;
+    }
+    .latest-summury .all-bets {
+        margin-left: 0;
+    }
+    .latest-summury .all-bets .single-result .part-top .user-img {
+        width: 60px;
+        height: 60px;
+    }
+    .latest-summury .all-bets .single-result .part-top .part-info span.game {
+        width: 160px;
+    }
+
+    /* table */
+    .latest-summury .all-bets .table-cover {
+        overflow-y: hidden;
+        overflow-x: scroll;
+    }
+    .latest-summury .all-bets .table {
+        width: 945px;
+    }
+    .latest-summury .all-bets .table tbody tr:hover {
+        transform: scale(1.0);
+        box-shadow: none;
+    }
+}
+
+@media only screen and (min-width: 576px) and (max-width: 767px) {
+    /* header */
+    .header {
+        padding: 0 15px;
+    }
+    .header .logo {
+        display: inline-block;
+        padding-right: 0;
+        padding: 15px 0;
+    }
+    .header .logo:after {
+        display: none;
+    }
+    .header .logo {
+        width: 120px;
+    }
+    .header .logo img {
+        width: 100%;
+    }
+    .header .navbar-toggler {
+        font-size: 25px;
+        color: #fff;
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        float: right;
+        cursor: pointer;
+        outline: none;
+        background: -webkit-linear-gradient(130deg, #ff416c, #ff4b2b);
+    }
+    .header .top-header {
+        display: none;
+    }
+    .header.header-fixed {
+        position: initial;
+        box-shadow: none;
+    }
+    .header .bottom-header .navbar .navbar-nav:after {
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item {
+        padding: 10px 15px;
+        background: #111;
+        margin-bottom: 1px;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item:last-child {
+        margin-bottom: 15px;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item .nav-link:before {
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item.dropdown .dropdown-menu {
+        margin-top: 10px;
+        opacity: 1;
+        visibility: visible;
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item.dropdown:hover .dropdown-menu {
+        margin-top: 10px;
+        display: block;
+    }
+
+    /* banner */
+    .banner .banner-txt {
+        padding: 120px 0!important;
+    }
+    .banner .banner-txt h1 {
+        font-size: 34px;
+        line-height: 44px;
+        letter-spacing: 0.5px;
+        text-transform: capitalize;
+        margin-bottom: 34px;
+    }
+    .banner .banner-txt h4 {
+        font-size: 20px;
+        line-height: 30px;
+        letter-spacing: 0.5px;
+        text-transform: capitalize;    
+        margin-top: -7px;
+        margin-bottom: 15px;
+    }
+
+    /* about */
+    .about {
+        padding: 60px 0;
+    }
+    .about .part-txt h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -9px;
+        letter-spacing: .5px;
+    }
+    .about .part-txt h3 {
+        font-size: 24px;
+        line-height: 34px; 
+        margin-top: -9px;
+        letter-spacing: .5px;
+    }
+    .about .part-txt.right {
+        margin: 0;
+        margin-top: 30px;
+    }
+    .about .part-img .single-img {
+        display: none;
+    }
+
+    /* feature */
+    .feature {
+        margin-top: 0!important;
+        display: none;
+    }
+
+    /* iqn */
+    .iq-feature {
+        padding: 50px 0 20px;
+    }
+    .iq-feature .part-text h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .iq-feature .part-features .single-feature h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .iq-feature .part-features .single-feature .icon {
+        height: 50px;
+    }
+    .iq-feature .part-img {
+        margin: 0;
+        margin-bottom: 30px;
+    }
+    .iq-feature .part-text {
+        margin-bottom: 30px;
+    }
+
+    /* games */
+    .games {
+        padding: 50px 0 20px;
+    }
+    .section-title {
+        margin-bottom: 32px;
+    }
+    .section-title h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .games .game-menu {
+        margin-bottom: 30px;
+    }
+
+    /* partner */
+    .partner {
+        padding: 50px 0;
+    }
+    .partner .part-text h2.title {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .partner .part-partner-logo .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-last-child(1n+4) .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-child(3n+0) .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-last-child(1n+3) .single-logo {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .partner .part-partner-logo .col-xl-4:nth-child(2n+1) .single-logo {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .partner .part-partner-logo .single-logo a {
+        width: 50px;
+    }
+    .partner .part-partner-logo {
+        margin-top: 40px;
+    }
+
+    /* news */
+    .news {
+        padding: 50px 0 10px;
+    }
+    .news .news-container:before, .news .news-container:after {
+        display: none;
+    }
+    .news .single-news .part-text {
+        padding: 30px;
+    }
+    .news .single-news .part-text h3.title {
+        font-size: 20px;
+        line-height: 30px;
+    }
+    .news .single-news .part-text a {
+        margin-top: 6px;
+    } 
+
+    /* payment gateway */
+    .payment-gateway {
+        padding: 50px 0;
+    }
+    .payment-gateway .part-text h2.title {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .payment-gateway .all-gateways {
+        margin-top: 40px;
+    }
+
+    /* testimonial */
+    .testimonial {
+        padding: 50px 0;
+    }
+    .testimonial .single-testimonial .part-text p {
+        font-size: 18px;
+        line-height: 30px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* contact */
+    .contact {
+        padding: 50px 0;
+    }
+    .contact .container-contact:before, .contact .container-contact:after {
+        display: none;
+    }
+    .contact .bg-tamim {
+        padding: 30px;
+        padding-bottom: 10px;
+    }
+    .contact .part-address {
+        margin-top: 30px;
+    }
+    .contact .part-address .addressing .single-address:last-child {
+        margin-bottom: 0;
+    }
+    .contact .part-form form input {
+        height: 40px;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .contact .part-form form textarea {
+        height: 140px;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+    }
+    .contact .part-address .addressing .single-address h4 {
+        font-size: 18px;
+        line-height: 28px;
+        margin-bottom: 5px;
+    }
+
+    /* footer */
+    .footer .footer-top {
+        padding: 50px 0 45px;
+    }
+    .footer .about-widget a.logo {
+        width: 130px;
+        margin-bottom: 22px;
+    }
+    .footer .about-widget {
+        margin-bottom: 40px;
+    }
+    .footer .link-widget h4.title {
+        font-size: 20px;
+        line-height: 30px;
+        margin-top: -7px;
+        margin-bottom: 13px;
+    }
+    .footer .link-widget {
+        margin-bottom: 30px;
+    }
+    .footer .newsletter-widget p {
+        margin-bottom: 0;
+    }
+
+    /* recent activity */
+    .recent-activity .single-col .activity-list .single-activity {
+        padding: 30px;
+        display: block;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-img {
+        height: 55px;
+        width: 55px;
+        float: left;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text {
+        display: flow-root;
+    }
+    .recent-activity .single-col .activity-list.top-winner .single-activity .part-img {
+        height: 55px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text p br {
+        display: block;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .single-activity .part-text p br, .recent-activity .single-col .activity-list.top-winner .single-activity .part-text p br {
+        display: block;
+    }
+    .recent-activity .single-col {
+        margin-bottom: 40px;
+    }
+    .recent-activity .single-col h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .recent-activity {
+        padding: 60px 0 20px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text .winning-amount {
+        font-size: 20px;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .winning-amount {
+        font-size: 20px!important;
+    }
+
+    /* cta */
+    .cta:after {
+        left: -45%;
+    }
+    .cta:before {
+        left: 35%;
+        width: 100%;
+    }
+    .cta {
+        padding: 60px 0;
+    }
+    .cta h2 {
+        font-size: 28px;
+        line-height: 38px;
+        margin-top: -8px;
+        letter-spacing: 0.5px;
+    } 
+    .cta h2 br {
+        display: none;
+    }
+    .cta .play-now-btn {
+        float: none;
+        padding: 0 50px;
+        margin-top: 25px;
+    }  
+    
+    /* bet summery */
+    .latest-summury {
+        padding: 60px 0;
+    }
+    .latest-summury .game-menu {
+        margin-right: 0;
+        margin-bottom: 40px;
+    }
+    .latest-summury .all-bets {
+        margin-left: 0;
+    }
+    .latest-summury .all-bets .single-result .part-top .user-img {
+        width: 60px;
+        height: 60px;
+    }
+
+    /* table */
+    .latest-summury .all-bets .table-cover {
+        overflow-y: hidden;
+        overflow-x: scroll;
+    }
+    .latest-summury .all-bets .table {
+        width: 945px;
+    }
+    .latest-summury .all-bets .table tbody tr:hover {
+        transform: scale(1.0);
+        box-shadow: none;
+    }
+}
+
+@media only screen and (min-width: 480px) and (max-width: 575px) {
+    /* header */
+    .header {
+        padding: 0 15px;
+    }
+    .header .logo {
+        display: inline-block;
+        padding-right: 0;
+        padding: 15px 0;
+    }
+    .header .logo:after {
+        display: none;
+    }
+    .header .logo {
+        width: 120px;
+    }
+    .header .logo img {
+        width: 100%;
+    }
+    .header .navbar-toggler {
+        font-size: 25px;
+        color: #fff;
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        float: right;
+        cursor: pointer;
+        outline: none;
+        background: -webkit-linear-gradient(130deg, #ff416c, #ff4b2b);
+    }
+    .header .top-header {
+        display: none;
+    }
+    .header.header-fixed {
+        position: initial;
+        box-shadow: none;
+    }
+    .header .bottom-header .navbar .navbar-nav:after {
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item {
+        padding: 10px 15px;
+        background: #111;
+        margin-bottom: 1px;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item:last-child {
+        margin-bottom: 15px;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item .nav-link:before {
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item.dropdown .dropdown-menu {
+        margin-top: 10px;
+        opacity: 1;
+        visibility: visible;
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item.dropdown:hover .dropdown-menu {
+        margin-top: 10px;
+        display: block;
+    }
+
+    /* banner */
+    .banner .banner-txt {
+        padding: 120px 0!important;
+    }
+    .banner .banner-txt h1 {
+        font-size: 28px;
+        line-height: 38px;
+        letter-spacing: 0.5px;
+        text-transform: capitalize;
+        margin-bottom: 34px;
+    }
+    .banner .banner-txt h4 {
+        font-size: 20px;
+        line-height: 30px;
+        letter-spacing: 0.5px;
+        text-transform: capitalize;    
+        margin-top: -7px;
+    }
+
+    /* about */
+    .about {
+        padding: 60px 0;
+    }
+    .about .part-txt h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -9px;
+        letter-spacing: .5px;
+    }
+    .about .part-txt h3 {
+        font-size: 24px;
+        line-height: 34px; 
+        margin-top: -9px;
+        letter-spacing: .5px;
+    }
+    .about .part-txt.right {
+        margin: 0;
+        margin-top: 30px;
+    }
+    .about .part-img .single-img {
+        display: none;
+    }
+
+    /* feature */
+    .feature {
+        margin-top: 0!important;
+        display: none;
+    }
+
+    /* iqn */
+    .iq-feature {
+        padding: 50px 0 20px;
+    }
+    .iq-feature .part-text h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .iq-feature .part-features .single-feature h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .iq-feature .part-features .single-feature .icon {
+        height: 50px;
+    }
+    .iq-feature .part-img {
+        margin: 0;
+        margin-bottom: 30px;
+    }
+    .iq-feature .part-text {
+        margin-bottom: 30px;
+    }
+
+    /* games */
+    .games {
+        padding: 50px 0 20px;
+    }
+    .section-title {
+        margin-bottom: 32px;
+    }
+    .section-title h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .games .game-menu {
+        margin-bottom: 30px;
+    }
+
+    /* partner */
+    .partner {
+        padding: 50px 0;
+    }
+    .partner .part-text h2.title {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .partner .part-partner-logo .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-last-child(1n+4) .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-child(3n+0) .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-last-child(1n+3) .single-logo {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .partner .part-partner-logo .col-xl-4:nth-child(2n+1) .single-logo {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .partner .part-partner-logo .single-logo a {
+        width: 50px;
+    }
+    .partner .part-partner-logo {
+        margin-top: 40px;
+    }
+
+    /* news */
+    .news {
+        padding: 50px 0 10px;
+    }
+    .news .news-container:before, .news .news-container:after {
+        display: none;
+    }
+    .news .single-news .part-text {
+        padding: 30px;
+    }
+    .news .single-news .part-text h3.title {
+        font-size: 20px;
+        line-height: 30px;
+    }
+    .news .single-news .part-text a {
+        margin-top: 6px;
+    } 
+
+    /* payment gateway */
+    .payment-gateway {
+        padding: 50px 0;
+    }
+    .payment-gateway .part-text h2.title {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .payment-gateway .all-gateways {
+        margin-top: 40px;
+    }
+
+    /* testimonial */
+    .testimonial {
+        padding: 50px 0;
+    }
+    .testimonial .single-testimonial .part-text p {
+        font-size: 16px;
+        line-height: 30px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* contact */
+    .contact {
+        padding: 50px 0;
+    }
+    .contact .container-contact:before, .contact .container-contact:after {
+        display: none;
+    }
+    .contact .bg-tamim {
+        padding: 30px;
+        padding-bottom: 10px;
+    }
+    .contact .part-address {
+        margin-top: 30px;
+    }
+    .contact .part-address .addressing .single-address:last-child {
+        margin-bottom: 0;
+    }
+    .contact .part-form form input {
+        height: 40px;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .contact .part-form form textarea {
+        height: 140px;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+    }
+    .contact .part-address .addressing .single-address h4 {
+        font-size: 18px;
+        line-height: 28px;
+        margin-bottom: 5px;
+    }
+
+    /* footer */
+    .footer .footer-top {
+        padding: 50px 0 45px;
+    }
+    .footer .about-widget a.logo {
+        width: 130px;
+        margin-bottom: 22px;
+    }
+    .footer .about-widget {
+        margin-bottom: 40px;
+    }
+    .footer .link-widget h4.title {
+        font-size: 20px;
+        line-height: 30px;
+        margin-top: -7px;
+        margin-bottom: 13px;
+    }
+    .footer .link-widget {
+        margin-bottom: 30px;
+    }
+    .footer .newsletter-widget p {
+        margin-bottom: 0;
+    }
+
+     /* recent activity */
+     .recent-activity .single-col .activity-list .single-activity {
+        padding: 30px;
+        display: block;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-img {
+        height: 55px;
+        width: 55px;
+        float: left;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text {
+        display: flow-root;
+    }
+    .recent-activity .single-col .activity-list.top-winner .single-activity .part-img {
+        height: 55px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text p br {
+        display: block;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .single-activity .part-text p br, .recent-activity .single-col .activity-list.top-winner .single-activity .part-text p br {
+        display: block;
+    }
+    .recent-activity .single-col {
+        margin-bottom: 40px;
+    }
+    .recent-activity .single-col h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .recent-activity {
+        padding: 60px 0 20px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text .winning-amount {
+        font-size: 20px;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .winning-amount {
+        font-size: 20px!important;
+    }
+
+    /* cta */
+    .cta:after {
+        left: -45%;
+    }
+    .cta:before {
+        left: 35%;
+        width: 100%;
+    }
+    .cta {
+        padding: 60px 0;
+    }
+    .cta h2 {
+        font-size: 28px;
+        line-height: 38px;
+        margin-top: -8px;
+        letter-spacing: 0.5px;
+    } 
+    .cta h2 br {
+        display: none;
+    }
+    .cta .play-now-btn {
+        float: none;
+        padding: 0 50px;
+        margin-top: 25px;
+    }  
+    
+    /* bet summery */
+    .latest-summury {
+        padding: 60px 0;
+    }
+    .latest-summury .game-menu {
+        margin-right: 0;
+        margin-bottom: 40px;
+    }
+    .latest-summury .all-bets {
+        margin-left: 0;
+    }
+    .latest-summury .all-bets .single-result .part-top .part-info span.game {
+        width: 160px;
+    }
+
+    /* table */
+    .latest-summury .all-bets .table-cover {
+        overflow-y: hidden;
+        overflow-x: scroll;
+    }
+    .latest-summury .all-bets .table {
+        width: 945px;
+    }
+    .latest-summury .all-bets .table tbody tr:hover {
+        transform: scale(1.0);
+        box-shadow: none;
+    }
+}
+
+@media only screen and (min-width: 320px) and (max-width: 479px) {
+    /* header */
+    .header {
+        padding: 0 15px;
+    }
+    .header .logo {
+        display: inline-block;
+        padding-right: 0;
+        padding: 15px 0;
+    }
+    .header .logo:after {
+        display: none;
+    }
+    .header .logo {
+        width: 120px;
+    }
+    .header .logo img {
+        width: 100%;
+    }
+    .header .navbar-toggler {
+        font-size: 25px;
+        color: #fff;
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        float: right;
+        cursor: pointer;
+        outline: none;
+        background: -webkit-linear-gradient(130deg, #ff416c, #ff4b2b);
+    }
+    .header .top-header {
+        display: none;
+    }
+    .header.header-fixed {
+        position: initial;
+        box-shadow: none;
+    }
+    .header .bottom-header .navbar .navbar-nav:after {
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item {
+        padding: 10px 15px;
+        background: #111;
+        margin-bottom: 1px;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item:last-child {
+        margin-bottom: 15px;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item .nav-link:before {
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item.dropdown .dropdown-menu {
+        margin-top: 10px;
+        opacity: 1;
+        visibility: visible;
+        display: none;
+    }
+    .header .bottom-header .navbar .navbar-nav .nav-item.dropdown:hover .dropdown-menu {
+        margin-top: 10px;
+        display: block;
+    }
+
+    /* banner */
+    .banner .banner-txt {
+        padding: 120px 0!important;
+    }
+    .banner .banner-txt h1 {
+        font-size: 28px;
+        line-height: 38px;
+        letter-spacing: 0.5px;
+        text-transform: capitalize;
+        margin-bottom: 34px;
+    }
+    .banner .banner-txt h4 {
+        font-size: 20px;
+        line-height: 30px;
+        letter-spacing: 0.5px;
+        text-transform: capitalize;    
+        margin-top: -7px;
+    }
+
+    /* about */
+    .about {
+        padding: 60px 0;
+    }
+    .about .part-txt h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -9px;
+        letter-spacing: .5px;
+    }
+    .about .part-txt h3 {
+        font-size: 24px;
+        line-height: 34px; 
+        margin-top: -9px;
+        letter-spacing: .5px;
+    }
+    .about .part-txt.right {
+        margin: 0;
+        margin-top: 30px;
+    }
+    .about .part-img .single-img {
+        display: none;
+    }
+
+    /* feature */
+    .feature {
+        margin-top: 0!important;
+        display: none;
+    }
+
+    /* iqn */
+    .iq-feature {
+        padding: 50px 0 20px;
+    }
+    .iq-feature .part-text h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .iq-feature .part-features .single-feature h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .iq-feature .part-features .single-feature .icon {
+        height: 50px;
+    }
+    .iq-feature .part-img {
+        margin: 0;
+        margin-bottom: 30px;
+    }
+    .iq-feature .part-text {
+        margin-bottom: 30px;
+    }
+
+    /* games */
+    .games {
+        padding: 50px 0 20px;
+    }
+    .section-title {
+        margin-bottom: 32px;
+    }
+    .section-title h2 {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .games .game-menu {
+        margin-bottom: 30px;
+    }
+
+    /* partner */
+    .partner {
+        padding: 50px 0;
+    }
+    .partner .part-text h2.title {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .partner .part-partner-logo .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-last-child(1n+4) .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-child(3n+0) .single-logo {
+        border: none;
+    }
+    .partner .part-partner-logo .col-xl-4:nth-last-child(1n+3) .single-logo {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .partner .part-partner-logo .col-xl-4:nth-child(2n+1) .single-logo {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .partner .part-partner-logo .single-logo a {
+        width: 50px;
+    }
+    .partner .part-partner-logo {
+        margin-top: 40px;
+    }
+
+    /* news */
+    .news {
+        padding: 50px 0 10px;
+    }
+    .news .news-container:before, .news .news-container:after {
+        display: none;
+    }
+    .news .single-news .part-text {
+        padding: 30px;
+    }
+    .news .single-news .part-text h3.title {
+        font-size: 20px;
+        line-height: 30px;
+    }
+    .news .single-news .part-text a {
+        margin-top: 6px;
+    } 
+
+    /* payment gateway */
+    .payment-gateway {
+        padding: 50px 0;
+    }
+    .payment-gateway .part-text h2.title {
+        font-size: 26px;
+        line-height: 36px; 
+        margin-top: -8px;
+        margin-bottom: 16px;
+    }
+    .payment-gateway .all-gateways {
+        margin-top: 40px;
+    }
+
+    /* testimonial */
+    .testimonial {
+        padding: 50px 0;
+    }
+    .testimonial .single-testimonial .part-text p {
+        font-size: 16px;
+        line-height: 30px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* contact */
+    .contact {
+        padding: 50px 0;
+    }
+    .contact .container-contact:before, .contact .container-contact:after {
+        display: none;
+    }
+    .contact .bg-tamim {
+        padding: 30px;
+        padding-bottom: 10px;
+    }
+    .contact .part-address {
+        margin-top: 30px;
+    }
+    .contact .part-address .addressing .single-address:last-child {
+        margin-bottom: 0;
+    }
+    .contact .part-form form input {
+        height: 40px;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .contact .part-form form textarea {
+        height: 140px;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+    }
+    .contact .part-address .addressing .single-address h4 {
+        font-size: 18px;
+        line-height: 28px;
+        margin-bottom: 5px;
+    }
+
+    /* footer */
+    .footer .footer-top {
+        padding: 50px 0 45px;
+    }
+    .footer .about-widget a.logo {
+        width: 130px;
+        margin-bottom: 22px;
+    }
+    .footer .about-widget {
+        margin-bottom: 40px;
+    }
+    .footer .link-widget h4.title {
+        font-size: 20px;
+        line-height: 30px;
+        margin-top: -7px;
+        margin-bottom: 13px;
+    }
+    .footer .link-widget {
+        margin-bottom: 30px;
+    }
+    .footer .newsletter-widget p {
+        margin-bottom: 0;
+    }
+
+    /* recent activity */
+    .recent-activity .single-col .activity-list .single-activity {
+        padding: 15px;
+        display: block;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-img {
+        height: 55px;
+        width: 55px;
+        float: left;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text {
+        display: flow-root;
+    }
+    .recent-activity .single-col .activity-list.top-winner .single-activity .part-img {
+        height: 55px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text p br {
+        display: none;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .single-activity .part-text p br, .recent-activity .single-col .activity-list.top-winner .single-activity .part-text p br {
+        display: block;
+    }
+    .recent-activity .single-col {
+        margin-bottom: 40px;
+    }
+    .recent-activity .single-col h3.title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .recent-activity {
+        padding: 60px 0 10px;
+    }
+    .recent-activity .single-col .activity-list .single-activity .part-text .winning-amount {
+        font-size: 20px;
+    }
+    .recent-activity .single-col .activity-list.jackpot-triggers-win .winning-amount {
+        font-size: 20px!important;
+    }
+
+    /* cta */
+    .cta:after {
+        left: -45%;
+    }
+    .cta:before {
+        left: 35%;
+        width: 100%;
+    }
+    .cta {
+        padding: 60px 0;
+    }
+    .cta h2 {
+        font-size: 28px;
+        line-height: 38px;
+        margin-top: -8px;
+        letter-spacing: 0.5px;
+    } 
+    .cta h2 br {
+        display: none;
+    }
+    .cta .play-now-btn {
+        float: none;
+        padding: 0 50px;
+        margin-top: 25px;
+    }  
+    
+    /* bet summery */
+    .latest-summury {
+        padding: 60px 0;
+    }
+    .latest-summury .game-menu {
+        margin-right: 0;
+        margin-bottom: 40px;
+    }
+    .latest-summury .all-bets {
+        margin-left: 0;
+    }
+    .latest-summury .all-bets .single-result .part-top .part-info span.game {
+        width: 160px;
+    }
+
+
+    /* table */
+    .latest-summury .all-bets .table-cover {
+        overflow-y: hidden;
+        overflow-x: scroll;
+    }
+    .latest-summury .all-bets .table {
+        width: 945px;
+    }
+    .latest-summury .all-bets .table tbody tr:hover {
+        transform: scale(1.0);
+        box-shadow: none;
+    }
+}

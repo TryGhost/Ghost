@@ -1,0 +1,21 @@
+<div class="row justify-content-xl-start justify-content-lg-start justify-content-sm-center justify-content-md-start" role="navigation">
+  <div class="col-xl-10 col-lg-10 col-sm-10">
+    <div class="misco-pagination">
+      <ul>
+        <li>
+          {{#if prev}}
+            <a href="{{page_url prev}}">
+              <i class="fas fa-chevron-left"></i>
+            </a>
+          {{/if}}
+          <span>Page {{page}} of {{pages}}</span>
+          {{#if next}}
+            <a href="{{page_url next}}">
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          {{/if}}
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

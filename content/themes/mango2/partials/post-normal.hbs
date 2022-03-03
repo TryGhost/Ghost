@@ -1,0 +1,95 @@
+{{> "breadcrumb" heading="Blog Details"}}
+<!-- blog details begin -->
+<div class="blog-details">
+  <div class="container">
+    <div class="part-post">
+      <div class="part-img {{#if is_video}}part-video{{/if}}">
+        {{#if is_video}}
+          <div class="part-video-iframe">
+            <iframe src="{{video_url}}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        {{else}}
+          <img src="{{img_url feature_image}}"
+            alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}">
+        {{/if}}
+      </div>
+      <div class="part-meta">
+        <div class="left-side">
+          <ul>
+            <li>
+              <span class="icon">
+                <i class="far fa-calendar-alt"></i>
+              </span>
+              <span class="text"> <time datetime="{{date format="YYYY-MM-DD"}}">{{date}}</time> </span>
+            </li>
+            <li>
+              <span class="icon">
+                <i class="far fa-user"></i>
+              </span>
+              <span class="text"> By {{#has author="count:>2"}}Multiple authors{{else}}{{authors}}{{/has}} </span>
+            </li>
+          </ul>
+        </div>
+        <div class="right-side">
+          {{> "social-links"}}
+        </div>
+      </div>
+      <div class="part-text">
+        <h2 class="title">{{title}}</h2>
+        {{content}}
+      </div>
+    </div>
+  </div>
+</div>
+
+{{#if is_video}}
+  {{#get "posts" filter="posts_game.is_video:true+id:-{{id}}" limit="3" as | more_videos|}}
+    {{#if more_videos}}
+      <!-- blog begin -->
+      <div class="news blog-detail-news" id="blog">
+        <div class="container news-container">
+          <div class="row justify-content-center">
+            <div class="col-xl-6 col-lg-7 col-sm-10">
+              <div class="section-title style-2">
+                <h2>Related Videos</h2>
+              </div>
+            </div>
+          </div>
+          <div class="row justify-content-sm-center justify-content-md-start">
+            {{#foreach more_videos}}
+              <div class="col-xl-4 col-lg-4 col-md-6 col-sm-10">
+                {{> "post-card"}}
+              </div>
+            {{/foreach}}
+          </div>
+        </div>
+      </div>
+      <!-- blog end -->
+    {{/if}}
+  {{/get}}
+{{else}}
+  {{#get "posts" filter="tag:[game-news]+id:-{{id}}" limit="3" as | more_posts|}}
+    {{#if more_posts}}
+      <!-- blog begin -->
+      <div class="news blog-detail-news" id="blog">
+        <div class="container news-container">
+          <div class="row justify-content-center">
+            <div class="col-xl-6 col-lg-7 col-sm-10">
+              <div class="section-title style-2">
+                <h2>Related News</h2>
+              </div>
+            </div>
+          </div>
+          <div class="row justify-content-sm-center justify-content-md-start">
+            {{#foreach more_posts}}
+              <div class="col-xl-4 col-lg-4 col-md-6 col-sm-10">
+                {{> "post-card"}}
+              </div>
+            {{/foreach}}
+          </div>
+        </div>
+      </div>
+      <!-- blog end -->
+    {{/if}}
+  {{/get}}
+{{/if}}

@@ -1,0 +1,101 @@
+{{!< default}}
+{{!-- The tag above means: insert everything in this file
+into the {body} of the default.hbs template --}}
+
+{{> "banner-slider"}}
+
+<!-- about section begin -->
+<div class="about" id="about">
+  <div class="container">
+    <div class="feature">
+      <div class="row">
+        {{#get "posts" filter="posts_game.is_game:true+featured:true" limit="4" as | featured_posts|}}
+          {{#if featured_posts}}
+            {{#foreach featured_posts}}
+              <div class="col-xl-3 col-lg-3">
+                <div class="single-feature">
+                  <div class="part-icon">
+                    <img src="{{img_url feature_image}}" alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}">
+                  </div>
+                  <h4 class="feature-title"> {{title}} </h4>
+                  <a href="{{url}}" class="def-btn def-small"> Play Now <svg aria-hidden="true" focusable="false" data-prefix="fal" data-icon="long-arrow-right" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-long-arrow-right fa-w-14 fa-fw fa-2x">
+                      <path fill="currentColor" d="M311.03 131.515l-7.071 7.07c-4.686 4.686-4.686 12.284 0 16.971L387.887 239H12c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h375.887l-83.928 83.444c-4.686 4.686-4.686 12.284 0 16.971l7.071 7.07c4.686 4.686 12.284 4.686 16.97 0l116.485-116c4.686-4.686 4.686-12.284 0-16.971L328 131.515c-4.686-4.687-12.284-4.687-16.97 0z" class=""></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            {{/foreach}}
+          {{/if}}
+        {{/get}}
+      </div>
+    </div>
+  </div>
+</div>
+<!-- about section end -->
+<!-- game begin -->
+<div class="games" id="games">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-6 col-lg-7 col-sm-10">
+        <div class="section-title style-2">
+          <h2>hundreds of free online games</h2>
+          <p>Mango Gaming has hundreds of free online games for all generation. Play action, racing, sports, and other fun games for free at Mango Gaming</p>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xl-3 col-lg-3 col-md-4">
+        {{> "sidebar-game"}}
+      </div>
+      <div class="col-xl-9 col-lg-9 col-md-8">
+        <div class="all-games anim-change">
+          <div class="row">
+            {{#get "posts" filter="posts_game.is_game:true" limit="9" as | more_posts|}}
+              {{#if more_posts}}
+                {{#foreach more_posts}}
+                  <div class="col-xl-4 col-lg-4 col-sm-6">
+                    <div class="single-game">
+                      <div class="part-img">
+                        <img src="{{img_url feature_image}}" alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}">
+                      </div>
+                      <div class="part-text">
+                        <h4 class="game-title"> {{title}} </h4>
+                        <a href="{{url}}" class="def-btn def-small">Play Now</a>
+                      </div>
+                    </div>
+                  </div>
+                {{/foreach}}
+              {{/if}}
+            {{/get}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- game end -->
+<!-- blog begin -->
+<div class="news" id="blog">
+  <div class="container news-container">
+    <div class="row justify-content-center">
+      <div class="col-xl-6 col-lg-7 col-sm-10">
+        <div class="section-title style-2">
+          <h2>Mango Gaming Latest News</h2>
+          <p>Mango Gaming has hundreds of free online games for all generation. Play action, racing, sports, and other fun games for free at Mango Gaming</p>
+        </div>
+      </div>
+    </div>
+    <div class="row justify-content-sm-center justify-content-md-start">
+      {{#get "posts" filter="tag:[game-news]" limit="6" as | more_posts|}}
+        {{#if more_posts}}
+          {{#foreach more_posts}}
+            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-10">
+              {{> "post-card"}}
+            </div>
+          {{/foreach}}
+        {{/if}}
+      {{/get}}
+    </div>
+  </div>
+</div>
+<!-- blog end -->

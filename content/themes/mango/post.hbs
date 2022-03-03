@@ -1,0 +1,26 @@
+{{!< default}}
+
+{{!-- The tag above means: insert everything in this file
+into the {body} tag of the default.hbs template --}}
+
+{{> "live-news"}}
+
+{{#post}}
+{{!-- Everything inside the #post block pulls data from the post --}}
+<!-- LAYOUT CONTENT 1 -->
+<div class="layout-content-1 layout-item-3-1 grid-limit">
+  <!-- LAYOUT BODY -->
+  <div class="layout-body">
+    {{#if is_game}}
+      {{> "post-game"}}
+    {{else}}
+      {{> "post-normal"}}
+    {{/if}}
+  </div>
+  <!-- /LAYOUT BODY -->
+
+  {{> "sidebar"}}
+</div>
+<!-- /LAYOUT CONTENT 1 -->
+
+{{/post}}
