@@ -9,6 +9,7 @@
                                 <h1>All done!</h1>
                                 <p>Your brand new publication is set up and ready to go.</p>
                             </header>
+                            <h4>What do you want to do first?</h4>
                             <section>
                                 <LinkTo class="gh-done-yellow" @route="editor.new" @model="post">
                                     <span>{{svg-jar "posts"}}</span>
@@ -17,14 +18,14 @@
                                 </LinkTo>
                                 <LinkTo class="gh-done-green" @route="settings.design">
                                     <span>{{svg-jar "paint-palette"}}</span>
-                                    <h6>Customise your design</h6>
+                                    <h6>Customise your site</h6>
                                     <p>Drop into the theme editor to tweak your site and make it your own.</p>
                                 </LinkTo>
-                                <a class="gh-done-blue" href="https://ghost.org/docs/migration/">
+                                <LinkTo class="gh-done-blue" @route="members.import">
                                     <span>{{svg-jar "members"}}</span>
                                     <h6>Import members</h6>
                                     <p>Learn how to move over to Ghost from other tools with our migration guides.</p>
-                                </a>
+                                </LinkTo>
                                 <LinkTo class="gh-done-pink" @route="dashboard">
                                    <span>{{svg-jar "house"}}</span>
                                     <h6>Explore Ghost admin</h6>
