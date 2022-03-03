@@ -1,7 +1,6 @@
 import Component from '@glimmer/component';
 import moment from 'moment';
 import nql from '@nexes/nql-lang';
-import {A} from '@ember/array';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
