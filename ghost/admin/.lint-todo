@@ -1868,3 +1868,4 @@ remove|ember-template-lint|no-invalid-interactive|22|88|22|88|ef47bac5b5a1607201
 add|ember-template-lint|no-invalid-interactive|22|88|22|88|0f147010e9192fd3e2236d824b4e60aeeff4bd31|1646179200000|1648767600000|1651359600000|app/components/gh-publishmenu-draft.hbs
 remove|ember-template-lint|no-invalid-interactive|10|134|10|134|189785ab41f7fd0728185805080288951907c7fe|1643760000000|1646352000000|1648940400000|app/components/modal-portal-settings.hbs
 add|ember-template-lint|no-invalid-interactive|10|134|10|134|68bb5cb082102867d52b583bb276c4aa100d7cde|1646265600000|1648854000000|1651446000000|app/components/modal-portal-settings.hbs
+remove|ember-template-lint|no-unused-block-params|10|50|10|50|1e6738be2e5fab44085f88c0ca9b838aeeed4785|1643760000000|1646352000000|1648940400000|app/components/gh-members-list-item.hbs
