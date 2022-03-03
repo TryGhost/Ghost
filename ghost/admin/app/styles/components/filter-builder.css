@@ -49,8 +49,9 @@
 }
 
 .gh-filter-builder .gh-delete-filter {
-    margin-left: 4px;
     width: 20px;
+    height: 33px;
+    margin-left: 4px;
 }
 
 .gh-filter-builder .gh-delete-filter svg {
