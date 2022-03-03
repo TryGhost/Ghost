@@ -45,6 +45,18 @@ const handleMatch = (data, operator, value) => {
     case '!=':
         result = data !== value;
         break;
+    case '<':
+        result = data < value;
+        break;
+    case '>':
+        result = data > value;
+        break;
+    case '>=':
+        result = data >= value;
+        break;
+    case '<=':
+        result = data <= value;
+        break;
     default:
         result = data === value;
     }

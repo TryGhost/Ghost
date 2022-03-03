@@ -204,6 +204,57 @@ describe('Match helper', function () {
             }, hash);
         });
 
+        describe('Explicit Greater Than', function () {
+            runTests({
+                // Number to Number comparisons
+                '{{match zero ">" 1}}': 'false',
+                '{{match one ">" 0}}': 'true',
+                '{{match zero ">" 0}}': 'false'
+            }, hash);
+        });
+
+        describe('Explicit Less Than', function () {
+            runTests({
+                // Number to Number comparisons
+                '{{match zero "<" 1}}': 'true',
+                '{{match one "<" 0}}': 'false',
+                '{{match zero "<" 0}}': 'false'
+            }, hash);
+        });
+
+        describe('Explicit Greater Than Or Equal To', function () {
+            runTests({
+                // Number to Number comparisons
+                '{{match zero ">=" 1}}': 'false',
+                '{{match one ">=" 0}}': 'true',
+                '{{match zero ">=" 0}}': 'true',
+
+                // String to String comparisons
+                '{{match string ">=" "Hello world"}}': 'true',
+                '{{match "b" ">=" "a"}}': 'true',
+                '{{match "b" ">=" "b"}}': 'true',
+                '{{match "a" ">=" "b"}}': 'false',
+                '{{match "a" ">=" "3"}}': 'true',
+
+                // String to Number comparisons
+                '{{match "5" ">=" 3}}': 'true',
+                '{{match "3" ">=" 3}}': 'true',
+                '{{match "3" ">=" 5}}': 'false',
+
+                '{{match "hello" ">=" 5}}': 'false',
+                '{{match 5 ">=" "hello"}}': 'false'
+            }, hash);
+        });
+
+        describe('Explicit Less Than Or Equal To', function () {
+            runTests({
+                // Number to Number comparisons
+                '{{match zero "<=" 1}}': 'true',
+                '{{match one "<=" 0}}': 'false',
+                '{{match zero "<=" 0}}': 'true'
+            }, hash);
+        });
+
         // SafeStrings represent the original value as an object for example:
         // SafeString { string: true } vs SafeString { string: 'true' }
         // allows us to know if the original value was a boolean or a string
