@@ -482,11 +482,17 @@ export default class MembersFilter extends Component {
             defaultValue = moment(moment.tz(this.settings.get('timezone')).format('YYYY-MM-DD')).toDate();
         }
 
+        let defaultRelation = this.availableFilterRelationsOptions[newType][0].name;
+
+        if (newProp.valueType === 'date') {
+            defaultRelation = 'is-or-less';
+        }
+
         const filterToEdit = this.filters.findBy('id', filterId);
         if (filterToEdit) {
             filterToEdit.type = newType;
             filterToEdit.relationOptions = this.availableFilterRelationsOptions[newType];
-            filterToEdit.relation = filterToEdit.relationOptions[0].name;
+            filterToEdit.relation = defaultRelation;
             filterToEdit.value = defaultValue;
         }
 
