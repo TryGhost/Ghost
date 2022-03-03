@@ -7,6 +7,7 @@ const models = require('../../../../../../core/server/models');
 
 describe('Admin API Key Auth', function () {
     const ADMIN_API_URL = '/ghost/api/canary/admin/';
+    const ADMIN_API_URL_NON_VERSIONED = '/ghost/api/admin/';
 
     before(models.init);
 
@@ -43,6 +44,31 @@ describe('Admin API Key Auth', function () {
 
         const req = {
             originalUrl: ADMIN_API_URL,
+            headers: {
+                authorization: `Ghost ${token}`
+            }
+        };
+        const res = {};
+
+        apiKeyAuth.admin.authenticate(req, res, (err) => {
+            should.not.exist(err);
+            req.api_key.should.eql(this.fakeApiKey);
+            done();
+        });
+    });
+
+    it('should authenticate known+valid non-versioned API key', function (done) {
+        const token = jwt.sign({
+        }, this.secret, {
+            keyid: this.fakeApiKey.id,
+            algorithm: 'HS256',
+            expiresIn: '5m',
+            audience: '/admin/',
+            issuer: this.fakeApiKey.id
+        });
+
+        const req = {
+            originalUrl: `${ADMIN_API_URL_NON_VERSIONED}session/`,
             headers: {
                 authorization: `Ghost ${token}`
             }
