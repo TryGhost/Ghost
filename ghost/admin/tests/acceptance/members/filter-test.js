@@ -764,6 +764,85 @@ describe('Acceptance: Members filtering', function () {
             expect(find(valueInput)).to.have.value('2022-02-28');
         });
 
+        it('can filter by paid subscription start date', async function () {
+            clock = sinon.useFakeTimers({
+                now: moment('2022-03-01 09:00:00.000Z').toDate(),
+                shouldAdvanceTime: true
+            });
+
+            // add some members to filter
+            this.server.createList('member', 3, {subscriptions: [{start_date: moment('2022-02-01 12:00:00').format('YYYY-MM-DD HH:mm:ss')}]});
+            this.server.createList('member', 4, {subscriptions: [{start_date: moment('2022-02-05 12:00:00').format('YYYY-MM-DD HH:mm:ss')}]});
+            this.server.createList('member', 2, {subscriptions: []});
+
+            await visit('/members');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(9);
+
+            await click('[data-test-button="members-filter-actions"]');
+
+            const filterSelect = `[data-test-members-filter="0"]`;
+            const typeSelect = `${filterSelect} [data-test-select="members-filter"]`;
+            const operatorSelect = `${filterSelect} [data-test-select="members-filter-operator"]`;
+
+            expect(find(`${filterSelect} [data-test-select="members-filter"] option[value="subscriptions.start_date"]`), 'subscriptions.start_date filter option').to.exist;
+
+            await fillIn(typeSelect, 'subscriptions.start_date');
+
+            // has the right operators
+            const operatorOptions = findAll(`${operatorSelect} option`);
+            expect(operatorOptions).to.have.length(4);
+            expect(operatorOptions[0]).to.have.value('is-less');
+            expect(operatorOptions[1]).to.have.value('is-or-less');
+            // expect(operatorOptions[2]).to.have.value('is');
+            // expect(operatorOptions[3]).to.have.value('is-not');
+            expect(operatorOptions[2]).to.have.value('is-greater');
+            expect(operatorOptions[3]).to.have.value('is-or-greater');
+
+            const valueDateInput = `${filterSelect} [data-test-input="members-filter-value"] [data-test-date-picker-input]`;
+            const valueDatePicker = `${filterSelect} [data-test-input="members-filter-value"]`;
+
+            // operator defaults to "on or before"
+            expect(find(operatorSelect)).to.have.value('is-or-less');
+
+            // value defaults to today's date
+            expect(find(valueDateInput)).to.have.value('2022-03-01');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - default')
+                .to.equal(7);
+
+            // can change date
+            await datepickerSelect(valueDatePicker, moment.utc('2022-02-03').toDate());
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - 2022-02-03')
+                .to.equal(3);
+
+            // can change operator
+            await fillIn(operatorSelect, 'is-greater');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - is-greater')
+                .to.equal(4);
+
+            // can populate filter from URL
+            // TODO: leaving screen is needed, suggests component is not fully reactive and needs to be torn down.
+            // - see <Members::Filter> constructor
+            await visit(`/`);
+            const filter = encodeURIComponent(`subscriptions.start_date:<='2022-02-01 23:59:59'`);
+            await visit(`/members?filter=${filter}`);
+            await click('[data-test-button="members-filter-actions"]');
+
+            expect(find(typeSelect), 'type select - from URL').to.have.value('subscriptions.start_date');
+            expect(find(operatorSelect), 'operator select - from URL').to.have.value('is-or-less');
+            expect(find(valueDateInput), 'date input - from URL').to.have.value('2022-02-01');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - from URL')
+                .to.equal(3);
+
+            // it adds extra column to table
+            expect(find('[data-test-table-column="subscriptions.start_date"]')).to.exist;
+            expect(findAll('[data-test-table-data="subscriptions.start_date"]').length).to.equal(3);
+            expect(find('[data-test-table-data="subscriptions.start_date"]')).to.contain.text('1 Feb 2022');
+            expect(find('[data-test-table-data="subscriptions.start_date"]')).to.contain.text('a month ago');
+        });
+
         it('can handle multiple filters', async function () {
             // add some members to filter
             this.server.createList('member', 1, {subscriptions: [{status: 'active'}]});
