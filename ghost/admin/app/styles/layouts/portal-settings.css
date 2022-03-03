@@ -98,14 +98,27 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.2px;
-    color: var(--black);
+    color: var(--midgrey-l1);
     margin: 0;
     padding: 0 0 8px;
     border-bottom: 1px solid var(--whitegrey);
 }
 
+.gh-portal-setting-sectionheading.gh-stripe-connect {
+    display: flex;
+    justify-content: space-between;
+}
+
+.gh-portal-setting-sectionheading.gh-stripe-connect a {
+    color: #6772E5;
+    text-transform: initial;
+    font-size: 1.25rem;
+    font-weight: 400;
+    cursor: pointer;
+}
+
 .gh-portal-setting-section {
-    margin: 0 -24px 3.5vw;
+    margin: 0 -24px 2.4em;
     padding: 0 28px;
 }
 
@@ -255,6 +268,10 @@
 
 .gh-portal-button-icon:hover {
     box-shadow: 0px 0px 0px 1px color-mod(var(--green) a(40%));
+}
+
+.gh-portal-button-icon:hover svg path {
+    stroke: var(--green);
 }
 
 .gh-portal-button-icon.selected-icon {
