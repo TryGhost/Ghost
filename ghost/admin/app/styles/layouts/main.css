@@ -1828,10 +1828,14 @@ section.gh-ds h2 {
 
 .gh-done header p {   
     font-size: 1.9rem;
-    line-height: 1.5em;
+    line-height: 1.3em;
     margin: 0.5rem 0 2rem;
     padding: 0 4rem 0 0;
     color: var(--midgrey);
+}
+
+.gh-done h4 {
+    margin: 0 0 4rem;
 }
 
 .gh-done section h2 {
@@ -1853,54 +1857,40 @@ section.gh-ds h2 {
 .gh-done section a {
     display: grid;
     grid-template-columns: 56px auto;
-    grid-template-areas:
-        "icon top"
-        "icon content";
     margin: 0 0 3.5rem;
     padding: 0;
 }
 
 .gh-done section span {
-    grid-area: icon;
+    grid-row: 1 / 3;
+    grid-column: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 5px;
-    background: #fff;
+    background: var(--black);
     width: 40px;
     height: 40px;
     min-width: 40px;
     border-radius: 999px;
-    color: #fff;
+    color: var(--white);
     margin: 0 8px 0 0;
 }
 
 .gh-done section a.gh-done-yellow span {
-    background: #ffb41f;
-
-    /* color: #ffb41f;
-    border: 1px solid #ffb41f; */
+    background: var(--yellow);
 }
 
 .gh-done section a.gh-done-blue span {
-    background: #14b8ff;
-
-    /* color: #14b8ff;
-    border: 1px solid #14b8ff; */
+    background: var(--blue);
 }
 
 .gh-done section a.gh-done-green span {
-    background: #30cf43;
-
-    /* color: #30cf43;
-    border: 1px solid #30cf43; */
+    background: var(--green);
 }
 
 .gh-done section a.gh-done-pink span {
-    background: #fb2d8d;
-
-    /* color: #fb2d8d;
-    border: 1px solid #fb2d8d; */
+    background: var(--pink);
 }
 
 .gh-done section a:hover span {
@@ -1913,16 +1903,18 @@ section.gh-ds h2 {
 }
 
 .gh-done section a h6 {
-    grid-area: top;
+    grid-column: 2;
     margin: 0 0 4px;
     font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .gh-done section a p {
-    color: #7c8b9a;
-    grid-area: content;
+    grid-column: 2;
+    color: var(--midgrey);
     margin: 0;
     padding: 0 4rem 0 0;
+    line-height: 1.45em;
 }
 
 .gh-done .gh-done-panel {
@@ -1932,7 +1924,7 @@ section.gh-ds h2 {
     height: 100%;
     display: flex;
     justify-content: flex-start;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .gh-done .gh-done-panel .gh-stack {
