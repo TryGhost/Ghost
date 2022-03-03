@@ -6,6 +6,6 @@ module.exports = createAddColumnMigration('products', 'visible', {
     defaultTo: false
 });
 
-module.exports.up = () => {
+module.exports.up = async () => {
     // noop - column will be replaced with `visibility` instead
 };
