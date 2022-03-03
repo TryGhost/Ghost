@@ -699,7 +699,7 @@ describe('Acceptance: Members filtering', function () {
             // with a site timezone UTC-5 (Eastern Time Zone) we would expect date-based NQL filter strings
             // to be adjusted to UTC.
             //
-            // Eg. "created at on or after 2022-02-22" = `created_at:>='2022-02-21 19:00:00'
+            // Eg. "created on or after 2022-02-22" = `created_at:>='2022-02-22 05:00:00'
             //
             // we also need to convert back when parsing the NQL-based query param and make sure dates
             // shown in the members table match site timezone
@@ -721,6 +721,34 @@ describe('Acceptance: Members filtering', function () {
             const createdAtFields = findAll('[data-test-list="members-list-item"] [data-test-table-data="created-at"]');
             expect(createdAtFields.filter(el => el.textContent.match(/21 Feb 2022/)).length).to.equal(3);
             expect(createdAtFields.filter(el => el.textContent.match(/22 Feb 2022/)).length).to.equal(4);
+
+            const filterSelect = `[data-test-members-filter="0"]`;
+            const typeSelect = `${filterSelect} [data-test-select="members-filter"]`;
+            const operatorSelect = `${filterSelect} [data-test-select="members-filter-operator"]`;
+            const valueInput = `${filterSelect} [data-test-input="members-filter-value"] [data-test-date-picker-input]`;
+
+            // filter date is transformed to UTC equivalent timeframe when querying
+            await click('[data-test-button="members-filter-actions"]');
+            await fillIn(typeSelect, 'created_at');
+            await fillIn(operatorSelect, 'is-or-greater');
+            await fillIn(valueInput, '2022-02-22');
+            await blur(valueInput);
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of member rows - post filter')
+                .to.equal(4);
+
+            // query param is transformed back to expected filter date value
+            await visit('/'); // TODO: remove once <Members::Filter> component reacts to filter updates
+            const filterQuery = encodeURIComponent(`created_at:<='2022-02-22 04:59:59'`);
+            await visit(`/members?filter=${filterQuery}`);
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of member rows - post URL parse')
+                .to.equal(3);
+
+            await click('[data-test-button="members-filter-actions"]');
+
+            expect(find(operatorSelect)).to.have.value('is-or-less');
+            expect(find(valueInput)).to.have.value('2022-02-21');
         });
 
         it('can handle multiple filters', async function () {
