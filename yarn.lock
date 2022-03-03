@@ -1971,14 +1971,6 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.2.2", "@tryghost/errors@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.2.tgz#643009ba20770279577fe2778cdf1f816ad13e90"
-  integrity sha512-81PnsWWayCLQgeBYpslyrMRmSIuflarxxR4tz7ZOIuptybAiKaD3S4GhTZLAXUOi38S62wJBoS/qTzRF6sIzng==
-  dependencies:
-    lodash "^4.17.21"
-    uuid "^8.3.2"
-
 "@tryghost/errors@1.2.3", "@tryghost/errors@^1.2.3":
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.3.tgz#dccfcd09e175e4f0e437039a2653119f84b41e70"
@@ -1999,6 +1991,14 @@
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.1.tgz#1f2e618ec3a0617a6b9c5ac540a202fb46e32559"
   integrity sha512-Ui8iU/ky2HC9+WqOFKDSJyZv0WonrklPugKgWR4QKJ4wIeMXd+uJMqpHLXcN8uMiPVw5Lj9yl8mHq5rjw5dgIQ==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
+"@tryghost/errors@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.2.tgz#643009ba20770279577fe2778cdf1f816ad13e90"
+  integrity sha512-81PnsWWayCLQgeBYpslyrMRmSIuflarxxR4tz7ZOIuptybAiKaD3S4GhTZLAXUOi38S62wJBoS/qTzRF6sIzng==
   dependencies:
     lodash "^4.17.21"
     uuid "^8.3.2"
@@ -2295,17 +2295,7 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.8.3":
-  version "0.8.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.8.3.tgz#460dc41ec87464c4fe8ea814f931719f0bc8265d"
-  integrity sha512-mTSjy3UWmpdTNqIPjfwM8FeT4nUqBGaSJ4473vRxqJY53KnmM3CPnyjZjzczoE6x4NYYW/WkNKkgLQGpwykO7g==
-  dependencies:
-    "@tryghost/debug" "^0.1.4"
-    "@tryghost/errors" "1.2.2"
-    leaky-bucket "^2.2.0"
-    stripe "^8.174.0"
-
-"@tryghost/members-stripe-service@^0.8.4":
+"@tryghost/members-stripe-service@0.8.4", "@tryghost/members-stripe-service@^0.8.4":
   version "0.8.4"
   resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.8.4.tgz#e4f7dcdc999fc3310acd7aacb069b2cb1c761a08"
   integrity sha512-nuyQRIcXfwANls26uAKporW1BwdjlT4sZAmbxTQXUb2DRtHQeVXJQIY48BV0hg/Hr2nzJBnlnhKGmS1+4VsIkQ==
