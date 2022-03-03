@@ -7,7 +7,7 @@ const testUtils = require('../../utils');
 //       the commit introducing this comment.
 const schema = require('../../../core/server/data/schema').tables;
 
-const API_URL = '/ghost/api/canary/admin/';
+const API_URL = '/ghost/api/admin/';
 
 const expectedProperties = {
     // API top level
