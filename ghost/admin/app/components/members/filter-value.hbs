@@ -136,6 +136,13 @@
         {{svg-jar "arrow-down-small"}}
     </span>
 
+{{else if (eq @filter.type 'subscriptions.start_date')}}
+    <GhDatePicker
+        @value={{@filter.value}}
+        @onChange={{fn @setFilterValue @filter.type @filter.id}}
+        data-test-input="members-filter-value"
+    />
+
 {{else}}
     <input
         type="text"
