@@ -168,9 +168,11 @@ export default class MembersController extends Controller {
 
     get filterColumnLabels() {
         const filterColumnLabelMap = {
-            'subscriptions.plan_interval': 'Billing period',
             subscribed: 'Subscribed to email',
+            'subscriptions.plan_interval': 'Billing period',
             'subscriptions.status': 'Subscription Status',
+            'subscriptions.start_date': 'Paid start date',
+            'subscriptions.current_period_end': 'Next billing date',
             product: 'Tiers'
         };
         return this.filterColumns.map((d) => {
