@@ -136,10 +136,15 @@ class Filter {
         this.type = options.type;
         this.relation = options.relation;
         this.relationOptions = options.relationOptions;
+        this.timezone = options.timezone || 'Etc/UTC';
 
         const filterProperty = FILTER_PROPERTIES.find(prop => this.type === prop.name);
-        const value = filterProperty.valueType === 'date'
-            ? moment(options.value).toDate()
+
+        // date string values are passed in as UTC strings
+        // we need to convert them to the site timezone and make a local date that matches
+        // so the date string output in the filter inputs is correct
+        const value = filterProperty.valueType === 'date' && typeof options.value === 'string'
+            ? moment(moment.tz(moment.utc(options.value), this.timezone).format('YYYY-MM-DD')).toDate()
             : options.value;
 
         this.value = value;
@@ -263,19 +268,23 @@ export default class MembersFilter extends Component {
 
                 if (operator === '>') {
                     relationStr = '>';
-                    filterValue = `'${moment(filter.value).set({hour: 23, minute: 59, second: 59}).format(nqlDateFormat)}'`;
+                    const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 23, minute: 59, second: 59});
+                    filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (operator === '>=') {
                     relationStr = '>=';
-                    filterValue = `'${moment(filter.value).set({hour: 0, minute: 0, second: 0}).format(nqlDateFormat)}'`;
+                    const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 0, minute: 0, second: 0});
+                    filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (operator === '<') {
                     relationStr = '<';
-                    filterValue = `'${moment(filter.value).set({hour: 0, minute: 0, second: 0}).format(nqlDateFormat)}'`;
+                    const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 0, minute: 0, second: 0});
+                    filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (operator === '<=') {
                     relationStr = '<=';
-                    filterValue = `'${moment(filter.value).set({hour: 23, minute: 59, second: 59}).format(nqlDateFormat)}'`;
+                    const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timeone')).set({hour: 23, minute: 59, second: 59});
+                    filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
 
                 query += `${filter.type}:${relationStr}${filterValue}+`;
@@ -302,7 +311,8 @@ export default class MembersFilter extends Component {
                     type: key,
                     relation: 'is',
                     value: value.$in,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
+                    timezone: this.settings.get('timezone')
                 });
             }
 
@@ -313,7 +323,8 @@ export default class MembersFilter extends Component {
                     type: key,
                     relation: 'is-not',
                     value: value.$nin,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
+                    timezone: this.settings.get('timezone')
                 });
             }
 
@@ -324,7 +335,8 @@ export default class MembersFilter extends Component {
                     type: key,
                     relation: 'is-not',
                     value: value.$ne,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
+                    timezone: this.settings.get('timezone')
                 });
             }
 
@@ -336,7 +348,8 @@ export default class MembersFilter extends Component {
                     type: key,
                     relation: 'is-greater',
                     value: value.$gt,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
+                    timezone: this.settings.get('timezone')
                 });
             }
 
@@ -348,7 +361,8 @@ export default class MembersFilter extends Component {
                     type: key,
                     relation: 'is-or-greater',
                     value: value.$gte,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
+                    timezone: this.settings.get('timezone')
                 });
             }
 
@@ -359,7 +373,8 @@ export default class MembersFilter extends Component {
                     type: key,
                     relation: 'is-less',
                     value: value.$lt,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
+                    timezone: this.settings.get('timezone')
                 });
             }
 
@@ -370,7 +385,8 @@ export default class MembersFilter extends Component {
                     type: key,
                     relation: 'is-or-less',
                     value: value.$lte,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
+                    timezone: this.settings.get('timezone')
                 });
             }
 
