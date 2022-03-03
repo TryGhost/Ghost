@@ -463,6 +463,8 @@ export default class MembersFilter extends Component {
             newType = newType.target.value;
         }
 
+        const newProp = FILTER_PROPERTIES.find(prop => prop.name === newType);
+
         let defaultValue = this.availableFilterValueOptions[newType]
             ? this.availableFilterValueOptions[newType][0].name
             : '';
@@ -476,8 +478,8 @@ export default class MembersFilter extends Component {
             defaultValue = [];
         }
 
-        if (newType === 'created_at' && !defaultValue) {
-            defaultValue = new Date();
+        if (newProp.valueType === 'date' && !defaultValue) {
+            defaultValue = moment(moment.tz(this.settings.get('timezone')).format('YYYY-MM-DD')).toDate();
         }
 
         const filterToEdit = this.filters.findBy('id', filterId);
