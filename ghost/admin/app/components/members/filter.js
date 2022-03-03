@@ -152,7 +152,6 @@ export default class MembersFilter extends Component {
     @service settings;
     @service store;
 
-    @tracked productsList;
     @tracked filters = A([
         new Filter({
             id: `filter-0`,
@@ -169,7 +168,7 @@ export default class MembersFilter extends Component {
 
     get availableFilterProperties() {
         let availableFilters = FILTER_PROPERTIES;
-        const hasMultipleProducts = this.productsList?.length > 1;
+        const hasMultipleProducts = this.store.peekAll('product').length > 1;
 
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
@@ -203,10 +202,7 @@ export default class MembersFilter extends Component {
         if (this.args.defaultFilterParam) {
             this.parseNqlFilter(this.args.defaultFilterParam);
         }
-    }
 
-    @action
-    setup() {
         this.fetchProducts.perform();
     }
 
@@ -447,6 +443,10 @@ export default class MembersFilter extends Component {
 
     @action
     setFilterType(filterId, newType) {
+        if (newType instanceof Event) {
+            newType = newType.target.value;
+        }
+
         let defaultValue = this.availableFilterValueOptions[newType]
             ? this.availableFilterValueOptions[newType][0].name
             : '';
