@@ -2441,10 +2441,10 @@
     caller "^1.0.1"
     find-root "^1.1.0"
 
-"@tryghost/security@0.2.14":
-  version "0.2.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.14.tgz#9928992166b0a27294d2907be6cae3b6eeea53ab"
-  integrity sha512-bwUbAro5IZ5qzk6FdM4OZVfGSP1XYmEz8ElNJVMDL5TNRWTzDee1DXHCDNabgT/DE2fraEqqlmuPoYu5QsGHmQ==
+"@tryghost/security@0.2.15":
+  version "0.2.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/security/-/security-0.2.15.tgz#b8483905516f50dd6ed1c36efb27a5633eae7fa1"
+  integrity sha512-38wJ8QneMKw0r4vtq/wcN78YlxEYSMN1EF2tZQE8kfIkzFLQpIgVcs5kh3I2xOIvqLhVaTmgw2HKQEmuGfTGvQ==
   dependencies:
     "@tryghost/string" "^0.1.17"
     bcryptjs "^2.4.3"
