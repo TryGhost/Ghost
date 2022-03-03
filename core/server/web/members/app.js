@@ -39,7 +39,7 @@ module.exports = function setupMembersApp() {
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.get('/api/offers/:id', middleware.getOfferData);
     membersApp.delete('/api/session', middleware.deleteSession);
-    membersApp.get('/api/site', shared.middleware.cacheControl('public', {maxAge: 30}), middleware.getMemberSiteData);
+    membersApp.get('/api/site', middleware.getMemberSiteData);
 
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     membersApp.post('/api/send-magic-link', bodyParser.json(), shared.middleware.brute.membersAuth, (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next));
