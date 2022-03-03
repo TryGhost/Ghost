@@ -143,6 +143,13 @@
         data-test-input="members-filter-value"
     />
 
+{{else if (eq @filter.type 'subscriptions.current_period_end')}}
+    <GhDatePicker
+        @value={{@filter.value}}
+        @onChange={{fn @setFilterValue @filter.type @filter.id}}
+        data-test-input="members-filter-value"
+    />
+
 {{else}}
     <input
         type="text"
