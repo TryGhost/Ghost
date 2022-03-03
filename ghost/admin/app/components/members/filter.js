@@ -23,7 +23,7 @@ const FILTER_PROPERTIES = [
     // {label: 'Tier', name: 'tier', group: 'Subscription'},
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
     {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
-    {label: 'Start date', name: 'subscriptions.start_date', valueType: 'date', group: 'Subscription', feature: 'membersTimeFilters'},
+    {label: 'Paid start date', name: 'subscriptions.start_date', valueType: 'date', group: 'Subscription', feature: 'membersTimeFilters'},
     {label: 'Next billing date', name: 'subscriptions.current_period_end', valueType: 'date', group: 'Subscription', feature: 'membersTimeFilters'},
 
     // Emails
