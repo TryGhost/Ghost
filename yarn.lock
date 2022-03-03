@@ -2003,10 +2003,10 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/express-dynamic-redirects@0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.5.tgz#3a8ab59cc4fc3dd652058958b61800616ea96ccf"
-  integrity sha512-Qz2KHt1KdWvIx96fcu/cYPPSEdG52xke3/KrQXCVGp00a3FjQq3WYxWl/p6eMp/30mjExg2UQhcqoCj7hJLX6g==
+"@tryghost/express-dynamic-redirects@0.2.6":
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.6.tgz#2c73d424a1ff5abda8b202e9931908071e59932a"
+  integrity sha512-DmjgIt3V9jya9nfAi2aiPozMKcA8SDXc9VKqSD+nVRE8GZbEevx8ZPxdVBhpARnW/acVSzhxwwUYwXrgbH73zw==
 
 "@tryghost/express-test@0.6.0":
   version "0.6.0"
