@@ -653,8 +653,8 @@ describe('Acceptance: Members filtering', function () {
             const valueDateInput = `${filterSelect} [data-test-input="members-filter-value"] [data-test-date-picker-input]`;
             const valueDatePicker = `${filterSelect} [data-test-input="members-filter-value"]`;
 
-            // operator defaults to before
-            expect(find(operatorSelect)).to.have.value('is-less');
+            // operator defaults to "on or before"
+            expect(find(operatorSelect)).to.have.value('is-or-less');
 
             // value defaults to today's date
             expect(find(valueDateInput)).to.have.value('2022-03-01');
