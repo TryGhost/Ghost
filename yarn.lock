@@ -2061,10 +2061,10 @@
     expect "^27.5.0"
     jest-snapshot "^27.5.0"
 
-"@tryghost/job-manager@0.8.19":
-  version "0.8.19"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.19.tgz#8d9459b56f179a477d21cf2537577412cec8633f"
-  integrity sha512-F720XocrD1LU3abW1ot9ADu8jVz9y/4RKUjYDvO9khppEE+a34E3/iR48kIMuHO6kFJWGMJYhyfHEOq5J6RuDg==
+"@tryghost/job-manager@0.8.20":
+  version "0.8.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.20.tgz#9e65635e588cb44acbc82a5a1223ba1b49905079"
+  integrity sha512-G2NOl43yFJehWlgS1/c3Gki7I+fPHwWOxZL08Erw6N3HSxMO/NY85f63BrjOR0Rkr/yw1VcaT2nFplCdN7MbtQ==
   dependencies:
     "@breejs/later" "^4.0.2"
     "@tryghost/logging" "^2.0.0"
