@@ -504,7 +504,7 @@
 }
 
 .gh-product-benefits .gh-blognav-item.gh-blognav-item--error {
-    align-items: start;
+    align-items: flex-start;
 }
 
 .gh-blognav-item--error button.gh-blognav-add {
