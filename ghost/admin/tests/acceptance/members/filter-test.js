@@ -749,6 +749,19 @@ describe('Acceptance: Members filtering', function () {
 
             expect(find(operatorSelect)).to.have.value('is-or-less');
             expect(find(valueInput)).to.have.value('2022-02-21');
+
+            // it initializes date filter with correct site timezone date
+            // "local" is 1st March 04:00 but site time is 28th Feb 00:00
+            clock = sinon.useFakeTimers({
+                now: moment('2022-03-01 04:00:00.000Z').toDate(),
+                shouldAdvanceTime: true
+            });
+
+            await click('[data-test-delete-members-filter="0"]');
+            await click('[data-test-button="members-filter-actions"]');
+            await fillIn(typeSelect, 'created_at');
+
+            expect(find(valueInput)).to.have.value('2022-02-28');
         });
 
         it('can handle multiple filters', async function () {
