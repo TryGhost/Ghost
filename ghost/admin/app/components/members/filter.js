@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import moment from 'moment';
 import nql from '@nexes/nql-lang';
 import {A} from '@ember/array';
+import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -168,7 +169,7 @@ export default class MembersFilter extends Component {
     @service settings;
     @service store;
 
-    @tracked filters = A([
+    @tracked filters = new TrackedArray([
         new Filter({
             id: `filter-0`,
             type: 'label',
@@ -224,7 +225,7 @@ export default class MembersFilter extends Component {
 
     @action
     addFilter() {
-        this.filters.pushObject(new Filter({
+        this.filters.push(new Filter({
             id: `filter-${this.nextFilterId}`,
             type: 'label',
             relation: 'is',
@@ -440,7 +441,7 @@ export default class MembersFilter extends Component {
             });
         }
 
-        this.filters = A(filterData);
+        this.filters = new TrackedArray(filterData);
     }
 
     getFilterRelationOperator(relation) {
@@ -459,11 +460,10 @@ export default class MembersFilter extends Component {
         event.stopPropagation();
         event.preventDefault();
 
-        const filterToDelete = this.filters.findBy('id', filterId);
         if (this.filters.length === 1) {
             this.resetFilter();
         } else {
-            this.filters.removeObject(filterToDelete);
+            this.filters = new TrackedArray(this.filters.reject(f => f.id === filterId));
             this.applySoftFilter();
         }
     }
@@ -499,13 +499,17 @@ export default class MembersFilter extends Component {
             defaultRelation = 'is-or-less';
         }
 
-        const filterToEdit = this.filters.findBy('id', filterId);
-        if (filterToEdit) {
-            filterToEdit.type = newType;
-            filterToEdit.relationOptions = this.availableFilterRelationsOptions[newType];
-            filterToEdit.relation = defaultRelation;
-            filterToEdit.value = defaultValue;
-        }
+        const newFilter = new Filter({
+            id: filterId,
+            type: newType,
+            relation: defaultRelation,
+            relationOptions: this.availableFilterRelationsOptions[newType],
+            value: defaultValue,
+            timezone: this.settings.get('timezone')
+        });
+
+        const filterToSwap = this.filters.find(f => f.id === filterId);
+        this.filters[this.filters.indexOf(filterToSwap)] = newFilter;
 
         if (newType !== 'label' && defaultValue) {
             this.applySoftFilter();
@@ -518,14 +522,14 @@ export default class MembersFilter extends Component {
 
     @action
     setFilterRelation(filterId, newRelation) {
-        const filterToEdit = this.filters.findBy('id', filterId);
+        const filterToEdit = this.filters.find(f => f.id === filterId);
         filterToEdit.relation = newRelation;
         this.applySoftFilter();
     }
 
     @action
     setFilterValue(filterType, filterId, filterValue) {
-        const filterToEdit = this.filters.findBy('id', filterId);
+        const filterToEdit = this.filters.find(f => f.id === filterId);
         filterToEdit.value = filterValue;
         this.applySoftFilter();
     }
@@ -561,7 +565,7 @@ export default class MembersFilter extends Component {
     @action
     resetFilter() {
         this.nextFilterId = 1;
-        this.filters = A([
+        this.filters = new TrackedArray([
             new Filter({
                 id: `filter-0`,
                 type: 'label',
