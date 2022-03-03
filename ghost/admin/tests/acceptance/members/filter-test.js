@@ -686,6 +686,11 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - from URL')
                 .to.equal(3);
 
+            // "on or after" doesn't break
+            await fillIn(operatorSelect, 'is-or-greater');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - from URL')
+                .to.equal(7);
+
             // it does not add extra column to table
             expect(find('[data-test-table-column="created_at"]')).to.not.exist;
         });

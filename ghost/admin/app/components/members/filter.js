@@ -267,7 +267,7 @@ export default class MembersFilter extends Component {
                 }
                 if (operator === '>=') {
                     relationStr = '>=';
-                    filterValue = `'${moment(filter.value).set({hour: 0, minute: 0, second: 0}).format(nqlDateFormat)}`;
+                    filterValue = `'${moment(filter.value).set({hour: 0, minute: 0, second: 0}).format(nqlDateFormat)}'`;
                 }
                 if (operator === '<') {
                     relationStr = '<';
