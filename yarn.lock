@@ -1863,10 +1863,10 @@
   dependencies:
     color "^3.2.1"
 
-"@tryghost/config-url-helpers@0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.4.tgz#199884396c5ab3b5c6f2d3effd5405934b799698"
-  integrity sha512-GMR5Bc7STWFMsAzlZbh/b73zLAu/9gaF9XZQKrsLNMad8OPbKA5reOwgbZYcLMNgmodAn630PdAYrDMesTbiLQ==
+"@tryghost/config-url-helpers@0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.5.tgz#44c34f5bfaf28d773ddb40cf2644e03828d58f30"
+  integrity sha512-cAWawmolr10ePxy02CXl4vq6hwS0EyiEREmKbXQvGTgbrPoT9yIBnSFCxUOKCzusucwT7dmleQTt0GleQehzdw==
 
 "@tryghost/config@0.2.2":
   version "0.2.2"
