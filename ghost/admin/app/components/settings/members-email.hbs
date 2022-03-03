@@ -104,7 +104,12 @@
                                     }}
                                     {{svg-jar "arrow-down-small"}}
                                 </span>
-                                <p>Where you receive responses to newsletters</p>
+                                <div class="flex justify-between">
+                                    <p>Where you receive responses to newsletters</p>
+                                    {{#if (eq this.settings.membersReplyAddress "support")}}
+                                        <LinkTo @route="settings.membership" class="gh-update-support-address" type="button" @query={{hash showPortalSettings=true}}>Change support email address</LinkTo>
+                                    {{/if}}
+                                </div>
                             </GhFormGroup>
                         {{/liquid-if}}
                     </div>

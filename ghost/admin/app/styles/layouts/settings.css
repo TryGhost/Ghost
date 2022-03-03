@@ -783,6 +783,13 @@
     background: var(--white);
 }
 
+.gh-update-support-address {
+    margin: 4px 0 0;
+    color: var(--green);
+    font-size: 1.25rem;
+    font-weight: 400;
+}
+
 .gh-mailgun-region {
     width: 140px !important;
     margin-right: 12px;
