@@ -1,12 +1,11 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 const glob = require('glob');
 const uuid = require('uuid');
 const {extract} = require('@tryghost/zip');
-const {pipeline, sequence} = require('@tryghost/promise');
+const {sequence} = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -40,10 +39,20 @@ let defaults = {
 
 class ImportManager {
     constructor() {
+        /**
+         * @type {Importer[]} importers
+         */
         this.importers = [ImageImporter, DataImporter];
+
+        /**
+         * @type {Handler[]}
+         */
         this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
+        /**
+         * @type {?string}
+         */
         this.fileToDelete = null;
     }
 
@@ -52,7 +61,7 @@ class ImportManager {
      * @returns {string[]}
      */
     getExtensions() {
-        return _.flatten(_.union(_.map(this.handlers, 'extensions'), defaults.extensions));
+        return _.union(_.flatMap(this.handlers, 'extensions'), defaults.extensions);
     }
 
     /**
@@ -60,7 +69,7 @@ class ImportManager {
      * @returns {string[]}
      */
     getContentTypes() {
-        return _.flatten(_.union(_.map(this.handlers, 'contentTypes'), defaults.contentTypes));
+        return _.union(_.flatMap(this.handlers, 'contentTypes'), defaults.contentTypes);
     }
 
     /**
@@ -112,13 +121,11 @@ class ImportManager {
      * @returns {void}
      */
     cleanUp() {
-        const self = this;
-
-        if (self.fileToDelete === null) {
+        if (this.fileToDelete === null) {
             return;
         }
 
-        fs.remove(self.fileToDelete, function (err) {
+        fs.remove(this.fileToDelete, (err) => {
             if (err) {
                 logging.error(new errors.InternalServerError({
                     err: err,
@@ -127,7 +134,7 @@ class ImportManager {
                 }));
             }
 
-            self.fileToDelete = null;
+            this.fileToDelete = null;
         });
     }
 
@@ -323,15 +330,12 @@ class ImportManager {
      * @param {ImportData} importData
      * @returns {Promise<ImportData>}
      */
-    preProcess(importData) {
-        const ops = [];
-        _.each(this.importers, function (importer) {
-            ops.push(function () {
-                return importer.preProcess(importData);
-            });
-        });
+    async preProcess(importData) {
+        for (const importer of this.importers) {
+            importData = importer.preProcess(importData);
+        }
 
-        return pipeline(ops);
+        return Promise.resolve(importData);
     }
 
     /**
@@ -339,59 +343,101 @@ class ImportManager {
      * Each importer gets passed the data from importData which has the key matching its type - i.e. it only gets the
      * data that it should import. Each importer then handles actually importing that data into Ghost
      * @param {ImportData} importData
-     * @param {Object} importOptions to allow override of certain import features such as locking a user
-     * @returns {Promise<any>}
+     * @param {ImportOptions} importOptions to allow override of certain import features such as locking a user
+     * @returns {Promise<ImportResult[]>} importResults
      */
-    doImport(importData, importOptions) {
+    async doImport(importData, importOptions) {
         importOptions = importOptions || {};
-        const ops = [];
-        _.each(this.importers, function (importer) {
-            if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
-                ops.push(function () {
-                    return importer.doImport(importData[importer.type], importOptions);
-                });
-            }
-        });
+        const importResults = [];
 
-        return sequence(ops).then(function (importResult) {
-            return importResult;
-        });
+        for (const importer of this.importers) {
+            if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
+                importResults.push(await importer.doImport(importData[importer.type], importOptions));
+            }
+        }
+
+        return importResults;
     }
 
     /**
      * Import Step 4:
      * Report on what was imported, currently a no-op
-     * @param {ImportData} importData
-     * @returns {Promise<ImportData>}
+     * @param {ImportResult[]} importResults
+     * @returns {Promise<ImportResult[]>} importResults
      */
-    generateReport(importData) {
-        return Promise.resolve(importData);
+    async generateReport(importResults) {
+        return Promise.resolve(importResults);
     }
 
     /**
      * Import From File
      * The main method of the ImportManager, call this to kick everything off!
      * @param {File} file
-     * @param {Object} importOptions to allow override of certain import features such as locking a user
-     * @returns {Promise<ImportData>}
+     * @param {ImportOptions} importOptions to allow override of certain import features such as locking a user
+     * @returns {Promise<ImportResult[]>}
      */
-    importFromFile(file, importOptions = {}) {
-        const self = this;
+    async importFromFile(file, importOptions = {}) {
+        try {
+            // Step 1: Handle converting the file to usable data
+            let importData = await this.loadFile(file);
 
-        // Step 1: Handle converting the file to usable data
-        return this.loadFile(file).then(function (importData) {
             // Step 2: Let the importers pre-process the data
-            return self.preProcess(importData);
-        }).then(function (importData) {
+            importData = await this.preProcess(importData);
+        
             // Step 3: Actually do the import
             // @TODO: It would be cool to have some sort of dry run flag here
-            return self.doImport(importData, importOptions);
-        }).then(function (importData) {
+            let importResult = await this.doImport(importData, importOptions);
+            
             // Step 4: Report on the import
-            return self.generateReport(importData);
-        }).finally(() => self.cleanUp()); // Step 5: Cleanup any files
+            return await this.generateReport(importResult);
+        } finally {
+            // Step 5: Cleanup any files
+            this.cleanUp();
+        }
     }
 }
+
+/**
+ * @typedef {object} ImportOptions
+ * @property {boolean} [returnImportedData]
+ * @property {boolean} [importPersistUser]
+ */
+
+/**
+ * @typedef {object} Importer
+ * @property {"images"|"data"} type
+ * @property {PreProcessMethod} preProcess
+ * @property {DoImportMethod} doImport
+ */
+
+/**
+ * @callback PreProcessMethod
+ * @param {ImportData} importData
+ * @returns {ImportData}
+ */
+
+/**
+ * @callback DoImportMethod
+ * @param {object|object[]} importData
+ * @param {ImportOptions} importOptions
+ * @returns {Promise<ImportResult>} import result
+ */
+
+/**
+ * @typedef {object} Handler
+ * @property {"images"|"data"} type
+ * @property {string[]} extensions
+ * @property {string[]} contentTypes
+ * @property {string[]} directories
+ * @property {LoadFileMethod} loadFile
+ */
+
+/**
+ * @callback LoadFileMethod
+ * @param {File[]} files
+ * @param {string} [baseDir]
+ * @returns {Promise<object[]|object>} data
+ */
 
 /**
  * File object
@@ -401,10 +447,12 @@ class ImportManager {
  */
 
 /**
- * A number, or a string containing a number.
  * @typedef {Object} ImportData
  * @property {Object} [data]
  * @property {Array} [images]
  */
 
+/**
+ * @typedef {Object} ImportResult
+ */
 module.exports = new ImportManager();

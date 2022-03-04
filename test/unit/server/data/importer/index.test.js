@@ -46,13 +46,22 @@ describe('Importer', function () {
         });
 
         it('gets the correct types', function () {
-            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(13);
+            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(12);
+            ImportManager.getContentTypes().should.containEql('image/jpeg');
+            ImportManager.getContentTypes().should.containEql('image/png');
+            ImportManager.getContentTypes().should.containEql('image/gif');
+            ImportManager.getContentTypes().should.containEql('image/svg+xml');
+            ImportManager.getContentTypes().should.containEql('image/x-icon');
+            ImportManager.getContentTypes().should.containEql('image/vnd.microsoft.icon');
+            ImportManager.getContentTypes().should.containEql('image/webp');
+
             ImportManager.getContentTypes().should.containEql('application/octet-stream');
             ImportManager.getContentTypes().should.containEql('application/json');
+
+            ImportManager.getContentTypes().should.containEql('text/plain');
+
             ImportManager.getContentTypes().should.containEql('application/zip');
             ImportManager.getContentTypes().should.containEql('application/x-zip-compressed');
-            ImportManager.getContentTypes().should.containEql('text/plain');
-            ImportManager.getContentTypes().should.containEql('image/webp');
         });
 
         it('gets the correct directories', function () {
