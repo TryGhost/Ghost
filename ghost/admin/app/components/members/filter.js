@@ -15,7 +15,7 @@ const FILTER_PROPERTIES = [
     {label: 'Label', name: 'label', group: 'Basic'},
     {label: 'Tiers', name: 'product', group: 'Basic', feature: 'multipleProducts'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
-    {label: 'Last seen', name: 'last_seen_at', group: 'Basic', feature: 'membersLastSeenFilter'},
+    {label: 'Last seen', name: 'last_seen_at', group: 'Basic', valueType: 'date', feature: 'membersLastSeenFilter'},
     {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
 
     // Member subscription
@@ -36,6 +36,17 @@ const FILTER_PROPERTIES = [
     // {label: 'Emails sent (60 days)', name: 'x', group: 'Email'},
     // {label: 'Emails opened (60 days)', name: 'x', group: 'Email'},
     // {label: 'Open rate (60 days)', name: 'x', group: 'Email'},
+];
+
+const DATE_RELATION_OPTIONS = [
+    {label: 'before', name: 'is-less'},
+    {label: 'on or before', name: 'is-or-less'},
+    // TODO: these cause problems because they require multiple NQL statements, eg:
+    // created_at:>='2022-03-02 00:00'+created_at:<'2022-03-03 00:00'
+    // {label: 'on', name: 'is'},
+    // {label: 'not on', name: 'is-not'},
+    {label: 'after', name: 'is-greater'},
+    {label: 'on or after', name: 'is-or-greater'}
 ];
 
 const FILTER_RELATIONS_OPTIONS = {
@@ -59,20 +70,8 @@ const FILTER_RELATIONS_OPTIONS = {
         {label: 'is', name: 'is'},
         {label: 'is not', name: 'is-not'}
     ],
-    last_seen_at: [
-        {label: 'less than', name: 'is-less'},
-        {label: 'more than', name: 'is-greater'}
-    ],
-    created_at: [
-        {label: 'before', name: 'is-less'},
-        {label: 'on or before', name: 'is-or-less'},
-        // TODO: these cause problems because they require multiple NQL statements, eg:
-        // created_at:>='2022-03-02 00:00'+created_at:<'2022-03-03 00:00'
-        // {label: 'on', name: 'is'},
-        // {label: 'not on', name: 'is-not'},
-        {label: 'after', name: 'is-greater'},
-        {label: 'on or after', name: 'is-or-greater'}
-    ],
+    last_seen_at: DATE_RELATION_OPTIONS,
+    created_at: DATE_RELATION_OPTIONS,
     status: [
         {label: 'is', name: 'is'},
         {label: 'is not', name: 'is-not'}
@@ -85,26 +84,8 @@ const FILTER_RELATIONS_OPTIONS = {
         {label: 'is', name: 'is'},
         {label: 'is not', name: 'is-not'}
     ],
-    'subscriptions.start_date': [
-        {label: 'before', name: 'is-less'},
-        {label: 'on or before', name: 'is-or-less'},
-        // TODO: these cause problems because they require multiple NQL statements, eg:
-        // created_at:>='2022-03-02 00:00'+created_at:<'2022-03-03 00:00'
-        // {label: 'on', name: 'is'},
-        // {label: 'not on', name: 'is-not'},
-        {label: 'after', name: 'is-greater'},
-        {label: 'on or after', name: 'is-or-greater'}
-    ],
-    'subscriptions.current_period_end': [
-        {label: 'before', name: 'is-less'},
-        {label: 'on or before', name: 'is-or-less'},
-        // TODO: these cause problems because they require multiple NQL statements, eg:
-        // created_at:>='2022-03-02 00:00'+created_at:<'2022-03-03 00:00'
-        // {label: 'on', name: 'is'},
-        // {label: 'not on', name: 'is-not'},
-        {label: 'after', name: 'is-greater'},
-        {label: 'on or after', name: 'is-or-greater'}
-    ],
+    'subscriptions.start_date': DATE_RELATION_OPTIONS,
+    'subscriptions.current_period_end': DATE_RELATION_OPTIONS,
     email_count: [
         {label: 'is', name: 'is'},
         {label: 'is greater than', name: 'is-greater'},
@@ -275,13 +256,6 @@ export default class MembersFilter extends Component {
             } else if (filter.type === 'product' && filter.value?.length) {
                 const relationStr = filter.relation === 'is-not' ? '-' : '';
                 const filterValue = '[' + filter.value.join(',') + ']';
-                query += `${filter.type}:${relationStr}${filterValue}+`;
-            } else if (filter.type === 'last_seen_at') {
-                // is-greater = more than x days ago = <date
-                // is-less = less than x days ago = >date
-                const relationStr = filter.relation === 'is-greater' ? '<=' : '>=';
-                const daysAgoMoment = moment.utc().subtract(filter.value, 'days');
-                const filterValue = `'${daysAgoMoment.format(nqlDateFormat)}'`;
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else if (filterProperty.valueType === 'date') {
                 const operator = relationMap[filter.relation];

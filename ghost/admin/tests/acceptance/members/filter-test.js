@@ -536,37 +536,41 @@ describe('Acceptance: Members filtering', function () {
 
         it('can filter by last seen date', async function () {
             clock = sinon.useFakeTimers({
-                now: moment('2022-02-10 11:50:00.000Z').toDate(),
+                now: moment('2022-02-05 11:50:00.000Z').toDate(),
                 shouldAdvanceTime: true
             });
 
             // add some members to filter
-            this.server.createList('member', 3, {lastSeenAt: moment('2022-02-01 12:00:00').format('YYYY-MM-DD HH:mm:ss')});
-            this.server.createList('member', 4, {lastSeenAt: moment('2022-02-05 12:00:00').format('YYYY-MM-DD HH:mm:ss')});
+            this.server.createList('member', 3, {lastSeenAt: moment('2022-02-01 11:00:00').format('YYYY-MM-DD HH:mm:ss')});
+            this.server.createList('member', 4, {lastSeenAt: moment('2022-02-05 11:00:00').format('YYYY-MM-DD HH:mm:ss')});
 
             await visit('/members');
 
             expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
                 .to.equal(7);
 
+            const filterSelect = `[data-test-members-filter="0"]`;
+            const typeSelect = `${filterSelect} [data-test-select="members-filter"]`;
+            const operatorSelect = `${filterSelect} [data-test-select="members-filter-operator"]`;
+            const valueInput = `${filterSelect} [data-test-input="members-filter-value"] [data-test-date-picker-input]`;
+            const valueDatePicker = `${filterSelect} [data-test-input="members-filter-value"]`;
+
             await click('[data-test-button="members-filter-actions"]');
-
-            const filterSelector = `[data-test-members-filter="0"]`;
-
-            await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'last_seen_at');
-
-            const operatorSelector = `${filterSelector} [data-test-select="members-filter-operator"]`;
+            await fillIn(typeSelect, 'last_seen_at');
 
             // has the right operators
-            const operatorOptions = findAll(`${operatorSelector} option`);
-            expect(operatorOptions).to.have.length(2);
+            const operatorOptions = findAll(`${operatorSelect} option`);
+            expect(operatorOptions).to.have.length(4);
             expect(operatorOptions[0]).to.have.value('is-less');
-            expect(operatorOptions[1]).to.have.value('is-greater');
+            expect(operatorOptions[1]).to.have.value('is-or-less');
+            expect(operatorOptions[2]).to.have.value('is-greater');
+            expect(operatorOptions[3]).to.have.value('is-or-greater');
 
-            const valueInput = `${filterSelector} [data-test-input="members-filter-value"]`;
+            // has the right default operator
+            expect(find(operatorSelect)).to.have.value('is-or-less');
 
-            // has no default filter
-            expect(find(valueInput)).to.have.value('');
+            // has expected default value
+            expect(find(valueInput)).to.have.value('2022-02-05');
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - default')
                 .to.equal(7);
 
@@ -576,42 +580,29 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - after blur')
                 .to.equal(7);
 
-            // can change filter
-            await fillIn(valueInput, '2'); // last seen less than 2 days ago
-            await blur(valueInput);
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen less than 2 days ago')
-                .to.equal(0);
+            // can change operator
+            await fillIn(operatorSelect, 'is-less');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - is before 2022-02-05')
+                .to.equal(3);
 
-            await fillIn(valueInput, '6'); // last seen less than 6 days ago
+            // can change filter via input
+            await fillIn(operatorSelect, 'is-greater');
+            await fillIn(valueInput, '2022-02-01');
             await blur(valueInput);
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen less than 6 days ago')
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - is after 2022-02-01')
                 .to.equal(4);
+
+            // can change filter via date picker
+            await fillIn(operatorSelect, 'is-or-greater');
+            await datepickerSelect(valueDatePicker, moment.utc('2022-01-01').toDate());
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - is after 2022-01-01')
+                .to.equal(7);
 
             // table shows last seen column+data
             expect(find('[data-test-table-column="last_seen_at"]')).to.exist;
-            expect(findAll('[data-test-table-data="last_seen_at"]').length).to.equal(4);
-            expect(find('[data-test-table-data="last_seen_at"]')).to.contain.text('5 Feb 2022');
-            expect(find('[data-test-table-data="last_seen_at"]')).to.contain.text('5 days ago');
-
-            await fillIn(valueInput, '11'); // last seen less than 11 days ago
-            await blur(valueInput);
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen less than 11 days ago')
-                .to.equal(7);
-
-            // can change operator
-            await fillIn(operatorSelector, 'is-greater');
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen more than 11 days ago')
-                .to.equal(0);
-
-            await fillIn(valueInput, '6'); // last seen more than 6 days ago
-            await blur(valueInput);
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen more than 6 days ago')
-                .to.equal(3);
-
-            await fillIn(valueInput, '2'); // last seen more than 2 days ago
-            await blur(valueInput);
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - last seen more than 2 days ago')
-                .to.equal(7);
+            expect(findAll('[data-test-table-data="last_seen_at"]').length).to.equal(7);
+            expect(find('[data-test-table-data="last_seen_at"]')).to.contain.trimmed.text('1 Feb 2022');
+            expect(find('[data-test-table-data="last_seen_at"]')).to.contain.trimmed.text('4 days ago');
         });
 
         it('can filter by created at date', async function () {
