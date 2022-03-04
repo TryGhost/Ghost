@@ -155,8 +155,8 @@ export default class ModalProductPrice extends ModalBase {
         }
 
         if (!this.isFreeProduct) {
-            const monthlyAmount = this.stripeMonthlyAmount * 100;
-            const yearlyAmount = this.stripeYearlyAmount * 100;
+            const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
+            const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
             this.product.set('monthlyPrice', {
                 nickname: 'Monthly',
                 amount: monthlyAmount,
