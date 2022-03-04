@@ -37,6 +37,7 @@ const ALPHA_FEATURES = [
     'membersTableStatus',
     'membersLastSeenFilter',
     'membersTimeFilters',
+    'membersContainsFilters',
     'selectablePortalLinks'
 ];
 
