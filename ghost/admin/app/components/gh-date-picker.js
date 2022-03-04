@@ -82,7 +82,11 @@ export default class GhDatePicker extends Component {
 
     @action
     onDateSelected(datepickerEvent) {
-        this.setDate(datepickerEvent.id);
+        if (datepickerEvent instanceof moment) {
+            this.setDate(datepickerEvent.format(this.dateFormat));
+        } else {
+            this.setDate(datepickerEvent.id);
+        }
     }
 
     @action
