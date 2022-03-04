@@ -31,7 +31,6 @@ jobs:
             ### Schema changes
 
             - [ ]  Both schema change and related migration have been implemented
-            - [ ]  For column changes: indexes have been recreated for sqlite
             - [ ]  For index changes: has been performance tested for large tables
             - [ ]  For new tables/columns: fields use the appropriate predefined field lengths
             - [ ]  For new tables/columns: field names follow the appropriate conventions
