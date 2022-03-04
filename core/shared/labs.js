@@ -36,7 +36,6 @@ const ALPHA_FEATURES = [
     'tierName',
     'membersTableStatus',
     'membersLastSeenFilter',
-    'membersTimeFilters',
     'membersContainsFilters',
     'selectablePortalLinks'
 ];
