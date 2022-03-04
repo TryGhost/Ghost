@@ -213,12 +213,12 @@ describe('Integration: Component: gh-date-picker', function () {
         await fillIn('[data-test-date-picker-input]', 'narp');
         await blur('[data-test-date-picker-input]');
 
-        expect(find('[data-test-date-picker-error]')).to.contain.text('Invalid date format');
+        expect(find('[data-test-date-picker-error]')).to.contain.text('Date must be YYYY-MM-DD');
 
         expect(changeSpy.callCount, '@onChange call count').to.equal(0);
         expect(errorSpy.callCount, '@onError call count').to.equal(1);
         expect(errorSpy.firstCall.args[0]).to.be.instanceof(Error);
-        expect(errorSpy.firstCall.args[0].message).to.contain('Invalid date format');
+        expect(errorSpy.firstCall.args[0].message).to.contain('Date must be YYYY-MM-DD');
     });
 
     it('clears error on internal change to valid', async function () {
@@ -294,6 +294,18 @@ describe('Integration: Component: gh-date-picker', function () {
             expect(errorSpy.firstCall.args[0].date).to.be.equal('2022-02-10');
         });
 
+        it('allows for min date error override', async function () {
+            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+            this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
+
+            await render(hbs`<GhDatePicker @value={{this.date}} @minDate={{this.minDate}} @minDateError="Must be in the future" @onChange={{this.onChange}} />`);
+
+            await fillIn('[data-test-date-picker-input]', '2022-02-10');
+            await blur('[data-test-date-picker-input]');
+
+            expect(find('[data-test-date-picker-error]')).to.have.text('Must be in the future');
+        });
+
         it('errors when date input is later than max', async function () {
             this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
             this.set('maxDate', moment('2022-02-25 12:00:00.000Z').toDate());
@@ -315,6 +327,18 @@ describe('Integration: Component: gh-date-picker', function () {
             expect(errorSpy.firstCall.args[0]).to.be.instanceof(Error);
             expect(errorSpy.firstCall.args[0].message).to.equal('Must be on or before 2022-02-25');
             expect(errorSpy.firstCall.args[0].date).to.be.equal('2022-02-28');
+        });
+
+        it('allows for max date error override', async function () {
+            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+            this.set('maxDate', moment('2022-02-25 12:00:00.000Z').toDate());
+
+            await render(hbs`<GhDatePicker @value={{this.date}} @maxDate={{this.maxDate}} @maxDateError="Must be in the past" @onChange={{this.onChange}} />`);
+
+            await fillIn('[data-test-date-picker-input]', '2022-02-28');
+            await blur('[data-test-date-picker-input]');
+
+            expect(find('[data-test-date-picker-error]')).to.have.text('Must be in the past');
         });
     });
 });

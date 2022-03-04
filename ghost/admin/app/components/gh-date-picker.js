@@ -39,7 +39,7 @@ export default class GhDatePicker extends Component {
         this.error = null;
 
         if (!dateStr.match(/^\d\d\d\d-\d\d-\d\d$/)) {
-            this.error = `Invalid date format, must be ${this.dateFormat}`;
+            this.error = `Date must be ${this.dateFormat}`;
             this.args.onError?.(new DateError({
                 message: this.error,
                 date: dateStr
@@ -59,7 +59,8 @@ export default class GhDatePicker extends Component {
         }
 
         if (this.args.minDate && mDate.isBefore(moment(this.args.minDate))) {
-            this.error = `Must be on or after ${moment(this.args.minDate).format(this.dateFormat)}`;
+            this.error = this.args.minDateError || `Must be on or after ${moment(this.args.minDate).format(this.dateFormat)}`;
+
             this.args.onError?.(new DateError({
                 message: this.error,
                 date: dateStr
@@ -68,7 +69,7 @@ export default class GhDatePicker extends Component {
         }
 
         if (this.args.maxDate && mDate.isAfter(moment(this.args.maxDate))) {
-            this.error = `Must be on or before ${moment(this.args.maxDate).format(this.dateFormat)}`;
+            this.error = this.args.maxDateError || `Must be on or before ${moment(this.args.maxDate).format(this.dateFormat)}`;
             this.args.onError?.(new DateError({
                 message: this.error,
                 date: dateStr
