@@ -386,8 +386,8 @@ export default class MembersAccessController extends Controller {
     async saveProduct() {
         const isStripeConnected = this.settings.get('stripeConnectAccountId');
         if (this.product && isStripeConnected) {
-            const monthlyAmount = this.stripeMonthlyAmount * 100;
-            const yearlyAmount = this.stripeYearlyAmount * 100;
+            const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
+            const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
 
             this.product.set('monthlyPrice', {
                 nickname: 'Monthly',

@@ -19,8 +19,8 @@ export default class GhLaunchWizardFinaliseComponent extends Component {
         const data = this.args.getData();
         this.product = data?.product;
         if (this.product) {
-            const monthlyAmount = data.monthlyAmount * 100;
-            const yearlyAmount = data.yearlyAmount * 100;
+            const monthlyAmount = Math.round(data.monthlyAmount * 100);
+            const yearlyAmount = Math.round(data.yearlyAmount * 100);
             const currency = data.currency;
             const monthlyPrice = {
                 nickname: 'Monthly',

@@ -189,9 +189,9 @@ export default Component.extend({
                 if (plan.name !== 'Complimentary') {
                     let newAmount;
                     if (plan.interval === 'year') {
-                        newAmount = yearlyAmount * 100;
+                        newAmount = Math.round(yearlyAmount * 100);
                     } else if (plan.interval === 'month') {
-                        newAmount = monthlyAmount * 100;
+                        newAmount = Math.round(monthlyAmount * 100);
                     }
                     return Object.assign({}, plan, {
                         amount: newAmount
