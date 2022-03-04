@@ -175,6 +175,7 @@ class ajaxService extends AjaxService {
     get headers() {
         return {
             'X-Ghost-Version': config.APP.version,
+            'Content-Version': 'v4',
             'App-Pragma': 'no-cache'
         };
     }
