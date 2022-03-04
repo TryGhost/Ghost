@@ -109,7 +109,7 @@ class ImportManager {
 
     /**
      * Remove files after we're done (abstracted into a function for easier testing)
-     * @returns {Function}
+     * @returns {void}
      */
     cleanUp() {
         const self = this;
@@ -145,14 +145,14 @@ class ImportManager {
      * Importable content must be found either in the root, or inside one base directory
      *
      * @param {String} directory
-     * @returns {Promise}
+     * @returns {boolean}
      */
     isValidZip(directory) {
         // Globs match content in the root or inside a single directory
-        const extMatchesBase = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_OR_SINGLE_DIR), {cwd: directory});
+        const extMatchesBase = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_OR_SINGLE_DIR), {cwd: directory, nocase: true});
 
         const extMatchesAll = glob.sync(
-            this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory}
+            this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory, nocase: true}
         );
 
         const dirMatches = glob.sync(
@@ -173,8 +173,8 @@ class ImportManager {
 
     /**
      * Use the extract module to extract the given zip file to a temp directory & return the temp directory path
-     * @param {String} filePath
-     * @returns {Promise[]} Files
+     * @param {string} filePath
+     * @returns {Promise<string>} full path to the extracted folder
      */
     extractZip(filePath) {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
@@ -190,11 +190,11 @@ class ImportManager {
      * are relevant to the given handler, and return them as a name and path combo
      * @param {Object} handler
      * @param {String} directory
-     * @returns [] Files
+     * @returns {File[]} Files
      */
     getFilesFromZip(handler, directory) {
         const globPattern = this.getExtensionGlob(handler.extensions, ALL_DIRS);
-        return _.map(glob.sync(globPattern, {cwd: directory}), function (file) {
+        return _.map(glob.sync(globPattern, {cwd: directory, nocase: true}), function (file) {
             return {name: file, path: path.join(directory, file)};
         });
     }
@@ -206,9 +206,9 @@ class ImportManager {
      */
     getBaseDirectory(directory) {
         // Globs match root level only
-        const extMatches = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_ONLY), {cwd: directory});
+        const extMatches = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_ONLY), {cwd: directory, nocase: true});
 
-        const dirMatches = glob.sync(this.getDirectoryGlob(this.getDirectories(), ROOT_ONLY), {cwd: directory});
+        const dirMatches = glob.sync(this.getDirectoryGlob(this.getDirectories(), ROOT_ONLY), {cwd: directory, nocase: true});
         let extMatchesAll;
 
         // There is no base directory
@@ -217,7 +217,7 @@ class ImportManager {
         }
         // There is a base directory, grab it from any ext match
         extMatchesAll = glob.sync(
-            this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory}
+            this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory, nocase: true}
         );
         if (extMatchesAll.length < 1 || extMatchesAll[0].split('/') < 1) {
             throw new errors.ValidationError({message: tpl(messages.invalidZipFileBaseDirectory)});
@@ -233,13 +233,17 @@ class ImportManager {
      * The data key contains JSON representing any data that should be imported
      * The image key contains references to images that will be stored (and where they will be stored)
      * @param {File} file
-     * @returns {Promise(ImportData)}
+     * @returns {Promise<ImportData>}
      */
     processZip(file) {
         const self = this;
 
         return this.extractZip(file.path).then(function (zipDirectory) {
             const ops = [];
+
+            /**
+             * @type {ImportData}
+             */
             const importData = {};
             let baseDir;
 
@@ -284,7 +288,7 @@ class ImportManager {
      * The data key contains JSON representing any data that should be imported
      * The image key contains references to images that will be stored (and where they will be stored)
      * @param {File} file
-     * @returns {Promise(ImportData)}
+     * @returns {Promise<ImportData>}
      */
     processFile(file, ext) {
         const fileHandler = _.find(this.handlers, function (handler) {
@@ -304,7 +308,7 @@ class ImportManager {
      * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
      * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
      * @param {File} file
-     * @returns {Promise}
+     * @returns {Promise<ImportData>}
      */
     loadFile(file) {
         const self = this;
@@ -317,7 +321,7 @@ class ImportManager {
      * Pass the prepared importData through the preProcess function of the various importers, so that the importers can
      * make any adjustments to the data based on relationships between it
      * @param {ImportData} importData
-     * @returns {Promise(ImportData)}
+     * @returns {Promise<ImportData>}
      */
     preProcess(importData) {
         const ops = [];
@@ -369,7 +373,7 @@ class ImportManager {
      * The main method of the ImportManager, call this to kick everything off!
      * @param {File} file
      * @param {Object} importOptions to allow override of certain import features such as locking a user
-     * @returns {Promise}
+     * @returns {Promise<ImportData>}
      */
     importFromFile(file, importOptions = {}) {
         const self = this;
@@ -390,10 +394,17 @@ class ImportManager {
 }
 
 /**
+ * File object
+ * @typedef {Object} File
+ * @property {string} name
+ * @property {string} path
+ */
+
+/**
  * A number, or a string containing a number.
  * @typedef {Object} ImportData
- * @property [Object] data
- * @property [Array] images
+ * @property {Object} [data]
+ * @property {Array} [images]
  */
 
 module.exports = new ImportManager();

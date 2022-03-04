@@ -172,6 +172,12 @@ describe('Importer', function () {
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
+                it('accepts a zip with uppercase image extensions', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
                 it('fails a zip with two base directories', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
@@ -182,6 +188,56 @@ describe('Importer', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
 
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
+                });
+            });
+
+            describe('Process Zip', function () {
+                const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
+
+                this.beforeEach(() => {
+                    sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
+                    sinon.stub(ImageHandler, 'loadFile');
+                    sinon.stub(MarkdownHandler, 'loadFile');
+                });
+
+                it('accepts a zip with a base directory', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+    
+                    const zipResult = await ImportManager.processZip(testZip);
+                    zipResult.data.should.not.be.undefined();
+                    should(zipResult.images).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('accepts a zip without a base directory', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+
+                    const zipResult = await ImportManager.processZip(testZip);
+                    zipResult.data.should.not.be.undefined();
+                    should(zipResult.images).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('accepts a zip with an image directory', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+
+                    const zipResult = await ImportManager.processZip(testZip);
+                    zipResult.images.length.should.eql(1);
+                    should(zipResult.data).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('accepts a zip with uppercase image extensions', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+    
+                    const zipResult = await ImportManager.processZip(testZip);
+                    zipResult.images.length.should.eql(1);
+                    should(zipResult.data).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
                 });
             });
 
