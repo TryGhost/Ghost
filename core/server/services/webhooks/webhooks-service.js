@@ -41,6 +41,8 @@ class WebhooksService {
                     help: messages.nonExistingIntegrationIdProvided.help
                 });
             }
+
+            throw error;
         }
     }
 }
