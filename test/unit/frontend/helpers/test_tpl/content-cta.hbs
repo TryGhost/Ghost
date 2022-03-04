@@ -1,5 +1,14 @@
 <aside class="custom-post-upgrade-cta">
     <div class="custom-post-upgrade-cta-content" style="background-color: {{accentColor}}">
+        {{#has visibility="paid"}}
+            <h2>This post is for paying subscribers only</h2>
+        {{/has}}
+        {{#has visibility="members"}}
+            <h2>This post is for subscribers only</h2>
+        {{/has}}
+        {{#has visibility="tiers"}}
+            <h2>This post is for subscribers on the {{tiers}} only </h2>
+        {{/has}}
         {{#if @member}}
             <a class="gh-btn" data-portal="account/plans" style="color:{{accentColor}}">Account upgrade link</a>
         {{else}}
