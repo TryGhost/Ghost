@@ -5,7 +5,6 @@ const os = require('os');
 const glob = require('glob');
 const uuid = require('uuid');
 const {extract} = require('@tryghost/zip');
-const {sequence} = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -242,50 +241,40 @@ class ImportManager {
      * @param {File} file
      * @returns {Promise<ImportData>}
      */
-    processZip(file) {
-        const self = this;
+    async processZip(file) {
+        const zipDirectory = await this.extractZip(file.path);
 
-        return this.extractZip(file.path).then(function (zipDirectory) {
-            const ops = [];
+        /**
+         * @type {ImportData}
+         */
+        const importData = {};
 
-            /**
-             * @type {ImportData}
-             */
-            const importData = {};
-            let baseDir;
+        this.isValidZip(zipDirectory);
+        const baseDir = this.getBaseDirectory(zipDirectory);
 
-            self.isValidZip(zipDirectory);
-            baseDir = self.getBaseDirectory(zipDirectory);
+        for (const handler of this.handlers) {
+            const files = this.getFilesFromZip(handler, zipDirectory);
 
-            _.each(self.handlers, function (handler) {
+            if (files.length > 0) {
                 if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
                     // This limitation is here to reduce the complexity of the importer for now
-                    return Promise.reject(new errors.UnsupportedMediaTypeError({
+                    throw new errors.UnsupportedMediaTypeError({
                         message: tpl(messages.zipContainsMultipleDataFormats)
-                    }));
-                }
-
-                const files = self.getFilesFromZip(handler, zipDirectory);
-
-                if (files.length > 0) {
-                    ops.push(function () {
-                        return handler.loadFile(files, baseDir).then(function (data) {
-                            importData[handler.type] = data;
-                        });
                     });
                 }
-            });
 
-            if (ops.length === 0) {
-                return Promise.reject(new errors.UnsupportedMediaTypeError({
-                    message: tpl(messages.noContentToImport)
-                }));
+                const data = await handler.loadFile(files, baseDir);
+                importData[handler.type] = data;
             }
+        }
 
-            return sequence(ops).then(function () {
-                return importData;
+        if (Object.keys(importData).length === 0) {
+            throw new errors.UnsupportedMediaTypeError({
+                message: tpl(messages.noContentToImport)
             });
-        });
+        }
+
+        return importData;
     }
 
     /**

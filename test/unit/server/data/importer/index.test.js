@@ -6,6 +6,7 @@ const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const moment = require('moment');
 const path = require('path');
+const fs = require('fs-extra');
 
 // Stuff we are testing
 const ImportManager = require('../../../../../core/server/data/importer');
@@ -199,6 +200,22 @@ describe('Importer', function () {
                 });
             });
 
+            it('cleans up', async function () {
+                ImportManager.fileToDelete = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                const removeStub = sinon.stub(fs, 'remove').returns(undefined);
+
+                await ImportManager.cleanUp();
+                removeStub.calledOnce.should.be.true();
+            });
+
+            it('doesn\'t cleans up', async function () {
+                ImportManager.fileToDelete = null;
+                const removeStub = sinon.stub(fs, 'remove').returns(undefined);
+
+                await ImportManager.cleanUp();
+                removeStub.calledOnce.should.be.false();
+            });
+
             describe('Process Zip', function () {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
 
@@ -245,6 +262,22 @@ describe('Importer', function () {
                     const zipResult = await ImportManager.processZip(testZip);
                     zipResult.images.length.should.eql(1);
                     should(zipResult.data).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('throws zipContainsMultipleDataFormats', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-multiple-data-formats');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+    
+                    await should(ImportManager.processZip(testZip)).rejectedWith(/multiple data formats/);
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('throws noContentToImport', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+    
+                    await should(ImportManager.processZip(testZip)).rejectedWith(/not include any content/);
                     extractSpy.calledOnce.should.be.true();
                 });
             });
