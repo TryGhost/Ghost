@@ -93,7 +93,7 @@ class ImportManager {
 
     /**
      * @param {String[]} extensions
-     * @param {Number} level
+     * @param {Number} [level]
      * @returns {String}
      */
     getExtensionGlob(extensions, level) {
@@ -106,7 +106,7 @@ class ImportManager {
     /**
      *
      * @param {String[]} directories
-     * @param {Number} level
+     * @param {Number} [level]
      * @returns {String}
      */
     getDirectoryGlob(directories, level) {
@@ -343,7 +343,7 @@ class ImportManager {
      * Each importer gets passed the data from importData which has the key matching its type - i.e. it only gets the
      * data that it should import. Each importer then handles actually importing that data into Ghost
      * @param {ImportData} importData
-     * @param {ImportOptions} importOptions to allow override of certain import features such as locking a user
+     * @param {ImportOptions} [importOptions] to allow override of certain import features such as locking a user
      * @returns {Promise<ImportResult[]>} importResults
      */
     async doImport(importData, importOptions) {

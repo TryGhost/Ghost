@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const moment = require('moment');
@@ -101,8 +100,8 @@ describe('Importer', function () {
         describe('loadFile', function () {
             it('knows when to process a file', function (done) {
                 const testFile = {name: 'myFile.json', path: '/my/path/myFile.json'};
-                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve());
-                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve());
+                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve({}));
+                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve({}));
 
                 ImportManager.loadFile(testFile).then(function () {
                     zipSpy.calledOnce.should.be.false();
@@ -114,8 +113,8 @@ describe('Importer', function () {
             // We need to make sure we don't actually extract a zip and leave temporary files everywhere!
             it('knows when to process a zip', function (done) {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
-                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve());
-                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve());
+                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve({}));
+                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve({}));
 
                 ImportManager.loadFile(testZip).then(function () {
                     zipSpy.calledOnce.should.be.true();
@@ -132,14 +131,14 @@ describe('Importer', function () {
                 const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve('/tmp/dir/'));
 
                 const validSpy = sinon.stub(ImportManager, 'isValidZip').returns(true);
-                const baseDirSpy = sinon.stub(ImportManager, 'getBaseDirectory').returns();
+                const baseDirSpy = sinon.stub(ImportManager, 'getBaseDirectory').returns('');
                 const getFileSpy = sinon.stub(ImportManager, 'getFilesFromZip');
                 const jsonSpy = sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
                 const imageSpy = sinon.stub(ImageHandler, 'loadFile');
                 const mdSpy = sinon.stub(MarkdownHandler, 'loadFile');
 
                 getFileSpy.returns([]);
-                getFileSpy.withArgs(JSONHandler).returns(['/tmp/dir/myFile.json']);
+                getFileSpy.withArgs(JSONHandler, sinon.match.string).returns([{path: '/tmp/dir/myFile.json', name: 'myFile.json'}]);
 
                 ImportManager.processZip(testZip).then(function (zipResult) {
                     extractSpy.calledOnce.should.be.true();
@@ -350,7 +349,7 @@ describe('Importer', function () {
             // generateReport is intended to create a message to show to the user about what has been imported
             // it is currently a noop
             it('is currently a noop', function (done) {
-                const input = {data: {}, images: []};
+                const input = [{data: {}, images: []}];
                 ImportManager.generateReport(input).then(function (output) {
                     output.should.equal(input);
                     done();
@@ -360,13 +359,13 @@ describe('Importer', function () {
 
         describe('importFromFile', function () {
             it('does the import steps in order', function (done) {
-                const loadFileSpy = sinon.stub(ImportManager, 'loadFile').returns(Promise.resolve());
-                const preProcessSpy = sinon.stub(ImportManager, 'preProcess').returns(Promise.resolve());
-                const doImportSpy = sinon.stub(ImportManager, 'doImport').returns(Promise.resolve());
-                const generateReportSpy = sinon.stub(ImportManager, 'generateReport').returns(Promise.resolve());
-                const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns({});
+                const loadFileSpy = sinon.stub(ImportManager, 'loadFile').returns(Promise.resolve({}));
+                const preProcessSpy = sinon.stub(ImportManager, 'preProcess').returns(Promise.resolve({}));
+                const doImportSpy = sinon.stub(ImportManager, 'doImport').returns(Promise.resolve([]));
+                const generateReportSpy = sinon.spy(ImportManager, 'generateReport');
+                const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns();
 
-                ImportManager.importFromFile({}).then(function () {
+                ImportManager.importFromFile({name: 'test.json', path: '/test.json'}).then(function () {
                     loadFileSpy.calledOnce.should.be.true();
                     preProcessSpy.calledOnce.should.be.true();
                     doImportSpy.calledOnce.should.be.true();
