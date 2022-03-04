@@ -110,9 +110,12 @@ const getPortalProductPrices = async function () {
             monthlyPrice: product.monthlyPrice,
             yearlyPrice: product.yearlyPrice,
             benefits: product.benefits,
+            active: product.active,
             type: product.type,
             prices: productPrices
         };
+    }).filter((product) => {
+        return !!product.active;
     });
     const defaultProduct = products.find((product) => {
         return product.type === 'paid';
