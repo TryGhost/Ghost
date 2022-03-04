@@ -8,14 +8,14 @@
                     "slug":             "free",
                     "type":             "free",
                     "active":           true,
-                    "visible":          true
+                    "visibility":       "public"
                 },
                 {
                     "name":             "Default Product",
                     "slug":             "default-product",
                     "type":             "paid",
                     "active":           true,
-                    "visible":          true
+                    "visibility":       "public"
                 }
             ]
         },

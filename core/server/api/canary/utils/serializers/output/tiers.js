@@ -82,7 +82,7 @@ function serializeTier(tier, options, apiType) {
         monthly_price: serializeStripePrice(json.monthlyPrice, hideStripeData),
         yearly_price: serializeStripePrice(json.yearlyPrice, hideStripeData),
         benefits: json.benefits || null,
-        visible: json.visible
+        visibility: json.visibility
     };
 
     return serialized;
