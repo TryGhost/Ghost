@@ -219,7 +219,7 @@ class ImportManager {
         extMatchesAll = glob.sync(
             this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory, nocase: true}
         );
-        if (extMatchesAll.length < 1 || extMatchesAll[0].split('/') < 1) {
+        if (extMatchesAll.length < 1 || extMatchesAll[0].split('/').length < 1) {
             throw new errors.ValidationError({message: tpl(messages.invalidZipFileBaseDirectory)});
         }
 
