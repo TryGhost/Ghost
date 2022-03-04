@@ -20,7 +20,6 @@ describe('Acceptance: Members filtering', function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
         enableLabsFlag(this.server, 'membersLastSeenFilter');
-        enableLabsFlag(this.server, 'membersTimeFilters');
         enableLabsFlag(this.server, 'multipleProducts');
 
         // test with stripe connected and email turned on

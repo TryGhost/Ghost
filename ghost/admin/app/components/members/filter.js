@@ -16,15 +16,15 @@ const FILTER_PROPERTIES = [
     {label: 'Tiers', name: 'product', group: 'Basic', feature: 'multipleProducts'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Last seen', name: 'last_seen_at', group: 'Basic', feature: 'membersLastSeenFilter'},
-    {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date', feature: 'membersTimeFilters'},
+    {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
 
     // Member subscription
     {label: 'Member status', name: 'status', group: 'Subscription'},
     // {label: 'Tier', name: 'tier', group: 'Subscription'},
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
     {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
-    {label: 'Paid start date', name: 'subscriptions.start_date', valueType: 'date', group: 'Subscription', feature: 'membersTimeFilters'},
-    {label: 'Next billing date', name: 'subscriptions.current_period_end', valueType: 'date', group: 'Subscription', feature: 'membersTimeFilters'},
+    {label: 'Paid start date', name: 'subscriptions.start_date', valueType: 'date', group: 'Subscription'},
+    {label: 'Next billing date', name: 'subscriptions.current_period_end', valueType: 'date', group: 'Subscription'},
 
     // Emails
     {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
