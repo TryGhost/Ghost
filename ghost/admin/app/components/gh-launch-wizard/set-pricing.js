@@ -199,8 +199,8 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         const options = {
             disableBackground: true,
             currency: this.selectedCurrency.value,
-            monthlyPrice: this.stripeMonthlyAmount * 100,
-            yearlyPrice: this.stripeYearlyAmount * 100,
+            monthlyPrice: Math.round(this.stripeMonthlyAmount * 100),
+            yearlyPrice: Math.round(this.stripeYearlyAmount * 100),
             isMonthlyChecked: this.isMonthlyChecked,
             isYearlyChecked: this.isYearlyChecked,
             isFreeChecked: this.isFreeChecked,
