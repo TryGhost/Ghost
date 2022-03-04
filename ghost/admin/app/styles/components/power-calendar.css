@@ -21,6 +21,8 @@
 .ember-power-calendar-nav-title {
   flex: 1;
   text-align: center;
+  font-size: 1.35rem;
+  font-weight: 600;
 }
 
 .ember-power-calendar-row {
@@ -41,6 +43,7 @@
   justify-content: center;
   display: flex;
   align-items: center;
+  height: 23px;
 }
 
 .ember-power-calendar-day {
@@ -56,6 +59,7 @@
   align-items: center;
   justify-content: center;
   padding: 0;
+  height: 23px;
 }
 
 .ember-power-calendar-nav-control {
@@ -76,8 +80,7 @@
 }
 
 .ember-power-calendar-weekdays {
-  color: var(--darkgrey);
-  padding: 4px 0;
+  color: var(--midlightgrey);
 }
 
 .ember-power-calendar-day {
@@ -86,6 +89,7 @@
 
 .ember-power-calendar-nav {
   padding: 0 4px 8px;
+  height: 32px;
 }
 
 .ember-power-calendar-nav-control {
@@ -235,4 +239,55 @@ svg.gh-date-picker-cal-icon {
     right: 0;
     top: 9px;
     font-size: 1.3rem;
+}
+
+.gh-date-picker-sh-container {
+    display: flex;
+    min-width: 380px;
+}
+
+.gh-date-picker-sh-calendar {
+    flex-basis: 213px;
+}
+
+.gh-date-picker-with-shortcuts .ember-power-datepicker-content {
+    min-width: 300px;
+}
+
+.gh-date-picker-shortcuts {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid var(--whitegrey);
+}
+
+.gh-date-picker-shortcuts h4 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 5px 0;
+    height: 31px;
+    line-height: 24px;
+}
+
+.gh-date-picker-shortcuts ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-bottom: 1px;
+}
+
+.gh-date-picker-shortcuts ol li {
+    height: 24px;
+}
+
+.gh-date-picker-shortcuts ol li button {
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 1.4rem;
 }
