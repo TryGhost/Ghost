@@ -174,7 +174,7 @@ export default class ModalProductPrice extends ModalBase {
                 type: 'recurring'
             });
         }
-        this.product.set('benefits', this.benefits);
+        this.product.set('benefits', this.benefits.filter(benefit => !benefit.get('isBlank')));
         yield this.product.save();
 
         yield this.confirm();

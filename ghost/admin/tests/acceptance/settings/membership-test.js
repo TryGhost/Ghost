@@ -267,6 +267,17 @@ describe('Acceptance: Settings - Membership', function () {
         expect(find(`${modal} [data-test-tierpreview-benefits]`)).to.not.contain.text('First benefit');
         expect(findAll(`${modal} [data-test-tierpreview-benefits] li`).length).to.equal(1);
 
+        // Add a new benefit that we will later rename to an empty name
+        await fillIn(`${newBenefit} [data-test-input="benefit-label"]`, 'Third benefit');
+        await click(`${newBenefit} [data-test-button="add-benefit"]`);
+
+        expect(find(`${modal} [data-test-tierpreview-benefits]`)).to.contain.text('Third benefit');
+        expect(findAll(`${modal} [data-test-tierpreview-benefits] li`).length).to.equal(2);
+
+        // Clear the second benefit's name (it should get removed after saving)
+        const secondBenefitItem = `${modal} [data-test-benefit-item="1"]`;
+        await fillIn(`${secondBenefitItem} [data-test-input="benefit-label"]`, '');
+
         await click('[data-test-button="save-product"]');
 
         expect(find(`${modal}`)).to.not.exist;
@@ -274,6 +285,7 @@ describe('Acceptance: Settings - Membership', function () {
         expect(find('[data-test-product-card="free"] [data-test-description]')).to.contain.text('Test description');
         expect(find('[data-test-product-card="free"] [data-test-benefits]')).to.contain.text('Benefits (1)');
         expect(find('[data-test-product-card="free"] [data-test-benefits] li:nth-of-type(1)')).to.contain.text('Second benefit');
+        expect(findAll(`[data-test-product-card="free"] [data-test-benefits] li`).length).to.equal(1);
 
         const freeProduct = this.server.db.products.findBy({slug: 'free'});
         expect(freeProduct.description).to.equal('Test description');
