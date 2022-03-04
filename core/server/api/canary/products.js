@@ -93,7 +93,9 @@ module.exports = {
         options: [
             'id'
         ],
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         validation: {
             options: {
                 id: {
@@ -108,11 +110,6 @@ module.exports = {
                 frame.options
             );
 
-            if (model.wasChanged()) {
-                this.headers.cacheInvalidate = true;
-            } else {
-                this.headers.cacheInvalidate = false;
-            }
             return model;
         }
     }
