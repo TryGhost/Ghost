@@ -119,6 +119,12 @@ export function getSubscriptionFromId({member, subscriptionId}) {
     return null;
 }
 
+export function getMemberTierName({member}) {
+    const subscription = getMemberSubscription({member});
+
+    return subscription?.tier?.name || '';
+}
+
 export function hasOnlyFreePlan({plans, site = {}}) {
     plans = plans || getSitePrices({site});
     return !plans || plans.length === 0 || (plans.length === 1 && plans[0].type === 'free');
