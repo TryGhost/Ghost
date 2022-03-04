@@ -341,4 +341,23 @@ describe('Integration: Component: gh-date-picker', function () {
             expect(find('[data-test-date-picker-error]')).to.have.text('Must be in the past');
         });
     });
+
+    describe('block invocation', function () {
+        it('exposes Nav and Days components', async function () {
+            clock = sinon.useFakeTimers({
+                now: moment('2022-02-02 22:22:22.000Z').toDate()
+            });
+
+            this.set('date', moment('2022-02-02 22:22:22.000Z')).toDate();
+            this.set('maxDate', moment('2022-02-05 12:00:00.000Z').toDate());
+
+            await render(hbs`<GhDatePicker @value={{this.date}} @maxDate={{this.maxDate}} as |dp|><dp.Nav /><dp.Days /></GhDatePicker>`);
+
+            await click('[data-test-date-picker-trigger]');
+
+            // calendar is rendered with the right maxDate value curried
+            expect(find('[data-date="2022-02-10"]')).to.have.attribute('disabled');
+            expect(find('[data-date="2022-02-25"]')).to.have.attribute('disabled');
+        });
+    });
 });

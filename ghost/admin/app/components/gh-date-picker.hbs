@@ -1,5 +1,5 @@
 
-<div class="gh-date-picker">
+<div class="gh-date-picker" ...attributes>
     <PowerDatepicker
         @selected={{@value}}
         @center={{@value}}
@@ -8,7 +8,7 @@
         @disabled={{@disabled}}
         as |dp|
     >
-        <dp.Trigger @tabindex="-1" data-test-date-picker-trigger ...attributes>
+        <dp.Trigger @tabindex="-1" data-test-date-picker-trigger>
             <div class="{{if this.error "error"}}">
                 {{!-- template-lint-disable no-down-event-binding --}}
                 <input
@@ -28,8 +28,21 @@
             </div>
         </dp.Trigger>
         <dp.Content class="dropdown-menu">
-            <dp.Nav />
-            <dp.Days @minDate={{this.minDate}} @maxDate={{this.maxDate}} @weekdayFormat="min" />
+            {{#if (has-block)}}
+                {{yield (assign
+                    dp
+                    (hash
+                        select=this.onDateSelected
+                        Triger=null
+                        Content=null
+                        Nav=dp.Nav
+                        Days=(component dp.Days minDate=this.minDate maxDate=this.maxDate weekdayFormat="min")
+                    )
+                )}}
+            {{else}}
+                <dp.Nav />
+                <dp.Days @minDate={{this.minDate}} @maxDate={{this.maxDate}} @weekdayFormat="min" />
+            {{/if}}
         </dp.Content>
     </PowerDatepicker>
 
