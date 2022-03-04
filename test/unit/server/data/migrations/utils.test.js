@@ -172,7 +172,7 @@ const ObjectId = require('bson-objectid').default;
 
 async function setupDb() {
     const knex = Knex({
-        client: 'sqlite',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },

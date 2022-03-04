@@ -13,7 +13,7 @@ const doRaw = function doRaw(query, transaction, fn) {
 };
 
 const getTables = function getTables(transaction) {
-    return doRaw('select * from sqlite_master where type = "table"', transaction, function (response) {
+    return doRaw('select * from sqlite_master where type = \'table\'', transaction, function (response) {
         return _.reject(_.map(response, 'tbl_name'), function (name) {
             return name === 'sqlite_sequence';
         });

@@ -56,6 +56,8 @@ const checkUrlProtocol = function checkUrlProtocol(url) {
 const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
     if (nconf.get('database:client') === 'mysql') {
         nconf.set('database:client', 'mysql2');
+    } else if (nconf.get('database:client') === 'sqlite3') {
+        nconf.set('database:client', 'better-sqlite3');
     }
 
     const database = nconf.get('database');
@@ -71,7 +73,7 @@ const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
 
     nconf.set('database', database);
 
-    if (nconf.get('database:client') === 'sqlite3') {
+    if (nconf.get('database:client') === 'better-sqlite3') {
         makePathsAbsolute(nconf, nconf.get('database:connection'), 'database:connection');
 
         // In the default SQLite test config we set the path to /tmp/ghost-test.db,

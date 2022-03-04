@@ -538,7 +538,7 @@
             "name": "User",
             "entries": [
                 {
-                    "id": 1,
+                    "id": "1",
                     "name": "Ghost",
                     "email": "ghost@example.com",
                     "status": "inactive",

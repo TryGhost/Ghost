@@ -9,21 +9,23 @@ let knexInstance;
 function configure(dbConfig) {
     const client = dbConfig.client;
 
-    if (client === 'sqlite3') {
+    if (client === 'better-sqlite3') {
         // Backwards compatibility with old knex behaviour
         dbConfig.useNullAsDefault = Object.prototype.hasOwnProperty.call(dbConfig, 'useNullAsDefault') ? dbConfig.useNullAsDefault : true;
 
         // Enables foreign key checks and delete on cascade
         dbConfig.pool = {
             afterCreate(conn, cb) {
-                conn.run('PRAGMA foreign_keys = ON', cb);
+                conn.pragma('foreign_keys = ON');
 
                 // These two are meant to improve performance at the cost of reliability
                 // Should be safe for tests. We add them here and leave them on
                 if (config.get('env').startsWith('testing')) {
-                    conn.run('PRAGMA synchronous = OFF;');
-                    conn.run('PRAGMA journal_mode = TRUNCATE;');
+                    conn.pragma('synchronous = OFF;');
+                    conn.pragma('journal_mode = TRUNCATE;');
                 }
+
+                cb();
             }
         };
 
