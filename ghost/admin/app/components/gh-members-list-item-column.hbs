@@ -56,8 +56,8 @@
 
 {{else if (eq @filterColumn 'subscriptions.status')}}
     <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
-        {{#if (not (is-empty this.subscriptionStatus))}}
-            <span>{{capitalize this.subscriptionStatus}}</span>
+        {{#if (not (is-empty this.mostRecentSubscription.status))}}
+            <span>{{capitalize this.mostRecentSubscription.status}}</span>
         {{else}}
             <span class="midlightgrey">-</span>
         {{/if}}
@@ -65,8 +65,8 @@
 
 {{else if (eq @filterColumn 'subscriptions.plan_interval')}}
     <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
-        {{#if (not (is-empty this.billingPeriod))}}
-            <span>{{capitalize this.billingPeriod}}</span>
+        {{#if (not (is-empty this.mostRecentSubscription.price.interval))}}
+            <span>{{capitalize this.mostRecentSubscription.price.interval}}</span>
         {{else}}
             <span class="midlightgrey">-</span>
         {{/if}}
@@ -74,9 +74,9 @@
 
 {{else if (eq @filterColumn 'subscriptions.start_date')}}
     <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
-        {{#if (not (is-empty @member.subscriptions.firstObject.start_date))}}
-            {{moment-format (moment-site-tz @member.subscriptions.firstObject.start_date) "D MMM YYYY"}}
-            <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now @member.subscriptions.firstObject.start_date}}</div>
+        {{#if (not (is-empty this.mostRecentSubscription.start_date))}}
+            {{moment-format (moment-site-tz this.mostRecentSubscription.start_date) "D MMM YYYY"}}
+            <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now this.mostRecentSubscription.start_date}}</div>
         {{else}}
             <span class="midlightgrey">-</span>
         {{/if}}
@@ -84,9 +84,9 @@
 
 {{else if (eq @filterColumn 'subscriptions.current_period_end')}}
     <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
-        {{#if (not (is-empty @member.subscriptions.firstObject.current_period_end))}}
-            {{moment-format (moment-site-tz @member.subscriptions.firstObject.current_period_end) "D MMM YYYY"}}
-            <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now @member.subscriptions.firstObject.current_period_end}}</div>
+        {{#if (not (is-empty this.mostRecentSubscription.current_period_end))}}
+            {{moment-format (moment-site-tz this.mostRecentSubscription.current_period_end) "D MMM YYYY"}}
+            <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now this.mostRecentSubscription.current_period_end}}</div>
         {{else}}
             <span class="midlightgrey">-</span>
         {{/if}}
