@@ -21,7 +21,7 @@ export default ModalComponent.extend({
     },
 
     async _resetPasswords() {
-        const res = await fetch('/ghost/api/canary/admin/authentication/reset_all_passwords/', {
+        const res = await fetch('/ghost/api/admin/authentication/reset_all_passwords/', {
             method: 'POST'
         });
         if (res.status < 200 || res.status >= 300) {
