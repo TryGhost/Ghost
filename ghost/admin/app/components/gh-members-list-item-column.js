@@ -1,4 +1,6 @@
 import Component from '@glimmer/component';
+import {get} from '@ember/object';
+import {mostRecentlyUpdated} from 'ghost-admin/helpers/most-recently-updated';
 
 export default class GhMembersListItemColumn extends Component {
     constructor(...args) {
@@ -6,23 +8,16 @@ export default class GhMembersListItemColumn extends Component {
     }
 
     get labels() {
-        const labelData = this.args.member.get('labels') || [];
+        const labelData = get(this.args.member, 'labels') || [];
         return labelData.map(label => label.name).join(', ');
     }
 
     get products() {
-        const productData = this.args.member.get('products') || [];
+        const productData = get(this.args.member, 'products') || [];
         return productData.map(product => product.name).join(', ');
     }
 
-    get subscriptionStatus() {
-        const subscriptions = this.args.member.get('subscriptions') || [];
-        return subscriptions[0]?.status;
-    }
-
-    get billingPeriod() {
-        const subscriptions = this.args.member.get('subscriptions') || [];
-        const billingPeriod = subscriptions[0]?.price?.interval;
-        return billingPeriod;
+    get mostRecentSubscription() {
+        return mostRecentlyUpdated(get(this.args.member, 'subscriptions'));
     }
 }
