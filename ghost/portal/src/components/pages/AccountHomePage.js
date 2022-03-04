@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, getUpdatedOfferPrice, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
+import {getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -281,14 +281,17 @@ const PaidAccountActions = () => {
             price,
             default_payment_card_last4: defaultCardLast4
         } = subscription || {};
+        let planLabel = 'Plan';
+
+        // Show name of tiers if there are multiple tiers
+        if (hasMultipleProductsFeature({site}) && getMemberTierName({member})) {
+            planLabel = getMemberTierName({member});
+        }
         return (
             <>
                 <section>
                     <div className='gh-portal-list-detail'>
-                        {/* Shows the name of the tier if there are multiple tiers */}
-                        {/* <h3>Bronze</h3> */}
-                        {/* Shows "Plan" if there are no multiple tiers */}
-                        <h3>Plan</h3>
+                        <h3>{planLabel}</h3>
                         <PlanLabel price={price} isComplimentary={isComplimentary} subscription={subscription} />
                     </div>
                     <PlanUpdateButton isComplimentary={isComplimentary} />
