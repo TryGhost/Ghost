@@ -15,7 +15,6 @@ export const AccountHomePageStyles = `
     .gh-portal-account-main {
         background: var(--grey13);
         padding: 32px 32px 0;
-        max-height: calc(100vh - 12vw - 104px);
     }
 
     .gh-portal-account-header {
