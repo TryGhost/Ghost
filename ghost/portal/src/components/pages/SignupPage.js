@@ -7,6 +7,7 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasMultipleProducts, hasOnlyFreePlan, isInviteOnlySite, getAvailableProducts, hasMultipleProductsFeature, freeHasBenefitsOrDescription} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import {ReactComponent as GhostLogo} from '../../images/ghost-logo-small.svg';
 
 const React = require('react');
 
@@ -138,9 +139,9 @@ export const SignupPageStyles = `
 
     .gh-portal-popup-wrapper.multiple-products .gh-portal-powered {
         display: flex;
-        margin-top: 24px;
+        margin-top: 48px;
         margin-bottom: 0;
-        padding-bottom: 0;
+        padding-bottom: 0 !important;
     }
 
     .gh-portal-invite-only-notification {
@@ -166,33 +167,32 @@ export const SignupPageStyles = `
         background: #fff;
     }
 
-    .gh-portal-popup-wrapper.multiple-products .gh-portal-signin-header {
-        padding-top: 18vmin;
-    }
-
-    .gh-portal-popup-wrapper.signin.multiple-products .gh-portal-popup-container {
-        padding-bottom: 3vmin;
-    }
-
     .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
     .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
         width: 100%;
-        max-width: 420px;
         height: unset;
-        padding: 0 !important;
+        padding: 0 32px !important;
         margin: 24px 32px;
     }
 
+    .gh-portal-popup-wrapper.multiple-products footer .gh-portal-btn {
+        max-width: 420px;
+    }
 
     .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
         padding-top: 24px;
     }
 
-    .gh-portal-powered.multiple-products {
+    .gh-portal-powered.multiple-products.signup {
         display: none;
     }
 
     @media (max-width: 480px) {
+        .gh-portal-popup-wrapper.multiple-products .gh-portal-powered {
+            margin-top: 0;
+            margin-bottom: -32px;
+        }
+
         .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
         .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
             max-width: unset;
@@ -221,10 +221,6 @@ export const SignupPageStyles = `
         .gh-portal-powered.outside {
             left: 50%;
             transform: translateX(-50%);
-        }
-
-        .gh-portal-popup-wrapper.signup {
-            padding-bottom: 20vmin;
         }
     }
 
@@ -620,7 +616,8 @@ class SignupPage extends React.Component {
                         <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' onClick={() => {
                             window.open('https://ghost.org', '_blank');
                         }}>
-                            <img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" alt="Publish with Ghost" />
+                            <GhostLogo />
+                            <span>Powered by Ghost</span>
                         </a>
                     </div>
                 </footer>

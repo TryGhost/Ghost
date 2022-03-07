@@ -5,6 +5,7 @@ import {getFrameStyles} from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
 import {hasMultipleProducts, isCookiesDisabled, getSitePrices, isInviteOnlySite} from '../utils/helpers';
+import {ReactComponent as GhostLogo} from '../images/ghost-logo-small.svg';
 
 const React = require('react');
 
@@ -200,11 +201,12 @@ class PopupContent extends React.Component {
                         {this.renderActivePage()}
                     </div>
                 </div>
-                <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? ' hidden' : '') + pageClass}>
+                <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
                     <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' onClick={() => {
                         window.open('https://ghost.org', '_blank');
                     }}>
-                        <img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" alt="Publish with Ghost" />
+                        <GhostLogo />
+                        Powered by Ghost
                     </a>
                 </div>
             </>
