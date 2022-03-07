@@ -3353,13 +3353,14 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-2.3.0.tgz#4459055d7e49f06bb366eeb5f987fc7c2c17cc49"
-  integrity sha512-jc2VwGsfcGWB8oNF1uwsgyujMYX/pTdI8ofmigdgT6QVzSN0C/Em+3FDNr+LAldB/n12J33VMckg67/HwQgpIQ==
+bookshelf-relations@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-2.4.0.tgz#75d594beaccceab06f13923652508c12dd2a9900"
+  integrity sha512-Diwx/MPvqaeFjdKC2IZoe2vG+Sepcy3EpMd75AB+ToNsjpke6JgKsfFz6wUxrJ+S6VPdNsh7Fpg0Lm4+imK5zg==
   dependencies:
+    "@tryghost/debug" "^0.1.13"
+    "@tryghost/errors" "^1.2.3"
     bluebird "^3.7.2"
-    ghost-ignition "^4.6.2"
     lodash "^4.17.21"
 
 bookshelf@1.2.0:
@@ -6161,7 +6162,7 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-ignition@4.6.3, ghost-ignition@^4.6.2:
+ghost-ignition@4.6.3:
   version "4.6.3"
   resolved "https://registry.yarnpkg.com/ghost-ignition/-/ghost-ignition-4.6.3.tgz#eea33bbd84e4e26096f9b7c8838f972acdab7533"
   integrity sha512-F9Kms91NG7miRH8FdmvHvWGt9crVHaKYap3gFrGekCi0TTpssN6duGi0NERSqAcf+7gC7QXT3BP/yCWwBr3fqw==
