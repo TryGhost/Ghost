@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class DashboardController extends Controller {
@@ -29,9 +30,23 @@ export default class DashboardController extends Controller {
         return this.settings.get('membersSignupAccess') !== 'none';
     }
 
+    get showMembersGraphs() {
+        if (!this.feature.improvedOnboarding) {
+            return this.showMembersData;
+        }
+
+        const hasMembers = this.store.peekAll('member').length > 0;
+        const gettingStartedBannerDismissed = this.feature.dashboardHideGettingStarted === true;
+
+        return this.showMembersData
+            && this.checkMemberCountTask.performCount > 0
+            && (hasMembers || gettingStartedBannerDismissed);
+    }
+
     initialise() {
         this.loadTopMembers();
         this.loadWhatsNew();
+        this.checkMemberCountTask.perform();
     }
 
     loadTopMembers() {
@@ -78,5 +93,12 @@ export default class DashboardController extends Controller {
     dismissLaunchBanner() {
         this.settings.set('editorIsLaunchComplete', true);
         this.settings.save();
+    }
+
+    @task
+    *checkMemberCountTask() {
+        if (this.store.peekAll('member').length === 0) {
+            yield this.store.query('member', {limit: 1});
+        }
     }
 }
