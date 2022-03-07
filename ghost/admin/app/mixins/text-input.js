@@ -1,6 +1,5 @@
 import Mixin from '@ember/object/mixin';
 import {computed} from '@ember/object';
-import {inject as service} from '@ember/service';
 
 const keyCodes = {
     13: 'Enter',
@@ -8,17 +7,20 @@ const keyCodes = {
 };
 
 export default Mixin.create({
-    userAgent: service(),
-
     attributeBindings: ['autofocus'],
 
     selectOnClick: false,
     shouldFocus: false,
     stopEnterKeyDownPropagation: false,
 
+    constructor() {
+        this._super(...arguments);
+        this._isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    },
+
     autofocus: computed(function () {
         if (this.shouldFocus) {
-            return (this.userAgent.os.isIOS) ? false : 'autofocus';
+            return (this._isIOS) ? false : 'autofocus';
         }
 
         return false;
@@ -79,7 +81,7 @@ export default Mixin.create({
     _focus() {
         // Until mobile safari has better support
         // for focusing, we just ignore it
-        if (this.shouldFocus && !this.userAgent.os.isIOS) {
+        if (this.shouldFocus && !this._isIOS) {
             this.element.focus();
         }
     },
