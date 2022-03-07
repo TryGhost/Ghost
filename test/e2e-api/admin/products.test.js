@@ -1,4 +1,5 @@
 const should = require('should');
+const sinon = require('sinon');
 
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 
@@ -16,6 +17,21 @@ describe('Tiers API', function () {
         const stripeService = require('../../../core/server/services/stripe');
         stripeService.api._configured = true;
         mockManager.mockStripe();
+
+        sinon
+            .stub(stripeService.api, 'createProduct')
+            .resolves({
+                id: 'prod_LFPlH9BDDwXcZ1'
+            });
+
+        sinon
+            .stub(stripeService.api, 'createPrice')
+            .resolves({
+                id: 'price_1KYpK92eZvKYlo2C86IrYSPM',
+                currency: 'usd',
+                nickname: null,
+                unit_amount: 299
+            });
     });
 
     afterEach(function () {
