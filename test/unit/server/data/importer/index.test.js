@@ -97,6 +97,34 @@ describe('Importer', function () {
                 .should.equal('**/+(images|content)');
         });
 
+        it('cleans up', async function () {
+            const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+            ImportManager.fileToDelete = file;
+            const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.resolve());
+
+            await ImportManager.cleanUp();
+            removeStub.calledOnce.should.be.true();
+            should(ImportManager.fileToDelete).be.null();
+        });
+
+        it('doesn\'t clean up', async function () {
+            ImportManager.fileToDelete = null;
+            const removeStub = sinon.stub(fs, 'remove').returns(Promise.resolve());
+
+            await ImportManager.cleanUp();
+            removeStub.called.should.be.false();
+        });
+
+        it('silently ignores clean up errors', async function () {
+            const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+            ImportManager.fileToDelete = file;
+            const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.reject(new Error('Unknown file')));
+
+            await ImportManager.cleanUp();
+            removeStub.calledOnce.should.be.true();
+            should(ImportManager.fileToDelete).be.null();
+        });
+
         // Step 1 of importing is loadFile
         describe('loadFile', function () {
             it('knows when to process a file', function (done) {
@@ -200,22 +228,6 @@ describe('Importer', function () {
                 });
             });
 
-            it('cleans up', async function () {
-                ImportManager.fileToDelete = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
-                const removeStub = sinon.stub(fs, 'remove').returns(undefined);
-
-                await ImportManager.cleanUp();
-                removeStub.calledOnce.should.be.true();
-            });
-
-            it('doesn\'t cleans up', async function () {
-                ImportManager.fileToDelete = null;
-                const removeStub = sinon.stub(fs, 'remove').returns(undefined);
-
-                await ImportManager.cleanUp();
-                removeStub.calledOnce.should.be.false();
-            });
-
             describe('Process Zip', function () {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
 
@@ -289,10 +301,28 @@ describe('Importer', function () {
                     ImportManager.getBaseDirectory(testDir).should.equal('basedir');
                 });
 
+                it('returns string for double base directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
+
+                    ImportManager.getBaseDirectory(testDir).should.equal('basedir');
+                });
+
                 it('returns empty for no base directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
                     should.not.exist(ImportManager.getBaseDirectory(testDir));
+                });
+
+                it('returns empty for content handler directories', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+
+                    should.not.exist(ImportManager.getBaseDirectory(testDir));
+                });
+
+                it('throws invalidZipFileBaseDirectory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
+
+                    should(() => ImportManager.getBaseDirectory(testDir)).throwError(/invalid zip file/i);
                 });
             });
 
@@ -396,7 +426,7 @@ describe('Importer', function () {
                 const preProcessSpy = sinon.stub(ImportManager, 'preProcess').returns(Promise.resolve({}));
                 const doImportSpy = sinon.stub(ImportManager, 'doImport').returns(Promise.resolve([]));
                 const generateReportSpy = sinon.spy(ImportManager, 'generateReport');
-                const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns();
+                const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns(Promise.resolve());
 
                 ImportManager.importFromFile({name: 'test.json', path: '/test.json'}).then(function () {
                     loadFileSpy.calledOnce.should.be.true();
