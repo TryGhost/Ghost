@@ -13,7 +13,7 @@ module.exports = function (Bookshelf) {
          * Create a string to act as the permalink for an object.
          * @param {Bookshelf['Model']} Model Model type to generate a slug for
          * @param {String} base The string for which to generate a slug, usually a title or name
-         * @param {Object} options Options to pass to findOne
+         * @param {GenerateSlugOptions} [options] Options to pass to findOne
          * @return {Promise<String>} Resolves to a unique slug string
          */
         generateSlug: function generateSlug(Model, base, options) {
@@ -98,6 +98,10 @@ module.exports = function (Bookshelf) {
                 slug = baseName;
             }
 
+            if (options && options.skipDuplicateChecks === true) {
+                return slug;
+            }
+
             // Test for duplicate slugs.
             return checkIfSlugExists(slug);
         }
@@ -106,4 +110,12 @@ module.exports = function (Bookshelf) {
 
 /**
  * @type {import('bookshelf')} Bookshelf
+ */
+
+/**
+ * @typedef {object} GenerateSlugOptions
+ * @property {string} [status] Used for posts, to also filter by post status when generating a slug
+ * @property {boolean} [importing] Set to true to don't cut the slug on import
+ * @property {boolean} [shortSlug] If it's a user, let's try to cut it down (unless this is a human request)
+ * @property {boolean} [skipDuplicateChecks] Don't append unique identifiers when the slug is not unique (this prevents any database queries)
  */

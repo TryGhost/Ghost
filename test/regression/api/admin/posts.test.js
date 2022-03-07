@@ -416,6 +416,7 @@ describe('Posts API (canary)', function () {
             res.body.posts[0].title.should.equal('Tags test 5');
             res.body.posts[0].tags.length.should.equal(1);
             res.body.posts[0].tags[0].slug.should.equal('five-spaces');
+            res.body.posts[0].tags[0].name.should.equal('five spaces');
 
             // If we create another post again now that the five-spaces tag exists, 
             // we need to make sure it matches correctly and doesn't create a new tag again
@@ -437,7 +438,53 @@ describe('Posts API (canary)', function () {
             should.exist(res2.body.posts[0].title);
             res2.body.posts[0].title.should.equal('Tags test 6');
             res2.body.posts[0].tags.length.should.equal(1);
-            res2.body.posts[0].tags[0].slug.should.equal('five-spaces');
+            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
+        });
+
+        it('can add with tags - slug with spaces not automated', async function () {
+            // Make sure that the matching still works when using a different name
+            // this is important because it invalidates any solution that would just consider a slug as the name
+            const res = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 7',
+                        tags: [{slug: 'six-spaces', name: 'Not automated name for six spaces'}]
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+            
+            should.exist(res.body.posts);
+            should.exist(res.body.posts[0].title);
+            res.body.posts[0].title.should.equal('Tags test 7');
+            res.body.posts[0].tags.length.should.equal(1);
+            res.body.posts[0].tags[0].slug.should.equal('six-spaces');
+            res.body.posts[0].tags[0].name.should.equal('Not automated name for six spaces');
+
+            // If we create another post again now that the five-spaces tag exists, 
+            // we need to make sure it matches correctly and doesn't create a new tag again
+
+            const res2 = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 8',
+                        tags: [{slug: 'six spaces'}]
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+            
+            should.exist(res2.body.posts);
+            should.exist(res2.body.posts[0].title);
+            res2.body.posts[0].title.should.equal('Tags test 8');
+            res2.body.posts[0].tags.length.should.equal(1);
+            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
         });
 
         it('can add with tags - too long slug', async function () {
@@ -448,7 +495,7 @@ describe('Posts API (canary)', function () {
                 .set('Origin', config.get('url'))
                 .send({
                     posts: [{
-                        title: 'Tags test 7',
+                        title: 'Tags test 9',
                         tags: [{slug: tooLongSlug}]
                     }]
                 })
@@ -458,7 +505,7 @@ describe('Posts API (canary)', function () {
             
             should.exist(res.body.posts);
             should.exist(res.body.posts[0].title);
-            res.body.posts[0].title.should.equal('Tags test 7');
+            res.body.posts[0].title.should.equal('Tags test 9');
             res.body.posts[0].tags.length.should.equal(1);
             res.body.posts[0].tags[0].slug.should.equal(tooLongSlug.substring(0, 185));
 
@@ -470,7 +517,7 @@ describe('Posts API (canary)', function () {
                 .set('Origin', config.get('url'))
                 .send({
                     posts: [{
-                        title: 'Tags test 8',
+                        title: 'Tags test 10',
                         tags: [{slug: tooLongSlug}]
                     }]
                 })
@@ -480,9 +527,9 @@ describe('Posts API (canary)', function () {
             
             should.exist(res2.body.posts);
             should.exist(res2.body.posts[0].title);
-            res2.body.posts[0].title.should.equal('Tags test 8');
+            res2.body.posts[0].title.should.equal('Tags test 10');
             res2.body.posts[0].tags.length.should.equal(1);
-            res2.body.posts[0].tags[0].slug.should.equal(tooLongSlug.substring(0, 185));
+            res2.body.posts[0].tags[0].id.should.equal(res.body.posts[0].tags[0].id);
         });
     });
 

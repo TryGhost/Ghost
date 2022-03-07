@@ -15,6 +15,7 @@ const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils');
+const { Tag } = require('./tag');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -550,6 +551,26 @@ Post = ghostBookshelf.Model.extend({
         // CASE: detect lowercase/uppercase tag slugs
         if (!_.isUndefined(this.get('tags')) && !_.isNull(this.get('tags'))) {
             tagsToSave = [];
+
+            // When only the slug is set for a new tag
+            // pretend it to be the name, instead of the slug
+            // This is required to fix any issues when matching with existing ta
+            for (const tag of this.get('tags')) {
+                if (!tag.id && !tag.tag_id && tag.slug) {
+                    if (!tag.name) {
+                        // When only the slug is set, we want to keep the original slug as the name if we
+                        // needed to correct it (e.g. when there are spaces in the slug)
+                        tag.name = tag.slug;
+                    }
+
+                    const slug = await ghostBookshelf.Model.generateSlug(
+                        Tag, 
+                        tag.slug || tag.name,
+                        {skipDuplicateChecks: true}
+                    );
+                    tag.slug = slug;
+                }
+            }
 
             //  and deduplicate upper/lowercase tags
             _.each(this.get('tags'), function each(item) {
