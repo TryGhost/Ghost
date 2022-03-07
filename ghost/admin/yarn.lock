@@ -2170,10 +2170,10 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/members-csv@1.2.3":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.3.tgz#a8db3cfa4d1281e04cfc48b22eebdc1eeb06355d"
-  integrity sha512-a4kJB0HR653D3MxYypwXqITDyifWWYw+vnKor9IJObpJpDXspvJBr5EbIDsrEbwTIj4mYGFK4IP2LIGX+AO1bQ==
+"@tryghost/members-csv@1.2.6":
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.6.tgz#703c8fc0d79a4b5fef95a64081cab08a655f44c1"
+  integrity sha512-mK0ath8GUUaw/HO3/pwV2tBt4cFPxC372CIqc0EdypD0/AJKrOHRLIhqUE4VZ5qMtzAC43RFEFZM3rNay0cQHw==
   dependencies:
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
