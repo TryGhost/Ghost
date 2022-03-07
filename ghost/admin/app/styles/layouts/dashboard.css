@@ -274,12 +274,13 @@ a.gh-dashboard-container {
 
 .gh-dashboard-container.start-contents .gh-dashboard-box a h4 {
     font-size: 1.5rem;
-    margin-bottom: 4px;
+    margin-bottom: 0;
     font-weight: 500;
 }
 
 .gh-dashboard-container.start-contents .gh-dashboard-box a p {
     font-size: 1.3rem;
+    margin-bottom: 0;
 }
 
 /* Charts */
