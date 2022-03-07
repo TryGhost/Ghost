@@ -1987,7 +1987,7 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: center;
     padding: 6px 9px 6px 6px;
     border: none;
-    font-size: 12px;
+    font-size: 12.5px;
     line-height: 12px;
     letter-spacing: -.3px;
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
@@ -1996,7 +1996,6 @@ p.gh-members-import-errordetail:first-of-type {
     color: #383838;
     background: #fff;
     border-radius: 5px;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.08);
     cursor: auto;
     outline: none;
     pointer-events: none;
