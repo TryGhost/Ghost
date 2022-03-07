@@ -396,6 +396,49 @@ describe('Posts API (canary)', function () {
                     res.body.posts[0].tags[1].slug.should.equal('four');
                 });
         });
+
+        it('can add with tags - slug with spaces', async function () {
+            const res = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 5',
+                        tags: [{slug: 'five spaces'}]
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+            
+            should.exist(res.body.posts);
+            should.exist(res.body.posts[0].title);
+            res.body.posts[0].title.should.equal('Tags test 5');
+            res.body.posts[0].tags.length.should.equal(1);
+            res.body.posts[0].tags[0].slug.should.equal('five-spaces');
+
+            // If we create another post again now that the five-spaces tag exists, 
+            // we need to make sure it matches correctly and doesn't create a new tag again
+
+            const res2 = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 6',
+                        tags: [{slug: 'five spaces'}]
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+            
+            should.exist(res2.body.posts);
+            should.exist(res2.body.posts[0].title);
+            res2.body.posts[0].title.should.equal('Tags test 6');
+            res2.body.posts[0].tags.length.should.equal(1);
+            res2.body.posts[0].tags[0].slug.should.equal('five-spaces');
+        });
     });
 
     describe('Edit', function () {
