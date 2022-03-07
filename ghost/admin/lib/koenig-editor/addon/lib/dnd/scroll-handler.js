@@ -1,6 +1,5 @@
 // adapted from draggable.js Scrollable plugin (MIT)
 // https://github.com/Shopify/draggable/blob/master/src/Draggable/Plugins/Scrollable/Scrollable.js
-import UAParser from 'ua-parser-js';
 import {
     getDocumentScrollingElement,
     getParentScrollableElement
@@ -24,7 +23,7 @@ export default class ScrollHandler {
         this._scroll = this._scroll.bind(this);
 
         // cache browser info to avoid parsing on every animation frame
-        this.userAgent = new UAParser();
+        this._isSafari = navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1;
     }
 
     dragStart(draggableInfo) {
@@ -91,13 +90,12 @@ export default class ScrollHandler {
 
         let topPosition = rect.top + offsetHeight - clientY;
         let bottomPosition = clientY - rect.top;
-        let isSafari = this.userAgent.getBrowser().name === 'Safari';
 
         // Safari will automatically scroll when the mouse is outside of the window
         // so we want to avoid our own scrolling in that situation to avoid jank
-        if (topPosition < sensitivity && !(isSafari && topPosition < 0)) {
+        if (topPosition < sensitivity && !(this._isSafari && topPosition < 0)) {
             scrollableElement.scrollTop += speed;
-        } else if (bottomPosition < sensitivity && !(isSafari && bottomPosition < 0)) {
+        } else if (bottomPosition < sensitivity && !(this._isSafari && bottomPosition < 0)) {
             scrollableElement.scrollTop -= speed;
         }
 
