@@ -19,7 +19,7 @@ module.exports = createTransactionalMigration(
             }
 
             logging.info(`Updating free products to visible`);
-            await knex('products').update('visible', true).where('type', 'free');
+            await knex('products').update('visibility', 'public').where('type', 'free');
         } catch (err) {
             logging.error(err);
             logging.warn('portal_plans setting is invalid - skipping migration');
@@ -44,7 +44,7 @@ module.exports = createTransactionalMigration(
             const existingSettingData = JSON.parse(portalPlanSetting.value);
             let settingData;
 
-            if (freeTier.visible) {
+            if (freeTier.visibility === 'public') {
                 if (existingSettingData.includes('free')) {
                     logging.info('portal_plans setting already contains "free" - skipping update');
                     return;

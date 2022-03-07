@@ -19,14 +19,14 @@ module.exports = createTransactionalMigration(
             }
 
             logging.info(`Updating ${settingData.length} products to visible, ${settingData}`);
-            await knex('products').update('visible', true).whereIn('id', settingData);
+            await knex('products').update('visibility', 'public').whereIn('id', settingData);
         } catch (err) {
             logging.warn('portal_products setting is invalid - skipping migration');
             return;
         }
     },
     async function down(knex) {
-        const visibleTiers = await knex('products').select('id').where('visible', true);
+        const visibleTiers = await knex('products').select('id').where('visibility', 'public');
 
         const settingData = JSON.stringify(visibleTiers.map(obj => obj.id));
 
