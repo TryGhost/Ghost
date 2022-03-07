@@ -188,6 +188,33 @@ export function hasMultipleProductsFeature({site}) {
     return !!portalProducts;
 }
 
+export function transformApiSiteData({site}) {
+    if (!site) {
+        return null;
+    }
+
+    if (site.tiers) {
+        site.products = site.tiers;
+    }
+
+    // Map tier visibility to old settings
+    if (site.products?.[0]?.visibility) {
+        // Map paid tier visibility to portal products
+        site.portal_products = site.products.filter((p) => {
+            return p.visibility !== 'none' && p.type === 'paid';
+        }).map(p => p.id);
+
+        // Map free tier visibility to portal plans
+        const freeProduct = site.products.find(p => p.type === 'free');
+        site.portal_plans = site.portal_plans?.filter(d => d !== 'free');
+        if (freeProduct.visibility === 'public') {
+            site.portal_plans?.push('free');
+        }
+    }
+
+    return site;
+}
+
 export function getAvailableProducts({site}) {
     const {portal_products: portalProducts, products = [], portal_plans: portalPlans = []} = site || {};
 
