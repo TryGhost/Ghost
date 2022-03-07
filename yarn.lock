@@ -1856,10 +1856,10 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/color-utils@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.8.tgz#8c0ceadadb816422c05f661ebe2ddffe741799e5"
-  integrity sha512-0sM+SDv4w99IWvR3cHMXCNBMW94UXXR3I8K1EM6e16W+CqHFAGqBQ6epagu0v3fCLor6ej2e1NhZti84gA6FRQ==
+"@tryghost/color-utils@0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.10.tgz#c74f0a37d1fad7d2662005c729c60302ff937708"
+  integrity sha512-nK34S9RH+PKzP/ZME3Hbcsi+PNUg6HSnMu9CwTIrGC97AyqkQgriGFAts7w0V1FUIFnIfbziLVLZy1RyISL0Dw==
   dependencies:
     color "^3.2.1"
 
