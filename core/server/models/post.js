@@ -15,7 +15,7 @@ const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils');
-const { Tag } = require('./tag');
+const {Tag} = require('./tag');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
