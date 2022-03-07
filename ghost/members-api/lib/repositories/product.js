@@ -134,6 +134,8 @@ class ProductRepository {
      * @param {object} data
      * @param {string} data.name
      * @param {string} data.description
+     * @param {boolean} data.visibility
+     * @param {string} data.welcome_page_url
      * @param {BenefitInput[]} data.benefits
      * @param {StripePriceInput[]} data.stripe_prices
      * @param {StripePriceInput|null} data.monthly_price
@@ -177,6 +179,7 @@ class ProductRepository {
         const productData = {
             type: 'paid',
             active: true,
+            visibility: data.visibility || false,
             name: data.name,
             description: data.description,
             benefits: data.benefits,
@@ -285,6 +288,8 @@ class ProductRepository {
      * @param {string} data.id
      * @param {string} data.name
      * @param {string} data.description
+     * @param {boolean} data.visibility
+     * @param {string} data.welcome_page_url
      * @param {BenefitInput[]} data.benefits
      *
      * @param {StripePriceInput[]=} data.stripe_prices
@@ -330,6 +335,7 @@ class ProductRepository {
 
         let productData = {
             name: data.name,
+            visibility: data.visibility,
             description: data.description,
             benefits: data.benefits,
             welcome_page_url: data.welcome_page_url
