@@ -33,11 +33,13 @@
                 {{#if eventsFetcher.data}}
                     <MembersActivity::Table @hideMemberColumn={{if this.member true}} @events={{eventsFetcher.data}} />
 
-                    {{#unless (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd)}}
+                    {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
                         <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
+                    {{/if}}
+                {{else}}
+                    {{#unless eventsFetcher.isLoading}}
+                        <MembersActivity::NoEvents @filter={{this.filter}} />
                     {{/unless}}
-                {{else unless eventsFetcher.isLoading}}
-                    <MembersActivity::NoEvents @filter={{this.filter}} />
                 {{/if}}
 
                 {{#if eventsFetcher.isLoading}}
