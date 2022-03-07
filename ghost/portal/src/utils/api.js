@@ -1,3 +1,5 @@
+import {transformApiSiteData} from './helpers';
+
 function getAnalyticsMetadata() {
     const analyticsTag = document.querySelector('meta[name=ghost-analytics-id]');
     const analyticsId = analyticsTag?.content;
@@ -339,10 +341,11 @@ function setupGhostApi({siteUrl = window.location.origin}) {
     };
 
     api.init = async () => {
-        const [{site}, member] = await Promise.all([
+        let [{site}, member] = await Promise.all([
             api.site.read(),
             api.member.sessionData()
         ]);
+        site = transformApiSiteData({site});
         return {site, member};
     };
 
