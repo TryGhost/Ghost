@@ -556,12 +556,11 @@ Post = ghostBookshelf.Model.extend({
             for (const tag of this.get('tags')) {
                 if (!tag.id && !tag.tag_id && tag.slug) {
                     // Clean up the provided slugs before we do any matching with existing tags
-                    const slug = await ghostBookshelf.Model.generateSlug(
+                    tag.slug = await ghostBookshelf.Model.generateSlug(
                         Tag, 
-                        tag.slug || tag.name,
+                        tag.slug,
                         {skipDuplicateChecks: true}
                     );
-                    tag.slug = slug;
                 }
 
                 for (i = 0; i < tagsToSave.length; i = i + 1) {
