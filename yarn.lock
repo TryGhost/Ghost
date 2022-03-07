@@ -2173,10 +2173,10 @@
     "@tryghost/domain-events" "^0.1.8"
     "@tryghost/member-events" "^0.4.0"
 
-"@tryghost/members-api@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.1.0.tgz#83280b8bd1f2a31160e3dd7a0885936ece0b3d00"
-  integrity sha512-JHXIg/+HPUZhm5j+EcL9h6mHUen0vaMIK8yFeLYBJXMfnl/lnd5FFVDLOTpFvo1pX+66hH2W+LonnhIspbvAaQ==
+"@tryghost/members-api@5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.1.1.tgz#2d547f0104c46619a3f903a2ca1069eece1c6030"
+  integrity sha512-2utNMPfz9H7qddaD89PueRCWZx4Rr+v0QjrgLPbmjEZajEXrghETQch25RLkwE8AO1Cll2SNpoWbkMpijT1F4g==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
