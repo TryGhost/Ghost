@@ -76,7 +76,7 @@ class ImportManager {
      * @returns {string[]}
      */
     getDirectories() {
-        return _.flatten(_.union(_.map(this.handlers, 'directories'), defaults.directories));
+        return _.union(_.flatMap(this.handlers, 'directories'), defaults.directories);
     }
 
     /**
@@ -117,24 +117,24 @@ class ImportManager {
 
     /**
      * Remove files after we're done (abstracted into a function for easier testing)
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    cleanUp() {
+    async cleanUp() {
         if (this.fileToDelete === null) {
             return;
         }
 
-        fs.remove(this.fileToDelete, (err) => {
-            if (err) {
-                logging.error(new errors.InternalServerError({
-                    err: err,
-                    context: tpl(messages.couldNotCleanUpFile.error),
-                    help: tpl(messages.couldNotCleanUpFile.context)
-                }));
-            }
+        try {
+            await fs.remove(this.fileToDelete);
+        } catch (err) {
+            logging.error(new errors.InternalServerError({
+                err: err,
+                context: tpl(messages.couldNotCleanUpFile.error),
+                help: tpl(messages.couldNotCleanUpFile.context)
+            }));
+        }
 
-            this.fileToDelete = null;
-        });
+        this.fileToDelete = null;
     }
 
     /**
@@ -381,7 +381,7 @@ class ImportManager {
             return await this.generateReport(importResult);
         } finally {
             // Step 5: Cleanup any files
-            this.cleanUp();
+            await this.cleanUp();
         }
     }
 }
