@@ -439,6 +439,51 @@ describe('Posts API (canary)', function () {
             res2.body.posts[0].tags.length.should.equal(1);
             res2.body.posts[0].tags[0].slug.should.equal('five-spaces');
         });
+
+        it('can add with tags - too long slug', async function () {
+            const tooLongSlug = 'a'.repeat(190);
+
+            const res = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 7',
+                        tags: [{slug: tooLongSlug}]
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+            
+            should.exist(res.body.posts);
+            should.exist(res.body.posts[0].title);
+            res.body.posts[0].title.should.equal('Tags test 7');
+            res.body.posts[0].tags.length.should.equal(1);
+            res.body.posts[0].tags[0].slug.should.equal(tooLongSlug.substring(0, 185));
+
+            // If we create another post again now that the very long tag exists, 
+            // we need to make sure it matches correctly and doesn't create a new tag again
+
+            const res2 = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Tags test 8',
+                        tags: [{slug: tooLongSlug}]
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+            
+            should.exist(res2.body.posts);
+            should.exist(res2.body.posts[0].title);
+            res2.body.posts[0].title.should.equal('Tags test 8');
+            res2.body.posts[0].tags.length.should.equal(1);
+            res2.body.posts[0].tags[0].slug.should.equal(tooLongSlug.substring(0, 185));
+        });
     });
 
     describe('Edit', function () {
