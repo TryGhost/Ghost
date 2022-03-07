@@ -13,12 +13,12 @@ const FILTER_PROPERTIES = [
     // {label: 'Email', name: 'email', group: 'Basic'},
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic'},
-    {label: 'Tiers', name: 'product', group: 'Basic', feature: 'multipleProducts'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Last seen', name: 'last_seen_at', group: 'Basic', valueType: 'date', feature: 'membersLastSeenFilter'},
     {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
 
     // Member subscription
+    {label: 'Membership tier', name: 'product', group: 'Subscription', feature: 'multipleProducts'},
     {label: 'Member status', name: 'status', group: 'Subscription'},
     // {label: 'Tier', name: 'tier', group: 'Subscription'},
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
