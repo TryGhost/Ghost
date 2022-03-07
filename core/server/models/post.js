@@ -552,11 +552,10 @@ Post = ghostBookshelf.Model.extend({
         if (!_.isUndefined(this.get('tags')) && !_.isNull(this.get('tags'))) {
             tagsToSave = [];
 
-            // When only the slug is set for a new tag
-            // pretend it to be the name, instead of the slug
-            // This is required to fix any issues when matching with existing ta
+            //  and deduplicate upper/lowercase tags
             for (const tag of this.get('tags')) {
                 if (!tag.id && !tag.tag_id && tag.slug) {
+                    // Clean up the provided slugs before we do any matching with existing tags
                     const slug = await ghostBookshelf.Model.generateSlug(
                         Tag, 
                         tag.slug || tag.name,
@@ -564,18 +563,15 @@ Post = ghostBookshelf.Model.extend({
                     );
                     tag.slug = slug;
                 }
-            }
 
-            //  and deduplicate upper/lowercase tags
-            _.each(this.get('tags'), function each(item) {
                 for (i = 0; i < tagsToSave.length; i = i + 1) {
-                    if (tagsToSave[i].name && item.name && tagsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+                    if (tagsToSave[i].name && tag.name && tagsToSave[i].name.toLocaleLowerCase() === tag.name.toLocaleLowerCase()) {
                         return;
                     }
                 }
 
-                tagsToSave.push(item);
-            });
+                tagsToSave.push(tag);
+            }
 
             this.set('tags', tagsToSave);
         }
