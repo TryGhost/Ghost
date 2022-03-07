@@ -173,7 +173,7 @@ export default class MembersController extends Controller {
             'subscriptions.status': 'Subscription Status',
             'subscriptions.start_date': 'Paid start date',
             'subscriptions.current_period_end': 'Next billing date',
-            product: 'Tiers'
+            product: 'Membership tier'
         };
         return this.filterColumns.map((d) => {
             return {
