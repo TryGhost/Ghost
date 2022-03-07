@@ -91,4 +91,11 @@ describe('Tiers API', function () {
                 }]
             });
     });
+
+    it('Can read Tiers', async function () {
+        const {body: {tiers: [tier]}} = await agent.get('/tiers/');
+
+        await agent.get(`/tiers/${tier.id}/`)
+            .expectStatus(200);
+    });
 });
