@@ -39,7 +39,7 @@
     "@nexes/nql": "0.6.0",
     "@nexes/nql-lang": "0.0.1",
     "@sentry/ember": "6.16.1",
-    "@tryghost/color-utils": "0.1.7",
+    "@tryghost/color-utils": "0.1.9",
     "@tryghost/helpers": "1.1.56",
     "@tryghost/kg-clean-basic-html": "2.2.9",
     "@tryghost/kg-parser-plugins": "2.11.5",
