@@ -1744,10 +1744,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/admin-api-schema@2.10.0":
-  version "2.10.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.10.0.tgz#5d0966f3d937251070933314d64bd1486e6c93f5"
-  integrity sha512-EATkl1UYNN8Xmpk7xizjjrcmZW6B97z9yAtBDt+4lPEDpdZoCd/yVau640/Y5q257lWjaXq0CeQ6O9kpN7WwJQ==
+"@tryghost/admin-api-schema@2.11.0":
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.11.0.tgz#13e50b70a28bd6dfee01da46dbfbed1fc9a444f5"
+  integrity sha512-bY6qBFkB3i71Ci2lpnOgIFvxHnHYgDg/wK/fx2v7U6rXqO8wbtqo69GELyi7BaCS+Ji/CUBCsjuFWn2idh7u3A==
   dependencies:
     "@tryghost/errors" "^0.2.10"
     lodash "^4.17.11"
@@ -2173,10 +2173,10 @@
     "@tryghost/domain-events" "^0.1.8"
     "@tryghost/member-events" "^0.4.0"
 
-"@tryghost/members-api@5.0.4":
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.0.4.tgz#0e9bbef7e1381e4f11ac2ac512777cc4389e57ab"
-  integrity sha512-/ngQfgJsCMulAcprxC7sKFQukPlrkzxVKM6Fv33eBnSlIKBCVEhUWde7Pf2bp6zb1ZKMjz6YpS+193m+aEgcXg==
+"@tryghost/members-api@5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.1.0.tgz#83280b8bd1f2a31160e3dd7a0885936ece0b3d00"
+  integrity sha512-JHXIg/+HPUZhm5j+EcL9h6mHUen0vaMIK8yFeLYBJXMfnl/lnd5FFVDLOTpFvo1pX+66hH2W+LonnhIspbvAaQ==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"

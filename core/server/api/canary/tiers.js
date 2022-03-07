@@ -54,7 +54,9 @@ module.exports = {
                 }
             }
         },
-        permissions: true,
+        permissions: {
+            docName: 'products'
+        },
         async query(frame) {
             const model = await membersService.api.productRepository.get(frame.data, frame.options);
 
