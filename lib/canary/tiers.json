@@ -24,6 +24,10 @@
         "active": {
           "type": "boolean"
         },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "none"]
+        },
         "updated_at": {
           "strip": true
         },
