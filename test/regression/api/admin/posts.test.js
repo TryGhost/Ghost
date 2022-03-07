@@ -416,7 +416,9 @@ describe('Posts API (canary)', function () {
             res.body.posts[0].title.should.equal('Tags test 5');
             res.body.posts[0].tags.length.should.equal(1);
             res.body.posts[0].tags[0].slug.should.equal('five-spaces');
-            res.body.posts[0].tags[0].name.should.equal('five spaces');
+
+            // Expected behaviour when creating a slug with spaces:
+            res.body.posts[0].tags[0].name.should.equal('five-spaces');
 
             // If we create another post again now that the five-spaces tag exists, 
             // we need to make sure it matches correctly and doesn't create a new tag again

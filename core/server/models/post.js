@@ -557,12 +557,6 @@ Post = ghostBookshelf.Model.extend({
             // This is required to fix any issues when matching with existing ta
             for (const tag of this.get('tags')) {
                 if (!tag.id && !tag.tag_id && tag.slug) {
-                    if (!tag.name) {
-                        // When only the slug is set, we want to keep the original slug as the name if we
-                        // needed to correct it (e.g. when there are spaces in the slug)
-                        tag.name = tag.slug;
-                    }
-
                     const slug = await ghostBookshelf.Model.generateSlug(
                         Tag, 
                         tag.slug || tag.name,
