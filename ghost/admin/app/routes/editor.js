@@ -1,13 +1,11 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend({
     feature: service(),
     notifications: service(),
-    userAgent: service(),
     ui: service(),
 
     classNames: ['editor'],
@@ -15,18 +13,6 @@ export default AuthenticatedRoute.extend({
     activate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', true);
-    },
-
-    setupController() {
-        this._super(...arguments);
-
-        // edge has known issues
-        if (this.userAgent.browser.isEdge && this.userAgent.parser.getEngine().name === 'EdgeHTML') {
-            this.notifications.showAlert(
-                htmlSafe('Microsoft Edge is not currently supported. Please use a recent version of Chrome/Firefox/Safari.'),
-                {type: 'info', key: 'koenig.browserSupport'}
-            );
-        }
     },
 
     deactivate() {
