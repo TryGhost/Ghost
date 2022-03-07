@@ -1835,12 +1835,12 @@ section.gh-ds h2 {
 }
 
 .gh-done h4 {
-    margin: 0 0 4rem;
+    margin: 0 0 3rem;
 }
 
 .gh-done section h2 {
     font-size: 1.8rem;
-    margin: 0 0 4rem;
+    margin: 0 0 3rem;
 }
 
 .gh-done main {
@@ -1856,9 +1856,48 @@ section.gh-ds h2 {
 
 .gh-done section a {
     display: grid;
-    grid-template-columns: 56px auto;
-    margin: 0 0 3.5rem;
-    padding: 0;
+    grid-template-columns: 54px auto;
+    margin: 0 -0.5rem 1.25rem;
+    padding: 1.75rem 1.1rem 2.1rem;
+    border: 1px solid #ffb41f;
+    border-radius: 6px;
+    transition: border-color 100ms ease-out, transform 125ms ease-out;
+}
+
+.gh-done section a.gh-done-yellow {
+    border-color: var(--yellow-l3);
+}
+
+.gh-done section a.gh-done-yellow:hover {
+    border-color: var(--yellow-d1);
+}
+
+.gh-done section a.gh-done-blue {
+    border-color: var(--blue-l3);
+}
+
+.gh-done section a.gh-done-blue:hover {
+    border-color: var(--blue-d1);
+}
+
+.gh-done section a.gh-done-green {
+    border-color: var(--green-l3);
+}
+
+.gh-done section a.gh-done-green:hover {
+    border-color: var(--green-d1);
+}
+
+.gh-done section a.gh-done-pink {
+    border-color: var(--pink-l3);
+}
+
+.gh-done section a.gh-done-pink:hover {
+    border-color: var(--pink-d1);
+}
+
+.gh-done section a:hover {
+    transform: translateX(2px);
 }
 
 .gh-done section span {
@@ -1869,32 +1908,45 @@ section.gh-ds h2 {
     justify-content: center;
     padding: 5px;
     background: var(--black);
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
     border-radius: 999px;
     color: var(--white);
-    margin: 0 8px 0 0;
+    margin: 1px 4px 0;
+    transition: background-color 125ms ease-out;
 }
 
 .gh-done section a.gh-done-yellow span {
     background: var(--yellow);
 }
 
+.gh-done section a.gh-done-yellow:hover span {
+    background: var(--yellow-d1);
+}
+
 .gh-done section a.gh-done-blue span {
     background: var(--blue);
+}
+
+.gh-done section a.gh-done-blue:hover span {
+    background: var(--blue-d1);
 }
 
 .gh-done section a.gh-done-green span {
     background: var(--green);
 }
 
+.gh-done section a.gh-done-green:hover span {
+    background: var(--green-d1);
+}
+
 .gh-done section a.gh-done-pink span {
     background: var(--pink);
 }
 
-.gh-done section a:hover span {
-    opacity: 0.8;
+.gh-done section a.gh-done-pink:hover span {
+    background: var(--pink-d1);
 }
 
 .gh-done section a svg {
@@ -1904,7 +1956,7 @@ section.gh-ds h2 {
 
 .gh-done section a h6 {
     grid-column: 2;
-    margin: 0 0 4px;
+    margin: 0 0 6px;
     font-size: 1.5rem;
     font-weight: 600;
 }
@@ -1913,7 +1965,7 @@ section.gh-ds h2 {
     grid-column: 2;
     color: var(--midgrey);
     margin: 0;
-    padding: 0 4rem 0 0;
+    padding: 0 3rem 0 0;
     line-height: 1.45em;
 }
 
@@ -1969,7 +2021,7 @@ section.gh-ds h2 {
 }
 
 .gh-done .gh-nav {
-    flex: 0 0 360px !important;
+    flex: 0 0 420px !important;
 }
 
 
