@@ -1161,3 +1161,12 @@ add|ember-template-lint|no-action|4|11|4|11|831dd12209c22868d0614c65417281fda799
 add|ember-template-lint|require-valid-alt-text|3|44|3|44|a7f0566c430150bae4153e0dfb489a218bdeb8a4|1646611200000|1649199600000|1651791600000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-valid-alt-text|8|20|8|20|9d0c591086dc9139ff38a7b385c3367a83438786|1646611200000|1649199600000|1651791600000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-input-label|10|12|10|12|8c3c0ea315ff4da828363989a45fa11256a78796|1646611200000|1649199600000|1651791600000|lib/koenig-editor/addon/components/koenig-card-image/selector-tenor.hbs
+remove|ember-template-lint|no-invalid-role|16|24|16|24|f4ef9ac4dce151eec8ed5c4ea81b263d70d8ec82|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-role|28|28|28|28|38a04b1a48e814d3644ec621f53b0b976dc7637f|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-role|33|28|33|28|ae089ed2726e29ba4828e6b9d74460a2b95b8eae|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-role|38|28|38|28|44dba2b770f13e4b458bd3ad8fd0bce027412c06|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-role|48|24|48|24|ed0e49b40ec918b4568302fadc617fb64a10d6ab|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-role|56|28|56|28|156177efcfa893d64c122bd7e2f34ddf25c485fb|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-role|61|28|61|28|83c51011d1462aebfd2e81537be01340e13503fb|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-role|72|40|72|40|82eb5369fb03019dee23eb2a99d3da774eee7084|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-role|83|24|83|24|82e305f542b2c200d412e1b6e596c5fa620930b2|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
