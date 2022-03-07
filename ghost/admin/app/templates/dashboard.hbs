@@ -8,7 +8,7 @@
     <div class="view-container gh-dashboard">
 
         {{#if (and this.session.user.isAdmin (not (feature "dashboardHideGettingStarted")) (feature "improvedOnboarding"))}}
-            <section class="gh-dashboard-area lw-banner" {{css-transition "gh-dashboard-area"}}>
+            <section class="gh-dashboard-area lw-banner" {{css-transition "gh-dashboard-area"}} data-test-dashboard-getting-started>
                 <div class="gh-lw-banner" style="background-image:url(assets/img/launch-wizard-bg.png);">
                     <h1>Not sure where to start? We got you.</h1>
                     <p>
@@ -57,7 +57,7 @@
                     </div>
                 </div>
             </section>
-        {{else if this.showMembersData}}
+        {{else if this.showMembersGraphs}}
             <Dashboard::MembersGraphs />
         {{/if}}
 
