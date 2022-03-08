@@ -1,4 +1,4 @@
-import Mirage from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {click, currentRouteName, fillIn, find, findAll, visit} from '@ember/test-helpers';
@@ -8,7 +8,7 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 import {versionMismatchResponse} from 'ghost-admin/mirage/utils';
 
 let htmlErrorResponse = function () {
-    return new Mirage.Response(
+    return new Response(
         504,
         {'Content-Type': 'text/html'},
         '<!DOCTYPE html><head><title>Server Error</title></head><body>504 Gateway Timeout</body></html>'

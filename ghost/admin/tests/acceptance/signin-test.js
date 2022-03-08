@@ -1,4 +1,4 @@
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {
     beforeEach,

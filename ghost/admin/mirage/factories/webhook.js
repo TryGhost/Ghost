@@ -1,6 +1,6 @@
 import moment from 'moment';
 import {AVAILABLE_EVENTS} from 'ghost-admin/helpers/event-name';
-import {Factory} from 'ember-cli-mirage';
+import {Factory} from 'miragejs';
 
 export default Factory.extend({
     name(i) { return `Integration ${i + 1}`;},

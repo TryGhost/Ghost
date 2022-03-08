@@ -1,6 +1,6 @@
 import faker from 'faker';
 import moment from 'moment';
-import {Factory} from 'ember-cli-mirage';
+import {Factory} from 'miragejs';
 
 const EVENT_TYPES = [
     'newsletter_event',

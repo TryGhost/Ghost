@@ -1,4 +1,4 @@
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';

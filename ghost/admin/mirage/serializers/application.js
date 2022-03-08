@@ -1,5 +1,5 @@
-import {Collection, RestSerializer} from 'ember-cli-mirage';
-import {pluralize} from 'ember-cli-mirage/utils/inflector';
+import {Collection, RestSerializer} from 'miragejs';
+import {pluralize} from 'ember-inflector';
 import {underscore} from '@ember/string';
 
 export default RestSerializer.extend({

@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {dasherize} from '@ember/string';
 import {isBlank} from '@ember/utils';
 

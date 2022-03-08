@@ -1,7 +1,7 @@
-import Mirage from 'ember-cli-mirage';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment';
 import sinon from 'sinon';
+import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent} from '@ember/test-helpers';
@@ -433,7 +433,7 @@ describe('Acceptance: Editor', function () {
 
         it('handles validation errors when scheduling', async function () {
             this.server.put('/posts/:id/', function () {
-                return new Mirage.Response(422, {}, {
+                return new Response(422, {}, {
                     errors: [{
                         type: 'ValidationError',
                         message: 'Error test'

@@ -1,4 +1,4 @@
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 
 let themeCount = 1;
 

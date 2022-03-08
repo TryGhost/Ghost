@@ -1,4 +1,4 @@
-import {Factory, trait} from 'ember-cli-mirage';
+import {Factory, trait} from 'miragejs';
 
 export default Factory.extend({
     emailCount: 0,

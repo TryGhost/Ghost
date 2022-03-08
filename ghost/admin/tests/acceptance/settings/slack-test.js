@@ -1,5 +1,5 @@
-import Mirage from 'ember-cli-mirage';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
+import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll, triggerEvent} from '@ember/test-helpers';
@@ -95,7 +95,7 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
                 .to.not.exist;
 
             this.server.put('/settings/', function () {
-                return new Mirage.Response(422, {}, {
+                return new Response(422, {}, {
                     errors: [
                         {
                             type: 'ValidationError',
