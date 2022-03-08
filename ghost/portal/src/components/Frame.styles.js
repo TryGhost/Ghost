@@ -344,6 +344,7 @@ const FrameStyles = `
             0 41.8px 33.4px rgba(0, 0, 0, 0.05),
             0 100px 80px rgba(0, 0, 0, 0.07);
         animation: none;
+        margin-bottom: 0;
     }
 
     /* Sets the main content area of the popup scrollable.
@@ -683,6 +684,7 @@ const MobileStyles = `
         padding-top: 32px;
     }
 
+    .gh-portal-popup-wrapper.preview .gh-portal-powered,
     .gh-portal-popup-wrapper.preview .gh-portal-powered a {
         display: none !important;
     }
