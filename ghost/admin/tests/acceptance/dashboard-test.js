@@ -10,8 +10,6 @@ describe('Acceptance: Dashboard', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    let user;
-
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
@@ -19,7 +17,7 @@ describe('Acceptance: Dashboard', function () {
         enableLabsFlag(this.server, 'improvedOnboarding');
 
         let role = this.server.create('role', {name: 'Administrator'});
-        user = this.server.create('user', {roles: [role]});
+        this.server.create('user', {roles: [role]});
 
         return await authenticateSession();
     });
