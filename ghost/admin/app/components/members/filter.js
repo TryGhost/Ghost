@@ -241,20 +241,22 @@ export default class MembersFilter extends Component {
             } else if (filterProperty.valueType === 'date') {
                 let filterValue;
 
+                let tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone'));
+
                 if (relationStr === '>') {
-                    const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 23, minute: 59, second: 59});
+                    tzMoment = tzMoment.set({hour: 23, minute: 59, second: 59});
                     filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (relationStr === '>=') {
-                    const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 0, minute: 0, second: 0});
+                    tzMoment = tzMoment.set({hour: 0, minute: 0, second: 0});
                     filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (relationStr === '<') {
-                    const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 0, minute: 0, second: 0});
+                    tzMoment = tzMoment.set({hour: 0, minute: 0, second: 0});
                     filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (relationStr === '<=') {
-                    const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timeone')).set({hour: 23, minute: 59, second: 59});
+                    tzMoment = tzMoment.set({hour: 23, minute: 59, second: 59});
                     filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
 
