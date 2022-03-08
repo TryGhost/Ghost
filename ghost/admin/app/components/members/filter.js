@@ -12,13 +12,13 @@ const FILTER_PROPERTIES = [
     // {label: 'Name', name: 'name', group: 'Basic'},
     // {label: 'Email', name: 'email', group: 'Basic'},
     // {label: 'Location', name: 'location', group: 'Basic'},
-    {label: 'Label', name: 'label', group: 'Basic'},
+    {label: 'Label', name: 'label', group: 'Basic', valueType: 'array'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Last seen', name: 'last_seen_at', group: 'Basic', valueType: 'date', feature: 'membersLastSeenFilter'},
     {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
 
     // Member subscription
-    {label: 'Membership tier', name: 'product', group: 'Subscription', feature: 'multipleProducts'},
+    {label: 'Membership tier', name: 'product', group: 'Subscription', valueType: 'array', feature: 'multipleProducts'},
     {label: 'Member status', name: 'status', group: 'Subscription'},
     // {label: 'Tier', name: 'tier', group: 'Subscription'},
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
@@ -228,59 +228,38 @@ export default class MembersFilter extends Component {
     }
 
     generateNqlFilter(filters) {
-        // TODO: unify operator naming
-        const relationMap = {
-            'is-less': '<',
-            'is-or-less': '<=',
-            is: '',
-            'is-not': '-',
-            'is-greater': '>',
-            'is-or-greater': '>='
-        };
-
         const nqlDateFormat = 'YYYY-MM-DD HH:mm:ss';
 
         let query = '';
         filters.forEach((filter) => {
+            const relationStr = this.getFilterRelationOperator(filter.relation);
             const filterProperty = FILTER_PROPERTIES.find(prop => prop.name === filter.type);
 
-            if (filter.type === 'label' && filter.value?.length) {
-                const relationStr = filter.relation === 'is-not' ? '-' : '';
-                const filterValue = '[' + filter.value.join(',') + ']';
-                query += `${filter.type}:${relationStr}${filterValue}+`;
-            } else if (filter.type === 'product' && filter.value?.length) {
-                const relationStr = filter.relation === 'is-not' ? '-' : '';
+            if (filterProperty.valueType === 'array' && filter.value?.length) {
                 const filterValue = '[' + filter.value.join(',') + ']';
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else if (filterProperty.valueType === 'date') {
-                const operator = relationMap[filter.relation];
-                let relationStr;
                 let filterValue;
 
-                if (operator === '>') {
-                    relationStr = '>';
+                if (relationStr === '>') {
                     const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 23, minute: 59, second: 59});
                     filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
-                if (operator === '>=') {
-                    relationStr = '>=';
+                if (relationStr === '>=') {
                     const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 0, minute: 0, second: 0});
                     filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
-                if (operator === '<') {
-                    relationStr = '<';
+                if (relationStr === '<') {
                     const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone')).set({hour: 0, minute: 0, second: 0});
                     filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
-                if (operator === '<=') {
-                    relationStr = '<=';
+                if (relationStr === '<=') {
                     const tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timeone')).set({hour: 23, minute: 59, second: 59});
                     filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
 
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else {
-                const relationStr = this.getFilterRelationOperator(filter.relation);
                 const filterValue = (typeof filter.value === 'string' && filter.value.includes(' ')) ? `'${filter.value}'` : filter.value;
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             }
@@ -404,14 +383,17 @@ export default class MembersFilter extends Component {
     }
 
     getFilterRelationOperator(relation) {
-        if (relation === 'is-not') {
-            return '-';
-        } else if (relation === 'is-greater') {
-            return '>';
-        } else if (relation === 'is-less') {
-            return '<';
-        }
-        return '';
+        // TODO: unify operator naming with NQL
+        const relationMap = {
+            'is-less': '<',
+            'is-or-less': '<=',
+            is: '',
+            'is-not': '-',
+            'is-greater': '>',
+            'is-or-greater': '>='
+        };
+
+        return relationMap[relation] || '';
     }
 
     @action
