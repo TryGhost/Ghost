@@ -6,6 +6,7 @@ export default Factory.extend({
     active: true,
     slug(i) { return `product-${i}`;},
     type: 'paid',
+    visibility: 'none',
     monthly_price() {
         return {
             interval: 'month',
