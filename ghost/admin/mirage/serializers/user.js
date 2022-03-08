@@ -1,5 +1,5 @@
 import BaseSerializer from './application';
-import {RestSerializer} from 'ember-cli-mirage';
+import {RestSerializer} from 'miragejs';
 
 export default BaseSerializer.extend({
     embed: true,

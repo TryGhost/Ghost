@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {dasherize} from '@ember/string';
 import {extractFilterParam, paginateModelCollection} from '../utils';
 import {isBlank, isEmpty} from '@ember/utils';

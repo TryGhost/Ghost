@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';

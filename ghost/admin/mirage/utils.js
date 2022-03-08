@@ -1,5 +1,5 @@
 /* eslint-disable max-statements-per-line */
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {isArray} from '@ember/array';
 
 export function paginatedResponse(modelName) {

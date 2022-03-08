@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {paginatedResponse} from '../utils';
 
 export default function mockInvites(server) {

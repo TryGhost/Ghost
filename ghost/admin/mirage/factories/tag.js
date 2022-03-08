@@ -1,4 +1,4 @@
-import {Factory} from 'ember-cli-mirage';
+import {Factory} from 'miragejs';
 
 export default Factory.extend({
     createdAt: '2015-09-11T09:44:29.871Z',

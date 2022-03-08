@@ -1,4 +1,4 @@
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {isEmpty} from '@ember/utils';
 import {paginatedResponse} from '../utils';
 
