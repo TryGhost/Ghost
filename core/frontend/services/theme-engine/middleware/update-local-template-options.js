@@ -33,7 +33,8 @@ function updateLocalTemplateOptions(req, res, next) {
                 default_payment_card_last4: sub.default_payment_card_last4 || '****'
             });
         }),
-        paid: req.member.status !== 'free'
+        paid: req.member.status !== 'free',
+        status: req.member.status
     } : null;
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
