@@ -10,6 +10,7 @@ export default [
         name: 'Free',
         slug: 'free',
         type: 'free',
+        visibility: 'public',
         updatedAt: '2022-02-04T13:34:53.000Z',
         welcomePageUrl: null,
         yearlyPrice: null
@@ -24,6 +25,7 @@ export default [
         name: 'Default Product',
         slug: 'default-product',
         type: 'paid',
+        visibility: 'public',
         updatedAt: '2022-02-04T13:11:40.000Z',
         welcomePageUrl: null,
         yearlyPrice: null
