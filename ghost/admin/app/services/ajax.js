@@ -175,7 +175,7 @@ class ajaxService extends AjaxService {
     get headers() {
         return {
             'X-Ghost-Version': config.APP.version,
-            'Content-Version': 'v4',
+            'Accept-Version': 'v4',
             'App-Pragma': 'no-cache'
         };
     }
@@ -188,7 +188,7 @@ class ajaxService extends AjaxService {
     }
 
     async _makeRequest(hash) {
-        // ember-ajax recognises `application/vnd.api+json` as a JSON-API request
+        // ember-ajax recognizes `application/vnd.api+json` as a JSON-API request
         // and formats appropriately, we want to handle `application/json` the same
         if (isJSONContentType(hash.contentType) && hash.type !== 'GET') {
             if (typeof hash.data === 'object') {
