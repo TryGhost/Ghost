@@ -165,7 +165,7 @@ describe('Acceptance: Signup', function () {
         ).to.equal('');
 
         // submitting sends correct details and redirects to content screen
-        await click('.gh-btn-green');
+        await click('[data-test-button="signup"]');
 
         expect(currentRouteName()).to.equal('site');
     });
