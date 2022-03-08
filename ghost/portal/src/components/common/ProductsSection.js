@@ -753,7 +753,10 @@ function getSelectedPrice({products, selectedProduct, selectedInterval}) {
     if (selectedProduct === 'free') {
         selectedPrice = {id: 'free'};
     } else {
-        const product = products.find(prod => prod.id === selectedProduct);
+        let product = products.find(prod => prod.id === selectedProduct);
+        if (!product) {
+            product = products.find(p => p.type === 'paid');
+        }
         selectedPrice = selectedInterval === 'month' ? product?.monthlyPrice : product?.yearlyPrice;
     }
     return selectedPrice;
@@ -790,12 +793,12 @@ function ProductsSection({onPlanSelect, products, type = null}) {
     const activeInterval = getActiveInterval({portalPlans, selectedInterval});
 
     useEffect(() => {
-        onPlanSelect(null, selectedPrice.id);
-    }, [selectedPrice.id, onPlanSelect]);
-
-    useEffect(() => {
         setSelectedProduct(defaultProductId);
     }, [defaultProductId]);
+
+    useEffect(() => {
+        onPlanSelect(null, selectedPrice.id);
+    }, [selectedPrice.id, onPlanSelect]);
 
     if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
         return null;
@@ -809,10 +812,12 @@ function ProductsSection({onPlanSelect, products, type = null}) {
     if (type === 'upgrade') {
         className += ' gh-portal-upgrade-product';
     }
+
+    let finalProduct = products.find(p => p.id === selectedProduct)?.id || products.find(p => p.type === 'paid')?.id;
     return (
         <ProductsContext.Provider value={{
             selectedInterval: activeInterval,
-            selectedProduct,
+            selectedProduct: finalProduct,
             setSelectedProduct
         }}>
             <section className={className}>
