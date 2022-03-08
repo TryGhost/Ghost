@@ -58,7 +58,13 @@ module.exports = {
             'include'
         ],
         permissions: true,
-        validation: {},
+        validation: {
+            options: {
+                include: {
+                    values: allowedIncludes
+                }
+            }
+        },
         async query(frame) {
             const page = await membersService.api.memberBREADService.browse(frame.options);
 
