@@ -1969,7 +1969,15 @@ section.gh-ds h2 {
     line-height: 1.45em;
 }
 
-.gh-done .gh-done-panel {
+.gh-done .gh-setting-desc {
+    padding-right: 2rem;
+}
+
+.gh-done .gh-nav-design .gh-setting-action {
+    margin-bottom: 12px;
+}
+
+.gh-done-panel {
     margin: 8px 0 24px;
     padding: 52px var(--main-layout-area-padding) 16px;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
@@ -1979,16 +1987,16 @@ section.gh-ds h2 {
     align-items: flex-start;
 }
 
-.gh-done .gh-done-panel .gh-stack {
-    padding-bottom: 96px;
+.gh-done-panel .gh-stack {
+    padding-bottom: 64px;
 }
 
-.gh-done .gh-setting-desc {
-    padding-right: 2rem;
-}
-
-.gh-done .gh-nav-design .gh-setting-action {
-    margin-bottom: 12px;
+.gh-done-sidebar {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 420px;
+    overflow-x: hidden;
+    border-right: 1px solid #e6e9eb;
 }
 
 .gh-done-preview {
@@ -1996,12 +2004,12 @@ section.gh-ds h2 {
     padding: 48px;
 }
 
-.gh-done .gh-browserpreview-previewcontainer {
-    border-radius: 5px !important;
+.gh-done-preview .gh-browserpreview-previewcontainer {
+    border-radius: 5px;
     overflow: hidden;
 }
 
-.gh-done .gh-browserpreview-browser .tabs div {
+.gh-done-preview .gh-browserpreview-browser .tabs div {
     display: none;
 }
 
@@ -2024,6 +2032,47 @@ section.gh-ds h2 {
     flex: 0 0 420px !important;
 }
 
+@media (max-width: 1000px) {
+    .gh-done-sidebar {
+        flex: 0 0 360px;
+    }
+
+    .gh-done-preview {
+        padding: 0;
+    }
+
+    .gh-done-preview .gh-browserpreview-previewcontainer {
+        box-shadow: none;
+        border-radius: 0 !important;
+    }
+    
+    .gh-done-preview .tabs {
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    .gh-done-sidebar {
+        flex: 1;
+    }
+
+    .gh-done {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 99999;
+        width: 100%;
+        height: 100%;
+    }
+
+    .gh-done .gh-done-preview {
+        display: none;
+    }
+
+    .gh-done .gh-done-panel {
+        justify-content: center;
+    }
+}
 
 /* Get started modal */
 /* ---------------------------------------------------- */
