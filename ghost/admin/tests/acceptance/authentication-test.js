@@ -24,7 +24,7 @@ describe('Acceptance: Authentication', function () {
         });
         it('redirects to setup when setup isn\'t complete', async function () {
             await visit('settings/labs');
-            expect(currentURL()).to.equal('/setup/one');
+            expect(currentURL()).to.equal('/setup');
         });
     });
 

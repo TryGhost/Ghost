@@ -7,7 +7,16 @@
     flex-direction: column;
     overflow-y: auto;
     min-height: 100%;
-    background: linear-gradient(135deg, #fff, #f4f4f4);
+    background: linear-gradient(315deg,#efefef,#fff);
+}
+
+.gh-setup {
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: unset;
+    overflow-y: unset;
+    padding: 0 2.4rem;
 }
 
 .gh-flow-head {
@@ -28,163 +37,56 @@
     padding-bottom: 8vh;
 }
 
-.gh-flow-back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    margin: 0 0 0 3%;
-    padding: 2px 9px 2px 5px;
-    border: transparent 1px solid;
-    border-radius: 4px;
-    color: #7d878a;
-    font-weight: 300;
-    transition: all 0.3s ease;
-}
-
-.gh-flow-back svg {
-    margin-right: 4px;
-    height: 12px;
-    line-height: 14px;
-}
-
-.gh-flow-back svg path {
-    stroke: #7d878a;
-    stroke-width: 1.2px;
-}
-
-.gh-flow-back:hover {
-    border: #dae1e3 1px solid;
-}
-
-.gh-flow-nav {
-    position: relative;
-    flex: 1;
-}
-
-.gh-flow-nav ol {
-    display: flex;
-    justify-content: space-between;
-    margin: 0 auto;
-    padding: 0;
-    width: 160px;
-    list-style: none;
-}
-
-.gh-flow-nav li {
-    margin: 0;
-}
-
-.gh-flow-nav .divider {
-    align-self: center;
-    width: 22px;
-    height: 2px;
-    background-image: linear-gradient(to right, var(--green) 33%, rgba(255, 255, 255, 0) 0%);
-    background-position: bottom;
-    background-size: 6px 2px;
-    background-repeat: repeat-x;
-}
-
-.gh-flow-nav .active ~ .divider {
-    background-image: linear-gradient(to right, #e3e3e3 33%, rgba(255, 255, 255, 0) 0%);
-}
-
-.gh-flow-nav .step {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 30px;
-    height: 30px;
-    border: transparent 2px solid;
-    background: var(--green);
-    border-radius: 100%;
-    color: #fff;
-    vertical-align: middle;
-    text-align: center;
-    text-align: center;
-    font-size: 1.3rem;
-    line-height: 1;
-}
-
-.gh-flow-nav .step .num {
-    display: none;
-}
-
-.gh-flow-nav .step svg {
-    width: 26px;
-    height: 26px;
-    fill: #fff;
-    stroke: #fff;
-    stroke-width: 2px;
-}
-
-.gh-flow-nav .step svg path {
-    stroke: #fff;
-}
-
-.gh-flow-nav .active ~ li:not(divider) .step {
-    border: #e3e3e3 2px solid;
-    background: transparent;
-    color: #cdcdcd;
-}
-
-.gh-flow-nav .active ~ li:not(divider) .step .num {
-    display: block;
-}
-
-.gh-flow-nav .active ~ li:not(divider) .step svg {
-    display: none;
-}
-
-.gh-flow-nav .active .step {
-    border: var(--green) 2px solid;
-    background: transparent;
-    color: color-mod(var(--green) lightness(-10%));
-    cursor: default;
-}
-
-.gh-flow-nav .active .step .num {
-    display: block;
-}
-
-.gh-flow-nav .active .step svg {
-    display: none;
-}
-
-.gh-flow-nav .done {
-    border: none;
-    background: var(--green);
-    color: #fff;
-}
-
-
 .gh-flow-content {
     display: flex;
     flex-direction: column;
-    max-width: 700px;
+    max-width: 520px;
     width: 100%;
-    color: var(--midgrey);
-    text-align: center;
+    margin: 4.8rem 0 8rem;
+    color: var(--darkgrey);
     font-size: 1.9rem;
     line-height: 1.5em;
     font-weight: 300;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 400px) {
     .gh-flow-content {
+        margin: 4rem 0 6rem;
         font-size: 4vw;
     }
 }
 
-.gh-flow-content header {
-    margin: 0 auto;
-    max-width: 520px;
+.gh-setup .gh-flow-content header {
+    margin: 0 0 1rem;
+}
+
+.gh-setup .gh-flow-content header svg {
+    width: 7.2rem;
+    margin: 0 0 1rem;
+}
+
+.gh-setup .gh-flow-content h1 {
+    margin-bottom: 0;
+}
+
+.gh-setup .gh-flow-content p {
+    color: var(--midgrey);
+    font-size: 1.9rem;
+    font-weight: 400;
+    line-height: 1.4em;
+}
+
+@media (max-width: 520px) {
+    .gh-setup .gh-flow-content p {
+        font-size: 1.7rem;
+    }
 }
 
 .gh-flow-content h1 {
-    font-size: 4.2rem;
-    font-weight: 300;
+    margin-bottom: 40px;
+    font-size: 4.1rem;
+    font-weight: 700;
+    line-height: 1.15em;
 }
 
 @media (max-width: 600px) {
@@ -198,42 +100,25 @@
 }
 
 .gh-flow-content em {
-    color: var(--blue);
-    font-weight: 400;
+    color: var(--black);
+    font-weight: 500;
     font-style: normal;
-}
-
-.gh-flow-content .gh-flow-screenshot {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    height: 45vh;
-}
-
-.gh-flow-content .gh-flow-screenshot img {
-    position: relative;
-    left: -3%;
-    flex-shrink: 0;
-    display: block;
-    margin: 0 auto;
-    max-height: 100%;
-}
-
-@media (max-width: 860px) {
-    .gh-flow-content .gh-flow-screenshot img {
-        left: 0;
-    }
-}
-@media (max-width: 600px) {
-    .gh-flow-content .gh-flow-screenshot {
-        height: auto;
-    }
 }
 
 .gh-flow-content .gh-btn {
     display: block;
     margin: 40px auto 0;
     max-width: 400px;
+}
+
+.gh-setup .gh-flow-content .gh-btn {
+    height: 52px;
+    max-width: unset;
+    margin: 40px 0 0
+}
+
+.gh-setup .gh-flow-content .gh-btn span {
+    font-size: 1.7rem;
 }
 
 .gh-flow-content .login span {
@@ -273,11 +158,6 @@
   margin-left: 6px;
 }
 
-.gh-flow-content .gh-input:focus {
-    box-shadow: none;
-    border-color: color-mod(var(--midlightgrey) l(+10%));
-}
-
 .gh-flow-content .gh-flow-skip {
     display: inline-block;
     margin-top: 5px;
@@ -296,11 +176,6 @@
     border-radius: 5px;
     text-align: left;
     box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.1);
-}
-
-.gh-flow-create .gh-btn-create-account span {
-    height: 37px;
-    line-height: 37px;
 }
 
 .gh-flow-content .account-image {
@@ -395,9 +270,9 @@
 }
 
 .gh-flow-content .form-group label {
-    margin: 0;
+    margin: 0 0 .3em;
     font-size: 1.4rem;
-    font-weight: 400;
+    font-weight: 600;
 }
 
 .gh-flow-content .form-group a {
@@ -405,10 +280,17 @@
 }
 
 .gh-flow-content input {
-    padding: 10px 10px 10px 30px;
-    font-size: 1.4rem;
-    line-height: 1.4em;
+    height: 48px;
+    padding: 12px 16px;
+    font-size: 1.7rem;
     font-weight: 400;
+    border-radius: 8px;
+}
+
+.gh-flow-content .gh-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(26,170,96,.15);
+    outline: none;
 }
 
 .gh-flow-content .pw-strength {
@@ -490,14 +372,14 @@
     line-height: 1.8rem;
 }
 
-.gh-flow-content .response {
+.gh-flow-content .response,
+.gh-setup .gh-flow-content .response {
     position: absolute;
     right: 0;
-    bottom: -25px;
+    bottom: -24px;
     margin: 0;
     color: #a6b0b3;
-    text-align: right;
-    font-size: 1.2rem;
+    font-size: 1.35rem;
 }
 
 .gh-flow-content form:not(.gh-signin) .success .gh-input-icon svg {
@@ -511,21 +393,32 @@
     font-weight: 400;
 }
 
-.gh-flow-content .error input {
+.gh-flow-content .error input,
+.gh-flow-content .error input:focus {
     border-color: var(--red);
-    box-shadow: none;
+    box-shadow: 0 0 0 3px rgba(239,24,24,.15);
 }
 
 .gh-flow-content .error .gh-input-icon svg {
     fill: var(--red);
 }
 
-.gh-flow-content .error .response {
+.gh-flow-content .error .response,
+.gh-setup .gh-flow-content .error .response {
     color: var(--red);
 }
 
-.gh-flow-content .main-error {
-    margin-top: 5px;
-    color: var(--red);
-    font-size: 1.3rem;
+.gh-flow-content .main-error,
+.gh-setup .gh-flow-content .main-error {
+    margin-top: 8px;
+    color: var(--midgrey);
+    font-size: 1.35rem;
+    text-align: center;
+}
+
+.gh-setup .gh-flow-form .gh-btn-red,
+.gh-setup .gh-flow-form .gh-btn-red:active,
+.gh-signup .gh-btn-red,
+.gh-signup .gh-btn-red:active {
+    background: var(--black) !important;
 }
