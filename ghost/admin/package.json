@@ -47,7 +47,7 @@
     "@tryghost/members-csv": "1.2.6",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
     "@tryghost/string": "0.1.23",
-    "@tryghost/timezone-data": "0.2.57",
+    "@tryghost/timezone-data": "0.2.58",
     "autoprefixer": "9.8.6",
     "blueimp-md5": "2.19.0",
     "broccoli-asset-rev": "3.0.0",
