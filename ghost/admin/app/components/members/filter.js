@@ -467,8 +467,8 @@ export default class MembersFilter extends Component {
     }
 
     @action
-    setFilterValue(filterType, filter, filterValue) {
-        filter.value = filterValue;
+    setFilterValue(filter, newValue) {
+        filter.value = newValue;
         this.applySoftFilter();
     }
 
