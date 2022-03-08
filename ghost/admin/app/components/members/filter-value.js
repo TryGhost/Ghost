@@ -49,38 +49,38 @@ export default class MembersFilterValue extends Component {
     }
 
     @action
-    setInputFilterValue(filterType, filterId, event) {
+    setInputFilterValue(filterType, filter, event) {
         this.filterValue = event.target.value;
     }
 
     @action
-    updateInputFilterValue(filterType, filterId, event) {
+    updateInputFilterValue(filterType, filter, event) {
         if (event.type === 'blur') {
             this.filterValue = event.target.value;
         }
-        this.args.setFilterValue(filterType, filterId, this.filterValue);
+        this.args.setFilterValue(filterType, filter, this.filterValue);
     }
 
     @action
-    updateInputFilterValueOnEnter(filterType, filterId, event) {
+    updateInputFilterValueOnEnter(filterType, filter, event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            this.args.setFilterValue(filterType, filterId, this.filterValue);
+            this.args.setFilterValue(filterType, filter, this.filterValue);
         }
     }
 
     @action
-    setLabelsFilterValue(filterType, filterId, labels) {
-        this.args.setFilterValue(filterType, filterId, labels.map(label => label.slug));
+    setLabelsFilterValue(filterType, filter, labels) {
+        this.args.setFilterValue(filterType, filter, labels.map(label => label.slug));
     }
 
     @action
-    setProductsFilterValue(filterType, filterId, tiers) {
-        this.args.setFilterValue(filterType, filterId, tiers.map(tier => tier.slug));
+    setProductsFilterValue(filterType, filter, tiers) {
+        this.args.setFilterValue(filterType, filter, tiers.map(tier => tier.slug));
     }
 
     @action
-    setFilterValue(filterType, filterId, value) {
-        this.args.setFilterValue(filterType, filterId, value);
+    setFilterValue(filterType, filter, value) {
+        this.args.setFilterValue(filterType, filter, value);
     }
 }
