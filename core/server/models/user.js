@@ -510,7 +510,7 @@ User = ghostBookshelf.Model.extend({
             return ghostBookshelf.Model.edit.call(self, data, options).then((user) => {
                 let roleId;
 
-                if (!data.roles) {
+                if (!data.roles || !data.roles.length) {
                     return user;
                 }
 
