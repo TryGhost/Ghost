@@ -15,7 +15,7 @@ export default class ChangeThemeController extends Controller {
     officialThemes = [{
         name: 'Casper',
         category: 'Blog',
-        previewUrl: 'https://casper.ghost.io/',
+        previewUrl: 'https://demo.ghost.io/',
         ref: 'default',
         image: 'assets/img/themes/Casper.jpg'
     }, {
