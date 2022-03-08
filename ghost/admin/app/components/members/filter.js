@@ -14,7 +14,7 @@ const FILTER_PROPERTIES = [
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic', valueType: 'array'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
-    {label: 'Last seen', name: 'last_seen_at', group: 'Basic', valueType: 'date', feature: 'membersLastSeenFilter'},
+    {label: 'Last seen', name: 'last_seen_at', group: 'Basic', valueType: 'date'},
     {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
 
     // Member subscription
