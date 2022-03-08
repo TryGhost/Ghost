@@ -7,13 +7,15 @@
                     "name":             "Default Product",
                     "slug":             "default-product",
                     "type":             "paid",
-                    "active":           true
+                    "active":           true,
+                    "visibility":       "public"
                 },
                 {
                     "name":             "Free",
                     "slug":             "free",
                     "type":             "free",
-                    "active":           true
+                    "active":           true,
+                    "visibility":       "public"
                 }
             ]
         },
