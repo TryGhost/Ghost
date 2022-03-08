@@ -20,7 +20,6 @@ const FILTER_PROPERTIES = [
     // Member subscription
     {label: 'Membership tier', name: 'product', group: 'Subscription', valueType: 'array', feature: 'multipleProducts'},
     {label: 'Member status', name: 'status', group: 'Subscription'},
-    // {label: 'Tier', name: 'tier', group: 'Subscription'},
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
     {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
     {label: 'Paid start date', name: 'subscriptions.start_date', valueType: 'date', group: 'Subscription'},
@@ -38,6 +37,11 @@ const FILTER_PROPERTIES = [
     // {label: 'Open rate (60 days)', name: 'x', group: 'Email'},
 ];
 
+const MATCH_RELATION_OPTIONS = [
+    {label: 'is', name: 'is'},
+    {label: 'is not', name: 'is-not'}
+];
+
 const DATE_RELATION_OPTIONS = [
     {label: 'before', name: 'is-less'},
     {label: 'on or before', name: 'is-or-less'},
@@ -49,58 +53,28 @@ const DATE_RELATION_OPTIONS = [
     {label: 'on or after', name: 'is-or-greater'}
 ];
 
+const NUMBER_RELATION_OPTIONS = [
+    {label: 'is', name: 'is'},
+    {label: 'is greater than', name: 'is-greater'},
+    {label: 'is less than', name: 'is-less'}
+];
+
 const FILTER_RELATIONS_OPTIONS = {
-    // name: [
-    //     {label: 'is', name: 'is'},
-    //     {label: 'is not', name: 'is-not'}
-    // ],
-    // email: [
-    //     {label: 'is', name: 'is'},
-    //     {label: 'is not', name: 'is-not'}
-    // ],
-    label: [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
-    ],
-    product: [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
-    ],
-    subscribed: [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
-    ],
+    // name: MATCH_RELATION_OPTIONS,
+    // email: MATCH_RELATION_OPTIONS,
+    label: MATCH_RELATION_OPTIONS,
+    product: MATCH_RELATION_OPTIONS,
+    subscribed: MATCH_RELATION_OPTIONS,
     last_seen_at: DATE_RELATION_OPTIONS,
     created_at: DATE_RELATION_OPTIONS,
-    status: [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
-    ],
-    'subscriptions.plan_interval': [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
-    ],
-    'subscriptions.status': [
-        {label: 'is', name: 'is'},
-        {label: 'is not', name: 'is-not'}
-    ],
+    status: MATCH_RELATION_OPTIONS,
+    'subscriptions.plan_interval': MATCH_RELATION_OPTIONS,
+    'subscriptions.status': MATCH_RELATION_OPTIONS,
     'subscriptions.start_date': DATE_RELATION_OPTIONS,
     'subscriptions.current_period_end': DATE_RELATION_OPTIONS,
-    email_count: [
-        {label: 'is', name: 'is'},
-        {label: 'is greater than', name: 'is-greater'},
-        {label: 'is less than', name: 'is-less'}
-    ],
-    email_opened_count: [
-        {label: 'is', name: 'is'},
-        {label: 'is greater than', name: 'is-greater'},
-        {label: 'is less than', name: 'is-less'}
-    ],
-    email_open_rate: [
-        {label: 'is', name: 'is'},
-        {label: 'is greater than', name: 'is-greater'},
-        {label: 'is less than', name: 'is-less'}
-    ]
+    email_count: NUMBER_RELATION_OPTIONS,
+    email_opened_count: NUMBER_RELATION_OPTIONS,
+    email_open_rate: NUMBER_RELATION_OPTIONS
 };
 
 const FILTER_VALUE_OPTIONS = {
@@ -245,21 +219,18 @@ export default class MembersFilter extends Component {
 
                 if (relationStr === '>') {
                     tzMoment = tzMoment.set({hour: 23, minute: 59, second: 59});
-                    filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (relationStr === '>=') {
                     tzMoment = tzMoment.set({hour: 0, minute: 0, second: 0});
-                    filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (relationStr === '<') {
                     tzMoment = tzMoment.set({hour: 0, minute: 0, second: 0});
-                    filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
                 if (relationStr === '<=') {
                     tzMoment = tzMoment.set({hour: 23, minute: 59, second: 59});
-                    filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 }
 
+                filterValue = `'${tzMoment.utc().format(nqlDateFormat)}'`;
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else {
                 const filterValue = (typeof filter.value === 'string' && filter.value.includes(' ')) ? `'${filter.value}'` : filter.value;
@@ -272,86 +243,60 @@ export default class MembersFilter extends Component {
     parseNqlFilterKey(nqlFilter) {
         const keys = Object.keys(nqlFilter);
         const key = keys[0];
-        const value = nqlFilter[key];
+        const nqlValue = nqlFilter[key];
 
-        if (typeof value === 'object') {
-            if (value.$in !== undefined && ['label', 'product'].includes(key)) {
-                return new Filter({
-                    type: key,
-                    relation: 'is',
-                    value: value.$in,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
-                    timezone: this.settings.get('timezone')
-                });
+        const filterProperty = FILTER_PROPERTIES.find(prop => prop.name === key);
+
+        let relation;
+        let value;
+
+        if (typeof nqlValue === 'object') {
+            if (nqlValue.$in !== undefined && filterProperty.valueType === 'array') {
+                relation = 'is';
+                value = nqlValue.$in;
             }
 
-            if (value.$nin !== undefined && ['label', 'product'].includes(key)) {
-                return new Filter({
-                    type: key,
-                    relation: 'is-not',
-                    value: value.$nin,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
-                    timezone: this.settings.get('timezone')
-                });
+            if (nqlValue.$nin !== undefined && filterProperty.valueType === 'array') {
+                relation = 'is-not';
+                value = nqlValue.$nin;
             }
 
-            if (value.$ne !== undefined) {
-                return new Filter({
-                    type: key,
-                    relation: 'is-not',
-                    value: value.$ne,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
-                    timezone: this.settings.get('timezone')
-                });
+            if (nqlValue.$ne !== undefined) {
+                relation = 'is-not';
+                value = nqlValue.$ne;
             }
 
-            if (value.$gt !== undefined) {
-                return new Filter({
-                    type: key,
-                    relation: 'is-greater',
-                    value: value.$gt,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
-                    timezone: this.settings.get('timezone')
-                });
+            if (nqlValue.$gt !== undefined) {
+                relation = 'is-greater';
+                value = nqlValue.$gt;
             }
 
-            if (value.$gte !== undefined) {
-                return new Filter({
-                    type: key,
-                    relation: 'is-or-greater',
-                    value: value.$gte,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
-                    timezone: this.settings.get('timezone')
-                });
+            if (nqlValue.$gte !== undefined) {
+                relation = 'is-or-greater';
+                value = nqlValue.$gte;
             }
 
-            if (value.$lt !== undefined) {
-                return new Filter({
-                    type: key,
-                    relation: 'is-less',
-                    value: value.$lt,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
-                    timezone: this.settings.get('timezone')
-                });
+            if (nqlValue.$lt !== undefined) {
+                relation = 'is-less';
+                value = nqlValue.$lt;
             }
 
-            if (value.$lte !== undefined) {
-                return new Filter({
-                    type: key,
-                    relation: 'is-or-less',
-                    value: value.$lte,
-                    relationOptions: FILTER_RELATIONS_OPTIONS[key],
-                    timezone: this.settings.get('timezone')
-                });
+            if (nqlValue.$lte !== undefined) {
+                relation = 'is-or-less';
+                value = nqlValue.$lte;
             }
-
-            return null;
         } else {
+            relation = 'is';
+            value = nqlValue;
+        }
+
+        if (relation && value) {
             return new Filter({
                 type: key,
-                relation: 'is',
-                value: value,
-                relationOptions: FILTER_RELATIONS_OPTIONS[key]
+                relation,
+                relationOptions: FILTER_RELATIONS_OPTIONS[key],
+                value,
+                timezone: this.settings.get('timezone')
             });
         }
     }
@@ -423,12 +368,7 @@ export default class MembersFilter extends Component {
             ? this.availableFilterValueOptions[newType][0].name
             : '';
 
-        // TODO: move default values to filter type definitions
-        if (newType === 'label' && !defaultValue) {
-            defaultValue = [];
-        }
-
-        if (newType === 'product' && !defaultValue) {
+        if (newProp.valueType === 'array' && !defaultValue) {
             defaultValue = [];
         }
 

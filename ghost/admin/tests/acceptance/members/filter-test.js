@@ -653,12 +653,12 @@ describe('Acceptance: Members filtering', function () {
 
             // can change date
             await datepickerSelect(valueDatePicker, moment.utc('2022-02-03').toDate());
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - default')
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - 2022-02-03')
                 .to.equal(3);
 
             // can change operator
             await fillIn(operatorSelect, 'is-greater');
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - default')
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - is-greater')
                 .to.equal(4);
 
             // can populate filter from URL
@@ -678,7 +678,7 @@ describe('Acceptance: Members filtering', function () {
 
             // "on or after" doesn't break
             await fillIn(operatorSelect, 'is-or-greater');
-            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - from URL')
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - is-or-greater after URL change')
                 .to.equal(7);
 
             // it does not add extra column to table
