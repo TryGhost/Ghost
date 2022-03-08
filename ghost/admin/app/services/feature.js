@@ -56,9 +56,6 @@ export default class FeatureService extends Service {
     @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
         nightShift;
 
-    @feature('dashboardHideGettingStarted', {user: true})
-        dashboardHideGettingStarted;
-
     // labs flags
     @feature('multipleProducts')
         multipleProducts;
