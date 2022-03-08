@@ -303,12 +303,9 @@ export default Component.extend({
             try {
                 let response = yield this.settings.save();
 
-                const product = yield this.saveProduct.perform();
+                yield this.saveProduct.perform();
                 this.settings.set('portalPlans', ['free', 'monthly', 'yearly']);
-                const existingPortalProducts = this.settings.get('portalProducts');
-                if (!existingPortalProducts?.length) {
-                    this.settings.set('portalProducts', [product.id]);
-                }
+
                 response = yield this.settings.save();
 
                 this.set('membersStripeOpen', false);

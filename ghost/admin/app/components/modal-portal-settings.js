@@ -24,6 +24,7 @@ export default ModalComponent.extend({
     showLinksPage: false,
     showLeaveSettingsModal: false,
     isPreloading: true,
+    changedProducts: null,
     portalPreviewGuid: 'modal-portal-settings',
 
     confirm() {},
@@ -48,8 +49,17 @@ export default ModalComponent.extend({
         return `data-portal`;
     }),
 
-    portalPreviewUrl: computed('page', 'membersUtils.{isFreeChecked,isMonthlyChecked,isYearlyChecked}', 'settings.{portalName,portalButton,portalButtonIcon,portalButtonSignupText,portalButtonStyle,accentColor,portalPlans.[],portalProducts.[]}', function () {
+    portalPreviewUrl: computed('page', 'model.products.[]', 'changedProducts.[]', 'membersUtils.{isFreeChecked,isMonthlyChecked,isYearlyChecked}', 'settings.{portalName,portalButton,portalButtonIcon,portalButtonSignupText,portalButtonStyle,accentColor,portalPlans.[]}', function () {
         const options = this.getProperties(['page']);
+        options.portalProducts = this.model.products?.filter((product) => {
+            return product.get('visibility') === 'public' && product.get('type') === 'paid';
+        }).map((product) => {
+            return product.id;
+        });
+        const freeProduct = this.model.products?.find((product) => {
+            return product.type === 'free';
+        });
+        options.isFreeChecked = freeProduct?.visibility === 'public';
         return this.membersUtils.getPortalPreviewUrl(options);
     }),
 
@@ -81,17 +91,17 @@ export default ModalComponent.extend({
         const allowedPlans = this.settings.get('portalPlans') || [];
         return (this.membersUtils.isStripeEnabled && allowedPlans.includes('yearly'));
     }),
-    products: computed('model.products.[]', 'settings.portalProducts.[]', 'isPreloading', function () {
+    products: computed('model.products.[]', 'changedProducts.[]', 'isPreloading', function () {
         const paidProducts = this.model.products?.filter(product => product.type === 'paid' && product.active === true);
         if (this.isPreloading || !paidProducts?.length) {
             return [];
         }
-        const portalProducts = this.settings.get('portalProducts') || [];
+
         const products = paidProducts.map((product) => {
             return {
                 id: product.id,
                 name: product.name,
-                checked: portalProducts.includes(product.id)
+                checked: product.visibility === 'public'
             };
         });
         return products;
@@ -108,8 +118,12 @@ export default ModalComponent.extend({
         if (!this.feature.get('multipleProducts')) {
             return true;
         }
-        const portalProducts = this.settings.get('portalProducts') || [];
-        return !!portalProducts?.length;
+
+        const visibleProducts = this.model.products?.filter((product) => {
+            return product.visibility === 'public' && product.type === 'paid';
+        });
+
+        return !!visibleProducts?.length;
     }),
 
     init() {
@@ -120,7 +134,7 @@ export default ModalComponent.extend({
             {name: 'text-only', label: 'Text only'}
         ];
         this.iconExtensions = ICON_EXTENSIONS;
-
+        this.changedProducts = [];
         this.set('supportAddress', this.parseEmailAddress(this.settings.get('membersSupportAddress')));
     },
 
@@ -254,25 +268,38 @@ export default ModalComponent.extend({
     updateAllowedPlan(plan, isChecked) {
         const portalPlans = this.settings.get('portalPlans') || [];
         const allowedPlans = [...portalPlans];
+        const freeProduct = this.model.products.find(p => p.type === 'free');
 
         if (!isChecked) {
             this.settings.set('portalPlans', allowedPlans.filter(p => p !== plan));
+            if (plan === 'free') {
+                freeProduct.set('visibility', 'none');
+            }
         } else {
             allowedPlans.push(plan);
             this.settings.set('portalPlans', allowedPlans);
+            if (plan === 'free') {
+                freeProduct.set('visibility', 'public');
+            }
         }
     },
 
     updateAllowedProduct(productId, isChecked) {
-        const portalProducts = this.settings.get('portalProducts') || [];
-        const allowedProducts = [...portalProducts];
+        const portalProductsSetting = this.settings.get('portalProducts') || [];
+        const allowedProducts = [...portalProductsSetting];
 
+        const product = this.model.products.find(p => p.id === productId);
         if (!isChecked) {
             this.settings.set('portalProducts', allowedProducts.filter(p => p !== productId));
+            product.set('visibility', 'none');
         } else {
-            allowedProducts.push(productId);
             this.settings.set('portalProducts', allowedProducts);
+            product.set('visibility', 'public');
         }
+        let portalProducts = this.model.products.filter((p) => {
+            return p.visibility === 'public';
+        }).map(p => p.id);
+        this.set('changedProducts', portalProducts);
     },
 
     _validateSignupRedirect(url, type) {
@@ -333,7 +360,19 @@ export default ModalComponent.extend({
         if (this.settings.get('errors').length !== 0) {
             return;
         }
+
+        // Save tier visibility if changed
+        yield Promise.all(
+            this.model.products.filter((product) => {
+                const changedAttrs = product.changedAttributes();
+                return !!changedAttrs.visibility;
+            }).map((product) => {
+                return product.save();
+            })
+        );
+
         yield this.settings.save();
+
         this.closeModal();
     }).drop(),
 
