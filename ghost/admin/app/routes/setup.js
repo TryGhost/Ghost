@@ -26,7 +26,7 @@ export default class SetupRoute extends Route {
                 if (setup.status) {
                     return this.transitionTo('signin');
                 } else {
-                    let controller = this.controllerFor('setup/two');
+                    let controller = this.controllerFor('setup');
                     if (setup.title) {
                         controller.set('blogTitle', setup.title.replace(/&apos;/gim, '\''));
                     }
@@ -44,7 +44,7 @@ export default class SetupRoute extends Route {
 
     deactivate() {
         super.deactivate(...arguments);
-        this.controllerFor('setup/two').set('password', '');
+        this.controllerFor('setup').set('password', '');
     }
 
     buildRouteInfoMetadata() {

@@ -57,6 +57,12 @@ input[type=number] {
     font-weight: 400;
 }
 
+::-moz-placeholder {
+    color: var(--midlightgrey);
+    font-weight: 400;
+    opacity: 1;
+}
+
 .error .response {
     color: var(--red);
 }

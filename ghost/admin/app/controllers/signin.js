@@ -48,18 +48,6 @@ export default class SigninController extends Controller.extend(ValidationEngine
         return color;
     }
 
-    @computed('config.icon')
-    get siteIconStyle() {
-        let icon = this.get('config.icon');
-
-        if (icon) {
-            return htmlSafe(`background-image: url(${icon})`);
-        }
-
-        icon = 'https://static.ghost.org/v4.0.0/images/ghost-orb-2.png';
-        return htmlSafe(`background-image: url(${icon})`);
-    }
-
     @action
     authenticate() {
         return this.validateAndAuthenticate.perform();
