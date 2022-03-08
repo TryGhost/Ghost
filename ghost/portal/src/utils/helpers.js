@@ -206,9 +206,11 @@ export function transformApiSiteData({site}) {
 
         // Map free tier visibility to portal plans
         const freeProduct = site.products.find(p => p.type === 'free');
-        site.portal_plans = site.portal_plans?.filter(d => d !== 'free');
-        if (freeProduct.visibility === 'public') {
-            site.portal_plans?.push('free');
+        if (freeProduct) {
+            site.portal_plans = site.portal_plans?.filter(d => d !== 'free');
+            if (freeProduct?.visibility === 'public') {
+                site.portal_plans?.push('free');
+            }
         }
     }
 
