@@ -1170,3 +1170,8 @@ remove|ember-template-lint|no-invalid-role|56|28|56|28|156177efcfa893d64c122bd7e
 remove|ember-template-lint|no-invalid-role|61|28|61|28|83c51011d1462aebfd2e81537be01340e13503fb|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
 remove|ember-template-lint|no-invalid-role|72|40|72|40|82eb5369fb03019dee23eb2a99d3da774eee7084|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
 remove|ember-template-lint|no-invalid-role|83|24|83|24|82e305f542b2c200d412e1b6e596c5fa620930b2|1646611200000|1649199600000|1651791600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-interactive|10|134|10|134|68bb5cb082102867d52b583bb276c4aa100d7cde|1646611200000|1649199600000|1651791600000|app/components/modal-portal-settings.hbs
+remove|ember-template-lint|no-invalid-interactive|165|59|165|59|df9c2bf70a166edc0849e54088026ac00cfa351b|1646611200000|1649199600000|1651791600000|app/components/modal-portal-settings.hbs
+remove|ember-template-lint|no-invalid-interactive|221|163|221|163|a5145bca59feb20e1078505aea2fd35758795d52|1646611200000|1649199600000|1651791600000|app/components/modal-portal-settings.hbs
+remove|ember-template-lint|no-invalid-interactive|235|60|235|60|50dc8bff0ff82f6924e528d71f114326cfed17ab|1646611200000|1649199600000|1651791600000|app/components/modal-portal-settings.hbs
+remove|ember-template-lint|no-invalid-interactive|280|59|280|59|76d4aa1f6519b5257d8809ab05cf5d34319bcac3|1646611200000|1649199600000|1651791600000|app/components/modal-portal-settings.hbs
