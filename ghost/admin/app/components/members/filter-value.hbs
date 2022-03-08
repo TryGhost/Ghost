@@ -1,6 +1,6 @@
 {{#if (eq @filter.type 'label')}}
     <GhMemberLabelInput
-        @onChange={{fn this.setLabelsFilterValue @filter.type @filter}}
+        @onChange={{fn this.setLabelsFilterValue @filter}}
         @onLabelEdit={{@onLabelEdit}}
         @triggerId="label-input"
         @labels={{@filter.value}}
@@ -11,7 +11,7 @@
 {{else if (eq @filter.type 'product')}}
     <div class="relative">
         <Tiers::SegmentSelect
-            @onChange={{fn this.setProductsFilterValue @filter.type @filter}}
+            @onChange={{fn this.setProductsFilterValue @filter}}
             @tiers={{this.productFilterValue}}
             @renderInPlace={{true}}
             @hideOptionsWhenAllSelected={{true}}
@@ -26,7 +26,7 @@
             @optionValuePath="name"
             @optionLabelPath="label"
             @optionTargetPath="name"
-            @update={{fn this.setFilterValue @filter.type @filter}}
+            @update={{fn @setFilterValue @filter}}
             data-test-select="members-filter-value"
         />
         {{svg-jar "arrow-down-small"}}
@@ -38,7 +38,7 @@
         @value={{@filter.value}}
         @maxDate={{now}}
         @maxDateError="Must be in the past"
-        @onChange={{fn @setFilterValue @filter.type @filter}}
+        @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
         as |datepicker|
     >
@@ -65,7 +65,7 @@
         @value={{@filter.value}}
         @maxDate={{now}}
         @maxDateError="Must be in the past"
-        @onChange={{fn @setFilterValue @filter.type @filter}}
+        @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
     />
 
@@ -77,7 +77,7 @@
             @optionValuePath="name"
             @optionLabelPath="label"
             @optionTargetPath="name"
-            @update={{fn this.setFilterValue @filter.type @filter}}
+            @update={{fn @setFilterValue @filter}}
             data-test-select="members-filter-value"
         />
         {{svg-jar "arrow-down-small"}}
@@ -89,9 +89,9 @@
         value={{@filter.value}}
         class="gh-input"
         aria-label="Email count filter value"
-        {{on "input" (fn this.setInputFilterValue @filter.type @filter)}}
-        {{on "blur" (fn this.updateInputFilterValue @filter.type @filter)}}
-        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter)}}
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
         data-test-input="members-filter-value"
     />
 
@@ -101,9 +101,9 @@
         value={{@filter.value}}
         class="gh-input"
         aria-label="Email opened count filter value"
-        {{on "input" (fn this.setInputFilterValue @filter.type @filter)}}
-        {{on "blur" (fn this.updateInputFilterValue @filter.type @filter)}}
-        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter)}}
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
         data-test-input="members-filter-value"
     />
 
@@ -115,9 +115,9 @@
             value={{@filter.value}}
             class="gh-input"
             aria-label="Email open rate filter value"
-            {{on "input" (fn this.setInputFilterValue @filter.type @filter)}}
-            {{on "blur" (fn this.updateInputFilterValue @filter.type @filter)}}
-            {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter)}}
+            {{on "input" (fn this.setInputFilterValue @filter)}}
+            {{on "blur" (fn this.updateInputFilterValue @filter)}}
+            {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
         data-test-input="members-filter-value"
         />
     </div>
@@ -130,7 +130,7 @@
             @optionValuePath="name"
             @optionLabelPath="label"
             @optionTargetPath="name"
-            @update={{fn this.setFilterValue @filter.type @filter}}
+            @update={{fn @setFilterValue @filter}}
             data-test-select="members-filter-value"
         />
         {{svg-jar "arrow-down-small"}}
@@ -144,7 +144,7 @@
             @optionValuePath="name"
             @optionLabelPath="label"
             @optionTargetPath="name"
-            @update={{fn this.setFilterValue @filter.type @filter}}
+            @update={{fn @setFilterValue @filter}}
             data-test-select="members-filter-value"
         />
         {{svg-jar "arrow-down-small"}}
@@ -153,14 +153,14 @@
 {{else if (eq @filter.type 'subscriptions.start_date')}}
     <GhDatePicker
         @value={{@filter.value}}
-        @onChange={{fn @setFilterValue @filter.type @filter}}
+        @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
     />
 
 {{else if (eq @filter.type 'subscriptions.current_period_end')}}
     <GhDatePicker
         @value={{@filter.value}}
-        @onChange={{fn @setFilterValue @filter.type @filter}}
+        @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
     />
 
@@ -171,8 +171,8 @@
         name={{@index}}
         class="gh-input"
         aria-label="filter value"
-        {{on "input" (fn this.setInputFilterValue @filter.type @filter)}}
-        {{on "blur" (fn this.updateInputFilterValue @filter.type @filter)}}
-        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter.type @filter)}}
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
     />
 {{/if}}
