@@ -185,6 +185,17 @@ describe('User API', function () {
         }
     });
 
+    it('Can edit user with empty roles data', async function () {
+        await request.put(localUtils.API.getApiQuery('users/me'))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{
+                    roles: []
+                }]
+            })
+            .expect(200);
+    });
+
     it('Can destroy an active user', async function () {
         const userId = testUtils.getExistingData().users[1].id;
 
