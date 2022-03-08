@@ -18,7 +18,7 @@
         <section class="gh-filters">
             {{#each this.filters as |filter index|}}
                 <div class="gh-filter-block">
-                    <GhFormGroup @property={{filter.id}} @classNames="max-width" data-test-members-filter={{index}}>
+                    <div class="form-group max-width" data-test-members-filter={{index}}>
                         <div class="gh-filter-inputgroup">
                             <span class="gh-select">
                                 <OneWaySelect
@@ -28,7 +28,7 @@
                                     @optionLabelPath="label"
                                     @optionTargetPath="name"
                                     @groupLabelPath="group"
-                                    @update={{fn this.setFilterType filter.id}}
+                                    @update={{fn this.setFilterType filter}}
                                     data-test-select="members-filter"
                                 />
                                 {{svg-jar "arrow-down-small"}}
@@ -40,12 +40,13 @@
                                     @optionValuePath="name"
                                     @optionLabelPath="label"
                                     @optionTargetPath="name"
-                                    @update={{fn this.setFilterRelation filter.id}}
+                                    @update={{fn this.setFilterRelation filter}}
                                     data-test-select="members-filter-operator"
                                 />
                                 {{svg-jar "arrow-down-small"}}
                             </span>
                             <Members::FilterValue
+                                @index={{index}}
                                 @filter={{filter}}
                                 @setFilterValue={{this.setFilterValue}}
                                 @onLabelEdit={{@onLabelEdit}}
@@ -54,13 +55,13 @@
                                 type="button"
                                 class="gh-btn gh-btn-text gh-btn-link gh-btn-icon gh-delete-filter"
                                 title="Delete filter"
-                                {{on "click" (fn this.deleteFilter filter.id)}}
+                                {{on "click" (fn this.deleteFilter filter)}}
                                 data-test-delete-members-filter={{index}}
                             >
                                 {{svg-jar "close"}} <span class="hidden">Delete filter</span>
                             </button>
                         </div>
-                    </GhFormGroup>
+                    </div>
                 </div>
             {{/each}}
             <div>

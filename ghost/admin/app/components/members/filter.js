@@ -135,7 +135,6 @@ class Filter {
     @tracked relationOptions;
 
     constructor(options) {
-        this.id = options.id;
         this.type = options.type;
         this.relation = options.relation;
         this.relationOptions = options.relationOptions;
@@ -162,7 +161,6 @@ export default class MembersFilter extends Component {
 
     @tracked filters = new TrackedArray([
         new Filter({
-            id: `filter-0`,
             type: 'label',
             relation: 'is',
             value: [],
@@ -172,7 +170,6 @@ export default class MembersFilter extends Component {
 
     availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
     availableFilterValueOptions = FILTER_VALUE_OPTIONS;
-    nextFilterId = 1;
 
     get availableFilterProperties() {
         let availableFilters = FILTER_PROPERTIES;
@@ -217,13 +214,11 @@ export default class MembersFilter extends Component {
     @action
     addFilter() {
         this.filters.push(new Filter({
-            id: `filter-${this.nextFilterId}`,
             type: 'label',
             relation: 'is',
             value: [],
             relationOptions: FILTER_RELATIONS_OPTIONS.label
         }));
-        this.nextFilterId = this.nextFilterId + 1;
         this.applySoftFilter();
     }
 
@@ -297,13 +292,10 @@ export default class MembersFilter extends Component {
         const keys = Object.keys(nqlFilter);
         const key = keys[0];
         const value = nqlFilter[key];
-        const filterId = this.nextFilterId;
 
         if (typeof value === 'object') {
             if (value.$in !== undefined && ['label', 'product'].includes(key)) {
-                this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
-                    id: `filter-${filterId}`,
                     type: key,
                     relation: 'is',
                     value: value.$in,
@@ -313,9 +305,7 @@ export default class MembersFilter extends Component {
             }
 
             if (value.$nin !== undefined && ['label', 'product'].includes(key)) {
-                this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
-                    id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-not',
                     value: value.$nin,
@@ -325,9 +315,7 @@ export default class MembersFilter extends Component {
             }
 
             if (value.$ne !== undefined) {
-                this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
-                    id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-not',
                     value: value.$ne,
@@ -337,10 +325,7 @@ export default class MembersFilter extends Component {
             }
 
             if (value.$gt !== undefined) {
-                this.nextFilterId = this.nextFilterId + 1;
-
                 return new Filter({
-                    id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-greater',
                     value: value.$gt,
@@ -350,10 +335,7 @@ export default class MembersFilter extends Component {
             }
 
             if (value.$gte !== undefined) {
-                this.nextFilterId = this.nextFilterId + 1;
-
                 return new Filter({
-                    id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-or-greater',
                     value: value.$gte,
@@ -363,9 +345,7 @@ export default class MembersFilter extends Component {
             }
 
             if (value.$lt !== undefined) {
-                this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
-                    id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-less',
                     value: value.$lt,
@@ -375,9 +355,7 @@ export default class MembersFilter extends Component {
             }
 
             if (value.$lte !== undefined) {
-                this.nextFilterId = this.nextFilterId + 1;
                 return new Filter({
-                    id: `filter-${filterId}`,
                     type: key,
                     relation: 'is-or-less',
                     value: value.$lte,
@@ -388,10 +366,7 @@ export default class MembersFilter extends Component {
 
             return null;
         } else {
-            this.nextFilterId = this.nextFilterId + 1;
-
             return new Filter({
-                id: `filter-${filterId}`,
                 type: key,
                 relation: 'is',
                 value: value,
@@ -440,20 +415,20 @@ export default class MembersFilter extends Component {
     }
 
     @action
-    deleteFilter(filterId, event) {
+    deleteFilter(filter, event) {
         event.stopPropagation();
         event.preventDefault();
 
         if (this.filters.length === 1) {
             this.resetFilter();
         } else {
-            this.filters = new TrackedArray(this.filters.reject(f => f.id === filterId));
+            this.filters = new TrackedArray(this.filters.reject(f => f === filter));
             this.applySoftFilter();
         }
     }
 
     @action
-    setFilterType(filterId, newType) {
+    setFilterType(filter, newType) {
         if (newType instanceof Event) {
             newType = newType.target.value;
         }
@@ -484,7 +459,6 @@ export default class MembersFilter extends Component {
         }
 
         const newFilter = new Filter({
-            id: filterId,
             type: newType,
             relation: defaultRelation,
             relationOptions: this.availableFilterRelationsOptions[newType],
@@ -492,7 +466,7 @@ export default class MembersFilter extends Component {
             timezone: this.settings.get('timezone')
         });
 
-        const filterToSwap = this.filters.find(f => f.id === filterId);
+        const filterToSwap = this.filters.find(f => f === filter);
         this.filters[this.filters.indexOf(filterToSwap)] = newFilter;
 
         if (newType !== 'label' && defaultValue) {
@@ -505,29 +479,27 @@ export default class MembersFilter extends Component {
     }
 
     @action
-    setFilterRelation(filterId, newRelation) {
-        const filterToEdit = this.filters.find(f => f.id === filterId);
-        filterToEdit.relation = newRelation;
+    setFilterRelation(filter, newRelation) {
+        filter.relation = newRelation;
         this.applySoftFilter();
     }
 
     @action
-    setFilterValue(filterType, filterId, filterValue) {
-        const filterToEdit = this.filters.find(f => f.id === filterId);
-        filterToEdit.value = filterValue;
+    setFilterValue(filterType, filter, filterValue) {
+        filter.value = filterValue;
         this.applySoftFilter();
     }
 
     @action
     applySoftFilter() {
-        const validFilters = this.filters.filter((fil) => {
-            if (fil.type === 'label') {
-                return fil.value?.length;
+        const validFilters = this.filters.filter((filter) => {
+            if (filter.type === 'label') {
+                return filter.value?.length;
             }
-            if (fil.type === 'product') {
-                return fil.value?.length;
+            if (filter.type === 'product') {
+                return filter.value?.length;
             }
-            return fil.value;
+            return filter.value;
         });
         const query = this.generateNqlFilter(validFilters);
         this.args.onApplySoftFilter(query, validFilters);
@@ -535,11 +507,11 @@ export default class MembersFilter extends Component {
 
     @action
     applyFilter() {
-        const validFilters = this.filters.filter((fil) => {
-            if (['label', 'product'].includes(fil.type)) {
-                return fil.value?.length;
+        const validFilters = this.filters.filter((filter) => {
+            if (['label', 'product'].includes(filter.type)) {
+                return filter.value?.length;
             }
-            return fil.value;
+            return filter.value;
         });
 
         const query = this.generateNqlFilter(validFilters);
@@ -548,10 +520,8 @@ export default class MembersFilter extends Component {
 
     @action
     resetFilter() {
-        this.nextFilterId = 1;
         this.filters = new TrackedArray([
             new Filter({
-                id: `filter-0`,
                 type: 'label',
                 relation: 'is',
                 value: [],
