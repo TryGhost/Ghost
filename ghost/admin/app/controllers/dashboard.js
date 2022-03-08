@@ -36,11 +36,10 @@ export default class DashboardController extends Controller {
         }
 
         const hasMembers = this.store.peekAll('member').length > 0;
-        const gettingStartedBannerDismissed = this.feature.dashboardHideGettingStarted === true;
 
         return this.showMembersData
             && this.checkMemberCountTask.performCount > 0
-            && (hasMembers || gettingStartedBannerDismissed);
+            && hasMembers;
     }
 
     initialise() {

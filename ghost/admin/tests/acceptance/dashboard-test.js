@@ -35,23 +35,20 @@ describe('Acceptance: Dashboard', function () {
     });
 
     describe('members graphs', function () {
-        beforeEach(function () {
-            this.server.createList('member', 5);
-
-            // dismiss the getting-started dashboard block
-            const userSettings = JSON.parse(user.accessibility || '{}');
-            userSettings.dashboardHideGettingStarted = true;
-            user.accessibility = JSON.stringify(userSettings);
-            user.save();
-        });
-
         it('is shown when members exist', async function () {
+            this.server.createList('member', 5);
             await visit('/dashboard');
             expect(find('[data-test-dashboard-members-graphs]'), 'members graphs block').to.exist;
-            expect(find('[data-test-dashboard-getting-started]'), 'getting-started resource block').to.not.exist;
+        });
+
+        it('is hidden when no members exist', async function () {
+            this.server.db.members.remove();
+            await visit('/dashboard');
+            expect(find('[data-test-dashboard-members-graphs]'), 'members graphs block').to.not.exist;
         });
 
         it('is hidden when members is disabled', async function () {
+            this.server.createList('member', 5);
             this.server.db.settings.update({key: 'members_signup_access'}, {value: 'none'});
 
             await visit('/dashboard');
