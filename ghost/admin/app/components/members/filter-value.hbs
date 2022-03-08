@@ -1,4 +1,16 @@
-{{#if (eq @filter.type 'label')}}
+{{#if (eq @filter.type 'name')}}
+    <input
+        type="text"
+        value={{@filter.value}}
+        class="gh-input"
+        aria-label="Name filter"
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
+        data-test-input="members-filter-value"
+    />
+
+{{else if (eq @filter.type 'label')}}
     <GhMemberLabelInput
         @onChange={{fn this.setLabelsFilterValue @filter}}
         @onLabelEdit={{@onLabelEdit}}

@@ -1,6 +1,6 @@
 import faker from 'faker';
 import moment from 'moment';
-import nql from '@nexes/nql';
+import nql from '@tryghost/nql';
 import {Response} from 'miragejs';
 import {extractFilterParam, paginateModelCollection} from '../utils';
 import {underscore} from '@ember/string';
@@ -73,50 +73,55 @@ export default function mockMembers(server) {
         let collection = members.all();
 
         if (filter) {
-            const nqlFilter = nql(filter, {
-                expansions: [
-                    {
-                        key: 'label',
-                        replacement: 'labels.slug'
-                    },
-                    {
-                        key: 'product',
-                        replacement: 'products.slug'
-                    }
-                ]
-            });
-
-            collection = collection.filter((member) => {
-                const serializedMember = {};
-
-                // mirage model keys match our main model keys so we need to transform
-                // camelCase to underscore to match the filter format
-                Object.keys(member.attrs).forEach((key) => {
-                    serializedMember[underscore(key)] = member.attrs[key];
+            try {
+                const nqlFilter = nql(filter, {
+                    expansions: [
+                        {
+                            key: 'label',
+                            replacement: 'labels.slug'
+                        },
+                        {
+                            key: 'product',
+                            replacement: 'products.slug'
+                        }
+                    ]
                 });
 
-                // similar deal for associated label models
-                serializedMember.labels = [];
-                member.labels.models.forEach((label) => {
-                    const serializedLabel = {};
-                    Object.keys(label.attrs).forEach((key) => {
-                        serializedLabel[underscore(key)] = label.attrs[key];
+                collection = collection.filter((member) => {
+                    const serializedMember = {};
+
+                    // mirage model keys match our main model keys so we need to transform
+                    // camelCase to underscore to match the filter format
+                    Object.keys(member.attrs).forEach((key) => {
+                        serializedMember[underscore(key)] = member.attrs[key];
                     });
-                    serializedMember.labels.push(serializedLabel);
-                });
 
-                // similar deal for associated product models
-                serializedMember.products = [];
-                member.products.models.forEach((product) => {
-                    const serializedProduct = {};
-                    Object.keys(product.attrs).forEach((key) => {
-                        serializedProduct[underscore(key)] = product.attrs[key];
+                    // similar deal for associated label models
+                    serializedMember.labels = [];
+                    member.labels.models.forEach((label) => {
+                        const serializedLabel = {};
+                        Object.keys(label.attrs).forEach((key) => {
+                            serializedLabel[underscore(key)] = label.attrs[key];
+                        });
+                        serializedMember.labels.push(serializedLabel);
                     });
-                    serializedMember.products.push(serializedProduct);
-                });
 
-                return nqlFilter.queryJSON(serializedMember);
-            });
+                    // similar deal for associated product models
+                    serializedMember.products = [];
+                    member.products.models.forEach((product) => {
+                        const serializedProduct = {};
+                        Object.keys(product.attrs).forEach((key) => {
+                            serializedProduct[underscore(key)] = product.attrs[key];
+                        });
+                        serializedMember.products.push(serializedProduct);
+                    });
+
+                    return nqlFilter.queryJSON(serializedMember);
+                });
+            } catch (err) {
+                console.error(err); // eslint-disable-line
+                throw err;
+            }
         }
 
         if (search) {
