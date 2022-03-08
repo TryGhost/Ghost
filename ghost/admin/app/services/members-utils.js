@@ -4,6 +4,7 @@ export default class MembersUtilsService extends Service {
     @service config;
     @service settings;
     @service feature;
+    @service store;
 
     get isMembersEnabled() {
         return this.settings.get('membersSignupAccess') !== 'none';
@@ -77,7 +78,7 @@ export default class MembersUtilsService extends Service {
     // Portal preview ----------------------------------------------------------
 
     getPortalPreviewUrl(overrides) {
-        const {
+        let {
             disableBackground = false,
             page = 'signup',
             button = this.settings.get('portalButton'),
@@ -88,10 +89,16 @@ export default class MembersUtilsService extends Service {
             monthlyPrice,
             yearlyPrice,
             portalPlans = this.settings.get('portalPlans'),
-            portalProducts = this.settings.get('portalProducts'),
+            portalProducts,
             currency,
             membersSignupAccess = this.settings.get('membersSignupAccess')
         } = overrides;
+
+        const tiers = this.store.peekAll('product') || [];
+
+        portalProducts = portalProducts || tiers.filter((t) => {
+            return t.visibility === 'public' && t.type === 'paid';
+        }).map(t => t.id);
 
         const baseUrl = this.config.get('blogUrl');
         const portalBase = '/#/portal/preview';

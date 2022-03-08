@@ -88,10 +88,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
 
             try {
                 const updatedProduct = yield this.product.save();
-                const existingPortalProducts = this.settings.get('portalProducts');
-                if (!existingPortalProducts?.length) {
-                    this.settings.set('portalProducts', [updatedProduct.id]);
-                }
+
                 yield this.settings.save();
 
                 return updatedProduct;
