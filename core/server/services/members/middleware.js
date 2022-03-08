@@ -112,6 +112,7 @@ const getPortalProductPrices = async function () {
             benefits: product.benefits,
             active: product.active,
             type: product.type,
+            visibility: product.visibility,
             prices: productPrices
         };
     }).filter((product) => {
