@@ -8,7 +8,7 @@ export default NewUserValidator.create({
         let blogTitle = model.get('blogTitle');
 
         if (!validator.isLength(blogTitle || '', 1)) {
-            model.get('errors').add('blogTitle', 'Please enter a blog title.');
+            model.get('errors').add('blogTitle', 'Please enter a site title.');
             this.invalidate();
         }
 
