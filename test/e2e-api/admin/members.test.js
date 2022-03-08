@@ -178,6 +178,25 @@ describe('Members API', function () {
             });
     });
 
+    it('Can ignore any unknown includes', async function () {
+        await agent
+            .get('/members/?filter=status:paid&include=emailRecipients')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(5).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    labels: anyArray,
+                    subscriptions: anyArray
+                })
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
     it('Can order by email_open_rate', async function () {
         await agent
             .get('members/?order=email_open_rate%20desc')
