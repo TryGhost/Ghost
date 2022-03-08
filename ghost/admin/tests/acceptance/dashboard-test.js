@@ -57,30 +57,6 @@ describe('Acceptance: Dashboard', function () {
             await visit('/dashboard');
             expect(find('[data-test-dashboard-members-graphs]'), 'members graphs block').to.not.exist;
         });
-
-        it('is shown when getting-started resource box is shown and members exist', async function () {
-            const userSettings = JSON.parse(user.accessibility || '{}');
-            delete userSettings.dashboardHideGettingStarted;
-            user.accessibility = JSON.stringify(userSettings);
-            user.save();
-
-            await visit('/dashboard');
-            expect(find('[data-test-dashboard-getting-started]'), 'getting-started resource block').to.exist;
-            expect(find('[data-test-dashboard-members-graphs]'), 'members graphs block').to.exist;
-        });
-
-        it('is hidden when getting-started resource box is shown and no members exist', async function () {
-            const userSettings = JSON.parse(user.accessibility || '{}');
-            delete userSettings.dashboardHideGettingStarted;
-            user.accessibility = JSON.stringify(userSettings);
-            user.save();
-
-            this.server.db.members.remove();
-
-            await visit('/dashboard');
-            expect(find('[data-test-dashboard-getting-started]'), 'getting-started resource block').to.exist;
-            expect(find('[data-test-dashboard-members-graphs]'), 'members graphs block').to.not.exist;
-        });
     });
 
     describe('permissions', function () {
