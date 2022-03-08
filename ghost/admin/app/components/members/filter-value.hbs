@@ -34,31 +34,12 @@
 
 {{else if (eq @filter.type 'last_seen_at')}}
     <GhDatePicker
-        class="gh-date-picker-with-shortcuts"
         @value={{@filter.value}}
         @maxDate={{now}}
         @maxDateError="Must be in the past"
         @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
-        as |datepicker|
-    >
-        <div class="gh-date-picker-sh-container">
-            <div class="gh-date-picker-sh-calendar">
-                <datepicker.Nav />
-                <datepicker.Days />
-            </div>
-            <div class="gh-date-picker-shortcuts">
-                <h4>Jump to date</h4>
-                <ol>
-                    <li><button type="button" {{on "click" (fn datepicker.actions.select (moment-site-tz) datepicker)}}>Today</button></li>
-                    <li><button type="button" {{on "click" (fn datepicker.actions.select (moment-subtract (moment-site-tz) 1 precision="days") datepicker)}}>Yesterday</button></li>
-                    <li><button type="button" {{on "click" (fn datepicker.actions.select (moment-subtract (moment-site-tz) 7 precision="days") datepicker)}}>7 days ago</button></li>
-                    <li><button type="button" {{on "click" (fn datepicker.actions.select (moment-subtract (moment-site-tz) 30 precision="days") datepicker)}}>30 days ago</button></li>
-                    <li><button type="button" {{on "click" (fn datepicker.actions.select (moment-subtract (moment-site-tz) 90 precision="days") datepicker)}}>90 days ago</button></li>
-                </ol>
-            </div>
-        </div>
-    </GhDatePicker>
+    />
 
 {{else if (eq @filter.type 'created_at')}}
     <GhDatePicker
