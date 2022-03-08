@@ -1,4 +1,4 @@
-import {Model, hasMany} from 'ember-cli-mirage';
+import {Model, hasMany} from 'miragejs';
 
 export default Model.extend({
     // ran into odd relationship bugs when called `benefits`

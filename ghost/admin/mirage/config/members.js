@@ -1,7 +1,7 @@
 import faker from 'faker';
 import moment from 'moment';
 import nql from '@nexes/nql';
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {extractFilterParam, paginateModelCollection} from '../utils';
 import {underscore} from '@ember/string';
 

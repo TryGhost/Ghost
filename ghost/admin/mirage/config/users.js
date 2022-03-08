@@ -1,4 +1,4 @@
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {paginateModelCollection} from '../utils';
 
 export default function mockUsers(server) {

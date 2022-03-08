@@ -1,5 +1,5 @@
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {Response} from 'ember-cli-mirage';
+import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {click, currentRouteName, currentURL, fillIn, findAll, visit} from '@ember/test-helpers';
