@@ -185,14 +185,6 @@ async function installTheme(data, api) {
     } catch (error) {
         //Fallback to Casper by doing nothing as the theme setting update is the last step
         logging.warn(tpl(messages.failedThemeInstall, {themeName, error: error.message}));
-
-        await api.notifications.add({
-            notifications: [{
-                custom: true, //avoids update-check from deleting the notification
-                type: 'warn',
-                message: 'The installation of the theme you have selected wasn\'t successful.'
-            }]
-        }, {context: {internal: true}});
     }
 
     return data;
