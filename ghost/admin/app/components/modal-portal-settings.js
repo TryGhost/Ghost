@@ -285,15 +285,10 @@ export default ModalComponent.extend({
     },
 
     updateAllowedProduct(productId, isChecked) {
-        const portalProductsSetting = this.settings.get('portalProducts') || [];
-        const allowedProducts = [...portalProductsSetting];
-
         const product = this.model.products.find(p => p.id === productId);
         if (!isChecked) {
-            this.settings.set('portalProducts', allowedProducts.filter(p => p !== productId));
             product.set('visibility', 'none');
         } else {
-            this.settings.set('portalProducts', allowedProducts);
             product.set('visibility', 'public');
         }
         let portalProducts = this.model.products.filter((p) => {
