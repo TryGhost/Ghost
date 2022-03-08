@@ -547,6 +547,7 @@
     padding-right: 40px;
     color: var(--middarkgrey) !important;
     background: none;
+    cursor: text;
 }
 
 .gh-portal-page-url-container .page-url-slash {
