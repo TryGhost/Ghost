@@ -553,7 +553,7 @@ Post = ghostBookshelf.Model.extend({
             tagsToSave = [];
 
             //  and deduplicate upper/lowercase tags
-            for (const tag of this.get('tags')) {
+            loopTags: for (const tag of this.get('tags')) {
                 if (!tag.id && !tag.tag_id && tag.slug) {
                     // Clean up the provided slugs before we do any matching with existing tags
                     tag.slug = await ghostBookshelf.Model.generateSlug(
@@ -565,7 +565,7 @@ Post = ghostBookshelf.Model.extend({
 
                 for (i = 0; i < tagsToSave.length; i = i + 1) {
                     if (tagsToSave[i].name && tag.name && tagsToSave[i].name.toLocaleLowerCase() === tag.name.toLocaleLowerCase()) {
-                        return;
+                        continue loopTags;
                     }
                 }
 
