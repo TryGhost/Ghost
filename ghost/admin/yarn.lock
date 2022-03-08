@@ -2117,10 +2117,10 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/helpers@1.1.58":
-  version "1.1.58"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.58.tgz#673865856d79e550a035dcd42726441d82a89824"
-  integrity sha512-g8eSHqTJYH4JavH4maiYlQncfzmtcLFy4YnCytXuEL5kH/a67jqnz2OLwduKYefJo8xQb3PMztexO7NqQcDTFg==
+"@tryghost/helpers@1.1.59":
+  version "1.1.59"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.59.tgz#09129469a4ade676919b4fabe10fd0e8e72c88b3"
+  integrity sha512-c849BzLFyNZqiu7cTSn4OSwnI9pX8uhC+WTqfSDaO9lqHCeDMVs1/qaJdfqBZgCQn5mlZ4kMU7wJ/pEbxamwuw==
   dependencies:
     lodash-es "^4.17.11"
 
