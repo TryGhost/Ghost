@@ -2072,10 +2072,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tryghost/color-utils@0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.9.tgz#d46740a96907bbcd989adc9079721cb26c72bcd0"
-  integrity sha512-mtmhJWDVv26UuVG/jJvJDCqw499i9Tdfb4wnqfpuKEomqLl1S/w5u/ckOWcymUZ1C3lbIq0j4KopDcH5VCow9A==
+"@tryghost/color-utils@0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.10.tgz#c74f0a37d1fad7d2662005c729c60302ff937708"
+  integrity sha512-nK34S9RH+PKzP/ZME3Hbcsi+PNUg6HSnMu9CwTIrGC97AyqkQgriGFAts7w0V1FUIFnIfbziLVLZy1RyISL0Dw==
   dependencies:
     color "^3.2.1"
 
