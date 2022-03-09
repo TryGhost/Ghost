@@ -20,7 +20,7 @@ module.exports = function (Bookshelf) {
             fetchAll: function (options) {
                 options = options || {};
 
-                const nql = require('@nexes/nql');
+                const nql = require('@tryghost/nql');
                 const modelName = options.modelName;
                 const tableNames = {
                     Post: 'posts',

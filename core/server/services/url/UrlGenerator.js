@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const nql = require('@nexes/nql');
+const nql = require('@tryghost/nql');
 const debug = require('@tryghost/debug')('services:url:generator');
 const localUtils = require('../../../shared/url-utils');
 
