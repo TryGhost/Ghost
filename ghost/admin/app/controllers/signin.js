@@ -5,7 +5,7 @@ import $ from 'jquery';
 import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import classic from 'ember-classic-decorator';
-import {action, computed} from '@ember/object';
+import {action} from '@ember/object';
 import {alias} from '@ember/object/computed';
 import {htmlSafe} from '@ember/template';
 import {isArray as isEmberArray} from '@ember/array';
@@ -41,12 +41,6 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
     @alias('model')
         signin;
-
-    @computed('config.accent_color')
-    get accentColor() {
-        let color = this.get('config.accent_color');
-        return color;
-    }
 
     @action
     authenticate() {

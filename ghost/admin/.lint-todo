@@ -1189,3 +1189,4 @@ add|ember-template-lint|no-passed-in-event-handlers|39|24|39|24|2692530760cb1f71
 add|ember-template-lint|no-passed-in-event-handlers|58|24|58|24|ce0d7e2e732b22ce3643fb9b1ac6ecef07c275ff|1646697600000|1649286000000|1651878000000|app/templates/setup.hbs
 add|ember-template-lint|no-passed-in-event-handlers|77|24|77|24|80681fcec2258c3d81a231bbd635aa1f03ff1452|1646697600000|1649286000000|1651878000000|app/templates/setup.hbs
 add|ember-template-lint|no-duplicate-landmark-elements|16|16|16|16|1661d2edb187b634c8187e5ecb0db15a4c7262fc|1646697600000|1649286000000|1651878000000|app/templates/signin.hbs
+remove|ember-template-lint|style-concatenation|90|20|90|20|95c5634b86fb8d9deffe53d77bd746f8b62571a3|1646611200000|1649199600000|1651791600000|app/templates/signin.hbs
