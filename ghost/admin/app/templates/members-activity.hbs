@@ -25,9 +25,7 @@
     <div class="view-container">
         <div class="gh-list-scrolling">
             {{#if this.memberRecord}}
-                <LinkTo @route="member" @model={{this.memberRecord}}>
-                    <GhMemberDetailsActivity @member={{this.memberRecord}} />
-                </LinkTo>
+                <GhMemberDetailsActivity @member={{this.memberRecord}} />
             {{/if}}
             {{#let (members-event-fetcher filter=(members-event-filter excludedEvents=this.fullExcludedEvents member=this.member) pageSize=50) as |eventsFetcher|}}
                 {{#if eventsFetcher.data}}

@@ -1,29 +1,90 @@
+.gh-members-activity {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.gh-members-activity .gh-canvas-header {
+    padding-left: 48px;
+    padding-right: 48px;
+    margin: 0 auto;
+    max-width: 1320px;
+}
+
 .gh-member-details-activity {
-    padding: 32px 0;
-    border-top: 1px solid var(--whitegrey);
+    margin: 0 auto;
+    max-width: 1320px;
+}
+
+.gh-member-details-activity .gh-main-section-block {
+    padding: 15px 0 20px;
+    margin: 0 48px;
+    border-top: 1px solid var(--whitegrey);  
+}
+
+.gh-member-details-activity .gh-main-section-content {
+    margin: 0 -4px;
 }
 
 .gh-member-details-activity h3 {
     margin: 0;
     padding: 0;
-    font-size: 1.7rem;
+    font-size: 1.6rem;
     font-weight: 600;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .gh-member-details-activity p {
     margin: 0;
     padding: 0;
-    color: var(--midgrey);
-    font-size: 1.3rem;
+    font-size: 1.4rem;
+    color: #40474f;
 }
 
-.gh-member-details-activity a,
-.gh-member-details-activity a:hover {
-    color: var(--black);
+.gh-member-details-activity-link {
+    margin: 0 0 0 -2px;
+    padding: 0;
+    font-size: 1.4rem;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+}
+
+.gh-member-details-activity-link svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: 0.6rem;
+}
+
+.gh-member-details-activity-link svg path {
+    fill: var(--green);
+}
+
+.gh-member-details-activity-email {
+    margin: 0;
+    padding: 0;
+    font-size: 1.4rem;
+    color: var(--midgrey);
 }
 
 .gh-members-activity .gh-list-scrolling {
     height: calc(100vh - 96px);
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.gh-members-activity .gh-list-scrolling {
+    height: calc(100vh - 96px);
+}
+
+.gh-members-activity .gh-list-scrolling .gh-list {
+    padding: 0 48px 48px;
+    margin: 0 auto;
+    max-width: 1320px;
 }
 
 .gh-members-activity .gh-list-scrolling thead th:last-child {
