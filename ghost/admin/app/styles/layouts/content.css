@@ -507,7 +507,7 @@
     justify-content: center;
     align-items: center;
     margin: 0 auto;
-    padding: 0;
+    padding: 0 0 24px;
     height: calc(100vh - 200px);
 }
 
