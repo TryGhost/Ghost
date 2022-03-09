@@ -266,10 +266,20 @@ export default class MembersAccessController extends Controller {
         let isMonthlyChecked = portalPlans.includes('monthly');
         let isYearlyChecked = portalPlans.includes('yearly');
 
+        const products = this.store.peekAll('product');
+        const portalProducts = products?.filter((product) => {
+            return product.get('visibility') === 'public'
+                && product.get('active') === true
+                && product.get('type') === 'paid';
+        }).map((product) => {
+            return product.id;
+        });
+
         const newUrl = new URL(this.membersUtils.getPortalPreviewUrl({
             button: false,
             monthlyPrice,
             yearlyPrice,
+            portalProducts,
             currency: this.currency,
             isMonthlyChecked,
             isYearlyChecked,

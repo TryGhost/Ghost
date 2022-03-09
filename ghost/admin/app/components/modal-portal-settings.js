@@ -52,7 +52,9 @@ export default ModalComponent.extend({
     portalPreviewUrl: computed('page', 'model.products.[]', 'changedProducts.[]', 'membersUtils.{isFreeChecked,isMonthlyChecked,isYearlyChecked}', 'settings.{portalName,portalButton,portalButtonIcon,portalButtonSignupText,portalButtonStyle,accentColor,portalPlans.[]}', function () {
         const options = this.getProperties(['page']);
         options.portalProducts = this.model.products?.filter((product) => {
-            return product.get('visibility') === 'public' && product.get('type') === 'paid';
+            return product.get('visibility') === 'public'
+                && product.get('active') === true
+                && product.get('type') === 'paid';
         }).map((product) => {
             return product.id;
         });

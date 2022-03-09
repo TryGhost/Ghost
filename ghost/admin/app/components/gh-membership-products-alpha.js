@@ -60,6 +60,12 @@ export default class extends Component {
     @action
     async onUnarchive() {
         this.type = 'active';
+        this.args.updatePortalPreview();
+    }
+
+    @action
+    async onArchive() {
+        this.args.updatePortalPreview();
     }
 
     @action
