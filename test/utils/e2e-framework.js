@@ -287,5 +287,6 @@ module.exports = {
             return stringMatching(new RegExp(`https?://.*?/${resource}/[a-f0-9]{24}/`));
         },
         stringMatching
-    }
+    },
+    startGhost
 };
