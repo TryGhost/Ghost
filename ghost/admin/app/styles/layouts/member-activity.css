@@ -28,7 +28,7 @@
 }
 
 .gh-member-details-activity h3 {
-    margin: 0;
+    margin: 0 0 3px;
     padding: 0;
     font-size: 1.6rem;
     font-weight: 600;
@@ -46,22 +46,29 @@
 }
 
 .gh-member-details-activity-link {
-    margin: 0 0 0 -2px;
+    margin: 1px 0 0;
     padding: 0;
     font-size: 1.4rem;
+    font-weight: 400;
     color: var(--green);
     display: flex;
     align-items: center;
+    transition: color 125ms linear;
+}
+
+.gh-member-details-activity-link:hover {
+    color: var(--green-d2);
 }
 
 .gh-member-details-activity-link svg {
     width: 1.6rem;
     height: 1.6rem;
     margin-right: 0.6rem;
+    color: var(--green);
 }
 
-.gh-member-details-activity-link svg path {
-    fill: var(--green);
+.gh-member-details-activity-link:hover svg {
+    color: var(--green-d2);
 }
 
 .gh-member-details-activity-email {
