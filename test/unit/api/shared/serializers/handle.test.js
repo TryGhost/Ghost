@@ -26,7 +26,7 @@ describe('Unit: api/shared/serializers/handle', function () {
                 });
         });
 
-        it('ensure serializers are called with apiConfig and frame', function () {
+        it('ensure default serializers are called with apiConfig and frame', function () {
             const allStub = sinon.stub();
             sinon.stub(shared.serializers.input.all, 'all').get(() => allStub);
 
@@ -51,10 +51,45 @@ describe('Unit: api/shared/serializers/handle', function () {
             return shared.serializers.handle.input(apiConfig, apiSerializers, frame)
                 .then(() => {
                     stubsToCheck.forEach((stub) => {
-                        stub.calledOnce.should.be.true();
-                        should.equal(stub.args[0][0], apiConfig);
-                        should.equal(stub.args[0][1], frame);
+                        sinon.assert.calledOnceWithExactly(stub, apiConfig, frame);
                     });
+                });
+        });
+
+        it('ensure serializers are called with apiConfig and frame if new shared serializer is added', function () {
+            const allStub = sinon.stub();
+            const allBrowseStub = sinon.stub();
+
+            shared.serializers.input.all.browse = allBrowseStub;
+
+            sinon.stub(shared.serializers.input.all, 'all').get(() => allStub);
+
+            const apiSerializers = {
+                all: sinon.stub().resolves(),
+                posts: {
+                    all: sinon.stub().resolves(),
+                    browse: sinon.stub().resolves()
+                }
+            };
+
+            const apiConfig = {docName: 'posts', method: 'browse'};
+            const frame = {};
+
+            const stubsToCheck = [
+                allStub,
+                allBrowseStub,
+                apiSerializers.all,
+                apiSerializers.posts.all,
+                apiSerializers.posts.browse
+            ];
+
+            return shared.serializers.handle.input(apiConfig, apiSerializers, frame)
+                .then(() => {
+                    stubsToCheck.forEach((stub) => {
+                        sinon.assert.calledOnceWithExactly(stub, apiConfig, frame);
+                    });
+
+                    sinon.assert.callOrder(allStub, allBrowseStub, apiSerializers.all, apiSerializers.posts.all, apiSerializers.posts.browse);
                 });
         });
     });
@@ -80,7 +115,7 @@ describe('Unit: api/shared/serializers/handle', function () {
                 });
         });
 
-        it('ensure serializers are called', function () {
+        it('ensure custom api Serializers are called correctly', function () {
             const apiSerializers = {
                 posts: {
                     add: sinon.stub().resolves()
@@ -90,10 +125,50 @@ describe('Unit: api/shared/serializers/handle', function () {
                 }
             };
 
-            return shared.serializers.handle.output([], {docName: 'posts', method: 'add'}, apiSerializers, {})
+            const response = [];
+            const apiConfig = {docName: 'posts', method: 'add'};
+            const frame = {};
+
+            return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
                 .then(() => {
-                    apiSerializers.posts.add.calledOnce.should.be.true();
-                    apiSerializers.users.add.called.should.be.false();
+                    sinon.assert.calledOnceWithExactly(apiSerializers.posts.add, response, apiConfig, frame);
+                    sinon.assert.notCalled(apiSerializers.users.add);
+                });
+        });
+
+        it('ensure "all" serializers are called correctly', function () {
+            const apiSerializers = {
+                all: {
+                    after: sinon.stub().resolves(),
+                    before: sinon.stub().resolves()
+
+                },
+                posts: {
+                    add: sinon.stub().resolves(),
+                    all: sinon.stub().resolves()
+                }
+            };
+
+            const response = [];
+            const apiConfig = {docName: 'posts', method: 'add'};
+            const frame = {};
+
+            const stubsToCheck = [
+                apiSerializers.all.before,
+                apiSerializers.posts.add,
+                apiSerializers.posts.all
+            ];
+
+            return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                .then(() => {
+                    stubsToCheck.forEach((stub) => {
+                        sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
+                    });
+
+                    // After has a different call signature... is this a intentional?
+                    sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+
+                    sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.posts.all, apiSerializers.posts.add, apiSerializers.all.after);
                 });
         });
     });
