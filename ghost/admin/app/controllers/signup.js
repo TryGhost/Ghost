@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
+import {computed} from '@ember/object';
 import {get} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {
@@ -20,6 +21,11 @@ export default Controller.extend({
     profileImage: null,
 
     signupDetails: alias('model'),
+
+    accentColor: computed('config.accent_color', function () {
+        let color = this.get('config.accent_color');
+        return color;
+    }),
 
     actions: {
         validate(property) {
@@ -56,7 +62,7 @@ export default Controller.extend({
         } catch (error) {
             // ValidationEngine throws undefined
             if (!error) {
-                this.set('flowErrors', 'Please fill out the form to complete your sign-up');
+                this.set('flowErrors', 'Please fill out the form to complete your signup');
                 return false;
             }
 
