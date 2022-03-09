@@ -86,17 +86,13 @@ describe('e2e {{#get}} helper', function () {
         publicPost.visibility.should.eql('public');
         membersPost.visibility.should.eql('members');
         paidPost.visibility.should.eql('paid');
+        basicTierPost.visibility.should.eql('tiers');
     });
 
     beforeEach(function () {
         fn = sinon.spy();
         inverse = sinon.spy();
-
-        locals = {root: {_locals: {apiVersion: API_VERSION}}, globalProp: {foo: 'bar'}};
-    });
-
-    it('test', function () {
-        should(true).eql(true);
+        locals = {root: {_locals: {apiVersion: API_VERSION}}};
     });
 
     describe('{{access}} property', function () {
