@@ -141,14 +141,23 @@ export default class MembersFilter extends Component {
     @service settings;
     @service store;
 
-    @tracked filters = new TrackedArray([
-        new Filter({
-            type: 'label',
-            relation: 'is',
-            value: [],
-            relationOptions: FILTER_RELATIONS_OPTIONS.label
-        })
-    ]);
+    @tracked filters = this.feature.membersContainsFilters
+        ? new TrackedArray([
+            new Filter({
+                type: 'name',
+                relation: 'is',
+                value: '',
+                relationOptions: FILTER_RELATIONS_OPTIONS.name
+            })
+        ])
+        : new TrackedArray([
+            new Filter({
+                type: 'label',
+                relation: 'is',
+                value: [],
+                relationOptions: FILTER_RELATIONS_OPTIONS.label
+            })
+        ]);
 
     availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
     availableFilterValueOptions = FILTER_VALUE_OPTIONS;
@@ -195,12 +204,21 @@ export default class MembersFilter extends Component {
 
     @action
     addFilter() {
-        this.filters.push(new Filter({
-            type: 'label',
-            relation: 'is',
-            value: [],
-            relationOptions: FILTER_RELATIONS_OPTIONS.label
-        }));
+        if (this.feature.membersContainsFilters) {
+            this.filters.push(new Filter({
+                type: 'name',
+                relation: 'is',
+                value: '',
+                relationOptions: FILTER_RELATIONS_OPTIONS.name
+            }));
+        } else {
+            this.filters.push(new Filter({
+                type: 'label',
+                relation: 'is',
+                value: [],
+                relationOptions: FILTER_RELATIONS_OPTIONS.label
+            }));
+        }
         this.applySoftFilter();
     }
 
@@ -483,14 +501,25 @@ export default class MembersFilter extends Component {
 
     @action
     resetFilter() {
-        this.filters = new TrackedArray([
-            new Filter({
+        const filters = [];
+
+        if (this.feature.membersContainsFilters) {
+            filters.push(new Filter({
+                type: 'name',
+                relation: 'is',
+                value: '',
+                relationOptions: FILTER_RELATIONS_OPTIONS.name
+            }));
+        } else {
+            filters.push(new Filter({
                 type: 'label',
                 relation: 'is',
                 value: [],
                 relationOptions: FILTER_RELATIONS_OPTIONS.label
-            })
-        ]);
+            }));
+        }
+
+        this.filters = new TrackedArray(filters);
         this.args.onResetFilter();
     }
 
