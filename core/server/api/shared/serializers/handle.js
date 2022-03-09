@@ -101,6 +101,7 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
         });
     }
 
+    // CASE: custom serializer exists
     if (apiSerializers[apiConfig.docName]) {
         if (apiSerializers[apiConfig.docName].all) {
             tasks.push(function serializeOptionsShared() {
@@ -111,6 +112,20 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
         if (apiSerializers[apiConfig.docName][apiConfig.method]) {
             tasks.push(function serializeOptionsShared() {
                 return apiSerializers[apiConfig.docName][apiConfig.method](response, apiConfig, frame);
+            });
+        }
+
+    // CASE: Fall back to default serializer
+    } else if (apiSerializers.default) {
+        if (apiSerializers.default.all) {
+            tasks.push(function serializeOptionsShared() {
+                return apiSerializers.default.all(response, apiConfig, frame);
+            });
+        }
+
+        if (apiSerializers.default[apiConfig.method]) {
+            tasks.push(function serializeOptionsShared() {
+                return apiSerializers.default[apiConfig.method](response, apiConfig, frame);
             });
         }
     }

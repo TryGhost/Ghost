@@ -9,6 +9,10 @@ module.exports = {
         return require('./all');
     },
 
+    get default() {
+        return require('./default');
+    },
+
     get authentication() {
         return require('./authentication');
     },
@@ -47,10 +51,6 @@ module.exports = {
 
     get posts() {
         return require('./posts');
-    },
-
-    get invites() {
-        return require('./invites');
     },
 
     get settings() {
