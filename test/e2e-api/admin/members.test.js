@@ -178,6 +178,25 @@ describe('Members API', function () {
             });
     });
 
+    it('Can filter using contains operators', async function () {
+        await agent
+            .get(`/members/?filter=name:~'Venkman'`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    labels: anyArray,
+                    subscriptions: anyArray
+                })
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
     it('Can ignore any unknown includes', async function () {
         await agent
             .get('/members/?filter=status:paid&include=emailRecipients')

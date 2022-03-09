@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:v3:utils:serializers:input:pages');
-const mapNQLKeyValues = require('@nexes/nql').utils.mapKeyValues;
+const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');

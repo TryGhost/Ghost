@@ -1,4 +1,4 @@
-const nql = require('@nexes/nql');
+const nql = require('@tryghost/nql');
 
 // @ts-check
 /** @typedef { boolean } AccessFlag */
