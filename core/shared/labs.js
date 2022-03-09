@@ -15,6 +15,10 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
+    'tierWelcomePages',
+    'tierName',
+    'selectablePortalLinks',
+    'membersTableStatus'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -32,12 +36,8 @@ const ALPHA_FEATURES = [
     'tweetGridCard',
     'membersActivityFeed',
     'improvedOnboarding',
-    'tierWelcomePages',
-    'tierName',
-    'membersTableStatus',
     'membersLastSeenFilter',
-    'membersContainsFilters',
-    'selectablePortalLinks'
+    'membersContainsFilters'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
