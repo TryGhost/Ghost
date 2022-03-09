@@ -2,7 +2,7 @@
   "all": true,
   "check-coverage": true,
   "reporter": [
-    "html",
+    "html-spa",
     "text-summary",
     "cobertura"
   ],
