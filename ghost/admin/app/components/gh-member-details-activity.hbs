@@ -21,14 +21,14 @@
                             <span class="midgrey">New member</span>
                             {{/if}}
                         {{/unless}}
-                        <span class="gh-member-details-activity-email">
-                            {{#if (and @member.name @member.email)}}
-                                &nbsp;&middot;&nbsp;{{@member.email}}
-                            {{/if}}
-                        </span>
                     </h3>
                     <p>
-                        <LinkTo class="gh-member-details-activity-link" @route="member" @model={{@member}}>{{svg-jar "member"}} See member details</LinkTo>
+                        {{#if (and @member.name @member.email)}}
+                            {{@member.email}}
+                        {{/if}}
+                    </p>
+                    <p>
+                        <LinkTo class="gh-member-details-activity-link" @route="member" @model={{@member}}>{{svg-jar "members"}} See member details</LinkTo>
                     </p>
                 </div>
             </div>
