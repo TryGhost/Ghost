@@ -32,6 +32,7 @@ module.exports = class StripeMigrations {
         await this.revertPortalPlansSetting();
         await this.removeInvalidSubscriptions();
         await this.setDefaultProductName();
+        await this.updateStripeProductNamesFromDefaultProduct();
     }
 
     async populateProductsAndPrices(options) {
@@ -568,6 +569,35 @@ module.exports = class StripeMigrations {
                 }, {
                     ...options,
                     id: defaultProduct.id
+                });
+            }
+        }
+    }
+
+    async updateStripeProductNamesFromDefaultProduct(options) {
+        if (!options) {
+            return this.models.Product.transaction((transacting) => {
+                return this.updateStripeProductNamesFromDefaultProduct({transacting});
+            });
+        }
+
+        const {data} = await this.models.StripeProduct.findPage({
+            ...options,
+            limit: 'all'
+        });
+
+        const siteTitle = await this.models.Settings.findOne({key: 'title'}, options);
+
+        if (!siteTitle) {
+            return;
+        }
+
+        for (const model of data) {
+            const product = await this.api.getProduct(model.get('stripe_product_id'));
+
+            if (product.name === 'Default Product') {
+                await this.api.updateProduct(product.id, {
+                    name: siteTitle.get('value')
                 });
             }
         }

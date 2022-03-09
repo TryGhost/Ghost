@@ -81,6 +81,18 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * @param {string} id
+     *
+     * @returns {Promise<IProduct>}
+     */
+    async getProduct(id) {
+        await this._rateLimitBucket.throttle();
+        const product = await this._stripe.products.retrieve(id);
+
+        return product;
+    }
+
+    /**
      * @param {object} options
      * @param {string} options.name
      *
