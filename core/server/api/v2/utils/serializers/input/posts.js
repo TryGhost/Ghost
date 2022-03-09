@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const mapNQLKeyValues = require('@nexes/nql').utils.mapKeyValues;
+const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
 const debug = require('@tryghost/debug')('api:v2:utils:serializers:input:posts');
 const url = require('./utils/url');
 const localUtils = require('../../index');
