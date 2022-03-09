@@ -980,6 +980,101 @@ describe('Acceptance: Members filtering', function () {
             expect(find(valueInput)).to.have.value(`test+test`);
         });
 
+        it('can filter by email', async function () {
+            this.server.create('member', {email: 'test-1@one.com'});
+            this.server.create('member', {email: 'test-2@one.com'});
+            this.server.create('member', {email: 'test-1@two.com'});
+            this.server.create('member', {email: 'test-2@two.com'});
+            this.server.create('member', {email: 'test-3@two.com'});
+            this.server.create('member', {email: 'hello@hi.com'});
+            this.server.create('member', {email: 'with+plus@fuzzy.org'});
+
+            await visit('/members');
+
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
+                .to.equal(7);
+
+            await click('[data-test-button="members-filter-actions"]');
+
+            const filterSelect = `[data-test-members-filter="0"]`;
+            const typeSelect = `${filterSelect} [data-test-select="members-filter"]`;
+            const operatorSelect = `${filterSelect} [data-test-select="members-filter-operator"]`;
+            const valueInput = `${filterSelect} [data-test-input="members-filter-value"]`;
+
+            expect(find(`${filterSelect} [data-test-select="members-filter"] option[value="email"]`), 'email filter option').to.exist;
+
+            await fillIn(typeSelect, 'email');
+
+            // has the right operators
+            const operatorOptions = findAll(`${operatorSelect} option`);
+            expect(operatorOptions).to.have.length(5);
+            expect(operatorOptions[0]).to.have.value('is');
+            expect(operatorOptions[1]).to.have.value('contains');
+            expect(operatorOptions[2]).to.have.value('does-not-contain');
+            expect(operatorOptions[3]).to.have.value('starts-with');
+            expect(operatorOptions[4]).to.have.value('ends-with');
+
+            // has expected default operator and value
+            expect(find(operatorSelect)).to.have.value('is');
+            expect(find(valueInput)).to.have.value('');
+
+            // can change filter
+            await fillIn(valueInput, 'hello@hi.com');
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - is "hello@hi.com"')
+                .to.equal(1);
+
+            // can change operator
+            await fillIn(operatorSelect, 'contains');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - contains "hello"')
+                .to.equal(1);
+
+            // contains query works
+            await fillIn(valueInput, 'test');
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - contains "test"')
+                .to.equal(5);
+
+            // starts with query works
+            await fillIn(operatorSelect, 'starts-with');
+            await fillIn(valueInput, 'test-2');
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - starts with "test-2"')
+                .to.equal(2);
+
+            // ends with query works
+            await fillIn(operatorSelect, 'ends-with');
+            await fillIn(valueInput, '.com');
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - ends with ".com"')
+                .to.equal(6);
+
+            // does not contain query works
+            await fillIn(operatorSelect, 'does-not-contain');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - does not contain ".com"')
+                .to.equal(1);
+
+            // can query with special chars
+            await fillIn(operatorSelect, 'contains');
+            await fillIn(valueInput, `with+plus`);
+            await blur(valueInput);
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - contains "with+plus"')
+                .to.equal(1);
+
+            // no duplicate column added (email is included in the "details" column)
+            expect(find('[data-test-table-column="email"]')).to.not.exist;
+
+            // can handle contains operator in URL
+            let filter = encodeURIComponent(`email:~'hello'`);
+            await visit('/');
+            await visit(`/members?filter=${filter}`);
+            await click('[data-test-button="members-filter-actions"]');
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - from URL contains "hello"')
+                .to.equal(1);
+            expect(find(operatorSelect)).to.have.value('contains');
+            expect(find(valueInput)).to.have.value('hello');
+        });
+
         it('can filter by next billing date', async function () {
             clock = sinon.useFakeTimers({
                 now: moment('2022-03-01 09:00:00.000Z').toDate(),
