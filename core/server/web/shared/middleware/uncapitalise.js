@@ -27,7 +27,8 @@ const uncapitalise = (req, res, next) => {
     let decodedURI;
 
     const isSignupOrReset = pathToTest.match(/^(.*\/ghost\/(signup|reset)\/)/i);
-    const isAPI = pathToTest.match(/^(.*\/ghost\/api(\/(v[\d.]+|canary))?\/.*?\/)/i);
+    const isAPIRegExp = new RegExp(`^(.*${urlUtils.BASE_API_PATH}(/(v[\\d.]+|canary))?/.*?/)`, 'i');
+    const isAPI = pathToTest.match(isAPIRegExp);
 
     if (isSignupOrReset) {
         pathToTest = isSignupOrReset[1];
