@@ -10,7 +10,7 @@ import {tracked} from '@glimmer/tracking';
 const FILTER_PROPERTIES = [
     // Basic
     {label: 'Name', name: 'name', group: 'Basic', valueType: 'text', feature: 'membersContainsFilters'},
-    // {label: 'Email', name: 'email', group: 'Basic'},
+    {label: 'Email', name: 'email', group: 'Basic', valueType: 'text', feature: 'membersContainsFilters'},
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic', valueType: 'array'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
@@ -42,6 +42,14 @@ const MATCH_RELATION_OPTIONS = [
     {label: 'is not', name: 'is-not'}
 ];
 
+const CONTAINS_RELATION_OPTIONS = [
+    {label: 'is', name: 'is'},
+    {label: 'contains', name: 'contains'},
+    {label: 'does not contain', name: 'does-not-contain'},
+    {label: 'starts with', name: 'starts-with'},
+    {label: 'ends with', name: 'ends-with'}
+];
+
 const DATE_RELATION_OPTIONS = [
     {label: 'before', name: 'is-less'},
     {label: 'on or before', name: 'is-or-less'},
@@ -60,14 +68,8 @@ const NUMBER_RELATION_OPTIONS = [
 ];
 
 const FILTER_RELATIONS_OPTIONS = {
-    name: [
-        {label: 'is', name: 'is'},
-        {label: 'contains', name: 'contains'},
-        {label: 'does not contain', name: 'does-not-contain'},
-        {label: 'starts with', name: 'starts-with'},
-        {label: 'ends with', name: 'ends-with'}
-    ],
-    // email: MATCH_RELATION_OPTIONS,
+    name: CONTAINS_RELATION_OPTIONS,
+    email: CONTAINS_RELATION_OPTIONS,
     label: MATCH_RELATION_OPTIONS,
     product: MATCH_RELATION_OPTIONS,
     subscribed: MATCH_RELATION_OPTIONS,
