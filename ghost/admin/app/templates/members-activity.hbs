@@ -24,11 +24,11 @@
 
     <div class="view-container">
         <div class="gh-list-scrolling">
-            {{#if this.memberRecord}}
-                <GhMemberDetailsActivity @member={{this.memberRecord}} />
-            {{/if}}
             {{#let (members-event-fetcher filter=(members-event-filter excludedEvents=this.fullExcludedEvents member=this.member) pageSize=50) as |eventsFetcher|}}
                 {{#if eventsFetcher.data}}
+                    {{#if this.memberRecord}}
+                        <GhMemberDetailsActivity @member={{this.memberRecord}} />
+                    {{/if}}
                     <MembersActivity::Table @hideMemberColumn={{if this.member true}} @events={{eventsFetcher.data}} />
 
                     {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
