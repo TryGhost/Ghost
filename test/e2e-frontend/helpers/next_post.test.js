@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const {startGhost} = require('../../utils/e2e-framework');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
 
@@ -34,7 +33,10 @@ describe('e2e {{#next_post}} helper', function () {
     let publicPost, membersPost, paidPost, basicTierPost, publicPost2;
 
     before(async function () {
-        await startGhost();
+        await testUtils.startGhost({
+            backend: true,
+            frontend: false
+        });
 
         publicPost = await createPost({
             slug: 'free-to-see',
