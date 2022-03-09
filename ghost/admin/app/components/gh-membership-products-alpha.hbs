@@ -25,7 +25,7 @@
     </div>
     {{/if}}
 
-    {{#each this.products as |product productIdx|}}
+    {{#each this.products as |product|}}
         <GhProductCard
             @product={{product}}
             @openEditProduct={{this.openEditProduct}}

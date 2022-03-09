@@ -107,7 +107,6 @@ add|ember-template-lint|no-invalid-interactive|20|68|20|68|df3b265cb782bcfbc1794
 add|ember-template-lint|no-invalid-interactive|38|68|38|68|1849f49e96b9809e3b7c578e3b76a6f3afab090f|1646611200000|1649199600000|1651791600000|app/components/gh-members-recipient-select.hbs
 add|ember-template-lint|no-duplicate-attributes|9|4|9|4|6b5f76f812df2b84f2ed9ee5a557ca1bf98710df|1646611200000|1649199600000|1651791600000|app/components/gh-members-segment-select.hbs
 add|ember-template-lint|no-action|37|110|37|110|02e1b4d3006c769249aeb86ae7ac4e4699686697|1646611200000|1649199600000|1651791600000|app/components/gh-membership-products-alpha.hbs
-add|ember-template-lint|no-unused-block-params|28|51|28|51|040794f44ec6dab3105b4227304bbaca577545d1|1646611200000|1649199600000|1651791600000|app/components/gh-membership-products-alpha.hbs
 add|ember-template-lint|no-action|8|50|8|50|de589665046a78748832e8f93d2e495d1d259265|1646611200000|1649199600000|1651791600000|app/components/gh-mobile-nav-bar.hbs
 add|ember-template-lint|no-action|20|19|20|19|1cf358e2bf9d6fbb6abdc967c327ac9236e817dc|1646611200000|1649199600000|1651791600000|app/components/gh-navitem.hbs
 add|ember-template-lint|no-action|21|22|21|22|b05a3bfe0536cd1cacb3a5803246be6f16857425|1646611200000|1649199600000|1651791600000|app/components/gh-navitem.hbs
