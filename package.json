@@ -97,7 +97,7 @@
     "@tryghost/nql": "0.9.0",
     "@tryghost/package-json": "1.0.16",
     "@tryghost/promise": "0.1.15",
-    "@tryghost/request": "0.1.16",
+    "@tryghost/request": "0.1.17",
     "@tryghost/root-utils": "0.3.11",
     "@tryghost/security": "0.2.15",
     "@tryghost/session-service": "0.1.38",
