@@ -74,7 +74,8 @@
     fill: #fff !important;
 }
 
-.gh-signin .gh-btn-login:hover {
+.gh-signin .gh-btn-login:hover,
+.gh-signup .gh-btn-signup:hover {
     opacity: 0.9;
 }
 
@@ -131,7 +132,8 @@
     font-size: 1.8rem;
 }
 
-.gh-signin .gh-input:focus:not(.gh-signin .gh-input.reset-password:focus) {
+.gh-signin .gh-input:focus:not(.gh-signin .gh-input.reset-password:focus),
+.gh-signup .gh-input:focus {
     border-color: var(--midgrey) !important;
     box-shadow: none !important;
 }
