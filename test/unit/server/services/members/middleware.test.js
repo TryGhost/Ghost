@@ -5,13 +5,19 @@ const urlUtils = require('../../../../../core/shared/url-utils');
 const membersService = require('../../../../../core/server/services/members');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
 const settingsCache = require('../../../../../core/shared/settings-cache');
+const models = require('../../../../../core/server/models');
 
 describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {
         let oldSSR;
+        let oldProductModel;
         let req;
         let res;
         let next;
+
+        before(function () {
+            models.init();
+        });
 
         beforeEach(function () {
             req = {};
@@ -26,12 +32,19 @@ describe('Members Service Middleware', function () {
                 exchangeTokenForSession: sinon.stub()
             };
 
+            // Stub the members Service, handle this in separate tests
+            oldProductModel = models.Product;
+            models.Product = {
+                findOne: sinon.stub()
+            };
+
             sinon.stub(urlUtils, 'getSubdir').returns('/blah');
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
         });
 
         afterEach(function () {
             membersService.ssr = oldSSR;
+            models.Product = oldProductModel;
             sinon.restore();
         });
 
@@ -52,7 +65,14 @@ describe('Members Service Middleware', function () {
             req.query = {token: 'test', action: 'signup'};
 
             // Fake token handling success
-            membersService.ssr.exchangeTokenForSession.resolves();
+            membersService.ssr.exchangeTokenForSession.resolves({
+                subscriptions: [{
+                    status: 'active',
+                    tier: {
+                        welcome_page_url: ''
+                    }
+                }]
+            });
 
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
@@ -79,16 +99,19 @@ describe('Members Service Middleware', function () {
             res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=false');
         });
 
-        it('redirects to custom redirect on signup', async function () {
+        it('redirects free member to custom redirect on signup', async function () {
             req.url = '/members?token=test&action=signup';
             req.query = {token: 'test', action: 'signup'};
 
-            sinon.stub(settingsCache, 'get')
-                .withArgs('members_free_signup_redirect')
-                .returns('https://custom.com/redirect');
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves();
+
+            // Fake welcome page for free tier
+            models.Product.findOne.resolves({
+                get: () => {
+                    return 'https://custom.com/redirect/';
+                }
+            });
 
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
@@ -99,18 +122,17 @@ describe('Members Service Middleware', function () {
             res.redirect.firstCall.args[0].should.eql('https://custom.com/redirect/');
         });
 
-        it('redirects to custom redirect on signup', async function () {
+        it('redirects paid member to custom redirect on signup', async function () {
             req.url = '/members?token=test&action=signup';
             req.query = {token: 'test', action: 'signup'};
-
-            sinon.stub(settingsCache, 'get')
-                .withArgs('members_paid_signup_redirect')
-                .returns('https://custom.com/paid');
 
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({
                 subscriptions: [{
-                    status: 'active'
+                    status: 'active',
+                    tier: {
+                        welcome_page_url: 'https://custom.com/paid'
+                    }
                 }]
             });
 
