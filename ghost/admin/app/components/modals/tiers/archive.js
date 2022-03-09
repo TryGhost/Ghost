@@ -13,11 +13,13 @@ export default class ArchiveTierModalComponent extends Component {
 
     @task({drop: true})
     *archiveTierTask() {
-        const {product} = this.args.data;
+        const {product, onArchive} = this.args.data;
         product.active = false;
+        product.visibility = 'none';
 
         try {
             yield product.save();
+            onArchive?.();
             return product;
         } catch (error) {
             if (error) {

@@ -20,7 +20,8 @@ export default class ArchiveTierComponent extends Component {
     handleArchiveTier() {
         if (!this.product.isNew) {
             this.modals.open('modals/tiers/archive', {
-                product: this.product
+                product: this.product,
+                onArchive: this.args.onArchive
             }, {
                 className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
             });
