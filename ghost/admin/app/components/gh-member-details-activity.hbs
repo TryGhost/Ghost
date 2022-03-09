@@ -21,26 +21,15 @@
                             <span class="midgrey">New member</span>
                             {{/if}}
                         {{/unless}}
+                        <span class="gh-member-details-activity-email">
+                            {{#if (and @member.name @member.email)}}
+                                &nbsp;&middot;&nbsp;{{@member.email}}
+                            {{/if}}
+                        </span>
                     </h3>
                     <p>
-                        {{#if (and @member.name @member.email)}}
-                            <a href="mailto:{{@member.email}}">{{@member.email}}</a>
-                        {{/if}}
+                        <LinkTo class="gh-member-details-activity-link" @route="member" @model={{@member}}>{{svg-jar "member"}} See member details</LinkTo>
                     </p>
-                    {{#unless @member.isNew}}
-                    <p class="{{if @member.name "nudge-bottom--2"}}">
-                        {{#if @member.geolocation}}
-                            {{#if (and (eq @member.geolocation.country_code "US") @member.geolocation.region)}}
-                                {{@member.geolocation.region}}, US
-                            {{else}}
-                                {{or @member.geolocation.country "Unknown location"}}
-                            {{/if}}
-                        {{else}}
-                            Unknown location
-                        {{/if}}
-                        – Created on {{moment-format @member.createdAtUTC "D MMM YYYY"}}
-                    </p>
-                    {{/unless}}
                 </div>
             </div>
         </div>
