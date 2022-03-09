@@ -13,7 +13,7 @@ const privateRoute = '/private/';
 
 const messages = {
     pageNotFound: 'Page not found.',
-    wrongPassword: 'Wrong password'
+    wrongPassword: 'Incorrect password.'
 };
 
 function verifySessionHash(salt, hash) {

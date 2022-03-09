@@ -349,49 +349,66 @@ th {
 }
 /* Colour classes
 /* ---------------------------------------------------------- */
+.black {
+    color: #15171A;
+}
+
 .darkgrey {
-    color: #343f44;
+    color: #394047;
 }
+
 .midgrey {
-    color: #738a94;
+    color: #7C8B9A;
 }
+
 .lightgrey {
-    color: #e5eff5;
+    color: #CED4D9;
 }
+
 .blue {
-    color: #3eb0ef;
+    color: #14b8ff;
 }
+
 .red {
-    color: #f05230;
+    color: #f50b23;
 }
+
 .orange {
-    color: #fecd35;
+    color: #ffb41f;
 }
+
 .green {
-    color: #a4d037;
+    color: #30cf43;
 }
+
 /* Colour classes (hover)
 /* ---------------------------------------------------------- */
 .darkgrey-hover:hover {
-    color: #343f44;
+    color: #394047
 }
+
 .midgrey-hover:hover {
-    color: #738a94;
+    color: #7C8B9A;
 }
+
 .lightgrey-hover:hover {
-    color: #e5eff5;
+    color: #CED4D9;
 }
+
 .blue-hover:hover {
-    color: #3eb0ef;
+    color: #14b8ff;
 }
+
 .red-hover:hover {
-    color: #f05230;
+    color: #f50b23;
 }
+
 .orange-hover:hover {
-    color: #fecd35;
+    color: #ffb41f;
 }
+
 .green-hover:hover {
-    color: #a4d037;
+    color: #30cf43;
 }
 
 /* Layout
@@ -493,7 +510,6 @@ h2 {
     outline: none;
     border: 1px solid rgb(214, 227, 235);
     color: rgb(130, 154, 168);
-    text-shadow: 0 1px 0 #fff;
     text-decoration: none !important;
     -webkit-user-select: none;
        -moz-user-select: none;
@@ -608,6 +624,7 @@ h2 {
     overflow: hidden;
     height: 100%;
 }
+
 /* Content viewport, contains everything else */
 .gh-viewport {
     -ms-flex-positive: 1;
@@ -617,6 +634,7 @@ h2 {
     overflow: hidden;
     max-height: 100%;
 }
+
 .gh-main {
     position: relative;
     -ms-flex-positive: 1;
@@ -630,161 +648,94 @@ h2 {
 /* Full screen workflow
 /* ---------------------------------------------------------- */
 .gh-flow {
-    -ms-flex-positive: 1;
-        flex-grow: 1;
-    display: -ms-flexbox;
+    flex-grow: 1;
     display: flex;
-    -ms-flex-direction: column;
-        flex-direction: column;
+    flex-direction: column;
     overflow-y: auto;
     min-height: 100%;
+    background: linear-gradient(315deg,#efefef,#fff);
 }
-.gh-flow-head {
-    -ms-flex-negative: 0;
-        flex-shrink: 0;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-pack: justify;
-        justify-content: space-between;
-    padding-top: 4vh;
-    padding-bottom: 20px;
-}
+
 .gh-flow-content-wrap {
-    -ms-flex-positive: 1;
-        flex-grow: 1;
-    -ms-flex-negative: 0;
-        flex-shrink: 0;
-    display: -ms-flexbox;
+    flex-grow: 1;
+    flex-shrink: 0;
     display: flex;
-    -ms-flex-pack: center;
-        justify-content: center;
-    -ms-flex-align: center;
-        align-items: center;
+    justify-content: center;
+    align-items: center;
     margin: 0 5%;
     padding-bottom: 8vh;
 }
-.gh-flow-back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-align: center;
-        align-items: center;
-    margin: 0 0 0 3%;
-    padding: 2px 9px 2px 5px;
-    border: transparent 1px solid;
-    border-radius: 4px;
-    color: #7d878a;
-    font-weight: 100;
-    transition: all 0.3s ease;
-}
-.gh-flow-back svg {
-    margin-right: 4px;
-    height: 12px;
-    line-height: 14px;
-}
-.gh-flow-back svg path {
-    stroke: #7d878a;
-    stroke-width: 1.2px;
-}
-.gh-flow-back:hover {
-    border: #dae1e3 1px solid;
-}
-.gh-flow-back-plain {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-align: center;
-        align-items: center;
-    margin: 0 0 0 3%;
-    padding: 2px 9px 2px 5px;
-    color: #7d878a;
-    font-weight: 300;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-.gh-flow-back-plain svg {
-    margin-right: 4px;
-    height: 12px;
-    line-height: 14px;
-}
-.gh-flow-back-plain svg path {
-    stroke: #7d878a;
-    stroke-width: 1.2px;
-}
-.gh-flow-back-plain:hover {
-    color: #15212A;
-}
-.gh-flow-nav {
-    position: relative;
-    -ms-flex: 1;
-        flex: 1;
-}
+
 .gh-flow-content {
-    display: -ms-flexbox;
     display: flex;
-    -ms-flex-direction: column;
-        flex-direction: column;
-    max-width: 700px;
+    flex-direction: column;
+    max-width: 520px;
     width: 100%;
-    color: #738a94;
-    text-align: center;
+    margin: 4.8rem 0 8rem;
+    color: var(--darkgrey);
     font-size: 1.9rem;
     line-height: 1.5em;
-    font-weight: 100;
-}
-
-.gh-flow-content .gh-input-icon input {
-    padding-left: 35px;
-}
-
-.gh-flow-content-unsubscribe {
     font-weight: 300;
 }
 
-@media (max-width: 500px) {
-    .gh-flow-head-unsubscribe {
-        padding-top: 2.8vh;
-    }
+.gh-flow-content.private {
+    max-width: 480px;
+}
+
+@media (max-width: 400px) {
     .gh-flow-content {
+        margin: 4rem 0 6rem;
         font-size: 4vw;
     }
-    .gh-flow-content-unsubscribe {
-        font-size: 1.8rem;
-        line-height: 1.6em;
-    }
 }
+
 .gh-flow-content header {
-    margin: 0 auto;
-    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
 .gh-flow-content h1 {
-    font-size: 4.2rem;
-    font-weight: 100;
+    margin-bottom: 40px;
+    color: #15171A;
+    font-size: 4.1rem;
+    font-weight: 700;
+    line-height: 1.15em;
 }
+
 @media (max-width: 600px) {
     .gh-flow-content h1 {
         font-size: 7vw;
     }
 }
+
 .gh-flow-content .gh-btn {
     display: block;
     margin: 20px auto 0;
     max-width: 400px;
 }
+
 .gh-flow-content .form-group {
+    position: relative;
     margin-bottom: 2.5rem;
 }
-.gh-flow-content input {
-    padding: 10px;
-    border: #dae1e3 1px solid;
-    font-size: 1.6rem;
-    line-height: 1.4em;
-    font-weight: 100;
+
+.gh-flow-content .form-group.error .gh-input {
+    border-color: #f50b23;
+    box-shadow: 0 0 0 3px rgba(239,24,24,.15);
 }
+
+.gh-flow-content .main-error {
+    position: absolute;
+    right: 0;
+    margin: 0;
+    color: #7C8B9A;
+    font-size: 1.35rem;
+    font-weight: 400;
+    text-align: center;
+    user-select: text;
+}
+
 .gh-flow-em {
     font-weight: 500;
 }
@@ -792,21 +743,64 @@ h2 {
 /* Sign in
 /* ---------------------------------------------------------- */
 .gh-signin {
-    position: relative;
-    margin: 30px auto;
-    padding: 40px;
-    max-width: 400px;
-    width: 100%;
-    border: #dae1e3 1px solid;
-    background: #f8fbfd;
-    border-radius: 5px;
-    text-align: left;
-}
-.gh-signin .form-group {
     margin-bottom: 1.5rem;
 }
+
+.gh-signin .gh-input,
+.gh-signin .gh-input:-webkit-autofill::first-line {
+    height: 54px;
+    padding: 12px 16px;
+    font-size: 1.8rem;
+    border-radius: 8px;
+}
+
+.gh-signin .gh-input::placeholder {
+    color: #abb4be;
+    font-weight: 400;
+    opacity: 1;
+}
+
+.gh-signin .gh-input::-webkit-input-placeholder {
+    color: #abb4be;
+    font-weight: 400;
+}
+
+.gh-signin .gh-input:-ms-input-placeholder {
+    color: #abb4be;
+    font-weight: 400;
+}
+
+.gh-signin .gh-input::-moz-placeholder {
+    color: #abb4be;
+    font-weight: 400;
+    opacity: 1;
+}
+
+.gh-signin .gh-input:focus {
+    border-color: #30cf43;
+    box-shadow: 0 0 0 3px rgba(26,170,96,.15);
+}
+
 .gh-signin .gh-btn {
     margin: 0;
+}
+
+.gh-signin .gh-btn {
+    width: 100%;
+    height: 54px;
+    max-width: unset;
+    margin-top: 40px;
+    background: #15171A;
+    font-weight: 300;
+    line-height: 54px;
+    border-radius: 8px;
+    transition: all 0.4s ease;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
+.gh-signin .gh-btn span {
+    color: #fff;
+    font-size: 1.8rem;
 }
 
 /* Error /ghost/404/
