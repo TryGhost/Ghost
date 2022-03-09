@@ -22,6 +22,9 @@
                 <main class="gh-main" role="main">
                     <div class="gh-flow">
                         <div class="gh-flow-content-wrap">
+                            {{#if @site.icon}}
+                                <img class="site-icon" src="{{img_url @site.icon absolute="true"}}" alt="icon">
+                            {{/if}}
                             <section class="gh-flow-content private">
                                 <header>
                                     <h1>This site is private.</h1>
