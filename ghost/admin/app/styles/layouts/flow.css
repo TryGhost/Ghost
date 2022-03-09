@@ -19,14 +19,6 @@
     padding: 0 2.4rem;
 }
 
-.gh-flow-head {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: space-between;
-    padding-top: 4vh;
-    padding-bottom: 20px;
-}
-
 .gh-flow-content-wrap {
     flex-grow: 1;
     flex-shrink: 0;
@@ -417,8 +409,6 @@
 }
 
 .gh-setup .gh-flow-form .gh-btn-red,
-.gh-setup .gh-flow-form .gh-btn-red:active,
-.gh-signup .gh-btn-red,
-.gh-signup .gh-btn-red:active {
+.gh-setup .gh-flow-form .gh-btn-red:active {
     background: var(--black) !important;
 }

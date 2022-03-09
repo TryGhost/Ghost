@@ -69,7 +69,7 @@
                 </GhFormGroup>
 
                 <GhTaskButton @buttonText="Create Account &rarr;" @type="submit" @form="signup" @defaultClick={{true}} @runningText="Creating"
-                    @task={{this.signup}} @data-test-button="signup" @class="gh-btn gh-btn-black gh-btn-signup gh-btn-block gh-btn-icon" @tabindex="3" />
+                    @task={{this.signup}} @data-test-button="signup" @class="gh-btn gh-btn-signup gh-btn-block gh-btn-icon" @tabindex="3" style="background: {{this.accentColor}};" />
             </form>
             {{#if this.flowErrors}}
                 <p class="main-error">{{this.flowErrors}}&nbsp;</p>
