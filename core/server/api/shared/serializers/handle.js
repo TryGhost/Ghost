@@ -21,11 +21,11 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
     const tasks = [];
     const sharedSerializers = require('./input');
 
-    if (!apiSerializers) {
+    if (!apiConfig) {
         return Promise.reject(new errors.IncorrectUsageError());
     }
 
-    if (!apiConfig) {
+    if (!apiSerializers) {
         return Promise.reject(new errors.IncorrectUsageError());
     }
 
