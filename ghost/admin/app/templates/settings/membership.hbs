@@ -169,6 +169,7 @@
                             {{else}}
                                 {{#if (feature "multipleProducts")}}
                                     <GhMembershipProductsAlpha
+                                        @updatePortalPreview={{this.updatePortalPreview}}
                                         @products={{this.paidProducts}}
                                         @confirmProductSave={{this.confirmProductSave}}
                                     />
