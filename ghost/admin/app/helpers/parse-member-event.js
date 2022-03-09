@@ -37,7 +37,7 @@ function getIcon(event) {
     }
 
     if (event.type === 'payment_event') {
-        icon = 'changed-subscription';
+        icon = 'subscriptions';
     }
 
     if (event.type === 'newsletter_event') {
@@ -49,10 +49,10 @@ function getIcon(event) {
     }
 
     if (event.type === 'subscription_event') {
-        icon = 'started-subscription';
+        icon = 'subscriptions';
 
         if (event.data.from_plan === null) {
-            icon = 'started-subscription';
+            icon = 'subscriptions';
         }
 
         if (event.data.to_plan === null) {
