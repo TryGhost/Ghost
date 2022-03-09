@@ -1,4 +1,4 @@
-const nql = require('@nexes/nql');
+const nql = require('@tryghost/nql');
 const {BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
