@@ -158,6 +158,9 @@ export default class MembersController extends Controller {
 
     get filterColumns() {
         const defaultColumns = ['name', 'email', 'created_at'];
+        if (this.feature.get('membersTableStatus')) {
+            defaultColumns.push('status', 'product');
+        }
         const availableFilters = this.filters.length ? this.filters : this.softFilters;
         return availableFilters.map((filter) => {
             return filter.type;
@@ -401,10 +404,8 @@ export default class MembersController extends Controller {
                 extraFilters: [`created_at:<='${moment.utc(this._startDate).format('YYYY-MM-DD HH:mm:ss')}'`]
             });
             const order = orderParam ? `${orderParam} desc` : `created_at desc`;
-            const includes = ['labels'];
-            if (this.includeProductQuery()) {
-                includes.push('products');
-            }
+            const includes = ['labels', 'products'];
+
             query = Object.assign({
                 include: includes.join(','),
                 order,

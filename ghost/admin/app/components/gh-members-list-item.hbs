@@ -23,16 +23,24 @@
             </div>
         </LinkTo>
         {{#if (feature "membersTableStatus")}}
-            {{!-- One line: Free tier, or premium tier if there is only one premium tier --}}
-            {{!-- <LinkTo @route="member" @model={{@member}} class="gh-list-data">
-                <div>Free</div>
-            </LinkTo>--}}
-
-            {{!-- Two lines: Premium tier if there are multiple premium tiers --}}
-            {{!-- <LinkTo @route="member" @model={{@member}} class="gh-list-data">
-                <div>Paid</div>
-                <div class="midgrey">Bronze</div>
-            </LinkTo> --}}
+            {{#if this.hasMultipleProducts}}
+                <LinkTo @route="member" @model={{@member}} class="gh-list-data">
+                    {{#if (not (is-empty @member.status))}}
+                        <span>{{capitalize @member.status}}</span>
+                    {{else}}
+                        <span class="midlightgrey">-</span>
+                    {{/if}}
+                    <div class="midgrey">{{this.products}}</div>
+                </LinkTo>
+            {{else}}
+                <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="status">
+                    {{#if (not (is-empty @member.status))}}
+                        <span>{{capitalize @member.status}}</span>
+                    {{else}}
+                        <span class="midlightgrey">-</span>
+                    {{/if}}
+                </LinkTo>
+            {{/if}}
         {{/if}}
         {{#if @newsletterEnabled}}
             {{#if (feature "emailAnalytics")}}
