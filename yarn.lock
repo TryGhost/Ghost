@@ -1954,6 +1954,14 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
+"@tryghost/errors@1.2.4", "@tryghost/errors@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.4.tgz#5a3604fd56e2cfd8f9c7cf0dbc307f77cb5b10b4"
+  integrity sha512-tzm5Gu/XiaVHiSGO7KROAyneExpNor2/CkSdTVvuspICbdhjPoZZ2s8J7bptu484Xw79SyZqhIXAZULGwTJYiw==
+  dependencies:
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
 "@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.14":
   version "0.2.17"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
@@ -1966,14 +1974,6 @@
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.1.tgz#1f2e618ec3a0617a6b9c5ac540a202fb46e32559"
   integrity sha512-Ui8iU/ky2HC9+WqOFKDSJyZv0WonrklPugKgWR4QKJ4wIeMXd+uJMqpHLXcN8uMiPVw5Lj9yl8mHq5rjw5dgIQ==
-  dependencies:
-    lodash "^4.17.21"
-    uuid "^8.3.2"
-
-"@tryghost/errors@^1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.4.tgz#5a3604fd56e2cfd8f9c7cf0dbc307f77cb5b10b4"
-  integrity sha512-tzm5Gu/XiaVHiSGO7KROAyneExpNor2/CkSdTVvuspICbdhjPoZZ2s8J7bptu484Xw79SyZqhIXAZULGwTJYiw==
   dependencies:
     lodash "^4.17.21"
     uuid "^8.3.2"
