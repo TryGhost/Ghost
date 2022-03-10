@@ -110,14 +110,15 @@ async function doProduct(data, productsAPI) {
         return user;
     }
     try {
-        const page = await productsAPI.browse({limit: 1});
+        const page = await productsAPI.browse({limit: 'all'});
 
-        const [product] = page.products;
+        const product = page.products.find(p => p.slug === 'default-product');
+
         if (!product) {
             return data;
         }
 
-        productsAPI.edit({products: [{name: blogTitle.trim()}]}, {context: context.context, id: product.id});
+        await productsAPI.edit({products: [{name: blogTitle.trim()}]}, {context: context.context, id: product.id});
     } catch (e) {
         return data;
     }
