@@ -35,9 +35,7 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'tweetGridCard',
     'membersActivityFeed',
-    'improvedOnboarding',
-    'membersLastSeenFilter',
-    'membersContainsFilters'
+    'improvedOnboarding'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
