@@ -4,6 +4,7 @@ import {configureScope} from '@sentry/browser';
 import {getOwner} from '@ember/application';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class SessionService extends ESASessionService {
@@ -60,22 +61,18 @@ export default class SessionService extends ESASessionService {
     }
 
     async handleAuthentication() {
-        if (!this.user) {
-            try {
-                await this.populateUser();
-            } catch (err) {
-                await this.invalidate();
+        if (this.handleAuthenticationTask.isRunning) {
+            return this.handleAuthenticationTask.last;
+        }
+
+        return this.handleAuthenticationTask.perform(() => {
+            if (this.skipAuthSuccessHandler) {
+                this.skipAuthSuccessHandler = false;
+                return;
             }
 
-            await this.postAuthPreparation();
-        }
-
-        if (this.skipAuthSuccessHandler) {
-            this.skipAuthSuccessHandler = false;
-            return;
-        }
-
-        super.handleAuthentication('home');
+            super.handleAuthentication('home');
+        });
     }
 
     handleInvalidation() {
@@ -107,5 +104,20 @@ export default class SessionService extends ESASessionService {
                 });
             }
         }
+    }
+
+    @task({drop: true})
+    *handleAuthenticationTask(callback) {
+        if (!this.user) {
+            try {
+                yield this.populateUser();
+            } catch (err) {
+                yield this.invalidate();
+            }
+
+            yield this.postAuthPreparation();
+        }
+
+        callback();
     }
 }
