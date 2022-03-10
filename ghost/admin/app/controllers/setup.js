@@ -151,9 +151,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
 
                 return this.session.authenticate('authenticator:cookie', data.email, data.password).then(() => {
                     this.set('blogCreated', true);
-                    return this.session.populateUser().then(() => {
-                        return this._afterAuthentication(result);
-                    });
+                    return this._afterAuthentication(result);
                 }).catch((error) => {
                     this._handleAuthenticationError(error);
                 });
@@ -184,7 +182,9 @@ export default class SetupController extends Controller.extend(ValidationEngine)
         }
     }
 
-    _afterAuthentication(result) {
+    async _afterAuthentication(result) {
+        await this.session.handleAuthentication();
+
         if (this.profileImage) {
             return this._sendImage(result.users[0])
                 .then(() => (this.router.transitionTo('dashboard')))
