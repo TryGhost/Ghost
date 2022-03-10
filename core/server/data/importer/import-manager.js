@@ -21,7 +21,6 @@ const messages = {
         error: 'Import could not clean up file ',
         context: 'Your site will continue to work as expected'
     },
-    unsupportedRoonExport: 'Your zip file looks like an old format Roon export, please re-export your Roon blog and try again.',
     noContentToImport: 'Zip did not include any content to import.',
     invalidZipStructure: 'Invalid zip file structure.',
     invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
@@ -159,14 +158,6 @@ class ImportManager {
         const dirMatches = glob.sync(
             this.getDirectoryGlob(this.getDirectories(), ROOT_OR_SINGLE_DIR), {cwd: directory}
         );
-
-        const oldRoonMatches = glob.sync(this.getDirectoryGlob(['drafts', 'published', 'deleted'], ROOT_OR_SINGLE_DIR),
-            {cwd: directory});
-
-        // This is a temporary extra message for the old format roon export which doesn't work with Ghost
-        if (oldRoonMatches.length > 0) {
-            throw new errors.UnsupportedMediaTypeError({message: tpl(messages.unsupportedRoonExport)});
-        }
 
         // If this folder contains importable files or a content or images directory
         if (extMatchesBase.length > 0 || (dirMatches.length > 0 && extMatchesAll.length > 0)) {
