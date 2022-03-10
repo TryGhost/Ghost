@@ -183,16 +183,6 @@ describe('Importer', function () {
 
                     ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
                 });
-
-                it('shows a special error for old Roon exports', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-old-roon-export');
-
-                    const msg = 'Your zip file looks like an old format Roon export, ' +
-                        'please re-export your Roon blog and try again.';
-
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(errors.UnsupportedMediaTypeError);
-                    ImportManager.isValidZip.bind(ImportManager, testDir).should.throw(msg);
-                });
             });
 
             describe('Get Base Dir', function () {
