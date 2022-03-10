@@ -107,7 +107,7 @@
     "@tryghost/tpl": "0.1.12",
     "@tryghost/update-check-service": "0.3.1",
     "@tryghost/url-utils": "2.0.8",
-    "@tryghost/validator": "0.1.14",
+    "@tryghost/validator": "0.1.15",
     "@tryghost/verification-trigger": "0.1.5",
     "@tryghost/version": "0.1.11",
     "@tryghost/vhost-middleware": "1.0.22",
