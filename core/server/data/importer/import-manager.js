@@ -381,7 +381,7 @@ class ImportManager {
             return await this.generateReport(importResult);
         } finally {
             // Step 5: Cleanup any files
-            await this.cleanUp();
+            this.cleanUp();
         }
     }
 }
