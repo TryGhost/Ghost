@@ -15,7 +15,8 @@ describe('Authentication API', function () {
             agent = await agentProvider.getAdminAPIAgent();
         });
 
-        beforeEach(function () {
+        beforeEach(async function () {
+            await mockManager.disableStripe();
             mockManager.mockMail();
         });
 
@@ -89,6 +90,13 @@ describe('Authentication API', function () {
                 .expect(({body}) => {
                     assert.deepEqual(body.notifications, [], 'The setup should not create notifications');
                 });
+
+            // Test that the default Tier has been renamed from 'Default Product'
+            const {body} = await agent.get('/tiers/');
+
+            const tierWithDefaultProductName = body.tiers.find(x => x.name === 'Default Product');
+
+            assert(tierWithDefaultProductName === undefined, 'The default Tier should have had a name change');
         });
 
         it('is setup? yes', async function () {
