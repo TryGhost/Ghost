@@ -13,6 +13,14 @@ let emailCount = 0;
 const mailService = require('../../core/server/services/mail/index');
 const labs = require('../../core/shared/labs');
 
+const disableStripe = async () => {
+    // This must be required _after_ startGhost has been called, because the models will
+    // not have been loaded otherwise. Consider moving the dependency injection of models
+    // into the init method of the Stripe service.
+    const stripeService = require('../../core/server/services/stripe');
+    await stripeService.disconnect();
+};
+
 const mockMail = () => {
     mocks.mail = sinon
         .stub(mailService.GhostMailer.prototype, 'send')
@@ -95,6 +103,7 @@ const restore = () => {
 
 module.exports = {
     mockMail,
+    disableStripe,
     mockStripe,
     mockLabsEnabled,
     mockLabsDisabled,
