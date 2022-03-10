@@ -699,7 +699,7 @@ h2 {
         align-items: center;
         justify-content: center;
         max-width: 560px;
-        min-height: 200;
+        min-height: 200px;
         margin: 4rem 0;
         text-align: center;
 }
