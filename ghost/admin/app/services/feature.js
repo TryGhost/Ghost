@@ -90,9 +90,6 @@ export default class FeatureService extends Service {
     @feature('membersTableStatus')
         membersTableStatus;
 
-    @feature('membersContainsFilters')
-        membersContainsFilters;
-
     @feature('selectablePortalLinks')
         selectablePortalLinks;
 

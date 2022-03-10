@@ -9,8 +9,8 @@ import {tracked} from '@glimmer/tracking';
 
 const FILTER_PROPERTIES = [
     // Basic
-    {label: 'Name', name: 'name', group: 'Basic', valueType: 'text', feature: 'membersContainsFilters'},
-    {label: 'Email', name: 'email', group: 'Basic', valueType: 'text', feature: 'membersContainsFilters'},
+    {label: 'Name', name: 'name', group: 'Basic', valueType: 'text'},
+    {label: 'Email', name: 'email', group: 'Basic', valueType: 'text'},
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic', valueType: 'array'},
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
@@ -141,23 +141,14 @@ export default class MembersFilter extends Component {
     @service settings;
     @service store;
 
-    @tracked filters = this.feature.membersContainsFilters
-        ? new TrackedArray([
-            new Filter({
-                type: 'name',
-                relation: 'is',
-                value: '',
-                relationOptions: FILTER_RELATIONS_OPTIONS.name
-            })
-        ])
-        : new TrackedArray([
-            new Filter({
-                type: 'label',
-                relation: 'is',
-                value: [],
-                relationOptions: FILTER_RELATIONS_OPTIONS.label
-            })
-        ]);
+    @tracked filters = new TrackedArray([
+        new Filter({
+            type: 'name',
+            relation: 'is',
+            value: '',
+            relationOptions: FILTER_RELATIONS_OPTIONS.name
+        })
+    ]);
 
     availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
     availableFilterValueOptions = FILTER_VALUE_OPTIONS;
@@ -204,21 +195,12 @@ export default class MembersFilter extends Component {
 
     @action
     addFilter() {
-        if (this.feature.membersContainsFilters) {
-            this.filters.push(new Filter({
-                type: 'name',
-                relation: 'is',
-                value: '',
-                relationOptions: FILTER_RELATIONS_OPTIONS.name
-            }));
-        } else {
-            this.filters.push(new Filter({
-                type: 'label',
-                relation: 'is',
-                value: [],
-                relationOptions: FILTER_RELATIONS_OPTIONS.label
-            }));
-        }
+        this.filters.push(new Filter({
+            type: 'name',
+            relation: 'is',
+            value: '',
+            relationOptions: FILTER_RELATIONS_OPTIONS.name
+        }));
         this.applySoftFilter();
     }
 
@@ -503,21 +485,12 @@ export default class MembersFilter extends Component {
     resetFilter() {
         const filters = [];
 
-        if (this.feature.membersContainsFilters) {
-            filters.push(new Filter({
-                type: 'name',
-                relation: 'is',
-                value: '',
-                relationOptions: FILTER_RELATIONS_OPTIONS.name
-            }));
-        } else {
-            filters.push(new Filter({
-                type: 'label',
-                relation: 'is',
-                value: [],
-                relationOptions: FILTER_RELATIONS_OPTIONS.label
-            }));
-        }
+        filters.push(new Filter({
+            type: 'name',
+            relation: 'is',
+            value: '',
+            relationOptions: FILTER_RELATIONS_OPTIONS.name
+        }));
 
         this.filters = new TrackedArray(filters);
         this.args.onResetFilter();
