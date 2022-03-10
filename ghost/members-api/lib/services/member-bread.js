@@ -128,6 +128,7 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.customer',
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
+            'stripeSubscriptions.stripePrice.stripeProduct.product',
             'products',
             'offerRedemptions'
         ];
