@@ -248,6 +248,83 @@ Object {
 }
 `;
 
+exports[`Members API Can add a subscription 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member1@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Mr Egg",
+      "note": null,
+      "products": Array [],
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Array [
+        Object {
+          "cancel_at_period_end": false,
+          "cancellation_reason": null,
+          "current_period_end": Any<String>,
+          "customer": Object {
+            "email": "member1@test.com",
+            "id": "cus_123",
+            "name": null,
+          },
+          "default_payment_card_last4": null,
+          "id": "sub_123",
+          "offer": null,
+          "plan": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
+            "interval": "month",
+            "nickname": "month",
+          },
+          "price": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
+            "interval": "month",
+            "nickname": "Monthly",
+            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "product": Object {
+              "id": "109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d",
+              "name": "Default Product",
+              "product_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            },
+            "type": "recurring",
+          },
+          "start_date": Any<String>,
+          "status": "active",
+        },
+      ],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API Can add a subscription 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1391",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Members API Can add and send a signup confirmation email 1: [body] 1`] = `
 Object {
   "members": Array [
