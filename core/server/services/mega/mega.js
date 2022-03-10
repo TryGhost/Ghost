@@ -249,14 +249,14 @@ const retryFailedEmail = async (emailModel) => {
 async function handleUnsubscribeRequest(req) {
     if (!req.url) {
         throw new errors.BadRequestError({
-            message: 'Unsubscribe failed! Could not find member'
+            message: 'Email address not found.'
         });
     }
 
     const {query} = url.parse(req.url, true);
     if (!query || !query.uuid) {
         throw new errors.BadRequestError({
-            message: (query.preview ? 'Unsubscribe preview' : 'Unsubscribe failed! Could not find member')
+            message: (query.preview ? 'Unsubscribe preview' : 'Email address not found.')
         });
     }
 
@@ -266,7 +266,7 @@ async function handleUnsubscribeRequest(req) {
 
     if (!member) {
         throw new errors.BadRequestError({
-            message: 'Unsubscribe failed! Could not find member'
+            message: 'Email address not found.'
         });
     }
 
@@ -276,7 +276,7 @@ async function handleUnsubscribeRequest(req) {
     } catch (err) {
         throw new errors.InternalServerError({
             err,
-            message: 'Failed to unsubscribe member'
+            message: 'Failed to unsubscribe this email address'
         });
     }
 }

@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>
-        {{#if member}}Successfully Unsubscribed{{/if}}
-        {{#if error}}Unsubscribe Failed{{/if}}
+        {{#if error}}
+            Unsubscribe Failed
+        {{else}}
+            Successfully Unsubscribed
+        {{/if}}
     </title>
     <link rel="stylesheet" href="{{asset "public/ghost.css" hasMinFile="true"}}" />
 </head>
@@ -15,42 +18,34 @@
         <div class="gh-viewport">
             <main class="gh-main" role="main">
                 <div class="gh-flow">
-                    <header class="gh-flow-head gh-flow-head-unsubscribe">
-                        <nav class="gh-flow-nav">
-                            <a href="{{@site.url}}" class="gh-flow-back-plain">
-                                <!--?xml version="1.0" encoding="UTF-8" standalone="no"?-->
-                                <svg width="17px" height="27px" viewBox="0 0 17 27" version="1.1"
-                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <g id="Stroke-42" transform="translate(2.000000, 2.000000)" stroke-width="3"
-                                            stroke="#7d878a">
-                                            <polyline points="13.5401 0.4256 0.3971 11.9256 13.5401 23.4256"></polyline>
-                                        </g>
-                                    </g>
-                                </svg>
-                                Back to {{@site.title}}
-                            </a>
-                        </nav>
-                    </header>
-
                     <div class="gh-flow-content-wrap">
-                        <section class="gh-flow-content gh-flow-content-unsubscribe">
+                        {{#if @site.icon}}
+                            <img class="site-icon" src="{{img_url @site.icon absolute="true"}}" layout="fixed">
+                        {{/if}}
+                        <section class="gh-flow-content unsubscribe">
                             {{#if error}}
+                                <h1>Unsubscribe failed.</h1>
                                 <p>{{error}}</p>
-                            {{else}}
-                                {{#if member}}
-                                    <p>
-                                        <span class="gh-flow-em">{{member.email}}</span> has been successfully unsubscribed from emails.
-                                        {{#match member.status "!=" "free"}}
-                                            <br>
-                                            Don't worry, this will not cancel your paid subscription to {{@site.title}}.
-                                        {{/match}}
-                                    </p>
-                                    <p>Didn't mean to do this? Manage your account <a href="{{@site.url}}/#/portal/account">here</a>.</p>
-                                {{/if}}
+                            {{else if member}}
+                                <h1>Successfully unsubscribed.</h1>
+                                <p>
+                                    <span class="gh-flow-em">{{member.email}}</span> will no longer receive this newsletter.
+                                    {{#match member.status "!=" "free"}}
+                                        This will not cancel your paid subscription{{#if @site.title}} to {{@site.title}}{{/if}}.
+                                    {{/match}}
+                                </p>
                             {{/if}}
                         </section>
+                        <div class="unsubscribe-footer">
+                            {{#unless error}}
+                                <p>Didn't mean to do this? Manage your account <a href="{{@site.url}}/#/portal/account">here</a>.</p>
+                            {{/unless}}
+                            {{#if @site.title}}
+                                <a href="{{@site.url}}">{{@site.title}}</a>
+                            {{else}}
+                                <a href="{{@site.url}}">Visit site</a>
+                            {{/if}}
+                        </div>
                     </div>
                 </div>
             </main>

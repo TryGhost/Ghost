@@ -663,7 +663,7 @@ h2 {
     flex-shrink: 0;
     justify-content: center;
     align-items: center;
-    margin: 0 5%;
+    margin: 0 24px;
     padding-bottom: 8vh;
 }
 
@@ -679,15 +679,12 @@ h2 {
     max-width: 520px;
     width: 100%;
     margin: 4rem 0 6rem;
+    padding: 40px;
+    background: #fff;
     color: var(--darkgrey);
     font-size: 1.9rem;
     line-height: 1.5em;
     font-weight: 300;
-}
-
-.gh-flow-content.private {
-    padding: 40px;
-    background: #fff;
     border-radius: 3px;
     box-shadow: 
         0 2.8px 2.2px rgba(0,0,0,.02),
@@ -698,9 +695,20 @@ h2 {
         0 100px 80px rgba(0,0,0,.05);
 }
 
-@media (max-width: 400px) {
+.gh-flow-content.unsubscribe {
+        align-items: center;
+        justify-content: center;
+        max-width: 560px;
+        min-height: 200;
+        margin: 4rem 0;
+        text-align: center;
+}
+
+@media (max-width: 500px) {
     .gh-flow-content {
-        font-size: 4vw;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
     }
 }
 
@@ -711,16 +719,34 @@ h2 {
 }
 
 .gh-flow-content h1 {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     color: #15171A;
     font-size: 4.1rem;
     font-weight: 700;
     line-height: 1.15em;
 }
 
+.gh-flow-content.unsubscribe h1 {
+    font-size: 3.2rem;
+}
+
 @media (max-width: 600px) {
-    .gh-flow-content h1 {
-        font-size: 7vw;
+    .gh-flow-content h1,
+    .gh-flow-content.unsubscribe h1 {
+        font-size: 6vw;
+    }
+}
+
+.gh-flow-content.unsubscribe p {
+    margin: 0 0 .4em;
+    color: #394047;
+    font-size: 1.8rem;
+}
+
+@media (max-width: 500px) {
+    .gh-flow-content.unsubscribe p {
+        font-size: 1.6rem;
+        line-height: 1.5;
     }
 }
 
@@ -753,6 +779,33 @@ h2 {
 
 .gh-flow-em {
     font-weight: 500;
+}
+
+.unsubscribe-footer {
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+@media (max-width: 500px) {
+    .unsubscribe-footer {
+        padding: 0 24px;
+        font-size: 1.4rem;
+        line-height: 1.4em;
+    }
+}
+
+.unsubscribe-footer p {
+    color: #7C8B9A;
+    margin: 0 0 .4rem;
+}
+
+.unsubscribe-footer a {
+    color: #15171A;
+    text-decoration: none;
+}
+
+.unsubscribe-footer a:hover {
+    text-decoration: underline;
 }
 
 /* Sign in
