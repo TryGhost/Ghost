@@ -157,6 +157,7 @@ describe('Acceptance: Members', function () {
 
             // a filter is needed for the delete-selected button to show
             await click('[data-test-button="members-filter-actions"]');
+            await fillIn('[data-test-members-filter="0"] [data-test-select="members-filter"]', 'label');
             await click('.gh-member-label-input input');
             await click(`[data-test-label-filter="${label.name}"]`);
             await click(`[data-test-button="members-apply-filter"]`);
