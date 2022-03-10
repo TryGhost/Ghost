@@ -900,7 +900,7 @@
         transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
         transform: translate3d(-260px, 0px, 0px);
     }
-    
+
     .mobile-menu-expanded .gh-nav {
         transform: translate3d(0,0,0);
     }
@@ -1826,7 +1826,7 @@ section.gh-ds h2 {
     margin: 0 0 0.5rem;
 }
 
-.gh-done header p {   
+.gh-done header p {
     font-size: 1.9rem;
     line-height: 1.3em;
     margin: 0.5rem 0 2rem;
@@ -2045,7 +2045,7 @@ section.gh-ds h2 {
         box-shadow: none;
         border-radius: 0 !important;
     }
-    
+
     .gh-done-preview .tabs {
         display: none;
     }
@@ -2072,94 +2072,4 @@ section.gh-ds h2 {
     .gh-done .gh-done-panel {
         justify-content: center;
     }
-}
-
-/* Get started modal */
-/* ---------------------------------------------------- */
-
-@keyframes reveal {
-    from {
-        opacity: 0;
-        transform: translateY(32px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.epm-modal .modal-content.gh-get-started {
-    padding: 0;
-    background-image: url(img/get-started.jpg);
-    background-repeat: no-repeat;
-    background-position: top right;
-    background-size: cover;
-    border-radius: 6px;
-    overflow: hidden;
-    animation: reveal 275ms normal 800ms forwards ease-out;
-    opacity: 0;
-    transform: translateY(32px);
-}
-
-.modal-content.gh-get-started .close svg {
-    fill: var(--white);
-}
-
-.gh-get-started-welcome {
-    padding: 4rem 6rem 2rem 4rem;
-    width: 66%;
-    background: var(--white);
-}
-
-.gh-get-started-welcome header p:first-of-type {
-    margin-bottom: 1.75rem;
-    font-size: 1.5rem;
-    color: var(--midgrey);
-}
-
-.gh-get-started-welcome footer {
-    margin: 10rem 0 0;
-}
-
-.gh-get-started-welcome footer ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.gh-get-started-welcome footer li {
-    margin: 0 0 0.5rem;
-    padding: 0 0 0 40px;
-    background: transparent;
-    background-repeat: no-repeat;
-    background-position: center left;
-    background-size: 20px;
-}
-
-.gh-get-started-welcome footer li:last-of-type {
-    margin-bottom: 0;
-}
-
-.gh-get-started-welcome footer li:first-of-type {
-    background-image: url(icons/get-started-members.svg);
-}
-
-.gh-get-started-welcome footer li:last-of-type {
-    background-image: url(icons/get-started-import.svg);
-}
-
-.gh-get-started-welcome footer a {
-    display: inline-block;
-    margin: 0 0 0.25rem;
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--darkgrey);
-}
-
-.gh-get-started-welcome footer a:hover {
-    color: var(--blackgrey);
-}
-
-.gh-get-started-welcome footer p {
-    color: var(--midgrey);
 }
