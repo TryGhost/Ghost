@@ -734,6 +734,33 @@ describe('Members API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
+
+        // Check member read with a subscription
+        await agent
+            .get(`/members/${memberId}/`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    labels: anyArray,
+                    subscriptions: [{
+                        start_date: anyString,
+                        current_period_end: anyString,
+                        price: {
+                            price_id: anyObjectId,
+                            product: {
+                                product_id: anyObjectId
+                            }
+                        }
+                    }]
+                })
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 
     // Delete a member
