@@ -126,11 +126,11 @@
             "type": "string"
         },
         "navigation": {
-            "defaultValue": "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"About\",\"url\":\"/about/\"},{\"label\":\"Collection\",\"url\":\"/tag/getting-started/\"},{\"label\":\"Author\",\"url\":\"/author/ghost/\"},{\"label\":\"Portal\",\"url\":\"/portal/\"}]",
+            "defaultValue": "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"About\",\"url\":\"/about/\"}]",
             "type": "array"
         },
         "secondary_navigation": {
-            "defaultValue": "[{\"label\":\"Data & privacy\",\"url\":\"/privacy/\"},{\"label\":\"Contact\",\"url\":\"/contact/\"},{\"label\":\"Contribute →\",\"url\":\"/contribute/\"}]",
+            "defaultValue": "[{\"label\":\"Sign up\",\"url\":\"#/portal/\"}]",
             "type": "array"
         },
         "meta_title": {
