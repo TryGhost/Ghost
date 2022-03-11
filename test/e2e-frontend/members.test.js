@@ -298,7 +298,6 @@ describe('Front-end members behaviour', function () {
                 await loginAsMember(email);
             });
 
-
             it('generates a MemberPageView event', async function () {
                 const spy = sinon.spy();
                 DomainEvents.subscribe(MemberPageViewEvent, spy);
