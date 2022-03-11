@@ -1,6 +1,6 @@
 <div class="gh-publishmenu-send-to-option">
     <p>Free members <span class="gh-publishmenu-emailcount">{{this.freeMemberCountLabel}}</span></p>
-    <div class="for-switch x-small {{if @disabled "disabled"}}" {{on "click" (fn this.toggleFilter "status:free")}}>
+    <div class="for-switch x-small {{if @disabled "disabled"}}">
         <label class="switch" for="send-email-to-free">
             <input
                 id="send-email-to-free"
@@ -8,6 +8,8 @@
                 class="gh-input post-settings-featured"
                 checked={{this.isFreeChecked}}
                 disabled={{@disabled}}
+                aria-label="Free members toggle"
+                {{on "change" (fn this.toggleFilter "status:free")}}
                 data-test-checkbox="free-members"
             >
             <span class="input-toggle-component"></span>
@@ -17,7 +19,7 @@
 {{#if this.isPaidAvailable}}
     <div class="gh-publishmenu-send-to-option">
         <p>Paid members <span class="gh-publishmenu-emailcount">{{this.paidMemberCountLabel}}</span></p>
-        <div class="for-switch x-small {{if @disabled "disabled"}}" {{on "click" (fn this.toggleFilter "status:-free")}}>
+        <div class="for-switch x-small {{if @disabled "disabled"}}">
             <label class="switch" for="send-email-to-paid">
                 <input
                     id="send-email-to-paid"
@@ -25,6 +27,8 @@
                     class="gh-input post-settings-featured"
                     checked={{this.isPaidChecked}}
                     disabled={{@disabled}}
+                    aria-label="Paid members toggle"
+                    {{on "change" (fn this.toggleFilter "status:-free")}}
                     data-test-checkbox="paid-members"
                 >
                 <span class="input-toggle-component"></span>
@@ -35,15 +39,16 @@
 {{#if this.specificOptions}}
     <div class="gh-publishmenu-send-to-option">
         <p>Specific people</p>
-        <div class="for-switch x-small {{if @disabled "disabled"}}" {{on "click" this.toggleSpecificFilter}}>
-            <label class="switch" for="send-email-to-paid">
+        <div class="for-switch x-small {{if @disabled "disabled"}}">
+            <label class="switch" for="send-email-to-specific">
                 <input
-                    id="send-email-to-paid"
+                    id="send-email-to-specific"
                     type="checkbox"
                     class="gh-input post-settings-featured"
                     checked={{this.isSpecificChecked}}
                     disabled={{@disabled}}
-                    {{on "click" this.toggleSpecificFilter}}
+                    aria-label="Specific people toggle"
+                    {{on "change" this.toggleSpecificFilter}}
                     data-test-checkbox="paid-members"
                 >
                 <span class="input-toggle-component"></span>
