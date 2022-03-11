@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-payments",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/payments",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -25,7 +25,7 @@
     "sinon": "13.0.1"
   },
   "dependencies": {
-    "@tryghost/domain-events": "^0.1.8",
-    "@tryghost/members-offers": "^0.10.8"
+    "@tryghost/domain-events": "^0.1.9",
+    "@tryghost/members-offers": "^0.10.9"
   }
 }
