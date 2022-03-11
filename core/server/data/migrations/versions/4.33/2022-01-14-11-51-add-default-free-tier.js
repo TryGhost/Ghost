@@ -19,6 +19,9 @@ module.exports = createTransactionalMigration(
         const id = ObjectID().toHexString();
 
         logging.info(`Adding tier "${name}"`);
+
+        // `slugify(id) is used to ensure unique slug here, as existing tiers could be using any name including "Free"
+        // slugs are not used anywhere user-facing so the value is acceptable
         await knex('products')
             .insert({
                 id: id,
