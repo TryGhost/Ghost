@@ -89,7 +89,7 @@ describe('Acceptance: Setup', function () {
 
             // it redirects to the dashboard
             expect(currentURL(), 'url after submitting account details')
-                .to.equal('/dashboard');
+                .to.equal('/setup/done');
         });
 
         it('handles validation errors in setup', async function () {
