@@ -1191,3 +1191,7 @@ add|ember-template-lint|no-passed-in-event-handlers|77|24|77|24|80681fcec2258c3d
 add|ember-template-lint|no-duplicate-landmark-elements|16|16|16|16|1661d2edb187b634c8187e5ecb0db15a4c7262fc|1646697600000|1649286000000|1651878000000|app/templates/signin.hbs
 remove|ember-template-lint|style-concatenation|90|20|90|20|95c5634b86fb8d9deffe53d77bd746f8b62571a3|1646611200000|1649199600000|1651791600000|app/templates/signin.hbs
 remove|ember-template-lint|no-invalid-interactive|2|24|2|24|57abe13dc5ce3104c8e74180b2f2555db1633d6e|1646611200000|1649199600000|1651791600000|app/components/members-activity/member-filter.hbs
+remove|ember-template-lint|no-duplicate-id|41|20|41|20|0b1df369aa015be03c9130792ec710745e10f37b|1646611200000|1649199600000|1651791600000|app/components/gh-members-recipient-select.hbs
+remove|ember-template-lint|no-invalid-interactive|3|64|3|64|e9d67a1a1018242c2c738f7e8dd98cb41bc20c71|1646611200000|1649199600000|1651791600000|app/components/gh-members-recipient-select.hbs
+remove|ember-template-lint|no-invalid-interactive|20|68|20|68|df3b265cb782bcfbc1794d11c0b087b411aa14b1|1646611200000|1649199600000|1651791600000|app/components/gh-members-recipient-select.hbs
+remove|ember-template-lint|no-invalid-interactive|38|68|38|68|1849f49e96b9809e3b7c578e3b76a6f3afab090f|1646611200000|1649199600000|1651791600000|app/components/gh-members-recipient-select.hbs

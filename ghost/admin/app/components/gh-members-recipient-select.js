@@ -75,8 +75,7 @@ export default class GhMembersRecipientSelect extends Component {
     }
 
     @action
-    toggleFilter(filter, event) {
-        event?.preventDefault();
+    toggleFilter(filter) {
         if (this.args.disabled) {
             return;
         }
@@ -88,8 +87,7 @@ export default class GhMembersRecipientSelect extends Component {
     }
 
     @action
-    toggleSpecificFilter(event) {
-        event?.preventDefault();
+    toggleSpecificFilter() {
         if (this.args.disabled) {
             return;
         }
