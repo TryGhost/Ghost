@@ -257,6 +257,7 @@ export function getSubscriptionData({
     amount = (interval === 'month' ? 500 : 5000),
     nickname = (interval === 'month' ? 'Monthly' : 'Yearly'),
     cardLast4 = '4242',
+    offer: localOffer = offer,
     priceId: price_id = `price_${objectId()}`,
     startDate: start_date = '2021-10-05T03:18:30.000Z',
     currentPeriodEnd: current_period_end = '2022-10-05T03:18:30.000Z',
@@ -276,7 +277,7 @@ export function getSubscriptionData({
             interval,
             currency
         },
-        offer,
+        offer: localOffer,
         status,
         start_date,
         default_payment_card_last4: cardLast4,

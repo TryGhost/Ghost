@@ -39,7 +39,7 @@ const products = [
         }),
         numOfBenefits: 1
     })
-    
+
     // ,
     // getProductData({
     //     name: 'Friends of the Blueprint',
@@ -144,4 +144,32 @@ export const member = {
         ]
     })
 };
+
+export function paidMemberOnTier() {
+    let price = site?.products?.[2].monthlyPrice;
+    /* eslint-disable no-console */
+    console.log(site?.products);
+    console.log('price', price);
+    let updatedMember = getMemberData({
+        paid: true,
+        subscriptions: [
+            getSubscriptionData({
+                offer: null,
+                priceId: price?.id,
+                status: 'active',
+                currency: price?.currency,
+                interval: price?.interval,
+                amount: price?.amount,
+                cardLast4: '4242',
+                startDate: '2021-10-05T03:18:30.000Z',
+                currentPeriodEnd: '2022-10-05T03:18:30.000Z',
+                cancelAtPeriodEnd: false
+            })
+        ]
+    });
+    return {
+        site,
+        member: updatedMember
+    };
+}
 /* eslint-enable no-unused-vars*/
