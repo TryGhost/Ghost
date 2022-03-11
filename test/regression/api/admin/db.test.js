@@ -129,7 +129,7 @@ describe('DB API (canary)', function () {
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup${backupQuery}`))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', backupKey)}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', backupKey)}`)
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect(200)
@@ -144,7 +144,7 @@ describe('DB API (canary)', function () {
         const fsStub = sinon.stub(fs, 'writeFile').resolves();
 
         return request.post(localUtils.API.getApiQuery(`db/backup`))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', schedulerKey)}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', schedulerKey)}`)
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect(403)

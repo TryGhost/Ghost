@@ -50,8 +50,8 @@ function createUrlUtilsMock() {
         apiVersions: {
             all: ['canary'],
             canary: {
-                admin: 'canary/admin',
-                content: 'canary/content'
+                admin: 'admin',
+                content: 'content'
             }
         },
         defaultApiVersion: 'canary',
