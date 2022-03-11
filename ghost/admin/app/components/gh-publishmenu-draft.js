@@ -13,7 +13,7 @@ export default class GhPublishMenuDraftComponent extends Component {
     @service settings;
     @service store;
 
-    @tracked totalMemberCount = 0;
+    @tracked totalMemberCount = null;
 
     // used to set minDate in datepicker
     _minDate = null;
@@ -21,7 +21,7 @@ export default class GhPublishMenuDraftComponent extends Component {
 
     get disableEmailOption() {
         // TODO: remove owner or admin check when editors can count members
-        return this.session.user.isAdmin && (this.totalMemberCount === 0 || this.countTotalMembersTask.isRunning);
+        return this.session.user.isAdmin && (this.totalMemberCount === 0);
     }
 
     get showEmailSection() {
