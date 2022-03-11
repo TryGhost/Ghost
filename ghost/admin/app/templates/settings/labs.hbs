@@ -82,23 +82,6 @@
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Beta features</h4>
             <div class="gh-expandable">
-
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Tiers</h4>
-                            <p class="gh-expandable-description">
-                                Add additional tiers to your paid memberships (e.g. Bronze, Silver, Gold). <a href="http://ghost.org/help/tiers" target="_blank" rel="noopener noreferrer">Learn more here</a>
-                            </p>
-                        </div>
-                        {{#if (feature "multipleProducts")}}
-                            <span class="gh-badge">Enabled</span>
-                        {{else}}
-                            <button type="button" class="gh-btn" {{action "toggleEnableTiersModal"}}><span>Enable</span></button>
-                        {{/if}}
-                    </div>
-                </div>
-
                 <div class="gh-expandable-block">
                     <GhUploader
                         @extensions={{this.redirectsFileExtensions}}
