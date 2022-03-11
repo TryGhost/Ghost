@@ -173,27 +173,27 @@ module.exports.pageNotFound = (req, res, next) => {
 };
 
 module.exports.handleJSONResponse = sentry => [
-    // Make sure the error can be served
-    module.exports.prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
+    // Make sure the error can be served
+    module.exports.prepareError,
     // Render the error using JSON format
     jsonErrorRenderer
 ];
 
 module.exports.handleJSONResponseV2 = sentry => [
-    // Make sure the error can be served
-    module.exports.prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
+    // Make sure the error can be served
+    module.exports.prepareError,
     // Render the error using JSON format
     jsonErrorRendererV2
 ];
 
 module.exports.handleHTMLResponse = sentry => [
-    // Make sure the error can be served
-    module.exports.prepareError,
     // Handle the error in Sentry
-    sentry.errorHandler
+    sentry.errorHandler,
+    // Make sure the error can be served
+    module.exports.prepareError
 ];
 
