@@ -89,7 +89,7 @@ describe('Canary Schedules API', function () {
         before(function () {
             const schedulerKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-scheduler'}});
 
-            token = localUtils.getValidAdminToken('/canary/admin/', schedulerKey);
+            token = localUtils.getValidAdminToken('/admin/', schedulerKey);
         });
 
         it('publishes posts', async function () {
@@ -123,7 +123,7 @@ describe('Canary Schedules API', function () {
 
         it('no access', function () {
             const zapierKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-backup'}});
-            const zapierToken = localUtils.getValidAdminToken('/canary/admin/', zapierKey);
+            const zapierToken = localUtils.getValidAdminToken('/admin/', zapierKey);
 
             return request
                 .put(localUtils.API.getApiQuery(`schedules/posts/${resources[0].id}/?token=${zapierToken}`))

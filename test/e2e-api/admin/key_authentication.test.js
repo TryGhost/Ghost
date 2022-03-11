@@ -32,7 +32,7 @@ describe('Admin API key authentication', function () {
 
     it('Can access browse endpoint with correct token', async function () {
         await request.get(localUtils.API.getApiQuery('posts/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
@@ -46,7 +46,7 @@ describe('Admin API key authentication', function () {
         const res = await request
             .post(localUtils.API.getApiQuery('posts/?include=authors'))
             .set('Origin', config.get('url'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
             .send({
                 posts: [post]
             })
@@ -62,7 +62,7 @@ describe('Admin API key authentication', function () {
         const res = await request
             .get(localUtils.API.getApiQuery('users/'))
             .set('Origin', config.get('url'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
@@ -88,7 +88,7 @@ describe('Admin API key authentication', function () {
             await testUtils.initFixtures('api_keys');
 
             const response = await request.get(localUtils.API.getApiQuery('posts/'))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(403);

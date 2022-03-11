@@ -56,7 +56,7 @@ describe('Themes: engines', function () {
         it('not supported upcoming version falls back to default version', function () {
             const engines = themeEngines.create({
                 engines: {
-                    'ghost-api': 'v5'
+                    'ghost-api': 'v6'
                 }
             });
 
