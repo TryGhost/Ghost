@@ -84,10 +84,10 @@ const themeErrorRenderer = (err, req, res, next) => {
 };
 
 module.exports.handleThemeResponse = [
-    // Make sure the error can be served
-    prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
+    // Make sure the error can be served
+    prepareError,
     // Render the error using theme template
     themeErrorRenderer
 ];
