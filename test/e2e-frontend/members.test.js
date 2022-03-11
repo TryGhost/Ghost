@@ -298,13 +298,6 @@ describe('Front-end members behaviour', function () {
                 await loginAsMember(email);
             });
 
-            it('can read label-only post content', async function () {
-                await request
-                    .get('/thou-must-be-labelled-vip/')
-                    .expect(200)
-                    .expect(assertContentIsPresent);
-            });
-
             it('generates a MemberPageView event', async function () {
                 const spy = sinon.spy();
                 DomainEvents.subscribe(MemberPageViewEvent, spy);
@@ -403,19 +396,6 @@ describe('Front-end members behaviour', function () {
                 assert(spy.calledOnce, 'A page view from a member should generate a MemberPageViewEvent event');
                 member = await models.Member.findOne({email});
                 assert.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after having visited a page while logged-in.');
-            });
-        });
-
-        describe('as paid member with vip label', function () {
-            before(async function () {
-                await loginAsMember('vip-paid@test.com');
-            });
-
-            it('can read label-only post content', async function () {
-                await request
-                    .get('/thou-must-be-labelled-vip/')
-                    .expect(200)
-                    .expect(assertContentIsPresent);
             });
         });
 
