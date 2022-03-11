@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 export default class NewIntegrationRoute extends AdminRoute {
     @service limit;
     @service modals;
+    @service router;
 
     modal = null;
 
@@ -38,8 +39,8 @@ export default class NewIntegrationRoute extends AdminRoute {
 
     @action
     beforeModalClose() {
-        if (!this.isLeaving) {
-            this.transitionTo('settings.integrations');
+        if (this.modal && !this.isLeaving) {
+            this.router.transitionTo('settings.integrations');
         }
     }
 }
