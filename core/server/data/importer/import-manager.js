@@ -1,12 +1,10 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 const glob = require('glob');
 const uuid = require('uuid');
 const {extract} = require('@tryghost/zip');
-const {pipeline, sequence} = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -40,10 +38,20 @@ let defaults = {
 
 class ImportManager {
     constructor() {
+        /**
+         * @type {Importer[]} importers
+         */
         this.importers = [ImageImporter, DataImporter];
+
+        /**
+         * @type {Handler[]}
+         */
         this.handlers = [ImageHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
+        /**
+         * @type {?string}
+         */
         this.fileToDelete = null;
     }
 
@@ -52,7 +60,7 @@ class ImportManager {
      * @returns {string[]}
      */
     getExtensions() {
-        return _.flatten(_.union(_.map(this.handlers, 'extensions'), defaults.extensions));
+        return _.union(_.flatMap(this.handlers, 'extensions'), defaults.extensions);
     }
 
     /**
@@ -60,7 +68,7 @@ class ImportManager {
      * @returns {string[]}
      */
     getContentTypes() {
-        return _.flatten(_.union(_.map(this.handlers, 'contentTypes'), defaults.contentTypes));
+        return _.union(_.flatMap(this.handlers, 'contentTypes'), defaults.contentTypes);
     }
 
     /**
@@ -68,7 +76,7 @@ class ImportManager {
      * @returns {string[]}
      */
     getDirectories() {
-        return _.flatten(_.union(_.map(this.handlers, 'directories'), defaults.directories));
+        return _.union(_.flatMap(this.handlers, 'directories'), defaults.directories);
     }
 
     /**
@@ -84,7 +92,7 @@ class ImportManager {
 
     /**
      * @param {String[]} extensions
-     * @param {Number} level
+     * @param {Number} [level]
      * @returns {String}
      */
     getExtensionGlob(extensions, level) {
@@ -97,7 +105,7 @@ class ImportManager {
     /**
      *
      * @param {String[]} directories
-     * @param {Number} level
+     * @param {Number} [level]
      * @returns {String}
      */
     getDirectoryGlob(directories, level) {
@@ -109,26 +117,24 @@ class ImportManager {
 
     /**
      * Remove files after we're done (abstracted into a function for easier testing)
-     * @returns {Function}
+     * @returns {Promise<void>}
      */
-    cleanUp() {
-        const self = this;
-
-        if (self.fileToDelete === null) {
+    async cleanUp() {
+        if (this.fileToDelete === null) {
             return;
         }
 
-        fs.remove(self.fileToDelete, function (err) {
-            if (err) {
-                logging.error(new errors.InternalServerError({
-                    err: err,
-                    context: tpl(messages.couldNotCleanUpFile.error),
-                    help: tpl(messages.couldNotCleanUpFile.context)
-                }));
-            }
+        try {
+            await fs.remove(this.fileToDelete);
+        } catch (err) {
+            logging.error(new errors.InternalServerError({
+                err: err,
+                context: tpl(messages.couldNotCleanUpFile.error),
+                help: tpl(messages.couldNotCleanUpFile.context)
+            }));
+        }
 
-            self.fileToDelete = null;
-        });
+        this.fileToDelete = null;
     }
 
     /**
@@ -145,14 +151,14 @@ class ImportManager {
      * Importable content must be found either in the root, or inside one base directory
      *
      * @param {String} directory
-     * @returns {Promise}
+     * @returns {boolean}
      */
     isValidZip(directory) {
         // Globs match content in the root or inside a single directory
-        const extMatchesBase = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_OR_SINGLE_DIR), {cwd: directory});
+        const extMatchesBase = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_OR_SINGLE_DIR), {cwd: directory, nocase: true});
 
         const extMatchesAll = glob.sync(
-            this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory}
+            this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory, nocase: true}
         );
 
         const dirMatches = glob.sync(
@@ -173,8 +179,8 @@ class ImportManager {
 
     /**
      * Use the extract module to extract the given zip file to a temp directory & return the temp directory path
-     * @param {String} filePath
-     * @returns {Promise[]} Files
+     * @param {string} filePath
+     * @returns {Promise<string>} full path to the extracted folder
      */
     extractZip(filePath) {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
@@ -190,11 +196,11 @@ class ImportManager {
      * are relevant to the given handler, and return them as a name and path combo
      * @param {Object} handler
      * @param {String} directory
-     * @returns [] Files
+     * @returns {File[]} Files
      */
     getFilesFromZip(handler, directory) {
         const globPattern = this.getExtensionGlob(handler.extensions, ALL_DIRS);
-        return _.map(glob.sync(globPattern, {cwd: directory}), function (file) {
+        return _.map(glob.sync(globPattern, {cwd: directory, nocase: true}), function (file) {
             return {name: file, path: path.join(directory, file)};
         });
     }
@@ -206,9 +212,9 @@ class ImportManager {
      */
     getBaseDirectory(directory) {
         // Globs match root level only
-        const extMatches = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_ONLY), {cwd: directory});
+        const extMatches = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_ONLY), {cwd: directory, nocase: true});
 
-        const dirMatches = glob.sync(this.getDirectoryGlob(this.getDirectories(), ROOT_ONLY), {cwd: directory});
+        const dirMatches = glob.sync(this.getDirectoryGlob(this.getDirectories(), ROOT_ONLY), {cwd: directory, nocase: true});
         let extMatchesAll;
 
         // There is no base directory
@@ -217,9 +223,9 @@ class ImportManager {
         }
         // There is a base directory, grab it from any ext match
         extMatchesAll = glob.sync(
-            this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory}
+            this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory, nocase: true}
         );
-        if (extMatchesAll.length < 1 || extMatchesAll[0].split('/') < 1) {
+        if (extMatchesAll.length < 1 || extMatchesAll[0].split('/').length < 1) {
             throw new errors.ValidationError({message: tpl(messages.invalidZipFileBaseDirectory)});
         }
 
@@ -233,48 +239,42 @@ class ImportManager {
      * The data key contains JSON representing any data that should be imported
      * The image key contains references to images that will be stored (and where they will be stored)
      * @param {File} file
-     * @returns {Promise(ImportData)}
+     * @returns {Promise<ImportData>}
      */
-    processZip(file) {
-        const self = this;
+    async processZip(file) {
+        const zipDirectory = await this.extractZip(file.path);
 
-        return this.extractZip(file.path).then(function (zipDirectory) {
-            const ops = [];
-            const importData = {};
-            let baseDir;
+        /**
+         * @type {ImportData}
+         */
+        const importData = {};
 
-            self.isValidZip(zipDirectory);
-            baseDir = self.getBaseDirectory(zipDirectory);
+        this.isValidZip(zipDirectory);
+        const baseDir = this.getBaseDirectory(zipDirectory);
 
-            _.each(self.handlers, function (handler) {
+        for (const handler of this.handlers) {
+            const files = this.getFilesFromZip(handler, zipDirectory);
+
+            if (files.length > 0) {
                 if (Object.prototype.hasOwnProperty.call(importData, handler.type)) {
                     // This limitation is here to reduce the complexity of the importer for now
-                    return Promise.reject(new errors.UnsupportedMediaTypeError({
+                    throw new errors.UnsupportedMediaTypeError({
                         message: tpl(messages.zipContainsMultipleDataFormats)
-                    }));
-                }
-
-                const files = self.getFilesFromZip(handler, zipDirectory);
-
-                if (files.length > 0) {
-                    ops.push(function () {
-                        return handler.loadFile(files, baseDir).then(function (data) {
-                            importData[handler.type] = data;
-                        });
                     });
                 }
-            });
 
-            if (ops.length === 0) {
-                return Promise.reject(new errors.UnsupportedMediaTypeError({
-                    message: tpl(messages.noContentToImport)
-                }));
+                const data = await handler.loadFile(files, baseDir);
+                importData[handler.type] = data;
             }
+        }
 
-            return sequence(ops).then(function () {
-                return importData;
+        if (Object.keys(importData).length === 0) {
+            throw new errors.UnsupportedMediaTypeError({
+                message: tpl(messages.noContentToImport)
             });
-        });
+        }
+
+        return importData;
     }
 
     /**
@@ -284,7 +284,7 @@ class ImportManager {
      * The data key contains JSON representing any data that should be imported
      * The image key contains references to images that will be stored (and where they will be stored)
      * @param {File} file
-     * @returns {Promise(ImportData)}
+     * @returns {Promise<ImportData>}
      */
     processFile(file, ext) {
         const fileHandler = _.find(this.handlers, function (handler) {
@@ -304,7 +304,7 @@ class ImportManager {
      * Load the given file into usable importData in the format: {data: {}, images: []}, regardless of
      * whether the file is a single importable file like a JSON file, or a zip file containing loads of files.
      * @param {File} file
-     * @returns {Promise}
+     * @returns {Promise<ImportData>}
      */
     loadFile(file) {
         const self = this;
@@ -317,17 +317,14 @@ class ImportManager {
      * Pass the prepared importData through the preProcess function of the various importers, so that the importers can
      * make any adjustments to the data based on relationships between it
      * @param {ImportData} importData
-     * @returns {Promise(ImportData)}
+     * @returns {Promise<ImportData>}
      */
-    preProcess(importData) {
-        const ops = [];
-        _.each(this.importers, function (importer) {
-            ops.push(function () {
-                return importer.preProcess(importData);
-            });
-        });
+    async preProcess(importData) {
+        for (const importer of this.importers) {
+            importData = importer.preProcess(importData);
+        }
 
-        return pipeline(ops);
+        return Promise.resolve(importData);
     }
 
     /**
@@ -335,65 +332,116 @@ class ImportManager {
      * Each importer gets passed the data from importData which has the key matching its type - i.e. it only gets the
      * data that it should import. Each importer then handles actually importing that data into Ghost
      * @param {ImportData} importData
-     * @param {Object} importOptions to allow override of certain import features such as locking a user
-     * @returns {Promise<any>}
+     * @param {ImportOptions} [importOptions] to allow override of certain import features such as locking a user
+     * @returns {Promise<ImportResult[]>} importResults
      */
-    doImport(importData, importOptions) {
+    async doImport(importData, importOptions) {
         importOptions = importOptions || {};
-        const ops = [];
-        _.each(this.importers, function (importer) {
-            if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
-                ops.push(function () {
-                    return importer.doImport(importData[importer.type], importOptions);
-                });
-            }
-        });
+        const importResults = [];
 
-        return sequence(ops).then(function (importResult) {
-            return importResult;
-        });
+        for (const importer of this.importers) {
+            if (Object.prototype.hasOwnProperty.call(importData, importer.type)) {
+                importResults.push(await importer.doImport(importData[importer.type], importOptions));
+            }
+        }
+
+        return importResults;
     }
 
     /**
      * Import Step 4:
      * Report on what was imported, currently a no-op
-     * @param {ImportData} importData
-     * @returns {Promise<ImportData>}
+     * @param {ImportResult[]} importResults
+     * @returns {Promise<ImportResult[]>} importResults
      */
-    generateReport(importData) {
-        return Promise.resolve(importData);
+    async generateReport(importResults) {
+        return Promise.resolve(importResults);
     }
 
     /**
      * Import From File
      * The main method of the ImportManager, call this to kick everything off!
      * @param {File} file
-     * @param {Object} importOptions to allow override of certain import features such as locking a user
-     * @returns {Promise}
+     * @param {ImportOptions} importOptions to allow override of certain import features such as locking a user
+     * @returns {Promise<ImportResult[]>}
      */
-    importFromFile(file, importOptions = {}) {
-        const self = this;
+    async importFromFile(file, importOptions = {}) {
+        try {
+            // Step 1: Handle converting the file to usable data
+            let importData = await this.loadFile(file);
 
-        // Step 1: Handle converting the file to usable data
-        return this.loadFile(file).then(function (importData) {
             // Step 2: Let the importers pre-process the data
-            return self.preProcess(importData);
-        }).then(function (importData) {
+            importData = await this.preProcess(importData);
+        
             // Step 3: Actually do the import
             // @TODO: It would be cool to have some sort of dry run flag here
-            return self.doImport(importData, importOptions);
-        }).then(function (importData) {
+            let importResult = await this.doImport(importData, importOptions);
+            
             // Step 4: Report on the import
-            return self.generateReport(importData);
-        }).finally(() => self.cleanUp()); // Step 5: Cleanup any files
+            return await this.generateReport(importResult);
+        } finally {
+            // Step 5: Cleanup any files
+            this.cleanUp();
+        }
     }
 }
 
 /**
- * A number, or a string containing a number.
- * @typedef {Object} ImportData
- * @property [Object] data
- * @property [Array] images
+ * @typedef {object} ImportOptions
+ * @property {boolean} [returnImportedData]
+ * @property {boolean} [importPersistUser]
  */
 
+/**
+ * @typedef {object} Importer
+ * @property {"images"|"data"} type
+ * @property {PreProcessMethod} preProcess
+ * @property {DoImportMethod} doImport
+ */
+
+/**
+ * @callback PreProcessMethod
+ * @param {ImportData} importData
+ * @returns {ImportData}
+ */
+
+/**
+ * @callback DoImportMethod
+ * @param {object|object[]} importData
+ * @param {ImportOptions} importOptions
+ * @returns {Promise<ImportResult>} import result
+ */
+
+/**
+ * @typedef {object} Handler
+ * @property {"images"|"data"} type
+ * @property {string[]} extensions
+ * @property {string[]} contentTypes
+ * @property {string[]} directories
+ * @property {LoadFileMethod} loadFile
+ */
+
+/**
+ * @callback LoadFileMethod
+ * @param {File[]} files
+ * @param {string} [baseDir]
+ * @returns {Promise<object[]|object>} data
+ */
+
+/**
+ * File object
+ * @typedef {Object} File
+ * @property {string} name
+ * @property {string} path
+ */
+
+/**
+ * @typedef {Object} ImportData
+ * @property {Object} [data]
+ * @property {Array} [images]
+ */
+
+/**
+ * @typedef {Object} ImportResult
+ */
 module.exports = new ImportManager();
