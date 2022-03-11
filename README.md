@@ -1,15 +1,19 @@
+&nbsp;
 <p align="center">
-  <a href="https://ghost.org/">
-    <img src="https://user-images.githubusercontent.com/120485/43974508-b64b2fe8-9cd2-11e8-8e58-707254b8817c.png" width="140px" alt="Ghost" />
+  <a href="https://ghost.org/#gh-light-mode-only" target="_blank">
+    <img src="https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png" alt="Ghost" width="240px">
+  </a>
+  <a href="https://ghost.org/#gh-dark-mode-only" target="_blank">
+    <img src="https://user-images.githubusercontent.com/65487235/157849205-aa24152c-4610-4d7d-b752-3a8c4f9319e6.png" alt="Ghost" width="240px">
   </a>
 </p>
+&nbsp;
+
 <p align="center">
-    <a href="https://ghost.org/">Ghost.org</a> |
-    <a href="https://ghost.org/features/">Features</a> |
-    <a href="https://ghost.org/customers/">Showcase</a> |
-    <a href="https://forum.ghost.org">Forum</a> |
-    <a href="https://ghost.org/docs/">Docs</a> |
-    <a href="https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md">Contributing</a> |
+    <a href="https://ghost.org/">Ghost.org</a> •
+    <a href="https://forum.ghost.org">Forum</a> •
+    <a href="https://ghost.org/docs/">Docs</a> •
+    <a href="https://github.com/TryGhost/Ghost/blob/master/.github/CONTRIBUTING.md">Contributing</a> •
     <a href="https://twitter.com/ghost">Twitter</a>
     <br /><br />
     <a href="https://ghost.org/">
@@ -25,13 +29,16 @@
         <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
     </a>
 </p>
-<p align="center">Love open source? We're hiring <a href="https://careers.ghost.org/product-engineer-node-js/">Node.js Engineers</a> to work on Ghost full-time</p>
+<p align="center">
+  Love open source? <a href="https://careers.ghost.org/product-engineer-node-js/">We're hiring</a> Node.js engineers to work on Ghost full-time.
+</p>
 
 &nbsp;
 
 <a href="https://ghost.org/"><img src="https://user-images.githubusercontent.com/120485/66918181-f88fdc80-f048-11e9-8135-d9c0e7b35ebc.png" alt="Fiercely independent, professional publishing. Ghost is the most popular open source, headless Node.js CMS which already works with all the tools you know and love." /></a>
 
-<a href="https://ghost.org/pricing/"><img src="https://user-images.githubusercontent.com/120485/43995179-556d7620-9da1-11e8-8410-4b2ba48ea8d0.png" alt="Ghost(Pro)" width="165px" /></a>
+<a href="https://ghost.org/pricing/#gh-light-mode-only" target="_blank"><img src="https://user-images.githubusercontent.com/65487235/157849437-9b8fcc48-1920-4b26-a1e8-5806db0e6bb9.png" alt="Ghost(Pro)" width="165px" /></a>
+<a href="https://ghost.org/pricing/#gh-dark-mode-only" target="_blank"><img src="https://user-images.githubusercontent.com/65487235/157849438-79889b04-b7b6-4ba7-8de6-4c1e4b4e16a5.png" alt="Ghost(Pro)" width="165px" /></a>
 
 The easiest way to get a production instance deployed is with our official **[Ghost(Pro)](https://ghost.org/pricing/)** managed service. It takes about 2 minutes to launch a new site with worldwide CDN, backups, security and maintenance all done for you.
 
@@ -41,7 +48,7 @@ If you prefer to run on your own infrastructure, we also offer official 1-off in
 
 &nbsp;
 
-# Quickstart Install
+# Quickstart install
 
 If you want to run your own instance of Ghost, in most cases the best way is to use our **CLI tool**
 
@@ -69,21 +76,21 @@ ghost install
 
 Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/hosting/) & properly [upgrading Ghost](https://ghost.org/docs/update/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/themes/) or work with [our API](https://ghost.org/docs/content-api/).
 
-### Contributors & Advanced Developers
+### Contributors & advanced developers
 
-For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor Guide](https://ghost.org/docs/contributing/) | [Developer Setup](https://ghost.org/docs/install/source/) | [Admin Client Dev Guide](https://ghost.org/docs/install/source/#ghost-admin)
-
-&nbsp;
-
-# Ghost Sponsors
-
-We'd like to extend big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub Sponsors](https://github.com/sponsors/TryGhost) :heart:
-
-**[DigitalOcean](https://m.do.co/c/9ff29836d717)** | **[Fastly](https://www.fastly.com/)**
+For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor guide](https://ghost.org/docs/contributing/) • [Developer setup](https://ghost.org/docs/install/source/) • [Admin Client dev guide](https://ghost.org/docs/install/source/#ghost-admin)
 
 &nbsp;
 
-# Getting Help
+# Ghost sponsors
+
+We'd like to extend big thanks to our sponsors and partners who make Ghost possible. If you're interested in sponsoring Ghost and supporting the project, please check out our profile on [GitHub sponsors](https://github.com/sponsors/TryGhost) :heart:
+
+**[DigitalOcean](https://m.do.co/c/9ff29836d717)** • **[Fastly](https://www.fastly.com/)**
+
+&nbsp;
+
+# Getting help
 
 You can find answers to a huge variety of questions, along with a large community of helpful developers over on the [Ghost forum](https://forum.ghost.org/) - replies are generally very quick. **Ghost(Pro)** customers also have access to 24/7 email support.
 
@@ -91,6 +98,6 @@ To stay up to date with all the latest news and product updates, make sure you [
 
 &nbsp;
 
-# Copyright & License
+# Copyright & license
 
 Copyright (c) 2013-2022 Ghost Foundation - Released under the [MIT license](LICENSE). Ghost and the Ghost Logo are trademarks of Ghost Foundation Ltd. Please see our [trademark policy](https://ghost.org/trademark/) for info on acceptable usage.
