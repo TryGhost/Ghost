@@ -834,4 +834,33 @@ describe('Acceptance: Editor', function () {
             expect(body.posts[0].title).to.equal('CMD-S Test');
         });
     });
+
+    describe('regressions', function () {
+        let user;
+
+        beforeEach(async function () {
+            const role = this.server.create('role', {name: 'Administrator'});
+            user = this.server.create('user', {roles: [role]});
+
+            return await authenticateSession();
+        });
+
+        // BUG: opening the publish menu and selecting a scheduled time then
+        // closing prevents scheduling with a "Must be in the past" error
+        // when re-opening the menu
+        // https://github.com/TryGhost/Team/issues/1399
+        it('can close publish menu after selecting schedule then re-open, schedule, and publish without error', async function () {
+            const post = this.server.create('post', {status: 'draft', authors: [user]});
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-scheduled-option]');
+            await click('[data-test-publishmenu-cancel]');
+            await click('[data-test-publishmenu-trigger]');
+            await click('[data-test-publishmenu-scheduled-option]');
+            await click('[data-test-publishmenu-save]');
+
+            expect(post.status).to.equal('scheduled');
+        });
+    });
 });
