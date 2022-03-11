@@ -187,12 +187,12 @@ export default class SetupController extends Controller.extend(ValidationEngine)
 
         if (this.profileImage) {
             return this._sendImage(result.users[0])
-                .then(() => (this.router.transitionTo('dashboard')))
+                .then(() => (this.router.transitionTo('setup.done')))
                 .catch((resp) => {
                     this.notifications.showAPIError(resp, {key: 'setup.blog-details'});
                 });
         } else {
-            return this.router.transitionTo('dashboard');
+            return this.router.transitionTo('setup.done');
         }
     }
 }
