@@ -6,13 +6,13 @@ export const testSite = getTestSite();
 const products = [
     getFreeProduct({
         name: 'Free',
-        // description: 'Free tier description which is actually a pretty long description',
-        description: '',
+        description: 'Free tier description which is actually a pretty long description',
+        // description: '',
         numOfBenefits: 0
     })
     ,
     getProductData({
-        name: 'Bronze',
+        name: 'The Blueprint',
         // description: 'Access to all members articles',
         description: '',
         monthlyPrice: getPriceData({
@@ -23,23 +23,24 @@ const products = [
             interval: 'year',
             amount: 7000
         }),
-        numOfBenefits: 2
+        numOfBenefits: 1
     })
+    ,
+    getProductData({
+        name: 'Friends of the Blueprint Silver',
+        description: 'Access to all members articles and weekly podcast',
+        monthlyPrice: getPriceData({
+            interval: 'month',
+            amount: 1200
+        }),
+        yearlyPrice: getPriceData({
+            interval: 'year',
+            amount: 11000
+        }),
+        numOfBenefits: 1
+    })
+    
     // ,
-    // getProductData({
-    //     name: 'Silver',
-    //     description: 'Access to all members articles and weekly podcast',
-    //     monthlyPrice: getPriceData({
-    //         interval: 'month',
-    //         amount: 1200
-    //     }),
-    //     yearlyPrice: getPriceData({
-    //         interval: 'year',
-    //         amount: 12000
-    //     }),
-    //     numOfBenefits: 3
-    // })
-
     // getProductData({
     //     name: 'Friends of the Blueprint',
     //     description: 'Get access to everything and lock in early adopter pricing for life + listen to my podcast',
@@ -92,7 +93,7 @@ export const site = getSiteData({
 });
 
 export const offer = getOfferData({
-    tierId: site.products[0]?.id
+    tierId: site.products[1]?.id
 });
 
 export const member = {
