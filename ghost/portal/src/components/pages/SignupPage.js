@@ -163,12 +163,12 @@ export const SignupPageStyles = `
     .gh-portal-popup-wrapper.signup.multiple-products .gh-portal-content,
     .gh-portal-popup-wrapper.signin.multiple-products .gh-portal-content {
         width: 100%;
-        overflow: hidden;
         background: #fff;
     }
 
     .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signup-footer,
     .gh-portal-popup-wrapper.multiple-products footer.gh-portal-signin-footer {
+        flex: 1;
         width: 100%;
         height: unset;
         padding: 0 32px !important;
