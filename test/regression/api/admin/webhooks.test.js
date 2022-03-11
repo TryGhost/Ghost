@@ -27,7 +27,7 @@ describe('Webhooks API (canary)', function () {
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
             .send({webhooks: [webhookData]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -134,7 +134,7 @@ describe('Webhooks API (canary)', function () {
                 [createdWebhook] = body.webhooks;
 
                 return request.put(localUtils.API.getApiQuery(`webhooks/${createdWebhook.id}/`))
-                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
                     .send({
                         webhooks: [{
                             name: 'Edit Test',
@@ -146,14 +146,14 @@ describe('Webhooks API (canary)', function () {
             })
             .then(() => {
                 return request.del(localUtils.API.getApiQuery(`webhooks/${createdWebhook.id}/`))
-                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+                    .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
                     .expect(403);
             });
     });
 
     it('Integration editing non-existing webhook returns 404', function () {
         return request.put(localUtils.API.getApiQuery(`webhooks/5f27d0287c75da744d8615da/`))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
             .send({
                 webhooks: [{
                     name: 'Edit Test'
@@ -164,7 +164,7 @@ describe('Webhooks API (canary)', function () {
 
     it('Integration deleting non-existing webhook returns 404', function () {
         return request.delete(localUtils.API.getApiQuery(`webhooks/5f27d0287c75da744d8615db/`))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[0])}`)
             .expect(404);
     });
 
@@ -175,7 +175,7 @@ describe('Webhooks API (canary)', function () {
         };
 
         return request.post(localUtils.API.getApiQuery('webhooks/'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/', testUtils.DataGenerator.Content.api_keys[1])}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', testUtils.DataGenerator.Content.api_keys[1])}`)
             .send({webhooks: [webhookData]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

@@ -220,7 +220,7 @@ describe('api/canary/content/posts', function () {
                 }
 
                 res.headers.vary.should.eql('Accept, Accept-Encoding');
-                res.headers.location.should.eql(`http://localhost:9999/ghost/api/canary/content/posts/?key=${validKey}`);
+                res.headers.location.should.eql(`http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
                 should.exist(res.headers['access-control-allow-origin']);
                 should.not.exist(res.headers['x-cache-invalidate']);
                 done();

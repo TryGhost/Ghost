@@ -6,7 +6,7 @@ const apiKeyAuth = require('../../../../../../core/server/services/auth/api-key'
 const models = require('../../../../../../core/server/models');
 
 describe('Admin API Key Auth', function () {
-    const ADMIN_API_URL = '/ghost/api/canary/admin/';
+    const ADMIN_API_URL = '/ghost/api/v4/admin/';
     const ADMIN_API_URL_NON_VERSIONED = '/ghost/api/admin/';
 
     before(models.init);
@@ -32,13 +32,13 @@ describe('Admin API Key Auth', function () {
         sinon.restore();
     });
 
-    it('should authenticate known+valid canary API key', function (done) {
+    it('should authenticate known+valid v4 API key', function (done) {
         const token = jwt.sign({
         }, this.secret, {
             keyid: this.fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: '/canary/admin/',
+            audience: '/v4/admin/',
             issuer: this.fakeApiKey.id
         });
 
@@ -153,7 +153,7 @@ describe('Admin API Key Auth', function () {
             keyid: this.fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: '/canary/admin/',
+            audience: '/v4/admin/',
             issuer: this.fakeApiKey.id
         });
 
@@ -183,7 +183,7 @@ describe('Admin API Key Auth', function () {
             keyid: this.fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '10m',
-            audience: '/canary/admin/',
+            audience: '/v4/admin/',
             issuer: this.fakeApiKey.id
         });
 
@@ -211,7 +211,7 @@ describe('Admin API Key Auth', function () {
             keyid: this.fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: '/canary/admin/',
+            audience: 'v4/admin/',
             issuer: this.fakeApiKey.id
         });
 

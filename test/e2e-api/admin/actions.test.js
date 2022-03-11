@@ -98,7 +98,7 @@ describe('Actions API', function () {
         await integrationRequest
             .put(localUtils.API.getApiQuery(`posts/${postId}/`))
             .set('Origin', config.get('url'))
-            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/canary/admin/')}`)
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
             .send({
                 posts: [{
                     featured: true,

@@ -1,7 +1,7 @@
 const url = require('url');
 const testUtils = require('../../../utils');
 
-const API_URL = '/ghost/api/canary/admin/';
+const API_URL = '/ghost/api/admin/';
 
 const expectedProperties = {
     posts: ['posts', 'meta'],

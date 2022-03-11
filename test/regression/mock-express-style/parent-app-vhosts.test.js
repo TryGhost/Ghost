@@ -9,7 +9,7 @@ const themeEngine = require('../../../core/frontend/services/theme-engine');
 describe('Integration - Web - vhosts', function () {
     let app;
 
-    const ADMIN_API_URL = '/ghost/api/canary/admin';
+    const ADMIN_API_URL = '/ghost/api/admin';
 
     before(testUtils.teardownDb);
 
