@@ -2,11 +2,11 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const moment = require('moment');
 const path = require('path');
+const fs = require('fs-extra');
 
 // Stuff we are testing
 const ImportManager = require('../../../../../core/server/data/importer');
@@ -46,13 +46,22 @@ describe('Importer', function () {
         });
 
         it('gets the correct types', function () {
-            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(13);
+            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(12);
+            ImportManager.getContentTypes().should.containEql('image/jpeg');
+            ImportManager.getContentTypes().should.containEql('image/png');
+            ImportManager.getContentTypes().should.containEql('image/gif');
+            ImportManager.getContentTypes().should.containEql('image/svg+xml');
+            ImportManager.getContentTypes().should.containEql('image/x-icon');
+            ImportManager.getContentTypes().should.containEql('image/vnd.microsoft.icon');
+            ImportManager.getContentTypes().should.containEql('image/webp');
+
             ImportManager.getContentTypes().should.containEql('application/octet-stream');
             ImportManager.getContentTypes().should.containEql('application/json');
+
+            ImportManager.getContentTypes().should.containEql('text/plain');
+
             ImportManager.getContentTypes().should.containEql('application/zip');
             ImportManager.getContentTypes().should.containEql('application/x-zip-compressed');
-            ImportManager.getContentTypes().should.containEql('text/plain');
-            ImportManager.getContentTypes().should.containEql('image/webp');
         });
 
         it('gets the correct directories', function () {
@@ -88,12 +97,40 @@ describe('Importer', function () {
                 .should.equal('**/+(images|content)');
         });
 
+        it('cleans up', async function () {
+            const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+            ImportManager.fileToDelete = file;
+            const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.resolve());
+
+            await ImportManager.cleanUp();
+            removeStub.calledOnce.should.be.true();
+            should(ImportManager.fileToDelete).be.null();
+        });
+
+        it('doesn\'t clean up', async function () {
+            ImportManager.fileToDelete = null;
+            const removeStub = sinon.stub(fs, 'remove').returns(Promise.resolve());
+
+            await ImportManager.cleanUp();
+            removeStub.called.should.be.false();
+        });
+
+        it('silently ignores clean up errors', async function () {
+            const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+            ImportManager.fileToDelete = file;
+            const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.reject(new Error('Unknown file')));
+
+            await ImportManager.cleanUp();
+            removeStub.calledOnce.should.be.true();
+            should(ImportManager.fileToDelete).be.null();
+        });
+
         // Step 1 of importing is loadFile
         describe('loadFile', function () {
             it('knows when to process a file', function (done) {
                 const testFile = {name: 'myFile.json', path: '/my/path/myFile.json'};
-                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve());
-                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve());
+                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve({}));
+                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve({}));
 
                 ImportManager.loadFile(testFile).then(function () {
                     zipSpy.calledOnce.should.be.false();
@@ -105,8 +142,8 @@ describe('Importer', function () {
             // We need to make sure we don't actually extract a zip and leave temporary files everywhere!
             it('knows when to process a zip', function (done) {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
-                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve());
-                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve());
+                const zipSpy = sinon.stub(ImportManager, 'processZip').returns(Promise.resolve({}));
+                const fileSpy = sinon.stub(ImportManager, 'processFile').returns(Promise.resolve({}));
 
                 ImportManager.loadFile(testZip).then(function () {
                     zipSpy.calledOnce.should.be.true();
@@ -123,14 +160,14 @@ describe('Importer', function () {
                 const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve('/tmp/dir/'));
 
                 const validSpy = sinon.stub(ImportManager, 'isValidZip').returns(true);
-                const baseDirSpy = sinon.stub(ImportManager, 'getBaseDirectory').returns();
+                const baseDirSpy = sinon.stub(ImportManager, 'getBaseDirectory').returns('');
                 const getFileSpy = sinon.stub(ImportManager, 'getFilesFromZip');
                 const jsonSpy = sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
                 const imageSpy = sinon.stub(ImageHandler, 'loadFile');
                 const mdSpy = sinon.stub(MarkdownHandler, 'loadFile');
 
                 getFileSpy.returns([]);
-                getFileSpy.withArgs(JSONHandler).returns(['/tmp/dir/myFile.json']);
+                getFileSpy.withArgs(JSONHandler, sinon.match.string).returns([{path: '/tmp/dir/myFile.json', name: 'myFile.json'}]);
 
                 ImportManager.processZip(testZip).then(function (zipResult) {
                     extractSpy.calledOnce.should.be.true();
@@ -172,6 +209,12 @@ describe('Importer', function () {
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
 
+                it('accepts a zip with uppercase image extensions', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
                 it('fails a zip with two base directories', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
@@ -185,9 +228,81 @@ describe('Importer', function () {
                 });
             });
 
+            describe('Process Zip', function () {
+                const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
+
+                this.beforeEach(() => {
+                    sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
+                    sinon.stub(ImageHandler, 'loadFile');
+                    sinon.stub(MarkdownHandler, 'loadFile');
+                });
+
+                it('accepts a zip with a base directory', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+    
+                    const zipResult = await ImportManager.processZip(testZip);
+                    zipResult.data.should.not.be.undefined();
+                    should(zipResult.images).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('accepts a zip without a base directory', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+
+                    const zipResult = await ImportManager.processZip(testZip);
+                    zipResult.data.should.not.be.undefined();
+                    should(zipResult.images).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('accepts a zip with an image directory', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+
+                    const zipResult = await ImportManager.processZip(testZip);
+                    zipResult.images.length.should.eql(1);
+                    should(zipResult.data).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('accepts a zip with uppercase image extensions', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+    
+                    const zipResult = await ImportManager.processZip(testZip);
+                    zipResult.images.length.should.eql(1);
+                    should(zipResult.data).be.undefined();
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('throws zipContainsMultipleDataFormats', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-multiple-data-formats');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+    
+                    await should(ImportManager.processZip(testZip)).rejectedWith(/multiple data formats/);
+                    extractSpy.calledOnce.should.be.true();
+                });
+
+                it('throws noContentToImport', async function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
+                    const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
+    
+                    await should(ImportManager.processZip(testZip)).rejectedWith(/not include any content/);
+                    extractSpy.calledOnce.should.be.true();
+                });
+            });
+
             describe('Get Base Dir', function () {
                 it('returns string for base directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+
+                    ImportManager.getBaseDirectory(testDir).should.equal('basedir');
+                });
+
+                it('returns string for double base directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
 
                     ImportManager.getBaseDirectory(testDir).should.equal('basedir');
                 });
@@ -196,6 +311,18 @@ describe('Importer', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
 
                     should.not.exist(ImportManager.getBaseDirectory(testDir));
+                });
+
+                it('returns empty for content handler directories', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+
+                    should.not.exist(ImportManager.getBaseDirectory(testDir));
+                });
+
+                it('throws invalidZipFileBaseDirectory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
+
+                    should(() => ImportManager.getBaseDirectory(testDir)).throwError(/invalid zip file/i);
                 });
             });
 
@@ -285,7 +412,7 @@ describe('Importer', function () {
             // generateReport is intended to create a message to show to the user about what has been imported
             // it is currently a noop
             it('is currently a noop', function (done) {
-                const input = {data: {}, images: []};
+                const input = [{data: {}, images: []}];
                 ImportManager.generateReport(input).then(function (output) {
                     output.should.equal(input);
                     done();
@@ -295,13 +422,13 @@ describe('Importer', function () {
 
         describe('importFromFile', function () {
             it('does the import steps in order', function (done) {
-                const loadFileSpy = sinon.stub(ImportManager, 'loadFile').returns(Promise.resolve());
-                const preProcessSpy = sinon.stub(ImportManager, 'preProcess').returns(Promise.resolve());
-                const doImportSpy = sinon.stub(ImportManager, 'doImport').returns(Promise.resolve());
-                const generateReportSpy = sinon.stub(ImportManager, 'generateReport').returns(Promise.resolve());
-                const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns({});
+                const loadFileSpy = sinon.stub(ImportManager, 'loadFile').returns(Promise.resolve({}));
+                const preProcessSpy = sinon.stub(ImportManager, 'preProcess').returns(Promise.resolve({}));
+                const doImportSpy = sinon.stub(ImportManager, 'doImport').returns(Promise.resolve([]));
+                const generateReportSpy = sinon.spy(ImportManager, 'generateReport');
+                const cleanupSpy = sinon.stub(ImportManager, 'cleanUp').returns(Promise.resolve());
 
-                ImportManager.importFromFile({}).then(function () {
+                ImportManager.importFromFile({name: 'test.json', path: '/test.json'}).then(function () {
                     loadFileSpy.calledOnce.should.be.true();
                     preProcessSpy.calledOnce.should.be.true();
                     doImportSpy.calledOnce.should.be.true();
