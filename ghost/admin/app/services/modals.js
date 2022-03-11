@@ -32,9 +32,11 @@ export default class ModalsService extends EPMModalsService {
 
     // we manually close modals on backdrop clicks and escape rather than letting focus-trap
     // handle it so we can intercept/abort closing for things like unsaved change confirmations
-    allowOutsideClick = true;
-    clickOutsideDeactivates = false;
-    escapeDeactivates = false;
+    focusTrapOptions = {
+        allowOutsideClick: true,
+        clickOutsideDeactivates: false,
+        escapeDeactivates: false
+    };
 
     open(modal, data, options) {
         const mergedOptions = Object.assign({}, this.DEFAULT_OPTIONS, this.MODAL_OPTIONS[modal], options);

@@ -280,7 +280,8 @@ export default class EditorController extends Controller {
             setEditorSaveType: this.actions.setSaveType.bind(this),
             memberCount: this.memberCount
         }, {
-            className: 'fullscreen-modal fullscreen-modal-full-overlay fullscreen-modal-email-preview'
+            className: 'fullscreen-modal fullscreen-modal-full-overlay fullscreen-modal-email-preview',
+            focusTrapOptions: null // not ideal but date inputs aren't focusable otherwise
         });
     }
 
