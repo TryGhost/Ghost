@@ -192,15 +192,6 @@ export default Component.extend({
     didReceiveAttrs() {
         this._super(...arguments);
 
-        const updateSaveTypeForPostStatus = (status) => {
-            if (status === 'draft' || status === 'published') {
-                this.set('saveType', 'publish');
-            }
-            if (status === 'scheduled') {
-                this.set('saveType', 'schedule');
-            }
-        };
-
         // update the displayState based on the post status but only after a
         // save has finished to avoid swapping the menu prematurely and triggering
         // calls to `setSaveType` due to the component re-rendering
@@ -211,11 +202,11 @@ export default Component.extend({
             if (this.get('saveTask.isRunning')) {
                 this.get('saveTask.last').then(() => {
                     this.set('displayState', postStatus);
-                    updateSaveTypeForPostStatus(postStatus);
+                    this.updateSaveTypeForPostStatus(postStatus);
                 });
             } else {
                 this.set('displayState', postStatus);
-                updateSaveTypeForPostStatus(postStatus);
+                this.updateSaveTypeForPostStatus(postStatus);
             }
         }
 
@@ -314,6 +305,15 @@ export default Component.extend({
                 this.send('setSaveType', 'publish');
                 this.save.perform();
             });
+        }
+    },
+
+    updateSaveTypeForPostStatus(status) {
+        if (status === 'draft' || status === 'published') {
+            this.set('saveType', 'publish');
+        }
+        if (status === 'scheduled') {
+            this.set('saveType', 'schedule');
         }
     },
 
@@ -492,6 +492,8 @@ export default Component.extend({
         } else {
             this.set('distributionAction', 'publish_send');
         }
+
+        this.updateSaveTypeForPostStatus(this.post.status);
 
         // when closing the menu we reset the publishedAtBlogTZ date so that the
         // unsaved changes made to the scheduled date aren't reflected in the PSM
