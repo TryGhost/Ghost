@@ -25,6 +25,7 @@ module.exports = class MemberRepository {
     /**
      * @param {object} deps
      * @param {any} deps.Member
+     * @param {any} deps.MemberCancelEvent
      * @param {any} deps.MemberSubscribeEvent
      * @param {any} deps.MemberEmailChangeEvent
      * @param {any} deps.MemberPaidSubscriptionEvent
@@ -38,6 +39,7 @@ module.exports = class MemberRepository {
      */
     constructor({
         Member,
+        MemberCancelEvent,
         MemberSubscribeEvent,
         MemberEmailChangeEvent,
         MemberPaidSubscriptionEvent,
@@ -51,6 +53,7 @@ module.exports = class MemberRepository {
         tokenService
     }) {
         this._Member = Member;
+        this._MemberCancelEvent = MemberCancelEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
@@ -823,6 +826,9 @@ module.exports = class MemberRepository {
     }
 
     async cancelSubscription(data, options) {
+        const sharedOptions = {
+            transacting: options ? options.transacting : null
+        };
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'update Stripe Subscription'})});
         }
@@ -856,9 +862,17 @@ module.exports = class MemberRepository {
             id: member.id,
             subscription: updatedSubscription
         }, options);
+
+        await this._MemberCancelEvent.add({
+            member_id: member.id,
+            from_plan: subscription.get('plan_id')
+        }, sharedOptions);
     }
 
     async updateSubscription(data, options) {
+        const sharedOptions = {
+            transacting: options ? options.transacting : null
+        };
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'update Stripe Subscription'})});
         }
@@ -910,6 +924,11 @@ module.exports = class MemberRepository {
                     data.subscription.subscription_id,
                     data.subscription.cancellationReason
                 );
+
+                await this._MemberCancelEvent.add({
+                    member_id: member.id,
+                    from_plan: subscriptionModel.get('plan_id')
+                }, sharedOptions);
             } else {
                 updatedSubscription = await this._stripeAPIService.continueSubscriptionAtPeriodEnd(
                     data.subscription.subscription_id
