@@ -2265,7 +2265,17 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.9.0", "@tryghost/members-stripe-service@^0.9.0":
+"@tryghost/members-stripe-service@0.9.1":
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.9.1.tgz#6ec70a1a328dd56e54b0dbfc6578ac9826f60b52"
+  integrity sha512-2Q1bcx5aEKCAx5Y1cfne2H7LtA7fRI14cO3ES3h0C/yQ2N2oK/wAtge9j3LfH4aSqmQz4c43DdT2AmzuKkIXjA==
+  dependencies:
+    "@tryghost/debug" "^0.1.4"
+    "@tryghost/errors" "1.2.5"
+    leaky-bucket "^2.2.0"
+    stripe "^8.174.0"
+
+"@tryghost/members-stripe-service@^0.9.0":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.9.0.tgz#f70ffa3afbd9903f7af8819dcb30eee0a3303c0c"
   integrity sha512-sSkYV5Uq2/daAx6+rzxECIARuucfzpYgXQsfpbXEvObMyldslctEiVIo9n/aO7nCB7a9YjdE/75REr/GbLQqdg==
