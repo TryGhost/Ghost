@@ -5,10 +5,12 @@ const {MemberStatusEvent} = require('../../../core/server/models/member-status-e
 const testUtils = require('../../utils');
 const should = require('should');
 const {v4: uuidv4} = require('uuid');
+const sinon = require('sinon');
 
 async function createMember(data) {
     return await Member.add({
-        email: `random-email${Date.now()}-${Math.floor(Math.random() * 99999)}@example.com`
+        email: `random-email${Date.now()}-${Math.floor(Math.random() * 99999)}@example.com`,
+        ...data
     }, {});
 }
 
@@ -56,6 +58,10 @@ describe('Fixup member status events', function () {
         if (process.env.NODE_ENV !== 'testing-mysql') {
             this.skip();
         }
+
+        // Stub onValidate (because we'll need to create events with the invalid status 'unknown')
+        // @ts-ignore
+        sinon.stub(MemberStatusEvent.prototype, 'onValidate').returns(Promise.resolve());
     });
 
     describe('deleteUnchangedEvents', function () {
@@ -67,7 +73,7 @@ describe('Fixup member status events', function () {
 
             should(await migration.deleteUnchangedEvents(knex)).eql(2);
 
-            // Check if event with lowest id has been deleted
+            // Check both have been deleted
             await assertEventExist(event1.id, false);
             await assertEventExist(event2.id, false);
         });
@@ -413,6 +419,211 @@ describe('Fixup member status events', function () {
             ]);
 
             should(await migration.mergeEventsWithSameToStatus(knex)).eql(0);
+        });
+    });
+
+    describe('mergeEventsWithSameTime', function () {
+        let member, member2;
+        const created_at = new Date(2000, 0, 1, 12, 0);
+        const created_at_past = new Date(created_at.getTime() - 10000);
+
+        before(async function () {
+            member = await createMember({});
+            member2 = await createMember({});
+        });
+
+        beforeEach(async function () {
+            await clearEvents();
+        });
+
+        it('merges multiple events', async function () {
+            const events = await Promise.all([
+                createEvent({member_id: member.id, to_status: null, from_status: 'free', created_at}),
+                createEvent({member_id: member.id, to_status: 'paid', from_status: 'comped', created_at})
+            ]);
+
+            should(await migration.mergeEventsWithSameTime(knex)).eql(2);
+            const f = (await refreshEvents(events)).filter(e => e !== null);
+            f.length.should.eql(1);
+            const mergedInto = f[0];
+            mergedInto.should.match({
+                attributes: {
+                    to_status: 'unknown',
+                    from_status: 'unknown'
+                }
+            });
+        });
+
+        it('does not merge for different members', async function () {
+            await Promise.all([
+                createEvent({member_id: member.id, to_status: 'paid', from_status: 'free', created_at}),
+                createEvent({member_id: member2.id, to_status: 'paid', from_status: 'comped', created_at})
+            ]);
+
+            should(await migration.mergeEventsWithSameTime(knex)).eql(0);
+        });
+
+        it('does not merge for different timestamps', async function () {
+            await Promise.all([
+                createEvent({member_id: member.id, to_status: 'paid', from_status: 'free', created_at}),
+                createEvent({member_id: member.id, to_status: 'paid', from_status: 'comped', created_at: created_at_past})
+            ]);
+
+            should(await migration.mergeEventsWithSameTime(knex)).eql(0);
+        });
+    });
+
+    describe('linkIncorrectEvents', function () {
+        let member, member2;
+        const created_at = new Date(2000, 0, 1, 12, 0);
+        const created_at_next = new Date(created_at.getTime() + 10000);
+        const created_at_past = new Date(created_at.getTime() - 10000);
+
+        before(async function () {
+            member = await createMember({});
+            member2 = await createMember({});
+        });
+
+        beforeEach(async function () {
+            await clearEvents();
+        });
+
+        it('update to_status', async function () {
+            const events = await Promise.all([
+                createEvent({member_id: member.id, from_status: null, to_status: 'free', created_at: created_at_past}),
+                createEvent({member_id: member.id, from_status: 'paid', to_status: 'free', created_at}),
+                createEvent({member_id: member.id, from_status: 'paid', to_status: 'comped', created_at: created_at_next})
+            ]);
+
+            should(await migration.linkIncorrectEvents(knex, 'to_status')).eql(2);
+            (await refreshEvents(events)).should.match([
+                {attributes: {from_status: null, to_status: 'paid'}},
+                null, // became paid -> paid
+                {attributes: {from_status: 'paid', to_status: 'comped'}}
+            ]);
+        });
+
+        it('update from_status', async function () {
+            const events = await Promise.all([
+                createEvent({member_id: member.id, from_status: null, to_status: 'free', created_at: created_at_past}),
+                createEvent({member_id: member.id, from_status: 'paid', to_status: 'free', created_at}),
+                createEvent({member_id: member.id, from_status: 'paid', to_status: 'comped', created_at: created_at_next})
+            ]);
+
+            should(await migration.linkIncorrectEvents(knex, 'from_status')).eql(2);
+            (await refreshEvents(events)).should.match([
+                {attributes: {from_status: null, to_status: 'free'}},
+                null, // became free -> free
+                {attributes: {from_status: 'free', to_status: 'comped'}}
+            ]);
+        });
+
+        it('never update to_status to unknown', async function () {
+            await Promise.all([
+                createEvent({member_id: member.id, from_status: null, to_status: 'free', created_at: created_at_past}),
+                createEvent({member_id: member.id, from_status: 'unknown', to_status: 'paid', created_at})
+            ]);
+
+            should(await migration.linkIncorrectEvents(knex, 'to_status')).eql(0);
+        });
+
+        it('never update from_status to unknown', async function () {
+            await Promise.all([
+                createEvent({member_id: member.id, from_status: null, to_status: 'unknown', created_at: created_at_past}),
+                createEvent({member_id: member.id, from_status: 'free', to_status: 'paid', created_at})
+            ]);
+
+            should(await migration.linkIncorrectEvents(knex, 'from_status')).eql(0);
+        });
+    });
+
+    describe('fixLastStatus', function () {
+        let member, member2;
+        const created_at = new Date(2000, 0, 1, 12, 0);
+        const created_at_past = new Date(created_at.getTime() - 10000);
+
+        before(async function () {
+            member = await createMember({status: 'comped'});
+            member2 = await createMember({status: 'free'});
+        });
+
+        beforeEach(async function () {
+            await clearEvents();
+        });
+
+        it('update to current member status', async function () {
+            const events = await Promise.all([
+                createEvent({member_id: member.id, from_status: null, to_status: 'free', created_at: created_at_past}),
+                createEvent({member_id: member.id, from_status: 'paid', to_status: 'free', created_at}),
+                createEvent({member_id: member2.id, from_status: null, to_status: 'paid', created_at})
+            ]);
+
+            should(await migration.fixLastStatus(knex)).eql(2);
+            (await refreshEvents(events)).should.match([
+                {attributes: {from_status: null, to_status: 'free'}},
+                {attributes: {from_status: 'paid', to_status: 'comped'}},
+                {attributes: {from_status: null, to_status: 'free'}}
+            ]);
+        });
+    });
+
+    describe('fixFirstStatus', function () {
+        let member, member2;
+        const created_at = new Date(2000, 0, 1, 12, 0);
+        const created_at_past = new Date(created_at.getTime() - 10000);
+
+        before(async function () {
+            member = await createMember({status: 'comped'});
+            member2 = await createMember({status: 'free'});
+        });
+
+        beforeEach(async function () {
+            await clearEvents();
+        });
+
+        it('update first events to NULL', async function () {
+            const events = await Promise.all([
+                createEvent({member_id: member.id, from_status: 'unknown', to_status: 'free', created_at: created_at_past}),
+                createEvent({member_id: member.id, from_status: 'paid', to_status: 'free', created_at}),
+                createEvent({member_id: member2.id, from_status: 'free', to_status: 'paid', created_at})
+            ]);
+
+            should(await migration.fixFirstStatus(knex)).eql(2);
+            (await refreshEvents(events)).should.match([
+                {attributes: {from_status: null, to_status: 'free'}},
+                {attributes: {from_status: 'paid', to_status: 'free'}},
+                {attributes: {from_status: null, to_status: 'paid'}}
+            ]);
+        });
+    });
+
+    describe('replaceUnknownStatuses', function () {
+        let member, member2;
+        const created_at = new Date(2000, 0, 1, 12, 0);
+        const created_at_past = new Date(created_at.getTime() - 10000);
+
+        before(async function () {
+            member = await createMember({status: 'comped'});
+            member2 = await createMember({status: 'free'});
+        });
+
+        beforeEach(async function () {
+            await clearEvents();
+        });
+
+        it('update unknown to free', async function () {
+            const events = await Promise.all([
+                createEvent({member_id: member.id, from_status: 'unknown', to_status: 'paid', created_at: created_at_past}),
+                createEvent({member_id: member.id, from_status: 'paid', to_status: 'unknown', created_at}),
+                createEvent({member_id: member2.id, from_status: 'unknown', to_status: 'unknown', created_at})
+            ]);
+
+            should(await migration.replaceUnknownStatuses(knex, 'free')).eql(4);
+            (await refreshEvents(events)).should.match([
+                {attributes: {from_status: 'free', to_status: 'paid'}},
+                {attributes: {from_status: 'paid', to_status: 'free'}},
+                null // updated to free -> free
+            ]);
         });
     });
 });

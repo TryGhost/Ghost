@@ -429,7 +429,7 @@ async function fixLastStatus(knex) {
 }
 
 /**
- * Set last event status for a member to the current member status
+ * Set first event status for a member to NULL
  * @param {import('knex')} knex
  * @returns {Promise<number>} Updated rows
  */
