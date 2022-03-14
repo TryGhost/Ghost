@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import SearchModal from '../modals/search';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import classic from 'ember-classic-decorator';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
@@ -101,7 +102,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
 
     @action
     openSearchModal() {
-        return this.modals.open('modals/search');
+        return this.modals.open(SearchModal);
     }
 
     @action

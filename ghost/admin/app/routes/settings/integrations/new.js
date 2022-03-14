@@ -1,4 +1,6 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import CustomIntegrationLimitsModal from '../../../components/modals/limits/custom-integration';
+import NewCustomIntegrationModal from '../../../components/modals/new-custom-integration';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
@@ -14,7 +16,7 @@ export default class NewIntegrationRoute extends AdminRoute {
             try {
                 await this.limit.limiter.errorIfWouldGoOverLimit('customIntegrations');
             } catch (error) {
-                this.modal = this.modals.open('modals/limits/custom-integration', {
+                this.modal = this.modals.open(CustomIntegrationLimitsModal, {
                     message: error.message
                 }, {
                     beforeClose: this.beforeModalClose
@@ -23,7 +25,7 @@ export default class NewIntegrationRoute extends AdminRoute {
             }
         }
 
-        this.modal = this.modals.open('modals/new-custom-integration', {}, {
+        this.modal = this.modals.open(NewCustomIntegrationModal, {}, {
             beforeClose: this.beforeModalClose
         });
     }

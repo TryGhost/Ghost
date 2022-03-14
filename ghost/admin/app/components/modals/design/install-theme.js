@@ -4,7 +4,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class InstallThemeModalComponent extends Component {
+export default class InstallThemeModal extends Component {
     @service ajax;
     @service ghostPaths;
     @service store;

@@ -4,7 +4,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class ModalsEditorConfirmPublishComponent extends Component {
+export default class ConfirmPublishModal extends Component {
     @service membersCountCache;
     @service session;
     @service store;

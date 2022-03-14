@@ -7,7 +7,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class MembersBulkDeleteModal extends Component {
+export default class BulkDeleteMembersModal extends Component {
     @service ajax;
     @service ghostPaths;
 
