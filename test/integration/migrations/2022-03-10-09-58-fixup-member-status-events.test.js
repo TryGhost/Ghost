@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-spaces */
 const {knex} = require('../../../core/server/data/db');
 const migration = require('../../../core/server/data/migrations/versions/4.39/2022-03-10-09-58-fixup-member-status-events');
 const {Member} = require('../../../core/server/models/member');
@@ -49,6 +50,12 @@ async function refreshEvents(events) {
             )
         )
     );
+}
+
+async function getMemberEvents(member_id) {
+    return await MemberStatusEvent
+        .where('member_id', member_id)
+        .fetchAll();
 }
 
 describe('Fixup member status events', function () {
@@ -624,6 +631,124 @@ describe('Fixup member status events', function () {
                 {attributes: {from_status: 'paid', to_status: 'free'}},
                 null // updated to free -> free
             ]);
+        });
+    });
+
+    describe('fixAll', function () {
+        const edgeCases = [
+            {
+                title: 'Minimum one event remaining',
+                status: 'comped', // current member status
+                events: [
+                    {created_at: 0, from: 'comped', to: 'free'},
+                    {created_at: 0, from: 'free',   to: 'paid'}
+                ],
+                expected: [
+                    {created_at: 0, from: null,     to: 'comped'}
+                ]
+            },
+            {
+                title: 'Wrong null ordering',
+                status: 'paid', // current member status
+                events: [
+                    {created_at: 0, from: 'free',   to: 'paid'},
+                    {created_at: 1, from: null,     to: 'free'}
+                ],
+                expected: [
+                    {created_at: 1, from: null,     to: 'paid'}
+                ]
+            },
+            {
+                title: 'Example 3',
+                status: 'paid', // current member status
+                events: [
+                    {created_at: 0, from: null,     to: 'comped'},
+                    {created_at: 1, from: 'paid',   to: 'free'},
+                    {created_at: 2, from: 'free',   to: 'comped'},
+                    {created_at: 3, from: 'comped', to: 'free'},
+                    {created_at: 3, from: 'comped', to: 'free'},
+                    {created_at: 3, from: 'free',   to: 'paid'}
+                ],
+                expected: [
+                    {created_at: 0, from: null,     to: 'comped'},
+                    {created_at: 1, from: 'comped', to: 'free'},
+                    {created_at: 2, from: 'free',   to: 'comped'},
+                    {created_at: 3, from: 'comped', to: 'paid'}
+                ]
+            },
+            {
+                title: 'Example 4',
+                status: 'paid', // current member status
+                events: [
+                    {created_at: 0, from: null,     to: 'comped'},
+                    {created_at: 2, from: 'free',   to: 'paid'},
+                    {created_at: 2, from: 'comped', to: 'paid'},
+                    {created_at: 3, from: 'free',   to: 'paid'}
+                ],
+                expected: [
+                    {created_at: 0, from: null,     to: 'comped'},
+                    {created_at: 2, from: 'comped', to: 'paid'}
+                ]
+            }
+        ];
+
+        async function initCases(cases) {
+            for (const c of cases) {
+                c.member = await createMember({status: c.status});
+
+                // Create events
+                for (const event of c.events) {
+                    event.event = await createEvent({
+                        created_at: new Date(event.created_at * 1000),
+                        from_status: event.from,
+                        to_status: event.to,
+                        member_id: c.member.id
+                    });
+                }
+            }
+        }
+
+        async function testCase(edgeCase) {
+            const filteredEvents = await getMemberEvents(edgeCase.member.id);
+
+            // Test event count
+            filteredEvents.length.should.eql(edgeCase.expected.length);
+
+            for (const e of edgeCase.expected) {
+                filteredEvents.models.should.matchAny({
+                    attributes: {
+                        from_status: e.from,
+                        to_status: e.to,
+                        created_at: new Date(e.created_at * 1000)
+                    }
+                });
+            }
+        }
+
+        describe('All at once', function () {
+            before(async function () {
+                await clearEvents();
+                await initCases(edgeCases);
+                await migration.fixAll(knex);
+            });
+
+            for (const edgeCase of edgeCases) {
+                it(edgeCase.title, async function () {
+                    await testCase(edgeCase);
+                });
+            }
+        });
+
+        describe('One by one', function () {
+            for (const edgeCase of edgeCases) {
+                it(edgeCase.title, async function () {
+                    await clearEvents();
+                    await initCases([edgeCase]);
+                    await migration.fixAll(knex);
+                    
+                    await testCase(edgeCase);
+                });
+            }
         });
     });
 });
