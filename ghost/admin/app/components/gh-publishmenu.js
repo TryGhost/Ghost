@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import ConfirmPublishModal from './modals/editor/confirm-publish';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import {bind, schedule} from '@ember/runloop';
 import {computed} from '@ember/object';
@@ -386,7 +387,7 @@ export default Component.extend({
                 options.dropdown.actions.close();
             }
 
-            return yield this.modals.open('modals/editor/confirm-publish', {
+            return yield this.modals.open(ConfirmPublishModal, {
                 post: this.post,
                 emailOnly: this.emailOnly,
                 sendEmailWhenPublished: this.sendEmailWhenPublished,

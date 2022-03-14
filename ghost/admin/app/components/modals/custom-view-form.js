@@ -8,6 +8,10 @@ export default class CustomViewFormModal extends Component {
     @service customViews;
     @service router;
 
+    static modalOptions = {
+        className: 'fullscreen-modal-action fullscreen-modal-narrow'
+    };
+
     @action
     changeColor(event) {
         const color = event.target.value;

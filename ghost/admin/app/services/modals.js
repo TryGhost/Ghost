@@ -4,30 +4,9 @@ import {inject as service} from '@ember/service';
 
 export default class ModalsService extends EPMModalsService {
     @service dropdown;
-    @service themeManagement;
 
     DEFAULT_OPTIONS = {
         className: 'fullscreen-modal-action fullscreen-modal-wide'
-    };
-
-    MODAL_OPTIONS = {
-        'modals/custom-view-form': {
-            className: 'fullscreen-modal-action fullscreen-modal-narrow'
-        },
-        'modals/email-preview': {
-            className: 'fullscreen-modal-full-overlay fullscreen-modal-email-preview'
-        },
-        'modals/design/upload-theme': {
-            beforeClose: () => {
-                if (this.themeManagement.isUploading) {
-                    return false;
-                }
-            }
-        },
-        'modals/design/view-theme': {
-            className: 'fullscreen-modal-total-overlay',
-            omitBackdrop: true
-        }
     };
 
     // we manually close modals on backdrop clicks and escape rather than letting focus-trap
@@ -39,7 +18,7 @@ export default class ModalsService extends EPMModalsService {
     };
 
     open(modal, data, options) {
-        const mergedOptions = Object.assign({}, this.DEFAULT_OPTIONS, this.MODAL_OPTIONS[modal], options);
+        const mergedOptions = Object.assign({}, this.DEFAULT_OPTIONS, modal.modalOptions, options);
         return super.open(modal, data, mergedOptions);
     }
 

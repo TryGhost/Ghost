@@ -1,6 +1,6 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import InstallThemeModal from '../../../../components/modals/design/install-theme';
 import {action} from '@ember/object';
-import {bind} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default class InstallThemeRoute extends AdminRoute {
@@ -23,7 +23,7 @@ export default class InstallThemeRoute extends AdminRoute {
 
         const theme = themesController.officialThemes.findBy('ref', installController.ref);
 
-        this.installModal = this.modals.open('modals/design/install-theme', {
+        this.installModal = this.modals.open(InstallThemeModal, {
             theme,
             ref: installController.ref,
             onSuccess: () => {
@@ -31,7 +31,7 @@ export default class InstallThemeRoute extends AdminRoute {
                 this.router.transitionTo('settings.design');
             }
         }, {
-            beforeClose: bind(this, this.beforeModalClose)
+            beforeClose: this.beforeModalClose
         });
     }
 
@@ -44,6 +44,7 @@ export default class InstallThemeRoute extends AdminRoute {
         }
     }
 
+    @action
     beforeModalClose() {
         if (!this.showingSuccessModal) {
             this.transitionTo('settings.design.change-theme');

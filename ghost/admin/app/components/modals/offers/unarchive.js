@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-export default class ArchiveOfferModalComponent extends Component {
+export default class UnarchiveOfferModal extends Component {
     @service notifications;
     @service router;
 

@@ -9,11 +9,19 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class UploadThemeModalComponent extends Component {
+export default class UploadThemeModal extends Component {
     @service eventBus;
     @service ghostPaths;
     @service store;
     @service themeManagement;
+
+    static modalOptions = {
+        beforeClose: () => {
+            if (this.themeManagement.isUploading) {
+                return false;
+            }
+        }
+    };
 
     @tracked displayOverwriteWarning = false;
     @tracked file;

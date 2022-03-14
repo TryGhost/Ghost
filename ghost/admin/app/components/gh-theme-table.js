@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import ConfirmDeleteThemeModal from './modals/design/confirm-delete-theme';
 import {action, get} from '@ember/object';
 import {inject as service} from '@ember/service';
 
@@ -89,7 +90,7 @@ export default class GhThemeTableComponent extends Component {
     deleteTheme(theme, dropdown) {
         dropdown?.actions.close();
 
-        this.confirmDeleteModal = this.modals.open('modals/design/confirm-delete-theme', {
+        this.confirmDeleteModal = this.modals.open(ConfirmDeleteThemeModal, {
             theme
         }).finally(() => {
             this.confirmDeleteModal = null;

@@ -1,11 +1,17 @@
 import Component from '@glimmer/component';
+import InstallThemeModal from './install-theme';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-export default class ViewThemeModalComponent extends Component {
+export default class ViewThemeModal extends Component {
     @service modals;
     @service router;
+
+    static modalOptions = {
+        className: 'fullscreen-modal-total-overlay',
+        omitBackdrop: true
+    };
 
     @tracked previewSize = 'desktop';
 
@@ -30,7 +36,7 @@ export default class ViewThemeModalComponent extends Component {
 
     @action
     installTheme() {
-        this.installModal = this.modals.open('modals/design/install-theme', {
+        this.installModal = this.modals.open(InstallThemeModal, {
             theme: this.args.data.theme,
             onSuccess: () => {
                 this.showingSuccessModal = true;

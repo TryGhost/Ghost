@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import LinkOfferModal from '../components/modals/offers/link';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -65,10 +66,8 @@ export default class MembersController extends Controller {
 
     @action
     openLinkDialog(offer) {
-        this.advancedModal = this.modals.open('modals/offers/link', {
+        this.advancedModal = this.modals.open(LinkOfferModal, {
             offer: offer
-        }, {
-            className: 'fullscreen-modal-action fullscreen-modal-wide'
         });
     }
 

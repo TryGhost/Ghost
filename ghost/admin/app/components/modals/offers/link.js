@@ -4,7 +4,7 @@ import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
-export default class ModalsOffersLinkComponent extends Component {
+export default class LinkOfferModal extends Component {
     @service config;
 
     constructor() {
