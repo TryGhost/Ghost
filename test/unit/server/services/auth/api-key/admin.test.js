@@ -82,6 +82,58 @@ describe('Admin API Key Auth', function () {
         });
     });
 
+    it('should authenticate known+valid non-versioned API key with a token created for versioned API', function (done) {
+        const token = jwt.sign({
+        }, this.secret, {
+            keyid: this.fakeApiKey.id,
+            algorithm: 'HS256',
+            expiresIn: '5m',
+            audience: 'v4/admin/',
+            issuer: this.fakeApiKey.id
+        });
+
+        const req = {
+            originalUrl: `${ADMIN_API_URL_NON_VERSIONED}session/`,
+            headers: {
+                authorization: `Ghost ${token}`
+            }
+        };
+        const res = {};
+
+        apiKeyAuth.admin.authenticate(req, res, (err) => {
+            should.not.exist(err);
+            req.api_key.should.eql(this.fakeApiKey);
+            done();
+        });
+    });
+
+    it('should NOT authenticate known+valid versioned API key with a token created for non-versioned API', function (done) {
+        const token = jwt.sign({
+        }, this.secret, {
+            keyid: this.fakeApiKey.id,
+            algorithm: 'HS256',
+            expiresIn: '5m',
+            audience: 'admin/',
+            issuer: this.fakeApiKey.id
+        });
+
+        const req = {
+            originalUrl: `${ADMIN_API_URL}session/`,
+            headers: {
+                authorization: `Ghost ${token}`
+            }
+        };
+        const res = {};
+
+        apiKeyAuth.admin.authenticate(req, res, (err) => {
+            should.exist(err);
+            should.equal(err instanceof errors.UnauthorizedError, true);
+            err.code.should.eql('INVALID_JWT');
+            should.not.exist(req.api_key);
+            done();
+        });
+    });
+
     it('shouldn\'t authenticate with missing Ghost token', function (done) {
         const token = '';
         const req = {
