@@ -119,7 +119,7 @@
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.4.0",
     "brute-knex": "4.0.1",
-    "bson-objectid": "2.0.2",
+    "bson-objectid": "2.0.3",
     "bthreads": "0.5.1",
     "cheerio": "0.22.0",
     "compression": "1.7.4",
