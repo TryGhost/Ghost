@@ -1,4 +1,6 @@
+import ArchiveOfferModal from '../components/modals/offers/archive';
 import Controller, {inject as controller} from '@ember/controller';
+import UnarchiveOfferModal from '../components/modals/offers/unarchive';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
@@ -347,10 +349,8 @@ export default class OffersController extends Controller {
     @action
     openConfirmArchiveModal() {
         if (!this.offer.isNew) {
-            this.modals.open('modals/offers/archive', {
+            this.modals.open(ArchiveOfferModal, {
                 offer: this.offer
-            }, {
-                className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
             });
         }
     }
@@ -358,10 +358,8 @@ export default class OffersController extends Controller {
     @action
     openConfirmUnarchiveModal() {
         if (!this.offer.isNew) {
-            this.modals.open('modals/offers/unarchive', {
+            this.modals.open(UnarchiveOfferModal, {
                 offer: this.offer
-            }, {
-                className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
             });
         }
     }

@@ -21,6 +21,10 @@ export default class EmailPreviewModal extends Component {
     @service ghostPaths;
     @service settings;
 
+    static modalOptions = {
+        className: 'fullscreen-modal-full-overlay fullscreen-modal-email-preview'
+    };
+
     @tracked tab = 'desktop';
     @tracked subject = null;
 

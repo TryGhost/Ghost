@@ -1,3 +1,4 @@
+import CustomViewFormModal from '../components/modals/custom-view-form';
 import EmberObject, {action} from '@ember/object';
 import Service, {inject as service} from '@ember/service';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
@@ -228,7 +229,7 @@ export default class CustomViewsService extends Service {
     editView() {
         const customView = CustomView.create(this.activeView || this.newView());
 
-        return this.modals.open('modals/custom-view-form', {
+        return this.modals.open(CustomViewFormModal, {
             customView
         });
     }

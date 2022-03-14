@@ -1,3 +1,7 @@
+import BulkAddMembersLabelModal from '../components/modals/members/bulk-add-label';
+import BulkDeleteMembersModal from '../components/modals/members/bulk-delete';
+import BulkRemoveMembersLabelModal from '../components/modals/members/bulk-remove-label';
+import BulkUnsubscribeMembersModal from '../components/modals/members/bulk-unsubscribe';
 import Controller from '@ember/controller';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment';
@@ -309,7 +313,7 @@ export default class MembersController extends Controller {
 
     @action
     bulkAddLabel() {
-        this.modals.open('modals/members/bulk-add-label', {
+        this.modals.open(BulkAddMembersLabelModal, {
             query: this.getApiQueryObject(),
             onComplete: this.resetAndReloadMembers
         });
@@ -317,7 +321,7 @@ export default class MembersController extends Controller {
 
     @action
     bulkRemoveLabel() {
-        this.modals.open('modals/members/bulk-remove-label', {
+        this.modals.open(BulkRemoveMembersLabelModal, {
             query: this.getApiQueryObject(),
             onComplete: this.resetAndReloadMembers
         });
@@ -325,7 +329,7 @@ export default class MembersController extends Controller {
 
     @action
     bulkUnsubscribe() {
-        this.modals.open('modals/members/bulk-unsubscribe', {
+        this.modals.open(BulkUnsubscribeMembersModal, {
             query: this.getApiQueryObject(),
             onComplete: this.resetAndReloadMembers
         });
@@ -339,7 +343,7 @@ export default class MembersController extends Controller {
 
     @action
     bulkDelete() {
-        this.modals.open('modals/members/bulk-delete', {
+        this.modals.open(BulkDeleteMembersModal, {
             query: this.getApiQueryObject(),
             onComplete: () => {
                 // reset, clear filters, and reload list and counts

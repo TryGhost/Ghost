@@ -7,7 +7,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class NewCustomIntegrationModalComponent extends Component {
+export default class NewCustomIntegrationModal extends Component {
     @service router;
     @service store;
 
