@@ -3511,7 +3511,12 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
-bson-objectid@2.0.2, bson-objectid@^2.0.1:
+bson-objectid@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.3.tgz#d840185172846b2f10c42ce2bcdb4a50956a9db5"
+  integrity sha512-WYwVtY9yqk179EPMNuF3vcxufdrGLEo2XwqdRVbfLVe9X6jLt7WKZQgP+ObOcprakBGbHxzl76tgTaieqsH29g==
+
+bson-objectid@^2.0.1:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.2.tgz#e72c9c51841f5e842dcc17d3cc7b7064f7abacae"
   integrity sha512-61Yo6MBAftkyc+nU0smq+VX2SCeKgtC6+cRI+JkatdCy1tPdAzvR1ezEQFlio6St2tDhKZm/IUXc2bzg0QSnqQ==
