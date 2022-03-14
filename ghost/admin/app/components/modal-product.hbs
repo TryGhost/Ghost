@@ -128,7 +128,7 @@
                 <h4 class="gh-main-section-header small bn">Benefits</h4>
                 <div class="gh-main-section-content grey gh-product-form-benefits">
                     <div class="gh-product-benefits">
-                        <form id="product-benefits" class="gh-blognav" novalidate="novalidate">
+                        <div class="gh-blognav">
                             <SortableObjects
                                 @sortableObjectList={{this.benefits}}
                                 @useSwap={{false}}
@@ -153,7 +153,7 @@
                                 @deleteItem={{action "deleteBenefit"}}
                                 @updateLabel={{action "updateLabel"}}
                                 data-test-benefit-item="new" />
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
