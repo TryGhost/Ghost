@@ -1196,3 +1196,5 @@ remove|ember-template-lint|no-invalid-interactive|3|64|3|64|e9d67a1a1018242c2c73
 remove|ember-template-lint|no-invalid-interactive|20|68|20|68|df3b265cb782bcfbc1794d11c0b087b411aa14b1|1646611200000|1649199600000|1651791600000|app/components/gh-members-recipient-select.hbs
 remove|ember-template-lint|no-invalid-interactive|38|68|38|68|1849f49e96b9809e3b7c578e3b76a6f3afab090f|1646611200000|1649199600000|1651791600000|app/components/gh-members-recipient-select.hbs
 remove|ember-template-lint|no-action|421|15|421|15|86d78f77ffe339a3beabf8cd2690e383fe8faace|1646611200000|1649199600000|1651791600000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-duplicate-landmark-elements|131|24|131|24|9eb7d301f1f50334e793aafab8f6b9e8905125ab|1646611200000|1649199600000|1651791600000|app/components/modal-product.hbs
+remove|ember-template-lint|no-nested-landmark|131|24|131|24|9eb7d301f1f50334e793aafab8f6b9e8905125ab|1646611200000|1649199600000|1651791600000|app/components/modal-product.hbs
