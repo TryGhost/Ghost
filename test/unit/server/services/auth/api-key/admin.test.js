@@ -6,7 +6,7 @@ const apiKeyAuth = require('../../../../../../core/server/services/auth/api-key'
 const models = require('../../../../../../core/server/models');
 
 describe('Admin API Key Auth', function () {
-    const ADMIN_API_URL = '/ghost/api/v4/admin/';
+    const ADMIN_API_URL_VERSIONED = '/ghost/api/v4/admin/';
     const ADMIN_API_URL_NON_VERSIONED = '/ghost/api/admin/';
 
     before(models.init);
@@ -43,7 +43,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: ADMIN_API_URL,
+            originalUrl: ADMIN_API_URL_VERSIONED,
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -118,7 +118,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: `${ADMIN_API_URL}session/`,
+            originalUrl: `${ADMIN_API_URL_VERSIONED}session/`,
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -181,7 +181,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: ADMIN_API_URL,
+            originalUrl: ADMIN_API_URL_VERSIONED,
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -210,7 +210,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: ADMIN_API_URL,
+            originalUrl: ADMIN_API_URL_VERSIONED,
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -240,7 +240,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: ADMIN_API_URL,
+            originalUrl: ADMIN_API_URL_VERSIONED,
             headers: {
                 authorization: `Ghost ${token}`
             }
@@ -268,7 +268,7 @@ describe('Admin API Key Auth', function () {
         });
 
         const req = {
-            originalUrl: ADMIN_API_URL,
+            originalUrl: ADMIN_API_URL_VERSIONED,
             headers: {
                 authorization: `Ghost ${token}`
             }
