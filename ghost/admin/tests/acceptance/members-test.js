@@ -63,6 +63,10 @@ describe('Acceptance: Members', function () {
             expect(member.querySelector('.gh-members-list-name').textContent, 'member list item title')
                 .to.equal(member1.name);
 
+            // it does not add ?include=email_recipients
+            const membersRequests = this.server.pretender.handledRequests.filter(r => r.url.match(/\/members\/(\?|$)/));
+            expect(membersRequests[0].url).to.not.have.string('email_recipients');
+
             await visit(`/members/${member1.id}`);
 
             // // second wait is needed for the member details to settle
