@@ -8,20 +8,6 @@ const extraAttrsUtils = require('../../../../../../../core/server/api/canary/uti
 const mappers = require('../../../../../../../core/server/api/canary/utils/serializers/output/mappers');
 
 describe('Unit: utils/serializers/output/mappers', function () {
-    beforeEach(function () {
-        sinon.stub(dateUtil, 'forPost').returns({});
-
-        sinon.stub(urlUtil, 'forPost').returns({});
-        sinon.stub(urlUtil, 'forTag').returns({});
-        sinon.stub(urlUtil, 'forUser').returns({});
-
-        sinon.stub(extraAttrsUtils, 'forPost').returns({});
-
-        sinon.stub(cleanUtil, 'post').returns({});
-        sinon.stub(cleanUtil, 'tag').returns({});
-        sinon.stub(cleanUtil, 'author').returns({});
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -30,6 +16,18 @@ describe('Unit: utils/serializers/output/mappers', function () {
         let postModel;
 
         beforeEach(function () {
+            sinon.stub(dateUtil, 'forPost').returns({});
+
+            sinon.stub(urlUtil, 'forPost').returns({});
+            sinon.stub(urlUtil, 'forTag').returns({});
+            sinon.stub(urlUtil, 'forUser').returns({});
+
+            sinon.stub(extraAttrsUtils, 'forPost').returns({});
+
+            sinon.stub(cleanUtil, 'post').returns({});
+            sinon.stub(cleanUtil, 'tag').returns({});
+            sinon.stub(cleanUtil, 'author').returns({});
+
             postModel = (data) => {
                 return Object.assign(data, {
                     toJSON: sinon.stub().returns(data)
@@ -86,6 +84,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
         let userModel;
 
         beforeEach(function () {
+            sinon.stub(urlUtil, 'forUser').returns({});
+            sinon.stub(cleanUtil, 'author').returns({});
+
             userModel = (data) => {
                 return Object.assign(data, {toJSON: sinon.stub().returns(data)});
             };
@@ -107,6 +108,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             urlUtil.forUser.callCount.should.equal(1);
             urlUtil.forUser.getCall(0).args.should.eql(['id1', user, frame.options]);
+            cleanUtil.author.callCount.should.equal(1);
         });
     });
 
@@ -114,6 +116,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
         let tagModel;
 
         beforeEach(function () {
+            sinon.stub(urlUtil, 'forTag').returns({});
+            sinon.stub(cleanUtil, 'tag').returns({});
+
             tagModel = (data) => {
                 return Object.assign(data, {toJSON: sinon.stub().returns(data)});
             };
@@ -135,6 +140,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             urlUtil.forTag.callCount.should.equal(1);
             urlUtil.forTag.getCall(0).args.should.eql(['id3', tag, frame.options]);
+            cleanUtil.tag.callCount.should.equal(1);
         });
     });
 
