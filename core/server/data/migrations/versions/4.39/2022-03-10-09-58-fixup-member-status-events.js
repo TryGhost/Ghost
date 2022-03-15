@@ -211,11 +211,6 @@ async function mergeEventsWithSameFromStatus(knex) {
 
     logging.info(`Updated ${updatedRows} rows, (A -> B), (A -> D) into (A -> unknown), (A -> unknown)`);
 
-    if (updatedRows > 0) {
-        // Now delete one of the matching rows
-        await deleteDuplicateEvents(knex);
-    }
-
     return updatedRows;
 }
 
@@ -246,11 +241,6 @@ async function mergeEventsWithSameToStatus(knex) {
     const updatedRows = result[0].affectedRows;
 
     logging.info(`Updated ${updatedRows} rows, (C -> A), (B -> A) into (unknown -> A), (unknown -> A)`);
-
-    if (updatedRows > 0) {
-        // Now delete one of the matching rows
-        await deleteDuplicateEvents(knex);
-    }
 
     return updatedRows;
 }
@@ -371,7 +361,7 @@ async function linkIncorrectEvents(knex, set = 'from_status') {
  */
 async function fixLastStatus(knex) {
     // Get the last created_at for each member
-    const maxquery = 
+    const subquery = 
         `SELECT
             members.id,
             members.status,
@@ -383,26 +373,14 @@ async function fixLastStatus(knex) {
         GROUP BY
             members.id`;
         
-    // Select the members_status_events.id of the last member event, and corresponding member status
-    const subquery = 
-        `SELECT
-            A.id,
-            B.status
-        FROM
-            members_status_events A
-            JOIN (${maxquery}) B 
-                ON B.id = A.member_id
-                AND A.created_at = B.last_event_created_at
-        WHERE
-            A.to_status != B.status`;
-
     const result = await knex.raw(
         `UPDATE 
             members_status_events AS A, 
             (${subquery}) AS B 
         SET A.to_status = B.status 
         WHERE
-            A.id = B.id`
+            A.member_id = B.id
+            AND A.created_at = B.last_event_created_at`
     );
     const updatedRows = result[0].affectedRows;
     logging.info(`Updated ${updatedRows} events to match current member status`);
@@ -549,8 +527,14 @@ async function fixAll(knex) {
     // @todo: If one of the events has a from_status === NULL, then we'll set the from_status of all the events to NULL, and to_status should be unknown (to_status will always differ or the duplicates would have been deleted)
     // not sure if that is needed, because we'll always make sure the first event status is NULL in one of the next steps
 
-    await mergeEventsWithSameFromStatus(knex);
-    await mergeEventsWithSameToStatus(knex);
+    let updatedRows = await mergeEventsWithSameFromStatus(knex);
+    updatedRows += await mergeEventsWithSameToStatus(knex);
+
+    if (updatedRows > 0) {
+        // Now delete one of the matching rows
+        await deleteDuplicateEvents(knex);
+    }
+
     await mergeEventsWithSameTime(knex);
 
     // Right now we don't have any events left that share the same created_at for the same member_id

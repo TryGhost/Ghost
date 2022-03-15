@@ -348,14 +348,27 @@ describe('Fixup member status events', function () {
 
             should(await migration.mergeEventsWithSameFromStatus(knex)).eql(3);
             const f = (await refreshEvents(events)).filter(e => e !== null);
-            f.length.should.eql(1);
-            const mergedInto = f[0];
-            mergedInto.should.match({
-                attributes: {
-                    from_status: 'paid',
-                    to_status: 'unknown'
+            f.length.should.eql(3);
+            f.should.match([
+                {
+                    attributes: {
+                        from_status: 'paid',
+                        to_status: 'unknown'
+                    }
+                },
+                {
+                    attributes: {
+                        from_status: 'paid',
+                        to_status: 'unknown'
+                    }
+                },
+                {
+                    attributes: {
+                        from_status: 'paid',
+                        to_status: 'unknown'
+                    }
                 }
-            });
+            ]);
         });
 
         it('does not merge for different members', async function () {
@@ -400,14 +413,23 @@ describe('Fixup member status events', function () {
 
             should(await migration.mergeEventsWithSameToStatus(knex)).eql(3);
             const f = (await refreshEvents(events)).filter(e => e !== null);
-            f.length.should.eql(1);
-            const mergedInto = f[0];
-            mergedInto.should.match({
+            f.length.should.eql(3);
+            f.should.match([{
                 attributes: {
                     to_status: 'paid',
                     from_status: 'unknown'
                 }
-            });
+            }, {
+                attributes: {
+                    to_status: 'paid',
+                    from_status: 'unknown'
+                }
+            }, {
+                attributes: {
+                    to_status: 'paid',
+                    from_status: 'unknown'
+                }
+            }]);
         });
 
         it('does not merge for different members', async function () {
@@ -656,6 +678,19 @@ describe('Fixup member status events', function () {
                 ],
                 expected: [
                     {created_at: 1, from: null,     to: 'paid'}
+                ]
+            },
+            {
+                title: 'Wrong null ordering 2',
+                status: 'free', // current member status
+                events: [
+                    {created_at: 0, from: 'free',   to: 'paid'},
+                    {created_at: 1, from: null,     to: 'free'},
+                    {created_at: 2, from: 'paid',     to: 'free'}
+                ],
+                expected: [
+                    {created_at: 1, from: null,     to: 'paid'},
+                    {created_at: 2, from: 'paid',     to: 'free'}
                 ]
             },
             {
