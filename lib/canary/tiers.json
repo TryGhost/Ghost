@@ -13,6 +13,10 @@
           "type": "string",
           "maxLength": 191
         },
+        "description": {
+          "type": "string",
+          "maxLength": 191
+        },
         "slug": {
           "type": ["string", "null"],
           "maxLength": 191
@@ -29,6 +33,9 @@
           "enum": ["public", "none"]
         },
         "updated_at": {
+          "strip": true
+        },
+        "type": {
           "strip": true
         },
         "created_at": {
