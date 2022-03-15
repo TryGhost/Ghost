@@ -23,7 +23,7 @@ export default Model.extend(ValidationEngine, {
     products: attr('member-product'),
 
     labels: hasMany('label', {embedded: 'always', async: false}),
-    emailRecipients: hasMany('emailRecipient', {embedded: 'always', async: false}),
+    emailRecipients: hasMany('emailRecipient', {async: true}),
 
     ghostPaths: service(),
     ajax: service(),
