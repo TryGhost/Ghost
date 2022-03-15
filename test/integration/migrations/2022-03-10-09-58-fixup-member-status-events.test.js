@@ -253,9 +253,9 @@ describe('Fixup member status events', function () {
                 {id: events[2].id},
                 {id: events[3].id},
 
-                // Both deleted, because (free -> paid) (paid -> free) became (free -> free) and got deleted
+                // (free -> paid) (paid -> free) became (free -> free) and will get deleted in the last step of the migration
                 null,
-                null
+                {id: events[5].id, attributes: {from_status: 'free', to_status: 'free'}}
             ]);
 
             should(await migration.mergeTwoEvents(knex)).eql(2);
@@ -268,7 +268,7 @@ describe('Fixup member status events', function () {
 
                 // Both deleted, because (free -> paid) (paid -> free) became (free -> free) and got deleted
                 null,
-                null
+                {id: events[5].id, attributes: {from_status: 'free', to_status: 'free'}}
             ]);
 
             should(await migration.mergeTwoEvents(knex)).eql(2);
@@ -281,7 +281,7 @@ describe('Fixup member status events', function () {
 
                 // Both deleted, because (free -> paid) (paid -> free) became (free -> free) and got deleted
                 null,
-                null
+                {id: events[5].id, attributes: {from_status: 'free', to_status: 'free'}}
             ]);
         });
 
@@ -505,7 +505,7 @@ describe('Fixup member status events', function () {
             should(await migration.linkIncorrectEvents(knex, 'to_status')).eql(2);
             (await refreshEvents(events)).should.match([
                 {attributes: {from_status: null, to_status: 'paid'}},
-                null, // became paid -> paid
+                {attributes: {from_status: 'paid', to_status: 'paid'}},
                 {attributes: {from_status: 'paid', to_status: 'comped'}}
             ]);
         });
@@ -520,7 +520,7 @@ describe('Fixup member status events', function () {
             should(await migration.linkIncorrectEvents(knex, 'from_status')).eql(2);
             (await refreshEvents(events)).should.match([
                 {attributes: {from_status: null, to_status: 'free'}},
-                null, // became free -> free
+                {attributes: {from_status: 'free', to_status: 'free'}},
                 {attributes: {from_status: 'free', to_status: 'comped'}}
             ]);
         });
@@ -629,7 +629,7 @@ describe('Fixup member status events', function () {
             (await refreshEvents(events)).should.match([
                 {attributes: {from_status: 'free', to_status: 'paid'}},
                 {attributes: {from_status: 'paid', to_status: 'free'}},
-                null // updated to free -> free
+                {attributes: {from_status: 'free', to_status: 'free'}}
             ]);
         });
     });
@@ -688,6 +688,33 @@ describe('Fixup member status events', function () {
                 expected: [
                     {created_at: 0, from: null,     to: 'comped'},
                     {created_at: 2, from: 'comped', to: 'paid'}
+                ]
+            },
+            {
+                title: 'Example 5',
+                status: 'comped', // current member status
+                events: [
+                    {created_at: 0, from: null,     to: 'comped'},
+                    {created_at: 2, from: 'free',   to: 'paid'},
+                    {created_at: 2, from: 'comped', to: 'paid'},
+                    {created_at: 3, from: 'free',   to: 'paid'}
+                ],
+                expected: [
+                    {created_at: 0, from: null,     to: 'comped'},
+                    {created_at: 2, from: 'comped', to: 'paid'},
+                    {created_at: 3, from: 'paid',   to: 'comped'}
+                ]
+            },
+            {
+                title: 'Keep initial event',
+                status: 'paid', // current member status
+                events: [
+                    {created_at: 0, from: 'free',   to: 'free'},
+                    {created_at: 2, from: 'free',   to: 'paid'}
+                ],
+                expected: [
+                    {created_at: 0, from: null,     to: 'free'},
+                    {created_at: 2, from: 'free',   to: 'paid'}
                 ]
             }
         ];

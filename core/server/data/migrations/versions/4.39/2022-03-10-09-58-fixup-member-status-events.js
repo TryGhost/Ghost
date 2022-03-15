@@ -172,9 +172,6 @@ async function mergeTwoEvents(knex) {
     if (updatedRows > 0) {
         // Now delete one of the matching rows
         await deleteDuplicateEvents(knex);
-
-        // And events that became (A -> A)
-        await deleteUnchangedEvents(knex);
     }
 
     return updatedRows;
@@ -369,11 +366,6 @@ async function linkIncorrectEvents(knex, set = 'from_status') {
         logging.info(`Updated ${updatedRows} events to set to_status to from_status of the next event`);
     }
 
-    if (updatedRows > 0) {
-        // And events that became (A -> A)
-        await deleteUnchangedEvents(knex);
-    }
-
     return updatedRows;
 }
 
@@ -420,11 +412,6 @@ async function fixLastStatus(knex) {
     const updatedRows = result[0].affectedRows;
     logging.info(`Updated ${updatedRows} events to match current member status`);
 
-    if (updatedRows > 0) {
-        // Delete events that became (A -> A)
-        await deleteUnchangedEvents(knex);
-    }
-
     return updatedRows;
 }
 
@@ -457,11 +444,6 @@ async function fixFirstStatus(knex) {
     );
     const updatedRows = result[0].affectedRows;
     logging.info(`Updated ${updatedRows} first events to always have from_status = NULL`);
-
-    if (updatedRows > 0) {
-        // Delete events that became (A -> A)
-        await deleteUnchangedEvents(knex);
-    }
 
     // Fix members that don't have a first event
 
@@ -496,10 +478,6 @@ async function replaceUnknownStatuses(knex, status = 'free') {
     const updatedRows2 = result2[0].affectedRows;
     logging.info(`Updated ${updatedRows2} events that still had an unknown from_status to ${status}`);
 
-    if (updatedRows > 0 || updatedRows2 > 0) {
-        // Delete events that became (A -> A)
-        await deleteUnchangedEvents(knex);
-    }
 
     return updatedRows + updatedRows2;
 }
@@ -516,7 +494,7 @@ async function fixAll(knex) {
     // - Delete unchanged events (from_status = to_status)
     // During our whole fixup process, we might create situations where we create duplicate events, so we are going to do that action again after some steps.
 
-    await deleteUnchangedEvents(knex);
+    //await deleteUnchangedEvents(knex);
     await deleteDuplicateEvents(knex);
 
     // STEP
@@ -600,16 +578,18 @@ async function fixAll(knex) {
     await linkIncorrectEvents(knex, 'to_status');
 
     // STEP
-    // Make sure the last event of a member has a to_status of member.status
+    // Make sure the last event(s) of a member has a to_status of member.status
     await fixLastStatus(knex);
 
     // STEP
-    // Make sure the first event of a member starts with NULL
+    // Make sure the first event(s) of a member starts with NULL
     await fixFirstStatus(knex);
 
-    // TODO
-    // Currently I don't have any evidence that some members might be missing a member status event (not the case in sample data)
-    // We might consider to check if every member does have a member status event, and create one if needed
+    // STEP
+    // Make sure every member has at least one event
+    // We could have deleted all status events for a given member in earlier steps, so add one if that was the case
+    // E.g. if the events were (paid -> free), (free -> paid) with same timestamps (not a single event with NULL)
+    // @todo
 
     // STEP
     // If we have any remaining 'unknown' statusses, log their count
@@ -618,4 +598,8 @@ async function fixAll(knex) {
     if (unknownStatuses > 0) {
         logging.warn(`Couldn't fix all member status events, still had ${unknownStatuses} unknown left`);
     }
+
+    // STEP
+    // Only delete unchanged events at the end, else we risk losing time data
+    await deleteUnchangedEvents(knex);
 }
