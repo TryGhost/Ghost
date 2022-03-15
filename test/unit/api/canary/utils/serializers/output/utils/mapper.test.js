@@ -5,9 +5,9 @@ const dateUtil = require('../../../../../../../../core/server/api/canary/utils/s
 const urlUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/url');
 const cleanUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/clean');
 const extraAttrsUtils = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/extra-attrs');
-const mapper = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/mapper');
+const mappers = require('../../../../../../../../core/server/api/canary/utils/serializers/output/mappers');
 
-describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
+describe('Unit: canary/utils/serializers/output/mappers', function () {
     beforeEach(function () {
         sinon.stub(dateUtil, 'forPost').returns({});
 
@@ -26,7 +26,7 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
         sinon.restore();
     });
 
-    describe('mapPost', function () {
+    describe('Posts Mapper', function () {
         let postModel;
 
         beforeEach(function () {
@@ -63,7 +63,7 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
                 }]
             }));
 
-            mapper.mapPost(post, frame);
+            mappers.posts(post, frame);
 
             dateUtil.forPost.callCount.should.equal(1);
 
@@ -82,7 +82,7 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
         });
     });
 
-    describe('mapUser', function () {
+    describe('User Mapper', function () {
         let userModel;
 
         beforeEach(function () {
@@ -103,14 +103,14 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
                 name: 'Ghosty'
             }));
 
-            mapper.mapUser(user, frame);
+            mappers.users(user, frame);
 
             urlUtil.forUser.callCount.should.equal(1);
             urlUtil.forUser.getCall(0).args.should.eql(['id1', user, frame.options]);
         });
     });
 
-    describe('mapTag', function () {
+    describe('Tag Mapper', function () {
         let tagModel;
 
         beforeEach(function () {
@@ -131,14 +131,14 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
                 feature_image: 'value'
             }));
 
-            mapper.mapTag(tag, frame);
+            mappers.tags(tag, frame);
 
             urlUtil.forTag.callCount.should.equal(1);
             urlUtil.forTag.getCall(0).args.should.eql(['id3', tag, frame.options]);
         });
     });
 
-    describe('mapIntegration', function () {
+    describe('Integration Mapper', function () {
         let integrationModel;
 
         beforeEach(function () {
@@ -155,7 +155,7 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
                 api_keys: testUtils.DataGenerator.Content.api_keys
             }));
 
-            const mapped = mapper.mapIntegration(integration, frame);
+            const mapped = mappers.integrations(integration, frame);
 
             should.exist(mapped.api_keys);
 

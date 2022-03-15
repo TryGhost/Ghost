@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:images');
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 
 module.exports = {
     upload(path, apiConfig, frame) {
@@ -7,7 +7,7 @@ module.exports = {
 
         return frame.response = {
             images: [{
-                url: mapper.mapImage(path),
+                url: mappers.images(path),
                 // NOTE: ref field is here to have reference point on the client
                 //       for example when substituting existing images in the mobiledoc
                 //       this field would serve as an identifier to find images to replace

@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:users');
 const tpl = require('@tryghost/tpl');
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 
 const messages = {
     pwdChangedSuccessfully: 'Password changed successfully.'
@@ -11,7 +11,7 @@ module.exports = {
         debug('browse');
 
         frame.response = {
-            users: models.data.map(model => mapper.mapUser(model, frame)),
+            users: models.data.map(model => mappers.users(model, frame)),
             meta: models.meta
         };
     },
@@ -20,7 +20,7 @@ module.exports = {
         debug('read');
 
         frame.response = {
-            users: [mapper.mapUser(model, frame)]
+            users: [mappers.users(model, frame)]
         };
     },
 
