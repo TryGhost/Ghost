@@ -1,24 +1,23 @@
-const {combineTransactionalMigrations, addPermissionWithRoles} = require('../../utils');
+const {
+    combineTransactionalMigrations,
+    addPermissionToRole
+} = require('../../utils');
 
 module.exports = combineTransactionalMigrations(
-    addPermissionWithRoles({
-        name: 'Browse Offers',
-        action: 'browse',
-        object: 'offer'
-    }, ['Admin Integration']),
-    addPermissionWithRoles({
-        name: 'Read Offers',
-        action: 'read',
-        object: 'offer'
-    }, ['Admin Integration']),
-    addPermissionWithRoles({
-        name: 'Edit Offers',
-        action: 'edit',
-        object: 'offer'
-    }, ['Admin Integration']),
-    addPermissionWithRoles({
-        name: 'Add Offers',
-        action: 'add',
-        object: 'offer'
-    }, ['Admin Integration'])
+    addPermissionToRole({
+        permission: 'Browse Offers',
+        role: 'Admin Integration'
+    }),
+    addPermissionToRole({
+        permission: 'Read Offers',
+        role: 'Admin Integration'
+    }),
+    addPermissionToRole({
+        permission: 'Edit Offers',
+        role: 'Admin Integration'
+    }),
+    addPermissionToRole({
+        permission: 'Add Offers',
+        role: 'Admin Integration'
+    })
 );
