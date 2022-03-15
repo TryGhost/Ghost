@@ -5,19 +5,19 @@ const {
 
 module.exports = combineTransactionalMigrations(
     addPermissionToRole({
-        permission: 'Browse Offers',
+        permission: 'Browse offers',
         role: 'Admin Integration'
     }),
     addPermissionToRole({
-        permission: 'Read Offers',
+        permission: 'Read offers',
         role: 'Admin Integration'
     }),
     addPermissionToRole({
-        permission: 'Edit Offers',
+        permission: 'Edit offers',
         role: 'Admin Integration'
     }),
     addPermissionToRole({
-        permission: 'Add Offers',
+        permission: 'Add offers',
         role: 'Admin Integration'
     })
 );
