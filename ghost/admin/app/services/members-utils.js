@@ -154,7 +154,7 @@ export default class MembersUtilsService extends Service {
             disableBackground = false,
             name,
             code,
-            displayTitle = 'Display title',
+            displayTitle = '',
             displayDescription = '',
             type,
             cadence,
