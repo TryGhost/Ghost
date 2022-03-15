@@ -17,7 +17,6 @@ module.exports = {
     exportCSV: createSerializer('exportCSV', exportCSV),
 
     importCSV: createSerializer('importCSV', passthrough),
-    stats: createSerializer('stats', passthrough),
     memberStats: createSerializer('memberStats', passthrough),
     mrrStats: createSerializer('mrrStats', passthrough),
     subscriberStats: createSerializer('subscriberStats', passthrough),
