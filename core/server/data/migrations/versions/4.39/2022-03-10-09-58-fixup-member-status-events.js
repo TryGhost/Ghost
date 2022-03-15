@@ -28,7 +28,6 @@ module.exports = {
             }
 
             await fixAll(knex);
-            throw new Error('Still WIP');
         },
         async function down(knex) {
             if (DatabaseInfo.isSQLite(knex)) {
@@ -477,7 +476,6 @@ async function replaceUnknownStatuses(knex, status = 'free') {
 
     const updatedRows2 = result2[0].affectedRows;
     logging.info(`Updated ${updatedRows2} events that still had an unknown from_status to ${status}`);
-
 
     return updatedRows + updatedRows2;
 }
