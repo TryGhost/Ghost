@@ -84,7 +84,6 @@ async function deleteDuplicateEvents(knex) {
  * @returns {Promise<number>} Deleted rows
  */
 async function eliminateWrongNullOrdering(knex) {
-    // We use GROUP BY here so we only delete one event at a time
     const subquery = 
         `SELECT
             A.id,
@@ -182,7 +181,6 @@ async function mergeTwoEvents(knex) {
  * @returns {Promise<number>} Deleted rows
  */
 async function mergeEventsWithSameFromStatus(knex) {
-    // We use GROUP BY here so we only delete one event at a time
     const subquery = 
         `SELECT
             A.id
@@ -227,7 +225,6 @@ async function mergeEventsWithSameFromStatus(knex) {
  * @returns {Promise<number>} Deleted rows
  */
 async function mergeEventsWithSameToStatus(knex) {
-    // We use GROUP BY here so we only delete one event at a time
     const subquery = 
         `SELECT
             A.id
@@ -264,7 +261,6 @@ async function mergeEventsWithSameToStatus(knex) {
  * @returns {Promise<number>} Deleted rows
  */
 async function mergeEventsWithSameTime(knex) {
-    // We use GROUP BY here so we only delete one event at a time
     const subquery = 
         `SELECT
             A.id
