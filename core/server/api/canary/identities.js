@@ -25,7 +25,6 @@ const sign = async (claims, options) => {
 
 module.exports = {
     docName: 'identities',
-    permissions: true,
     read: {
         permissions: true,
         async query(frame) {
