@@ -2,7 +2,7 @@ const {
     combineTransactionalMigrations,
     addPermissionToRole
 } = require('../../utils');
-
+//v1
 module.exports = combineTransactionalMigrations(
     addPermissionToRole({
         permission: 'Browse offers',
