@@ -1,35 +1,33 @@
 const should = require('should');
 const sinon = require('sinon');
-const testUtils = require('../../../../../../../utils');
-const dateUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/date');
-const urlUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/url');
-const cleanUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/clean');
-const extraAttrsUtils = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/extra-attrs');
-const mapper = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/mapper');
+const testUtils = require('../../../../../../utils');
+const dateUtil = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/date');
+const urlUtil = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/url');
+const cleanUtil = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/clean');
+const extraAttrsUtils = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/extra-attrs');
+const mappers = require('../../../../../../../core/server/api/canary/utils/serializers/output/mappers');
 
-describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
-    beforeEach(function () {
-        sinon.stub(dateUtil, 'forPost').returns({});
-
-        sinon.stub(urlUtil, 'forPost').returns({});
-        sinon.stub(urlUtil, 'forTag').returns({});
-        sinon.stub(urlUtil, 'forUser').returns({});
-
-        sinon.stub(extraAttrsUtils, 'forPost').returns({});
-
-        sinon.stub(cleanUtil, 'post').returns({});
-        sinon.stub(cleanUtil, 'tag').returns({});
-        sinon.stub(cleanUtil, 'author').returns({});
-    });
-
+describe('Unit: utils/serializers/output/mappers', function () {
     afterEach(function () {
         sinon.restore();
     });
 
-    describe('mapPost', function () {
+    describe('Posts Mapper', function () {
         let postModel;
 
         beforeEach(function () {
+            sinon.stub(dateUtil, 'forPost').returns({});
+
+            sinon.stub(urlUtil, 'forPost').returns({});
+            sinon.stub(urlUtil, 'forTag').returns({});
+            sinon.stub(urlUtil, 'forUser').returns({});
+
+            sinon.stub(extraAttrsUtils, 'forPost').returns({});
+
+            sinon.stub(cleanUtil, 'post').returns({});
+            sinon.stub(cleanUtil, 'tag').returns({});
+            sinon.stub(cleanUtil, 'author').returns({});
+
             postModel = (data) => {
                 return Object.assign(data, {
                     toJSON: sinon.stub().returns(data)
@@ -63,7 +61,7 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
                 }]
             }));
 
-            mapper.mapPost(post, frame);
+            mappers.posts(post, frame);
 
             dateUtil.forPost.callCount.should.equal(1);
 
@@ -82,10 +80,13 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
         });
     });
 
-    describe('mapUser', function () {
+    describe('User Mapper', function () {
         let userModel;
 
         beforeEach(function () {
+            sinon.stub(urlUtil, 'forUser').returns({});
+            sinon.stub(cleanUtil, 'author').returns({});
+
             userModel = (data) => {
                 return Object.assign(data, {toJSON: sinon.stub().returns(data)});
             };
@@ -103,17 +104,21 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
                 name: 'Ghosty'
             }));
 
-            mapper.mapUser(user, frame);
+            mappers.users(user, frame);
 
             urlUtil.forUser.callCount.should.equal(1);
             urlUtil.forUser.getCall(0).args.should.eql(['id1', user, frame.options]);
+            cleanUtil.author.callCount.should.equal(1);
         });
     });
 
-    describe('mapTag', function () {
+    describe('Tag Mapper', function () {
         let tagModel;
 
         beforeEach(function () {
+            sinon.stub(urlUtil, 'forTag').returns({});
+            sinon.stub(cleanUtil, 'tag').returns({});
+
             tagModel = (data) => {
                 return Object.assign(data, {toJSON: sinon.stub().returns(data)});
             };
@@ -131,14 +136,15 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
                 feature_image: 'value'
             }));
 
-            mapper.mapTag(tag, frame);
+            mappers.tags(tag, frame);
 
             urlUtil.forTag.callCount.should.equal(1);
             urlUtil.forTag.getCall(0).args.should.eql(['id3', tag, frame.options]);
+            cleanUtil.tag.callCount.should.equal(1);
         });
     });
 
-    describe('mapIntegration', function () {
+    describe('Integration Mapper', function () {
         let integrationModel;
 
         beforeEach(function () {
@@ -155,7 +161,7 @@ describe('Unit: canary/utils/serializers/output/utils/mapper', function () {
                 api_keys: testUtils.DataGenerator.Content.api_keys
             }));
 
-            const mapped = mapper.mapIntegration(integration, frame);
+            const mapped = mappers.integrations(integration, frame);
 
             should.exist(mapped.api_keys);
 

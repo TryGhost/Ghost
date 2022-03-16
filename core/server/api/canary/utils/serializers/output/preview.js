@@ -1,4 +1,4 @@
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 const membersService = require('../../../../../services/members');
 
 module.exports = {
@@ -8,7 +8,7 @@ module.exports = {
         });
         const tiers = tiersModels.data ? tiersModels.data.map(tierModel => tierModel.toJSON()) : [];
 
-        const data = await mapper.mapPost(model, frame, {tiers});
+        const data = await mappers.posts(model, frame, {tiers});
         frame.response = {
             preview: [data]
         };

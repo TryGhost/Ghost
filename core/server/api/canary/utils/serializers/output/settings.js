@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const utils = require('../../index');
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 const _private = {};
 
 /**
@@ -34,7 +34,7 @@ module.exports = {
         }
 
         frame.response = {
-            settings: mapper.mapSettings(filteredSettings, frame),
+            settings: mappers.settings(filteredSettings, frame),
             meta: {}
         };
 

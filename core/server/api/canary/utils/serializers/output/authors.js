@@ -1,12 +1,12 @@
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:authors');
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 
 module.exports = {
     browse(models, apiConfig, frame) {
         debug('browse');
 
         frame.response = {
-            authors: models.data.map(model => mapper.mapUser(model, frame)),
+            authors: models.data.map(model => mappers.users(model, frame)),
             meta: models.meta
         };
     },
@@ -15,7 +15,7 @@ module.exports = {
         debug('read');
 
         frame.response = {
-            authors: [mapper.mapUser(model, frame)]
+            authors: [mappers.users(model, frame)]
         };
     }
 };
