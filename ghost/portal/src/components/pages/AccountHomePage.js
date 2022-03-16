@@ -197,7 +197,7 @@ const PaidAccountActions = () => {
         const {
             offer,
             start_date: startDate
-        } = subscription;
+        } = subscription || {};
         let label = '';
         if (price) {
             const {amount = 0, currency, interval} = price;
