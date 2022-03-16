@@ -28,20 +28,20 @@ const check = async function check(theme, isZip) {
         debug('zip mode');
         checkedTheme = await gscan.checkZip(theme, {
             keepExtractedDir: true,
-            checkVersion: 'canary',
+            checkVersion: 'v4',
             labs: labs.getAll()
         });
     } else {
         debug('non-zip mode');
         checkedTheme = await gscan.check(theme.path, {
-            checkVersion: 'canary',
+            checkVersion: 'v4',
             labs: labs.getAll()
         });
     }
 
     checkedTheme = gscan.format(checkedTheme, {
         onlyFatalErrors: config.get('env') === 'production',
-        checkVersion: 'canary'
+        checkVersion: 'v4'
     });
 
     debug('End: Check');
