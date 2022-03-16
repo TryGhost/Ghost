@@ -457,6 +457,14 @@ const fixtures = {
         });
     },
 
+    insertArchivedTiers: function insertArchivedTiers() {
+        let archivedProduct = DataGenerator.forKnex.createProduct({
+            active: false
+        });
+
+        return models.Product.add(archivedProduct, context.internal);
+    },
+
     insertMembersAndLabelsAndProducts: function insertMembersAndLabelsAndProducts() {
         return Promise.map(DataGenerator.forKnex.labels, function (label) {
             return models.Label.add(label, context.internal);
@@ -693,6 +701,9 @@ const toDoList = {
     },
     custom_theme_settings: function insertCustomThemeSettings() {
         return fixtures.insertCustomThemeSettings();
+    },
+    'tiers:archived': function insertArchivedTiers() {
+        return fixtures.insertArchivedTiers();
     }
 };
 
