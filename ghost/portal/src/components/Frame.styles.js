@@ -231,10 +231,16 @@ const FrameStyles = `
 
     .gh-portal-popup-wrapper {
         position: relative;
-        padding: 10vmin 0;
+        padding: 5vmin 0 0;
         height: 100%;
         max-height: 100vh;
-        overflow: scroll;
+        overflow: auto;
+    }
+
+    /* Hiding scrollbars */
+    .gh-portal-popup-wrapper {
+        padding-right: 30px !important;
+        margin-right: -30px !important;
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
@@ -849,7 +855,8 @@ const MultipleProductsGlobalStyles = `
 .gh-portal-popup-wrapper.multiple-products.signup {
     overflow-y: scroll;
     overflow-x: clip;
-    margin: 32px auto;
+    margin: 32px auto !important;
+    padding-right: 0 !important; /* Override scrollbar hiding */
 }
 
 .gh-portal-popup-wrapper.multiple-products.signin {
@@ -921,8 +928,13 @@ const MultipleProductsGlobalStyles = `
         box-shadow: none;
     }
 
+    .gh-portal-popup-wrapper.multiple-products.signup:not(.preview) {
+        margin: 0 !important;
+    }
+
     .gh-portal-popup-wrapper.multiple-products.preview {
         height: unset !important;
+        margin: 0 !important;
     }
 
     .gh-portal-popup-wrapper.multiple-products:not(.dev) .gh-portal-popup-container.preview {
