@@ -29,6 +29,8 @@ const notImplemented = function (req, res, next) {
         users: ['GET'],
         themes: ['POST', 'PUT'],
         members: ['GET', 'PUT', 'DELETE', 'POST'],
+        tiers: ['GET', 'PUT', 'POST'],
+        offers: ['GET', 'PUT', 'POST'],
         config: ['GET'],
         schedules: ['PUT'],
         files: ['POST'],
