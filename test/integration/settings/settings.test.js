@@ -11,9 +11,7 @@ const testUtils = require('../../utils');
  */
 
 describe('Settings', function () {
-    before(function () {
-        return testUtils.setup();
-    });
+    before(testUtils.setup());
 
     // Allowlist: Only this list needs updating when a core setting is added/removed/renamed
     const coreSettingKeys = [
