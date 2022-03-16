@@ -235,6 +235,12 @@ const FrameStyles = `
         height: 100%;
         max-height: 100vh;
         overflow: scroll;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .gh-portal-popup-wrapper::-webkit-scrollbar {
+        display: none;
     }
 
     .gh-portal-popup-container {
