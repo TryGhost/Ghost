@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:tags');
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 
 module.exports = {
     all(models, apiConfig, frame) {
@@ -11,7 +11,7 @@ module.exports = {
 
         if (models.meta) {
             frame.response = {
-                tags: models.data.map(model => mapper.mapTag(model, frame)),
+                tags: models.data.map(model => mappers.tags(model, frame)),
                 meta: models.meta
             };
 
@@ -19,7 +19,7 @@ module.exports = {
         }
 
         frame.response = {
-            tags: [mapper.mapTag(models, frame)]
+            tags: [mappers.tags(models, frame)]
         };
     }
 };

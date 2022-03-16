@@ -1,15 +1,15 @@
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 
 module.exports = {
     read(email, apiConfig, frame) {
         frame.response = {
-            emails: [mapper.mapEmail(email, frame)]
+            emails: [mappers.emails(email, frame)]
         };
     },
 
     browse(page, apiConfig, frame) {
         const data = {
-            emails: page.data.map(model => mapper.mapEmail(model, frame)),
+            emails: page.data.map(model => mappers.emails(model, frame)),
             meta: page.meta
         };
 
