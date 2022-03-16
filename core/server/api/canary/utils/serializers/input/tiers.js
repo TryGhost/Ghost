@@ -1,3 +1,13 @@
+const localUtils = require('../../index');
+
+const forceActiveFilter = (frame) => {
+    if (frame.options.filter) {
+        frame.options.filter = `(${frame.options.filter})+active:true`;
+    } else {
+        frame.options.filter = 'active:true';
+    }
+};
+
 module.exports = {
     all(_apiConfig, frame) {
         if (!frame.options.withRelated) {
@@ -16,6 +26,13 @@ module.exports = {
             }
             return relation;
         });
+    },
+
+    browse(_apiConfig, frame) {
+        if (localUtils.isContentAPI(frame)) {
+            // CASE: content api can only has active tiers
+            forceActiveFilter(frame);
+        }
     },
 
     add(_apiConfig, frame) {
