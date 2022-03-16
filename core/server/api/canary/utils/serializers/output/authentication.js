@@ -1,5 +1,5 @@
 const tpl = require('@tryghost/tpl');
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:authentication');
 
 const messages = {
@@ -12,7 +12,7 @@ module.exports = {
     setup(user, apiConfig, frame) {
         frame.response = {
             users: [
-                mapper.mapUser(user, {options: {context: {internal: true}}})
+                mappers.users(user, {options: {context: {internal: true}}})
             ]
         };
     },
@@ -20,7 +20,7 @@ module.exports = {
     updateSetup(user, apiConfig, frame) {
         frame.response = {
             users: [
-                mapper.mapUser(user, {options: {context: {internal: true}}})
+                mappers.users(user, {options: {context: {internal: true}}})
             ]
         };
     },

@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
-const mapper = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/mapper');
+const mappers = require('../../../../../../../core/server/api/canary/utils/serializers/output/mappers');
 const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
 
 describe('Unit: canary/utils/serializers/output/tags', function () {
@@ -12,7 +12,7 @@ describe('Unit: canary/utils/serializers/output/tags', function () {
             return Object.assign(data, {toJSON: sinon.stub().returns(data)});
         };
 
-        sinon.stub(mapper, 'mapTag').returns({});
+        sinon.stub(mappers, 'tags').returns({});
     });
 
     afterEach(function () {
@@ -31,8 +31,8 @@ describe('Unit: canary/utils/serializers/output/tags', function () {
 
         serializers.output.tags.all(ctrlResponse, apiConfig, frame);
 
-        mapper.mapTag.callCount.should.equal(1);
-        mapper.mapTag.getCall(0).args.should.eql([ctrlResponse, frame]);
+        mappers.tags.callCount.should.equal(1);
+        mappers.tags.getCall(0).args.should.eql([ctrlResponse, frame]);
     });
 
     it('calls the mapper with multiple tags', function () {
@@ -53,7 +53,7 @@ describe('Unit: canary/utils/serializers/output/tags', function () {
 
         serializers.output.tags.all(ctrlResponse, apiConfig, frame);
 
-        mapper.mapTag.callCount.should.equal(2);
-        mapper.mapTag.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
+        mappers.tags.callCount.should.equal(2);
+        mappers.tags.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
     });
 });

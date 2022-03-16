@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
-const mapper = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/mapper');
+const mappers = require('../../../../../../../core/server/api/canary/utils/serializers/output/mappers');
 const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
 const membersService = require('../../../../../../../core/server/services/members');
 
@@ -23,7 +23,7 @@ describe('Unit: canary/utils/serializers/output/preview', function () {
             };
         });
 
-        sinon.stub(mapper, 'mapPost').returns({});
+        sinon.stub(mappers, 'posts').returns({});
     });
 
     afterEach(function () {
@@ -48,8 +48,8 @@ describe('Unit: canary/utils/serializers/output/preview', function () {
 
         await serializers.output.preview.all(ctrlResponse, apiConfig, frame);
 
-        mapper.mapPost.callCount.should.equal(1);
-        mapper.mapPost.getCall(0).args.should.eql([ctrlResponse, frame, {tiers: []}]);
+        mappers.posts.callCount.should.equal(1);
+        mappers.posts.getCall(0).args.should.eql([ctrlResponse, frame, {tiers: []}]);
 
         frame.response.preview[0].page.should.equal(true);
     });

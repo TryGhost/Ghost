@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:labels');
-const mapper = require('./utils/mapper');
+const mappers = require('./mappers');
 
 module.exports = {
     all(models, apiConfig, frame) {
@@ -11,7 +11,7 @@ module.exports = {
 
         if (models.meta) {
             frame.response = {
-                labels: models.data.map(model => mapper.mapLabel(model, frame)),
+                labels: models.data.map(model => mappers.labels(model, frame)),
                 meta: models.meta
             };
 
@@ -19,7 +19,7 @@ module.exports = {
         }
 
         frame.response = {
-            labels: [mapper.mapLabel(models, frame)]
+            labels: [mappers.labels(models, frame)]
         };
     }
 };
