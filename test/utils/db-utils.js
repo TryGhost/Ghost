@@ -17,10 +17,6 @@ const urlServiceUtils = require('./url-service-utils');
 
 const dbHash = Date.now();
 
-module.exports.destroy = async () => {
-    await knexMigrator.reset({force: true});
-};
-
 module.exports.reset = async ({truncate} = {truncate: false}) => {
     // Only run this copy in CI until it gets fleshed out
     if (process.env.CI && config.get('database:client') === 'sqlite3') {
@@ -41,21 +37,12 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
             await fs.copyFile(filename, filenameOrig);
         }
     } else {
-        debug('not CI');
         if (truncate) {
-            debug('truncate mode');
-            // Perform a fast reset by tearing down all the tables and inserting the fixtures
-            try {
-                await module.exports.teardown();
-                await knexMigrator.init({only: 2});
-            } catch (err) {
-                // If it fails, try a normal reset and init
-                debug('teardown failed, reset and init');
-                await knexMigrator.reset({force: true});
-                await knexMigrator.init();
-            }
+            // Perform a fast reset by tearing down all the tables and
+            // inserting the fixtures
+            await module.exports.teardown();
+            await knexMigrator.init({only: 2});
         } else {
-            debug('reset and init');
             // Do a full database reset + initialisation
             await knexMigrator.reset({force: true});
             await knexMigrator.init();
@@ -150,9 +137,6 @@ module.exports.teardown = () => {
                 }
 
                 throw err;
-            })
-            .finally(() => {
-                debug('Database teardown end');
             });
     });
 };
