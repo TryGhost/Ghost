@@ -14,7 +14,6 @@ const e2eUtils = require('./e2e-utils');
 const APIUtils = require('./api');
 const dbUtils = require('./db-utils');
 const fixtureUtils = require('./fixture-utils');
-const oldIntegrationUtils = require('../regression/mock-express-style/utils/setup');
 const redirects = require('./redirects');
 const cacheRules = require('./fixtures/cache-rules');
 const context = require('./fixtures/context');
@@ -40,7 +39,6 @@ const initFixtures = function initFixtures() {
  * ## Setup Integration Tests
  * Setup takes a list of arguments like: 'default', 'tag', 'perms:tag', 'perms:init'
  * Setup does 'init' (DB) by default
- * @returns {Function}
  */
 const setup = function setup() {
     /*eslint no-invalid-this: "off"*/
@@ -49,12 +47,12 @@ const setup = function setup() {
     const args = arguments;
 
     return function innerSetup() {
-        debug('setup start');
+        debug('Setup start');
         models.init();
         return initFixtures
             .apply(self, args)
             .finally(() => {
-                debug('setup end');
+                debug('Setup end');
             });
     };
 };
