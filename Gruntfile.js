@@ -220,7 +220,7 @@ module.exports = function (grunt) {
                     ]
                 },
                 files: {
-                    'core/server/frontend/ghost.min.css': 'core/frontend/public/ghost.css'
+                    'core/frontend/public/ghost.min.css': 'core/frontend/public/ghost.css'
                 }
             }
         },
