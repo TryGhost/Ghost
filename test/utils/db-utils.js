@@ -47,10 +47,15 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
         }
     } else {
         if (truncate) {
-            // Perform a fast reset by tearing down all the tables and
-            // inserting the fixtures
-            await module.exports.teardown();
-            await knexMigrator.init({only: 2});
+            // Perform a fast reset by tearing down all the tables and inserting the fixtures
+            try {
+                await module.exports.teardown();
+                await knexMigrator.init({only: 2});
+            } catch (err) {
+                // If it fails, try a normal restore
+                await knexMigrator.reset({force: true});
+                await knexMigrator.init();
+            }
         } else {
             // Do a full database reset + initialisation
             await knexMigrator.reset({force: true});
@@ -140,12 +145,25 @@ module.exports.teardown = () => {
                 return db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
             })
             .catch(function (err) {
-                // CASE: table does not exist
-                if (err.errno === 1146) {
+                // CASE: table does not exist || DB does not exist
+                // If the table or DB are not present, we can safely ignore
+                if (err.errno === 1146 || err.errno === 1049) {
                     return Promise.resolve();
                 }
 
                 throw err;
+            })
+            .finally(() => {
+                debug('Database teardown end');
             });
-    });
+    })
+        .catch(function (err) {
+            // CASE: table does not exist || DB does not exist
+            // If the table or DB are not present, we can safely ignore
+            if (err.errno === 1146 || err.errno === 1049) {
+                return Promise.resolve();
+            }
+
+            throw err;
+        });
 };
