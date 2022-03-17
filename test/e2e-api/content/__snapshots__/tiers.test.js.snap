@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Tiers Content API Can request tiers 1: [body] 1`] = `
+exports[`Tiers Content API Can request only active tiers 1: [body] 1`] = `
 Object {
   "meta": Object {
     "pagination": Object {
@@ -45,19 +45,7 @@ Object {
 }
 `;
 
-exports[`Tiers Content API Can request tiers 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "643",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Tiers Content API Can request tiers 2: [headers] 1`] = `
+exports[`Tiers Content API Can request only active tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
