@@ -142,11 +142,10 @@ async function mergeTwoEvents(knex) {
 
     // We use the above subquery twice because we need only to keep one event per member_id/created_at that we'll merge
     const deduplicated =
-        `WITH subquery AS(${subquery}) 
-        SELECT 
+        `SELECT 
             A.*
-        FROM subquery A
-        LEFT JOIN subquery B 
+        FROM (${subquery}) A
+        LEFT JOIN (${subquery}) B 
             ON B.member_id = A.member_id
             AND B.created_at = A.created_at
             AND CONCAT(A.FIRST_ID, A.SECOND_ID) > CONCAT(B.FIRST_ID, B.SECOND_ID)
