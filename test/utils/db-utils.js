@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const Promise = require('bluebird');
 const KnexMigrator = require('knex-migrator');
 const knexMigrator = new KnexMigrator();
+const DatabaseInfo = require('@tryghost/database-info');
 
 // Ghost Internals
 const config = require('../../core/shared/config');
@@ -17,9 +18,17 @@ const urlServiceUtils = require('./url-service-utils');
 
 const dbHash = Date.now();
 
+module.exports.isMySQL = () => {
+    return DatabaseInfo.isMySQL(db.knex);
+};
+
+module.exports.isSQLite = () => {
+    return DatabaseInfo.isSQLite(db.knex);
+};
+
 module.exports.reset = async ({truncate} = {truncate: false}) => {
     // Only run this copy in CI until it gets fleshed out
-    if (process.env.CI && config.get('database:client') === 'sqlite3') {
+    if (process.env.CI && module.exports.isSQLite()) {
         const filename = config.get('database:connection:filename');
         const filenameOrig = `${filename}.${dbHash}-orig`;
 
@@ -58,7 +67,7 @@ module.exports.initData = async () => {
 };
 
 module.exports.truncate = async (tableName) => {
-    if (config.get('database:client') === 'sqlite3') {
+    if (module.exports.isSQLite()) {
         const [foreignKeysEnabled] = await db.knex.raw('PRAGMA foreign_keys;');
         if (foreignKeysEnabled.foreign_keys) {
             await db.knex.raw('PRAGMA foreign_keys = OFF;');
@@ -92,7 +101,7 @@ module.exports.teardown = () => {
 
     const tables = schemaTables.concat(['migrations']);
 
-    if (config.get('database:client') === 'sqlite3') {
+    if (module.exports.isSQLite()) {
         return Promise
             .mapSeries(tables, function createTable(table) {
                 return (async function () {
