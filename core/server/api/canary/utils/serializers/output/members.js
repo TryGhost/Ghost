@@ -1,7 +1,6 @@
 //@ts-check
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
-const labs = require('../../../../../../shared/labs');
 
 module.exports = {
     hasActiveStripeSubscriptions: createSerializer('hasActiveStripeSubscriptions', passthrough),
