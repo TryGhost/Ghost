@@ -170,7 +170,10 @@ describe('Snippets API', function () {
             .delete(localUtils.API.getApiQuery(`snippets/${newSnippet.id}`))
             .set('Origin', config.get('url'))
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(204);
+            .expect(204)
+            .expect((_res) => {
+                _res.body.should.be.empty();
+            });
 
         await request
             .get(localUtils.API.getApiQuery(`snippets/${newSnippet.id}/`))
