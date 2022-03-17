@@ -5,7 +5,8 @@ module.exports = {
     browse: createSerializer('browse', paginatedSnippets),
     read: createSerializer('read', singleSnippet),
     edit: createSerializer('edit', singleSnippet),
-    add: createSerializer('add', singleSnippet)
+    add: createSerializer('add', singleSnippet),
+    destroy: createSerializer('destroy', passthrough)
 };
 
 /**
@@ -35,6 +36,15 @@ function singleSnippet(model, _apiConfig, frame) {
     return {
         snippets: [serializeSnippet(model, frame.options)]
     };
+}
+
+/**
+ * @template Data
+ * @param {Data} data
+ * @returns Data
+ */
+function passthrough(data) {
+    return data;
 }
 
 /**
