@@ -142,7 +142,10 @@ describe('Email Preview API', function () {
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
+                .expect(200)
+                .expect((res) => {
+                    res.body.should.be.empty();
+                });
         });
     });
 
@@ -168,7 +171,10 @@ describe('Email Preview API', function () {
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
+                .expect(200)
+                .expect((res) => {
+                    res.body.should.be.empty();
+                });
         });
     });
 
@@ -196,7 +202,10 @@ describe('Email Preview API', function () {
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
+                .expect(200)
+                .expect((res) => {
+                    res.body.should.be.empty();
+                });
         });
     });
 
@@ -224,7 +233,10 @@ describe('Email Preview API', function () {
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(403);
+                .expect(403)
+                .expect((res) => {
+                    res.body.should.be.an.Object().with.property('errors');
+                });
         });
     });
 });
