@@ -155,5 +155,9 @@ module.exports = {
 
     get custom_theme_settings() {
         return require('./custom-theme-settings');
+    },
+
+    get slack() {
+        return require('./slack');
     }
 };
