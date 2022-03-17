@@ -9,6 +9,8 @@ module.exports = {
     read: createSerializer('read', singleMember),
     edit: createSerializer('edit', singleMember),
     add: createSerializer('add', singleMember),
+    destroy: createSerializer('destroy', passthrough),
+
     editSubscription: createSerializer('editSubscription', singleMember),
     createSubscription: createSerializer('createSubscription', singleMember),
     bulkDestroy: createSerializer('bulkDestroy', passthrough),
