@@ -49,7 +49,7 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
         if (truncate) {
             // Perform a fast reset by tearing down all the tables and inserting the fixtures
             try {
-                await module.exports.teardown();
+                await truncateAll();
                 await knexMigrator.init({only: 2});
             } catch (err) {
                 // If it fails, try a normal restore
@@ -97,10 +97,21 @@ module.exports.clearData = async () => {
 };
 
 /**
+ * Reset the database to tables only
+ */
+module.exports.teardown = async () => {
+    try {
+        await truncateAll();
+    } catch (err) {
+        await knexMigrator.reset({force: true});
+    }
+};
+
+/**
  * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
  * Sqlite3 has no truncate command.
  */
-module.exports.teardown = () => {
+const truncateAll = () => {
     debug('Database teardown');
     urlServiceUtils.reset();
 
