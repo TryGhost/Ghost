@@ -520,6 +520,10 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - operator is-greater')
                 .to.equal(4);
 
+            // it does not add duplicate column
+            expect(find('[data-test-table-column="email_open_rate"]')).to.exist;
+            expect(findAll('[data-test-table-column="email_open_rate"]').length).to.equal(1);
+
             // can clear filter
             await fillIn(valueInput, '');
             await blur(valueInput);

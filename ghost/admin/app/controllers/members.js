@@ -161,7 +161,7 @@ export default class MembersController extends Controller {
     }
 
     get filterColumns() {
-        const defaultColumns = ['name', 'email', 'created_at'];
+        const defaultColumns = ['name', 'email', 'email_open_rate', 'created_at'];
         if (this.feature.get('membersTableStatus')) {
             defaultColumns.push('status', 'product');
         }
