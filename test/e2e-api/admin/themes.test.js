@@ -151,14 +151,13 @@ describe('Themes API', function () {
     });
 
     it('Can delete a theme', async function () {
-        const res = await ownerRequest
+        await ownerRequest
             .del(localUtils.API.getApiQuery('themes/valid'))
             .set('Origin', config.get('url'))
-            .expect(204);
-
-        const jsonResponse = res.body;
-        // Delete requests have empty bodies
-        jsonResponse.should.eql({});
+            .expect(204)
+            .expect((_res) => {
+                _res.body.should.be.empty();
+            });
 
         // ensure tmp theme folder contains one theme again now
         const tmpFolderContents = fs.readdirSync(config.getContentPath('themes'));
