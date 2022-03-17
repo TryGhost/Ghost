@@ -1,5 +1,5 @@
 module.exports = {
-    download(response, apiConfig, frame) {
+    all(response, apiConfig, frame) {
         frame.response = response;
     }
 };
