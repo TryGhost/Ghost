@@ -124,12 +124,9 @@ function serializeMember(member, options) {
         email_opened_count: json.email_opened_count,
         email_open_rate: json.email_open_rate,
         email_recipients: json.email_recipients,
-        status: json.status
+        status: json.status,
+        last_seen_at: json.last_seen_at
     };
-
-    if (labs.isSet('membersLastSeenFilter')) {
-        serialized.last_seen_at = json.last_seen_at;
-    }
 
     if (json.products) {
         serialized.products = json.products;
