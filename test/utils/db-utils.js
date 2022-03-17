@@ -18,14 +18,30 @@ const urlServiceUtils = require('./url-service-utils');
 
 const dbHash = Date.now();
 
+/**
+ * Checks if the current active connection is a MySQL database
+ * @returns {Boolean} isMySQL
+ */
 module.exports.isMySQL = () => {
     return DatabaseInfo.isMySQL(db.knex);
 };
 
+/**
+ * Checks if the current active connection is a SQLite database
+ * @returns {Boolean} isSQLite
+ */
 module.exports.isSQLite = () => {
     return DatabaseInfo.isSQLite(db.knex);
 };
 
+/**
+ * Reset
+ * - restores the DB to a fresh state with the default fixtures in place
+ * - has many behind the scenes tricks to try to do this as fast as possible
+ *
+ * @param {Object} options
+ * @param {Boolean} options.truncate whether to truncate rather thann fully reset
+ */
 module.exports.reset = async ({truncate} = {truncate: false}) => {
     // Only run this copy in CI until it gets fleshed out
     if (process.env.CI && module.exports.isSQLite()) {
@@ -38,10 +54,8 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
             await db.knex.destroy();
             await fs.copyFile(filenameOrig, filename);
         } else {
-            await knexMigrator.reset({force: true});
-
-            // Do a full database initialisation
-            await knexMigrator.init();
+            // Do a full database reset & initialisation
+            await forceReinit();
 
             await fs.copyFile(filename, filenameOrig);
         }
@@ -53,24 +67,33 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
                 await knexMigrator.init({only: 2});
             } catch (err) {
                 // If it fails, try a normal restore
-                await knexMigrator.reset({force: true});
-                await knexMigrator.init();
+                await forceReinit();
             }
         } else {
             // Do a full database reset + initialisation
-            await knexMigrator.reset({force: true});
-            await knexMigrator.init();
+            await forceReinit();
         }
     }
 };
 
-module.exports.initData = async () => {
-    await knexMigrator.init();
-    await urlServiceUtils.reset();
-    await urlServiceUtils.init();
-    await urlServiceUtils.isFinished();
+/**
+ * Teardown
+ * - restores the DB to empty tables only - no default fixtures, settings or permissions
+ * - has behind the scenes tricks to try to do this as fast as possible
+ */
+module.exports.teardown = async () => {
+    try {
+        await truncateAll();
+    } catch (err) {
+        await knexMigrator.reset({force: true});
+    }
 };
 
+/**
+ * Truncate
+ * - truncate a single table
+ * @param {string} tableName - the table to truncate
+ */
 module.exports.truncate = async (tableName) => {
     if (module.exports.isSQLite()) {
         const [foreignKeysEnabled] = await db.knex.raw('PRAGMA foreign_keys;');
@@ -89,25 +112,16 @@ module.exports.truncate = async (tableName) => {
     await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
 };
 
-// we must always try to delete all tables
-module.exports.clearData = async () => {
-    debug('Database reset');
-    await knexMigrator.reset({force: true});
-    urlServiceUtils.reset();
-};
-
 /**
- * Reset the database to tables only
+ * Internal helper to do a safe-but-slow knex-based forced reinit of the DB.
  */
-module.exports.teardown = async () => {
-    try {
-        await truncateAll();
-    } catch (err) {
-        await knexMigrator.reset({force: true});
-    }
+const forceReinit = async () => {
+    await knexMigrator.reset({force: true});
+    await knexMigrator.init();
 };
 
 /**
+ * Internal helper to attempt to truncate all tables as fast as possible
  * Has to run in a transaction for MySQL, otherwise the foreign key check does not work.
  * Sqlite3 has no truncate command.
  */
@@ -177,4 +191,25 @@ const truncateAll = () => {
 
             throw err;
         });
+};
+
+/**
+ * @deprecated Use teardown or reset instead
+ * Old method for clearing data from the database that also mixes in url service behaviour
+ */
+module.exports.clearData = async () => {
+    debug('Database reset');
+    await knexMigrator.reset({force: true});
+    urlServiceUtils.reset();
+};
+
+/**
+ * @deprecated Use reset instead
+ * Old method for clearing data from the database that also mixes in url service behaviour
+ */
+module.exports.initData = async () => {
+    await knexMigrator.init();
+    await urlServiceUtils.reset();
+    await urlServiceUtils.init();
+    await urlServiceUtils.isFinished();
 };
