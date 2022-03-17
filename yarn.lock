@@ -4560,6 +4560,13 @@ debug@4.3.1:
   dependencies:
     ms "2.1.2"
 
+debug@4.3.4:
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
+  integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
+  dependencies:
+    ms "2.1.2"
+
 debug@^3.1.0, debug@^3.2.6:
   version "3.2.7"
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.2.7.tgz#72580b7e9145fb39b6676f9c5e5fb100b934179a"
@@ -8093,17 +8100,18 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-knex-migrator@4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.2.tgz#619597bf35492757fe65710d25bb5e17aed18ee2"
-  integrity sha512-UxmbGU3fTrcHVY9cqFB8vap2Orgwr3ASlBQ0Y1cQhjrKKRGCRJMOEJ9sJBQlP2GxWh72pLn/v5W4V4BsYcKWpw==
+knex-migrator@4.2.3:
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.3.tgz#1787a28f0fc1304f806f29b0d082d41dc0819526"
+  integrity sha512-kiOTlJkoNRSWeUSD1+CalS8D5MqUVokPZh1TRX0QRkjcJBGt+Ukk123tyDSD/1HBF6dXNnbhddvHT3BPLhancQ==
   dependencies:
+    "@tryghost/logging" "2.0.4"
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
-    debug "4.3.3"
+    debug "4.3.4"
     ghost-ignition "4.6.3"
-    knex "0.21.19"
+    knex "0.21.21"
     lodash "4.17.21"
     moment "2.24.0"
     nconf "0.11.3"
@@ -8111,24 +8119,6 @@ knex-migrator@4.2.2:
   optionalDependencies:
     mysql2 "2.3.3"
     sqlite3 "5.0.2"
-
-knex@0.21.19:
-  version "0.21.19"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.19.tgz#df504a184eb29e286245839db0867e3ca161af00"
-  integrity sha512-6etvrq9XI1Ck6mEc/XiXFGVpD1Lmj6v9XWojqZgEbOvyMbW7XRvgZ99yIhN/kaBH+43FEy3xv/AcbRaH+1pJtw==
-  dependencies:
-    colorette "1.2.1"
-    commander "^6.2.0"
-    debug "4.3.1"
-    esm "^3.2.25"
-    getopts "2.2.5"
-    interpret "^2.2.0"
-    liftoff "3.1.0"
-    lodash "^4.17.20"
-    pg-connection-string "2.4.0"
-    tarn "^3.0.1"
-    tildify "2.0.0"
-    v8flags "^3.2.0"
 
 knex@0.21.21:
   version "0.21.21"
