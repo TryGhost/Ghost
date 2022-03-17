@@ -5,6 +5,7 @@ const url = require('url');
 const configUtils = require('../../utils/configUtils');
 const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
+const dbUtils = require('../../utils/db-utils');
 const localUtils = require('./utils');
 
 describe('Tags Content API', function () {
@@ -40,7 +41,7 @@ describe('Tags Content API', function () {
         // Default order 'name asc' check
         // the ordering difference is described in https://github.com/TryGhost/Ghost/issues/6104
         // this condition should be removed once issue mentioned above ^ is resolved
-        if (process.env.NODE_ENV === 'testing-mysql') {
+        if (dbUtils.isMySQL()) {
             jsonResponse.tags[0].name.should.eql('bacon');
             jsonResponse.tags[3].name.should.eql('kitchen sink');
         } else {
