@@ -197,9 +197,7 @@ module.exports = {
                     }
                 });
             }
-            let model = await membersService.api.members.get({id: frame.options.id}, {
-                withRelated: ['labels', 'products', 'stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']
-            });
+            let model = await membersService.api.memberBREADService.read({id: frame.options.id});
             if (!model) {
                 throw new errors.NotFoundError({
                     message: tpl(messages.memberNotFound)
@@ -241,9 +239,7 @@ module.exports = {
                     stripe_price_id: frame.data.stripe_price_id
                 }
             });
-            let model = await membersService.api.members.get({id: frame.options.id}, {
-                withRelated: ['labels', 'products', 'stripeSubscriptions', 'stripeSubscriptions.customer', 'stripeSubscriptions.stripePrice', 'stripeSubscriptions.stripePrice.stripeProduct']
-            });
+            let model = await membersService.api.memberBREADService.read({id: frame.options.id});
             if (!model) {
                 throw new errors.NotFoundError({
                     message: tpl(messages.memberNotFound)
