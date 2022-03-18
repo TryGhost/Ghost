@@ -31,9 +31,7 @@ describe('Offers API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             })
-            .matchBodySnapshot({
-                offers: []
-            });
+            .matchBodySnapshot();
     });
 
     it('Can add a new offer', async function () {
