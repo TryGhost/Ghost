@@ -1,15 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId} = matchers;
-
-const assert = require('assert');
-const nock = require('nock');
 const should = require('should');
-const sinon = require('sinon');
-const testUtils = require('../../utils');
-const Papa = require('papaparse');
-
 const models = require('../../../core/server/models');
-const { any } = require('bluebird');
 
 let agent;
 
@@ -135,7 +127,7 @@ describe('Offers API', function () {
             name: 'Cyber Monday',
             code: 'cyber-monday',
             display_title: 'Cyber Monday Sale!',
-            display_description: '10% off on yearly plan, only today',
+            display_description: '10% off on yearly plan, only today'
         };
 
         await agent
