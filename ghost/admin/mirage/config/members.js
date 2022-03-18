@@ -96,24 +96,17 @@ export default function mockMembers(server) {
                         serializedMember[underscore(key)] = member.attrs[key];
                     });
 
-                    // similar deal for associated label models
-                    serializedMember.labels = [];
-                    member.labels.models.forEach((label) => {
-                        const serializedLabel = {};
-                        Object.keys(label.attrs).forEach((key) => {
-                            serializedLabel[underscore(key)] = label.attrs[key];
-                        });
-                        serializedMember.labels.push(serializedLabel);
-                    });
+                    // similar deal for associated models
+                    ['labels', 'products', 'subscriptions'].forEach((association) => {
+                        serializedMember[association] = [];
 
-                    // similar deal for associated product models
-                    serializedMember.products = [];
-                    member.products.models.forEach((product) => {
-                        const serializedProduct = {};
-                        Object.keys(product.attrs).forEach((key) => {
-                            serializedProduct[underscore(key)] = product.attrs[key];
+                        member[association].models.forEach((associatedModel) => {
+                            const serializedAssociation = {};
+                            Object.keys(associatedModel.attrs).forEach((key) => {
+                                serializedAssociation[underscore(key)] = associatedModel.attrs[key];
+                            });
+                            serializedMember[association].push(serializedAssociation);
                         });
-                        serializedMember.products.push(serializedProduct);
                     });
 
                     return nqlFilter.queryJSON(serializedMember);
@@ -184,7 +177,75 @@ export default function mockMembers(server) {
         });
     });
 
-    server.put('/members/:id/');
+    server.put('/members/:id/', function ({members, products, subscriptions}, {params}) {
+        const attrs = this.normalizedRequestAttrs();
+        const member = members.find(params.id);
+
+        // API accepts `products: [{id: 'x'}]` which isn't handled natively by mirage
+        if (attrs.products.length > 0) {
+            attrs.products.forEach((p) => {
+                const product = products.find(p.id);
+
+                if (!member.products.includes(product)) {
+                    // TODO: serialize products through _active_ subscriptions
+                    member.products.add(product);
+
+                    subscriptions.create({
+                        member,
+                        product,
+                        comped: true,
+                        plan: {
+                            id: '',
+                            nickname: 'Complimentary',
+                            interval: 'year',
+                            currency: 'USD',
+                            amount: 0
+                        },
+                        status: 'active',
+                        startDate: moment().toISOString(),
+                        defaultPaymentCardLast4: '****',
+                        cancelAtPeriodEnd: false,
+                        cancellationReason: null,
+                        currentPeriodEnd: moment().add(1, 'year').toISOString(),
+                        price: {
+                            id: '',
+                            price_id: '',
+                            nickname: 'Complimentary',
+                            amount: 0,
+                            interval: 'year',
+                            type: 'recurring',
+                            currency: 'USD',
+                            product: {
+                                id: '',
+                                product_id: product.id
+                            }
+                        },
+                        offer: null
+                    });
+
+                    member.save();
+                }
+            });
+        }
+
+        const productIds = (attrs.products || []).map(p => p.id);
+
+        member.products.models.forEach((product) => {
+            if (!productIds.includes(product.id)) {
+                member.subscriptions.models.filter(sub => sub.product.id === product.id).forEach((sub) => {
+                    member.subscriptions.remove(sub);
+                });
+
+                member.products.remove(product);
+            }
+        });
+
+        // these are read-only properties so make sure we don't overwrite data
+        delete attrs.products;
+        delete attrs.subscriptions;
+
+        return member.update(attrs);
+    });
 
     server.del('/members/:id/');
 

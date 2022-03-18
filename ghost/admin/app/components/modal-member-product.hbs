@@ -1,18 +1,18 @@
-<header class="modal-header" data-test-modal="delete-user" {{did-insert this.setup}}>
+<header class="modal-header" data-test-modal="member-product" {{did-insert this.setup}}>
     <h1>Add subscription</h1>
 </header>
-<a class="close" href="" role="button" title="Close" {{action "closeModal" }}>
+<button type="button" class="close" title="Close" {{on "click" this.close}}>
     {{svg-jar "close"}}<span class="hidden">Close</span>
-</a>
+</button>
 
 <form>
     <div class="modal-body">
-        <p class="gh-member-addcomp-subhed">
+        <p class="gh-member-addcomp-subhed" data-test-text="select-tier-desc">
             Select a tier for <strong>{{or this.member.name this.member.email}}</strong>'s
             complimentary subscription.
         </p>
         {{#if this.activeSubscriptions.length}}
-            <p class="gh-member-addcomp-warning">
+            <p class="gh-member-addcomp-warning" data-test-text="sub-cancel-warning">
                 Adding a complimentary subscription cancels all existing subscriptions of this member.
             </p>
         {{/if}}
@@ -23,10 +23,14 @@
         {{else}}
             <div class="form-rich-radio">
                 {{#each this.products as |product|}}
-                    <div class="gh-radio {{if (eq this.selectedProduct product.id) "active"}}" {{on "click" (fn this.setProduct product.id)}}>
+                    <div
+                        class="gh-radio {{if (eq this.selectedProduct product.id) "active"}}"
+                        {{on "click" (fn this.setProduct product.id)}}
+                        data-test-tier-option={{product.id}}
+                    >
                         <div class="gh-radio-content">
                             <div class="gh-radio-label">
-                                <div class="description">
+                                <div class="description" data-test-text="tier-desc">
                                     <h4>{{product.name}}</h4>
                                     <p>{{product.description}}</p>
                                 </div>
@@ -43,9 +47,14 @@
 
 <div class="modal-footer">
     <button
-        class="gh-btn" data-test-button="cancel-webhook" type="button" {{action "closeModal" }}
+        class="gh-btn"
+        type="button"
+        {{on "click" this.close}}
         {{!-- disable mouseDown so it does not trigger focus-out validations --}}
-        {{action (optional this.noop) on="mouseDown" }}>
+        {{!-- template-lint-disable no-down-event-binding --}}
+        {{on "mousedown" (optional this.noop)}}
+        data-test-button="cancel-webhook"
+    >
         <span>Cancel</span>
     </button>
 
