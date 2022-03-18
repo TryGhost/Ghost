@@ -128,8 +128,8 @@
         "emailAnalytics": true
     },
     "portal": {
-        "url": "https://unpkg.com/@tryghost/portal@~1.16.0/umd/portal.min.js",
-        "version": "1.16"
+        "url": "https://unpkg.com/@tryghost/portal@~1.17.0/umd/portal.min.js",
+        "version": "1.17"
     },
     "tenor": {
         "publicReadOnlyApiKey": null,
