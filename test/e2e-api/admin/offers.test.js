@@ -1,5 +1,5 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId} = matchers;
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 
@@ -22,14 +22,6 @@ describe('Offers API', function () {
         await fixtureManager.init();
         await agent.loginAsOwner();
         defaultTier = await getPaidProduct();
-    });
-
-    beforeEach(function () {
-        mockManager.mockMail();
-    });
-
-    afterEach(function () {
-        mockManager.restore();
     });
 
     it('Has no initial offers', async function () {
