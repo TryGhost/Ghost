@@ -199,36 +199,36 @@ h6 {
     margin-top: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     line-height: 1.15em;
-    font-weight: 600;
+    font-weight: 700;
     text-rendering: optimizeLegibility;
 }
 
 h1 {
-    margin: 1.5em 0 0.5em 0;
+    margin: 1.5em 0 0.2em 0;
     font-size: 42px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 h2 {
-    margin: 1.5em 0 0.5em 0;
+    margin: 1.5em 0 0.2em 0;
     font-size: 32px;
     line-height: 1.22em;
 }
 
 h3 {
-    margin: 1.5em 0 0.5em 0;
+    margin: 1.5em 0 0.2em 0;
     font-size: 26px;
     line-height: 1.25em;
 }
 
 h4 {
-    margin: 1.8em 0 0.5em 0;
+    margin: 1.8em 0 0.2em 0;
     font-size: 21px;
     line-height: 1.3em;
 }
 
 h5 {
-    margin: 2em 0 0.5em 0;
+    margin: 2em 0 0.2em 0;
     font-size: 19px;
     line-height: 1.4em;
 }
@@ -241,7 +241,7 @@ h6 {
 }
 
 strong {
-    font-weight: 700;
+    font-weight: 800;
 }
 
 figure {
@@ -322,11 +322,13 @@ figure blockquote p {
     padding-bottom: 10px;
     font-size: 42px;
     line-height: 1.1em;
-    font-weight: 600;
+    font-weight: 700;
     text-align: center;
+    letter-spacing: -0.022em;
 }
 .post-title-serif {
     font-family: Georgia, serif;
+    letter-spacing: -0.01em;
 }
 .post-title-left {
     text-align: left;
@@ -388,7 +390,7 @@ figure blockquote p {
     font-family: Georgia, serif;
     font-size: 18px;
     line-height: 1.5em;
-    color: #23323D;
+    color: #15212A;
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
 }
@@ -397,7 +399,7 @@ figure blockquote p {
     max-width: 600px !important;
     font-size: 17px;
     line-height: 1.5em;
-    color: #23323D;
+    color: #15212A;
     padding-bottom: 20px;
     border-bottom: 1px solid #e5eff5;
 }
