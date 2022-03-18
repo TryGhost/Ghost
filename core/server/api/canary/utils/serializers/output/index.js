@@ -159,5 +159,9 @@ module.exports = {
 
     get slack() {
         return require('./slack');
+    },
+
+    get session() {
+        return require('./session');
     }
 };
