@@ -2220,15 +2220,15 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/members-csv@1.2.6":
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.6.tgz#703c8fc0d79a4b5fef95a64081cab08a655f44c1"
-  integrity sha512-mK0ath8GUUaw/HO3/pwV2tBt4cFPxC372CIqc0EdypD0/AJKrOHRLIhqUE4VZ5qMtzAC43RFEFZM3rNay0cQHw==
+"@tryghost/members-csv@1.2.8":
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.8.tgz#33189fbdc011edb9a0123b08db830c701518ea45"
+  integrity sha512-cFt7kilHW+z/C+FtuN+BGlD7Cza/umV8rjvyK6EcWi4KORPYKt5vFcqim0g3rllIJjJhpteeZYNyKNKvhWZRXQ==
   dependencies:
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
     lodash "^4.17.21"
-    papaparse "5.3.1"
+    papaparse "5.3.2"
     pump "^3.0.0"
 
 "@tryghost/mobiledoc-kit@0.12.5-ghost.1":
@@ -12282,6 +12282,11 @@ papaparse@5.3.1:
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.1.tgz#770b7a9124d821d4b2132132b7bd7dce7194b5b1"
   integrity sha512-Dbt2yjLJrCwH2sRqKFFJaN5XgIASO9YOFeFP8rIBRG2Ain8mqk5r1M6DkfvqEVozVcz3r3HaUGw253hA1nLIcA==
+
+papaparse@5.3.2:
+  version "5.3.2"
+  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.2.tgz#d1abed498a0ee299f103130a6109720404fbd467"
+  integrity sha512-6dNZu0Ki+gyV0eBsFKJhYr+MdQYAzFUGlBMNj3GNrmHxmz1lfRa24CjFObPXtjcetlOv5Ad299MhIK0znp3afw==
 
 parallel-transform@^1.1.0:
   version "1.2.0"
