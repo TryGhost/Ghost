@@ -1,0 +1,337 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Offers API Can add a new offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "black-friday",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan",
+      "display_title": "Black Friday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Black Friday",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can add a new offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "389",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can archive an offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can archive an offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "428",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can browse 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "black-friday",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan",
+      "display_title": "Black Friday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Black Friday",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can browse 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "414",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can edit an offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can edit an offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "426",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can get a single offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "black-friday",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan",
+      "display_title": "Black Friday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Black Friday",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can get a single offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "414",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer amount 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer amount 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "428",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer cadence 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer cadence 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "428",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer tier 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer tier 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "428",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Has no initial offers 1: [body] 1`] = `
+Object {
+  "offers": Array [],
+}
+`;
+
+exports[`Offers API Has no initial offers 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "13",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
