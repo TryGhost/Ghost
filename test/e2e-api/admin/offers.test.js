@@ -79,7 +79,7 @@ describe('Offers API', function () {
         const newOffer = {
             name: 'Easter Sales',
             code: 'easter',
-            cadence: 'year',
+            cadence: 'month',
             amount: 50,
             duration: 'once',
             type: 'percent',
@@ -103,6 +103,40 @@ describe('Offers API', function () {
                         id: anyObjectId
                     }
                 }]
+            });
+    });
+
+    it('Slugifies offer codes', async function () {
+        const newOffer = {
+            name: 'Summer Sale',
+            code: 'Summer sale',
+            cadence: 'year',
+            amount: 20,
+            duration: 'once',
+            type: 'percent',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+        
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('offers')
+            })
+            .matchBodySnapshot({
+                offers: [{
+                    id: anyObjectId,
+                    tier: {
+                        id: anyObjectId
+                    }
+                }]
+            })
+            .expect(({body}) => {
+                body.offers[0].code.should.eql('summer-sale');
             });
     });
 
@@ -166,6 +200,34 @@ describe('Offers API', function () {
             });
     });
 
+    it('Cannot create offer with same slugified code', async function () {
+        const newOffer = {
+            name: 'Another Black Friday Sale',
+            code: 'black friday',
+            cadence: 'year',
+            amount: 200,
+            duration: 'once',
+            type: 'fixed',
+            currency: 'USD',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+        
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(400)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
     it('Cannot create offer with same name', async function () {
         const newOffer = {
             name: 'Fourth of July Sales',
@@ -202,7 +264,7 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(3).fill({
+                offers: new Array(4).fill({
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
@@ -232,7 +294,7 @@ describe('Offers API', function () {
         // We can change all fields except discount related fields
         let updatedOffer = {
             name: 'Cyber Monday',
-            code: 'cyber-monday',
+            code: 'cyber monday',
             display_title: 'Cyber Monday Sale!',
             display_description: '10% off on yearly plan, only today'
         };
@@ -253,7 +315,8 @@ describe('Offers API', function () {
                 })
             })
             .expect(({body}) => {
-                body.offers[0].should.match(updatedOffer);
+                // Test if all the changes were applied, and that the code has been slugified
+                body.offers[0].should.match({...updatedOffer, code: 'cyber-monday'});
             });
     });
 
@@ -261,6 +324,26 @@ describe('Offers API', function () {
         // We can change all fields except discount related fields
         let updatedOffer = {
             code: '4th'
+        };
+
+        await agent
+            .put(`offers/${savedOffer.id}/`)
+            .body({offers: [updatedOffer]})
+            .expectStatus(400)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: new Array(1).fill({
+                    id: anyErrorId
+                })
+            });
+    });
+
+    it('Cannot update offer code to one that exists after it is slugified', async function () {
+        // We can change all fields except discount related fields
+        let updatedOffer = {
+            code: 'Summer sale'
         };
 
         await agent
@@ -350,7 +433,7 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(2).fill({
+                offers: new Array(3).fill({
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
