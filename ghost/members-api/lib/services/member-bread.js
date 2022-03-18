@@ -51,7 +51,10 @@ module.exports = class MemberBREADService {
             return member;
         }
 
-        const subscriptionProducts = (member.subscriptions || []).map(sub => sub.price.product.product_id);
+        const subscriptionProducts = (member.subscriptions || [])
+            .filter(sub => sub.status !== 'canceled')
+            .map(sub => sub.price.product.product_id);
+
         for (const product of member.products) {
             if (!subscriptionProducts.includes(product.id)) {
                 const productAddEvent = member.productEvents.find(event => event.product_id === product.id);
