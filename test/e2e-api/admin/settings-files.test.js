@@ -26,7 +26,10 @@ describe('Settings File API', function () {
         const res = await request.get(localUtils.API.getApiQuery('settings/routes/yaml/'))
             .set('Origin', config.get('url'))
             .set('Accept', 'application/yaml')
-            .expect(200);
+            .expect(200)
+            .expect((_res) => {
+                _res.body.should.be.empty();
+            });
 
         res.headers['content-disposition'].should.eql('Attachment; filename="routes.yaml"');
         res.headers['content-type'].should.eql('application/yaml; charset=utf-8');
@@ -42,9 +45,9 @@ describe('Settings File API', function () {
             .set('Origin', config.get('url'))
             .attach('routes', newRoutesYamlPath)
             .expect('Content-Type', /application\/json/)
-            .expect(200);
-
-        res.headers['x-cache-invalidate'].should.eql('/*');
-        await testUtils.stopGhost();
+            .expect(200)
+            .expect((_res) => {
+                _res.body.should.be.empty();
+            });
     });
 });
