@@ -10,6 +10,10 @@ const models = require('../../../core/server/models');
 let membersAgent;
 let adminAgent;
 
+async function getPaidProduct() {
+    return await Product.findOne({type: 'paid'});
+}
+
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
     events.map(e => e.toJSON()).should.match(asserts);
@@ -167,6 +171,8 @@ describe('Members API', function () {
         });
 
         describe('Handling the end of subscriptions', function () {
+            let canceledPaidMember;
+
             it('Handles cancellation of paid subscriptions correctly', async function () {
                 const customer_id = 'cust_3432';
                 const subscription_id = 'sub_3432';
@@ -214,6 +220,12 @@ describe('Members API', function () {
                 // And all the subscriptions are setup correctly
                 const initialMember = await createMemberFromStripe();
                 assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+                assert.equal(initialMember.products.length, 1, 'The member should have one product');
+                should(initialMember.subscriptions).match([
+                    {
+                        status: 'active'
+                    }
+                ]);
 
                 // Cancel the previously created subscription in Stripe
                 set(subscription, {
@@ -239,10 +251,16 @@ describe('Members API', function () {
                     .expectStatus(200);
 
                 // Check status has been updated to 'free' after cancelling
-                const {body: body2} = await adminAgent.get('/members/?search=' + encodeURIComponent(customer.email));
+                const {body: body2} = await adminAgent.get('/members/' + initialMember.id + '/');
                 assert.equal(body2.members.length, 1, 'The member does not exist');
                 const updatedMember = body2.members[0];
                 assert.equal(updatedMember.status, 'free');
+                assert.equal(updatedMember.products.length, 0, 'The member should have no products');
+                should(updatedMember.subscriptions).match([
+                    {
+                        status: 'canceled'
+                    }
+                ]);
 
                 // Check the status events for this newly created member (should be NULL -> paid only)
                 assertMemberEvents({
@@ -260,6 +278,76 @@ describe('Members API', function () {
                         {
                             from_status: 'paid',
                             to_status: 'free'
+                        }
+                    ]
+                });
+
+                assertMemberEvents({
+                    eventType: 'MemberPaidSubscriptionEvent',
+                    memberId: updatedMember.id,
+                    asserts: [
+                        {
+                            mrr_delta: 500
+                        },
+                        {
+                            mrr_delta: -500
+                        }
+                    ]
+                });
+
+                canceledPaidMember = updatedMember;
+            });
+
+            it('Can create a comlimentary subscription after canceling a paid subscription', async function () {
+                const product = await getPaidProduct();
+
+                const compedPayload = {
+                    id: canceledPaidMember.id,
+                    products: [
+                        {
+                            id: product.id
+                        }
+                    ]
+                };
+
+                const {body} = await adminAgent
+                    .put(`/members/${canceledPaidMember.id}/`)
+                    .body({members: [compedPayload]})
+                    .expectStatus(200);
+
+                const updatedMember = body.members[0];
+                assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
+                assert.equal(updatedMember.products.length, 1, 'The member should have one product');
+                should(updatedMember.subscriptions).match([
+                    {
+                        status: 'canceled'
+                    },
+                    {
+                        status: 'active'
+                    }
+                ]);
+                assert.equal(updatedMember.subscriptions.length, 2, 'The member should have two subscriptions');
+
+                // Check the status events for this newly created member (should be NULL -> paid only)
+                assertMemberEvents({
+                    eventType: 'MemberStatusEvent',
+                    memberId: updatedMember.id,
+                    asserts: [
+                        {
+                            from_status: null,
+                            to_status: 'free'
+                        },
+                        {
+                            from_status: 'free',
+                            to_status: 'paid'
+                        },
+                        {
+                            from_status: 'paid',
+                            to_status: 'free'
+                        },
+                        {
+                            from_status: 'free',
+                            to_status: 'comped'
                         }
                     ]
                 });
@@ -328,6 +416,12 @@ describe('Members API', function () {
                 // And all the subscriptions are setup correctly
                 const initialMember = await createMemberFromStripe();
                 assert.equal(initialMember.status, 'comped', 'The member initial status should be comped');
+                assert.equal(initialMember.products.length, 1, 'The member should have one product');
+                should(initialMember.subscriptions).match([
+                    {
+                        status: 'active'
+                    }
+                ]);
 
                 // Cancel the previously created subscription in Stripe
                 set(subscription, {
@@ -353,10 +447,16 @@ describe('Members API', function () {
                     .expectStatus(200);
 
                 // Check status has been updated to 'free' after cancelling
-                const {body: body2} = await adminAgent.get('/members/?search=' + encodeURIComponent(customer.email));
+                const {body: body2} = await adminAgent.get('/members/' + initialMember.id + '/');
                 assert.equal(body2.members.length, 1, 'The member does not exist');
                 const updatedMember = body2.members[0];
                 assert.equal(updatedMember.status, 'free');
+                assert.equal(updatedMember.products.length, 0, 'The member should have no products');
+                should(updatedMember.subscriptions).match([
+                    {
+                        status: 'canceled'
+                    }
+                ]);
 
                 // Check the status events for this newly created member (should be NULL -> paid only)
                 assertMemberEvents({

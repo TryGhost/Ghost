@@ -806,8 +806,8 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    products: anyArray,
-                    subscriptions: anyArray
+                    subscriptions: anyArray,
+                    products: anyArray
                 })
             })
             .matchHeaderSnapshot({
@@ -929,8 +929,8 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    products: anyArray,
-                    subscriptions: anyArray
+                    subscriptions: anyArray,
+                    products: anyArray
                 })
             })
             .matchHeaderSnapshot({
