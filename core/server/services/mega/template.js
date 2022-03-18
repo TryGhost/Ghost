@@ -198,50 +198,57 @@ h5,
 h6 {
     margin-top: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-    line-height: 1.15em;
+    line-height: 1.11em;
     font-weight: 700;
     text-rendering: optimizeLegibility;
 }
 
 h1 {
-    margin: 1.5em 0 0.2em 0;
+    margin: 1.5em 0 0.5em 0;
     font-size: 42px;
     font-weight: 700;
 }
 
 h2 {
-    margin: 1.5em 0 0.2em 0;
+    margin: 1.5em 0 0.5em 0;
     font-size: 32px;
-    line-height: 1.22em;
 }
 
 h3 {
-    margin: 1.5em 0 0.2em 0;
+    margin: 1.5em 0 0.5em 0;
     font-size: 26px;
-    line-height: 1.25em;
 }
 
 h4 {
-    margin: 1.8em 0 0.2em 0;
+    margin: 1.8em 0 0.5em 0;
     font-size: 21px;
-    line-height: 1.3em;
+    line-height: 1.2em;
 }
 
 h5 {
-    margin: 2em 0 0.2em 0;
+    margin: 2em 0 0.5em 0;
     font-size: 19px;
-    line-height: 1.4em;
+    line-height: 1.3em;
 }
 
 h6 {
     margin: 2em 0 0.5em 0;
     font-size: 19px;
-    line-height: 1.4em;
+    line-height: 1.3em;
     font-weight: 700;
 }
 
-strong {
+h1 strong,
+h2 strong,
+h3 strong,
+h4 strong,
+h5 strong,
+h6 strong {
     font-weight: 800;
+}
+
+strong {
+    font-weight: 700;
 }
 
 figure {
@@ -324,7 +331,6 @@ figure blockquote p {
     line-height: 1.1em;
     font-weight: 700;
     text-align: center;
-    letter-spacing: -0.022em;
 }
 .post-title-serif {
     font-family: Georgia, serif;
@@ -713,7 +719,7 @@ a[data-flickr-embed] img {
 }
 
 .kg-header-card h3 strong {
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .kg-header-card.kg-size-large h3 {
