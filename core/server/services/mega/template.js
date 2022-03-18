@@ -263,6 +263,7 @@ code {
 
 pre {
     white-space: pre-wrap;
+    overflow: auto;
     background: #15212A;
     padding: 15px;
     border-radius: 3px;
