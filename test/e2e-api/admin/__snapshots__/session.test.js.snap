@@ -1,0 +1,99 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sessions API can create session (log in) 1: [body] 1`] = `Object {}`;
+
+exports[`Sessions API can create session (log in) 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "7",
+  "content-type": "text/plain; charset=utf-8",
+  "etag": Any<String>,
+  "set-cookie": Array [
+    StringMatching /\\^ghost-admin-api-session=/,
+  ],
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Sessions API can delete session (log out) 1: [body] 1`] = `Object {}`;
+
+exports[`Sessions API can delete session (log out) 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": Any<String>,
+  "vary": "Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Sessions API can read session now the owner is logged in 1: [body] 1`] = `
+Object {
+  "accessibility": null,
+  "bio": "bio",
+  "cover_image": null,
+  "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "created_by": "1",
+  "email": "jbloggs@example.com",
+  "facebook": null,
+  "id": "1",
+  "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "locale": null,
+  "location": "location",
+  "meta_description": null,
+  "meta_title": null,
+  "name": "Joe Bloggs",
+  "profile_image": "https://example.com/super_photo.jpg",
+  "slug": "joe-bloggs",
+  "status": "active",
+  "tour": null,
+  "twitter": null,
+  "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "updated_by": "1",
+  "visibility": "public",
+  "website": null,
+}
+`;
+
+exports[`Sessions API can read session now the owner is logged in 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "515",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Sessions API errors when reading session again now owner is not logged in 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Unable to determine the authenticated user or integration. Check that cookies are being passed through if using session authentication.",
+      "details": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Authorization failed",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Sessions API errors when reading session again now owner is not logged in 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "321",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
