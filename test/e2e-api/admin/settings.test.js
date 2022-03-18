@@ -1,4 +1,5 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const assert = require('assert');
+const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyObjectId, anyISODateTime} = matchers;
 
 const CURRENT_SETTINGS_COUNT = 86;
@@ -28,12 +29,22 @@ const matchSettingsArray = (length) => {
 };
 
 describe('Settings API', function () {
-    let agent;
+    let agent, membersService;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
+
+        membersService = require('../../../core/server/services/members');
+    });
+
+    beforeEach(function () {
+        mockManager.mockMail();
+    });
+
+    afterEach(function () {
+        mockManager.restore();
     });
 
     it('Can request all settings', async function () {
@@ -150,6 +161,75 @@ describe('Settings API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
+            });
+    });
+
+    it('can do updateMembersEmail', async function () {
+        await agent
+            .post('settings/members/email/')
+            .body({
+                email: 'test@test.com',
+                type: 'fromAddressUpdate'
+            })
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        mockManager.assert.sentEmail({to: 'test@test.com'});
+    });
+
+    it('can do validateMembersEmailUpdate', async function () {
+        const magicLink = await membersService.api.getMagicLink('test@test.com');
+        const magicLinkUrl = new URL(magicLink);
+        const token = magicLinkUrl.searchParams.get('token');
+
+        // @TODO Fixing https://github.com/TryGhost/Team/issues/584 should result in this test changing
+        await agent
+            .get(`settings/members/email/?token=${token}&action=fromAddressUpdate`)
+            .expectStatus(302)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot();
+
+        // Assert that the setting is changed as a side effect
+        // NOTE: cannot use read here :/
+        await agent.get('settings/')
+            .expect(({body}) => {
+                const fromAddress = body.settings.find((setting) => {
+                    return setting.key === 'members_from_address';
+                });
+                assert.equal(fromAddress.value, 'test@test.com');
+            });
+    });
+
+    it('can do disconnectStripeConnectIntegration', async function () {
+        await agent
+            .delete('/settings/stripe/connect/')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const stripeSettings = [
+            'stripe_connect_publishable_key',
+            'stripe_connect_secret_key',
+            'stripe_connect_livemode',
+            'stripe_connect_display_name',
+            'stripe_connect_account_id',
+            'members_stripe_webhook_id',
+            'members_stripe_webhook_secret'
+        ];
+
+        // Assert that the settings are changed as a side effect
+        await agent.get('settings/')
+            .expect(({body}) => {
+                body.settings.forEach((setting) => {
+                    if (stripeSettings.includes(setting.key)) {
+                        assert.equal(setting.value, null);
+                    }
+                });
             });
     });
 });
