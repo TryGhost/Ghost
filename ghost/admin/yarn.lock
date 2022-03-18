@@ -2276,10 +2276,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.58":
-  version "0.2.58"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.58.tgz#f68a9caa77e607378d73d91123e84984e5a5d086"
-  integrity sha512-6ULhkoXNkc1WE92qxcFrDN/ZapV1qx1YPq5pWYdmmQsCs+iTNYwELyQDnGgJe4qpCgjUeHlFL2tb4TSgjRC4fg==
+"@tryghost/timezone-data@0.2.60":
+  version "0.2.60"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.60.tgz#d5e87928aeb93bc3846f907dc6a69ce550683da7"
+  integrity sha512-vdBIeVG7alHOjyKutJIh2rDzUJclA31yQj4ZzwkT4dhHuWb4o0cwkbFnc7KEgni7ClgHBisdxCgPbK3Jf7aR9g==
 
 "@types/acorn@^4.0.3":
   version "4.0.6"
