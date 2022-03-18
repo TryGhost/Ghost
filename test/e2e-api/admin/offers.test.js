@@ -83,6 +83,125 @@ describe('Offers API', function () {
         savedOffer = body.offers[0];
     });
 
+    it('Can add a new offer with minimal fields', async function () {
+        const newOffer = {
+            name: 'Easter Sales',
+            code: 'easter',
+            cadence: 'year',
+            amount: 50,
+            duration: 'once',
+            type: 'percent',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+        
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('offers')
+            })
+            .matchBodySnapshot({
+                offers: [{
+                    id: anyObjectId,
+                    tier: {
+                        id: anyObjectId
+                    }
+                }]
+            });
+    });
+
+    it('Can add a fixed offer', async function () {
+        const newOffer = {
+            name: 'Fourth of July Sales',
+            code: '4th',
+            cadence: 'year',
+            amount: 100,
+            duration: 'once',
+            type: 'fixed',
+            currency: 'USD',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+        
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('offers')
+            })
+            .matchBodySnapshot({
+                offers: [{
+                    id: anyObjectId,
+                    tier: {
+                        id: anyObjectId
+                    }
+                }]
+            });
+    });
+
+    it('Cannot create offer with same code', async function () {
+        const newOffer = {
+            name: 'Fourth of July',
+            code: '4th',
+            cadence: 'year',
+            amount: 200,
+            duration: 'once',
+            type: 'fixed',
+            currency: 'USD',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+        
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(400)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
+    it('Cannot create offer with same name', async function () {
+        const newOffer = {
+            name: 'Fourth of July Sales',
+            code: 'july4',
+            cadence: 'year',
+            amount: 150,
+            duration: 'once',
+            type: 'fixed',
+            currency: 'USD',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+        
+        await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(400)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
     it('Can browse', async function () {
         await agent
             .get(`offers/`)
@@ -91,7 +210,7 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(1).fill({
+                offers: new Array(3).fill({
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
@@ -99,10 +218,6 @@ describe('Offers API', function () {
                 })
             });
     });
-
-    /** 
-     * @todo: Can browse with filter
-     */
 
     it('Can get a single offer', async function () {
         await agent
@@ -150,6 +265,46 @@ describe('Offers API', function () {
             });
     });
 
+    it('Cannot update offer code to one that exists', async function () {
+        // We can change all fields except discount related fields
+        let updatedOffer = {
+            code: '4th'
+        };
+
+        await agent
+            .put(`offers/${savedOffer.id}/`)
+            .body({offers: [updatedOffer]})
+            .expectStatus(400)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: new Array(1).fill({
+                    id: anyErrorId
+                })
+            });
+    });
+
+    it('Cannot update offer name to one that exists', async function () {
+        // We can change all fields except discount related fields
+        let updatedOffer = {
+            name: 'Easter Sales'
+        };
+
+        await agent
+            .put(`offers/${savedOffer.id}/`)
+            .body({offers: [updatedOffer]})
+            .expectStatus(400)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: new Array(1).fill({
+                    id: anyErrorId
+                })
+            });
+    });
+
     it('Can archive an offer', async function () {
         // We can change all fields except discount related fields
         let updatedOffer = {
@@ -173,6 +328,42 @@ describe('Offers API', function () {
             })
             .expect(({body}) => {
                 body.offers[0].should.match(updatedOffer);
+            });
+    });
+
+    it('Can browse archived', async function () {
+        const filter = encodeURIComponent(`status:archived`);
+        await agent
+            .get(`offers/?filter=${filter}`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                offers: new Array(1).fill({
+                    id: anyObjectId,
+                    tier: {
+                        id: anyObjectId
+                    }
+                })
+            });
+    });
+
+    it('Can browse active', async function () {
+        const filter = encodeURIComponent(`status:active`);
+        await agent
+            .get(`offers/?filter=${filter}`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                offers: new Array(2).fill({
+                    id: anyObjectId,
+                    tier: {
+                        id: anyObjectId
+                    }
+                })
             });
     });
 
