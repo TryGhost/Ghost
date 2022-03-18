@@ -42,7 +42,7 @@
     "@tryghost/kg-clean-basic-html": "2.2.9",
     "@tryghost/kg-parser-plugins": "2.11.5",
     "@tryghost/limit-service": "1.0.10",
-    "@tryghost/members-csv": "1.2.6",
+    "@tryghost/members-csv": "1.2.8",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
     "@tryghost/nql": "0.9.0",
     "@tryghost/nql-lang": "0.3.0",
