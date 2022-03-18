@@ -105,14 +105,7 @@ describe('Members API', function () {
             .get('/members/')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(8).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(8).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -124,14 +117,7 @@ describe('Members API', function () {
             .get('/members/?filter=label:label-1')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -143,14 +129,7 @@ describe('Members API', function () {
             .get('/members/?search=member1')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -162,14 +141,7 @@ describe('Members API', function () {
             .get('/members/?filter=status:paid')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(5).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(5).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -181,14 +153,7 @@ describe('Members API', function () {
             .get(`/members/?filter=name:~'Venkman'`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -200,14 +165,7 @@ describe('Members API', function () {
             .get('/members/?filter=status:paid&include=emailRecipients')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(5).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(5).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -301,14 +259,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -320,14 +271,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=email_recipients`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -350,14 +294,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -516,14 +453,7 @@ describe('Members API', function () {
             .body({members: [initialMember]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -537,14 +467,7 @@ describe('Members API', function () {
             .body({members: [compedPayload]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -591,14 +514,7 @@ describe('Members API', function () {
             .body({members: [memberToChange]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -631,14 +547,7 @@ describe('Members API', function () {
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -774,14 +683,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray
-                })
+                members: new Array(1).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
