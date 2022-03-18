@@ -35,7 +35,7 @@
     "@ember/test-helpers": "2.6.0",
     "@glimmer/component": "1.0.4",
     "@html-next/vertical-collection": "2.1.0",
-    "@joeattardi/emoji-button": "4.6.2",
+    "@joeattardi/emoji-button": "4.6.4",
     "@sentry/ember": "6.16.1",
     "@tryghost/color-utils": "0.1.12",
     "@tryghost/helpers": "1.1.59",
