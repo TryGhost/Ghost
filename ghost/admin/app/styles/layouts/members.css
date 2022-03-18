@@ -577,8 +577,8 @@ p.gh-members-list-email {
 }
 
 @media (max-width: 620px),
-(min-width: 800px) and (max-width: 960px), 
-(min-width: 1080px) and (max-width: 1440px) {  
+(min-width: 800px) and (max-width: 960px),
+(min-width: 1080px) and (max-width: 1440px) {
     .gh-members-help-card .thumbnail {
         max-width: unset;
         margin-top: 2rem;
@@ -610,8 +610,8 @@ p.gh-members-list-email {
 }
 
 @media (max-width: 620px),
-(min-width: 800px) and (max-width: 960px), 
-(min-width: 1080px) and (max-width: 1440px) {  
+(min-width: 800px) and (max-width: 960px),
+(min-width: 1080px) and (max-width: 1440px) {
     .gh-members-help-content {
         flex-direction: column;
     }
@@ -640,12 +640,12 @@ p.gh-members-list-email {
 }
 
 @media (max-width: 620px),
-(min-width: 800px) and (max-width: 960px), 
-(min-width: 1080px) and (max-width: 1440px) {    
+(min-width: 800px) and (max-width: 960px),
+(min-width: 1080px) and (max-width: 1440px) {
     .gh-members-help-content .text {
         margin: 2rem 0 0;
     }
-    
+
     .gh-members-help-content .text p {
         margin-bottom: 2.8em;
     }
@@ -909,7 +909,7 @@ textarea.gh-member-details-textarea {
         float: none;
         width: 100%;
     }
-    
+
     .gh-member-details {
         position: relative;
         top: unset;
@@ -2052,6 +2052,10 @@ p.gh-members-import-errordetail:first-of-type {
     grid-row-gap: 24px;
 }
 
+.gh-member-settings .gh-member-product-container + .gh-member-product-container {
+    padding-top: 0 !important;
+}
+
 .gh-cp-memberproduct {
     margin-bottom: 0 !important;
 }
@@ -2105,8 +2109,8 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-memberproduct-list-footer {
     position:relative;
-    margin-top: 12px;
-    margin-bottom: -8px;
+    margin-top: 8px;
+    padding-bottom: 24px;
 }
 
 .gh-memberproduct-list-footer.min-height {
@@ -2209,10 +2213,6 @@ p.gh-members-import-errordetail:first-of-type {
     top: calc(100% - 36px);
     right: 0px;
     left: auto;
-}
-
-.gh-cp-memberproduct.multiple-subs .product-actions-menu {
-    top: calc(100% + 6px);
 }
 
 .gh-memberproduct-subscription .action-menu .gh-btn-subscription-action:not(:hover) {

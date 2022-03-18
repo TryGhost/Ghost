@@ -69,7 +69,8 @@ export default class ModalMemberProduct extends ModalComponent {
 
     @task({drop: true})
     *addProduct() {
-        let url = this.ghostPaths.url.api(`members/${this.member.get('id')}`);
+        const url = `${this.ghostPaths.url.api(`members/${this.member.get('id')}`)}?include=products`;
+
         // Cancel existing active subscriptions for member
         for (let i = 0; i < this.activeSubscriptions.length; i++) {
             const subscription = this.activeSubscriptions[i];
@@ -80,7 +81,8 @@ export default class ModalMemberProduct extends ModalComponent {
                 }
             });
         }
-        let response = yield this.ajax.put(url, {
+
+        const response = yield this.ajax.put(url, {
             data: {
                 members: [{
                     id: this.member.get('id'),
