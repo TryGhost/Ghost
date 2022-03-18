@@ -131,7 +131,7 @@ describe('Offers API', function () {
         };
 
         await agent
-            .put(`offers/${savedOffer.id}`)
+            .put(`offers/${savedOffer.id}/`)
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -157,7 +157,7 @@ describe('Offers API', function () {
         };
 
         await agent
-            .put(`offers/${savedOffer.id}`)
+            .put(`offers/${savedOffer.id}/`)
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -183,7 +183,7 @@ describe('Offers API', function () {
         };
 
         await agent
-            .put(`offers/${savedOffer.id}`)
+            .put(`offers/${savedOffer.id}/`)
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -210,7 +210,7 @@ describe('Offers API', function () {
 
         // No validation errors are thrown at the moment
         await agent
-            .put(`offers/${savedOffer.id}`)
+            .put(`offers/${savedOffer.id}/`)
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -240,7 +240,7 @@ describe('Offers API', function () {
 
         // No validation errors are thrown at the moment
         await agent
-            .put(`offers/${savedOffer.id}`)
+            .put(`offers/${savedOffer.id}/`)
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
