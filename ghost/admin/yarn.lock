@@ -1996,22 +1996,21 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.3.tgz#e45e384e4b8ec16bce2fd903af78450f6bf7ec98"
   integrity sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==
 
-"@joeattardi/emoji-button@4.6.2":
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/@joeattardi/emoji-button/-/emoji-button-4.6.2.tgz#75baf4ce27324e4d6fb90292f8b248235f638ad0"
-  integrity sha512-FhuzTmW3nVHLVp2BJfNX17CYV77fqtKZlx328D4h6Dw3cPTT1gJRNXN0jV7BvHgsl6Q/tN8DIQQxTUIO4jW3gQ==
+"@joeattardi/emoji-button@4.6.4":
+  version "4.6.4"
+  resolved "https://registry.yarnpkg.com/@joeattardi/emoji-button/-/emoji-button-4.6.4.tgz#9acea2cb18546f432f13ac77d3b688f287882cd4"
+  integrity sha512-vXji10ZwgxRG6xGQ93SIBUQEltWYTs3do/FSEn3qrRWUuavrqIUhh1oMEPmhKARF0pokW6bNRCvVKI6wq//H6w==
   dependencies:
     "@fortawesome/fontawesome-svg-core" "^1.2.28"
     "@fortawesome/free-regular-svg-icons" "^5.13.0"
     "@fortawesome/free-solid-svg-icons" "^5.13.0"
     "@popperjs/core" "^2.4.0"
-    "@types/twemoji" "^12.1.1"
     escape-html "^1.0.3"
     focus-trap "^5.1.0"
     fuzzysort "^1.1.4"
     tiny-emitter "^2.1.0"
     tslib "^2.0.0"
-    twemoji "^13.0.0"
+    twemoji "^12.1.2"
 
 "@kapouer/eslint-plugin-no-return-in-loop@1.0.0":
   version "1.0.0"
@@ -2454,11 +2453,6 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@types/symlink-or-copy/-/symlink-or-copy-1.2.0.tgz#4151a81b4052c80bc2becbae09f3a9ec010a9c7a"
   integrity sha512-Lja2xYuuf2B3knEsga8ShbOdsfNOtzT73GyJmZyY7eGl2+ajOqrs8yM5ze0fsSoYwvA6bw7/Qr7OZ7PEEmYwWg==
-
-"@types/twemoji@^12.1.1":
-  version "12.1.2"
-  resolved "https://registry.yarnpkg.com/@types/twemoji/-/twemoji-12.1.2.tgz#52578fd22665311e6a78d04f800275449d51c97e"
-  integrity sha512-3eMyKenMi0R1CeKzBYtk/Z2JIHsTMQrIrTah0q54o45pHTpWVNofU2oHx0jS8tqsDRhis2TbB6238WP9oh2l2w==
 
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"
@@ -15184,19 +15178,19 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-twemoji-parser@13.1.0:
-  version "13.1.0"
-  resolved "https://registry.yarnpkg.com/twemoji-parser/-/twemoji-parser-13.1.0.tgz#65e7e449c59258791b22ac0b37077349127e3ea4"
-  integrity sha512-AQOzLJpYlpWMy8n+0ATyKKZzWlZBJN+G0C+5lhX7Ftc2PeEVdUU/7ns2Pn2vVje26AIZ/OHwFoUbdv6YYD/wGg==
+twemoji-parser@12.1.3:
+  version "12.1.3"
+  resolved "https://registry.yarnpkg.com/twemoji-parser/-/twemoji-parser-12.1.3.tgz#916c0153e77bd5f1011e7a99cbeacf52e43c9371"
+  integrity sha512-ND4LZXF4X92/PFrzSgGkq6KPPg8swy/U0yRw1k/+izWRVmq1HYi3khPwV3XIB6FRudgVICAaBhJfW8e8G3HC7Q==
 
-twemoji@^13.0.0:
-  version "13.1.0"
-  resolved "https://registry.yarnpkg.com/twemoji/-/twemoji-13.1.0.tgz#65bb71e966dae56f0d42c30176f04cbdae109913"
-  integrity sha512-e3fZRl2S9UQQdBFLYXtTBT6o4vidJMnpWUAhJA+yLGR+kaUTZAt3PixC0cGvvxWSuq2MSz/o0rJraOXrWw/4Ew==
+twemoji@^12.1.2:
+  version "12.1.6"
+  resolved "https://registry.yarnpkg.com/twemoji/-/twemoji-12.1.6.tgz#3425427627a38ab5cae24e7690cecb691022479f"
+  integrity sha512-FIKi9Jne5IiDGDWekoANJ1a8ltUKVbJLEIR8XUpbFRDMqIPgLWnYgjeWZ1KOrdiTztRCAa9x4v+5w5OuiJOGVw==
   dependencies:
     fs-extra "^8.0.1"
     jsonfile "^5.0.0"
-    twemoji-parser "13.1.0"
+    twemoji-parser "12.1.3"
     universalify "^0.1.2"
 
 type-check@^0.4.0, type-check@~0.4.0:
