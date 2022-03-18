@@ -265,8 +265,8 @@ describe('Acceptance: Members filtering', function () {
 
         it('can filter by billing period', async function () {
             // add some members to filter
-            this.server.createList('member', 3, {subscriptions: [{plan_interval: 'month'}]});
-            this.server.createList('member', 4, {subscriptions: [{plan_interval: 'year'}]});
+            this.server.createList('member', 3).forEach(member => this.server.create('subscription', {member, planInterval: 'month'}));
+            this.server.createList('member', 4).forEach(member => this.server.create('subscription', {member, planInterval: 'year'}));
 
             await visit('/members');
 
@@ -310,8 +310,8 @@ describe('Acceptance: Members filtering', function () {
 
         it('can filter by stripe subscription status', async function () {
             // add some members to filter
-            this.server.createList('member', 3, {subscriptions: [{status: 'active'}]});
-            this.server.createList('member', 4, {subscriptions: [{status: 'trialing'}]});
+            this.server.createList('member', 3).forEach(member => this.server.create('subscription', {member, status: 'active'}));
+            this.server.createList('member', 4).forEach(member => this.server.create('subscription', {member, status: 'trialing'}));
 
             await visit('/members');
 
@@ -764,9 +764,9 @@ describe('Acceptance: Members filtering', function () {
             });
 
             // add some members to filter
-            this.server.createList('member', 3, {subscriptions: [{start_date: moment('2022-02-01 12:00:00').format('YYYY-MM-DD HH:mm:ss')}]});
-            this.server.createList('member', 4, {subscriptions: [{start_date: moment('2022-02-05 12:00:00').format('YYYY-MM-DD HH:mm:ss')}]});
-            this.server.createList('member', 2, {subscriptions: []});
+            this.server.createList('member', 3).forEach(member => this.server.create('subscription', {member, startDate: moment('2022-02-01 12:00:00').format('YYYY-MM-DD HH:mm:ss')}));
+            this.server.createList('member', 4).forEach(member => this.server.create('subscription', {member, startDate: moment('2022-02-05 12:00:00').format('YYYY-MM-DD HH:mm:ss')}));
+            this.server.createList('member', 2);
 
             await visit('/members');
 
@@ -1085,9 +1085,9 @@ describe('Acceptance: Members filtering', function () {
             });
 
             // add some members to filter
-            this.server.createList('member', 3, {subscriptions: [{current_period_end: moment('2022-02-01 12:00:00').format('YYYY-MM-DD HH:mm:ss')}]});
-            this.server.createList('member', 4, {subscriptions: [{current_period_end: moment('2022-02-05 12:00:00').format('YYYY-MM-DD HH:mm:ss')}]});
-            this.server.createList('member', 2, {subscriptions: []});
+            this.server.createList('member', 3).forEach(member => this.server.create('subscription', {member, currentPeriodEnd: moment('2022-02-01 12:00:00').format('YYYY-MM-DD HH:mm:ss')}));
+            this.server.createList('member', 4).forEach(member => this.server.create('subscription', {member, currentPeriodEnd: moment('2022-02-05 12:00:00').format('YYYY-MM-DD HH:mm:ss')}));
+            this.server.createList('member', 2);
 
             await visit('/members');
 
@@ -1160,9 +1160,9 @@ describe('Acceptance: Members filtering', function () {
 
         it('can handle multiple filters', async function () {
             // add some members to filter
-            this.server.createList('member', 1, {subscriptions: [{status: 'active'}]});
-            this.server.createList('member', 2, {subscriptions: [{status: 'trialing'}]});
-            this.server.createList('member', 3, {emailOpenRate: 50, subscriptions: [{status: 'trialing'}]});
+            this.server.createList('member', 1).forEach(member => this.server.create('subscription', {member, status: 'active'}));
+            this.server.createList('member', 2).forEach(member => this.server.create('subscription', {member, status: 'trialing'}));
+            this.server.createList('member', 3, {emailOpenRate: 50}).forEach(member => this.server.create('subscription', {member, status: 'trialing'}));
             this.server.createList('member', 4, {emailOpenRate: 100});
 
             await visit('/members');
@@ -1216,7 +1216,7 @@ describe('Acceptance: Members filtering', function () {
         });
 
         it('has a no-match state', async function () {
-            this.server.createList('member', 5, {subscriptions: [{status: 'active'}]});
+            this.server.createList('member', 5).forEach(member => this.server.create('subscription', {member, status: 'active'}));
 
             await visit('/members');
 
@@ -1259,7 +1259,7 @@ describe('Acceptance: Members filtering', function () {
             // meaning you could have an "is-greater" operator applied to an
             // "is/is-not" filter type
 
-            this.server.createList('member', 3, {subscriptions: [{status: 'active'}]});
+            this.server.createList('member', 3).forEach(member => this.server.create('subscription', {member, status: 'active'}));
             this.server.createList('member', 4, {emailCount: 10});
 
             await visit('/members');
@@ -1414,7 +1414,7 @@ describe('Acceptance: Members filtering', function () {
         });
 
         it('can search + filter', async function () {
-            this.server.create('member', {name: 'A', email: 'a@aaa.aaa', subscriptions: [{status: 'active'}]});
+            this.server.create('member', {name: 'A', email: 'a@aaa.aaa', subscriptions: [this.server.create('subscription', {status: 'active'})]});
 
             await visit('/members');
 
