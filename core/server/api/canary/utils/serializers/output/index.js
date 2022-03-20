@@ -163,5 +163,9 @@ module.exports = {
 
     get session() {
         return require('./session');
+    },
+
+    get offers() {
+        return require('./offers');
     }
 };
