@@ -1073,3 +1073,10 @@ a.gh-dashboard-container {
     opacity: 0;
     max-height: 0;
 }
+
+
+/* Temporary section for prototype convenience */
+.prototype-panel {
+    /* Keep it out of view */
+    margin-top: 100vh;
+}
