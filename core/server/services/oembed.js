@@ -9,7 +9,8 @@ const {CookieJar} = require('tough-cookie');
 
 const messages = {
     noUrlProvided: 'No url provided.',
-    insufficientMetadata: 'URL contains insufficient metadata.'
+    insufficientMetadata: 'URL contains insufficient metadata.',
+    unknownProvider: 'No provider found for supplied URL.'
 };
 
 /**
