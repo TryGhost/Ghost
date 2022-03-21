@@ -143,6 +143,11 @@ describe('Unit: api/shared/serializers/handle', function () {
                     before: sinon.stub().resolves()
 
                 },
+                default: {
+                    add: sinon.stub().resolves(),
+                    all: sinon.stub().resolves()
+
+                },
                 posts: {
                     add: sinon.stub().resolves(),
                     all: sinon.stub().resolves()
@@ -169,6 +174,45 @@ describe('Unit: api/shared/serializers/handle', function () {
                     sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
 
                     sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.posts.all, apiSerializers.posts.add, apiSerializers.all.after);
+
+                    sinon.assert.notCalled(apiSerializers.default.add);
+                    sinon.assert.notCalled(apiSerializers.default.all);
+                });
+        });
+
+        it('correctly calls default serializer when no custom one is set', function () {
+            const apiSerializers = {
+                all: {
+                    after: sinon.stub().resolves(),
+                    before: sinon.stub().resolves()
+
+                },
+                default: {
+                    add: sinon.stub().resolves(),
+                    all: sinon.stub().resolves()
+                }
+            };
+
+            const response = [];
+            const apiConfig = {docName: 'posts', method: 'add'};
+            const frame = {};
+
+            const stubsToCheck = [
+                apiSerializers.all.before,
+                apiSerializers.default.all,
+                apiSerializers.default.add
+            ];
+
+            return shared.serializers.handle.output(response, apiConfig, apiSerializers, frame)
+                .then(() => {
+                    stubsToCheck.forEach((stub) => {
+                        sinon.assert.calledOnceWithExactly(stub, response, apiConfig, frame);
+                    });
+
+                    // After has a different call signature... is this a intentional?
+                    sinon.assert.calledOnceWithExactly(apiSerializers.all.after, apiConfig, frame);
+
+                    sinon.assert.callOrder(apiSerializers.all.before, apiSerializers.default.all, apiSerializers.default.add, apiSerializers.all.after);
                 });
         });
     });
