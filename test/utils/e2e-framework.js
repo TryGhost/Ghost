@@ -271,7 +271,10 @@ module.exports = {
         get: getFixture,
         getCurrentOwnerUser: fixtureUtils.getCurrentOwnerUser,
         init: initFixtures,
-        restore: resetData
+        restore: resetData,
+        getPathForFixture: (fixturePath) => {
+            return path.join(__dirname, 'fixtures', fixturePath);
+        }
     },
     matchers: {
         anyString: any(String),

@@ -42,7 +42,7 @@ describe('Authentication API', function () {
             const requestMock = nock('https://api.github.com')
                 .get('/repos/tryghost/dawn/zipball')
                 .query(true)
-                .replyWithFile(200, __dirname + '/../../../utils/fixtures/themes/valid.zip');
+                .replyWithFile(200, fixtureManager.getPathForFixture('themes/valid.zip'));
 
             await agent
                 .post('authentication/setup')
@@ -166,7 +166,7 @@ describe('Authentication API', function () {
             const requestMock = nock('https://api.github.com')
                 .get('/repos/tryghost/casper/zipball')
                 .query(true)
-                .replyWithFile(200, __dirname + '/../../../utils/fixtures/themes/valid.zip');
+                .replyWithFile(200, fixtureManager.getPathForFixture('themes/valid.zip'));
 
             await cleanAgent
                 .post('authentication/setup')
