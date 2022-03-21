@@ -1,65 +1,111 @@
-const path = require('path');
-const should = require('should');
-const supertest = require('supertest');
-const sinon = require('sinon');
-const testUtils = require('../../utils');
-const localUtils = require('./utils');
-const config = require('../../../core/shared/config');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
+
+const matchLabel = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
 
 describe('Labels API', function () {
-    let request;
-
-    after(function () {
-        sinon.restore();
-    });
+    let agent;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request);
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init();
+        await agent.loginAsOwner();
     });
 
     it('Can add', async function () {
-        const label = {
-            name: 'test'
-        };
+        await agent
+            .post('labels')
+            .body({labels: [{
+                name: 'test'
+            }]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                labels: [matchLabel]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('labels')
+            });
+    });
 
-        const res = await request
-            .post(localUtils.API.getApiQuery(`labels/`))
-            .send({labels: [label]})
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(201);
+    it('Errors when adding label with the same name', async function () {
+        await agent
+            .post('labels')
+            .body({labels: [{
+                name: 'test'
+            }]})
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.labels);
-
-        jsonResponse.labels.should.have.length(1);
-        jsonResponse.labels[0].name.should.equal(label.name);
-        jsonResponse.labels[0].slug.should.equal(label.name);
-
-        should.exist(res.headers.location);
-        res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('labels/')}${res.body.labels[0].id}/`);
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 
     it('Can browse with member count', async function () {
-        const res = await request
-            .get(localUtils.API.getApiQuery('labels/?include=count.members'))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        await agent
+            .get('labels/?include=count.members')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                labels: [matchLabel]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.labels);
+    it('Can read by slug and edit', async function () {
+        const {body} = await agent
+            .get('labels/slug/test/')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                labels: [matchLabel]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
 
-        jsonResponse.labels.should.have.length(1);
-        should.exist(jsonResponse.labels[0].count);
-        jsonResponse.labels[0].count.members.should.equal(0);
+        const id = body.labels[0].id;
+
+        await agent
+            .put(`labels/${id}`)
+            .body({labels: [{name: 'testing'}]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                labels: [matchLabel]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can destroy', async function () {
+        const {body} = await agent
+            .get('labels/slug/test/')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                labels: [matchLabel]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const id = body.labels[0].id;
+
+        await agent
+            .delete(`labels/${id}`)
+            .expectStatus(204)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 });
