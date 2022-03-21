@@ -60,6 +60,9 @@ export default class FeatureService extends Service {
     @feature('multipleProducts')
         multipleProducts;
 
+    @feature('dashboardV5')
+        dashboardV5;
+
     @feature('oauthLogin')
         oauthLogin;
 
