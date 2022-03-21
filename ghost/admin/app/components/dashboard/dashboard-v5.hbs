@@ -1,1 +1,94 @@
-Dashboard 5.0 is active, but not yet implemented
+<section class="gh-dashboard-area lw-banner">
+    Dashboard 5.0 is active, but not yet implemented
+</section>
+
+{{#if this.areMembersEnabled}}
+    <section>
+        These are members related graphs
+    </section>
+
+    {{#if this.hasPaidTiers}}
+        <section>
+            These are some paid members related graphs
+        </section>
+    {{/if}}
+{{/if}}
+
+{{#if this.areNewslettersEnabled}}
+    <section>
+        These are newsletter related graphs
+    </section>
+{{/if}}
+
+<div class="gh-main-section">
+    <h4 class="gh-main-section-header small bn">Prototype control panel</h4>
+    <div class="gh-expandable">
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Has paid tiers</h4>
+                    <p class="gh-expandable-description">
+                        Paid memberships
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch">
+                        <input type="checkbox" checked={{this.mockPaidTiers}} id="mockPaidTiers" onclick={{action (mut this.mockPaidTiers) value="target.checked"}}>
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Stripe connected</h4>
+                    <p class="gh-expandable-description">
+                        Mock that Stripe is enabled
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch">
+                        <input type="checkbox" checked={{this.mockStripeEnabled}} id="stripeEnabled" onclick={{action (mut this.mockStripeEnabled) value="target.checked"}}>
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Newsletters enabled</h4>
+                    <p class="gh-expandable-description">
+                        All email related charts shown
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch">
+                        <input type="checkbox" checked={{this.mockNewslettersEnabled}} id="mockNewslettersEnabled" onclick={{action (mut this.mockNewslettersEnabled) value="target.checked"}}>
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Members enabled</h4>
+                    <p class="gh-expandable-description">
+                        Setting subscription access to other value than 'Nobody'
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch">
+                        <input type="checkbox" checked={{this.mockMembersEnabled}} id="mockMembersEnabled" onclick={{action (mut this.mockMembersEnabled) value="target.checked"}}>
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

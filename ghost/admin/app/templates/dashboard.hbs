@@ -5,11 +5,10 @@
         </h2>
     </GhCanvasHeader>
 
-
-    <div class="view-container gh-dashboard">
-        {{#if (feature "dashboardV5")}}
-            <Dashboard::DashboardV5 />
-        {{else}}
+    {{#if (feature "dashboardV5")}}
+        <Dashboard::DashboardV5 />
+    {{else}}
+        <div class="view-container gh-dashboard">
             {{#if (and this.session.user.isOwnerOnly (not this.settings.editorIsLaunchComplete) (not (feature "improvedOnboarding")))}}
                 <section class="gh-dashboard-area lw-banner">
                     <div class="gh-lw-banner" style="background-image:url(assets/img/launch-wizard-bg.png);">
@@ -206,6 +205,6 @@
                 </div>
                 {{/if}}
             </section>
-        {{/if}}
-    </div>
+        </div>
+    {{/if}}
 </section>
