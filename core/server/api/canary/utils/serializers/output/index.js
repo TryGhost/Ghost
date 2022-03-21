@@ -145,10 +145,6 @@ module.exports = {
         return require('./emails');
     },
 
-    get labels() {
-        return require('./labels');
-    },
-
     get snippets() {
         return require('./snippets');
     },
