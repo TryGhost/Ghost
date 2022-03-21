@@ -4,7 +4,10 @@
 .tmp
 .eslintignore
 .eslintrc.json
+.eslintrc.js
 .npmignore
+.c8rc.json
+jsconfig.json
 changelog.md*
 coverage
 docs/**
@@ -43,7 +46,6 @@ test/**
 CONTRIBUTING.md
 content/themes/casper/SECURITY.md
 SECURITY.md
-.travis.yml
 renovate.json
 *.html
 !core/server/views/**
