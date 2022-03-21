@@ -129,10 +129,6 @@ module.exports = {
         return require('./themes');
     },
 
-    get actions() {
-        return require('./actions');
-    },
-
     get site() {
         return require('./site');
     },
