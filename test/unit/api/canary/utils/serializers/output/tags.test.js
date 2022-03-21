@@ -20,7 +20,7 @@ describe('Unit: canary/utils/serializers/output/tags', function () {
     });
 
     it('calls the mapper when single tag present', function () {
-        const apiConfig = {};
+        const apiConfig = {docName: 'tags'};
         const frame = {
             options: {
                 context: {}
@@ -29,14 +29,14 @@ describe('Unit: canary/utils/serializers/output/tags', function () {
 
         const ctrlResponse = tagModel(testUtils.DataGenerator.forKnex.createTag());
 
-        serializers.output.tags.all(ctrlResponse, apiConfig, frame);
+        serializers.output.default.all(ctrlResponse, apiConfig, frame);
 
         mappers.tags.callCount.should.equal(1);
         mappers.tags.getCall(0).args.should.eql([ctrlResponse, frame]);
     });
 
     it('calls the mapper with multiple tags', function () {
-        const apiConfig = {};
+        const apiConfig = {docName: 'tags'};
         const frame = {
             options: {
                 context: {}
@@ -51,7 +51,7 @@ describe('Unit: canary/utils/serializers/output/tags', function () {
             meta: {}
         });
 
-        serializers.output.tags.all(ctrlResponse, apiConfig, frame);
+        serializers.output.default.all(ctrlResponse, apiConfig, frame);
 
         mappers.tags.callCount.should.equal(2);
         mappers.tags.getCall(0).args.should.eql([ctrlResponse.data[0], frame]);
