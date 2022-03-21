@@ -93,10 +93,6 @@ module.exports = {
         return require('./files');
     },
 
-    get tags() {
-        return require('./tags');
-    },
-
     get users() {
         return require('./users');
     },
