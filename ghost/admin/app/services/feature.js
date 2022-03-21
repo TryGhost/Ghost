@@ -71,6 +71,9 @@ export default class FeatureService extends Service {
 
     @feature('beforeAfterCard')
         beforeAfterCard;
+    
+    @feature('multipleNewsletters')
+        multipleNewsletters;
 
     @feature('tweetGridCard')
         tweetGridCard;
