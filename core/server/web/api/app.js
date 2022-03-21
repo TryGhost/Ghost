@@ -22,6 +22,9 @@ module.exports = function setupApiApp() {
     apiApp.lazyUse(urlUtils.getVersionPath({version: 'v4', type: 'content'}), require('./canary/content/app'));
     apiApp.lazyUse(urlUtils.getVersionPath({version: 'v4', type: 'admin'}), require('./canary/admin/app'));
 
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v5', type: 'content'}), require('./canary/content/app'));
+    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v5', type: 'admin'}), require('./canary/admin/app'));
+
     apiApp.lazyUse(urlUtils.getVersionPath({version: 'canary', type: 'content'}), require('./canary/content/app'));
     apiApp.lazyUse(urlUtils.getVersionPath({version: 'canary', type: 'admin'}), require('./canary/admin/app'));
 

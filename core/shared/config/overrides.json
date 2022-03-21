@@ -82,8 +82,8 @@
             "all": ["v2", "v3", "v4", "v5", "canary"],
             "default": "v4",
             "canary": {
-                "admin": "admin",
-                "content": "content"
+                "admin": "canary/admin",
+                "content": "canary/content"
             },
             "v5": {
                 "admin": "admin",
