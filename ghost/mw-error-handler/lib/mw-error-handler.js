@@ -78,14 +78,18 @@ module.exports.prepareError = (err, req, res, next) => {
     // alternative for res.status();
     res.statusCode = err.statusCode;
 
-    prepareStackForUser(err);
-
     // never cache errors
     res.set({
         'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
     });
 
     next(err);
+};
+
+module.exports.prepareStack = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+    const clonedError = prepareStackForUser(err);
+
+    next(clonedError);
 };
 
 const jsonErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
@@ -173,27 +177,33 @@ module.exports.pageNotFound = (req, res, next) => {
 };
 
 module.exports.handleJSONResponse = sentry => [
-    // Handle the error in Sentry
-    sentry.errorHandler,
     // Make sure the error can be served
     module.exports.prepareError,
+    // Handle the error in Sentry
+    sentry.errorHandler,
+    // Format the stack for the user
+    module.exports.prepareStack,
     // Render the error using JSON format
     jsonErrorRenderer
 ];
 
 module.exports.handleJSONResponseV2 = sentry => [
-    // Handle the error in Sentry
-    sentry.errorHandler,
     // Make sure the error can be served
     module.exports.prepareError,
+    // Handle the error in Sentry
+    sentry.errorHandler,
+    // Format the stack for the user
+    module.exports.prepareStack,
     // Render the error using JSON format
     jsonErrorRendererV2
 ];
 
 module.exports.handleHTMLResponse = sentry => [
+    // Make sure the error can be served
+    module.exports.prepareError,
     // Handle the error in Sentry
     sentry.errorHandler,
-    // Make sure the error can be served
-    module.exports.prepareError
+    // Format the stack for the user
+    module.exports.prepareStack
 ];
 

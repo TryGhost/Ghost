@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const {InternalServerError} = require('@tryghost/errors');
-const {prepareError, handleJSONResponse, handleJSONResponseV2, handleHTMLResponse} = require('../lib/mw-error-handler');
+const {prepareError, handleJSONResponse, handleJSONResponseV2, handleHTMLResponse, prepareStack} = require('../lib/mw-error-handler');
 
 describe('Prepare Error', function () {
     it('Correctly prepares a normal error', function (done) {
@@ -17,11 +17,21 @@ describe('Prepare Error', function () {
     });
 });
 
+describe('Prepare Stack', function () {
+    it('Correctly prepares the stack for an error', function (done) {
+        prepareStack(new Error('test!'), {}, {}, (err) => {
+            // Includes "Stack Trace" text prepending human readable trace
+            err.stack.should.startWith('Error: test!\nStack Trace:');
+            done();
+        });
+    });
+});
+
 describe('Error renderers', function () {
     it('Renders JSON', function (done) {
         const errorRenderer = handleJSONResponse({
             errorHandler: () => {}
-        })[2];
+        })[3];
 
         errorRenderer(new Error('test!'), {}, {
             json: (data) => {
@@ -35,7 +45,7 @@ describe('Error renderers', function () {
     it('Renders JSON for v2', function (done) {
         const errorRenderer = handleJSONResponseV2({
             errorHandler: () => {}
-        })[2];
+        })[3];
 
         errorRenderer(new Error('test!'), {}, {
             json: (data) => {
@@ -49,7 +59,7 @@ describe('Error renderers', function () {
     it('Uses templates when required', function (done) {
         const errorRenderer = handleJSONResponseV2({
             errorHandler: () => {}
-        })[2];
+        })[3];
 
         errorRenderer(new InternalServerError({
             message: 'test!'
@@ -72,6 +82,6 @@ describe('Error renderers', function () {
             errorHandler: () => {}
         });
 
-        renderer.length.should.eql(2);
+        renderer.length.should.eql(3);
     });
 });
