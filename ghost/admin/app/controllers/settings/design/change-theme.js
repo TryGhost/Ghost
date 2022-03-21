@@ -19,19 +19,26 @@ export default class ChangeThemeController extends Controller {
         ref: 'default',
         image: 'assets/img/themes/Casper.jpg'
     }, {
-        name: 'Journal',
-        category: 'Newsletter',
-        url: 'https://github.com/TryGhost/Journal',
-        previewUrl: 'https://journal.ghost.io/',
-        ref: 'TryGhost/Journal',
-        image: 'assets/img/themes/Journal.png'
-    }, {
         name: 'Edition',
         category: 'Newsletter',
         url: 'https://github.com/TryGhost/Edition',
         previewUrl: 'https://edition.ghost.io/',
         ref: 'TryGhost/Edition',
         image: 'assets/img/themes/Edition.png'
+    }, {
+        name: 'Headline',
+        category: 'News',
+        url: 'https://github.com/TryGhost/Headline',
+        previewUrl: 'https://headline.ghost.io',
+        ref: 'TryGhost/Headline',
+        image: 'assets/img/themes/Headline.jpg'
+    }, {
+        name: 'Journal',
+        category: 'Newsletter',
+        url: 'https://github.com/TryGhost/Journal',
+        previewUrl: 'https://journal.ghost.io/',
+        ref: 'TryGhost/Journal',
+        image: 'assets/img/themes/Journal.png'
     }, {
         name: 'Digest',
         category: 'Newsletter',
