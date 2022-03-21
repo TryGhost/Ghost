@@ -147,9 +147,6 @@ export const member = {
 
 export function paidMemberOnTier() {
     let price = site?.products?.[2].monthlyPrice;
-    /* eslint-disable no-console */
-    console.log(site?.products);
-    console.log('price', price);
     let updatedMember = getMemberData({
         paid: true,
         subscriptions: [
