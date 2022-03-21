@@ -1,26 +1,24 @@
-<section class="gh-dashboard-area lw-banner">
-    Dashboard 5.0 is active, but not yet implemented
+<section>
+    {{#if this.areMembersEnabled}}
+        <article class="gh-dashboard-box">
+            These are members related graphs
+        </article>
+
+        {{#if this.hasPaidTiers}}
+            <article class="gh-dashboard-box">
+                These are some paid members related graphs
+            </article>
+        {{/if}}
+    {{/if}}
+
+    {{#if this.areNewslettersEnabled}}
+        <article class="gh-dashboard-box">
+            These are newsletter related graphs
+        </article>
+    {{/if}}
 </section>
 
-{{#if this.areMembersEnabled}}
-    <section>
-        These are members related graphs
-    </section>
-
-    {{#if this.hasPaidTiers}}
-        <section>
-            These are some paid members related graphs
-        </section>
-    {{/if}}
-{{/if}}
-
-{{#if this.areNewslettersEnabled}}
-    <section>
-        These are newsletter related graphs
-    </section>
-{{/if}}
-
-<div class="gh-main-section">
+<div class="gh-main-section prototype-panel">
     <h4 class="gh-main-section-header small bn">Prototype control panel</h4>
     <div class="gh-expandable">
         <div class="gh-expandable-block">
