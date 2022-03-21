@@ -109,10 +109,6 @@ module.exports = {
         return require('./oembed');
     },
 
-    get authors() {
-        return require('./authors');
-    },
-
     get config() {
         return require('./config');
     },
