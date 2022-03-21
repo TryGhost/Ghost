@@ -1,5 +1,5 @@
 module.exports = (model, frame) => {
-    const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
+    const jsonModel = model.toJSON(frame.options);
 
     if (jsonModel.api_keys) {
         jsonModel.api_keys.forEach((key) => {
