@@ -8,7 +8,7 @@
 
     <div class="view-container gh-dashboard">
         {{#if (feature "dashboardV5")}}
-            Dashboard 5.0 is active! 😎
+            <Dashboard::DashboardV5 />
         {{else}}
             {{#if (and this.session.user.isOwnerOnly (not this.settings.editorIsLaunchComplete) (not (feature "improvedOnboarding")))}}
                 <section class="gh-dashboard-area lw-banner">
