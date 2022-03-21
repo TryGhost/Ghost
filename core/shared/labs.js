@@ -35,7 +35,8 @@ const ALPHA_FEATURES = [
     'membersActivity',
     'urlCache',
     'beforeAfterCard',
-    'tweetGridCard'
+    'tweetGridCard',
+    'multipleNewsletters'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
