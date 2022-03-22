@@ -258,7 +258,7 @@ jobs:
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR
-          ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          ghost update --auto -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
       #- name: Update from latest v1
           #run: |
@@ -276,7 +276,7 @@ jobs:
         run: |
           DIR=$(mktemp -d)
           ghost install v3 --local -d $DIR
-          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          ghost update --auto -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
       - name: Print debug logs
         if: failure()
