@@ -1,19 +1,60 @@
 <section>
     {{#if this.areMembersEnabled}}
-        <Dashboard::MembersGraphs />
+        <section class="prototype-section">
+            <Dashboard::V5::MembersCounts />
+        </section>
 
-        {{#if this.hasPaidTiers}}
+        <section class="prototype-section">
             <article class="gh-dashboard-box">
-                These are some paid members related graphs
+                Dropdown: 7d/30d/90d/all time
             </article>
-        {{/if}}
+
+            <article class="gh-dashboard-box">
+                Total members graph
+            </article>
+
+            {{#if this.hasPaidTiers}}
+                <article class="gh-dashboard-box">
+                    MRR graph
+                </article>
+
+                <article class="gh-dashboard-box">
+                    Total paid graph
+                </article>
+
+                <article class="gh-dashboard-box">
+                    Paid members graph (new, canceled)
+                </article>
+
+                <article class="gh-dashboard-box">
+                    Paid mix with cadence or tiers segmented control
+                </article>
+            {{/if}}
+        </section>
+        <section class="prototype-section">
+            <Dashboard::V5::MembersEngagement />
+        </section>
     {{/if}}
 
     {{#if this.areNewslettersEnabled}}
-        <article class="gh-dashboard-box">
-            These are newsletter related graphs
-        </article>
+        <section class="prototype-section">
+            <Dashboard::V5::MembersEmail />
+        </section>
     {{/if}}
+
+    <section class="prototype-section">
+        <h2>Recent posts</h2>
+        <article class="gh-dashboard-box">
+            Recent posts
+        </article>
+    </section>
+
+    <section class="prototype-section">
+        <h2>Activity</h2>
+        <article class="gh-dashboard-box">
+            Activity feed
+        </article>
+    </section>
 </section>
 
 <div class="gh-main-section prototype-panel">
