@@ -151,6 +151,8 @@ describe('Acceptance: Member details', function () {
 
         expect(findAll('[data-test-subscription]').length, 'displays all member subscriptions')
             .to.equal(2);
+        await click('[data-test-button="save"]');
+        expect(find('[data-test-button="save"]')).to.not.contain.text('Retry');
     });
 
     it('displays correctly one canceled subscription', async function () {
