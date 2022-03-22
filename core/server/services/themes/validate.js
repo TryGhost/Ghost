@@ -22,26 +22,27 @@ const check = async function check(theme, isZip) {
     debug('Begin: Check');
     // gscan can slow down boot time if we require on boot, for now nest the require.
     const gscan = require('gscan');
+    const checkedVersion = 'v4';
     let checkedTheme;
 
     if (isZip) {
         debug('zip mode');
         checkedTheme = await gscan.checkZip(theme, {
             keepExtractedDir: true,
-            checkVersion: 'v4',
+            checkVersion: checkedVersion,
             labs: labs.getAll()
         });
     } else {
         debug('non-zip mode');
         checkedTheme = await gscan.check(theme.path, {
-            checkVersion: 'v4',
+            checkVersion: checkedVersion,
             labs: labs.getAll()
         });
     }
 
     checkedTheme = gscan.format(checkedTheme, {
         onlyFatalErrors: config.get('env') === 'production',
-        checkVersion: 'v4'
+        checkVersion: checkedVersion
     });
 
     debug('End: Check');
