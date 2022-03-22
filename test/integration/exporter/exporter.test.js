@@ -49,6 +49,7 @@ describe('Exporter', function () {
                 'migrations',
                 'migrations_lock',
                 'mobiledoc_revisions',
+                'newsletters',
                 'oauth',
                 'offers',
                 'offer_redemptions',
