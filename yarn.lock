@@ -1757,7 +1757,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.8.tgz#754af77b05336a689135971811ee438edda04876"
   integrity sha512-PalAdGOADidoxXg54F/QJEc1C9PwlQvWnIF1MksWY2Pp8XiH5mzeHisNnqXfXO3dEEopPPreIj7Lx/y6U9NAyQ==
 
-"@tryghost/domain-events@^0.1.8", "@tryghost/domain-events@^0.1.9":
+"@tryghost/domain-events@0.1.9", "@tryghost/domain-events@^0.1.8", "@tryghost/domain-events@^0.1.9":
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.9.tgz#f2de5189df2238bb72a53a76abcded0d84ae6fa7"
   integrity sha512-n2FEA5xBQBCHq02CNBMh8BkWV7zdy9yp/Y4dGWc2QQ58lcNTgSBqZBaPpfPURgTGJbLqO+xsNQgU0LYvUN9JTQ==
