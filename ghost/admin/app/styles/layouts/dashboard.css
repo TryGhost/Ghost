@@ -1078,5 +1078,44 @@ a.gh-dashboard-container {
 /* Temporary section for prototype convenience */
 .prototype-panel {
     /* Keep it out of view */
-    margin-top: 100vh;
+    margin-top: 50vh;
 }
+
+.prototype-counts {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 28px;
+}
+
+.prototype-section {
+    margin-bottom: 40px;
+}
+
+.prototype-section > h2 {
+    font-size: 1.65rem;
+    font-weight: 600;
+    line-height: 1.4em;
+    margin-bottom: 8px;
+    color: var(--black);
+}
+
+.prototype-counts.col {
+    flex-direction: column;
+}
+
+.prototype-counts > * {
+    flex-grow: 1;
+    min-width: 0;
+    flex-basis: 0;
+}
+
+.prototype-box {
+    border: 1px solid #ebeef0;
+    padding: 28px;
+}
+
+.prototype-box .number {
+    font-size: 24px;
+}
+
