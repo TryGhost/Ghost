@@ -46,6 +46,14 @@ module.exports = function setupAdminApp() {
     // Finally, routing
     adminApp.get('*', require('./controller'));
 
+    adminApp.use((err, req, res, next) => {
+        if (err.statusCode && err.statusCode === 404) {
+            // Remove 404 errors for next middleware to inject
+            next();
+        } else {
+            next(err);
+        }
+    });
     adminApp.use(errorHandler.pageNotFound);
     adminApp.use(errorHandler.handleHTMLResponse(sentry));
 
