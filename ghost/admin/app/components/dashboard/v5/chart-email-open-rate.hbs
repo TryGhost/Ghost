@@ -1,0 +1,25 @@
+<h2>Email</h2>
+
+<div class="prototype-counts">
+    <div class="prototype-counts col">
+        <div class="prototype-box">
+            <div class="number">{{this.dataSubscribers}}</div>
+            <div>Newsletter subscribers</div>
+        </div>
+
+        <div class="prototype-box">
+            <div class="number">{{this.dataEmailsSent}}</div>
+            <div>Emails sent in the past 30 days</div>
+        </div>
+    </div>
+
+    <div class="prototype-box">
+        <h4>Email open rate</h4>
+        <EmberChart
+            @type={{this.chartType}}
+            @data={{this.chartData}}
+            @options={{this.chartOptions}}
+            @height={{this.chartHeight}} />
+    </div>
+</div>
+
