@@ -1,8 +1,6 @@
 <section>
     {{#if this.areMembersEnabled}}
-        <article class="gh-dashboard-box">
-            These are members related graphs
-        </article>
+        <Dashboard::MembersGraphs />
 
         {{#if this.hasPaidTiers}}
             <article class="gh-dashboard-box">
@@ -31,7 +29,7 @@
                 </div>
                 <div class="for-switch">
                     <label class="switch">
-                        <input type="checkbox" checked={{this.mockPaidTiers}} id="mockPaidTiers" onclick={{action (mut this.mockPaidTiers) value="target.checked"}}>
+                        <Input @type="checkbox" @checked={{this.mockPaidTiers}} />
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>
@@ -48,7 +46,7 @@
                 </div>
                 <div class="for-switch">
                     <label class="switch">
-                        <input type="checkbox" checked={{this.mockStripeEnabled}} id="stripeEnabled" onclick={{action (mut this.mockStripeEnabled) value="target.checked"}}>
+                        <Input @type="checkbox" @checked={{this.mockStripeEnabled}} />
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>
@@ -65,7 +63,7 @@
                 </div>
                 <div class="for-switch">
                     <label class="switch">
-                        <input type="checkbox" checked={{this.mockNewslettersEnabled}} id="mockNewslettersEnabled" onclick={{action (mut this.mockNewslettersEnabled) value="target.checked"}}>
+                        <Input @type="checkbox" @checked={{this.mockNewslettersEnabled}} />
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>
@@ -82,7 +80,7 @@
                 </div>
                 <div class="for-switch">
                     <label class="switch">
-                        <input type="checkbox" checked={{this.mockMembersEnabled}} id="mockMembersEnabled" onclick={{action (mut this.mockMembersEnabled) value="target.checked"}}>
+                        <Input @type="checkbox" @checked={{this.mockMembersEnabled}} />
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>
