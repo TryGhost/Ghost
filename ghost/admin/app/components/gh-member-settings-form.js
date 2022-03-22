@@ -79,15 +79,15 @@ export default class extends Component {
                 isComplimentary: !sub.id
             };
         });
-
-        for (let product of products) {
+        return products.map((product) => {
             let productSubscriptions = subscriptionData.filter((subscription) => {
                 return subscription?.price?.product?.product_id === (product.product_id || product.id);
             });
-            product.subscriptions = productSubscriptions;
-        }
-
-        return products;
+            return {
+                ...product,
+                subscriptions: productSubscriptions
+            };
+        });
     }
 
     get customer() {
