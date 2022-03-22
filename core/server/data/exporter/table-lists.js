@@ -15,6 +15,7 @@ const BACKUP_TABLES = [
     'members_stripe_customers_subscriptions',
     'migrations',
     'migrations_lock',
+    'newsletters',
     'oauth',
     'permissions',
     'permissions_roles',
