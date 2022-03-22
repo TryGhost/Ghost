@@ -26,7 +26,8 @@ When a new rule is introduced in gscan one of these fixture files might break an
 
 - Unzip the theme files, e.g.: `cd $CURRENT_DIR && unzip valid.zip -d valid`
 - Make a change in the file which caused a warning/error/whatever
-- Zip the files back: `zip -r valid.zip ./valid`
+- Zip the files back: `cd valid; zip -r ../valid.zip * ; cd ..`
+- Clean up `rm -rf ./valid`
 - Commit changed zip file: `git add valid.zip ;... you know the drill :)`
 
 Ideas for future improvements in theme tests:
