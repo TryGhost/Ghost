@@ -1863,7 +1863,7 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.2.5", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.4":
+"@tryghost/errors@1.2.5":
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.5.tgz#e3dd6a462364f899e5267e282fe690ecfbdb4ea2"
   integrity sha512-6lsnonu7XI556Sg8j8Svlmaoen6DVVnRch3sPFu2Ugohbprzz3eQiJzNXXXaeIRgwBkTcSPHErYNMIf3fiI5Aw==
@@ -1880,7 +1880,7 @@
     "@tryghost/ignition-errors" "^0.1.0"
     lodash "^4.17.21"
 
-"@tryghost/errors@^1.2.6":
+"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.4", "@tryghost/errors@^1.2.6":
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.6.tgz#4cb15ec63de4e0fe632ce6fa84191e42c708371c"
   integrity sha512-9kNE9z9CIKjXKNWS03/pH8w9y1bTaLDTt1gIUQmBNlyS3zP56F1uJkz88Y5ySdp1Rbuee1UG+Kc8/L2NJQxsBg==
@@ -2244,14 +2244,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.28.tgz#6cddffa53e07a19c13cfc5a72071e59f42e65719"
   integrity sha512-1BXi+twPQVBbfm4NMRa9Ms5mHHZg0P8Z4oq1s0tnkJ+iNIWol2fkuJ5m6Mi6qXiWD0lPqpOL/as/aBGJsyoe7A==
 
-"@tryghost/nodemailer@0.3.14":
-  version "0.3.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.14.tgz#17323efb9ff54ac191c5cce862e03e13e9c6fa12"
-  integrity sha512-lAAqfJHsxjyYEdjigjWrWmbmilLr3pa24Gut7DhZD4vqqIO+ZoaWHYx3vn4CpWtg3UKBvmR00bSoMjE+6UUR2g==
+"@tryghost/nodemailer@0.3.16":
+  version "0.3.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.16.tgz#676f8159243fe326d8485dc4d056bf1d99020d3b"
+  integrity sha512-j5MZ5s6REi1s1a07tv4BX8EJJhb8ixOEljuxj7wBbjFFhOmv8zE+blzynWjHm7Piaq/m3O4RrzYrwXLpGcD5jA==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
     "@aws-sdk/credential-provider-node" "^3.31.0"
-    "@tryghost/errors" "^1.2.4"
+    "@tryghost/errors" "^1.2.6"
     nodemailer "^6.6.3"
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
