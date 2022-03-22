@@ -1,7 +1,7 @@
 <section>
     {{#if this.areMembersEnabled}}
         <section class="prototype-section">
-            <Dashboard::V5::MembersCounts />
+            <Dashboard::V5::ChartMembersCounts />
         </section>
 
         <section class="prototype-section">
@@ -10,35 +10,43 @@
             </article>
 
             <article class="gh-dashboard-box">
-                Total members graph
+                <Dashboard::V5::ChartTotalMembers />
             </article>
 
             {{#if this.hasPaidTiers}}
-                <article class="gh-dashboard-box">
-                    MRR graph
-                </article>
+                <div class="prototype-section">
+                    <div class="prototype-counts">
+                        <article class="prototype-box">
+                            <Dashboard::V5::ChartMonthlyRevenue />
+                        </article>
 
-                <article class="gh-dashboard-box">
-                    Total paid graph
-                </article>
+                        <article class="prototype-box">
+                            <Dashboard::V5::ChartTotalPaid />
+                        </article>
+                    </div>
+                </div>
 
-                <article class="gh-dashboard-box">
-                    Paid members graph (new, canceled)
-                </article>
+                <div class="prototype-section">
+                    <div class="prototype-counts">
+                        <article class="prototype-box">
+                            <Dashboard::V5::ChartPaidMembers />
+                        </article>
 
-                <article class="gh-dashboard-box">
-                    Paid mix with cadence or tiers segmented control
-                </article>
+                        <article class="prototype-box">
+                            <Dashboard::V5::ChartPaidMix />
+                        </article>
+                    </div>
+                </div>
             {{/if}}
         </section>
         <section class="prototype-section">
-            <Dashboard::V5::MembersEngagement />
+            <Dashboard::V5::ChartEngagement />
         </section>
     {{/if}}
 
     {{#if this.areNewslettersEnabled}}
         <section class="prototype-section">
-            <Dashboard::V5::MembersEmail />
+            <Dashboard::V5::ChartEmailOpenRate />
         </section>
     {{/if}}
 
@@ -53,6 +61,13 @@
         <h2>Activity</h2>
         <article class="gh-dashboard-box">
             Activity feed
+        </article>
+    </section>
+
+    <section class="prototype-section">
+        <h2>Resources</h2>
+        <article class="gh-dashboard-box">
+            <Dashboard::V5::ResourceGeneral />
         </article>
     </section>
 </section>
