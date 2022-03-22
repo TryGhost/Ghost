@@ -91,7 +91,7 @@
     "@tryghost/members-stripe-service": "0.9.1",
     "@tryghost/metrics": "1.0.6",
     "@tryghost/minifier": "0.1.11",
-    "@tryghost/mw-error-handler": "0.1.4",
+    "@tryghost/mw-error-handler": "0.1.5",
     "@tryghost/mw-session-from-token": "0.1.28",
     "@tryghost/nodemailer": "0.3.14",
     "@tryghost/nql": "0.9.0",
