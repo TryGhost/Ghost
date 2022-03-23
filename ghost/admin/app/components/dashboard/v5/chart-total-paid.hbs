@@ -1,5 +1,5 @@
 <h4>Total paid</h4>
-<EmberChart
+<EmberChart {{did-update this.loadCharts @days}}
     @type={{this.chartType}}
     @data={{this.chartData}}
     @options={{this.chartOptions}}
