@@ -2211,6 +2211,10 @@ p.theme-validation-details {
     margin: 36px 0;
 }
 
+.gh-expandable-content .gh-setting-richdd-container {
+    margin: 16px 0 32px;
+}
+
 .gh-setting-large-dropdown .ember-power-select-multiple-trigger {
     padding: 8px;
 }

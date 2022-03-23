@@ -136,7 +136,21 @@
                             <h4 class="gh-expandable-title">Default newsletter recipients</h4>
                             <p class="gh-expandable-description">When you publish new content, who do you usually want to send it to?</p>
                         </div>
-                        <button type="button" class="gh-btn"><span>Expand</span></button>
+                        <button type="button" class="gh-btn" {{action (toggle "defaultRecipientsOpen" this)}} data-test-toggle-membersemail>
+                            <span>{{if this.defaultRecipientsOpen "Close" "Expand"}}</span>
+                        </button>
+                    </div>
+                    <div class="gh-expandable-content">
+                        {{#liquid-if this.defaultRecipientsOpen}}
+                            <div class="gh-setting-richdd-container gh-setting-rich-dropdown">
+                                <Settings::MembersEmail::DefaultRecipientsSelect
+                                    @recipients={{this.recipientsSelectValue}}
+                                    @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
+                                    @onRecipientsChange={{action "setDefaultEmailRecipients"}}
+                                    @onSegmentChange={{action "setDefaultEmailRecipientsFilter"}}
+                                />
+                            </div>
+                        {{/liquid-if}}
                     </div>
                 </div>
 
