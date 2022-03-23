@@ -1,16 +1,16 @@
 <div class="prototype-counts">
     <div class="prototype-box">
-        <div class="number">{{this.dataTotalMembers}}</div>
-        <div>Total members</div>
+        <div class="number">{{format-number this.totalMembers}}</div>
+        <div>{{gh-pluralize this.totalMembers "Total member" without-count=true}}</div>
     </div>
 
     <div class="prototype-box">
-        <div class="number">{{this.dataPaidMembers}}</div>
-        <div>Paid members</div>
+        <div class="number">{{format-number this.paidMembers}}</div>
+        <div>{{gh-pluralize this.paidMembers "Paid member" without-count=true}}</div>
     </div>
 
     <div class="prototype-box">
-        <div class="number">{{this.dataFreeMembers}}</div>
-        <div>Free members</div>
+        <div class="number">{{format-number this.freeMembers}}</div>
+        <div>{{gh-pluralize this.freeMembers "Free member" without-count=true}}</div>
     </div>
 </div>

@@ -5,12 +5,24 @@
         </section>
 
         <section class="prototype-section">
-            <article class="gh-dashboard-box">
-                Dropdown: 7d/30d/90d/all time
-            </article>
+            <div class="prototype-day-selection">
+                <PowerSelect
+                    @selected={{this.selectedDaysOption}}
+                    @options={{this.daysOptions}}
+                    @searchEnabled={{false}}
+                    @onChange={{this.onDaysChange}}
+                    @triggerComponent="gh-power-select/trigger"
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown"
+                    @matchTriggerWidth={{false}}
+                    as |option|
+                >
+                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                </PowerSelect>
+            </div>
 
             <article class="gh-dashboard-box">
-                <Dashboard::V5::ChartTotalMembers />
+                <Dashboard::V5::ChartTotalMembers @days={{this.days}} />
             </article>
 
             {{#if this.hasPaidTiers}}
@@ -74,6 +86,7 @@
 
 <div class="gh-main-section prototype-panel">
     <h4 class="gh-main-section-header small bn">Prototype control panel</h4>
+    
     <div class="gh-expandable">
         <div class="gh-expandable-block">
             <div class="gh-expandable-header">
@@ -142,5 +155,14 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="prototype-states-buttons">
+        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 0)}}><span>0 days</span></button>
+        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 2)}}><span>2 days</span></button>
+        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 7)}}><span>7 days</span></button>
+        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 14)}}><span>14 days</span></button>
+        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 30)}}><span>30 days</span></button>
+        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 365)}}><span>1 year</span></button>
     </div>
 </div>

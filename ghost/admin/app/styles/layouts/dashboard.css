@@ -1081,6 +1081,18 @@ a.gh-dashboard-container {
     margin-top: 50vh;
 }
 
+.prototype-states-buttons {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.prototype-day-selection {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .prototype-counts {
     display: flex;
     flex-direction: row;
