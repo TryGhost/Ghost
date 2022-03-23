@@ -226,7 +226,14 @@
 }
 
 .gh-btn-add-product svg {
-    margin-right: 2px;
+    width: 1rem;
+    height: 1rem;
+    margin: 1px 4px 0 0;
+}
+
+.gh-btn-icon.gh-btn-add-product svg path {
+    stroke: var(--green-d1);
+    stroke-width: 3;
 }
 
 .gh-product-list-icon {

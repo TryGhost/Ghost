@@ -881,6 +881,120 @@
 }
 
 
+/* Email newsletter LABS
+/* ---------------------------------------------------------- */
+
+.gh-newsletters .intro {
+    margin-bottom: 2rem;
+}
+
+.gh-newsletters .gh-expandable-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--black);
+    margin: 0;
+    padding: 0;
+}
+
+.gh-newsletters .gh-expandable-description {
+    margin: 0;
+    padding: 0;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.gh-newsletters .gh-expandable-block {
+    padding: 24px;
+}
+
+.gh-newsletters .gh-main-content-card:last-of-type {
+    margin-bottom: 0;
+}
+
+.gh-newsletter-card {
+    position:relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+@media (max-width: 980px) {
+    .gh-newsletter-card {
+        padding: 4vmin 48px;
+    }
+}
+
+.gh-newsletter-card-block.stats-block {
+    display: grid;
+    flex-basis: 30%;
+    grid-template-columns: 1fr 1fr;
+    margin-right: 4.4rem;
+}
+
+.gh-newsletter-card-block.title-block {
+    flex-basis: 60%;
+}
+
+.gh-newsletter-card-block:not(:first-of-type) {
+    padding-left: 16px;
+}
+
+.gh-newsletter-card-block h4 {
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.gh-newsletter-card-block h4 .counter {
+    font-weight: 400;
+    color: var(--midgrey);
+}
+
+.gh-newsletter-card-name {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    font-size: 1.8rem;
+    line-height: 1.25em;
+}
+
+.gh-newsletter-card-description {
+    font-size: 1.3rem;
+    line-height: 1.45em;
+    margin: 4px 20px 4px 0;
+    color: var(--midgrey);
+}
+
+.gh-newsletter-card-button-container {
+    position: absolute;
+    right: 24px;
+    top: 24px;
+    margin-right: 0;
+}
+
+.gh-newsletter-actions-menu {
+    top: calc(100% + 6px);
+    left: auto;
+    right: 0;
+}
+
+.gh-add-newsletter {
+    width: max-content;
+    margin: .8rem 0 0;
+    color: var(--green-d1);
+}
+
+.gh-add-newsletter svg {
+    width: 1rem;
+    height: 1rem;
+    margin: 1px 4px 0 0;
+}
+
+.gh-add-newsletter svg path {
+    stroke: var(--green-d1);
+    stroke-width: 3;
+}
+
 /* Code injection
 /* ---------------------------------------------------------- */
 
