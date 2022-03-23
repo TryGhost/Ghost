@@ -814,7 +814,7 @@ const MobileStyles = `
     }
 
     .preview .gh-portal-btn-container.sticky {
-        margin-bottom: 0;
+        margin-bottom: 32px;
         padding-bottom: 0;
     }
 }
