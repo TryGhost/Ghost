@@ -28,7 +28,7 @@ const doGet = (key, options) => {
 
     // Don't try to resolve to the value of the setting
     if (options && options.resolve === false) {
-        return settingsCache[key] || null;
+        return settingsCache[key];
     }
 
     // Default behaviour is to try to resolve the value and return that
