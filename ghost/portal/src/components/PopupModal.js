@@ -4,8 +4,8 @@ import AppContext from '../AppContext';
 import {getFrameStyles} from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
-import {hasMultipleProducts, isCookiesDisabled, getSitePrices, isInviteOnlySite} from '../utils/helpers';
-import {ReactComponent as GhostLogo} from '../images/ghost-logo-small.svg';
+import PoweredBy from './common/PoweredBy';
+import {getSiteProducts, isInviteOnlySite, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
 
 const React = require('react');
 
@@ -126,8 +126,9 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const {page, site, pageQuery, customSiteUrl} = this.context;
-        const {is_stripe_configured: isStripeConfigured} = site;
+        const {page, pageQuery, site, customSiteUrl} = this.context;
+        const products = getSiteProducts({site});
+        const noOfProducts = products.length;
 
         getActivePage({page});
         const Styles = StylesWrapper({page});
@@ -135,20 +136,8 @@ class PopupContent extends React.Component {
             ...Styles.page[page]
         };
         let popupWidthStyle = '';
+        let popupSize = 'regular';
 
-        const portalPlans = getSitePrices({site, pageQuery});
-
-        if (page === 'signup' || page === 'signin' || page === 'offer') {
-            if (!isInviteOnlySite({site, pageQuery}) && portalPlans.length === 3 && (page === 'signup' || page === 'signin')) {
-                popupWidthStyle = ' gh-portal-container-wide';
-            }
-            if (portalPlans.length <= 1 || !isStripeConfigured) {
-                popupWidthStyle = 'gh-portal-container-narrow';
-            }
-            if (page === 'offer') {
-                popupWidthStyle = ' gh-portal-container-wide';
-            }
-        }
         let cookieBannerText = '';
         let pageClass = page;
         switch (page) {
@@ -173,8 +162,19 @@ class PopupContent extends React.Component {
             break;
         }
 
-        if (hasMultipleProducts({site}) && (page === 'signup' || page === 'signin')) {
-            pageClass += ' multiple-products';
+        if (noOfProducts > 1 && !isInviteOnlySite({site, pageQuery})) {
+            if (page === 'signup') {
+                pageClass += ' full-size';
+                popupSize = 'full';
+            }
+        }
+
+        const freeProduct = hasFreeProductPrice({site});
+        if ((freeProduct && noOfProducts > 2) || (!freeProduct && noOfProducts > 1)) {
+            if (page === 'accountPlan') {
+                pageClass += ' full-size';
+                popupSize = 'full';
+            }
         }
 
         let className = 'gh-portal-popup-container';
@@ -199,15 +199,15 @@ class PopupContent extends React.Component {
                         <CookieDisabledBanner message={cookieBannerText} />
                         {this.renderPopupNotification()}
                         {this.renderActivePage()}
+                        {(popupSize === 'full' ? 
+                            <div className={'gh-portal-powered inside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
+                                <PoweredBy />
+                            </div>
+                            : '')}
                     </div>
                 </div>
                 <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
-                    <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' onClick={() => {
-                        window.open('https://ghost.org', '_blank');
-                    }}>
-                        <GhostLogo />
-                        Powered by Ghost
-                    </a>
+                    <PoweredBy />
                 </div>
             </>
         );

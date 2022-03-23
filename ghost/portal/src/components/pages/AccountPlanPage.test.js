@@ -12,13 +12,15 @@ const setup = (overrides) => {
             }
         }
     );
-    const monthlyCheckboxEl = utils.getByLabelText('Monthly');
-    const yearlyCheckboxEl = utils.getByLabelText('Yearly');
+    const monthlyCheckboxEl = utils.queryByRole('button', {name: 'Monthly'});
+    const yearlyCheckboxEl = utils.queryByRole('button', {name: 'Yearly'});
     const continueBtn = utils.queryByRole('button', {name: 'Continue'});
+    const chooseBtns = utils.queryAllByRole('button', {name: 'Choose'});
     return {
         monthlyCheckboxEl,
         yearlyCheckboxEl,
         continueBtn,
+        chooseBtns,
         mockOnActionFn,
         context,
         ...utils
@@ -44,26 +46,24 @@ const customSetup = (overrides) => {
 
 describe('Account Plan Page', () => {
     test('renders', () => {
-        const {monthlyCheckboxEl, yearlyCheckboxEl, continueBtn} = setup();
+        const {monthlyCheckboxEl, yearlyCheckboxEl, chooseBtns} = setup();
 
         expect(monthlyCheckboxEl).toBeInTheDocument();
         expect(yearlyCheckboxEl).toBeInTheDocument();
-        expect(continueBtn).toBeInTheDocument();
+        expect(chooseBtns).toHaveLength(1);
     });
 
     test('can choose plan and continue', async () => {
         const siteData = getSiteData({
             products: getProductsData({numOfProducts: 1})
         });
-        const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, continueBtn} = setup({site: siteData});
+        const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, chooseBtns} = setup({site: siteData});
         fireEvent.click(monthlyCheckboxEl);
-        expect(monthlyCheckboxEl.checked).toEqual(false);
+        expect(monthlyCheckboxEl.className).toEqual('gh-portal-btn active');
         fireEvent.click(yearlyCheckboxEl);
-        expect(yearlyCheckboxEl.checked).toEqual(true);
-        expect(continueBtn).toBeEnabled();
-
-        fireEvent.click(continueBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: siteData.products[0].monthlyPrice.id});
+        expect(yearlyCheckboxEl.className).toEqual('gh-portal-btn active');
+        fireEvent.click(chooseBtns[0]);
+        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: siteData.products[0].yearlyPrice.id});
     });
 
     test('can cancel subscription for member on hidden tier', async () => {

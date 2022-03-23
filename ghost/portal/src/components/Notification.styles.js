@@ -23,7 +23,7 @@ const NotificationStyles = `
         background: rgba(33,33,33,0.95);
         backdrop-filter: blur(8px);
         color: var(--white);
-        border-radius: 5px;
+        border-radius: 7px;
         box-shadow: 0 3.2px 3.6px rgba(0, 0, 0, 0.024), 0 8.8px 10px -5px rgba(0, 0, 0, 0.08);
         animation: notification-slidein 0.55s cubic-bezier(0.215, 0.610, 0.355, 1.000);
     }

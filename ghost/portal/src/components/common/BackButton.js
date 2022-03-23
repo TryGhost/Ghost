@@ -8,15 +8,16 @@ export const BackButtonStyles = `
         position: relative;
         height: unset;
         min-width: unset;
-        position: absolute;
-        top: -3px;
-        left: -16px;
+        position: fixed;
+        top: 29px;
+        left: 25px;
         background: none;
         padding: 8px;
         margin: 0;
         box-shadow: none;
         color: var(--grey3);
         border: none;
+        z-index: 10000;
     }
 
     .gh-portal-btn-back:hover {

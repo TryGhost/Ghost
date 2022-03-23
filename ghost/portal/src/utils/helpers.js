@@ -297,7 +297,7 @@ export function getSiteProducts({site, pageQuery}) {
     if (showOnlyFree) {
         return [];
     }
-    if (hasFreeProductPrice({site}) && products.length > 0) {
+    if (hasFreeProductPrice({site})) {
         products.unshift({
             id: 'free'
         });
@@ -311,7 +311,11 @@ export function getFreeProductBenefits({site}) {
 }
 
 export function getFreeTierTitle({site}) {
-    return 'Free';
+    if (hasOnlyFreeProduct({site})) {
+        return 'Free membership';
+    } else {
+        return 'Free';
+    }
 }
 
 export function getFreeTierDescription({site}) {
@@ -367,6 +371,11 @@ export function hasFreeProductPrice({site}) {
         portal_plans: portalPlans
     } = site || {};
     return allowSelfSignup && portalPlans.includes('free');
+}
+
+export function hasOnlyFreeProduct({site}) {
+    const products = getSiteProducts({site});
+    return (products.length === 1 && hasFreeProductPrice({site}));
 }
 
 export function getProductFromPrice({site, priceId}) {
