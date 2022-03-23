@@ -917,6 +917,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    cursor: pointer;
     transition: margin 125ms ease-in-out, padding 125ms ease-in-out;
 }
 
@@ -942,7 +943,7 @@
     fill: var(--lightgrey-d2);
     cursor: move;
     opacity: 0;
-    transition: visibility 0s, opacity 125ms linear;
+    transition: visibility 0s, opacity 200ms ease-in-out;
 }
 
 .gh-newsletter-card:hover .grab-newsletter {
@@ -979,8 +980,12 @@
     display: flex;
     align-items: center;
     margin: 0;
-    font-size: 1.8rem;
-    line-height: 1.25em;
+    font-size: 1.9rem;
+    line-height: 22px;
+}
+
+.stats-block .gh-newsletter-card-name {
+    font-size: 1.7rem;
 }
 
 .gh-newsletter-card-description {
