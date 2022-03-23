@@ -90,6 +90,11 @@ export const SignupPageStyles = `
     margin-top: 8px;
 }
 
+.gh-portal-signup-message,
+.gh-portal-signup-message * {
+    z-index: 9999;
+}
+
 .full-size .gh-portal-signup-message {
     margin-bottom: 40px;
 }
