@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
+import {getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -324,7 +324,7 @@ const AccountActions = () => {
                 </section>
 
                 <PaidAccountActions />
-
+                <EmailPreferencesAction />
                 <section>
                     <div className='gh-portal-list-detail'>
                         <h3>Email newsletter</h3>
@@ -341,6 +341,26 @@ const AccountActions = () => {
         </div>
     );
 };
+
+function EmailPreferencesAction() {
+    const {site, onAction} = useContext(AppContext);
+    if (!hasMultipleNewsletters({site})) {
+        return null;
+    }
+    return (
+        <section>
+            <div className='gh-portal-list-detail'>
+                <h3>Email Preference</h3>
+            </div>
+            <button className='gh-portal-btn gh-portal-btn-list' onClick={(e) => {
+                onAction('switchPage', {
+                    page: 'accountEmail',
+                    lastPage: 'accountHome'
+                });
+            }}>Manage</button>
+        </section>
+    );
+}
 
 const SubscribeButton = () => {
     const {site, action, brandColor, onAction} = useContext(AppContext);

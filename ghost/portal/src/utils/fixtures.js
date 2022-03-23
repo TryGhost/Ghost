@@ -104,7 +104,17 @@ export const site = getSiteData({
     portalButtonIcon: 'icon-1',
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',
-    membersSupportAddress: 'support@example.com'
+    membersSupportAddress: 'support@example.com',
+    newsletters: [
+        {
+            id: 'weekly',
+            name: 'Weekly Rundown'
+        },
+        {
+            id: 'daily',
+            name: 'Daily Brief'
+        }
+    ]
 });
 
 export const offer = getOfferData({
