@@ -312,17 +312,19 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-current-plan {
             display: flex;
             align-items: center;
-            font-size: 1.5rem;
-            font-weight: 500;
-            line-height: 1em;
-            letter-spacing: 0.2px;
+            justify-content: center;
             text-align: center;
             white-space: nowrap;
             width: 100%;
             height: 44px;
             border-radius: 5px;
-            color: var(--grey0);
-            font-weight: 600;
+            color: var(--grey5);
+            font-size: 1.4rem;
+            font-weight: 500;
+            line-height: 1em;
+            letter-spacing: 0.2px;
+            font-weight: 500;
+            background: #f0f0f0;
         }
 
         .gh-portal-product-card.only-free {
@@ -858,7 +860,7 @@ function ChangeProductCard({product, onPlanSelect}) {
                 </div>
                 {(currentPlan ?
                     <div className='gh-portal-btn-product'>
-                        <span className='gh-portal-current-plan'>Current plan</span>
+                        <span className='gh-portal-current-plan'><span>Current plan</span></span>
                     </div>
                     :
                     <div className='gh-portal-btn-product'>
