@@ -125,7 +125,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : 'Price';
     if (type === 'changePlan') {
         return (
-            <>
+            <div className='gh-portal-logged-out-form-container'>
                 <div className='gh-portal-list mb6'>
                     <section>
                         <div className='gh-portal-list-detail'>
@@ -151,11 +151,11 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
                         height: '40px'
                     }}
                 />
-            </>
+            </div>
         );
     } else {
         return (
-            <div className="gh-portal-cancellation-form">
+            <div className="gh-portal-logged-out-form-container gh-portal-cancellation-form">
                 <p>If you cancel your subscription now, you will continue to have access until <strong>{getDateString(subscription.current_period_end)}</strong>.</p>
                 <section className='gh-portal-input-section'>
                     <div className='gh-portal-input-labelcontainer'>

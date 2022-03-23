@@ -326,6 +326,11 @@ const FrameStyles = `
     padding-bottom: 4vw;
 }
 
+.gh-portal-popup-container.full-size.account-plan {
+    justify-content: flex-start;
+    padding-top: 4vmin;
+}
+
 .gh-portal-popup-container.preview {
     animation: none !important;
 }
