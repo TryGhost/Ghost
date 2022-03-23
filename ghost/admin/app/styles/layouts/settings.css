@@ -917,12 +917,37 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    transition: margin 125ms ease-in-out, padding 125ms ease-in-out;
+}
+
+.gh-newsletter-card:hover {
+    margin-left: 4px;
+    padding-left: 20px;
 }
 
 @media (max-width: 980px) {
     .gh-newsletter-card {
         padding: 4vmin 48px;
     }
+}
+
+.gh-newsletter-card .grab-newsletter {
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: -20px;
+    width: 2rem;
+    height: 100%;
+    padding-right: 2px;
+    fill: var(--lightgrey-d2);
+    cursor: move;
+    opacity: 0;
+    transition: visibility 0s, opacity 125ms linear;
+}
+
+.gh-newsletter-card:hover .grab-newsletter {
+    visibility: visible;
+    opacity: 1;
 }
 
 .gh-newsletter-card-block.stats-block {
