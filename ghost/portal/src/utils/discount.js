@@ -3,7 +3,8 @@ function calculateDiscount(monthly, yearly) {
         return 0;
     }
 
-    return monthly ? 100 - Math.floor((yearly / 12 * 100) / monthly) : 0;
+    const discount = monthly ? 100 - Math.floor((yearly / 12 * 100) / monthly) : 0;
+    return (discount >= 1 && discount < 100) ? discount : 0;
 }
 
 module.exports = calculateDiscount;
