@@ -373,6 +373,20 @@ export function hasFreeProductPrice({site}) {
     return allowSelfSignup && portalPlans.includes('free');
 }
 
+export function getSiteNewsletters({site}) {
+    const {
+        newsletters
+    } = site || {};
+    return newsletters;
+}
+
+export function hasMultipleNewsletters({site}) {
+    const {
+        newsletters
+    } = site || {};
+    return newsletters?.length > 1;
+}
+
 export function hasOnlyFreeProduct({site}) {
     const products = getSiteProducts({site});
     return (products.length === 1 && hasFreeProductPrice({site}));
