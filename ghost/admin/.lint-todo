@@ -1216,3 +1216,13 @@ remove|ember-template-lint|no-action|48|8|48|8|48bafc3d5a5d7e6dc9e7318bb679ec770
 remove|ember-template-lint|no-down-event-binding|48|41|48|41|b3e87879e52edc06bb07f1ad0becc6ec762bbb39|1646611200000|1649199600000|1651791600000|app/components/modal-member-product.hbs
 remove|ember-template-lint|no-invalid-interactive|26|95|26|95|defed375e0064745e03179bf7687ca9aa13f6ac7|1646611200000|1649199600000|1651791600000|app/components/modal-member-product.hbs
 add|ember-template-lint|no-invalid-interactive|28|24|28|24|d7193af2cc72230c56b34863b6f8c0e7fbb1b41e|1647475200000|1650063600000|1652655600000|app/components/modal-member-product.hbs
+add|ember-template-lint|no-action|235|90|235|90|fd1f2c0329cecb082e8b5c31e2b08ea9ba3f00f0|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-action|236|121|236|121|fd1f2c0329cecb082e8b5c31e2b08ea9ba3f00f0|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-action|351|91|351|91|259aa927a526d3449245a05298d5cb8b1961de4e|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-action|352|131|352|131|259aa927a526d3449245a05298d5cb8b1961de4e|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-action|411|65|411|65|fff7691202120582f36d72eb959fc385580797bb|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-action|426|66|426|66|6315ee6c3906523f2605a9c48abce941fc345092|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-action|440|59|440|59|552676ca594b7e31314643aed74b61cf1746ed05|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-action|455|51|455|51|bdabf075c725d81a440009b6fe8d5c9f4dce1b24|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-passed-in-event-handlers|440|52|440|52|a302b99c2a5682fd9186a16dce373578fe74a18b|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
+add|ember-template-lint|no-passed-in-event-handlers|455|44|455|44|7ca43fc52964fe52050eacf376e788422c34cf7a|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
