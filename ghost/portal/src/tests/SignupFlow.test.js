@@ -37,9 +37,10 @@ const offerSetup = async ({site, member = null, offer}) => {
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
     const siteTitle = within(popupIframeDocument).queryByText(site.title);
-    const offerName = within(popupIframeDocument).queryByText(offer.name);
+    const offerName = within(popupIframeDocument).queryByText(offer.display_title);
     const offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
 
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
@@ -56,6 +57,7 @@ const offerSetup = async ({site, member = null, offer}) => {
         nameInput,
         signinButton,
         submitButton,
+        chooseBtns,
         freePlanTitle,
         monthlyPlanTitle,
         yearlyPlanTitle,
@@ -93,6 +95,7 @@ const setup = async ({site, member = null}) => {
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
     const siteTitle = within(popupIframeDocument).queryByText(site.title);
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
@@ -109,6 +112,7 @@ const setup = async ({site, member = null}) => {
         nameInput,
         signinButton,
         submitButton,
+        chooseBtns,
         freePlanTitle,
         monthlyPlanTitle,
         yearlyPlanTitle,
@@ -144,6 +148,7 @@ const multiTierSetup = async ({site, member = null}) => {
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
     const siteTitle = within(popupIframeDocument).queryByText(site.title);
     const freePlanTitle = within(popupIframeDocument).queryAllByText(/free$/i);
@@ -166,6 +171,7 @@ const multiTierSetup = async ({site, member = null}) => {
         yearlyPlanTitle,
         fullAccessTitle,
         freePlanDescription,
+        chooseBtns,
         ...utils
     };
 };
@@ -174,8 +180,8 @@ describe('Signup', () => {
     describe('as free member on single tier site', () => {
         test('with default settings', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton,
+                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, chooseBtns
             } = await setup({
                 site: FixtureSite.singleTier.basic
             });
@@ -188,16 +194,17 @@ describe('Signup', () => {
             expect(freePlanTitle).toBeInTheDocument();
             expect(monthlyPlanTitle).toBeInTheDocument();
             expect(yearlyPlanTitle).toBeInTheDocument();
-            expect(fullAccessTitle).toBeInTheDocument();
+            // expect(fullAccessTitle).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+            // expect(submitButton).toBeInTheDocument();
+            expect(chooseBtns).toHaveLength(2);
 
             fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[0]);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
@@ -209,8 +216,8 @@ describe('Signup', () => {
 
         test('without name field', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton,
+                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, chooseBtns
             } = await setup({
                 site: FixtureSite.singleTier.withoutName
             });
@@ -223,14 +230,14 @@ describe('Signup', () => {
             expect(freePlanTitle).toBeInTheDocument();
             expect(monthlyPlanTitle).toBeInTheDocument();
             expect(yearlyPlanTitle).toBeInTheDocument();
-            expect(fullAccessTitle).toBeInTheDocument();
+            // expect(fullAccessTitle).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+            expect(chooseBtns).toHaveLength(2);
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             expect(emailInput).toHaveValue('jamie@example.com');
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[0]);
 
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
@@ -286,8 +293,8 @@ describe('Signup', () => {
     describe('as paid member on single tier site', () => {
         test('with default settings on monthly plan', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, chooseBtns,
+                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle
             } = await setup({
                 site: FixtureSite.singleTier.basic
             });
@@ -300,9 +307,8 @@ describe('Signup', () => {
             expect(freePlanTitle).toBeInTheDocument();
             expect(monthlyPlanTitle).toBeInTheDocument();
             expect(yearlyPlanTitle).toBeInTheDocument();
-            expect(fullAccessTitle).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+            expect(chooseBtns).toHaveLength(2);
 
             const monthlyPlanContainer = within(popupIframeDocument).queryByText(/Monthly$/);
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
@@ -316,19 +322,19 @@ describe('Signup', () => {
             await within(popupIframeDocument).findByText(benefitText);
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[1]);
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
                 offerId: undefined,
-                plan: singleTierProduct.monthlyPrice.id
+                plan: singleTierProduct.yearlyPrice.id
             });
         });
 
         test('with default settings on yearly plan', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, chooseBtns,
+                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle
             } = await setup({
                 site: FixtureSite.singleTier.basic
             });
@@ -341,9 +347,8 @@ describe('Signup', () => {
             expect(freePlanTitle).toBeInTheDocument();
             expect(monthlyPlanTitle).toBeInTheDocument();
             expect(yearlyPlanTitle).toBeInTheDocument();
-            expect(fullAccessTitle).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+            expect(chooseBtns).toHaveLength(2);
 
             const yearlyPlanContainer = within(popupIframeDocument).queryByText(/Yearly$/);
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
@@ -357,7 +362,7 @@ describe('Signup', () => {
             await within(popupIframeDocument).findByText(benefitText);
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[1]);
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
@@ -370,8 +375,8 @@ describe('Signup', () => {
 
         test('without name field on monthly plan', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, chooseBtns,
+                siteTitle, popupIframeDocument, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle
             } = await setup({
                 site: FixtureSite.singleTier.withoutName
             });
@@ -388,17 +393,16 @@ describe('Signup', () => {
             expect(freePlanTitle).toBeInTheDocument();
             expect(monthlyPlanTitle).toBeInTheDocument();
             expect(yearlyPlanTitle).toBeInTheDocument();
-            expect(fullAccessTitle).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+            expect(chooseBtns).toHaveLength(2);
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
-            fireEvent.click(monthlyPlanContainer.parentNode);
+            fireEvent.click(monthlyPlanContainer);
             await within(popupIframeDocument).findByText(benefitText);
 
             expect(emailInput).toHaveValue('jamie@example.com');
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[1]);
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
@@ -410,7 +414,7 @@ describe('Signup', () => {
 
         test('with only paid plans available', async () => {
             let {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, chooseBtns,
                 siteTitle, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle
             } = await setup({
                 site: FixtureSite.singleTier.onlyPaidPlan
@@ -425,7 +429,7 @@ describe('Signup', () => {
             expect(monthlyPlanTitle).toBeInTheDocument();
             expect(yearlyPlanTitle).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+            expect(chooseBtns).toHaveLength(1);
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
             fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
@@ -433,14 +437,14 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
 
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[0]);
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
                 offerId: undefined,
-                plan: singleTierProduct.monthlyPrice.id
+                plan: singleTierProduct.yearlyPrice.id
             });
         });
 
@@ -524,7 +528,7 @@ describe('Signup', () => {
     describe('as free member on multi tier site', () => {
         test('with default settings', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, chooseBtns,
                 siteTitle, popupIframeDocument, freePlanTitle
             } = await multiTierSetup({
                 site: FixtureSite.multipleTiers.basic
@@ -537,14 +541,14 @@ describe('Signup', () => {
             expect(nameInput).toBeInTheDocument();
             expect(freePlanTitle[0]).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+            expect(chooseBtns).toHaveLength(4);
 
             fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[0]);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
@@ -556,7 +560,7 @@ describe('Signup', () => {
 
         test('without name field', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, chooseBtns,
                 siteTitle, popupIframeDocument, freePlanTitle
             } = await multiTierSetup({
                 site: FixtureSite.multipleTiers.withoutName
@@ -569,12 +573,11 @@ describe('Signup', () => {
             expect(nameInput).not.toBeInTheDocument();
             expect(freePlanTitle[0]).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
 
             expect(emailInput).toHaveValue('jamie@example.com');
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[0]);
 
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
@@ -627,7 +630,7 @@ describe('Signup', () => {
     describe('as paid member on multi tier site', () => {
         test('with default settings', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, chooseBtns,
                 siteTitle, popupIframeDocument, freePlanTitle
             } = await multiTierSetup({
                 site: FixtureSite.multipleTiers.basic
@@ -645,7 +648,7 @@ describe('Signup', () => {
             expect(nameInput).toBeInTheDocument();
             expect(freePlanTitle[0]).toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+            expect(chooseBtns).toHaveLength(4);
 
             fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
@@ -661,7 +664,7 @@ describe('Signup', () => {
 
             // added fake timeout for react state delay in setting plan
             await new Promise(r => setTimeout(r, 10));
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[1]);
             await waitFor(() => expect(ghostApi.member.checkoutPlan).toHaveBeenCalledTimes(1));
         });
 

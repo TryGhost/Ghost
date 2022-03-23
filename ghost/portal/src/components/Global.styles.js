@@ -39,7 +39,7 @@ export const GlobalStyles = `
         line-height: 1.6em;
         font-weight: 400;
         font-style: normal;
-        color: var(--grey4);
+        color: var(--grey2);
         box-sizing: border-box;
         overflow: hidden;
     }
@@ -60,26 +60,26 @@ export const GlobalStyles = `
     }
 
     h1 {
-        font-size: 31px;
-        font-weight: 500;
-        letter-spacing: 0.2px;
+        font-size: 35px;
+        font-weight: 700;
+        letter-spacing: -0.022em;
     }
 
     h2 {
-        font-size: 23px;
-        font-weight: 500;
-        letter-spacing: 0.2px;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.021em;
     }
 
     h3 {
-        font-size: 20px;
-        font-weight: 500;
-        letter-spacing: 0.2px;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.019em;
     }
 
     p {
         font-size: 15px;
-        line-height: 1.55em;
+        line-height: 1.5em;
         margin-bottom: 24px;
     }
 
@@ -105,6 +105,40 @@ export const GlobalStyles = `
     textarea {
         padding: 10px;
         line-height: 1.5em;
+    }
+
+    @media (max-width: 1440px) {
+        h1 {
+            font-size: 32px;
+            letter-spacing: -0.022em;
+        }
+
+        h2 {
+            font-size: 28px;
+            letter-spacing: -0.021em;
+        }
+
+        h3 {
+            font-size: 26px;
+            letter-spacing: -0.02em;
+        }
+    }
+
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 30px;
+            letter-spacing: -0.021em;
+        }
+
+        h2 {
+            font-size: 26px;
+            letter-spacing: -0.02em;
+        }
+
+        h3 {
+            font-size: 24px;
+            letter-spacing: -0.019em;
+        }
     }
 `;
 

@@ -1,5 +1,6 @@
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
+// import SiteTitleBackButton from '../common/SiteTitleBackButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
@@ -133,12 +134,12 @@ export default class SigninPage extends React.Component {
     }
 
     renderFormHeader() {
-        const siteTitle = this.context.site.title || 'Site Title';
+        // const siteTitle = this.context.site.title || 'Site Title';
 
         return (
             <header className='gh-portal-signin-header'>
                 {this.renderSiteLogo()}
-                <h2 className="gh-portal-main-title">Log in to {siteTitle}</h2>
+                <h1 className="gh-portal-main-title">Sign in</h1>
             </header>
         );
     }
@@ -146,15 +147,20 @@ export default class SigninPage extends React.Component {
     render() {
         return (
             <>
-                <div className='gh-portal-content signin'>
-                    <CloseButton />
-                    {this.renderFormHeader()}
-                    {this.renderForm()}
+                {/* <div className='gh-portal-back-sitetitle'>
+                    <SiteTitleBackButton />
+                </div> */}
+                <CloseButton />
+                <div className='gh-portal-logged-out-form-container'>
+                    <div className='gh-portal-content signin'>
+                        {this.renderFormHeader()}
+                        {this.renderForm()}
+                    </div>
+                    <footer className='gh-portal-signin-footer'>
+                        {this.renderSubmitButton()}
+                        {this.renderSignupMessage()}
+                    </footer>
                 </div>
-                <footer className='gh-portal-signin-footer'>
-                    {this.renderSubmitButton()}
-                    {this.renderSignupMessage()}
-                </footer>
             </>
         );
     }

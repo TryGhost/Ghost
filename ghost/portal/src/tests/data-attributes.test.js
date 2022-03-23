@@ -303,7 +303,7 @@ describe('Portal Data attributes:', () => {
             fireEvent.click(portalElement);
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
-            const loginTitle = within(popupFrame.contentDocument).queryByText(/log in/i);
+            const loginTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
             expect(loginTitle).toBeInTheDocument();
         });
     });

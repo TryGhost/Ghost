@@ -34,12 +34,16 @@ const offerSetup = async ({site, member = null, offer}) => {
     const popupFrame = await utils.findByTitle(/portal-popup/i);
     const triggerButtonFrame = utils.queryByTitle(/portal-trigger/i);
     const popupIframeDocument = popupFrame.contentDocument;
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
     const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
     const siteTitle = within(popupIframeDocument).queryByText(site.title);
-    const offerName = within(popupIframeDocument).queryByText(offer.name);
+
+    const offerName = within(popupIframeDocument).queryByText(offer.display_title);
+
     const offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
 
     const freePlanTitle = within(popupIframeDocument).queryByText('Free');
@@ -56,6 +60,7 @@ const offerSetup = async ({site, member = null, offer}) => {
         nameInput,
         signinButton,
         submitButton,
+        chooseBtns,
         freePlanTitle,
         monthlyPlanTitle,
         yearlyPlanTitle,
@@ -197,8 +202,12 @@ describe('Logged-in free member', () => {
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
 
             fireEvent.click(viewPlansButton);
-            await within(popupIframeDocument).findByText('Monthly');
-            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+            const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
+            fireEvent.click(monthlyPlanContainer);
+            // added fake timeout for react state delay in setting plan
+            await new Promise(r => setTimeout(r, 10));
+
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Choose'});
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
@@ -229,11 +238,11 @@ describe('Logged-in free member', () => {
             fireEvent.click(viewPlansButton);
             await within(popupIframeDocument).findByText('Monthly');
             const yearlyPlanContainer = await within(popupIframeDocument).findByText('Yearly');
-            fireEvent.click(yearlyPlanContainer.parentNode);
+            fireEvent.click(yearlyPlanContainer);
             // added fake timeout for react state delay in setting plan
             await new Promise(r => setTimeout(r, 10));
 
-            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Choose'});
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
@@ -347,9 +356,9 @@ describe('Logged-in free member', () => {
             // allow default checkbox switch to yearly
             await new Promise(r => setTimeout(r, 10));
 
-            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+            const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
 
-            fireEvent.click(submitButton);
+            fireEvent.click(chooseBtns[0]);
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 metadata: {
                     checkoutType: 'upgrade'

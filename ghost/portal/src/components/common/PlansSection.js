@@ -1,8 +1,7 @@
 import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import calculateDiscount from '../../utils/discount';
-import {isCookiesDisabled, formatNumber, hasOnlyFreePlan, hasMultipleProductsFeature, getProductBenefits, getFreeTierDescription, getFreeTierTitle, getFreeProductBenefits, getProductFromPrice} from '../../utils/helpers';
+import {isCookiesDisabled, formatNumber, hasOnlyFreePlan} from '../../utils/helpers';
 import ProductsSection, {ChangeProductSection} from './ProductsSection';
 
 export const PlanSectionStyles = `
@@ -64,25 +63,21 @@ export const PlanSectionStyles = `
         border-right: none;
     }
 
-    .gh-portal-plans-container:not(.has-multiple-products) {
-        margin-bottom: 2px;
-    }
-
-    .gh-portal-plans-container.has-multiple-products:not(.empty-selected-benefits) .gh-portal-plan-section::before {
+    .gh-portal-plans-container:not(.empty-selected-benefits) .gh-portal-plan-section::before {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
 
-    .gh-portal-plans-container.has-multiple-products.has-discount {
+    .gh-portal-plans-container.has-discount {
         margin-top: 40px;
     }
 
-    .gh-portal-plans-container.has-multiple-products.has-discount,
-    .gh-portal-plans-container.has-multiple-products.has-discount .gh-portal-plan-section:last-of-type::before {
+    .gh-portal-plans-container.has-discount,
+    .gh-portal-plans-container.has-discount .gh-portal-plan-section:last-of-type::before {
         border-top-right-radius: 0;
     }
 
-    .gh-portal-plans-container.is-change-plan.has-multiple-products .gh-portal-plan-section::before {
+    .gh-portal-plans-container.is-change-plan .gh-portal-plan-section::before {
         border-top-left-radius: 0;
         border-top-right-radius: 0;
     }
@@ -98,7 +93,7 @@ export const PlanSectionStyles = `
         margin-top: 2px;
     }
 
-    .gh-portal-plans-container.has-multiple-products .gh-portal-plan-pricelabel {
+    .gh-portal-plans-container .gh-portal-plan-pricelabel {
         min-height: unset;
     }
 
@@ -167,75 +162,10 @@ export const PlanSectionStyles = `
         word-break: break-word;
     }
 
-    .gh-portal-plan-checkbox {
-        position: relative;
-        display: block;
-        font-size: 22px;
-        height: 18px;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
-    .gh-portal-plans-container.disabled .gh-portal-plan-checkbox {
-        cursor: auto;
-    }
-
-    .gh-portal-plan-checkbox input {
-        position: absolute;
-        height: 0;
-        width: 0;
-        opacity: 0;
-        cursor: pointer;
-    }
-
-    .gh-portal-plan-checkbox .checkmark {
-        position: absolute;
-        top: 0;
-        left: -9px;
-        background-color: var(--grey12);
-        border-radius: 999px;
-        height: 18px;
-        width: 18px;
-    }
-
-    .gh-portal-plan-checkbox input:checked ~ .checkmark {
-        background-color: var(--brandcolor);
-    }
-
-    .gh-portal-plan-checkbox .checkmark::after {
-        position: absolute;
-        display: none;
-        content: "";
-    }
-
-    .gh-portal-plan-checkbox input:checked ~ .checkmark:after {
-        display: block;
-    }
-
-    .gh-portal-plan-checkbox .checkmark:after {
-        left: 6.5px;
-        top: 2.5px;
-        width: 5px;
-        height: 11px;
-        border: solid var(--white);
-        border-width: 0 2px 2px 0;
-        -webkit-transform: rotate(45deg);
-        -ms-transform: rotate(45deg);
-        transform: rotate(45deg);
-    }
-
-    .gh-portal-plans-container.disabled .gh-portal-plan-checkbox input:checked ~ .checkmark {
-        opacity: 0.3;
-    }
-
     .gh-portal-content.signup.singleplan .gh-portal-plan-section {
         cursor: auto;
     }
 
-    .gh-portal-content.signup.singleplan .gh-portal-plan-checkbox,
     .gh-portal-content.signup.singleplan .gh-portal-plan-section.checked::before {
         display: none;
     }
@@ -263,10 +193,6 @@ export const PlanSectionStyles = `
         opacity: 0;
     }
 
-    .gh-portal-plans-container.hide-checkbox .gh-portal-plan-checkbox {
-        display: none;
-    }
-
     .gh-portal-plans-container.hide-checkbox .gh-portal-plan-section {
         padding-top: 12px;
         padding-bottom: 12px;
@@ -281,107 +207,17 @@ export const PlanSectionStyles = `
         margin: 3px 0 -2px;
     }
 
-    .gh-portal-plans-container.vertical {
-        flex-direction: column;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-section {
-        display: grid;
-        flex-direction: unset;
-        grid-template-columns: 32px auto auto;
-        grid-template-rows: auto auto;
-        justify-items: start;
-        min-height: 60px;
-        border-right: none;
-        border-bottom: 1px solid var(--grey11);
-        padding: 10px;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-checkbox {
-        grid-column: 1 / 2;
-        grid-row: 1 / 3;
-        margin: 0 12px;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-pricelabel {
-        grid-column: 3 / 4;
-        grid-row: 1 / 3;
-        flex-direction: column;
-        justify-self: end;
-        align-items: flex-end;
-        margin: 4px 4px 0 12px;
-        min-height: unset;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-priceinterval {
-        line-height: unset;
-        line-height: 1.7;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-name {
-        text-transform: none;
-        font-size: 1.4rem;
-        line-height: 1.1em;
-        letter-spacing: 0.2px;
-        margin: 0;
-        min-height: unset;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-featurewrapper {
-        margin: 4px 0 0;
-        padding: 0;
-        border: none;
-        align-items: flex-start;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-feature {
-        text-align: left;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-section:last-of-type {
-        border-bottom: none;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-section:first-of-type::before {
-        border-radius: 5px 5px 0 0;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-section:last-of-type::before {
-        border-radius: 0 0 5px 5px;
-    }
-
-    .gh-portal-plans-container.vertical.hide-checkbox .gh-portal-plan-section {
-        grid-template-columns: auto auto;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-pricelabel {
-        grid-column: 3 / 4;
-        grid-row: 1 / 3;
-    }
-
-    .gh-portal-plans-container.vertical.hide-checkbox .gh-portal-plan-featurewrapper {
-        grid-column: 1 / 2;
-    }
-
-    .gh-portal-plans-container.vertical .gh-portal-plan-name.no-description {
-        grid-row: 1 / 3;
-    }
-
-    .gh-portal-plans-container.multiple-products {
-        border: none;
-    }
-
-    .gh-portal-plans-container.has-multiple-products:not(.empty-selected-benefits) {
+    .gh-portal-plans-container:not(.empty-selected-benefits) {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
 
-    .gh-portal-plans-container.has-multiple-products.is-change-plan {
+    .gh-portal-plans-container.is-change-plan {
         border-radius: 0 0 5px 5px;
         border-top: none;
     }
 
-    .gh-portal-plans-container.has-multiple-products.is-change-plan .gh-portal-plan-section {
+    .gh-portal-plans-container.is-change-plan .gh-portal-plan-section {
         min-height: 90px;
     }
 
@@ -447,26 +283,6 @@ export const PlanSectionStyles = `
     }
 `;
 
-function Checkbox({name, id, onPlanSelect, isChecked, disabled = false}) {
-    if (isCookiesDisabled()) {
-        disabled = true;
-    }
-    return (
-        <div className='gh-portal-plan-checkbox'>
-            <input
-                name={name}
-                key={id}
-                type="checkbox"
-                checked={isChecked}
-                aria-label={name}
-                onChange={e => onPlanSelect(e, id)}
-                disabled={disabled}
-            />
-            <span className='checkmark'></span>
-        </div>
-    );
-}
-
 function PriceLabel({currencySymbol, price, interval}) {
     const isSymbol = currencySymbol.length !== 3;
     const currencyClass = isSymbol ? 'gh-portal-plan-currency gh-portal-plan-currency-symbol' : 'gh-portal-plan-currency gh-portal-plan-currency-code';
@@ -495,175 +311,7 @@ function addDiscountToPlans(plans) {
     }
 }
 
-function PlanOptions({plans, selectedPlan, onPlanSelect, changePlan}) {
-    const {site} = useContext(AppContext);
-    addDiscountToPlans(plans);
-
-    return plans.map(({name, type, currency_symbol: currencySymbol, amount, description, interval, id}) => {
-        const price = amount / 100;
-        const isChecked = selectedPlan === id;
-        const planDetails = {};
-        let displayName = name;
-        if (type === 'free') {
-            displayName = getFreeTierTitle({site});
-            planDetails.feature = 'Free preview';
-        } else {
-            displayName = interval === 'month' ? 'Monthly' : 'Yearly';
-            planDetails.feature = description || 'Full access';
-        }
-        // switch (name) {
-        // case 'Free':
-        //     displayName = getFreeTierTitle({site});
-        //     planDetails.feature = 'Free preview';
-        //     break;
-        // default:
-        //     displayName = interval === 'month' ? 'Monthly' : 'Yearly';
-        //     planDetails.feature = description || 'Full access';
-        //     break;
-        // }
-
-        let planClass = isChecked ? 'gh-portal-plan-section checked' : 'gh-portal-plan-section';
-        const planNameClass = planDetails.feature ? 'gh-portal-plan-name' : 'gh-portal-plan-name no-description';
-        const featureClass = hasMultipleProductsFeature({site}) ? 'gh-portal-plan-featurewrapper hidden' : 'gh-portal-plan-featurewrapper';
-
-        return (
-            <div className={planClass} key={id} onClick={e => onPlanSelect(e, id)}>
-                {(hasMultipleProductsFeature({site}) ? <PlanDiscount discount={description} /> : ``)}
-                <Checkbox name={name} id={id} isChecked={isChecked} onPlanSelect={onPlanSelect} />
-                <h4 className={planNameClass}>{displayName}</h4>
-                <PriceLabel currencySymbol={currencySymbol} price={price} interval={interval} />
-                <div className={featureClass}>
-                    <PlanFeature feature={planDetails.feature} />
-                    {(changePlan && selectedPlan === id ? <span className='gh-portal-plan-current'>Current plan</span> : '')}
-                </div>
-            </div>
-        );
-    });
-}
-
-function PlanDiscount({discount}) {
-    return (
-        <div className="gh-portal-discount-label">{discount}</div>
-    );
-}
-
-function PlanFeature({feature, hide = false}) {
-    if (hide) {
-        return null;
-    }
-    return (
-        <div className='gh-portal-plan-feature'>
-            {feature}
-        </div>
-    );
-}
-
-function PlanBenefit({benefit}) {
-    if (!benefit?.name) {
-        return null;
-    }
-    return (
-        <div className="gh-portal-product-benefit">
-            <CheckmarkIcon className='gh-portal-benefit-checkmark' />
-            <span className={benefit.className}>{benefit.name}</span>
-        </div>
-    );
-}
-
-function PlanBenefits({product, plans, selectedPlan}) {
-    const {site} = useContext(AppContext);
-    const productBenefits = getProductBenefits({product, site});
-    const plan = plans.find((_plan) => {
-        return _plan.id === selectedPlan;
-    });
-    let planBenefits = [];
-    let planDescription = product?.description || '';
-    if (selectedPlan === 'free') {
-        planBenefits = getFreeProductBenefits({site});
-        planDescription = getFreeTierDescription({site});
-    } else if (plan?.interval === 'month') {
-        planBenefits = productBenefits.monthly;
-    } else if (plan?.interval === 'year') {
-        planBenefits = productBenefits.yearly;
-    }
-    const benefits = planBenefits.map((benefit, idx) => {
-        const key = `${benefit.name}-${idx}`;
-        return (
-            <PlanBenefit benefit={benefit} key={key} />
-        );
-    });
-
-    if (!planDescription && benefits.length === 0) {
-        return '';
-    }
-
-    let benefitsClass = benefits.length === 0 ? `no-benefits` : '';
-    if (!product || hasOnlyFreePlan({plans})) {
-        benefitsClass += ' onlyfree';
-    }
-
-    return (
-        <div className={'gh-portal-singleproduct-benefits gh-portal-product-benefits ' + benefitsClass}>
-            {planDescription ? <div className='gh-portal-product-description'> {planDescription} </div> : ''}
-            {benefits}
-        </div>
-    );
-}
-
-function PlanLabel({showLabel}) {
-    if (!showLabel) {
-        return null;
-    }
-    return (
-        <label className='gh-portal-input-label'>Plan</label>
-    );
-}
-
-function productHasDescriptionOrBenefits({product}) {
-    if (product?.description || product?.benefits?.length) {
-        return true;
-    }
-    return false;
-}
-
-function getPlanClassNames({changePlan, cookiesDisabled, plans = [], selectedPlan, showVertical = false, site}) {
-    let className = 'gh-portal-plans-container';
-    if (changePlan) {
-        className += ' hide-checkbox';
-    }
-    if (cookiesDisabled) {
-        className += ' disabled';
-    }
-    if (changePlan || plans.length > 3 || showVertical) {
-        className += ' vertical';
-    }
-    if (hasMultipleProductsFeature({site})) {
-        className += ' has-multiple-products';
-        const selectedProduct = getProductFromPrice({site, priceId: selectedPlan});
-
-        if (!productHasDescriptionOrBenefits({product: selectedProduct})) {
-            className += ' empty-selected-benefits';
-        }
-
-        const filteredPlans = plans.filter(d => d.id !== 'free');
-        const monthlyPlan = plans.find((d) => {
-            return d.name === 'Monthly' && !d.description && d.interval === 'month';
-        });
-        const yearlyPlan = plans.find((d) => {
-            return d.name === 'Yearly' && !d.description && d.interval === 'year';
-        });
-
-        if (filteredPlans.length === 2 && monthlyPlan && yearlyPlan) {
-            const discount = calculateDiscount(monthlyPlan.amount, yearlyPlan.amount);
-            if (discount) {
-                className += ' has-discount';
-            }
-        }
-    }
-    return className;
-}
-
-export function MultipleProductsPlansSection({products, selectedPlan, onPlanSelect, changePlan = false}) {
+export function MultipleProductsPlansSection({products, selectedPlan, onPlanSelect, onPlanCheckout, changePlan = false}) {
     const cookiesDisabled = isCookiesDisabled();
     /**Don't allow plans selection if cookies are disabled */
     if (cookiesDisabled) {
@@ -692,35 +340,11 @@ export function MultipleProductsPlansSection({products, selectedPlan, onPlanSele
                     type='upgrade'
                     products={products}
                     onPlanSelect={onPlanSelect}
+                    handleChooseSignup={(...args) => {
+                        onPlanCheckout(...args);
+                    }}
                 />
             </div>
-        </section>
-    );
-}
-
-export function SingleProductPlansSection({product, plans, selectedPlan, onPlanSelect, changePlan = false}) {
-    const {site} = useContext(AppContext);
-    const cookiesDisabled = isCookiesDisabled();
-    /**Don't allow plans selection if cookies are disabled */
-    if (cookiesDisabled) {
-        onPlanSelect = () => {};
-    }
-    const className = getPlanClassNames({cookiesDisabled, changePlan, plans, selectedPlan, site});
-
-    if (!product || hasOnlyFreePlan({plans})) {
-        return (
-            <section>
-                <PlanBenefits product={product} plans={plans} selectedPlan={selectedPlan} />
-            </section>
-        );
-    }
-
-    return (
-        <section>
-            <div className={className}>
-                <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
-            </div>
-            <PlanBenefits product={product} plans={plans} selectedPlan={selectedPlan} />
         </section>
     );
 }
@@ -731,9 +355,6 @@ function getChangePlanClassNames({cookiesDisabled, site}) {
         className += ' disabled';
     }
 
-    if (hasMultipleProductsFeature({site})) {
-        className += ' has-multiple-products';
-    }
     return className;
 }
 
@@ -783,26 +404,3 @@ export function ChangeProductPlansSection({product, plans, selectedPlan, onPlanS
         </section>
     );
 }
-
-function PlansSection({plans, showLabel = true, selectedPlan, onPlanSelect, changePlan = false}) {
-    const {site} = useContext(AppContext);
-    if (hasOnlyFreePlan({plans})) {
-        return null;
-    }
-    const cookiesDisabled = isCookiesDisabled();
-    /**Don't allow plans selection if cookies are disabled */
-    if (cookiesDisabled) {
-        onPlanSelect = () => {};
-    }
-    const className = getPlanClassNames({cookiesDisabled, changePlan, plans, selectedPlan, site});
-    return (
-        <section className="gh-portal-plans">
-            <PlanLabel showLabel={showLabel} />
-            <div className={className}>
-                <PlanOptions plans={plans} onPlanSelect={onPlanSelect} selectedPlan={selectedPlan} changePlan={changePlan} />
-            </div>
-        </section>
-    );
-}
-
-export default PlansSection;

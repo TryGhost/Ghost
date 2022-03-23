@@ -8,7 +8,7 @@ const products = [
         name: 'Free',
         description: 'Free tier description which is actually a pretty long description',
         // description: '',
-        numOfBenefits: 0
+        numOfBenefits: 2
     })
     ,
     getProductData({
@@ -17,13 +17,13 @@ const products = [
         description: '',
         monthlyPrice: getPriceData({
             interval: 'month',
-            amount: 700
+            amount: 500
         }),
         yearlyPrice: getPriceData({
             interval: 'year',
-            amount: 7000
+            amount: 5000
         }),
-        numOfBenefits: 1
+        numOfBenefits: 3
     })
     ,
     getProductData({
@@ -37,9 +37,24 @@ const products = [
             interval: 'year',
             amount: 11000
         }),
-        numOfBenefits: 1
+        numOfBenefits: 4
     })
 
+    // ,
+    // getProductData({
+    //     name: 'Silver',
+    //     description: 'Access to all members articles and weekly podcast',
+    //     monthlyPrice: getPriceData({
+    //         interval: 'month',
+    //         amount: 1200
+    //     }),
+    //     yearlyPrice: getPriceData({
+    //         interval: 'year',
+    //         amount: 12000
+    //     }),
+    //     numOfBenefits: 3
+    // })
+    //
     // ,
     // getProductData({
     //     name: 'Friends of the Blueprint',
@@ -146,7 +161,10 @@ export const member = {
 };
 
 export function paidMemberOnTier() {
-    let price = site?.products?.[2].monthlyPrice;
+    if (!products || !products[1]) {
+        return null;
+    }
+    let price = site?.products?.[1].monthlyPrice;
     let updatedMember = getMemberData({
         paid: true,
         subscriptions: [
