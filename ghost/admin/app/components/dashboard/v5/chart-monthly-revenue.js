@@ -20,6 +20,10 @@ export default class ChartMonthlyRevenue extends Component {
         this.dashboardStats.loadMrrStats(this.args.days);
     }
 
+    get loading() {
+        return this.dashboardStats.mrrStats === null;
+    }
+
     get chartType() {
         return 'line';
     }

@@ -20,6 +20,10 @@ export default class ChartTotalPaid extends Component {
         this.dashboardStats.loadMemberCountStats(this.args.days);
     }
 
+    get loading() {
+        return this.dashboardStats.memberCountStats === null;
+    }
+
     get chartType() {
         return 'line';
     }

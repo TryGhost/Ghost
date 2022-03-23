@@ -2,33 +2,78 @@ import Service from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 /**
+ * @typedef {import('./dashboard-stats').MemberCountStat} MemberCountStat
+ * @typedef {import('./dashboard-stats').MemberCounts} MemberCounts
+ * @typedef {import('./dashboard-stats').MrrStat} MrrStat
+ * @typedef {import('./dashboard-stats').EmailOpenRateStat} EmailOpenRateStat
+ * @typedef {import('./dashboard-stats').PaidMembersByCadence} PaidMembersByCadence
+ * @typedef {import('./dashboard-stats').PaidMembersForTier} PaidMembersForTier
+ */
+
+/**
  * Service that contains fake data to be used by the DashboardStatsService if useMocks is enabled
  */
 export default class DashboardMocksService extends Service {
     @tracked
         enabled = true;
 
+    /**
+     * @type {?MemberCounts} memberCounts
+     */
     @tracked
         memberCounts = null;
 
+    /**
+     * @type {?MemberCountStat[]}
+     */
     @tracked
-        memberCountStats = [];
+        memberCountStats = null;
 
+    /**
+     * @type {?MrrStat[]}
+     */
     @tracked
-        mrrStats = [];
+        mrrStats = null;
 
+    /**
+     * @type {PaidMembersByCadence} Number of members for annual and monthly plans
+     */
     @tracked
-        membersLastSeen30d = 123;
+        paidMembersByCadence = null;
 
+    /**
+     * @type {PaidMembersForTier[]} Number of members for each tier
+     */
     @tracked
-        membersLastSeen7d = 51;
+        paidMembersByTier = null;
 
+    /**
+     * @type {?number} Number of members last seen in last 30 days (could differ if filtered by member status)
+     */
+    @tracked
+        membersLastSeen30d = null;
+
+    /**
+     * @type {?number} Number of members last seen in last 7 days (could differ if filtered by member status)
+     */
+    @tracked
+        membersLastSeen7d = null;
+
+    /**
+     * @type {?MemberCounts} Number of members that are subscribed (grouped by status)
+     */
     @tracked
         newsletterSubscribers = null;
 
+    /**
+     * @type {?number} Number of emails sent in last 30 days
+     */
     @tracked
         emailsSent30d = null;
 
+    /**
+     * @type {?EmailOpenRateStat[]}
+     */
     @tracked
         emailOpenRateStats = null;
 
@@ -41,6 +86,9 @@ export default class DashboardMocksService extends Service {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - generateDays + 1);
     
+        /**
+         * @type {MemberCountStat[]}
+         */
         const stats = [];
         let growPeriod = true;
         let growCount = 0;
@@ -53,11 +101,14 @@ export default class DashboardMocksService extends Service {
 
             const previous = stats.length ? stats[stats.length - 1] : {free: 0, paid: 0, comped: 0};
 
+            const paid = index === 0 ? 0 : Math.max(0, previous.paid + Math.round(Math.random() * (growRate - 3)));
             stats.push({
                 date: date.toISOString().split('T')[0],
-                free: index === 0 ? 0 : Math.max(0, previous.free + Math.floor(Math.random() * (growRate))),
-                paid: index === 0 ? 0 : Math.max(0, previous.paid + Math.floor(Math.random() * (growRate - 3))),
-                comped: 0
+                free: index === 0 ? 0 : Math.max(0, previous.free + Math.round(Math.random() * (growRate))),
+                paid,
+                comped: 0,
+                newPaid: Math.max(paid - previous.paid + 5, 0),
+                canceledPaid: Math.max(previous.paid - paid, 0) + 5
             });
 
             if (growPeriod) {
@@ -93,6 +144,48 @@ export default class DashboardMocksService extends Service {
             paid: stats[stats.length - 1].paid,
             free: stats[stats.length - 1].free + stats[stats.length - 1].comped
         };
+
+        this.paidMembersByCadence = {
+            annual: 546,
+            monthly: 5162
+        };
+
+        this.paidMembersByTier = [
+            {
+                tier: {
+                    name: 'Gold tier'
+                },
+                members: 124
+            },
+            {
+                tier: {
+                    name: 'Silver tier'
+                },
+                members: 459
+            }
+        ];
+
+        this.newsletterSubscribers = {
+            paid: 156,
+            free: 8459,
+            total: 156 + 8459
+        };
+
+        this.emailsSent30d = 123;
+        
+        this.membersLastSeen7d = Math.round(Math.random() * this.memberCounts.free / 2);
+        this.membersLastSeen30d = this.membersLastSeen7d + Math.round(Math.random() * this.memberCounts.free / 2);
+
+        this.emailOpenRateStats = [
+            {
+                id: '23424',
+                title: 'Test post',
+                email: {
+                    openedCount: 518,
+                    deliveredCount: 1234
+                }
+            }
+        ];
 
         this.mrrStats = stats.map((s) => {
             return {

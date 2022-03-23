@@ -19,6 +19,10 @@ export default class ChartTotalMembers extends Component {
         // The dashboard stats service will take care or reusing and limiting API-requests between charts
         this.dashboardStats.loadMemberCountStats(this.args.days);
     }
+
+    get loading() {
+        return this.dashboardStats.memberCountStats === null;
+    }
     
     get chartType() {
         return 'line';
