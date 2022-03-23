@@ -19,6 +19,7 @@ const DAYS_OPTIONS = [{
 
 export default class DashboardDashboardV5Component extends Component {
     @service dashboardStats;
+    @service dashboardMocks;
 
     @tracked mockPaidTiers = true;
     @tracked mockStripeEnabled = true;
@@ -59,57 +60,10 @@ export default class DashboardDashboardV5Component extends Component {
      * Might be better to move this code to a temporary mocking service
      */
     @action
-    updateMockedData(days) {    
-        const generateDays = days;
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - generateDays + 1);
-    
-        const stats = [];
-        let growPeriod = true;
-        let growCount = 0;
-        let growLength = Math.floor(Math.random() * 14);
-        for (let index = 0; index < generateDays; index++) {
-            const date = new Date(startDate.getTime());
-            date.setDate(date.getDate() + index);
-
-            const previous = stats.length ? stats[stats.length - 1] : {free: 0, paid: 0, comped: 0};
-
-            stats.push({
-                date: date.toISOString().split('T')[0],
-                free: previous.free + (growPeriod ? (index + Math.floor(Math.random() * (previous.free) * 0.01)) : 0),
-                paid: previous.paid + Math.floor(Math.random() * (previous.free) * 0.005),
-                comped: previous.comped + Math.floor(Math.random() * 1)
-            });
-
-            if (growPeriod) {
-                growCount += 1;
-                if (growCount > growLength) {
-                    growPeriod = false;
-                    growCount = 0;
-                    growLength = Math.floor(Math.random() * 14);
-                }
-            } else {
-                growCount += 1;
-                if (growCount > growLength) {
-                    growPeriod = true;
-                    growCount = 0;
-                    growLength = Math.floor(Math.random() * 14);
-                }
-            }
-        }
-
-        this.dashboardStats.mockedMemberCountStats = stats;
-
-        this.dashboardStats.mockedMemberCounts = {
-            total: stats[stats.length - 1].paid + stats[stats.length - 1].free + stats[stats.length - 1].comped,
-            paid: stats[stats.length - 1].paid,
-            free: stats[stats.length - 1].free + stats[stats.length - 1].comped
-        };
+    updateMockedData(generateDays) {    
+        this.dashboardMocks.updateMockedData({days: generateDays});
 
         // Force update all data
-        this.dashboardStats.loadMembersCounts();
-        this.dashboardStats.loadMrrStats(this.days);
-        this.dashboardStats.loadMemberCountStats(this.days);
-        this.dashboardStats.loadLastSeen();
+        this.dashboardStats.reloadAll(this.days);
     }
 }

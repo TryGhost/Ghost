@@ -29,11 +29,11 @@
                 <div class="prototype-section">
                     <div class="prototype-counts">
                         <article class="prototype-box">
-                            <Dashboard::V5::ChartMonthlyRevenue />
+                            <Dashboard::V5::ChartMonthlyRevenue @days={{this.days}} />
                         </article>
 
                         <article class="prototype-box">
-                            <Dashboard::V5::ChartTotalPaid />
+                            <Dashboard::V5::ChartTotalPaid @days={{this.days}} />
                         </article>
                     </div>
                 </div>
@@ -41,7 +41,7 @@
                 <div class="prototype-section">
                     <div class="prototype-counts">
                         <article class="prototype-box">
-                            <Dashboard::V5::ChartPaidMembers />
+                            <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
                         </article>
 
                         <article class="prototype-box">
@@ -164,5 +164,6 @@
         <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 14)}}><span>14 days</span></button>
         <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 30)}}><span>30 days</span></button>
         <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 365)}}><span>1 year</span></button>
+        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 730)}}><span>2 year</span></button>
     </div>
 </div>
