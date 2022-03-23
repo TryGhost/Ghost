@@ -108,11 +108,13 @@ export const site = getSiteData({
     newsletters: [
         {
             id: 'weekly',
-            name: 'Weekly Rundown'
+            name: 'Weekly Rundown',
+            description: 'Best links from previous week every Monday'
         },
         {
             id: 'daily',
-            name: 'Daily Brief'
+            name: 'Daily Brief',
+            description: 'One email every day'
         }
     ]
 });
