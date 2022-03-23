@@ -25,6 +25,7 @@ function NewsletterPrefSection({newsletter}) {
         <section>
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
+                <p>{newsletter.description}</p>
             </div>
             <div>
                 <Switch id={newsletter.id} onToggle={(e) => {
@@ -80,6 +81,7 @@ export default function AccountEmailPage() {
                         isDestructive={true}
                         style={{width: '100%'}}
                     />
+                    <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>Unsubscribing from emails will not cancel your paid subscription to The Chinese Cinema</p>
                 </div>
             </footer>
         </div>
