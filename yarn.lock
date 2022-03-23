@@ -1872,15 +1872,7 @@
     utils-copy-error "1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.14":
-  version "0.2.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
-  integrity sha512-Mj+bedWOwfooNA8fQdp6gIcRvWcKhJ/hOyGzu6OLFDLgEosFEeuFgXE6SsAWkf9+9NTYX30w88qGIWZqOhEAmQ==
-  dependencies:
-    "@tryghost/ignition-errors" "^0.1.0"
-    lodash "^4.17.21"
-
-"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.4", "@tryghost/errors@^1.2.6":
+"@tryghost/errors@1.2.6", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.4", "@tryghost/errors@^1.2.6":
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.6.tgz#4cb15ec63de4e0fe632ce6fa84191e42c708371c"
   integrity sha512-9kNE9z9CIKjXKNWS03/pH8w9y1bTaLDTt1gIUQmBNlyS3zP56F1uJkz88Y5ySdp1Rbuee1UG+Kc8/L2NJQxsBg==
@@ -1888,6 +1880,14 @@
     lodash "^4.17.21"
     utils-copy-error "1.0.1"
     uuid "^8.3.2"
+
+"@tryghost/errors@^0.2.10", "@tryghost/errors@^0.2.11", "@tryghost/errors@^0.2.14":
+  version "0.2.17"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-0.2.17.tgz#9b89f3845256ace5650593f41cc86d64965b56ed"
+  integrity sha512-Mj+bedWOwfooNA8fQdp6gIcRvWcKhJ/hOyGzu6OLFDLgEosFEeuFgXE6SsAWkf9+9NTYX30w88qGIWZqOhEAmQ==
+  dependencies:
+    "@tryghost/ignition-errors" "^0.1.0"
+    lodash "^4.17.21"
 
 "@tryghost/express-dynamic-redirects@0.2.6":
   version "0.2.6"
