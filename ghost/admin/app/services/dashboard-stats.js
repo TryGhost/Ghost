@@ -1,9 +1,9 @@
-import Service from '@ember/service';
+import Service, {inject as service} from '@ember/service';
+import moment from 'moment';
 import {tracked} from '@glimmer/tracking';
 
 export default class DashboardStatsService extends Service {
-    @tracked
-        useMocks = true;
+    @service dashboardMocks;
 
     @tracked
         memberCounts = null;
@@ -30,8 +30,8 @@ export default class DashboardStatsService extends Service {
         emailOpenRateStats = null;
 
     loadMembersCounts() {
-        if (this.useMocks) {
-            this.memberCounts = this.mockedMemberCounts;
+        if (this.dashboardMocks.enabled) {
+            this.memberCounts = this.dashboardMocks.memberCounts;
             return;
         }
         // Normal implementation
@@ -46,8 +46,8 @@ export default class DashboardStatsService extends Service {
      * @param {number} days The number of days to fetch data for
      */
     loadMemberCountStats(days) {
-        if (this.useMocks) {
-            this.memberCountStats = this.mockedMemberCountStats.slice(-days);
+        if (this.dashboardMocks.enabled) {
+            this.memberCountStats = this.fillMissingDates(this.dashboardMocks.memberCountStats.slice(-days), {paid: 0,free: 0,comped: 0}, days);
             return;
         }
 
@@ -60,8 +60,8 @@ export default class DashboardStatsService extends Service {
      * @param {number} days The number of days to fetch data for
      */
     loadMrrStats(days) {
-        if (this.useMocks) {
-            this.mmrStats = this.mockedMrrStats.slice(-days);
+        if (this.dashboardMocks.enabled) {
+            this.mrrStats = this.fillMissingDates(this.dashboardMocks.mrrStats.slice(-days), {mrr: 0}, days);
             return;
         }
 
@@ -70,27 +70,54 @@ export default class DashboardStatsService extends Service {
     }
 
     loadLastSeen() {
-        if (this.useMocks) {
-            this.membersLastSeen30d = 620;
-            this.membersLastSeen7d = 320;
+        if (this.dashboardMocks.enabled) {
+            this.membersLastSeen30d = this.dashboardMocks.membersLastSeen30d;
+            this.membersLastSeen7d = this.dashboardMocks.membersLastSeen7d;
             return;
         }
         // Normal implementation
         // @todo
     }
 
-    // Mocked data (move this to a mocking service?)
+    /**
+     * For now this is only used when reloading all the graphs after changing the mocked data
+     * @todo: reload only data that we loaded earlier
+     */
+    reloadAll(days) {
+        this.loadMembersCounts();
+        this.loadMrrStats(days);
+        this.loadMemberCountStats(days);
+        this.loadLastSeen();
+    }
 
-    @tracked
-        mockedMemberCountStats = [];
+    /**
+     * Fill data to match a given amount of days
+     */
+    fillMissingDates(data, defaultData, days) {
+        let currentRangeDate = moment().subtract(days, 'days');
 
-    @tracked
-        mockedMrrStats = [];
+        let endDate = moment().add(1, 'hour');
+        const output = [];
+        const firstDateInRangeIndex = data.findIndex((val) => {
+            return moment(val.date).isAfter(currentRangeDate);
+        });
+        let initialDateInRangeVal = firstDateInRangeIndex > 0 ? data[firstDateInRangeIndex - 1] : null;
+        if (firstDateInRangeIndex === 0 && !initialDateInRangeVal) {
+            initialDateInRangeVal = data[firstDateInRangeIndex];
+        }
+        if (data.length > 0 && !initialDateInRangeVal && firstDateInRangeIndex !== 0) {
+            initialDateInRangeVal = data[data.length - 1];
+        }
 
-    @tracked
-        mockedMemberCounts = {
-            total: 0,
-            paid: 0,
-            free: 0
-        };
+        let lastVal = initialDateInRangeVal ? initialDateInRangeVal : defaultData;
+
+        while (currentRangeDate.isBefore(endDate)) {
+            let dateStr = currentRangeDate.format('YYYY-MM-DD');
+            const dataOnDate = data.find(d => d.date === dateStr);
+            lastVal = dataOnDate ? dataOnDate : lastVal;
+            output.push(lastVal);
+            currentRangeDate = currentRangeDate.add(1, 'day');
+        }
+        return output;
+    }
 }
