@@ -6,7 +6,6 @@ export const ActionButtonStyles = `
     .gh-portal-btn-main {
         box-shadow: none;
         position: relative;
-        height: 42px;
         border: none;
     }
 

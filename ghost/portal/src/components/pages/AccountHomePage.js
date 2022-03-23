@@ -12,11 +12,6 @@ import {useContext} from 'react';
 const React = require('react');
 
 export const AccountHomePageStyles = `
-    .gh-portal-account-main {
-        background: var(--grey13);
-        padding: 32px 32px 0;
-    }
-
     .gh-portal-account-header {
         display: flex;
         flex-direction: column;
@@ -29,14 +24,11 @@ export const AccountHomePageStyles = `
     }
 
     .gh-portal-account-data {
-        margin-bottom: 32px;
+        margin-bottom: 40px;
     }
 
     footer.gh-portal-account-footer {
         display: flex;
-        padding: 32px;
-        height: 104px;
-        border-top: 1px solid #eaeaea;
     }
 
     .gh-portal-account-footer.paid {
@@ -45,6 +37,7 @@ export const AccountHomePageStyles = `
 
     .gh-portal-account-footermenu {
         display: flex;
+        align-items: center;
         list-style: none;
         padding: 0;
         margin: 0;

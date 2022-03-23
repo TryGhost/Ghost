@@ -14,11 +14,13 @@ const setup = (overrides) => {
     const emailInput = utils.getByLabelText(/email/i);
     const nameInput = utils.getByLabelText(/name/i);
     const submitButton = utils.queryByRole('button', {name: 'Continue'});
+    const chooseButton = utils.queryAllByRole('button', {name: 'Choose'});
     const signinButton = utils.queryByRole('button', {name: 'Sign in'});
     return {
         nameInput,
         emailInput,
         submitButton,
+        chooseButton,
         signinButton,
         mockOnActionFn,
         ...utils
@@ -27,16 +29,16 @@ const setup = (overrides) => {
 
 describe('SignupPage', () => {
     test('renders', () => {
-        const {nameInput, emailInput, submitButton, signinButton} = setup();
+        const {nameInput, emailInput, chooseButton, signinButton} = setup();
 
         expect(nameInput).toBeInTheDocument();
         expect(emailInput).toBeInTheDocument();
-        expect(submitButton).toBeInTheDocument();
+        expect(chooseButton).toHaveLength(2);
         expect(signinButton).toBeInTheDocument();
     });
 
     test('can call signup action with name, email and plan', () => {
-        const {nameInput, emailInput, submitButton, mockOnActionFn} = setup();
+        const {nameInput, emailInput, chooseButton, mockOnActionFn} = setup();
         const nameVal = 'J Smith';
         const emailVal = 'jsmith@example.com';
         const planVal = 'free';
@@ -46,7 +48,7 @@ describe('SignupPage', () => {
         expect(nameInput).toHaveValue(nameVal);
         expect(emailInput).toHaveValue(emailVal);
 
-        fireEvent.click(submitButton);
+        fireEvent.click(chooseButton[0]);
         expect(mockOnActionFn).toHaveBeenCalledWith('signup', {email: emailVal, name: nameVal, plan: planVal});
     });
 
