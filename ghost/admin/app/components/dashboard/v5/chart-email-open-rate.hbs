@@ -15,11 +15,15 @@
 
     <div class="prototype-box">
         <h4>Email open rate</h4>
-        <EmberChart
-            @type={{this.chartType}}
-            @data={{this.chartData}}
-            @options={{this.chartOptions}}
-            @height={{this.chartHeight}} />
+        {{#if this.loading}}
+            <div class="prototype-placeholder" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+        {{else}}
+            <EmberChart
+                @type={{this.chartType}}
+                @data={{this.chartData}}
+                @options={{this.chartOptions}}
+                @height={{this.chartHeight}} />
+        {{/if}}
     </div>
 </div>
 

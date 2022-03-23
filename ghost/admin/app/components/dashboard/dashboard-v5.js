@@ -30,6 +30,11 @@ export default class DashboardDashboardV5Component extends Component {
 
     daysOptions = DAYS_OPTIONS;
 
+    constructor() {
+        super(...arguments);
+        //this.dashboardMocks.updateMockedData({days: 14});
+    }
+
     get selectedDaysOption() {
         return this.daysOptions.find(d => d.value === this.days);
     }
