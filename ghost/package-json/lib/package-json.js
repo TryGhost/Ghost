@@ -127,22 +127,18 @@ async function readPackage(packagePath, packageName) {
  * @returns {Promise<PackageList>}
  */
 async function readPackages(packagePath) {
-    return Bluebird.resolve(fs.readdir(packagePath))
-        .filter(function (packageName) {
+    return Bluebird.resolve(fs.readdir(packagePath, {withFileTypes: true}))
+        .filter(function (packageFile) {
             // Filter out things which are not packages by regex
-            if (packageName.match(notAPackageRegex)) {
+            if (packageFile.name.match(notAPackageRegex)) {
                 return;
             }
             // Check the remaining items to ensure they are a directory
-            return fs.stat(join(packagePath, packageName))
-                .then(function (stat) {
-                    return stat.isDirectory();
-                })
-                .catch(() => false);
+            return packageFile.isDirectory();
         })
-        .map(function readPackageJson(packageName) {
-            const absolutePath = join(packagePath, packageName);
-            return processPackage(absolutePath, packageName);
+        .map(function readPackageJson(packageFile) {
+            const absolutePath = join(packagePath, packageFile.name);
+            return processPackage(absolutePath, packageFile.name);
         })
         .then(function (packages) {
             return _.keyBy(packages, 'name');
