@@ -1,4 +1,4 @@
-<section>
+<section {{did-insert this.onInsert}}>
     {{#if this.areMembersEnabled}}
         <section class="prototype-section">
             <Dashboard::V5::ChartMembersCounts />
@@ -71,9 +71,7 @@
 
     <section class="prototype-section">
         <h2>Activity</h2>
-        <article class="gh-dashboard-box">
-            Activity feed
-        </article>
+        <Dashboard::LatestMemberActivity />
     </section>
 
     <section class="prototype-section">
