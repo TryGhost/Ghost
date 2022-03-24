@@ -64,6 +64,11 @@ export default class MembersEmail extends Component {
         };
     }
 
+    @computed('newsletters.newsletters.@each.status')
+    get newsletterCount() {
+        return this.newsletters.newsletters.filter(n => n.status === 'active').length;
+    }
+
     init() {
         super.init(...arguments);
         this.set('mailgunRegions', [US, EU]);
