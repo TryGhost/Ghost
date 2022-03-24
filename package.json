@@ -67,7 +67,7 @@
     "@tryghost/database-info": "0.2.5",
     "@tryghost/debug": "0.1.14",
     "@tryghost/domain-events": "0.1.9",
-    "@tryghost/email-analytics-provider-mailgun": "1.0.7",
+    "@tryghost/email-analytics-provider-mailgun": "1.0.8",
     "@tryghost/email-analytics-service": "1.0.5",
     "@tryghost/errors": "1.2.6",
     "@tryghost/express-dynamic-redirects": "0.2.6",
