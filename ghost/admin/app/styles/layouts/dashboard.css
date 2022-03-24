@@ -1162,6 +1162,7 @@ a.gh-dashboard-container {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    position: relative; /* Temporarily added for absolute positioned prototype-paid-mix-dropdown */
 }
 
 .gh-dashboard5-container .gh-dashboard5-box {
