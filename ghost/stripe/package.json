@@ -28,7 +28,7 @@
   "dependencies": {
     "@tryghost/debug": "^0.1.4",
     "@tryghost/domain-events": "^0.1.9",
-    "@tryghost/errors": "1.2.5",
+    "@tryghost/errors": "^1.2.5",
     "@tryghost/logging": "^2.0.5",
     "@tryghost/member-events": "^0.4.1",
     "leaky-bucket": "^2.2.0",
