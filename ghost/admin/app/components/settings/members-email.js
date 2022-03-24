@@ -65,8 +65,13 @@ export default class MembersEmail extends Component {
     }
 
     @computed('newsletters.newsletters.@each.status')
-    get newsletterCount() {
+    get activeNewsletterCount() {
         return this.newsletters.newsletters.filter(n => n.status === 'active').length;
+    }
+
+    @computed('newsletters.newsletters.@each.status')
+    get archivedNewsletterCount() {
+        return this.newsletters.newsletters.filter(n => n.status === 'archived').length;
     }
 
     init() {

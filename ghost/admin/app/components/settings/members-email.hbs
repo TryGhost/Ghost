@@ -20,12 +20,35 @@
 
     {{#if this.emailNewsletterEnabled}}
         <div class="gh-main-section gh-newsletters">
-            <h4 class="gh-main-section-header small bn">Newsletters</h4>
+            <div class="flex justify-between items-center">
+                <h4 class="gh-main-section-header small bn">Newsletters</h4>
+                {{#if (not-eq this.archivedNewsletterCount 0)}}
+                <div>
+                    <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
+                        {{!-- <PowerSelect
+                            @selected={{this.selectedType}}
+                            @options={{this.availableTypes}}
+                            @searchEnabled={{false}}
+                            @onChange={{this.onTypeChange}}
+                            @triggerComponent="gh-power-select/trigger"
+                            @triggerClass="gh-contentfilter-menu-trigger gh-contentfilter-menu-trigger-tiers"
+                            @dropdownClass="gh-contentfilter-menu-dropdown"
+                            @matchTriggerWidth={{false}}
+                            as |type|
+                        >
+                            {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
+                        </PowerSelect> --}}
+                        <span>Active</span> 
+                        <span>{{svg-jar "arrow-down-small" class="w2"}}</span>
+                    </div>
+                </div>
+                {{/if}}
+            </div>
             <section class="gh-expandable">
                 <div class="gh-expandable-block">
                     {{#each this.newsletters.newsletters as |newsletter|}}
                         {{#if (eq newsletter.status "active")}}
-                            <div class="gh-main-content-card gh-newsletter-card {{if (gt this.newsletterCount 1) "multiple"}}">
+                            <div class="gh-main-content-card gh-newsletter-card {{if (gt this.activeNewsletterCount 1) "multiple"}}">
                                 {{svg-jar "grab" class="grab-newsletter"}}
                                 <div class="gh-newsletter-card-block title-block">
                                     <h3 class="gh-newsletter-card-name">
@@ -35,7 +58,7 @@
                                         {{newsletter.description}}
                                     </p>
                                 </div>
-                                <div class="gh-newsletter-card-block stats-block {{if (gt this.newsletterCount 1) "multiple"}}">
+                                <div class="gh-newsletter-card-block stats-block {{if (gt this.activeNewsletterCount 1) "multiple"}}">
                                     <div>
                                         <h3 class="gh-newsletter-card-name">{{newsletter.members.total}}</h3>
                                         <p class="gh-newsletter-card-description">Subscribers</p>
@@ -46,8 +69,8 @@
                                     </div>
                                 </div>
                                 <div class="gh-newsletter-card-block cta-block">
-                                    {{#if (eq this.newsletterCount 1)}}
-                                        <button class="gh-btn gh-btn-green" type="button"><span>Customize &rarr;</span></button>
+                                    {{#if (eq this.activeNewsletterCount 1)}}
+                                        <button class="gh-btn gh-btn-green" type="button" {{on "click" @toggleEmailDesignSettings}}><span>Customize &rarr;</span></button>
                                     {{else}}
                                         <span class="dropdown">
                                             <GhDropdownButton
