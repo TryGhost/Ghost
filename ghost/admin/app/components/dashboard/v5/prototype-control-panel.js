@@ -61,6 +61,7 @@ export default class PrototypeControlPanel extends Component {
         try {
             localStorage.setItem('dashboard5-prototype-state', JSON.stringify(this.state));
             localStorage.setItem('dashboard5-prototype-status', JSON.stringify(this.dashboardMocks.siteStatus));
+            localStorage.setItem('dashboard5-prototype-enabled', JSON.stringify(this.enabled));
         } catch (e) {
             // ignore localStorage not supported errors
         }
@@ -82,6 +83,18 @@ export default class PrototypeControlPanel extends Component {
                 if (parsed) {
                     this.dashboardMocks.siteStatus = {...this.dashboardMocks.siteStatus, ...parsed};
                     //this.dashboardStats.loadSiteStatus();
+                }
+            }
+
+            const enabledStr = localStorage.getItem('dashboard5-prototype-enabled');
+            if (enabledStr) {
+                const parsed = JSON.parse(enabledStr);
+                if (typeof parsed === 'boolean' && parsed !== this.dashboardMocks.enabled) {
+                    this.dashboardMocks.enabled = parsed;
+
+                    // Needed for now to fix already loaded data:
+                    this.dashboardStats.loadSiteStatus();
+                    this.dashboardStats.reloadAll();
                 }
             }
         } catch (e) {
@@ -109,6 +122,15 @@ export default class PrototypeControlPanel extends Component {
     }
 
     // Convenience mappers
+    get enabled() {
+        return this.dashboardMocks.enabled;
+    }
+
+    set enabled(val) {
+        this.dashboardMocks.enabled = val;
+        this.dashboardStats.reloadAll();
+        this.saveState();
+    }
 
     get mockPaidTiers() {
         return this.dashboardMocks.siteStatus?.hasPaidTiers;
