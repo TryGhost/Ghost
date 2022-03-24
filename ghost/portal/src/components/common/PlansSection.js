@@ -483,15 +483,16 @@ function PriceLabel({currencySymbol, price, interval}) {
 function addDiscountToPlans(plans) {
     const filteredPlans = plans.filter(d => d.id !== 'free');
     const monthlyPlan = plans.find((d) => {
-        return d.name === 'Monthly' && !d.description && d.interval === 'month';
+        return d.name === 'Monthly' && d.interval === 'month';
     });
     const yearlyPlan = plans.find((d) => {
-        return d.name === 'Yearly' && !d.description && d.interval === 'year';
+        return d.name === 'Yearly' && d.interval === 'year';
     });
 
     if (filteredPlans.length === 2 && monthlyPlan && yearlyPlan) {
         const discount = calculateDiscount(monthlyPlan.amount, yearlyPlan.amount);
         yearlyPlan.description = discount > 0 ? `${discount}% discount` : '';
+        monthlyPlan.description = '';
     }
 }
 
@@ -647,10 +648,10 @@ function getPlanClassNames({changePlan, cookiesDisabled, plans = [], selectedPla
 
         const filteredPlans = plans.filter(d => d.id !== 'free');
         const monthlyPlan = plans.find((d) => {
-            return d.name === 'Monthly' && !d.description && d.interval === 'month';
+            return d.name === 'Monthly' && d.interval === 'month';
         });
         const yearlyPlan = plans.find((d) => {
-            return d.name === 'Yearly' && !d.description && d.interval === 'year';
+            return d.name === 'Yearly' && d.interval === 'year';
         });
 
         if (filteredPlans.length === 2 && monthlyPlan && yearlyPlan) {
