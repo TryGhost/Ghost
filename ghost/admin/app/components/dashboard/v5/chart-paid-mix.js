@@ -14,11 +14,6 @@ const MODE_OPTIONS = [{
 export default class ChartPaidMix extends Component {
     @service dashboardStats;
 
-    constructor() {
-        super(...arguments);
-        this.loadCharts();
-    }
-
     /**
      * Call this method when you need to fetch new data from the server. In this component, it will get called
      * when the days parameter changes and on initialisation.
