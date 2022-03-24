@@ -1848,22 +1848,13 @@
     utils-copy-error "1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.7", "@tryghost/errors@^1.2.7":
+"@tryghost/errors@1.2.7", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5", "@tryghost/errors@^1.2.7":
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.7.tgz#f2da9deadb6139167a9e967e1212a66064c5abce"
   integrity sha512-VNqUKiiy4jSOQGBxcwNYMPzf76m1VZ1rnF2gvqwzGIyjrzIGfTs/iNC98n9F6JKROFuOhWS8Ehiuk69/ZAukWg==
   dependencies:
     lodash "^4.17.21"
     utils-copy-error "^1.0.1"
-    uuid "^8.3.2"
-
-"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.6.tgz#4cb15ec63de4e0fe632ce6fa84191e42c708371c"
-  integrity sha512-9kNE9z9CIKjXKNWS03/pH8w9y1bTaLDTt1gIUQmBNlyS3zP56F1uJkz88Y5ySdp1Rbuee1UG+Kc8/L2NJQxsBg==
-  dependencies:
-    lodash "^4.17.21"
-    utils-copy-error "1.0.1"
     uuid "^8.3.2"
 
 "@tryghost/express-dynamic-redirects@0.2.7":
@@ -2145,10 +2136,10 @@
     "@tryghost/domain-events" "^0.1.9"
     "@tryghost/members-offers" "^0.10.9"
 
-"@tryghost/members-ssr@1.0.22":
-  version "1.0.22"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.22.tgz#85c1f2e9f15b9e3b9c7c4be02b4773139adbdd7a"
-  integrity sha512-CZDeh39loldYqPsHDJIXPit6XMRQcMK1l+TToT/f69s/Euny7WP77VYQM3EVFhxk8Fg6NgPkYHAPbjZm5azcmg==
+"@tryghost/members-ssr@1.0.23":
+  version "1.0.23"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.23.tgz#7e42d0db36a564437a20f7d0419083204eafac9a"
+  integrity sha512-yowIa1l/LnEAG7C7szV987hRekJwlZMt77JjOvCnHH94aQnCjr2KGKuSy68oBG2eKlUmXO4Iaest0iuEpWEcSQ==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^1.1.0"
