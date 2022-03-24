@@ -1,8 +1,14 @@
-<h4 class="gh-dashboard5-metric is-main">Paid members</h4>
+<h4 
+    class="gh-dashboard5-metric is-main"
+    {{did-insert this.loadCharts}}
+    {{did-update this.loadCharts @days}}
+>
+    Paid members
+</h4>
 {{#if this.loading}}
     <div class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
 {{else}}
-    <EmberChart {{did-update this.loadCharts @days}}
+    <EmberChart
         @type={{this.chartType}}
         @data={{this.chartData}}
         @options={{this.chartOptions}}

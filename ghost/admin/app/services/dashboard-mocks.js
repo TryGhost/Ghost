@@ -87,10 +87,19 @@ export default class DashboardMocksService extends Service {
     @tracked
         emailOpenRateStats = null;
 
-    loadSiteStatus() {
+    async waitRandom() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 100 + Math.random() * 1000);
+        });
+    }
+
+    async loadSiteStatus() {
         if (this.siteStatus !== null) {
             return;
         }
+        await this.waitRandom();
         this.siteStatus = {
             hasPaidTiers: true,
             stripeEnabled: true,
@@ -175,15 +184,21 @@ export default class DashboardMocksService extends Service {
         this.paidMembersByTier = [
             {
                 tier: {
-                    name: 'Gold tier'
+                    name: 'Bronze tier'
                 },
-                members: 124
+                members: 985
             },
             {
                 tier: {
                     name: 'Silver tier'
                 },
                 members: 459
+            },
+            {
+                tier: {
+                    name: 'Gold tier'
+                },
+                members: 124
             }
         ];
 
@@ -201,10 +216,27 @@ export default class DashboardMocksService extends Service {
         this.emailOpenRateStats = [
             {
                 id: '23424',
-                title: 'Test post',
+                title: '💸 The best way to get paid to create',
                 email: {
                     openedCount: 518,
                     deliveredCount: 1234
+                }
+            },
+            {
+                id: '23425',
+                title: '🎒How to start a blog and make money',
+                email: {
+                    openedCount: 100,
+                    deliveredCount: 900
+                }
+            }
+            ,
+            {
+                id: '23426',
+                title: 'How to turn your amateur blogging into a real business',
+                email: {
+                    openedCount: 500,
+                    deliveredCount: 1600
                 }
             }
         ];

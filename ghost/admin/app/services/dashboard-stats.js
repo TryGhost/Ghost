@@ -1,5 +1,6 @@
 import Service, {inject as service} from '@ember/service';
 import moment from 'moment';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 /**
@@ -140,11 +141,15 @@ export default class DashboardStatsService extends Service {
     @tracked lastSeenFilterStatus = 'total';
 
     loadSiteStatus() {
+        return this._loadSiteStatus.perform();
+    }
+
+    @task
+    *_loadSiteStatus() {
         this.siteStatus = null;
-        
         if (this.dashboardMocks.enabled) {
-            this.dashboardMocks.loadSiteStatus();
-            this.siteStatus = this.dashboardMocks.siteStatus;
+            yield this.dashboardMocks.loadSiteStatus();
+            this.siteStatus = {...this.dashboardMocks.siteStatus};
             return;
         }
         // Normal implementation
@@ -152,7 +157,14 @@ export default class DashboardStatsService extends Service {
     }
 
     loadMembersCounts() {
+        return this._loadMembersCounts.perform();
+    }
+
+    @task
+    *_loadMembersCounts() {
+        this.memberCounts = null;
         if (this.dashboardMocks.enabled) {
+            yield this.dashboardMocks.waitRandom();
             if (this.dashboardMocks.memberCounts === null) {
                 return null;
             }
@@ -163,15 +175,25 @@ export default class DashboardStatsService extends Service {
         // @todo
     }
 
+    loadMemberCountStats() {
+        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        return this._loadMemberCountStats.perform();
+    }
+
     /**
      * Loads the members graphs
      * - total paid
      * - total members
      * for each day in the last chartDays days
      */
-    loadMemberCountStats() {
+    @task
+    *_loadMemberCountStats() {
+        this.memberCountStats = null;
         if (this.dashboardMocks.enabled) {
+            yield this.dashboardMocks.waitRandom();
+
             if (this.dashboardMocks.memberCountStats === null) {
+                // Note: that this shouldn't happen
                 return null;
             }
             this.memberCountStats = this.fillMissingDates(this.dashboardMocks.memberCountStats.slice(-this.chartDays), {paid: 0, free: 0, comped: 0}, this.chartDays);
@@ -182,11 +204,19 @@ export default class DashboardStatsService extends Service {
         // @todo
     }
 
+    loadMrrStats() {
+        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        return this._loadMrrStats.perform();
+    }
+
     /**
      * Loads the mrr graphs for the current chartDays days
      */
-    loadMrrStats() {
+    @task 
+    *_loadMrrStats() {
+        this.mrrStats = null;
         if (this.dashboardMocks.enabled) {
+            yield this.dashboardMocks.waitRandom();
             if (this.dashboardMocks.mrrStats === null) {
                 return null;
             }
@@ -198,11 +228,21 @@ export default class DashboardStatsService extends Service {
         // @todo
     }
 
+    loadLastSeen() {
+        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        return this._loadLastSeen.perform();
+    }
+
     /**
      * Loads the mrr graphs
      */
-    loadLastSeen() {
+    @task
+    *_loadLastSeen() {
+        this.membersLastSeen30d = null;
+        this.membersLastSeen7d = null;
+
         if (this.dashboardMocks.enabled) {
+            yield this.dashboardMocks.waitRandom();
             if (this.lastSeenFilterStatus === 'paid') {
                 // @todo
             }
@@ -215,8 +255,17 @@ export default class DashboardStatsService extends Service {
     }
 
     loadPaidMembersByCadence() {
+        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        return this._loadPaidMembersByCadence.perform();
+    }
+
+    @task
+    *_loadPaidMembersByCadence() {
+        this.paidMembersByCadence = null;
+
         if (this.dashboardMocks.enabled) {
-            this.paidMembersByCadence = this.dashboardMocks.paidMembersByCadence;
+            yield this.dashboardMocks.waitRandom();
+            this.paidMembersByCadence = {...this.dashboardMocks.paidMembersByCadence};
             return;
         }
         // Normal implementation
@@ -224,8 +273,17 @@ export default class DashboardStatsService extends Service {
     }
 
     loadPaidMembersByTier() {
+        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        return this._loadPaidMembersByTier.perform();
+    }
+
+    @task
+    *_loadPaidMembersByTier() {
+        this.paidMembersByTier = null;
+
         if (this.dashboardMocks.enabled) {
-            this.paidMembersByTier = this.dashboardMocks.paidMembersByTier;
+            yield this.dashboardMocks.waitRandom();
+            this.paidMembersByTier = this.dashboardMocks.paidMembersByTier.slice();
             return;
         }
         // Normal implementation
@@ -233,7 +291,16 @@ export default class DashboardStatsService extends Service {
     }
 
     loadNewsletterSubscribers() {
+        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        return this._loadNewsletterSubscribers.perform();
+    }
+
+    @task
+    *_loadNewsletterSubscribers() {
+        this.newsletterSubscribers = null;
+
         if (this.dashboardMocks.enabled) {
+            yield this.dashboardMocks.waitRandom();
             this.newsletterSubscribers = this.dashboardMocks.newsletterSubscribers;
             return;
         }
@@ -242,7 +309,16 @@ export default class DashboardStatsService extends Service {
     }
 
     loadEmailsSent() {
+        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        return this._loadEmailsSent.perform();
+    }
+
+    @task
+    *_loadEmailsSent() {
+        this.emailsSent30d = null;
+
         if (this.dashboardMocks.enabled) {
+            yield this.dashboardMocks.waitRandom();
             this.emailsSent30d = this.dashboardMocks.emailsSent30d;
             return;
         }
@@ -251,7 +327,16 @@ export default class DashboardStatsService extends Service {
     }
 
     loadEmailOpenRateStats() {
+        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        return this._loadEmailOpenRateStats.perform();
+    }
+
+    @task
+    *_loadEmailOpenRateStats() {
+        this.emailOpenRateStats = null;
+
         if (this.dashboardMocks.enabled) {
+            yield this.dashboardMocks.waitRandom();
             this.emailOpenRateStats = this.dashboardMocks.emailOpenRateStats;
             return;
         }
