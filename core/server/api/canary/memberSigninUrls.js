@@ -8,7 +8,6 @@ const messages = {
 
 module.exports = {
     docName: 'member_signin_urls',
-    permissions: true,
     read: {
         data: [
             'id'
