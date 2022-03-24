@@ -1,4 +1,22 @@
-<h4>Paid mix ({{this.mode}})</h4>
+
+<div class="prototype-paid-mix-dropdown">
+    <PowerSelect
+        @selected={{this.selectedModeOption}}
+        @options={{this.modeOptions}}
+        @searchEnabled={{false}}
+        @onChange={{this.onSwitchMode}}
+        @triggerComponent="gh-power-select/trigger"
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @matchTriggerWidth={{false}}
+        as |option|
+    >
+        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+    </PowerSelect>
+</div>
+
+<h4>Paid mix</h4>
+
 {{#if this.loading}}
     <div class="prototype-placeholder" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
 {{else}}

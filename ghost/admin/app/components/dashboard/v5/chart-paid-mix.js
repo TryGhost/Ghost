@@ -1,6 +1,15 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
+
+const MODE_OPTIONS = [{
+    name: 'Cadence',
+    value: 'cadence'
+}, {
+    name: 'Tiers',
+    value: 'tiers'
+}];
 
 export default class ChartPaidMix extends Component {
     @service dashboardStats;
@@ -24,15 +33,28 @@ export default class ChartPaidMix extends Component {
         }
     }
 
+    @tracked mode = 'cadence';
+    modeOptions = MODE_OPTIONS;
+
+    get selectedModeOption() {
+        return this.modeOptions.find(option => option.value === this.mode);
+    }
+
+    @action 
+    onSwitchMode(selected) {
+        this.mode = selected.value;
+
+        if (this.loading) {
+            // We don't have the data yet for the newly selected mode
+            this.loadCharts();
+        }
+    }
+
     get loading() {
         if (this.mode === 'cadence') {
             return this.dashboardStats.paidMembersByCadence === null;
         }
         return this.dashboardStats.paidMembersByTier === null;
-    }
-
-    get mode() {
-        return 'cadence';
     }
     
     get chartType() {
@@ -51,7 +73,19 @@ export default class ChartPaidMix extends Component {
                 }]
             };
         }
-        throw new Error('Not yet supported');
+
+        const labels = this.dashboardStats.paidMembersByTier.map(stat => stat.tier.name);
+        const data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
+
+        return {
+            labels,
+            datasets: [{
+                data,
+                fill: false,
+                backgroundColor: ['#14b8ff'],
+                tension: 0.1
+            }]
+        };
     }
 
     get chartOptions() {
