@@ -64,6 +64,6 @@ export default class ChartEmailOpenRate extends Component {
     }
 
     get chartHeight() {
-        return 150;
+        return 100;
     }
 }

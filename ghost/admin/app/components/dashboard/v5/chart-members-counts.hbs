@@ -1,16 +1,18 @@
-<div class="prototype-counts">
-    <div class="prototype-box">
-        <div class="number">{{format-number this.totalMembers}}</div>
-        <div>{{gh-pluralize this.totalMembers "Total member" without-count=true}}</div>
+<h3>Overview</h3>
+<div class="gh-dashboard5-container">
+    <div class="gh-dashboard5-box">
+        <h4 class="gh-dashboard5-metric">{{gh-pluralize this.totalMembers "Total member" without-count=true}}</h4>
+        <div class="gh-dashboard5-number">{{format-number this.totalMembers}}</div>
+        <div class="gh-dashboard5-percentage is-positive">+2.2%</div>
     </div>
-
-    <div class="prototype-box">
-        <div class="number">{{format-number this.paidMembers}}</div>
-        <div>{{gh-pluralize this.paidMembers "Paid member" without-count=true}}</div>
+    <div class="gh-dashboard5-box">
+        <h4 class="gh-dashboard5-metric">{{gh-pluralize this.paidMembers "Paid member" without-count=true}}</h4>
+        <div class="gh-dashboard5-number">{{format-number this.paidMembers}}</div>
+        <div class="gh-dashboard5-percentage is-positive">+3.3%</div>
     </div>
-
-    <div class="prototype-box">
-        <div class="number">{{format-number this.freeMembers}}</div>
-        <div>{{gh-pluralize this.freeMembers "Free member" without-count=true}}</div>
+    <div class="gh-dashboard5-box">
+        <h4 class="gh-dashboard5-metric">{{gh-pluralize this.freeMembers "Free member" without-count=true}}</h4>
+        <div class="gh-dashboard5-number">{{format-number this.freeMembers}}</div>
+        <div class="gh-dashboard5-percentage is-negative">-1.1%</div>
     </div>
 </div>
