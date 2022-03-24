@@ -52,25 +52,6 @@ export default class NewslettersService extends Service {
                 posts: {
                     total: 17
                 }
-            },
-            {
-                id: '456',
-                name: ' Weekly summary ',
-                description: 'Get the weekly highlights every Sunday.',
-                sender_name: 'Test',
-                sender_email: 'test@example.com',
-                sender_reply_to: 'test@example.com',
-                default: true,
-                status: 'active',
-                recipient_filter: '',
-                subscribe_on_signup: true,
-                sort_order: 0,
-                members: {
-                    total: 32
-                },
-                posts: {
-                    total: 2
-                }
             }
         ];
 
