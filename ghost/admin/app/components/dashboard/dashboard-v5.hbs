@@ -4,11 +4,11 @@
         <GhLoadingSpinner />
     {{else}}
         {{#if this.areMembersEnabled}}
-            <section class="prototype-section">
+            <section class="gh-dashboard5-section">
                 <Dashboard::V5::ChartMembersCounts />
             </section>
 
-            <section class="prototype-section">
+            <section class="gh-dashboard5-section">
                 <div class="prototype-selection">
                     <PowerSelect
                         @selected={{this.selectedDaysOption}}
@@ -25,62 +25,56 @@
                     </PowerSelect>
                 </div>
 
-                <article class="gh-dashboard-box">
-                    <Dashboard::V5::ChartTotalMembers @days={{this.days}} />
-                </article>
+                <div class="gh-dashboard5-growth">
+                    <article class="gh-dashboard5-box">
+                        <Dashboard::V5::ChartTotalMembers @days={{this.days}} />
+                    </article>
 
-                {{#if this.hasPaidTiers}}
-                    <div class="prototype-section">
-                        <div class="prototype-counts">
-                            <article class="prototype-box">
-                                <Dashboard::V5::ChartMonthlyRevenue @days={{this.days}} />
-                            </article>
+                    {{#if this.hasPaidTiers}}
+                        <article class="gh-dashboard5-box">
+                            <Dashboard::V5::ChartMonthlyRevenue @days={{this.days}} />
+                        </article>
 
-                            <article class="prototype-box">
-                                <Dashboard::V5::ChartTotalPaid @days={{this.days}} />
-                            </article>
-                        </div>
-                    </div>
+                        <article class="gh-dashboard5-box">
+                            <Dashboard::V5::ChartTotalPaid @days={{this.days}} />
+                        </article>
 
-                    <div class="prototype-section">
-                        <div class="prototype-counts">
-                            <article class="prototype-box">
-                                <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
-                            </article>
+                        <article class="gh-dashboard5-box">
+                            <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
+                        </article>
 
-                            <article class="prototype-box">
-                                <Dashboard::V5::ChartPaidMix />
-                            </article>
-                        </div>
-                    </div>
-                {{/if}}
+                        <article class="gh-dashboard5-box">
+                            <Dashboard::V5::ChartPaidMix />
+                        </article>
+                    {{/if}}
+                </div>
             </section>
-            <section class="prototype-section">
+            <section class="gh-dashboard5-section">
                 <Dashboard::V5::ChartEngagement />
             </section>
         {{/if}}
 
         {{#if this.areNewslettersEnabled}}
-            <section class="prototype-section">
-                <Dashboard::V5::ChartEmailOpenRate />
+            <section class="gh-dashboard5-section">
+                <Dashboard::V5::ChartEmail />
             </section>
         {{/if}}
 
-        <section class="prototype-section">
+        <section class="gh-dashboard5-section">
             <h2>Recent posts</h2>
-            <article class="gh-dashboard-box">
+            <article class="gh-dashboard5-box">
                 Recent posts
             </article>
         </section>
 
-        <section class="prototype-section">
+        <section class="gh-dashboard5-section">
             <h2>Activity</h2>
             <Dashboard::LatestMemberActivity />
         </section>
 
-        <section class="prototype-section">
+        <section class="gh-dashboard5-section">
             <h2>Resources</h2>
-            <article class="gh-dashboard-box">
+            <article class="gh-dashboard5-box">
                 <Dashboard::V5::ResourceGeneral />
             </article>
         </section>

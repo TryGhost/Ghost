@@ -15,10 +15,10 @@
     </PowerSelect>
 </div>
 
-<h4>Paid mix</h4>
+<h4 class="gh-dashboard5-metric is-main">Paid mix</h4>
 
 {{#if this.loading}}
-    <div class="prototype-placeholder" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+    <div class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
 {{else}}
     <EmberChart
         @type={{this.chartType}}

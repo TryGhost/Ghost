@@ -1,0 +1,28 @@
+<h3>Email</h3>
+<div class="gh-dashboard5-container gh-dashboard5-email">
+    <div class="gh-dashboard5-box">
+        <h4 class="gh-dashboard5-metric">Newsletter subscribers</h4>
+        <div class="gh-dashboard5-number is-small">{{this.dataSubscribers}}</div>
+        <div class="gh-dashboard5-percentage is-positive">+2.2%</div>
+    </div>
+
+    <div class="gh-dashboard5-box">
+        <h4 class="gh-dashboard5-metric">Emails sent in the past 30 days</h4>
+        <div class="gh-dashboard5-number is-small">{{this.dataEmailsSent}}</div>
+        <div class="gh-dashboard5-percentage is-positive">+2.2%</div>
+    </div>
+
+    <div class="gh-dashboard5-box">
+        <h4 class="gh-dashboard5-metric is-main">Email open rate</h4>
+        {{#if this.loading}}
+            <div class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+        {{else}}
+            <EmberChart
+                @type={{this.chartType}}
+                @data={{this.chartData}}
+                @options={{this.chartOptions}}
+                @height={{this.chartHeight}} />
+        {{/if}}
+    </div>
+</div>
+

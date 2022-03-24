@@ -53,6 +53,6 @@ export default class ChartTotalPaid extends Component {
     }
 
     get chartHeight() {
-        return 150;
+        return 100;
     }
 }
