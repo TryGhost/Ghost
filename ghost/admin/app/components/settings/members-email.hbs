@@ -124,14 +124,32 @@
                     </div>
                     <div class="gh-expandable-content">
                         {{#liquid-if this.defaultRecipientsOpen}}
-                            <div class="gh-setting-richdd-container gh-setting-rich-dropdown">
-                                <Settings::MembersEmail::DefaultRecipientsSelect
-                                    @recipients={{this.recipientsSelectValue}}
-                                    @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
-                                    @onRecipientsChange={{action "setDefaultEmailRecipients"}}
-                                    @onSegmentChange={{action "setDefaultEmailRecipientsFilter"}}
-                                />
-                            </div>
+                            {{#if (gt this.activeNewsletterCount 1)}}
+                                <div class="form-group">
+                                    <label class="fw6 f8">Default newsletter</label>
+                                    <input class="gh-input">
+                                </div>
+                                <div class="form-group">
+                                    <label class="fw6 f8">Default member selection</label>
+                                    <div class="gh-setting-richdd-container gh-setting-rich-dropdown">
+                                        <Settings::MembersEmail::DefaultRecipientsSelect
+                                            @recipients={{this.recipientsSelectValue}}
+                                            @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
+                                            @onRecipientsChange={{action "setDefaultEmailRecipients"}}
+                                            @onSegmentChange={{action "setDefaultEmailRecipientsFilter"}}
+                                        />
+                                    </div>
+                                </div>      
+                            {{else}}
+                                <div class="gh-setting-richdd-container gh-setting-rich-dropdown form-group">
+                                    <Settings::MembersEmail::DefaultRecipientsSelect
+                                        @recipients={{this.recipientsSelectValue}}
+                                        @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
+                                        @onRecipientsChange={{action "setDefaultEmailRecipients"}}
+                                        @onSegmentChange={{action "setDefaultEmailRecipientsFilter"}}
+                                    />
+                                </div>                      
+                            {{/if}}
                         {{/liquid-if}}
                     </div>
                 </div>

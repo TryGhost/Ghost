@@ -2252,7 +2252,11 @@ p.theme-validation-details {
 }
 
 .gh-expandable-content .gh-setting-richdd-container {
-    margin: 16px 0 32px;
+    margin: 0 0 30px;
+}
+
+.gh-expandable-content .gh-setting-richdd-container .gh-setting-dropdown {
+    margin-top: 0;
 }
 
 .gh-setting-large-dropdown .ember-power-select-multiple-trigger {
