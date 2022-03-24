@@ -17,11 +17,7 @@ const STATUS_OPTIONS = [{
 export default class ChartEngagement extends Component {
     @service dashboardStats;
 
-    constructor() {
-        super(...arguments);
-        this.loadCharts();
-    }
-
+    @action
     loadCharts() {
         this.dashboardStats.lastSeenFilterStatus = this.status;
         this.dashboardStats.loadLastSeen();

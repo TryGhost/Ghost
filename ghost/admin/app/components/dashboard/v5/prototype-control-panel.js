@@ -53,7 +53,8 @@ export default class PrototypeControlPanel extends Component {
     @action
     onInsert() {
         this.loadState();
-        this.updateMockedData();
+        this.dashboardMocks.updateMockedData(this.state);
+        // Don't reload all (because then we would load unused graphs too)
     }
 
     saveState() {
@@ -80,7 +81,7 @@ export default class PrototypeControlPanel extends Component {
                 const parsed = JSON.parse(savedStatus);
                 if (parsed) {
                     this.dashboardMocks.siteStatus = {...this.dashboardMocks.siteStatus, ...parsed};
-                    this.dashboardStats.loadSiteStatus();
+                    //this.dashboardStats.loadSiteStatus();
                 }
             }
         } catch (e) {
