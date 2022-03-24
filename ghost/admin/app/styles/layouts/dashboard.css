@@ -1088,7 +1088,7 @@ a.gh-dashboard-container {
     gap: 10px;
 }
 
-.prototype-day-selection {
+.prototype-selection {
     display: flex;
     justify-content: flex-end;
 }
