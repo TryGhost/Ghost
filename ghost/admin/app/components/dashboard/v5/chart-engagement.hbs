@@ -1,4 +1,20 @@
-<h2>Engagement ({{this.status}})</h2>
+<h2>Engagement</h2>
+
+<div class="prototype-selection">
+    <PowerSelect
+        @selected={{this.selectedStatusOption}}
+        @options={{this.statusOptions}}
+        @searchEnabled={{false}}
+        @onChange={{this.onSwitchStatus}}
+        @triggerComponent="gh-power-select/trigger"
+        @triggerClass="gh-contentfilter-menu-trigger"
+        @dropdownClass="gh-contentfilter-menu-dropdown"
+        @matchTriggerWidth={{false}}
+        as |option|
+    >
+        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+    </PowerSelect>
+</div>
 
 <div class="prototype-counts">
     <div class="prototype-box">
