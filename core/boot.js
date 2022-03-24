@@ -148,6 +148,11 @@ async function initServicesForFrontend() {
     await themeService.init();
     debug('End: Themes');
 
+    debug('Begin: Offers');
+    const offers = require('./server/services/offers');
+    await offers.init();
+    debug('End: Offers');
+
     debug('End: initServicesForFrontend');
 }
 
@@ -239,7 +244,6 @@ async function initServices({config}) {
     debug('Begin: Services');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
-    const offers = require('./server/services/offers');
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
@@ -258,7 +262,6 @@ async function initServices({config}) {
     // NOTE: Members service depends on these
     //       so they are initialized before it.
     await stripe.init();
-    await offers.init();
 
     await Promise.all([
         members.init(),

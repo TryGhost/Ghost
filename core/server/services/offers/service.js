@@ -5,19 +5,20 @@ const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
 
-const redirectManager = new DynamicRedirectManager({
-    permanentMaxAge: config.get('caching:customRedirects:maxAge'),
-    getSubdirectoryURL: (pathname) => {
-        return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
-    }
-});
+let redirectManager;
 
 module.exports = {
     async init() {
+        redirectManager = new DynamicRedirectManager({
+            permanentMaxAge: config.get('caching:customRedirects:maxAge'),
+            getSubdirectoryURL: (pathname) => {
+                return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
+            }
+        });
         const offersModule = OffersModule.create({
             OfferModel: models.Offer,
             OfferRedemptionModel: models.OfferRedemption,
-            redirectManager: redirectManager
+            redirectManager
         });
 
         this.api = offersModule.api;
@@ -27,5 +28,7 @@ module.exports = {
 
     api: null,
 
-    middleware: redirectManager.handleRequest
+    get middleware() {
+        return redirectManager.handleRequest;
+    }
 };
