@@ -36,7 +36,8 @@ const messages = {
         HostLimitError: 'Host Limit error, cannot {action}.',
         DisabledFeatureError: 'Theme validation error, the {{{helperName}}} helper is not available. Cannot {action}.',
         UpdateCollisionError: 'Saving failed! Someone else is editing this post.'
-    }
+    },
+    UnknownError: 'Unknown error - {name}, cannot {action}.'
 };
 
 /**
@@ -161,7 +162,11 @@ const prepareUserMessage = (err, req) => {
                 userError.context = err.message;
             }
 
-            userError.message = tpl(messages.userMessages[err.name], {action: action});
+            if (_.get(messages.userMessages, err.name)) {
+                userError.message = tpl(messages.userMessages[err.name], {action: action});
+            } else {
+                userError.message = tpl(messages.UnknownError, {action, name: err.name});
+            }
         }
     }
 

@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const {InternalServerError} = require('@tryghost/errors');
-const {prepareError, handleJSONResponse, handleJSONResponseV2, handleHTMLResponse, prepareStack} = require('../lib/mw-error-handler');
+const {prepareError, handleJSONResponse, handleJSONResponseV2, handleHTMLResponse, prepareStack} = require('../');
 
 describe('Prepare Error', function () {
     it('Correctly prepares a normal error', function (done) {
@@ -51,6 +51,26 @@ describe('Error renderers', function () {
             json: (data) => {
                 data.errors.length.should.eql(1);
                 data.errors[0].message.should.eql('test!');
+                done();
+            }
+        }, () => {});
+    });
+
+    it('Handles unknown errors when preparing user message', function (done) {
+        const errorRenderer = handleJSONResponseV2({
+            errorHandler: () => {}
+        })[3];
+
+        errorRenderer(new RangeError('test!'), {
+            frameOptions: {
+                docName: 'oembed',
+                method: 'read'
+            }
+        }, {
+            json: (data) => {
+                data.errors.length.should.eql(1);
+                data.errors[0].message.should.eql('Unknown error - RangeError, cannot read oembed.');
+                data.errors[0].context.should.eql('test!');
                 done();
             }
         }, () => {});
