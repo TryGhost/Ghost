@@ -1813,7 +1813,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.8.tgz#754af77b05336a689135971811ee438edda04876"
   integrity sha512-PalAdGOADidoxXg54F/QJEc1C9PwlQvWnIF1MksWY2Pp8XiH5mzeHisNnqXfXO3dEEopPPreIj7Lx/y6U9NAyQ==
 
-"@tryghost/domain-events@0.1.9", "@tryghost/domain-events@^0.1.8", "@tryghost/domain-events@^0.1.9":
+"@tryghost/domain-events@0.1.9", "@tryghost/domain-events@^0.1.9":
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.9.tgz#f2de5189df2238bb72a53a76abcded0d84ae6fa7"
   integrity sha512-n2FEA5xBQBCHq02CNBMh8BkWV7zdy9yp/Y4dGWc2QQ58lcNTgSBqZBaPpfPURgTGJbLqO+xsNQgU0LYvUN9JTQ==
@@ -2060,7 +2060,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.0.tgz#6bef156f477cefa780b9c1651c41a1503ace4247"
   integrity sha512-i4URWIo6gV4zUCa9rCMYBYK3L8WGt1jONa4uGEEqlXHOf0YW40rLhdqlDhIzF/T5hSsLDZhFwkUx43+sGSOPwA==
 
-"@tryghost/member-events@^0.4.0", "@tryghost/member-events@^0.4.1":
+"@tryghost/member-events@^0.4.1":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.1.tgz#d75c183e29c1d186bc8a584a1f05b6e7c05c23b0"
   integrity sha512-eYsDWrsLbdX5alZI9hsxsswN0XnlkOH6AvOmzeaX17pxDqzAhG7DN9rs0lDH3Ov3aniRfHc2UukcQ65oJbvA1A==
@@ -2420,13 +2420,13 @@
     moment-timezone "0.5.23"
     validator "7.2.0"
 
-"@tryghost/verification-trigger@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.1.5.tgz#ff1b702c260b520b84cd0b92fc74ce192604fa61"
-  integrity sha512-uHirBwi2GRZdhWyLOMtugcJLjVDgWEfsLSpkQ6MrsZVRHEaR43GsMwSklsX+D/6mERBxg+rb8jp8bR9bJCjDhA==
+"@tryghost/verification-trigger@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.1.6.tgz#61780b33a2a2e5627694b34e63f6380277c9e0da"
+  integrity sha512-qSqHd4ftKJ42umDsTlCrXnKlihLD521qlHpz2Upo4NGxdKWgOHcx8cVIXL1SpDPUpCTZdmK2qQg9mbSuTwkfRw==
   dependencies:
-    "@tryghost/domain-events" "^0.1.8"
-    "@tryghost/member-events" "^0.4.0"
+    "@tryghost/domain-events" "^0.1.9"
+    "@tryghost/member-events" "^0.4.1"
 
 "@tryghost/version@0.1.11", "@tryghost/version@^0.1.11":
   version "0.1.11"
