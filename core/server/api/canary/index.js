@@ -78,7 +78,7 @@ module.exports = {
     },
 
     get membersStripeConnect() {
-        return shared.pipeline(require('./membersStripeConnect'), localUtils);
+        return shared.pipeline(require('./members-stripe-connect'), localUtils);
     },
 
     get members() {
@@ -98,7 +98,7 @@ module.exports = {
     },
 
     get memberSigninUrls() {
-        return shared.pipeline(require('./memberSigninUrls.js'), localUtils);
+        return shared.pipeline(require('./member-signin-urls.js'), localUtils);
     },
 
     get labels() {
