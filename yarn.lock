@@ -1281,6 +1281,21 @@
   resolved "https://registry.yarnpkg.com/@kapouer/eslint-plugin-no-return-in-loop/-/eslint-plugin-no-return-in-loop-1.0.0.tgz#9fdbe83deca12156c0b5fcbfae1f387e9f2baff5"
   integrity sha512-IXQp8N68L2fkk7p7RckBBhT/KwAX04GooIGjwzmY5THQanQvsmJpYgwC7A1Io2XDXBJzlGelQkP/C1SRM/aq8w==
 
+"@keyvhq/core@^1.6.6":
+  version "1.6.6"
+  resolved "https://registry.yarnpkg.com/@keyvhq/core/-/core-1.6.6.tgz#e31c7182a8232f14abc00f90d0a98c9be9a84b9f"
+  integrity sha512-jGj7OMLKYsaOO1P4BNWrJjs/sI3y/IgdoeP/5i1w+Dc/fq9r5r/K7Zq7VeNjcWfbnP3BvSlvcVz82RUGbwwGAg==
+  dependencies:
+    json-buffer "~3.0.1"
+
+"@keyvhq/memoize@~1.6.6":
+  version "1.6.6"
+  resolved "https://registry.yarnpkg.com/@keyvhq/memoize/-/memoize-1.6.6.tgz#7423f5055f4b624ca5a39d749df232837fc55a8e"
+  integrity sha512-jf85E6Fipur0YY9rtGcoNkdpriaykpzTh900mGav4DvpS01ngBFqWXm1ophs4NrbbZTBST6HqooU9Fnl2noozg==
+  dependencies:
+    "@keyvhq/core" "^1.6.6"
+    mimic-fn "~3.0.0"
+
 "@lodder/grunt-postcss@3.1.1":
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/@lodder/grunt-postcss/-/grunt-postcss-3.1.1.tgz#68d658c25fc97f2ad1306a4f33c02dd622c9733b"
@@ -7626,7 +7641,7 @@ json-buffer@3.0.0:
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
   integrity sha1-Wx85evx11ne96Lz8Dkfh+aPZqJg=
 
-json-buffer@3.0.1:
+json-buffer@3.0.1, json-buffer@~3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.1.tgz#9338802a30d3b6605fbe0613e094008ca8c05a13"
   integrity sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==
@@ -8508,11 +8523,12 @@ metascraper-image@5.26.0:
   dependencies:
     "@metascraper/helpers" "^5.26.0"
 
-metascraper-logo-favicon@5.27.1:
-  version "5.27.1"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.27.1.tgz#20283b943632a9553d6c26db0aaff0807e8258ef"
-  integrity sha512-t1520xRYYVdTHsaD9GTPhTfm2nrdY88l6wDR4Mhx1o1huhEMjkYC9vzB9auvoDVak1tZ/p/XM3OWw/EUasE+sQ==
+metascraper-logo-favicon@5.27.2:
+  version "5.27.2"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.27.2.tgz#3c094c0205cd94aa85473f1026c37bb85123266d"
+  integrity sha512-eksyPa6YxyPIE+H/Hp+UfvWxf7niWqwp9USrYMQxcNgrg9WfK6ICiuCPdBeoACc8CmLqZZJm/PFc1GPS6UKMUg==
   dependencies:
+    "@keyvhq/memoize" "~1.6.6"
     "@metascraper/helpers" "^5.26.0"
     lodash "~4.17.21"
     reachable-url "~1.6.7"
