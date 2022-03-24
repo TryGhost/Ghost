@@ -88,7 +88,7 @@
                                                     @classNames="gh-newsletter-actions-menu dropdown-menu dropdown-triangle-top-right"
                                                 >
                                                     <li>
-                                                        <button class="mr2" type="button">
+                                                        <button class="mr2" type="button" {{on "click" @toggleEmailDesignSettings}}>
                                                             <span>Edit</span>
                                                         </button>
                                                     </li>
@@ -127,7 +127,7 @@
                             {{#if (gt this.activeNewsletterCount 1)}}
                                 <div class="form-group">
                                     <label class="fw6 f8">Default newsletter</label>
-                                    <input class="gh-input">
+                                    <div class="gh-input"></div>
                                 </div>
                                 <div class="form-group">
                                     <label class="fw6 f8">Default member selection</label>
