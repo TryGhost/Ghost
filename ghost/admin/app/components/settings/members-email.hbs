@@ -24,59 +24,62 @@
             <section class="gh-expandable">
                 <div class="gh-expandable-block">
                     {{#each this.newsletters.newsletters as |newsletter|}}
-                    {{#if (eq newsletter.status "active")}}
-                    <div class="gh-main-content-card gh-newsletter-card">
-                        {{svg-jar "grab" class="grab-newsletter"}}
-                        <div class="gh-newsletter-card-block title-block">
-                            <h3 class="gh-newsletter-card-name">
-                                {{newsletter.name}}
-                            </h3>
-                            <p class="gh-newsletter-card-description">
-                                {{newsletter.description}}
-                            </p>
-                        </div>
-                        <div class="gh-newsletter-card-block stats-block">
-                            <div>
-                                <h3 class="gh-newsletter-card-name">{{newsletter.members.total}}</h3>
-                                <p class="gh-newsletter-card-description">Subscribers</p>
+                        {{#if (eq newsletter.status "active")}}
+                            <div class="gh-main-content-card gh-newsletter-card {{if (gt this.newsletterCount 1) "multiple"}}">
+                                {{svg-jar "grab" class="grab-newsletter"}}
+                                <div class="gh-newsletter-card-block title-block">
+                                    <h3 class="gh-newsletter-card-name">
+                                        {{newsletter.name}}
+                                    </h3>
+                                    <p class="gh-newsletter-card-description">
+                                        {{newsletter.description}}
+                                    </p>
+                                </div>
+                                <div class="gh-newsletter-card-block stats-block {{if (gt this.newsletterCount 1) "multiple"}}">
+                                    <div>
+                                        <h3 class="gh-newsletter-card-name">{{newsletter.members.total}}</h3>
+                                        <p class="gh-newsletter-card-description">Subscribers</p>
+                                    </div>
+                                    <div>
+                                        <h3 class="gh-newsletter-card-name">{{newsletter.posts.total}}</h3>
+                                        <p class="gh-newsletter-card-description">Posts sent</p>
+                                    </div>
+                                </div>
+                                <div class="gh-newsletter-card-block cta-block">
+                                    {{#if (eq this.newsletterCount 1)}}
+                                        <button class="gh-btn gh-btn-green" type="button"><span>Customize &rarr;</span></button>
+                                    {{else}}
+                                        <span class="dropdown">
+                                            <GhDropdownButton
+                                                @dropdownName="newsletter-actions-menu-newsletter-{{newsletter.id}}"
+                                                @classNames="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-actions-button icon-only"
+                                            >
+                                                <span>
+                                                    {{svg-jar "dotdotdot"}}
+                                                    <span class="hidden">Actions</span>
+                                                </span>
+                                            </GhDropdownButton>
+                                                <GhDropdown
+                                                    @name="newsletter-actions-menu-newsletter-{{newsletter.id}}"
+                                                    @tagName="ul"
+                                                    @classNames="gh-newsletter-actions-menu dropdown-menu dropdown-triangle-top-right"
+                                                >
+                                                    <li>
+                                                        <button class="mr2" type="button">
+                                                            <span>Edit</span>
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter.id)}}>
+                                                            <span>Archive</span>
+                                                        </button>
+                                                    </li>
+                                                </GhDropdown>
+                                        </span>
+                                    {{/if}}
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="gh-newsletter-card-name">{{newsletter.posts.total}}</h3>
-                                <p class="gh-newsletter-card-description">Posts sent</p>
-                            </div>
-                        </div>
-                        <div class="gh-newsletter-card-button-container">
-                            <span class="dropdown">
-                                <GhDropdownButton
-                                    @dropdownName="newsletter-actions-menu-newsletter-{{newsletter.id}}"
-                                    @classNames="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-actions-button icon-only"
-                                >
-                                    <span>
-                                        {{svg-jar "dotdotdot"}}
-                                        <span class="hidden">Actions</span>
-                                    </span>
-                                </GhDropdownButton>
-                                    <GhDropdown
-                                        @name="newsletter-actions-menu-newsletter-{{newsletter.id}}"
-                                        @tagName="ul"
-                                        @classNames="gh-newsletter-actions-menu dropdown-menu dropdown-triangle-top-right"
-                                    >
-                                        <li>
-                                            <button class="mr2" type="button">
-                                                <span>Edit</span>
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter.id)}}>
-                                                <span>Archive</span>
-                                            </button>
-                                        </li>
-                                    </GhDropdown>
-                            </span>
-                        </div>
-                    </div>
-
-                    {{/if}}
+                        {{/if}}
                     {{/each}}
                 </div>
             </section>

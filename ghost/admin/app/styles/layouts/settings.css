@@ -915,13 +915,16 @@
 .gh-newsletter-card {
     position:relative;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    cursor: pointer;
     transition: margin 125ms ease-in-out, padding 125ms ease-in-out;
 }
 
-.gh-newsletter-card:hover {
+.gh-newsletter-card.multiple {
+    cursor: pointer;
+}
+
+.gh-newsletter-card.multiple:hover {
     margin-left: 4px;
     padding-left: 20px;
 }
@@ -946,20 +949,27 @@
     transition: visibility 0s, opacity 200ms ease-in-out;
 }
 
-.gh-newsletter-card:hover .grab-newsletter {
+.gh-newsletter-card.multiple:hover .grab-newsletter {
     visibility: visible;
     opacity: 1;
+}
+
+.gh-newsletter-card-block.title-block {
+    flex-basis: 60%;
 }
 
 .gh-newsletter-card-block.stats-block {
     display: grid;
     flex-basis: 30%;
     grid-template-columns: 1fr 1fr;
-    margin-right: 4.4rem;
 }
 
-.gh-newsletter-card-block.title-block {
-    flex-basis: 60%;
+.gh-newsletter-card-block.stats-block.multiple {
+    margin-right: -4.4rem;
+}
+
+.gh-newsletter-card-block.cta-block {
+    display: flex;
 }
 
 .gh-newsletter-card-block:not(:first-of-type) {
