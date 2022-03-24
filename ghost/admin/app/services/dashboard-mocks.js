@@ -171,9 +171,9 @@ export default class DashboardMocksService extends Service {
 
         this.memberCountStats = stats;
         this.memberCounts = {
-            total: stats[stats.length - 1].paid + stats[stats.length - 1].free + stats[stats.length - 1].comped,
-            paid: stats[stats.length - 1].paid,
-            free: stats[stats.length - 1].free + stats[stats.length - 1].comped
+            total: (stats[stats.length - 1]?.paid ?? 0) + (stats[stats.length - 1]?.free ?? 0) + (stats[stats.length - 1]?.comped ?? 0),
+            paid: stats[stats.length - 1]?.paid ?? 0,
+            free: (stats[stats.length - 1]?.free ?? 0) + (stats[stats.length - 1]?.comped ?? 0)
         };
 
         this.paidMembersByCadence = {
