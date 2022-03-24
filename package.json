@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-api-schema",
-  "version": "2.12.0",
+  "version": "2.12.1",
   "repository": "https://github.com/TryGhost/SDK/tree/master/packages/admin-api-schema",
   "author": "Ghost Foundation",
   "license": "MIT",
