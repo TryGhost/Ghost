@@ -8,14 +8,24 @@ import {tracked} from '@glimmer/tracking';
  * @typedef {import('./dashboard-stats').EmailOpenRateStat} EmailOpenRateStat
  * @typedef {import('./dashboard-stats').PaidMembersByCadence} PaidMembersByCadence
  * @typedef {import('./dashboard-stats').PaidMembersForTier} PaidMembersForTier
+ * @typedef {import('./dashboard-stats').SiteStatus} SiteStatus
  */
 
 /**
  * Service that contains fake data to be used by the DashboardStatsService if useMocks is enabled
  */
 export default class DashboardMocksService extends Service {
-    @tracked
-        enabled = true;
+    @tracked enabled = true;
+
+    /**
+     * Just a setting for generating mocked data, for how long this site has been active.
+     */
+    @tracked generateDays = 30;
+
+    /**
+     * @type {?SiteStatus} Contains information on what graphs need to be shown
+    */
+    @tracked siteStatus = null;
 
     /**
      * @type {?MemberCounts} memberCounts
@@ -76,6 +86,18 @@ export default class DashboardMocksService extends Service {
      */
     @tracked
         emailOpenRateStats = null;
+
+    loadSiteStatus() {
+        if (this.siteStatus !== null) {
+            return;
+        }
+        this.siteStatus = {
+            hasPaidTiers: true,
+            stripeEnabled: true,
+            newslettersEnabled: true,
+            membersEnabled: true
+        };
+    }
 
     /**
      * This method generates new data and forces a reload for all the charts

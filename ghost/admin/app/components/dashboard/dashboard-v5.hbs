@@ -1,167 +1,91 @@
 <section {{did-insert this.onInsert}}>
-    {{#if this.areMembersEnabled}}
-        <section class="prototype-section">
-            <Dashboard::V5::ChartMembersCounts />
-        </section>
+
+    {{#if this.isLoading }}
+        <GhLoadingSpinner />
+    {{else}}
+        {{#if this.areMembersEnabled}}
+            <section class="prototype-section">
+                <Dashboard::V5::ChartMembersCounts />
+            </section>
+
+            <section class="prototype-section">
+                <div class="prototype-selection">
+                    <PowerSelect
+                        @selected={{this.selectedDaysOption}}
+                        @options={{this.daysOptions}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.onDaysChange}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown"
+                        @matchTriggerWidth={{false}}
+                        as |option|
+                    >
+                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                    </PowerSelect>
+                </div>
+
+                <article class="gh-dashboard-box">
+                    <Dashboard::V5::ChartTotalMembers @days={{this.days}} />
+                </article>
+
+                {{#if this.hasPaidTiers}}
+                    <div class="prototype-section">
+                        <div class="prototype-counts">
+                            <article class="prototype-box">
+                                <Dashboard::V5::ChartMonthlyRevenue @days={{this.days}} />
+                            </article>
+
+                            <article class="prototype-box">
+                                <Dashboard::V5::ChartTotalPaid @days={{this.days}} />
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="prototype-section">
+                        <div class="prototype-counts">
+                            <article class="prototype-box">
+                                <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
+                            </article>
+
+                            <article class="prototype-box">
+                                <Dashboard::V5::ChartPaidMix />
+                            </article>
+                        </div>
+                    </div>
+                {{/if}}
+            </section>
+            <section class="prototype-section">
+                <Dashboard::V5::ChartEngagement />
+            </section>
+        {{/if}}
+
+        {{#if this.areNewslettersEnabled}}
+            <section class="prototype-section">
+                <Dashboard::V5::ChartEmailOpenRate />
+            </section>
+        {{/if}}
 
         <section class="prototype-section">
-            <div class="prototype-selection">
-                <PowerSelect
-                    @selected={{this.selectedDaysOption}}
-                    @options={{this.daysOptions}}
-                    @searchEnabled={{false}}
-                    @onChange={{this.onDaysChange}}
-                    @triggerComponent="gh-power-select/trigger"
-                    @triggerClass="gh-contentfilter-menu-trigger"
-                    @dropdownClass="gh-contentfilter-menu-dropdown"
-                    @matchTriggerWidth={{false}}
-                    as |option|
-                >
-                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                </PowerSelect>
-            </div>
-
+            <h2>Recent posts</h2>
             <article class="gh-dashboard-box">
-                <Dashboard::V5::ChartTotalMembers @days={{this.days}} />
+                Recent posts
             </article>
-
-            {{#if this.hasPaidTiers}}
-                <div class="prototype-section">
-                    <div class="prototype-counts">
-                        <article class="prototype-box">
-                            <Dashboard::V5::ChartMonthlyRevenue @days={{this.days}} />
-                        </article>
-
-                        <article class="prototype-box">
-                            <Dashboard::V5::ChartTotalPaid @days={{this.days}} />
-                        </article>
-                    </div>
-                </div>
-
-                <div class="prototype-section">
-                    <div class="prototype-counts">
-                        <article class="prototype-box">
-                            <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
-                        </article>
-
-                        <article class="prototype-box">
-                            <Dashboard::V5::ChartPaidMix />
-                        </article>
-                    </div>
-                </div>
-            {{/if}}
         </section>
+
         <section class="prototype-section">
-            <Dashboard::V5::ChartEngagement />
+            <h2>Activity</h2>
+            <Dashboard::LatestMemberActivity />
         </section>
-    {{/if}}
 
-    {{#if this.areNewslettersEnabled}}
         <section class="prototype-section">
-            <Dashboard::V5::ChartEmailOpenRate />
+            <h2>Resources</h2>
+            <article class="gh-dashboard-box">
+                <Dashboard::V5::ResourceGeneral />
+            </article>
         </section>
+
+        <Dashboard::V5::PrototypeControlPanel />
     {{/if}}
-
-    <section class="prototype-section">
-        <h2>Recent posts</h2>
-        <article class="gh-dashboard-box">
-            Recent posts
-        </article>
-    </section>
-
-    <section class="prototype-section">
-        <h2>Activity</h2>
-        <Dashboard::LatestMemberActivity />
-    </section>
-
-    <section class="prototype-section">
-        <h2>Resources</h2>
-        <article class="gh-dashboard-box">
-            <Dashboard::V5::ResourceGeneral />
-        </article>
-    </section>
 </section>
 
-<div class="gh-main-section prototype-panel">
-    <h4 class="gh-main-section-header small bn">Prototype control panel</h4>
-    
-    <div class="gh-expandable">
-        <div class="gh-expandable-block">
-            <div class="gh-expandable-header">
-                <div>
-                    <h4 class="gh-expandable-title">Has paid tiers</h4>
-                    <p class="gh-expandable-description">
-                        Paid memberships
-                    </p>
-                </div>
-                <div class="for-switch">
-                    <label class="switch">
-                        <Input @type="checkbox" @checked={{this.mockPaidTiers}} />
-                        <span class="input-toggle-component"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="gh-expandable-block">
-            <div class="gh-expandable-header">
-                <div>
-                    <h4 class="gh-expandable-title">Stripe connected</h4>
-                    <p class="gh-expandable-description">
-                        Mock that Stripe is enabled
-                    </p>
-                </div>
-                <div class="for-switch">
-                    <label class="switch">
-                        <Input @type="checkbox" @checked={{this.mockStripeEnabled}} />
-                        <span class="input-toggle-component"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="gh-expandable-block">
-            <div class="gh-expandable-header">
-                <div>
-                    <h4 class="gh-expandable-title">Newsletters enabled</h4>
-                    <p class="gh-expandable-description">
-                        All email related charts shown
-                    </p>
-                </div>
-                <div class="for-switch">
-                    <label class="switch">
-                        <Input @type="checkbox" @checked={{this.mockNewslettersEnabled}} />
-                        <span class="input-toggle-component"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="gh-expandable-block">
-            <div class="gh-expandable-header">
-                <div>
-                    <h4 class="gh-expandable-title">Members enabled</h4>
-                    <p class="gh-expandable-description">
-                        Setting subscription access to other value than 'Nobody'
-                    </p>
-                </div>
-                <div class="for-switch">
-                    <label class="switch">
-                        <Input @type="checkbox" @checked={{this.mockMembersEnabled}} />
-                        <span class="input-toggle-component"></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="prototype-states-buttons">
-        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 0)}}><span>0 days</span></button>
-        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 2)}}><span>2 days</span></button>
-        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 7)}}><span>7 days</span></button>
-        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 14)}}><span>14 days</span></button>
-        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 30)}}><span>30 days</span></button>
-        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 365)}}><span>1 year</span></button>
-        <button class="gh-btn" type="button" {{on "click" (fn this.updateMockedData 730)}}><span>2 year</span></button>
-    </div>
-</div>

@@ -23,7 +23,8 @@ export default class ChartEngagement extends Component {
     }
 
     loadCharts() {
-        this.dashboardStats.loadLastSeen(this.status);
+        this.dashboardStats.lastSeenFilterStatus = this.status;
+        this.dashboardStats.loadLastSeen();
         this.dashboardStats.loadMembersCounts();
     }
 
@@ -37,7 +38,8 @@ export default class ChartEngagement extends Component {
     @action 
     onSwitchStatus(selected) {
         this.status = selected.value;
-        this.dashboardStats.loadLastSeen(this.status);
+        this.dashboardStats.lastSeenFilterStatus = this.status;
+        this.dashboardStats.loadLastSeen();
     }
 
     get loading() {

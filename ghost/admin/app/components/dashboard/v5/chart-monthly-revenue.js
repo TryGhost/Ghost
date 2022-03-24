@@ -17,7 +17,7 @@ export default class ChartMonthlyRevenue extends Component {
     @action
     loadCharts() {
         // The dashboard stats service will take care or reusing and limiting API-requests between charts
-        this.dashboardStats.loadMrrStats(this.args.days);
+        this.dashboardStats.loadMrrStats();
     }
 
     get loading() {
