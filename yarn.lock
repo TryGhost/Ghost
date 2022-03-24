@@ -2298,18 +2298,18 @@
   dependencies:
     bluebird "^3.7.2"
 
-"@tryghost/request@0.1.17":
-  version "0.1.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.17.tgz#0028fbe73f9926d2503112df650589bf014285f8"
-  integrity sha512-h2bWqK5IRt9ihtqcFGlEyHzBJkAwMIzAMm975FeHeLnAlb8R6e1FhrJX1EFCi7ytAVQLCst17J5nPrdcJP5mVg==
+"@tryghost/request@0.1.19":
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.19.tgz#e84e79c2426ebe08ac88799845da697d578585cb"
+  integrity sha512-+1xX/ylPedBIqb8bSTtnhGZSXjUOxAp+n1ldoWfp2QnEizDOkucWoLEv3GxYWIl4fntXP+7v0Pa1ebsUCdydqQ==
   dependencies:
-    "@tryghost/errors" "^1.2.4"
-    "@tryghost/validator" "^0.1.15"
-    "@tryghost/version" "^0.1.11"
+    "@tryghost/errors" "^1.2.6"
+    "@tryghost/validator" "^0.1.17"
+    "@tryghost/version" "^0.1.12"
     got "9.6.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.11", "@tryghost/root-utils@^0.3.11", "@tryghost/root-utils@^0.3.8", "@tryghost/root-utils@^0.3.9":
+"@tryghost/root-utils@0.3.11":
   version "0.3.11"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.11.tgz#4c3a045c89c75301435b1d1db1946072b3ee3adf"
   integrity sha512-1q01HsaqQSpFPVcq7tqkIUXa/L1P7yXNGbGJCeZ/IyfrSd/OdgQTluwz0BYzJc1mBP+5lIumqARr+XdbE/ZbAQ==
@@ -2321,6 +2321,14 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.1.0.tgz#7578cb5e57953316fef58edd43a152a86b719a8f"
   integrity sha512-zy3PSviwytjvjdMso86RYZLE2I4e2yL/s83fIEf/g17C8V8hsCcgE83cFOpCw3ISWDFX3Qi0IX9kI3or2pfGLg==
+  dependencies:
+    caller "^1.0.1"
+    find-root "^1.1.0"
+
+"@tryghost/root-utils@^0.3.11", "@tryghost/root-utils@^0.3.12", "@tryghost/root-utils@^0.3.8", "@tryghost/root-utils@^0.3.9":
+  version "0.3.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.12.tgz#c0544b79a9b34e543dd94f09173f2f672fa7535c"
+  integrity sha512-dmv2GRm0VV6cMHAi9awGZnBs1SmDHivdIJWz86TbxiVZoIFCWAwqlTNnz/RUJiBlLCfZlXsBnIeRkjeFC3m8OA==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
@@ -2409,7 +2417,7 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/validator@0.1.17", "@tryghost/validator@^0.1.15":
+"@tryghost/validator@0.1.17", "@tryghost/validator@^0.1.17":
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.17.tgz#29b50b721d47586bd5dfed219bb66ce664ffdea2"
   integrity sha512-ZNgqpJBPSfJ7SkiwKdBpyf8boV1dHr5cH+mdrOx087BfCGu6u5OPl1bqQTcf3hvsaovP5NbOjqJvmYuMdFiXvw==
@@ -2428,12 +2436,20 @@
     "@tryghost/domain-events" "^0.1.8"
     "@tryghost/member-events" "^0.4.0"
 
-"@tryghost/version@0.1.11", "@tryghost/version@^0.1.11":
+"@tryghost/version@0.1.11":
   version "0.1.11"
   resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.11.tgz#469be340ad738247c17bfe74a46772e47cb1fe6e"
   integrity sha512-zrQXvAnLIbowKJ9jlrm3wY+FDEa7qVzMvJtwjoRPqTc0N1n8jsnl+68/FxcYXFcWM8er7i47aP0t6BB2y6n0fg==
   dependencies:
     "@tryghost/root-utils" "^0.3.11"
+    semver "^7.3.5"
+
+"@tryghost/version@^0.1.12":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.12.tgz#66f1543053e16b4a4f1725d70ccdc02e88e12a64"
+  integrity sha512-SmH7u2xuw7Ou/YHGqLNiEyoWg4wgjspDkdrK2Zl0e1Yo4KzuQdljIke61t7xbfV7mwZojp+E7t/vGV+JdUVTwA==
+  dependencies:
+    "@tryghost/root-utils" "^0.3.12"
     semver "^7.3.5"
 
 "@tryghost/vhost-middleware@1.0.22":
