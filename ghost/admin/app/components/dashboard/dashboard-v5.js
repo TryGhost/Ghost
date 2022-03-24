@@ -1,7 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {tracked} from '@glimmer/tracking';
 
 const DAYS_OPTIONS = [{
     name: '7 days',
@@ -19,56 +18,48 @@ const DAYS_OPTIONS = [{
 
 export default class DashboardDashboardV5Component extends Component {
     @service dashboardStats;
-    @service dashboardMocks;
-
-    @tracked mockPaidTiers = true;
-    @tracked mockStripeEnabled = true;
-    @tracked mockNewslettersEnabled = true;
-    @tracked mockMembersEnabled = true;
-    
-    @tracked days = 30;
 
     daysOptions = DAYS_OPTIONS;
 
+    get days() {
+        return this.dashboardStats.chartDays;
+    }
+
+    set days(days) {
+        this.dashboardStats.chartDays = days;
+    }
+
     @action
     onInsert() {
-        this.updateMockedData(14);
+        this.dashboardStats.loadSiteStatus();
     }
 
     get selectedDaysOption() {
         return this.daysOptions.find(d => d.value === this.days);
     }
 
+    get isLoading() {
+        return this.dashboardStats.siteStatus === null;
+    }
+
     get hasPaidTiers() {
-        return this.mockPaidTiers;
+        return this.dashboardStats.siteStatus?.hasPaidTiers;
     }
 
     get isStripeEnabled() {
-        return this.mockStripeEnabled;
+        return this.dashboardStats.siteStatus?.stripeEnabled;
     }    
 
     get areNewslettersEnabled() {
-        return this.mockNewslettersEnabled;
+        return this.dashboardStats.siteStatus?.newslettersEnabled;
     }
 
     get areMembersEnabled() {
-        return this.mockMembersEnabled;
+        return this.dashboardStats.siteStatus?.membersEnabled;
     }
 
     @action 
     onDaysChange(selected) {
         this.days = selected.value;
-    }
-
-    /**
-     * This method generates new data and forces a reload for all the charts
-     * Might be better to move this code to a temporary mocking service
-     */
-    @action
-    updateMockedData(generateDays) {    
-        this.dashboardMocks.updateMockedData({days: generateDays});
-
-        // Force update all data
-        this.dashboardStats.reloadAll(this.days);
     }
 }
