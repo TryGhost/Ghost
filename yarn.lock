@@ -1428,6 +1428,17 @@
     component-type "^1.2.1"
     join-component "^1.1.0"
 
+"@sentry/core@6.19.1":
+  version "6.19.1"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.19.1.tgz#9672d0d19d4fe438be6e186b2b10a79826f19a03"
+  integrity sha512-ZSIFnwYCzABK1jX1iMwUbaAoWbbJear0wM+gSZvJpSUJ1dAXV1OZyL7kXtEJRtATahIlcrMou5ewIoeJizeWAw==
+  dependencies:
+    "@sentry/hub" "6.19.1"
+    "@sentry/minimal" "6.19.1"
+    "@sentry/types" "6.19.1"
+    "@sentry/utils" "6.19.1"
+    tslib "^1.9.3"
+
 "@sentry/core@6.19.2":
   version "6.19.2"
   resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.19.2.tgz#dd35ba6ca41a2dd011c43f732bcdadbb52c06376"
@@ -1439,6 +1450,15 @@
     "@sentry/utils" "6.19.2"
     tslib "^1.9.3"
 
+"@sentry/hub@6.19.1":
+  version "6.19.1"
+  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.19.1.tgz#bff9ed5885b6e0eb4280774b653fa05edec6ed07"
+  integrity sha512-BgUwdxxXntGohAYrXtYrYBA6QzOeRz3NINuS838n7SRTkGf9gBJ/Rd3dyOWUrzJciKty7rmvYIwTA0oo91AMkw==
+  dependencies:
+    "@sentry/types" "6.19.1"
+    "@sentry/utils" "6.19.1"
+    tslib "^1.9.3"
+
 "@sentry/hub@6.19.2":
   version "6.19.2"
   resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.19.2.tgz#0e9f9c507e55d8396002f644b43ef27cc9ff1289"
@@ -1446,6 +1466,15 @@
   dependencies:
     "@sentry/types" "6.19.2"
     "@sentry/utils" "6.19.2"
+    tslib "^1.9.3"
+
+"@sentry/minimal@6.19.1":
+  version "6.19.1"
+  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.19.1.tgz#d6fc92bd683ae7db207ad9666084307311881dcb"
+  integrity sha512-Xre3J6mjWEcQhDmQ3j4g71J8f0nDgg2p7K41SngibfZVYSOe8jAowxSI9JuWD7juuwT5GVRVCqLs+Y6mWDBaoQ==
+  dependencies:
+    "@sentry/hub" "6.19.1"
+    "@sentry/types" "6.19.1"
     tslib "^1.9.3"
 
 "@sentry/minimal@6.19.2":
@@ -1485,10 +1514,23 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
+"@sentry/types@6.19.1":
+  version "6.19.1"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.19.1.tgz#684a231f8fe10c9cf14f9552f5da0a4492e6fdbc"
+  integrity sha512-ovmNYdqD2MKLmru4calxetX1xjJdYim+HEI/GzwvVUYshsaXRq4EiQ17h3DAy90MV7JH279PmMoPGDTOpufq+Q==
+
 "@sentry/types@6.19.2":
   version "6.19.2"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.19.2.tgz#0219c9da21ed975951108b8541913b1966464435"
   integrity sha512-XO5qmVBdTs+7PdCz7fAwn1afWxSnRE2KLBFg5/vOdKosPSSHsSHUURSkxiEZc2QsR+JpRB4AeQ26AkIRX38qTg==
+
+"@sentry/utils@6.19.1":
+  version "6.19.1"
+  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.19.1.tgz#9d5f50a0ceb60b63631de88b4abed07253568209"
+  integrity sha512-mWcQbQ1yO7PooLpJpQK84+wOfxGeb8iUKRb8inO+2Eg6VksDbXRuJ89Yd4APBTRxBj5Wihy48bPuVfKtovtm8g==
+  dependencies:
+    "@sentry/types" "6.19.1"
+    tslib "^1.9.3"
 
 "@sentry/utils@6.19.2":
   version "6.19.2"
@@ -2267,7 +2309,7 @@
     got "9.6.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.11", "@tryghost/root-utils@^0.3.11", "@tryghost/root-utils@^0.3.8", "@tryghost/root-utils@^0.3.9":
+"@tryghost/root-utils@0.3.11":
   version "0.3.11"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.11.tgz#4c3a045c89c75301435b1d1db1946072b3ee3adf"
   integrity sha512-1q01HsaqQSpFPVcq7tqkIUXa/L1P7yXNGbGJCeZ/IyfrSd/OdgQTluwz0BYzJc1mBP+5lIumqARr+XdbE/ZbAQ==
@@ -2279,6 +2321,14 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.1.0.tgz#7578cb5e57953316fef58edd43a152a86b719a8f"
   integrity sha512-zy3PSviwytjvjdMso86RYZLE2I4e2yL/s83fIEf/g17C8V8hsCcgE83cFOpCw3ISWDFX3Qi0IX9kI3or2pfGLg==
+  dependencies:
+    caller "^1.0.1"
+    find-root "^1.1.0"
+
+"@tryghost/root-utils@^0.3.11", "@tryghost/root-utils@^0.3.12", "@tryghost/root-utils@^0.3.8", "@tryghost/root-utils@^0.3.9":
+  version "0.3.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.12.tgz#c0544b79a9b34e543dd94f09173f2f672fa7535c"
+  integrity sha512-dmv2GRm0VV6cMHAi9awGZnBs1SmDHivdIJWz86TbxiVZoIFCWAwqlTNnz/RUJiBlLCfZlXsBnIeRkjeFC3m8OA==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
@@ -2379,12 +2429,12 @@
     "@tryghost/domain-events" "^0.1.8"
     "@tryghost/member-events" "^0.4.0"
 
-"@tryghost/version@0.1.11", "@tryghost/version@^0.1.11":
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.11.tgz#469be340ad738247c17bfe74a46772e47cb1fe6e"
-  integrity sha512-zrQXvAnLIbowKJ9jlrm3wY+FDEa7qVzMvJtwjoRPqTc0N1n8jsnl+68/FxcYXFcWM8er7i47aP0t6BB2y6n0fg==
+"@tryghost/version@0.1.12", "@tryghost/version@^0.1.11":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/version/-/version-0.1.12.tgz#66f1543053e16b4a4f1725d70ccdc02e88e12a64"
+  integrity sha512-SmH7u2xuw7Ou/YHGqLNiEyoWg4wgjspDkdrK2Zl0e1Yo4KzuQdljIke61t7xbfV7mwZojp+E7t/vGV+JdUVTwA==
   dependencies:
-    "@tryghost/root-utils" "^0.3.11"
+    "@tryghost/root-utils" "^0.3.12"
     semver "^7.3.5"
 
 "@tryghost/vhost-middleware@1.0.22":
