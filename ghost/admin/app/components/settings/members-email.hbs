@@ -67,7 +67,7 @@
                                             </button>
                                         </li>
                                         <li>
-                                            <button class="mr2" type="button" {{action "archiveNewsletter" newsletter.id}}>
+                                            <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter.id)}}>
                                                 <span>Archive</span>
                                             </button>
                                         </li>
@@ -80,7 +80,7 @@
                     {{/each}}
                 </div>
             </section>
-            <button type="button" class="gh-add-newsletter" {{on "click" @toggleEmailDesignSettings}} {{action "addNewsletter"}}>{{svg-jar "add-stroke"}}Add newsletter</button>
+            <button type="button" class="gh-add-newsletter" {{on "click" @toggleEmailDesignSettings}} {{on "click" this.addNewsletter}}>{{svg-jar "add-stroke"}}Add newsletter</button>
         </div>
 
         <section class="gh-main-section">

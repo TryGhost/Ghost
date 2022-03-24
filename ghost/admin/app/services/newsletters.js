@@ -33,46 +33,46 @@ export default class NewslettersService extends Service {
     @service store;
 
     @tracked
-    newsletters = [
-        {
-            id: '123',
-            name: 'Daily roundup',
-            description: 'Daily news delivered to your inbox every morning.',
-            sender_name: 'Test',
-            sender_email: 'test@example.com',
-            sender_reply_to: 'test@example.com',
-            default: true,
-            status: 'active',
-            recipient_filter: '',
-            subscribe_on_signup: true,
-            sort_order: 0,
-            members: {
-                total: 19
+        newsletters = [
+            {
+                id: '123',
+                name: 'Daily roundup',
+                description: 'Daily news delivered to your inbox every morning.',
+                sender_name: 'Test',
+                sender_email: 'test@example.com',
+                sender_reply_to: 'test@example.com',
+                default: true,
+                status: 'active',
+                recipient_filter: '',
+                subscribe_on_signup: true,
+                sort_order: 0,
+                members: {
+                    total: 19
+                },
+                posts: {
+                    total: 17
+                }
             },
-            posts: {
-                total: 17
+            {
+                id: '456',
+                name: ' Weekly summary ',
+                description: 'Get the weekly highlights every Sunday.',
+                sender_name: 'Test',
+                sender_email: 'test@example.com',
+                sender_reply_to: 'test@example.com',
+                default: true,
+                status: 'active',
+                recipient_filter: '',
+                subscribe_on_signup: true,
+                sort_order: 0,
+                members: {
+                    total: 32
+                },
+                posts: {
+                    total: 2
+                }
             }
-        },
-        {
-            id: '456',
-            name: ' Weekly summary ',
-            description: 'Get the weekly highlights every Sunday.',
-            sender_name: 'Test',
-            sender_email: 'test@example.com',
-            sender_reply_to: 'test@example.com',
-            default: true,
-            status: 'active',
-            recipient_filter: '',
-            subscribe_on_signup: true,
-            sort_order: 0,
-            members: {
-                total: 32
-            },
-            posts: {
-                total: 2
-            }
-        }
-    ]
+        ];
 
     add() {
         this.newsletters.push(getFakeNewsletter());
