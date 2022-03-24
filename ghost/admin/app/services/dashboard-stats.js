@@ -270,8 +270,7 @@ export default class DashboardStatsService extends Service {
         while (currentRangeDate.isBefore(endDate)) {
             let dateStr = currentRangeDate.format('YYYY-MM-DD');
             const dataOnDate = data.find(d => d.date === dateStr);
-            lastVal = dataOnDate ? dataOnDate : lastVal;
-            lastVal.date = dateStr;
+            lastVal = dataOnDate ? dataOnDate : {...lastVal, date: dateStr};
             output.push(lastVal);
             currentRangeDate = currentRangeDate.add(1, 'day');
         }
