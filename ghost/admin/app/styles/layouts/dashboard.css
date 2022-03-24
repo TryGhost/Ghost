@@ -1335,3 +1335,7 @@ a.gh-dashboard-container {
 .gh-dashboard5 .gh-dashboard-header-container {
     display: none;
 }
+
+.gh-dashboard5 .gh-offers-help {
+    margin: 0;
+}
