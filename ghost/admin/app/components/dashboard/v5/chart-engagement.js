@@ -1,5 +1,18 @@
 import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
+
+const STATUS_OPTIONS = [{
+    name: 'All members',
+    value: 'total'
+}, {
+    name: 'Paid members',
+    value: 'paid'
+}, {
+    name: 'Free members',
+    value: 'free'
+}];
 
 export default class ChartEngagement extends Component {
     @service dashboardStats;
@@ -14,10 +27,17 @@ export default class ChartEngagement extends Component {
         this.dashboardStats.loadMembersCounts();
     }
 
-    get status() {
-        // todo: this should come from a dropdown
-        // + reload stats after changing this value
-        return 'total';
+    @tracked status = 'total';
+    statusOptions = STATUS_OPTIONS;
+
+    get selectedStatusOption() {
+        return this.statusOptions.find(option => option.value === this.status);
+    }
+
+    @action 
+    onSwitchStatus(selected) {
+        this.status = selected.value;
+        this.dashboardStats.loadLastSeen(this.status);
     }
 
     get loading() {
