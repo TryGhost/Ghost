@@ -1,4 +1,4 @@
-<section {{did-insert this.onInsert}}>
+<section {{did-insert this.onInsert}} class="gh-dashboard5">
 
     {{#if this.isLoading }}
         <GhLoadingSpinner />
@@ -9,20 +9,23 @@
             </section>
 
             <section class="gh-dashboard5-section">
-                <div class="prototype-selection">
-                    <PowerSelect
-                        @selected={{this.selectedDaysOption}}
-                        @options={{this.daysOptions}}
-                        @searchEnabled={{false}}
-                        @onChange={{this.onDaysChange}}
-                        @triggerComponent="gh-power-select/trigger"
-                        @triggerClass="gh-contentfilter-menu-trigger"
-                        @dropdownClass="gh-contentfilter-menu-dropdown"
-                        @matchTriggerWidth={{false}}
-                        as |option|
-                    >
-                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                    </PowerSelect>
+                <div class="gh-dashboard5-header">
+                    <h3>Members</h3>
+                    <div class="prototype-selection">
+                        <PowerSelect
+                            @selected={{this.selectedDaysOption}}
+                            @options={{this.daysOptions}}
+                            @searchEnabled={{false}}
+                            @onChange={{this.onDaysChange}}
+                            @triggerComponent="gh-power-select/trigger"
+                            @triggerClass="gh-contentfilter-menu-trigger"
+                            @dropdownClass="gh-contentfilter-menu-dropdown"
+                            @matchTriggerWidth={{false}}
+                            as |option|
+                        >
+                            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                        </PowerSelect>
+                    </div>
                 </div>
 
                 <div class="gh-dashboard5-growth">
@@ -60,20 +63,28 @@
             </section>
         {{/if}}
 
-        <section class="gh-dashboard5-section">
-            <h2>Recent posts</h2>
-            <article class="gh-dashboard5-box">
-                Recent posts
-            </article>
+        <section class="gh-dashboard5-split">
+            <section class="gh-dashboard5-section">
+                <div class="gh-dashboard5-header">
+                    <h3>Recent posts</h3>
+                </div>
+                <article class="gh-dashboard5-box">
+                    <!-- TODO: insert module -->
+                </article>
+            </section>
+
+            <section class="gh-dashboard5-section">
+                <div class="gh-dashboard5-header">
+                    <h3>Recent activity</h3>
+                </div>
+                <Dashboard::LatestMemberActivity />
+            </section>
         </section>
 
         <section class="gh-dashboard5-section">
-            <h2>Activity</h2>
-            <Dashboard::LatestMemberActivity />
-        </section>
-
-        <section class="gh-dashboard5-section">
-            <h2>Resources</h2>
+            <div class="gh-dashboard5-header">
+                <h3>Resources</h3>
+            </div>
             <article class="gh-dashboard5-box">
                 <Dashboard::V5::ResourceGeneral />
             </article>

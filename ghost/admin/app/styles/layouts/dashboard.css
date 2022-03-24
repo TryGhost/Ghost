@@ -1138,13 +1138,16 @@ a.gh-dashboard-container {
     font-size: 24px;
 }
 
-
-.gh-dashboard5 h3 {
-    margin: 0 0 12px;
+.gh-dashboard5-split {
+    display: flex;
+    gap: 24px;
 }
 
 .gh-dashboard5-section {
-    margin-bottom: 40px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 48px;
 }
 
 .gh-dashboard5-container {
@@ -1189,6 +1192,7 @@ a.gh-dashboard-container {
     letter-spacing: -.1px;
     line-height: 1;
     white-space: nowrap;
+    margin: 0 0 4px;
 }
 
 .gh-dashboard5-number.is-small {
@@ -1202,7 +1206,7 @@ a.gh-dashboard-container {
     text-transform: uppercase;
     font-weight: 500;
     letter-spacing: .2px;
-    margin: 0 0 4px;
+    margin: 0 0 8px;
     padding: 0;
     color: var(--black);
 }
@@ -1238,6 +1242,14 @@ a.gh-dashboard-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin: 0 0 8px;
+    min-height: 34px;
+}
+
+.gh-dashboard5-header h3 {
+    font-size: 1.6rem;
+    margin: 0;
+    padding: 0;
 }
 
 .gh-dashboard5-selection {
@@ -1314,4 +1326,12 @@ a.gh-dashboard-container {
     grid-row: 3;
     border-radius: 0 0 3px 0;
     border-width: 0 1px 1px 0;
+}
+
+.gh-dashboard5 .gh-dashboard-box {
+    margin-bottom: 0;
+}
+
+.gh-dashboard5 .gh-dashboard-header-container {
+    display: none;
 }
