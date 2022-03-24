@@ -90,7 +90,7 @@
     "@tryghost/members-ssr": "1.0.22",
     "@tryghost/members-stripe-service": "0.9.2",
     "@tryghost/metrics": "1.0.7",
-    "@tryghost/minifier": "0.1.11",
+    "@tryghost/minifier": "0.1.12",
     "@tryghost/mw-error-handler": "0.1.5",
     "@tryghost/mw-session-from-token": "0.1.28",
     "@tryghost/nodemailer": "0.3.16",
