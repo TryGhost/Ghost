@@ -2049,7 +2049,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.0.tgz#6bef156f477cefa780b9c1651c41a1503ace4247"
   integrity sha512-i4URWIo6gV4zUCa9rCMYBYK3L8WGt1jONa4uGEEqlXHOf0YW40rLhdqlDhIzF/T5hSsLDZhFwkUx43+sGSOPwA==
 
-"@tryghost/member-events@^0.4.1":
+"@tryghost/member-events@0.4.1", "@tryghost/member-events@^0.4.1":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.1.tgz#d75c183e29c1d186bc8a584a1f05b6e7c05c23b0"
   integrity sha512-eYsDWrsLbdX5alZI9hsxsswN0XnlkOH6AvOmzeaX17pxDqzAhG7DN9rs0lDH3Ov3aniRfHc2UukcQ65oJbvA1A==
