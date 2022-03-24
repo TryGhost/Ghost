@@ -1,8 +1,7 @@
 const sinon = require('sinon');
 const should = require('should');
-const rewire = require('rewire');
 const nock = require('nock');
-const externalRequest = rewire('../../../../core/server/lib/request-external');
+const externalRequest = require('../../../../core/server/lib/request-external');
 const configUtils = require('../../../utils/configUtils');
 
 // for sinon stubs
