@@ -17,7 +17,7 @@ export default class ChartPaidMembers extends Component {
     @action
     loadCharts() {
         // The dashboard stats service will take care or reusing and limiting API-requests between charts
-        this.dashboardStats.loadMemberCountStats(this.args.days);
+        this.dashboardStats.loadMemberCountStats();
     }
 
     get loading() {

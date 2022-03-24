@@ -51,8 +51,22 @@ import {tracked} from '@glimmer/tracking';
  * @property {number} members Paid members on this tier
  */
 
+/**
+ * @typedef SiteStatus Contains information on what graphs need to be shown
+ * @type {Object}
+ * @property {boolean} hasPaidTiers Whether the site has paid tiers
+ * @property {boolean} stripeEnabled Whether the site has stripe enabled
+ * @property {boolean} newslettersEnabled Whether the site has newsletters
+ * @property {boolean} membersEnabled Whether the site has members enabled
+ */
+
 export default class DashboardStatsService extends Service {
     @service dashboardMocks;
+
+    /**
+     * @type {?SiteStatus} Contains information on what graphs need to be shown
+     */
+    @tracked siteStatus = null;
 
     /**
      * @type {?MemberCounts} memberCounts
@@ -114,6 +128,29 @@ export default class DashboardStatsService extends Service {
     @tracked
         emailOpenRateStats = null;
 
+    /**
+     * Amount of days to load for member count and MRR related charts
+     */
+    @tracked chartDays = 7;
+
+    /**
+     * Filter last seen by this status
+     * @type {'free'|'paid'|'total'}
+     */
+    @tracked lastSeenFilterStatus = 'total';
+
+    loadSiteStatus() {
+        this.siteStatus = null;
+        
+        if (this.dashboardMocks.enabled) {
+            this.dashboardMocks.loadSiteStatus();
+            this.siteStatus = this.dashboardMocks.siteStatus;
+            return;
+        }
+        // Normal implementation
+        // @todo
+    }
+
     loadMembersCounts() {
         if (this.dashboardMocks.enabled) {
             if (this.dashboardMocks.memberCounts === null) {
@@ -130,15 +167,14 @@ export default class DashboardStatsService extends Service {
      * Loads the members graphs
      * - total paid
      * - total members
-     * for each day in the last {{days}} days
-     * @param {number} days The number of days to fetch data for
+     * for each day in the last chartDays days
      */
-    loadMemberCountStats(days) {
+    loadMemberCountStats() {
         if (this.dashboardMocks.enabled) {
             if (this.dashboardMocks.memberCountStats === null) {
                 return null;
             }
-            this.memberCountStats = this.fillMissingDates(this.dashboardMocks.memberCountStats.slice(-days), {paid: 0, free: 0, comped: 0}, days);
+            this.memberCountStats = this.fillMissingDates(this.dashboardMocks.memberCountStats.slice(-this.chartDays), {paid: 0, free: 0, comped: 0}, this.chartDays);
             return;
         }
 
@@ -147,15 +183,14 @@ export default class DashboardStatsService extends Service {
     }
 
     /**
-     * Loads the mrr graphs
-     * @param {number} days The number of days to fetch data for
+     * Loads the mrr graphs for the current chartDays days
      */
-    loadMrrStats(days) {
+    loadMrrStats() {
         if (this.dashboardMocks.enabled) {
             if (this.dashboardMocks.mrrStats === null) {
                 return null;
             }
-            this.mrrStats = this.fillMissingDates(this.dashboardMocks.mrrStats.slice(-days), {mrr: 0}, days);
+            this.mrrStats = this.fillMissingDates(this.dashboardMocks.mrrStats.slice(-this.chartDays), {mrr: 0}, this.chartDays);
             return;
         }
 
@@ -165,11 +200,10 @@ export default class DashboardStatsService extends Service {
 
     /**
      * Loads the mrr graphs
-     * @param {'paid'|'free'|'total'} status filter by status
      */
-    loadLastSeen(status) {
+    loadLastSeen() {
         if (this.dashboardMocks.enabled) {
-            if (status === 'paid') {
+            if (this.lastSeenFilterStatus === 'paid') {
                 // @todo
             }
             this.membersLastSeen30d = this.dashboardMocks.membersLastSeen30d;
@@ -228,13 +262,12 @@ export default class DashboardStatsService extends Service {
     /**
      * For now this is only used when reloading all the graphs after changing the mocked data
      * @todo: reload only data that we loaded earlier
-     * @param {number} days Amount of days to load data for (used for member related graphs)
      */
-    reloadAll(days) {
+    reloadAll() {
         this.loadMembersCounts();
-        this.loadMrrStats(days);
-        this.loadMemberCountStats(days);
-        this.loadLastSeen('paid');
+        this.loadMrrStats();
+        this.loadMemberCountStats();
+        this.loadLastSeen();
         this.loadPaidMembersByCadence();
         this.loadPaidMembersByTier();
 
