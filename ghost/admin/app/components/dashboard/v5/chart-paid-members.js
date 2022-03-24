@@ -60,6 +60,6 @@ export default class ChartPaidMembers extends Component {
     }
 
     get chartHeight() {
-        return 150;
+        return 100;
     }
 }

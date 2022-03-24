@@ -53,6 +53,6 @@ export default class ChartTotalMembers extends Component {
     }
 
     get chartHeight() {
-        return 300;
+        return 75;
     }
 }
