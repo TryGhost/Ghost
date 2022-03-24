@@ -116,6 +116,9 @@ export default class DashboardStatsService extends Service {
 
     loadMembersCounts() {
         if (this.dashboardMocks.enabled) {
+            if (this.dashboardMocks.memberCounts === null) {
+                return null;
+            }
             this.memberCounts = {...this.dashboardMocks.memberCounts};
             return;
         }
