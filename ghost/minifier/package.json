@@ -28,7 +28,7 @@
     "@tryghost/debug": "^0.1.8",
     "@tryghost/errors": "^1.2.1",
     "@tryghost/tpl": "^0.1.7",
-    "csso": "^4.2.0",
+    "csso": "^5.0.0",
     "terser": "^5.9.0",
     "tiny-glob": "^0.2.9"
   }
