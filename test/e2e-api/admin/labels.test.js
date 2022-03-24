@@ -16,6 +16,16 @@ describe('Labels API', function () {
         await agent.loginAsOwner();
     });
 
+    it('Can browse with no labels', async function () {
+        await agent
+            .get('labels')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
     it('Can add', async function () {
         await agent
             .post('labels')
