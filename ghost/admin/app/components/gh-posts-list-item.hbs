@@ -10,36 +10,40 @@
             <h3 class="gh-content-entry-title">
                 {{@post.title}} {{svg-jar "external" class="gh-post-list-external"}}
             </h3>
-            <p>
-                <span class="gh-content-entry-meta">
-                    By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
+            {{#unless @hideAuthor }}
+                <p>
+                    <span class="gh-content-entry-meta">
+                        By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
 
-                    {{#if @post.primaryTag}}
-                        in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
-                    {{/if}}
+                        {{#if @post.primaryTag}}
+                            in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
+                        {{/if}}
 
-                    • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
+                        • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
 
-                </span>
-            </p>
+                    </span>
+                </p>
+            {{/unless}}
         </a>
     {{else}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-title">
             <h3 class="gh-content-entry-title">
                 {{@post.title}}
             </h3>
-            <p>
-                <span class="gh-content-entry-meta">
-                    By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
+            {{#unless @hideAuthor }}
+                <p>
+                    <span class="gh-content-entry-meta">
+                        By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
 
-                    {{#if @post.primaryTag}}
-                        in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
-                    {{/if}}
+                        {{#if @post.primaryTag}}
+                            in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
+                        {{/if}}
 
-                    • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
+                        • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
 
-                </span>
-            </p>
+                    </span>
+                </p>
+            {{/unless}}
         </LinkTo>
     {{/if}}
 
@@ -75,73 +79,75 @@
         {{/if}}
     {{/if}}
 
-    {{#if (and this.session.user.isContributor @post.isPublished)}}
-        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
-            <div class="flex items-center">
-                {{#if @post.isScheduled}}
-                <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">
-                    Scheduled
-                    {{#if @post.emailRecipientFilter}}
-                    {{svg-jar "email-stroke"}}
+    {{#unless @hideStatusColumn }}
+        {{#if (and this.session.user.isContributor @post.isPublished)}}
+            <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
+                <div class="flex items-center">
+                    {{#if @post.isScheduled}}
+                    <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">
+                        Scheduled
+                        {{#if @post.emailRecipientFilter}}
+                        {{svg-jar "email-stroke"}}
+                        {{/if}}
+                    </span>
                     {{/if}}
-                </span>
-                {{/if}}
 
-                {{#if @post.isDraft}}
-                <span class="gh-content-status-draft gh-badge gh-badge-pink nowrap">
-                    Draft
-                </span>
-                {{/if}}
-
-                {{#if @post.isPublished}}
-                <span class="gh-content-status-published nowrap">
-                    Published
-                    {{#if @post.hasEmail}}
-                    {{svg-jar "email-stroke"}}
+                    {{#if @post.isDraft}}
+                    <span class="gh-content-status-draft gh-badge gh-badge-pink nowrap">
+                        Draft
+                    </span>
                     {{/if}}
-                </span>
-                {{/if}}
 
-                {{#if @post.isSent}}
-                <span class="gh-content-status-emailed nowrap">
-                    {{svg-jar "email-stroke"}}
-                </span>
-                {{/if}}
-            </div>
-        </a>
-    {{else}}
-        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status">
-            <div class="flex items-center">
-                {{#if @post.isScheduled}}
-                <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">
-                    Scheduled
-                    {{#if @post.emailRecipientFilter}}
-                    {{svg-jar "email-stroke"}}
+                    {{#if @post.isPublished}}
+                    <span class="gh-content-status-published nowrap">
+                        Published
+                        {{#if @post.hasEmail}}
+                        {{svg-jar "email-stroke"}}
+                        {{/if}}
+                    </span>
                     {{/if}}
-                </span>
-                {{/if}}
 
-                {{#if @post.isDraft}}
-                <span class="gh-content-status-draft gh-badge gh-badge-pink nowrap">
-                    Draft
-                </span>
-                {{/if}}
-
-                {{#if @post.isPublished}}
-                <span class="gh-content-status-published nowrap">
-                    Published
-                    {{#if @post.hasEmail}}
-                    {{svg-jar "email-stroke"}}
+                    {{#if @post.isSent}}
+                    <span class="gh-content-status-emailed nowrap">
+                        {{svg-jar "email-stroke"}}
+                    </span>
                     {{/if}}
-                </span>
-                {{/if}}
+                </div>
+            </a>
+        {{else}}
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status">
+                <div class="flex items-center">
+                    {{#if @post.isScheduled}}
+                    <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">
+                        Scheduled
+                        {{#if @post.emailRecipientFilter}}
+                        {{svg-jar "email-stroke"}}
+                        {{/if}}
+                    </span>
+                    {{/if}}
 
-                {{#if @post.isSent}}
-                <span class="gh-content-status-emailed nowrap">
-                    {{svg-jar "email-stroke"}}
-                </span>
-                {{/if}}
-            </div>
-        </LinkTo>
-    {{/if}}
+                    {{#if @post.isDraft}}
+                    <span class="gh-content-status-draft gh-badge gh-badge-pink nowrap">
+                        Draft
+                    </span>
+                    {{/if}}
+
+                    {{#if @post.isPublished}}
+                    <span class="gh-content-status-published nowrap">
+                        Published
+                        {{#if @post.hasEmail}}
+                        {{svg-jar "email-stroke"}}
+                        {{/if}}
+                    </span>
+                    {{/if}}
+
+                    {{#if @post.isSent}}
+                    <span class="gh-content-status-emailed nowrap">
+                        {{svg-jar "email-stroke"}}
+                    </span>
+                    {{/if}}
+                </div>
+            </LinkTo>
+        {{/if}}
+    {{/unless}}
 </li>

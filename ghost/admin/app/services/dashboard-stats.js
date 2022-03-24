@@ -63,6 +63,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class DashboardStatsService extends Service {
     @service dashboardMocks;
+    @service store;
 
     /**
      * @type {?SiteStatus} Contains information on what graphs need to be shown
@@ -154,13 +155,19 @@ export default class DashboardStatsService extends Service {
         }
         // Normal implementation
         // @todo
+        this.siteStatus = {
+            hasPaidTiers: true,
+            stripeEnabled: true,
+            newslettersEnabled: true,
+            membersEnabled: true
+        };
     }
 
     loadMembersCounts() {
         return this._loadMembersCounts.perform();
     }
 
-    @task
+    @task({restartable: true})
     *_loadMembersCounts() {
         this.memberCounts = null;
         if (this.dashboardMocks.enabled) {
@@ -186,7 +193,7 @@ export default class DashboardStatsService extends Service {
      * - total members
      * for each day in the last chartDays days
      */
-    @task
+    @task({restartable: true})
     *_loadMemberCountStats() {
         this.memberCountStats = null;
         if (this.dashboardMocks.enabled) {
@@ -212,7 +219,7 @@ export default class DashboardStatsService extends Service {
     /**
      * Loads the mrr graphs for the current chartDays days
      */
-    @task 
+    @task({restartable: true})
     *_loadMrrStats() {
         this.mrrStats = null;
         if (this.dashboardMocks.enabled) {
@@ -236,7 +243,7 @@ export default class DashboardStatsService extends Service {
     /**
      * Loads the mrr graphs
      */
-    @task
+    @task({restartable: true})
     *_loadLastSeen() {
         this.membersLastSeen30d = null;
         this.membersLastSeen7d = null;
@@ -259,7 +266,7 @@ export default class DashboardStatsService extends Service {
         return this._loadPaidMembersByCadence.perform();
     }
 
-    @task
+    @task({restartable: true})
     *_loadPaidMembersByCadence() {
         this.paidMembersByCadence = null;
 
@@ -277,7 +284,7 @@ export default class DashboardStatsService extends Service {
         return this._loadPaidMembersByTier.perform();
     }
 
-    @task
+    @task({restartable: true})
     *_loadPaidMembersByTier() {
         this.paidMembersByTier = null;
 
@@ -295,7 +302,7 @@ export default class DashboardStatsService extends Service {
         return this._loadNewsletterSubscribers.perform();
     }
 
-    @task
+    @task({restartable: true})
     *_loadNewsletterSubscribers() {
         this.newsletterSubscribers = null;
 
@@ -313,7 +320,7 @@ export default class DashboardStatsService extends Service {
         return this._loadEmailsSent.perform();
     }
 
-    @task
+    @task({restartable: true})
     *_loadEmailsSent() {
         this.emailsSent30d = null;
 
@@ -331,7 +338,7 @@ export default class DashboardStatsService extends Service {
         return this._loadEmailOpenRateStats.perform();
     }
 
-    @task
+    @task({restartable: true})
     *_loadEmailOpenRateStats() {
         this.emailOpenRateStats = null;
 
@@ -340,8 +347,9 @@ export default class DashboardStatsService extends Service {
             this.emailOpenRateStats = this.dashboardMocks.emailOpenRateStats;
             return;
         }
-        // Normal implementation
-        // @todo
+
+        const posts = yield this.store.query('post', {limit: 5, filter: 'status:published', order: 'published_at desc'});
+        this.emailOpenRateStats = posts;
     }
 
     /**

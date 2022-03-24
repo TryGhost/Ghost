@@ -1,1 +1,24 @@
-Recent posts WIP
+<ol class="gh-list" {{did-insert this.loadPosts}}>
+    <li class="gh-list-row header">
+        <div class="gh-list-header gh-posts-title-header">Title</div>
+        <div class="gh-list-header gh-posts-sends-header">Sends</div>
+        <div class="gh-list-header gh-posts-opens-header">Opens</div>
+    </li>
+    {{#each this.posts as |post|}}
+        <GhPostsListItem
+            @post={{post}}
+            @hideAuthor={{true}}
+            @hideStatusColumn={{true}}
+            data-test-post-id={{post.id}} />
+    {{else}}
+        <li class="no-posts-box">
+            <div class="no-posts">
+                <h3>No published posts yet.</h3>
+            </div>
+        </li>
+    {{/each}}
+</ol>
+
+<div class="footer">
+    <LinkTo @route="posts" @query={{reset-query-params "posts"}}>See all posts →</LinkTo>
+</div>
