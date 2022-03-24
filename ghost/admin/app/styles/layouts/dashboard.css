@@ -1093,6 +1093,12 @@ a.gh-dashboard-container {
     justify-content: flex-end;
 }
 
+.prototype-paid-mix-dropdown {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+}
+
 .prototype-counts {
     display: flex;
     flex-direction: row;
@@ -1125,6 +1131,7 @@ a.gh-dashboard-container {
 .prototype-box {
     border: 1px solid #ebeef0;
     padding: 28px;
+    position: relative;
 }
 
 .prototype-box .number {
