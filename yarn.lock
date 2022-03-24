@@ -6128,7 +6128,7 @@ got@9.6.0, got@^9.6.0:
     to-readable-stream "^1.0.0"
     url-parse-lax "^3.0.0"
 
-got@~11.8.3:
+got@~11.8.0:
   version "11.8.3"
   resolved "https://registry.yarnpkg.com/got/-/got-11.8.3.tgz#f496c8fdda5d729a90b4905d2b07dbd148170770"
   integrity sha512-7gtQ5KiPh1RtGS9/Jbv1ofDpBFuq42gyfEib+ejaRBJuj/3tQFeR5+gw57e4ipaU8c/rCjvX6fkQz2lyDlGAOg==
@@ -8508,14 +8508,14 @@ metascraper-image@5.26.0:
   dependencies:
     "@metascraper/helpers" "^5.26.0"
 
-metascraper-logo-favicon@5.26.0:
-  version "5.26.0"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.26.0.tgz#2b98efb99b73ced4d48cfc7f28d4b83bba69d5d9"
-  integrity sha512-A0kZCk1zJmDba/dTM4u07cAouTORDA25hFzrxiz/u1IsX0EibCdaRQldSA1UXHKn+BzbR7GHZrGaZ2uhHo85gA==
+metascraper-logo-favicon@5.27.1:
+  version "5.27.1"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.27.1.tgz#20283b943632a9553d6c26db0aaff0807e8258ef"
+  integrity sha512-t1520xRYYVdTHsaD9GTPhTfm2nrdY88l6wDR4Mhx1o1huhEMjkYC9vzB9auvoDVak1tZ/p/XM3OWw/EUasE+sQ==
   dependencies:
     "@metascraper/helpers" "^5.26.0"
-    got "~11.8.3"
     lodash "~4.17.21"
+    reachable-url "~1.6.7"
 
 metascraper-logo@5.26.0:
   version "5.26.0"
@@ -8546,10 +8546,10 @@ metascraper-url@5.26.0:
   dependencies:
     "@metascraper/helpers" "^5.26.0"
 
-metascraper@5.26.0:
-  version "5.26.0"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.26.0.tgz#f6777321a18f42a89551cbbae38d9169c32d2b2b"
-  integrity sha512-dS5GDkRj8BDShQtxfcxcXErrxeN+6ww9ZsPDowo33KnMLSkIifhmz8C0l92FWhWcEKLellwiVHjiaUr87HzZWA==
+metascraper@5.27.1:
+  version "5.27.1"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.27.1.tgz#e32ed1dc73efa843d348ad3997fd55254c89e0b8"
+  integrity sha512-NtTTWKYBmbGWQN0bfE7lUs1Wt9R12Gflg2Ce3s0/7NPY1OFQfVR/ZP5oKsjNJm+BeKmzKJ+SFNoJsgnUjmFcTg==
   dependencies:
     "@metascraper/helpers" "^5.26.0"
     cheerio "~1.0.0-rc.10"
@@ -9529,6 +9529,11 @@ p-map@^4.0.0:
   dependencies:
     aggregate-error "^3.0.0"
 
+p-reflect@~2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/p-reflect/-/p-reflect-2.1.0.tgz#5d67c7b3c577c4e780b9451fc9129675bd99fe67"
+  integrity sha512-paHV8NUz8zDHu5lhr/ngGWQiW067DK/+IbJ+RfZ4k+s8y4EKyYCz8pGYWjxCg35eHztpJAt+NUgvN4L+GCbPlg==
+
 p-timeout@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/p-timeout/-/p-timeout-3.2.0.tgz#c7e17abc971d2a7962ef83626b35d635acf23dfe"
@@ -10435,6 +10440,14 @@ re2@~1.17.4:
     install-artifact-from-github "^1.3.0"
     nan "^2.15.0"
     node-gyp "^8.4.1"
+
+reachable-url@~1.6.7:
+  version "1.6.8"
+  resolved "https://registry.yarnpkg.com/reachable-url/-/reachable-url-1.6.8.tgz#2280080e6e8e5607f4671728c520848264c071c2"
+  integrity sha512-GIO9oHD2rAj+jAHhyh+k8Y1+Wlu1DoAWm7V2o2bro34Z3SfES9pp0OPXtqv08qZxJFov+0gikbfwbstO+PX8Ag==
+  dependencies:
+    got "~11.8.0"
+    p-reflect "~2.1.0"
 
 react-is@^17.0.1:
   version "17.0.2"
