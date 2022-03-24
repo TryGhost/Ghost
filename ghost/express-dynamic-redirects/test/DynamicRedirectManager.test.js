@@ -76,6 +76,22 @@ describe('DynamicRedirectManager', function () {
             should.equal(location, null);
         });
 
+        it('Can add same redirect multiple times and remove it once', function () {
+            manager.addRedirect('/test-params', '/result?q=abc', {permanent: true});
+            const id = manager.addRedirect('/test-params', '/result?q=abc', {permanent: true});
+            manager.removeRedirect(id);
+
+            req.url = '/test-params/?q=123&lang=js';
+
+            manager.handleRequest(req, res, function next() {
+                should.ok(true, 'next should have been called');
+            });
+
+            should.equal(headers, null);
+            should.equal(status, null);
+            should.equal(location, null);
+        });
+
         it('The routing works when passed an invalid regexp for the from parameter', function () {
             const from = '/invalid_regex/(/size/[a-zA-Z0-9_-.]*/[a-zA-Z0-9_-.]*/[0-9]*/[0-9]*/)([a-zA-Z0-9_-.]*)';
             const to = '/';

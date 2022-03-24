@@ -97,7 +97,10 @@ class DynamicRedirectManager {
             const fromRegex = this.buildRegex(from);
             const redirectId = from;
 
-            this.redirectIds.push(redirectId);
+            if (!this.redirectIds.includes(redirectId)) {
+                this.redirectIds.push(redirectId);
+            }
+            
             this.redirects[redirectId] = {
                 fromRegex,
                 to,
