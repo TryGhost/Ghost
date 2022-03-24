@@ -25,9 +25,18 @@ class BootLogger {
         let {logging, startTime} = this;
         logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
     }
-    metric(name) {
+    /**
+     * @param {string} name
+     * @param {number} [initialTime]
+     */
+    metric(name, initialTime) {
         let {metrics, startTime} = this;
-        metrics.metric(name, Date.now() - startTime);
+
+        if (!initialTime) {
+            initialTime = startTime;
+        }
+
+        metrics.metric(name, Date.now() - initialTime);
     }
 }
 
@@ -126,8 +135,11 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
 
 /**
  * These are services required by Ghost's frontend.
+ * @param {object} options
+ * @param {object} options.bootLogger
+
  */
-async function initServicesForFrontend() {
+async function initServicesForFrontend({bootLogger}) {
     debug('Begin: initServicesForFrontend');
 
     debug('Begin: Routing Settings');
@@ -144,8 +156,11 @@ async function initServicesForFrontend() {
     // customThemSettingsService.api must be initialized before any theme activation occurs
     const customThemeSettingsService = require('./server/services/custom-theme-settings');
     customThemeSettingsService.init();
+
     const themeService = require('./server/services/themes');
+    const themeServiceStart = Date.now();
     await themeService.init();
+    bootLogger.metric('theme-service-init', themeServiceStart);
     debug('End: Themes');
 
     debug('Begin: Offers');
@@ -401,7 +416,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer, config, bootLogger, frontend});
-        await initServicesForFrontend();
+        await initServicesForFrontend({bootLogger});
 
         if (frontend) {
             await initFrontend();
