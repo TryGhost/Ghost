@@ -1,12 +1,11 @@
 const should = require('should');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const imageLib = require('../../../../core/server/lib/image');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const configUtils = require('../../../utils/configUtils');
 const config = configUtils.config;
 
-const getAssetUrl = rewire('../../../../core/frontend/meta/asset-url');
+const getAssetUrl = require('../../../../core/frontend/meta/asset-url');
 
 describe('getAssetUrl', function () {
     afterEach(function () {
