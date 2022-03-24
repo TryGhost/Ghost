@@ -13,6 +13,7 @@ export default class MembersEmail extends Component {
     @service ghostPaths;
     @service ajax;
     @service settings;
+    @service newsletters;
 
     replyAddresses = null;
     recipientsSelectValue = null;
@@ -184,6 +185,16 @@ export default class MembersEmail extends Component {
     @action
     setDefaultEmailRecipientsFilter(filter) {
         this.settings.set('editorDefaultEmailRecipientsFilter', filter);
+    }
+
+    @action
+    archiveNewsletter(id) {
+        this.newsletters.archive(id);
+    }
+
+    @action
+    addNewsletter() {
+        this.newsletters.add();
     }
 
     @(task(function* () {
