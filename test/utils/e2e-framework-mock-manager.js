@@ -21,10 +21,15 @@ const disableStripe = async () => {
     await stripeService.disconnect();
 };
 
-const mockMail = () => {
+/**
+ *
+ * @param {String|Object} response
+ * @returns
+ */
+const mockMail = (response = 'Mail is disabled') => {
     mocks.mail = sinon
         .stub(mailService.GhostMailer.prototype, 'send')
-        .resolves('Mail is disabled');
+        .resolves(response);
 
     return mocks.mail;
 };
