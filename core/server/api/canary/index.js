@@ -158,7 +158,7 @@ module.exports = {
     },
 
     get emails() {
-        return shared.pipeline(require('./email'), localUtils);
+        return shared.pipeline(require('./emails'), localUtils);
     },
 
     get site() {
