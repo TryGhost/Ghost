@@ -125,10 +125,6 @@ module.exports = {
         return require('./email-preview');
     },
 
-    get emails() {
-        return require('./emails');
-    },
-
     get snippets() {
         return require('./snippets');
     },
