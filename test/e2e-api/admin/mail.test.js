@@ -1,33 +1,27 @@
-const should = require('should');
-const supertest = require('supertest');
-const sinon = require('sinon');
-const testUtils = require('../../utils');
-const config = require('../../../core/shared/config');
-const mailService = require('../../../core/server/services/mail');
-const localUtils = require('./utils');
+const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
+const {anyEtag} = matchers;
 
 describe('Mail API', function () {
-    let request;
+    let agent;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'invites');
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init('invites');
+        await agent.loginAsOwner();
     });
 
     beforeEach(function () {
-        sinon.stub(mailService.GhostMailer.prototype, 'send').resolves({message: 'sent'});
+        mockManager.mockMail({message: 'sent'});
     });
 
     afterEach(function () {
-        sinon.restore();
+        mockManager.restore();
     });
 
     it('Can send mail', async function () {
-        const res = await request
-            .post(localUtils.API.getApiQuery('mail/'))
-            .set('Origin', config.get('url'))
-            .send({
+        await agent
+            .post('mail/')
+            .body({
                 mail: [{
                     message: {
                         to: 'joe@example.com',
@@ -36,20 +30,31 @@ describe('Mail API', function () {
                     }
                 }]
             })
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
+        mockManager.assert.sentEmail({
+            to: 'joe@example.com',
+            subject: 'testemail'
+        });
+    });
 
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.mail);
-        should.exist(jsonResponse.mail[0].message);
-        should.exist(jsonResponse.mail[0].status);
+    it('Can send a test mail', async function () {
+        // @TODO: either remove this endpoint or fix its response body
+        await agent
+            .post('mail/test')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
 
-        jsonResponse.mail[0].status.should.eql({message: 'sent'});
-        jsonResponse.mail[0].message.subject.should.eql('testemail');
-        mailService.GhostMailer.prototype.send.called.should.be.true();
+        mockManager.assert.sentEmail({
+            to: 'jbloggs@example.com',
+            subject: 'Test Ghost Email'
+        });
     });
 });
