@@ -1,31 +1,80 @@
-const should = require('should');
-const supertest = require('supertest');
-const testUtils = require('../../utils');
-const config = require('../../../core/shared/config');
-const localUtils = require('./utils');
+const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
+const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyErrorId} = matchers;
 
-describe('Email API', function () {
-    let request;
+const matchEmail = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    submitted_at: anyISODateTime
+};
+
+describe('Emails API', function () {
+    let agent;
 
     before(async function () {
-        await localUtils.startGhost();
-        request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'posts', 'emails');
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init('posts', 'emails');
+        await agent.loginAsOwner();
+    });
+
+    beforeEach(function () {
+        mockManager.mockEvents();
+    });
+
+    afterEach(function () {
+        mockManager.restore();
+    });
+
+    it('Can browse emails', async function () {
+        await agent
+            .get('emails')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                emails: new Array(2).fill(matchEmail)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 
     it('Can read an email', async function () {
-        const res = await request
-            .get(localUtils.API.getApiQuery(`emails/${testUtils.DataGenerator.Content.emails[0].id}/`))
-            .set('Origin', config.get('url'))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
+        await agent
+            .get(`emails/${fixtureManager.get('emails', 0).id}/`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                emails: [matchEmail]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse);
-        should.exist(jsonResponse.emails);
-        jsonResponse.emails.should.have.length(1);
-        localUtils.API.checkResponse(jsonResponse.emails[0], 'email');
+    it('Can retry a failed email', async function () {
+        await agent
+            .put(`emails/${fixtureManager.get('emails', 1).id}/retry`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                emails: [matchEmail]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        mockManager.assert.emittedEvent('email.edited');
+    });
+
+    it('Errors when retrying an email that was successful', async function () {
+        await agent
+            .put(`emails/${fixtureManager.get('emails', 0).id}/retry`)
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 });
