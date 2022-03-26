@@ -77,10 +77,6 @@ module.exports = {
         return require('./member-signin-urls');
     },
 
-    get identities() {
-        return require('./identities');
-    },
-
     get images() {
         return require('./images');
     },
