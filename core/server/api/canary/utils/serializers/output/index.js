@@ -73,10 +73,6 @@ module.exports = {
         return require('./tiers');
     },
 
-    get member_signin_urls() {
-        return require('./member-signin-urls');
-    },
-
     get images() {
         return require('./images');
     },
