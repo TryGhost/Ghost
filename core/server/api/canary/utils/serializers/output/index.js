@@ -41,10 +41,6 @@ module.exports = {
         return require('./schedules');
     },
 
-    get webhooks() {
-        return require('./webhooks');
-    },
-
     get posts() {
         return require('./posts');
     },
