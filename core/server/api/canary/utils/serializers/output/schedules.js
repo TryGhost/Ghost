@@ -1,5 +1,5 @@
 module.exports = {
-    all(model, apiConfig, frame) {
-        frame.response = model;
+    all(data, apiConfig, frame) {
+        frame.response = data;
     }
 };
