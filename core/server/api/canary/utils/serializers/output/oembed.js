@@ -1,8 +1,8 @@
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:oembed');
 
 module.exports = {
-    all(res, apiConfig, frame) {
+    all(data, apiConfig, frame) {
         debug('all');
-        frame.response = res;
+        frame.response = data;
     }
 };
