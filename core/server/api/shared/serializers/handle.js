@@ -67,6 +67,19 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
     return sequence(tasks);
 };
 
+const getBestMatchSerializer = function (apiSerializers, docName, method) {
+    if (apiSerializers[docName] && apiSerializers[docName][method]) {
+        debug(`Calling ${docName}.${method}`);
+        return apiSerializers[docName][method].bind(apiSerializers[docName]);
+    } else if (apiSerializers[docName] && apiSerializers[docName].all) {
+        debug(`Calling ${docName}.all`);
+        return apiSerializers[docName].all.bind(apiSerializers[docName]);
+    }
+
+    debug(`Returning as-is`);
+    return false;
+};
+
 /**
  * @description Shared output serialization handler.
  *
@@ -101,33 +114,19 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
         });
     }
 
-    // CASE: custom serializer exists
-    if (apiSerializers[apiConfig.docName]) {
-        if (apiSerializers[apiConfig.docName].all) {
-            tasks.push(function serialiseCustomAll() {
-                return apiSerializers[apiConfig.docName].all(response, apiConfig, frame);
-            });
-        }
+    const customSerializer = getBestMatchSerializer(apiSerializers, apiConfig.docName, apiConfig.method);
+    const defaultSerializer = getBestMatchSerializer(apiSerializers, 'default', apiConfig.method);
 
-        if (apiSerializers[apiConfig.docName][apiConfig.method]) {
-            tasks.push(function serialiseCustomMethod() {
-                return apiSerializers[apiConfig.docName][apiConfig.method](response, apiConfig, frame);
-            });
-        }
-
-    // CASE: Fall back to default serializer
-    } else if (apiSerializers.default) {
-        if (apiSerializers.default.all) {
-            tasks.push(function serializeDefaultAll() {
-                return apiSerializers.default.all(response, apiConfig, frame);
-            });
-        }
-
-        if (apiSerializers.default[apiConfig.method]) {
-            tasks.push(function serializeDefaultMethod() {
-                return apiSerializers.default[apiConfig.method](response, apiConfig, frame);
-            });
-        }
+    if (customSerializer) {
+        // CASE: custom serializer exists
+        tasks.push(function doCustomSerializer() {
+            return customSerializer(response, apiConfig, frame);
+        });
+    } else if (defaultSerializer) {
+        // CASE: Fall back to default serializer
+        tasks.push(function doDefaultSerializer() {
+            return defaultSerializer(response, apiConfig, frame);
+        });
     }
 
     if (apiSerializers.all && apiSerializers.all.after) {
