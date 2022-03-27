@@ -290,6 +290,7 @@ module.exports = function apiRoutes() {
     router.get('/actions', mw.authAdminApi, http(api.actions.browse));
 
     // ## Email Preview
+    // @TODO: rename to email_previews in 5.0
     router.get('/email_preview/posts/:id', mw.authAdminApi, http(api.email_preview.read));
     router.post('/email_preview/posts/:id', mw.authAdminApi, http(api.email_preview.sendTestEmail));
 
