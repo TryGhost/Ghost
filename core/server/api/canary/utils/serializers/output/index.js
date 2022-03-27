@@ -109,8 +109,8 @@ module.exports = {
         return require('./site');
     },
 
-    get email_preview() {
-        return require('./email-preview');
+    get email_previews() {
+        return require('./email-previews');
     },
 
     get snippets() {
