@@ -111,7 +111,7 @@
     "@tryghost/verification-trigger": "0.1.6",
     "@tryghost/version": "0.1.12",
     "@tryghost/vhost-middleware": "1.0.22",
-    "@tryghost/zip": "1.1.21",
+    "@tryghost/zip": "1.1.22",
     "amperize": "0.6.1",
     "analytics-node": "6.0.0",
     "bluebird": "3.7.2",
