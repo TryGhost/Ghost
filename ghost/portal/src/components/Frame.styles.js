@@ -824,10 +824,6 @@ const MobileStyles = `
         margin-bottom: 16px;
     }
 
-    .gh-portal-content {
-        padding: 24px;
-    }
-
     .gh-portal-popup-container footer {
         padding-right: 24px;
         padding-bottom: 24px;

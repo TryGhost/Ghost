@@ -373,7 +373,22 @@ export const ProductsSectionStyles = ({site}) => {
             .gh-portal-product-price .amount {
                 font-size: 3.4rem;
             }
+
+            .gh-portal-product-card {
+                min-width: unset;
+            }
         }
+        
+        @media (max-width: 370px) {
+            .gh-portal-product-price .currency-sign {
+                font-size: 1.8rem;
+            }
+
+            .gh-portal-product-price .amount {
+                font-size: 2.8rem;
+            }
+        }
+
 
         /* Upgrade and change plan*/
         .gh-portal-upgrade-product {
