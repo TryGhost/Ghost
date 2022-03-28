@@ -40,8 +40,8 @@ export default class ChartEmailOpenRate extends Component {
 
     get chartData() {
         const stats = this.dashboardStats.emailOpenRateStats;
-        const labels = stats.map(stat => stat.title);
-        const data = stats.map(stat => stat.email.openRate);
+        const labels = stats.map(stat => stat.subject);
+        const data = stats.map(stat => stat.openRate);
 
         return {
             labels,
