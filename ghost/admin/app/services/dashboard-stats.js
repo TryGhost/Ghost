@@ -379,8 +379,10 @@ export default class DashboardStatsService extends Service {
             this.emailsSent30d = this.dashboardMocks.emailsSent30d;
             return;
         }
-        // Normal implementation
-        // @todo
+        
+        const start30d = new Date(Date.now() - 30 * 3600 * 1000);
+        const result = yield this.store.query('email', {limit: 100, filter: 'submitted_at:>' + start30d.toISOString()});
+        this.emailsSent30d = result.reduce((c, email) => c + email.emailCount, 0);
     }
 
     loadEmailOpenRateStats() {
