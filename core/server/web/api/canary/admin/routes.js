@@ -308,5 +308,9 @@ module.exports = function apiRoutes() {
     router.get('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.browse));
     router.put('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.edit));
 
+    router.get('/newsletters', mw.authAdminApi, http(api.newsletters.browse));
+    router.post('/newsletters', mw.authAdminApi, http(api.newsletters.add));
+    router.put('/newsletters/:id', mw.authAdminApi, http(api.newsletters.edit));
+
     return router;
 };
