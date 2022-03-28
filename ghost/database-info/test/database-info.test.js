@@ -50,4 +50,28 @@ describe('DatabaseInfo', function () {
 
         DatabaseInfo.isMySQL(knex).should.be.true();
     });
+
+    it('recognises sqlite3 config is SQLite3', function () {
+        DatabaseInfo.isSQLiteConfig({
+            client: 'sqlite3'
+        }).should.be.true();
+    });
+
+    it('recognises better-sqlite3 config is SQLite3', function () {
+        DatabaseInfo.isSQLiteConfig({
+            client: 'better-sqlite3'
+        }).should.be.true();
+    });
+
+    it('recognises mysql config is MySQL', function () {
+        DatabaseInfo.isMySQLConfig({
+            client: 'mysql'
+        }).should.be.true();
+    });
+
+    it('recognises mysql2 config is MySQL', function () {
+        DatabaseInfo.isMySQLConfig({
+            client: 'mysql2'
+        }).should.be.true();
+    });
 });
