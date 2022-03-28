@@ -552,7 +552,8 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     border: none;
     color: var(--black);
     font-size: 4.8rem;
-    line-height: 1.15em;
+    letter-spacing: -0.017em;
+    line-height: 1.1em;
     font-weight: 700;
     overflow: hidden;
     box-shadow: none;
