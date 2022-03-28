@@ -470,7 +470,6 @@ export default class OfferPage extends React.Component {
                                 <div className="gh-portal-product-price">
                                     <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
                                     <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
-                                    <span className="billing-period">/year</span>
                                 </div>
                             </div>
                             {this.renderOfferMessage({offer, product})}
