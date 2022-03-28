@@ -210,7 +210,7 @@ export const ProductsSectionStyles = ({site}) => {
             align-self: flex-start;
             font-size: 2.7rem;
             font-weight: 700;
-            line-height: 1.115em;
+            line-height: 1.135em;
         }
 
         .gh-portal-product-price .currency-sign.long {
