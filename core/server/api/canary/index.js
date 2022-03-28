@@ -177,6 +177,10 @@ module.exports = {
         return require('./utils/serializers');
     },
 
+    get newsletters() {
+        return shared.pipeline(require('./newsletters'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
