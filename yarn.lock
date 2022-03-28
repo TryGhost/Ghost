@@ -1913,14 +1913,14 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/image-transform@1.0.28":
-  version "1.0.28"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.28.tgz#403bff8a1970ee62e664b3f7589b5f50fdfd5dd3"
-  integrity sha512-uDBoXn8IoomgA2DS0P2QRhmw2vrjAL0MnVCTe+yR7StDekm/MmNOlh980JxEdHf2Ecn7Br2gaerCpZkJWfMyEQ==
+"@tryghost/image-transform@1.0.29":
+  version "1.0.29"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.0.29.tgz#90b78ee7812d7e48c62e93209cf6987cdcc7e60f"
+  integrity sha512-6smc+xdXAG6FTcWeW+rE8o1qxHgblF4Xmcy8c6zM9zdCNm7y5Ossdo+tGhXux80qMRiCK63GxmZjUZ1ySrnDjQ==
   dependencies:
     "@tryghost/errors" "^1.2.1"
     bluebird "^3.7.2"
-    fs-extra "^9.1.0"
+    fs-extra "^10.0.0"
   optionalDependencies:
     sharp "^0.30.0"
 
