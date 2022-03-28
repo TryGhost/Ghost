@@ -78,6 +78,12 @@ export default class DashboardStatsService extends Service {
         memberCounts = null;
 
     /**
+     * @type {?MemberCounts} Member counts to compare against for trends (30 days ago)
+     */
+    @tracked
+        memberCountsTrend = null;
+
+    /**
      * @type {?MemberCountStat[]}
      */
     @tracked
@@ -171,23 +177,49 @@ export default class DashboardStatsService extends Service {
     @task({restartable: true})
     *_loadMembersCounts() {
         this.memberCounts = null;
+        this.memberCountsTrend = null;
+
         if (this.dashboardMocks.enabled) {
             yield this.dashboardMocks.waitRandom();
             if (this.dashboardMocks.memberCounts === null) {
                 return null;
             }
             this.memberCounts = {...this.dashboardMocks.memberCounts};
+
+            this.memberCountsTrend = {
+                // One percentage up
+                total: Math.round(this.dashboardMocks.memberCounts.total * 1.06),
+                // One percentage down
+                free: Math.round(this.dashboardMocks.memberCounts.free * 0.96),
+                // One percentage =
+                paid: this.dashboardMocks.memberCounts.paid
+            };
             return;
         }
 
         // @todo We need to have way to reduce the total number of API requests
-        const paidResult = yield this.store.query('member', {limit: 1, filter: 'status:paid'});
-        const paid = paidResult.meta.pagination.total;
+        let paidResult = yield this.store.query('member', {limit: 1, filter: 'status:paid'});
+        let paid = paidResult.meta.pagination.total;
 
-        const freeResult = yield this.store.query('member', {limit: 1, filter: 'status:-paid'});
-        const free = freeResult.meta.pagination.total;
+        let freeResult = yield this.store.query('member', {limit: 1, filter: 'status:-paid'});
+        let free = freeResult.meta.pagination.total;
 
         this.memberCounts = {
+            total: paid + free,
+            paid,
+            free
+        };
+
+        // Now fetch trends (30 days ago)
+        const trendDate = new Date(Date.now() - 30 * 60 * 60 * 24 * 1000);
+        
+        paidResult = yield this.store.query('member', {limit: 1, filter: `status:paid+created_at:<'${trendDate.toISOString()}'`});
+        paid = paidResult.meta.pagination.total;
+
+        freeResult = yield this.store.query('member', {limit: 1, filter: `status:-paid+created_at:<'${trendDate.toISOString()}'`});
+        free = freeResult.meta.pagination.total;
+
+        this.memberCountsTrend = {
             total: paid + free,
             paid,
             free
@@ -286,8 +318,8 @@ export default class DashboardStatsService extends Service {
 
         // @todo We need to have way to reduce the total number of API requests
 
-        const start30d = new Date(Date.now() - 30 * 3600 * 1000);
-        const start7d = new Date(Date.now() - 7 * 3600 * 1000);
+        const start30d = new Date(Date.now() - 30 * 86400 * 1000);
+        const start7d = new Date(Date.now() - 7 * 86400 * 1000);
 
         let extraFilter = '';
         if (this.lastSeenFilterStatus === 'paid') {
@@ -379,7 +411,7 @@ export default class DashboardStatsService extends Service {
             return;
         }
         
-        const start30d = new Date(Date.now() - 30 * 3600 * 1000);
+        const start30d = new Date(Date.now() - 30 * 86400 * 1000);
         const result = yield this.store.query('email', {limit: 100, filter: 'submitted_at:>' + start30d.toISOString()});
         this.emailsSent30d = result.reduce((c, email) => c + email.emailCount, 0);
     }
