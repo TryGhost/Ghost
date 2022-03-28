@@ -19,7 +19,11 @@ export default class ChartEmailOpenRate extends Component {
     
     get dataSubscribers() {
         // @todo: show paid, free, total together
-        return this.dashboardStats.newsletterSubscribers?.total ?? 0;
+        return this.dashboardStats.newsletterSubscribers ?? {
+            total: 0,
+            free: 0,
+            paid: 0
+        };
     }
 
     get dataEmailsSent() {

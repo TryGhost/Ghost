@@ -355,8 +355,14 @@ export default class DashboardStatsService extends Service {
             this.newsletterSubscribers = this.dashboardMocks.newsletterSubscribers;
             return;
         }
-        // Normal implementation
-        // @todo
+        
+        const resultPaid = yield this.store.query('member', {limit: 1, filter: 'subscribed:true+status:paid'});
+        const resultFree = yield this.store.query('member', {limit: 1, filter: 'subscribed:true+status:-paid'});
+        this.newsletterSubscribers = {
+            total: resultFree.meta.pagination.total + resultPaid.meta.pagination.total,
+            free: resultFree.meta.pagination.total,
+            paid: resultPaid.meta.pagination.total
+        };
     }
 
     loadEmailsSent() {
