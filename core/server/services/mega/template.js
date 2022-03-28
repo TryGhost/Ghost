@@ -308,6 +308,10 @@ figure blockquote p {
 
 .site-info {
     padding-top: 50px;
+}
+
+.site-info-bordered {
+    padding-top: 50px;
     border-bottom: 1px solid #e5eff5;
 }
 
@@ -1156,7 +1160,7 @@ ${ templateSettings.showBadge ? `
 
                                     ${ templateSettings.showHeaderIcon || templateSettings.showHeaderTitle ? `
                                     <tr>
-                                        <td class="site-info" width="100%" align="center">
+                                        <td class="${templateSettings.showHeaderTitle ? `site-info-bordered` : `site-info`}" width="100%" align="center">
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                                 ${ templateSettings.showHeaderIcon && site.iconUrl ? `
                                                 <tr>
