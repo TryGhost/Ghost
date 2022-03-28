@@ -178,8 +178,19 @@ export default class DashboardStatsService extends Service {
             this.memberCounts = {...this.dashboardMocks.memberCounts};
             return;
         }
-        // Normal implementation
-        // @todo
+
+        // @todo We need to have way to reduce the total number of API requests
+        const paidResult = yield this.store.query('member', {limit: 1, filter: 'status:paid'});
+        const paid = paidResult.meta.pagination.total;
+
+        const freeResult = yield this.store.query('member', {limit: 1, filter: 'status:-paid'});
+        const free = freeResult.meta.pagination.total;
+
+        this.memberCounts = {
+            total: paid + free,
+            paid,
+            free
+        };
     }
 
     loadMemberCountStats() {
@@ -257,8 +268,25 @@ export default class DashboardStatsService extends Service {
             this.membersLastSeen7d = this.dashboardMocks.membersLastSeen7d;
             return;
         }
-        // Normal implementation
-        // @todo
+
+        // @todo We need to have way to reduce the total number of API requests
+
+        const start30d = new Date(Date.now() - 30 * 3600 * 1000);
+        const start7d = new Date(Date.now() - 7 * 3600 * 1000);
+
+        let extraFilter = '';
+        if (this.lastSeenFilterStatus === 'paid') {
+            extraFilter = '+status:paid';
+        } else if (this.lastSeenFilterStatus === 'free') {
+            extraFilter = '+status:-paid';
+        }
+
+        // todo: filter by status here
+        const result30d = yield this.store.query('member', {limit: 1, filter: 'last_seen_at:>' + start30d.toISOString() + extraFilter});
+        this.membersLastSeen30d = result30d.meta.pagination.total;
+
+        const result7d = yield this.store.query('member', {limit: 1, filter: 'last_seen_at:>' + start7d.toISOString() + extraFilter});
+        this.membersLastSeen7d = result7d.meta.pagination.total;
     }
 
     loadPaidMembersByCadence() {
