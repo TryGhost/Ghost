@@ -64,6 +64,8 @@ import {tracked} from '@glimmer/tracking';
 export default class DashboardStatsService extends Service {
     @service dashboardMocks;
     @service store;
+    @service ajax;
+    @service ghostPaths;
 
     /**
      * @type {?SiteStatus} Contains information on what graphs need to be shown
@@ -214,12 +216,15 @@ export default class DashboardStatsService extends Service {
                 // Note: that this shouldn't happen
                 return null;
             }
-            this.memberCountStats = this.fillMissingDates(this.dashboardMocks.memberCountStats.slice(-this.chartDays), {paid: 0, free: 0, comped: 0}, this.chartDays);
+            this.memberCountStats = this.fillMissingDates(this.dashboardMocks.memberCountStats, {paid: 0, free: 0, comped: 0}, this.chartDays);
             return;
         }
 
-        // Normal implementation
-        // @todo
+        // @todo: we need to reuse the result of the call when we reload, because the endpoint returns all available days
+        // at the moment. We can reuse the result to show 7 days, 30 days, ...
+        let statsUrl = this.ghostPaths.url.api('members/stats/count');
+        let stats = yield this.ajax.request(statsUrl);
+        this.memberCountStats = this.fillMissingDates(stats.data, {paid: 0, free: 0, comped: 0}, this.chartDays);
     }
 
     loadMrrStats() {
