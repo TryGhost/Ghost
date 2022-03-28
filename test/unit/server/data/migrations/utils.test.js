@@ -193,8 +193,8 @@ async function setupDb() {
             \`updated_by\` varchar(24) null,
             primary key (\`id\`)
         );
-        CREATE UNIQUE INDEX \`permissions_name_unique\` on \`permissions\` (\`name\`);\`);
     `);
+    await knex.raw(`CREATE UNIQUE INDEX \`permissions_name_unique\` on \`permissions\` (\`name\`);`);
 
     await knex.raw(`
         CREATE TABLE \`permissions_roles\` (
@@ -216,8 +216,8 @@ async function setupDb() {
             \`updated_by\` varchar(24) null,
             primary key (\`id\`)
         );
-        CREATE UNIQUE INDEX \`roles_name_unique\` on \`roles\` (\`name\`);
     `);
+    await knex.raw(`CREATE UNIQUE INDEX \`roles_name_unique\` on \`roles\` (\`name\`);`);
 
     const date = knex.raw('CURRENT_TIMESTAMP');
     await knex('roles').insert({
