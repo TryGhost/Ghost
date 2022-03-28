@@ -93,6 +93,15 @@ module.exports = class DatabaseInfo {
     }
 
     /**
+     * Returns if the config is for SQLite
+     *
+     * @param {object} config
+     */
+    static isSQLiteConfig(config) {
+        return ['sqlite3', 'better-sqlite3'].includes(config.client);
+    }
+
+    /**
      * Returns if the driver used is for MySQL
      *
      * @param {import('knex')} knex
@@ -100,5 +109,14 @@ module.exports = class DatabaseInfo {
     static isMySQL(knex) {
         const driver = knex.client.config.client;
         return ['mysql', 'mysql2'].includes(driver);
+    }
+
+    /**
+     * Returns if the config is for MySQL
+     *
+     * @param {object} config
+     */
+    static isMySQLConfig(config) {
+        return ['mysql', 'mysql2'].includes(config.client);
     }
 };
