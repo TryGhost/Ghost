@@ -2438,15 +2438,15 @@
     extract-zip "2.0.1"
     fs-extra "^9.1.0"
 
-"@tryghost/zip@1.1.21":
-  version "1.1.21"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.21.tgz#52be26305351fd02460f21d8d813ba6321e6a583"
-  integrity sha512-/FAka9iiWB8k3GUR0VAekkPS/N9D7cxnhNOnPbiCt5kZ9Ytf27ivEkD8oWOAta5SWXx0dma968i2dHxVdyh7vw==
+"@tryghost/zip@1.1.22":
+  version "1.1.22"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.22.tgz#389c8c8402ac6ca1700dfa204e28cb979d64051e"
+  integrity sha512-k+AQDTXhGb5+SQ60Dde7/qcfJSBsyqRn9ndxjeCcCK5UWLZ5zqaN5XMk2OKhmG82/ZDgy66yd9R4WUw5g8TZsQ==
   dependencies:
     archiver "^4.0.2"
     bluebird "^3.7.2"
     extract-zip "^2.0.1"
-    fs-extra "^9.1.0"
+    fs-extra "^10.0.0"
 
 "@trysound/sax@0.2.0":
   version "0.2.0"
