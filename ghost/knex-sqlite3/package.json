@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/knex-sqlite3",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/knex-sqlite3",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -25,6 +25,5 @@
     "mocha": "9.2.2",
     "should": "13.2.3",
     "sinon": "13.0.1"
-  },
-  "dependencies": {}
+  }
 }
