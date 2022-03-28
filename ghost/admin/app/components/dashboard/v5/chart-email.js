@@ -39,9 +39,9 @@ export default class ChartEmailOpenRate extends Component {
     }
 
     get chartData() {
-        const stats = this.dashboardStats.emailOpenRateStats.filter(stat => stat.email.deliveredCount > 0);
+        const stats = this.dashboardStats.emailOpenRateStats;
         const labels = stats.map(stat => stat.title);
-        const data = stats.map(stat => stat.email.openedCount / stat.email.deliveredCount * 100);
+        const data = stats.map(stat => stat.email.openRate);
 
         return {
             labels,
