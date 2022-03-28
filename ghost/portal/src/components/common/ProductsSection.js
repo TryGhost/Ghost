@@ -524,7 +524,7 @@ function FreeProductCard({products, handleChooseSignup}) {
 
     let cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
     const product = getFreeProduct({site});
-    const freeProductDescription = getFreeTierDescription({site});
+    let freeProductDescription = getFreeTierDescription({site});
 
     let disabled = (action === 'signup:running') ? true : false;
 
@@ -541,13 +541,17 @@ function FreeProductCard({products, handleChooseSignup}) {
     }
 
     const hasOnlyFree = hasOnlyFreeProduct({site});
+    const freeBenefits = getFreeProductBenefits({site});
 
     if (hasOnlyFree) {
-        const freeBenefits = getFreeProductBenefits({site});
         if (!freeProductDescription && !freeBenefits.length) {
             return null;
         }
         cardClass += ' only-free';
+    }
+
+    if (!freeProductDescription && !freeBenefits.length) {
+        freeProductDescription = 'Free preview';
     }
 
     return (
@@ -602,6 +606,11 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
         disabled = true;
     }
 
+    let productDescription = product.description;
+    if ((!product.benefits || !product.benefits.length) && !productDescription) {
+        productDescription = 'Full access';
+    }
+
     return (
         <>
             <div className={cardClass} key={product.id} onClick={(e) => {
@@ -614,7 +623,9 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
                 </div>
                 <div className='gh-portal-product-card-details'>
                     <div className='gh-portal-product-card-detaildata'>
-                        {product.description ? <div className="gh-portal-product-description">{product.description}</div> : ''}
+                        <div className="gh-portal-product-description">
+                            {productDescription}
+                        </div>
                         <ProductBenefitsContainer product={product} />
                     </div>
                     <div className='gh-portal-btn-product'>
