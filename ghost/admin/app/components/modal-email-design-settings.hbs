@@ -206,7 +206,7 @@
                             </div>
                         {{/if}}
                         {{#if this.showHeader}}
-                            <div class="gh-members-emailpreview-header">
+                            <div class={{if this.showHeaderTitle "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}}>
                                 {{#if (and this.settings.icon this.showHeaderIcon)}}
                                     <img src={{this.settings.icon}} />
                                 {{/if}}

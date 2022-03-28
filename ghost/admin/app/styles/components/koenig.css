@@ -61,42 +61,57 @@
 .koenig-editor__editor h5,
 .koenig-editor__editor h6 {
     font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--black);
+}
+
+.koenig-editor__editor h1 strong,
+.koenig-editor__editor h2 strong,
+.koenig-editor__editor h3 strong,
+.koenig-editor__editor h4 strong,
+.koenig-editor__editor h5 strong,
+.koenig-editor__editor h6 strong {
+    font-weight: 800;
 }
 
 /* H1 should be almost the same size as the post title to suggest avoid using it */
 .koenig-editor__editor h1 {
     font-size: 4.4rem;
     line-height: 1.15em;
+    letter-spacing: -0.015em;
 }
 
 .koenig-editor__editor h2 {
     font-size: 3.2rem;
-    line-height: 1.32em;
+    line-height: 1.2em;
+    letter-spacing: -0.014em;
 }
 
 .koenig-editor__editor h3 {
     font-size: 2.5rem;
-    line-height: 1.35em;
+    line-height: 1.3em;
+    letter-spacing: -0.013em;
 }
 
 /* H4 is almost the same size as H3 to discourage using it */
 .koenig-editor__editor h4 {
     font-size: 2.2rem;
-    line-height: 1.4em;
+    line-height: 1.35em;
+    letter-spacing: -0.011em;
 }
 
 .koenig-editor__editor h5 {
     font-size: 2.0rem;
-    line-height: 1.4em;
+    line-height: 1.35em;
     font-weight: 700;
+    letter-spacing: -0.011em;
 }
 
 .koenig-editor__editor h6 {
     font-size: 1.85rem;
-    line-height: 1.6em;
+    line-height: 1.4em;
     font-weight: 700;
+    letter-spacing: -0.008em;
 }
 
 .koenig-editor__editor p + h1,

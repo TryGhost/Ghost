@@ -1827,9 +1827,13 @@ p.gh-members-import-errordetail:first-of-type {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 50px 0;
-    border-bottom: 1px solid #e5eff5;
     margin-bottom: -10px;
+    padding: 50px 0 0;
+}
+
+.gh-members-emailpreview-header.bordered {
+    border-bottom: 1px solid #e5eff5;
+    padding: 50px 0;
 }
 
 .gh-members-emailpreview-header.hide {
@@ -1866,7 +1870,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-members-emailpreview-title h2 {
     font-size: 4.2rem;
     line-height: 1.1em;
-    font-weight: 600;
+    font-weight: 700;
     text-align: center;
     margin: 0;
     padding: 0 0 10px;
