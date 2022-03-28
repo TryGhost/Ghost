@@ -10,7 +10,7 @@ import {formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePric
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
         font-size: 3.2rem;
-        margin-top: 32px;
+        margin-top: 44px;
     }
 
     .gh-portal-accountplans-main {

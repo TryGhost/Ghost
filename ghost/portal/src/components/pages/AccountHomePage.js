@@ -110,6 +110,24 @@ export const AccountHomePageStyles = `
         margin-right: 5px;
         z-index: 999;
     }
+
+    @media (max-width: 390px) {   
+        .gh-portal-account-footer {
+            padding: 0 !important;
+        }
+    }
+
+    @media (max-width: 340px) {
+        .gh-portal-account-footer {
+            padding: 0 !important;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .gh-portal-account-footer .gh-portal-account-footerright {
+            justify-content: flex-start;
+        }
+    }
 `;
 
 const UserAvatar = ({avatar, brandColor}) => {
