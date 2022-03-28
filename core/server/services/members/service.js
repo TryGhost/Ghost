@@ -19,6 +19,7 @@ const VerificationTrigger = require('@tryghost/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');
 const {LastSeenAtUpdater} = require('@tryghost/members-events-service');
 const events = require('../../lib/common/events');
+const DatabaseInfo = require('@tryghost/database-info');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -37,7 +38,7 @@ const membersConfig = new MembersConfigProvider({
 const membersStats = new MembersStats({
     db: db,
     settingsCache: settingsCache,
-    isSQLite: config.get('database:client') === 'sqlite3'
+    isSQLite: DatabaseInfo.isSQLite(db.knex)
 });
 
 let membersApi;
