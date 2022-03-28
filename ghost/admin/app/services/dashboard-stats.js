@@ -243,12 +243,23 @@ export default class DashboardStatsService extends Service {
             if (this.dashboardMocks.mrrStats === null) {
                 return null;
             }
-            this.mrrStats = this.fillMissingDates(this.dashboardMocks.mrrStats.slice(-this.chartDays), {mrr: 0}, this.chartDays);
+            this.mrrStats = this.fillMissingDates(this.dashboardMocks.mrrStats, {mrr: 0}, this.chartDays);
             return;
         }
 
-        // Normal implementation
-        // @todo
+        // @todo: we need to reuse the result of the call when we reload, because the endpoint returns all available days
+        // at the moment. We can reuse the result to show 7 days, 30 days, ...
+        let statsUrl = this.ghostPaths.url.api('members/stats/mrr');
+        let stats = yield this.ajax.request(statsUrl);
+
+        // @todo: add proper support for all different currencies that are returned
+        this.mrrStats = this.fillMissingDates(
+            stats.data[0].data.map((d) => {
+                return {date: d.date, mrr: d.value};
+            }), 
+            {mrr: 0}, 
+            this.chartDays
+        );
     }
 
     loadLastSeen() {
