@@ -59,4 +59,4 @@ gulpfile.js
 package-lock.json
 content/themes/casper/config.*.json
 config.*.json
-!core/server/config/env/**
+!core/shared/config/env/**
