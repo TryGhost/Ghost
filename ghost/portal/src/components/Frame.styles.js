@@ -803,6 +803,11 @@ const MobileStyles = `
         margin-bottom: 0;
     }
 
+    .gh-portal-popup-container.preview:not(.full-size).offer {
+        max-height: 860px;
+        padding-bottom: 0 !important;
+    }
+
     .gh-portal-popup-wrapper.preview.full-size {
         height: unset;
         max-height: 660px;
