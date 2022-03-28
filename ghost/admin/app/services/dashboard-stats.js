@@ -30,12 +30,11 @@ import {tracked} from '@glimmer/tracking';
  */
 
 /**
- * @todo: THIS ONE IS TEMPORARY
- * @typedef EmailOpenRateStat (Will be the same as post model probably)
+ * @typedef EmailOpenRateStat
  * @type {Object}
- * @property {string} id Post id
- * @property {string} title Post title
- * @property {?Object} Email model
+ * @property {string} subject Email title
+ * @property {number} openRate Email openRate
+ * @property {Date} submittedAt Date
  */
 
 /**
@@ -400,8 +399,37 @@ export default class DashboardStatsService extends Service {
             return;
         }
 
-        const posts = yield this.store.query('post', {limit: 5, filter: 'status:published', order: 'published_at desc'});
-        this.emailOpenRateStats = posts;
+        const limit = 8;
+        let query = {
+            filter: 'email_count:-0',
+            order: 'submitted_at desc',
+            limit: limit
+        };
+        const results = yield this.store.query('email', query);
+        const data = results.toArray();
+        let stats = data.map((d) => {
+            return {
+                subject: d.subject,
+                submittedAt: moment(d.submittedAtUTC).format('YYYY-MM-DD'),
+                openRate: d.openRate
+            };
+        });
+
+        const paddedResults = [];
+        if (data.length < limit) {
+            const pad = limit - data.length;
+            const lastSubmittedAt = data.length > 0 ? data[results.length - 1].submittedAtUTC : moment();
+            for (let i = 0; i < pad; i++) {
+                paddedResults.push({
+                    subject: '',
+                    submittedAt: moment(lastSubmittedAt).subtract(i + 1, 'days').format('YYYY-MM-DD'),
+                    openRate: 0
+                });
+            }
+        }
+        stats = stats.concat(paddedResults);
+        stats.reverse();
+        this.emailOpenRateStats = stats;
     }
 
     /**
