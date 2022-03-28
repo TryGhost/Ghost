@@ -377,6 +377,10 @@ export const ProductsSectionStyles = ({site}) => {
             .gh-portal-product-card {
                 min-width: unset;
             }
+
+            .gh-portal-btn-product {
+                position: static;
+            }
         }
         
         @media (max-width: 370px) {
