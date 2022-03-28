@@ -4,7 +4,9 @@
 <div class="gh-dashboard5-container gh-dashboard5-email">
     <div class="gh-dashboard5-box">
         <h4 class="gh-dashboard5-metric">Newsletter subscribers</h4>
-        <div class="gh-dashboard5-number is-small">{{this.dataSubscribers}}</div>
+        <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.total}}</div>
+        <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.paid}} paid</div>
+        <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.free}} free</div>
         <div class="gh-dashboard5-percentage is-positive">+2.2%</div>
     </div>
 
