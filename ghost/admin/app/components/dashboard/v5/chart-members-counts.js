@@ -21,4 +21,31 @@ export default class ChartMembersCounts extends Component {
     get freeMembers() {
         return this.dashboardStats.memberCounts?.free ?? 0;
     }
+
+    get hasTrends() {
+        return this.dashboardStats.memberCounts !== null && this.dashboardStats.memberCountsTrend !== null;
+    }
+
+    get totalMembersTrend() {
+        return this.calculatePercentage(this.dashboardStats.memberCountsTrend.total, this.dashboardStats.memberCounts.total);
+    }
+
+    get paidMembersTrend() {
+        return this.calculatePercentage(this.dashboardStats.memberCountsTrend.paid, this.dashboardStats.memberCounts.paid);
+    }
+
+    get freeMembersTrend() {
+        return this.calculatePercentage(this.dashboardStats.memberCountsTrend.free, this.dashboardStats.memberCounts.free);
+    }
+
+    calculatePercentage(from, to) {
+        if (from === 0) {
+            if (to > 0) {
+                return 100;
+            }
+            return 0;
+        }
+
+        return Math.round((to - from) / from * 100);
+    }
 }
