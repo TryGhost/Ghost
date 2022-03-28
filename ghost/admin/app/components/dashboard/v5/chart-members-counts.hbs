@@ -5,16 +5,22 @@
     <div class="gh-dashboard5-box">
         <h4 class="gh-dashboard5-metric">{{gh-pluralize this.totalMembers "Total member" without-count=true}}</h4>
         <div class="gh-dashboard5-number">{{format-number this.totalMembers}}</div>
-        <div class="gh-dashboard5-percentage is-positive">+2.2%</div>
+        {{#if this.hasTrends}}
+            <Dashboard::v5::parts::ChartPercentage @percentage={{this.totalMembersTrend}}/>
+        {{/if}}
     </div>
     <div class="gh-dashboard5-box">
         <h4 class="gh-dashboard5-metric">{{gh-pluralize this.paidMembers "Paid member" without-count=true}}</h4>
         <div class="gh-dashboard5-number">{{format-number this.paidMembers}}</div>
-        <div class="gh-dashboard5-percentage is-positive">+3.3%</div>
+        {{#if this.hasTrends}}
+            <Dashboard::v5::parts::ChartPercentage @percentage={{this.paidMembersTrend}}/>
+        {{/if}}
     </div>
     <div class="gh-dashboard5-box">
         <h4 class="gh-dashboard5-metric">{{gh-pluralize this.freeMembers "Free member" without-count=true}}</h4>
         <div class="gh-dashboard5-number">{{format-number this.freeMembers}}</div>
-        <div class="gh-dashboard5-percentage is-negative">-1.1%</div>
+        {{#if this.hasTrends}}
+            <Dashboard::v5::parts::ChartPercentage @percentage={{this.freeMembersTrend}}/>
+        {{/if}}
     </div>
 </div>
