@@ -557,8 +557,9 @@ const FrameStyles = `
     letter-spacing: 0.3px;
     line-height: 1.3em;
     padding: 0;
-    margin: 5px 0 0;
+    margin: 5px 8px 0 0;
     color: var(--grey6);
+    word-break: break-all;
 }
 
 .gh-portal-list-detail .old-price {
@@ -709,7 +710,8 @@ const MobileStyles = `
 
     button[class="gh-portal-btn"],
     .gh-portal-btn-main,
-    .gh-portal-btn-primary {
+    .gh-portal-btn-primary,
+    .gh-portal-btn-branded {
         height: 42px;
     }
 }
@@ -750,6 +752,10 @@ const MobileStyles = `
 }
 
 @media (max-width: 480px) {
+    .gh-portal-detail-header {
+        margin-top: 4px;
+    }
+
     .gh-portal-popup-wrapper {
         height: 100%;
         padding: 0;
@@ -816,27 +822,29 @@ const MobileStyles = `
         margin-bottom: 32px;
         padding-bottom: 0;
     }
+
+    .gh-portal-powered {
+        padding-top: 12px;
+        padding-bottom: 24px;
+    }
 }
 
 @media (max-width: 390px) {
+    .gh-portal-popup-container:not(.account-plan) .gh-portal-detail-header .gh-portal-main-title {
+        font-size: 2.1rem;
+        margin-top: 1px;
+        padding: 0 74px;
+        text-align: center;
+    }
+
     .gh-portal-input {
         font-size: 1.4rem;
         margin-bottom: 16px;
     }
 
-    .gh-portal-popup-container footer {
-        padding-right: 24px;
-        padding-bottom: 24px;
-        padding-left: 24px;
-    }
-
     .gh-portal-signup-header,
     .gh-portal-signin-header {
         padding-bottom: 16px;
-    }
-
-    .gh-portal-powered {
-        padding-top: 12px;
     }
 }
 
