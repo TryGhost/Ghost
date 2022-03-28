@@ -215,29 +215,20 @@ export default class DashboardMocksService extends Service {
 
         this.emailOpenRateStats = [
             {
-                id: '23424',
-                title: '💸 The best way to get paid to create',
-                email: {
-                    openedCount: 518,
-                    deliveredCount: 1234
-                }
+                subject: '💸 The best way to get paid to create',
+                openRate: 58,
+                submittedAt: new Date()
             },
             {
-                id: '23425',
-                title: '🎒How to start a blog and make money',
-                email: {
-                    openedCount: 100,
-                    deliveredCount: 900
-                }
+                subject: '🎒How to start a blog and make money',
+                openRate: 42,
+                submittedAt: new Date()
             }
             ,
             {
-                id: '23426',
-                title: 'How to turn your amateur blogging into a real business',
-                email: {
-                    openedCount: 500,
-                    deliveredCount: 1600
-                }
+                subject: 'How to turn your amateur blogging into a real business',
+                openRate: 89,
+                submittedAt: new Date()
             }
         ];
 
