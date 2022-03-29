@@ -20,8 +20,6 @@ module.exports = {
     importCSV: createSerializer('importCSV', passthrough),
     memberStats: createSerializer('memberStats', passthrough),
     mrrStats: createSerializer('mrrStats', passthrough),
-    subscriberStats: createSerializer('subscriberStats', passthrough),
-    grossVolumeStats: createSerializer('grossVolumeStats', passthrough),
     activityFeed: createSerializer('activityFeed', passthrough)
 };
 
