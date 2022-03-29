@@ -49,20 +49,61 @@ export default class ChartEmailOpenRate extends Component {
                 data,
                 fill: false,
                 backgroundColor: '#14b8ff',
-                tension: 0.1
+                tension: 0.1,
+                cubicInterpolationMode: 'monotone',
+                fill: false,
+                pointRadius: 0,
+                pointHitRadius: 10,
+                borderColor: '#14b8ff',
+                borderJoinStyle: 'miter',
+                maxBarThickness: 20,
+                minBarLength: 2
             }]
         };
     }
 
     get chartOptions() {
         return {
+            title: {
+                display: false
+            },
             legend: {
                 display: false
+            },
+            scales: {
+                yAxes: [{
+                    gridLines: {
+                        drawTicks: false,
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        display: false,
+                        maxTicksLimit: 5,
+                        fontColor: '#7C8B9A',
+                        padding: 8,
+                        precision: 0
+                    }
+                }],
+                xAxes: [{
+                    gridLines: {
+                        drawTicks: false,
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        display: false,
+                        maxTicksLimit: 5,
+                        autoSkip: true,
+                        maxRotation: 0,
+                        minRotation: 0
+                    }
+                }]
             }
         };
     }
 
     get chartHeight() {
-        return 100;
+        return 175;
     }
 }

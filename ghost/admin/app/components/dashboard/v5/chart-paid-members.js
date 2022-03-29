@@ -34,22 +34,75 @@ export default class ChartPaidMembers extends Component {
             datasets: [
                 {
                     data: newData,
-                    fill: false,
+                    fill: true,
                     backgroundColor: '#14b8ff',
-                    tension: 0.1
+                    tension: 0.1,
+                    borderWidth: 0,
+                    barThickness: 10,
+                    minBarLength: 3
                 },{
                     data: canceledData,
-                    fill: false,
+                    fill: true,
                     backgroundColor: '#E16262',
-                    tension: 0.1
+                    tension: 0.1,
+                    borderWidth: 0,
+                    barThickness: 10,
+                    minBarLength: 3
                 }]
         };
     }
 
     get chartOptions() {
         return {
+            title: {
+                display: false
+            },
             legend: {
                 display: false
+            },
+            scales: {
+                yAxes: [{
+                    gridLines: {
+                        drawTicks: false,
+                        display: true,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        display: false,
+                        maxTicksLimit: 5,
+                        fontColor: '#7C8B9A',
+                        padding: 8,
+                        precision: 0
+                    }
+                }],
+                xAxes: [{
+                    gridLines: {
+                        drawTicks: false,
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        display: false,
+                        maxTicksLimit: 5,
+                        autoSkip: true,
+                        maxRotation: 0,
+                        minRotation: 0
+                    },
+                    type: 'time',
+                    time: {
+                      displayFormats: {
+                         'millisecond': 'MMM DD',
+                         'second': 'MMM DD',
+                         'minute': 'MMM DD',
+                         'hour': 'MMM DD',
+                         'day': 'MMM DD',
+                         'week': 'MMM DD',
+                         'month': 'MMM DD',
+                         'quarter': 'MMM DD',
+                         'year': 'MMM DD',
+                      }
+                    }
+                }]
             }
         };
     }
