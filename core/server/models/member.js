@@ -3,6 +3,7 @@ const uuid = require('uuid');
 const _ = require('lodash');
 const config = require('../../shared/config');
 const crypto = require('crypto');
+const errors = require('@tryghost/errors');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -296,6 +297,19 @@ const Member = ghostBookshelf.Model.extend({
         }
 
         return attrs;
+    },
+
+    customQuery(qb, options) {
+        if (options.aggregateStatusCounts) {
+            if (options.limit || options.filter) {
+                throw new errors.IncorrectUsageError({message: 'aggregateStatusCounts does not work when passed a filter or limit'});
+            }
+            const knex = ghostBookshelf.knex;
+            return qb.clear('select')
+                .select('status')
+                .select(knex.raw(`count(*) as count`))
+                .groupBy('status');
+        }
     }
 }, {
     /**
@@ -308,6 +322,10 @@ const Member = ghostBookshelf.Model.extend({
 
         if (['findPage', 'findAll'].includes(methodName)) {
             options = options.concat(['search']);
+        }
+
+        if (methodName === 'findAll') {
+            options = options.concat('aggregateStatusCounts');
         }
 
         return options;
