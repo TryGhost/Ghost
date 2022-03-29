@@ -199,7 +199,7 @@ class PopupContent extends React.Component {
                         <CookieDisabledBanner message={cookieBannerText} />
                         {this.renderPopupNotification()}
                         {this.renderActivePage()}
-                        {(popupSize === 'full' ? 
+                        {(popupSize === 'full' ?
                             <div className={'gh-portal-powered inside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
                                 <PoweredBy />
                             </div>
@@ -252,7 +252,10 @@ export default class PopupModal extends React.Component {
             }
         ` + FrameStyle;
         return (
-            <style dangerouslySetInnerHTML={{__html: styles}} />
+            <>
+                <style dangerouslySetInnerHTML={{__html: styles}} />
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+            </>
         );
     }
 
