@@ -232,6 +232,46 @@ async function clearPopupNotification() {
     };
 }
 
+async function showPopupNotification({data, state}) {
+    let {action, message = ''} = data;
+    action = action || 'showPopupNotification:success';
+    return {
+        popupNotification: createPopupNotification({
+            type: action,
+            autoHide: true,
+            closeable: true,
+            state,
+            status: 'success',
+            message
+        })
+    };
+}
+
+async function updateNewsletterPreference({data, state}) {
+    try {
+        const {newsletter} = data;
+        if (!newsletter) {
+            return {};
+        }
+        await new Promise(r => setTimeout(r, 2000));
+
+        const action = 'updateNewsletterPref:success';
+        return {
+            action,
+            member: state.member
+        };
+    } catch (e) {
+        return {
+            action: 'updateNewsletterPref:failed',
+            popupNotification: createPopupNotification({
+                type: 'updateNewsletter:failed',
+                autoHide: true, closeable: true, state, status: 'error',
+                message: 'Failed to update newsletter settings'
+            })
+        };
+    }
+}
+
 async function updateNewsletter({data, state, api}) {
     try {
         const {subscribed} = data;
@@ -398,7 +438,9 @@ const Actions = {
     refreshMemberData,
     clearPopupNotification,
     editBilling,
-    checkoutPlan
+    checkoutPlan,
+    updateNewsletterPreference,
+    showPopupNotification
 };
 
 /** Handle actions in the App, returns updated state */
