@@ -1431,17 +1431,6 @@
     component-type "^1.2.1"
     join-component "^1.1.0"
 
-"@sentry/core@6.19.1":
-  version "6.19.1"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.19.1.tgz#9672d0d19d4fe438be6e186b2b10a79826f19a03"
-  integrity sha512-ZSIFnwYCzABK1jX1iMwUbaAoWbbJear0wM+gSZvJpSUJ1dAXV1OZyL7kXtEJRtATahIlcrMou5ewIoeJizeWAw==
-  dependencies:
-    "@sentry/hub" "6.19.1"
-    "@sentry/minimal" "6.19.1"
-    "@sentry/types" "6.19.1"
-    "@sentry/utils" "6.19.1"
-    tslib "^1.9.3"
-
 "@sentry/core@6.19.2":
   version "6.19.2"
   resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.19.2.tgz#dd35ba6ca41a2dd011c43f732bcdadbb52c06376"
@@ -1453,15 +1442,6 @@
     "@sentry/utils" "6.19.2"
     tslib "^1.9.3"
 
-"@sentry/hub@6.19.1":
-  version "6.19.1"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.19.1.tgz#bff9ed5885b6e0eb4280774b653fa05edec6ed07"
-  integrity sha512-BgUwdxxXntGohAYrXtYrYBA6QzOeRz3NINuS838n7SRTkGf9gBJ/Rd3dyOWUrzJciKty7rmvYIwTA0oo91AMkw==
-  dependencies:
-    "@sentry/types" "6.19.1"
-    "@sentry/utils" "6.19.1"
-    tslib "^1.9.3"
-
 "@sentry/hub@6.19.2":
   version "6.19.2"
   resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.19.2.tgz#0e9f9c507e55d8396002f644b43ef27cc9ff1289"
@@ -1471,15 +1451,6 @@
     "@sentry/utils" "6.19.2"
     tslib "^1.9.3"
 
-"@sentry/minimal@6.19.1":
-  version "6.19.1"
-  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.19.1.tgz#d6fc92bd683ae7db207ad9666084307311881dcb"
-  integrity sha512-Xre3J6mjWEcQhDmQ3j4g71J8f0nDgg2p7K41SngibfZVYSOe8jAowxSI9JuWD7juuwT5GVRVCqLs+Y6mWDBaoQ==
-  dependencies:
-    "@sentry/hub" "6.19.1"
-    "@sentry/types" "6.19.1"
-    tslib "^1.9.3"
-
 "@sentry/minimal@6.19.2":
   version "6.19.2"
   resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.19.2.tgz#e748541e4adbc7e80a3b6ccaf01b631c17fc44b4"
@@ -1487,20 +1458,6 @@
   dependencies:
     "@sentry/hub" "6.19.2"
     "@sentry/types" "6.19.2"
-    tslib "^1.9.3"
-
-"@sentry/node@6.19.1":
-  version "6.19.1"
-  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-6.19.1.tgz#807f9011dbac37370b49759c6d803c6026b4adfb"
-  integrity sha512-ipPWFY+1gNZlt99QHInP+Z70W7nYeBEEiVDtpxSMid5zFzPJ/k9QOZtUzyelyiSCBvIIeTzVX9Fyri17fay1Pw==
-  dependencies:
-    "@sentry/core" "6.19.1"
-    "@sentry/hub" "6.19.1"
-    "@sentry/types" "6.19.1"
-    "@sentry/utils" "6.19.1"
-    cookie "^0.4.1"
-    https-proxy-agent "^5.0.0"
-    lru_map "^0.3.3"
     tslib "^1.9.3"
 
 "@sentry/node@6.19.2":
@@ -1517,23 +1474,10 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
-"@sentry/types@6.19.1":
-  version "6.19.1"
-  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.19.1.tgz#684a231f8fe10c9cf14f9552f5da0a4492e6fdbc"
-  integrity sha512-ovmNYdqD2MKLmru4calxetX1xjJdYim+HEI/GzwvVUYshsaXRq4EiQ17h3DAy90MV7JH279PmMoPGDTOpufq+Q==
-
 "@sentry/types@6.19.2":
   version "6.19.2"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.19.2.tgz#0219c9da21ed975951108b8541913b1966464435"
   integrity sha512-XO5qmVBdTs+7PdCz7fAwn1afWxSnRE2KLBFg5/vOdKosPSSHsSHUURSkxiEZc2QsR+JpRB4AeQ26AkIRX38qTg==
-
-"@sentry/utils@6.19.1":
-  version "6.19.1"
-  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.19.1.tgz#9d5f50a0ceb60b63631de88b4abed07253568209"
-  integrity sha512-mWcQbQ1yO7PooLpJpQK84+wOfxGeb8iUKRb8inO+2Eg6VksDbXRuJ89Yd4APBTRxBj5Wihy48bPuVfKtovtm8g==
-  dependencies:
-    "@sentry/types" "6.19.1"
-    tslib "^1.9.3"
 
 "@sentry/utils@6.19.2":
   version "6.19.2"
@@ -1904,14 +1848,6 @@
   dependencies:
     "@tryghost/errors" "^1.2.7"
     "@tryghost/request" "^0.1.20"
-
-"@tryghost/ignition-errors@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/ignition-errors/-/ignition-errors-0.1.8.tgz#6d4c4d4e02d32403ca1e574eaa91b3c0d138d6f6"
-  integrity sha512-4KYU+kDXZyP7tmzyHiUkfDy9RWxKAtA/6xTGdxYHurE5ZlT++cDDfdUtF0v3308GGUzKlBzRc3jmLjDYpngcBQ==
-  dependencies:
-    lodash "^4.17.21"
-    uuid "^8.3.2"
 
 "@tryghost/image-transform@1.0.29":
   version "1.0.29"
@@ -2427,16 +2363,6 @@
   version "1.0.22"
   resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.22.tgz#22b9de3f6854a5f0c7d14acbb20abae789300cd7"
   integrity sha512-MBNe1i6wWGJamm/aaVAujJEQ04J/MKzxGC2hvnaWYkYTPA9PESecTsI2IEBN3RbInI1ozOSQxtjNcdHMIYkzUg==
-
-"@tryghost/zip@1.1.20":
-  version "1.1.20"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.20.tgz#58b214f3ddbef89f2ea966c6d9c8f02c083372ff"
-  integrity sha512-vjk0lZEcFJTFPIjlpkMuy3IHvXOFCxFzTHtTV/nTaE+SSnJy6FktqCOquViloqFT6i7H+nFp2aNx/vW4Rnk4kA==
-  dependencies:
-    archiver "^4.0.2"
-    bluebird "^3.7.2"
-    extract-zip "2.0.1"
-    fs-extra "^9.1.0"
 
 "@tryghost/zip@1.1.22":
   version "1.1.22"
@@ -5785,7 +5711,7 @@ fs-extra@10.0.1, fs-extra@^10.0.0:
     jsonfile "^6.0.1"
     universalify "^2.0.0"
 
-fs-extra@9.1.0, fs-extra@^9.1.0:
+fs-extra@9.1.0:
   version "9.1.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-9.1.0.tgz#5954460c764a8da2094ba3554bf839e6b9a7c86d"
   integrity sha512-hcg3ZmepS30/7BSFqRvoo3DOMQu7IjqxO5nCDt+zM9XWjb33Wg7ziNT+Qvqbuc3+gWpzO02JubVyk2G4Zvo1OQ==
@@ -6313,19 +6239,19 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.24.0:
-  version "4.24.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.24.0.tgz#0fb550d5b94903640c0f8ef63ef1822a6efba5f9"
-  integrity sha512-fJ4LCj9C0kxSA6CTLv3qUSXHV8XXCtCFyhNTRuusJoZUmUrkyE+DRuJLAUb77fyjrT9vXN/lYWOgD6zEdxxQVw==
+gscan@4.25.3:
+  version "4.25.3"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.25.3.tgz#fcd3f93a003442dcb75ed6df988dc4329d43037a"
+  integrity sha512-/C8JorPtIOkAbmf1UyNmszjg7pqO1CxxCjwwPsjG63O9RJZuByR5dgXVdRQYhxRT7uQJmkCzNXVhQMq3OpZ5UQ==
   dependencies:
-    "@sentry/node" "6.19.1"
+    "@sentry/node" "6.19.2"
     "@tryghost/config" "0.2.2"
     "@tryghost/debug" "0.1.11"
-    "@tryghost/ignition-errors" "0.1.8"
-    "@tryghost/logging" "2.0.4"
+    "@tryghost/errors" "1.2.7"
+    "@tryghost/logging" "2.1.1"
     "@tryghost/pretty-cli" "1.2.24"
     "@tryghost/server" "0.1.4"
-    "@tryghost/zip" "1.1.20"
+    "@tryghost/zip" "1.1.22"
     bluebird "3.7.2"
     chalk "4.1.2"
     common-tags "1.8.2"
