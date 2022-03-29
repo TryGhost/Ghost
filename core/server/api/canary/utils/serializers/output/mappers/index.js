@@ -7,6 +7,7 @@ module.exports = {
     pages: require('./pages'),
     posts: require('./posts'),
     settings: require('./settings'),
+    snippets: require('./snippets'),
     tags: require('./tags'),
     users: require('./users')
 };
