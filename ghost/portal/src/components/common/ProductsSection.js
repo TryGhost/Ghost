@@ -382,7 +382,7 @@ export const ProductsSectionStyles = ({site}) => {
                 position: static;
             }
         }
-        
+
         @media (max-width: 370px) {
             .gh-portal-product-price .currency-sign {
                 font-size: 1.8rem;
@@ -604,7 +604,7 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
     const {action} = useContext(AppContext);
 
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
-    let disabled = (action === 'signup:running') ? true : false;
+    let disabled = (['signup:running', 'checkoutPlan:running'].includes(action)) ? true : false;
 
     if (isCookiesDisabled()) {
         disabled = true;
