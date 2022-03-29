@@ -1,21 +1,23 @@
-<div class="gh-dashboard5-header">
-    <h3 {{did-insert this.loadCharts}}>Email</h3>
-</div>
-<div class="gh-dashboard5-container gh-dashboard5-email">
+<h3 {{did-insert this.loadCharts}}>Email</h3>
+<div class="gh-dashboard5-insert">
     <div class="gh-dashboard5-box">
-        <h4 class="gh-dashboard5-metric">Newsletter subscribers</h4>
-        <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.total}}</div>
-        <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.paid}} paid</div>
-        <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.free}} free</div>
+        {{!-- <h4 class="gh-dashboard5-metric">Newsletter subscribers</h4> --}}
+        {{!-- <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.total}}</div> --}}
+        {{!-- <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.paid}} paid</div> --}}
+        {{!-- <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.free}} free</div> --}}
+
+        <h4 class="gh-dashboard5-metric is-split">Email</h4>
+        <div class="gh-dashboard5-number">{{format-number this.dataSubscribers.total}}</div>
+        <small class="gh-dashboard5-info">Newsletter subscribers</small>
     </div>
 
     <div class="gh-dashboard5-box">
-        <h4 class="gh-dashboard5-metric">Emails sent in the past 30 days</h4>
-        <div class="gh-dashboard5-number is-small">{{format-number this.dataEmailsSent}}</div>
+        <h4 class="gh-dashboard5-metric is-split">&nbsp;</h4>
+        <div class="gh-dashboard5-number">{{format-number this.dataEmailsSent}}</div>
+        <small class="gh-dashboard5-info">Sent in the past 30 days</small>
     </div>
 
     <div class="gh-dashboard5-box">
-        <h4 class="gh-dashboard5-metric is-main">Email open rate</h4>
         {{#if this.loading}}
             <div class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
         {{else}}
@@ -25,5 +27,9 @@
                 @options={{this.chartOptions}}
                 @height={{this.chartHeight}} />
         {{/if}}
+        <div>
+            <div class="gh-dashboard5-number">58%</div>
+            <small class="gh-dashboard5-info">Open rate</small>
+        </div>
     </div>
 </div>

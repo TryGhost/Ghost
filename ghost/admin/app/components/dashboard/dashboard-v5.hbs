@@ -1,90 +1,95 @@
-<section {{did-insert this.onInsert}} class="gh-dashboard5">
+<section {{did-insert this.onInsert}}>
 
     {{#if this.isLoading }}
         <GhLoadingSpinner />
     {{else}}
         {{#if this.areMembersEnabled}}
-            <section class="gh-dashboard5-section">
-                <Dashboard::V5::ChartMembersCounts />
+            <section class="gh-dashboard5-section gh-dashboard5-overview">
+                <article class="gh-dashboard5-box">
+                    <Dashboard::V5::ChartTotalMembers @days={{this.days}} />
+                </article>
+                <div class="prototype-selection">
+                    <PowerSelect
+                        @selected={{this.selectedDaysOption}}
+                        @options={{this.daysOptions}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.onDaysChange}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown"
+                        @matchTriggerWidth={{false}}
+                        as |option|
+                    >
+                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                    </PowerSelect>
+                </div>
             </section>
 
-            <section class="gh-dashboard5-section">
-                <div class="gh-dashboard5-header">
-                    <h3>Members</h3>
-                    <div class="prototype-selection">
-                        <PowerSelect
-                            @selected={{this.selectedDaysOption}}
-                            @options={{this.daysOptions}}
-                            @searchEnabled={{false}}
-                            @onChange={{this.onDaysChange}}
-                            @triggerComponent="gh-power-select/trigger"
-                            @triggerClass="gh-contentfilter-menu-trigger"
-                            @dropdownClass="gh-contentfilter-menu-dropdown"
-                            @matchTriggerWidth={{false}}
-                            as |option|
-                        >
-                            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                        </PowerSelect>
-                    </div>
-                </div>
+            {{#if this.hasPaidTiers}}
+                <div class="gh-dashboard5-paid">
+                    <section class="gh-dashboard5-section">
+                        <div class="gh-dashboard5-growth">             
+                            <article class="gh-dashboard5-box">
+                                <Dashboard::V5::ChartMonthlyRevenue @days={{this.days}} />
+                            </article>
 
-                <div class="gh-dashboard5-growth">
+                            <article class="gh-dashboard5-box">
+                                <Dashboard::V5::ChartTotalPaid @days={{this.days}} />
+                            </article>
+
+                            <article class="gh-dashboard5-box">
+                                <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
+                            </article>
+
+                            <article class="gh-dashboard5-box">
+                                <Dashboard::V5::ChartPaidMix />
+                            </article>
+                        </div>
+                    </section>
+                </div>
+            {{/if}}
+
+            {{#if this.areNewslettersEnabled}}
+                <section class="gh-dashboard5-split is-third">
+                    <section class="gh-dashboard5-section gh-dashboard5-email">
+                        <article class="gh-dashboard5-box">
+                            <Dashboard::V5::ChartEmail />
+                        </article>
+                    </section>
+
+                    <section class="gh-dashboard5-section gh-dashboard5-engagement">
+                        <Dashboard::V5::ChartEngagement />
+                    </section>
+                </section> 
+            {{else}}
+                <section class="gh-dashboard5-section gh-dashboard5-engagement">
+                    <Dashboard::V5::ChartEngagement />
+                </section>
+            {{/if}}
+
+        {{else}}
+            {{#if this.areNewslettersEnabled}}
+                <section class="gh-dashboard5-section gh-dashboard5-email">
                     <article class="gh-dashboard5-box">
-                        <Dashboard::V5::ChartTotalMembers @days={{this.days}} />
+                        <Dashboard::V5::ChartEmail />
                     </article>
-
-                    {{#if this.hasPaidTiers}}
-                        <article class="gh-dashboard5-box">
-                            <Dashboard::V5::ChartMonthlyRevenue @days={{this.days}} />
-                        </article>
-
-                        <article class="gh-dashboard5-box">
-                            <Dashboard::V5::ChartTotalPaid @days={{this.days}} />
-                        </article>
-
-                        <article class="gh-dashboard5-box">
-                            <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
-                        </article>
-
-                        <article class="gh-dashboard5-box">
-                            <Dashboard::V5::ChartPaidMix />
-                        </article>
-                    {{/if}}
-                </div>
-            </section>
-            <section class="gh-dashboard5-section">
-                <Dashboard::V5::ChartEngagement />
-            </section>
-        {{/if}}
-
-        {{#if this.areNewslettersEnabled}}
-            <section class="gh-dashboard5-section">
-                <Dashboard::V5::ChartEmail />
-            </section>
+                </section>
+            {{/if}}
         {{/if}}
 
         <section class="gh-dashboard5-split">
-            <section class="gh-dashboard5-section">
-                <div class="gh-dashboard5-header">
-                    <h3>Recent posts</h3>
-                </div>
+            <section class="gh-dashboard5-section gh-dashboard5-posts">
                 <article class="gh-dashboard5-box">
                     <Dashboard::V5::RecentPosts />
                 </article>
             </section>
 
-            <section class="gh-dashboard5-section">
-                <div class="gh-dashboard5-header">
-                    <h3>Recent activity</h3>
-                </div>
-                <Dashboard::LatestMemberActivity />
+            <section class="gh-dashboard5-section gh-dashboard5-activity">
+                <Dashboard::V5::RecentActivity />
             </section>
         </section>
 
         <section class="gh-dashboard5-section">
-            <div class="gh-dashboard5-header">
-                <h3>Resources</h3>
-            </div>
             <div class="gh-main-section gh-offers-help">
                 <div class="gh-main-section-block">
                     <div class="gh-main-section-content grey">

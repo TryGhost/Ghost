@@ -1,8 +1,12 @@
+
 <ol class="gh-list" {{did-insert this.loadPosts}}>
     <li class="gh-list-row header">
+        <h4 class="gh-dashboard5-metric is-split">Recent posts</h4>
+        {{!--
         <div class="gh-list-header gh-posts-title-header">Title</div>
         <div class="gh-list-header gh-posts-sends-header">Sends</div>
         <div class="gh-list-header gh-posts-opens-header">Opens</div>
+        --}}
     </li>
     {{#each this.posts as |post|}}
         <GhPostsListItem

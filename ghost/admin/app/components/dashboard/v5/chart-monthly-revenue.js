@@ -32,22 +32,77 @@ export default class ChartMonthlyRevenue extends Component {
             labels: labels,
             datasets: [{
                 data: data,
-                fill: false,
+                tension: 0.1,
+                cubicInterpolationMode: 'monotone',
+                fill: true,
+                fillColor: '#F5FBFF',
+                backgroundColor: '#F5FBFF',
+                pointRadius: 0,
+                pointHitRadius: 10,
                 borderColor: '#14b8ff',
-                tension: 0.1
+                borderJoinStyle: 'miter',
+                maxBarThickness: 20,
+                minBarLength: 2
             }]
         };
     }
 
     get chartOptions() {
         return {
+            title: {
+                display: false
+            },
             legend: {
                 display: false
+            },
+            scales: {
+                yAxes: [{
+                    gridLines: {
+                        drawTicks: false,
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        display: false,
+                        maxTicksLimit: 5,
+                        fontColor: '#7C8B9A',
+                        padding: 8,
+                        precision: 0
+                    }
+                }],
+                xAxes: [{
+                    gridLines: {
+                        drawTicks: false,
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        display: false,
+                        maxTicksLimit: 5,
+                        autoSkip: true,
+                maxRotation: 0,
+                minRotation: 0
+                    },
+                    type: 'time',
+                    time: {
+                      displayFormats: {
+                         'millisecond': 'MMM DD',
+                         'second': 'MMM DD',
+                         'minute': 'MMM DD',
+                         'hour': 'MMM DD',
+                         'day': 'MMM DD',
+                         'week': 'MMM DD',
+                         'month': 'MMM DD',
+                         'quarter': 'MMM DD',
+                         'year': 'MMM DD',
+                      }
+                    }
+                }]
             }
         };
     }
 
     get chartHeight() {
-        return 100;
+        return 200;
     }
 }
