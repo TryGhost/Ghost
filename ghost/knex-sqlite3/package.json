@@ -25,5 +25,8 @@
     "mocha": "9.2.2",
     "should": "13.2.3",
     "sinon": "13.0.1"
+  },
+  "optionalDependencies": {
+    "sqlite3": "^5.0.2"
   }
 }
