@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/knex-sqlite3",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/knex-sqlite3",
   "author": "Ghost Foundation",
   "license": "MIT",
