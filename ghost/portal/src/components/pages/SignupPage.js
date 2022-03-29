@@ -192,6 +192,10 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     padding-bottom: 32px;
 }
 
+.gh-portal-invite-only-notification + .gh-portal-signup-message {
+    margin-bottom: 12px;
+}
+
 @media (min-width: 480px) {
 
 }

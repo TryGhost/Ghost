@@ -843,7 +843,6 @@ const MobileStyles = `
     }
 
     .gh-portal-input {
-        font-size: 1.4rem;
         margin-bottom: 16px;
     }
 
@@ -865,6 +864,17 @@ const MobileStyles = `
     }
     100%{
         opacity: 1.0;
+    }
+}
+
+/* Prevent zoom */
+@media (hover:none) {
+    select, textarea, input[type="text"], input[type="text"], input[type="password"],
+    input[type="datetime"], input[type="datetime-local"],
+    input[type="date"], input[type="month"], input[type="time"],
+    input[type="week"], input[type="number"], input[type="email"],
+    input[type="url"] {
+        font-size: 16px !important;
     }
 }
 `;
