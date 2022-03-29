@@ -140,6 +140,90 @@ class MembersStats {
 
         return results;
     }
+
+    async getTotalMembersByStatus() {
+        const [rows] = await this._db.knex.raw('SELECT status, COUNT(id) AS total FROM members GROUP BY status');
+        const paidEvent = rows.find(c => c.status === 'paid');
+        const freeEvent = rows.find(c => c.status === 'free');
+        const compedEvent = rows.find(c => c.status === 'comped');
+
+        return {
+            paid: paidEvent ? paidEvent.total : 0,
+            free: freeEvent ? freeEvent.total : 0,
+            comped: compedEvent ? compedEvent.total : 0
+        };
+    }
+
+    async getTotalMembersByStatusHistory() {
+        const knex = this._db.knex;
+        const rows = await knex('members_status_events')
+            .select(knex.raw('DATE(created_at) as date'))
+            .select(knex.raw(`SUM(
+                CASE WHEN to_status='paid' THEN 1
+                ELSE 0 END
+            ) as paid_subscribed`))
+            .select(knex.raw(`SUM(
+                CASE WHEN from_status='paid' THEN 1
+                ELSE 0 END
+            ) as paid_canceled`))
+            .select(knex.raw(`SUM(
+                CASE WHEN to_status='comped' THEN 1
+                WHEN from_status='comped' THEN -1
+                ELSE 0 END
+            ) as comped_delta`))
+            .select(knex.raw(`SUM(
+                CASE WHEN to_status='free' THEN 1
+                WHEN from_status='free' THEN -1
+                ELSE 0 END
+            ) as free_delta`))
+            .groupByRaw('DATE(created_at)')
+            .orderByRaw('DATE(created_at) DESC');
+
+        // Fetch current total amounts and start counting from there
+        let {paid, free, comped} = await this.getTotalMembersByStatus();
+
+        const today = moment.utc().format('YYYY-MM-DD');
+
+        const cumulativeResults = [];
+        for (const row of rows) {
+            const date = moment(row.date).format('YYYY-MM-DD');
+            if (date > today) {
+                // Skip results that are in the future (fix for invalid events)
+                continue;
+            }
+            cumulativeResults.unshift({
+                date,
+                paid,
+                free,
+                comped,
+
+                // Deltas
+                paid_subscribed: row.paid_subscribed,
+                paid_canceled: row.paid_canceled
+            });
+
+            // Update current counts
+            paid = Math.max(0, paid - row.paid_subscribed + row.paid_canceled);
+            free = Math.max(0, free - row.free_delta);
+            comped = Math.max(0, comped - row.comped_delta);
+        }
+
+        // Always make sure we have at least one result
+        if (cumulativeResults.length === 0) {
+            cumulativeResults.push({
+                date: today,
+                paid,
+                free,
+                comped,
+
+                // Deltas
+                paid_subscribed: 0,
+                paid_canceled: 0
+            });
+        }
+
+        return cumulativeResults;
+    }
 }
 
 module.exports = MembersStats;
