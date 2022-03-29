@@ -21,6 +21,7 @@ function AccountHeader() {
 }
 
 function NewsletterPrefSection({newsletter}) {
+    const {onAction} = useContext(AppContext);
     return (
         <section>
             <div className='gh-portal-list-detail'>
@@ -29,7 +30,11 @@ function NewsletterPrefSection({newsletter}) {
             </div>
             <div>
                 <Switch id={newsletter.id} onToggle={(e) => {
-                    // handle newsletter pref toggle
+                    onAction('showPopupNotification', {
+                        action: 'updated:success',
+                        message: `${newsletter.name} newsletter preference updated.`
+                    });
+                    onAction('updateNewsletterPreference', {newsletter});
                 }} checked={false} />
             </div>
         </section>
