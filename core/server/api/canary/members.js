@@ -452,51 +452,6 @@ module.exports = {
             };
         }
     },
-    subscriberStats: {
-        permissions: {
-            method: 'browse'
-        },
-        async query() {
-            const statsData = await membersService.api.events.getSubscriptions();
-            const totalSubscriptions = (_.last(statsData) && _.last(statsData).subscribed) || 0;
-            statsData.forEach((d) => {
-                d.date = moment(d.date).format('YYYY-MM-DD');
-            });
-            return {
-                resource: 'subscribers',
-                total: totalSubscriptions,
-                data: statsData.map((d) => {
-                    return Object.assign({}, {
-                        date: moment(d.date).format('YYYY-MM-DD'),
-                        value: d.subscribed
-                    });
-                })
-            };
-        }
-    },
-    grossVolumeStats: {
-        permissions: {
-            method: 'browse'
-        },
-        async query() {
-            const volumeData = await membersService.api.events.getVolume();
-            const volumeStats = Object.keys(volumeData).map((curr) => {
-                return {
-                    currency: curr,
-                    data: volumeData[curr].map((d) => {
-                        return Object.assign({}, {
-                            date: moment(d.date).format('YYYY-MM-DD'),
-                            value: d.volume
-                        });
-                    })
-                };
-            });
-            return {
-                resource: 'gross-volume',
-                data: volumeStats
-            };
-        }
-    },
 
     activityFeed: {
         options: [

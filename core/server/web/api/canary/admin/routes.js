@@ -113,8 +113,6 @@ module.exports = function apiRoutes() {
 
     router.get('/members/stats/count', mw.authAdminApi, http(api.members.memberStats));
     router.get('/members/stats/mrr', mw.authAdminApi, http(api.members.mrrStats));
-    router.get('/members/stats/subscribers', mw.authAdminApi, http(api.members.subscriberStats));
-    router.get('/members/stats/gross_volume', mw.authAdminApi, http(api.members.grossVolumeStats));
 
     router.get('/members/events', mw.authAdminApi, http(api.members.activityFeed));
 
