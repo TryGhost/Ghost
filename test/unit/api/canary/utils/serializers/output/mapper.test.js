@@ -178,4 +178,37 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
         });
     });
+
+    describe('Snippet Mapper', function () {
+        let snippetModel;
+
+        beforeEach(function () {
+            snippetModel = (data) => {
+                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
+            };
+        });
+
+        it('returns only allowed keys', function () {
+            const frame = {
+            };
+
+            const snippet = snippetModel(testUtils.DataGenerator.forKnex.createBasic({
+                name: 'test snippet',
+                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Hello World'),
+                foo: 'bar'
+            }));
+
+            const mapped = mappers.snippets(snippet, frame);
+
+            mapped.should.eql({
+                id: snippet.id,
+                name: snippet.name,
+                mobiledoc: snippet.mobiledoc,
+                created_at: snippet.created_at,
+                updated_at: snippet.updated_at,
+                created_by: snippet.created_by,
+                updated_by: snippet.updated_by
+            });
+        });
+    });
 });
