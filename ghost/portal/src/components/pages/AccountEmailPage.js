@@ -46,9 +46,7 @@ function NewsletterPrefs() {
     const newsletters = getSiteNewsletters({site});
     return newsletters.map((newsletter) => {
         return (
-            <>
-                <NewsletterPrefSection key={newsletter?.id} newsletter={newsletter} />
-            </>
+            <NewsletterPrefSection key={newsletter?.id} newsletter={newsletter} />
         );
     });
 }
