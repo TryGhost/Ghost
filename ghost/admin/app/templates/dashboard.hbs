@@ -1,13 +1,19 @@
 <section class="gh-canvas" {{scroll-top}}>
-    <GhCanvasHeader class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>
-            Dashboard
-        </h2>
-    </GhCanvasHeader>
-
     {{#if (feature "dashboardV5")}}
-        <Dashboard::DashboardV5 />
+        <div class="gh-dashboard5">
+            <GhCanvasHeader class="gh-canvas-header">
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    Dashboard
+                </h2>
+            </GhCanvasHeader>
+            <Dashboard::DashboardV5 />
+        </div>
     {{else}}
+        <GhCanvasHeader class="gh-canvas-header">
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                Dashboard
+            </h2>
+        </GhCanvasHeader>
         <div class="view-container gh-dashboard">
             {{#if (and this.session.user.isOwnerOnly (not this.settings.editorIsLaunchComplete) (not (feature "improvedOnboarding")))}}
                 <section class="gh-dashboard-area lw-banner">

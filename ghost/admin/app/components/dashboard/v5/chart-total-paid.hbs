@@ -1,10 +1,8 @@
-<h4 
-    class="gh-dashboard5-metric is-main" 
+<div class="gh-dashboard5-number"
     {{did-insert this.loadCharts}} 
     {{did-update this.loadCharts @days}}
->
-    Total paid
-</h4>
+>$999</div>
+<small class="gh-dashboard5-info">Total paid</small>
 
 {{#if this.loading}}
     <div class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
