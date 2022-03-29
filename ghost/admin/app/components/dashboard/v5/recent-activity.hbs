@@ -1,15 +1,8 @@
 {{#if this.shouldDisplay}}
     <div class="gh-dashboard-box activity gh-list" data-test-dashboard-member-activity>
-    {{!-- <li class="gh-list-row header">
-        <div class="gh-list-header gh-posts-title-header">Recent Activity</div>
-    </li> --}}
     <h4 class="gh-dashboard5-metric is-split">Recent activity</h4>
         <div class="content">
             {{#let (members-event-fetcher filter=(if (feature "membersActivityFeed") (members-event-filter excludeEmailEvents=true)) pageSize=5) as |eventsFetcher|}}
-                {{#if eventsFetcher.isLoading}}
-                    Loading...
-                {{/if}}
-
                 {{#if eventsFetcher.isError}}
                     <p class="error">
                         There was an error loading events
@@ -19,8 +12,10 @@
                     </p>
                 {{/if}}
 
-                {{#unless (or eventsFetcher.isLoading eventsFetcher.isError)}}
-                    <div class="gh-event-timeline">
+                {{#if eventsFetcher.isLoading}}
+                    Loading...
+                {{else}}
+                  <div class="gh-event-timeline">
                         {{#if eventsFetcher.data}}
                             <ul class="gh-dashboard-activity-list">
                                 {{#each eventsFetcher.data as |event|}}
@@ -59,7 +54,7 @@
                             <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity →</LinkTo>
                         </div>
                     {{/if}}
-                {{/unless}}
+                {{/if}}
             {{/let}}
         </div>
     </div>
