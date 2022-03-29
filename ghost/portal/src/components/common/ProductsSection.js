@@ -294,8 +294,21 @@ export const ProductsSectionStyles = ({site}) => {
             justify-self: flex-end;
             padding: 40px 0 32px;
             margin-bottom: -32px;
-            background: rgb(255,255,255);
-            background: linear-gradient(0deg, rgba(255,255,255,1) 75%, rgba(255,255,255,0) 100%);
+            /*background: rgb(255,255,255);
+            background: linear-gradient(0deg, rgba(255,255,255,1) 75%, rgba(255,255,255,0) 100%);*/
+            background: transparent;
+        }
+
+        .gh-portal-btn-product::before {
+            position: absolute;
+            content: "";
+            display: block;
+            top: -16px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(0deg, rgba(255,255,255,1) 60%, rgba(255,255,255,0) 100%);
+            z-index: 800;
         }
 
         .gh-portal-btn-product .gh-portal-btn {
@@ -303,6 +316,7 @@ export const ProductsSectionStyles = ({site}) => {
             color: #fff;
             border: none;
             width: 100%;
+            z-index: 900;
         }
 
         .gh-portal-btn-product .gh-portal-btn:hover {
@@ -380,6 +394,10 @@ export const ProductsSectionStyles = ({site}) => {
 
             .gh-portal-btn-product {
                 position: static;
+            }
+
+            .gh-portal-btn-product::before {
+                display: none;
             }
         }
 
