@@ -80,22 +80,22 @@ export default class ChartMonthlyRevenue extends Component {
                         display: false,
                         maxTicksLimit: 5,
                         autoSkip: true,
-                maxRotation: 0,
-                minRotation: 0
+                        maxRotation: 0,
+                        minRotation: 0
                     },
                     type: 'time',
                     time: {
-                      displayFormats: {
-                         'millisecond': 'MMM DD',
-                         'second': 'MMM DD',
-                         'minute': 'MMM DD',
-                         'hour': 'MMM DD',
-                         'day': 'MMM DD',
-                         'week': 'MMM DD',
-                         'month': 'MMM DD',
-                         'quarter': 'MMM DD',
-                         'year': 'MMM DD',
-                      }
+                        displayFormats: {
+                            millisecond: 'MMM DD',
+                            second: 'MMM DD',
+                            minute: 'MMM DD',
+                            hour: 'MMM DD',
+                            day: 'MMM DD',
+                            week: 'MMM DD',
+                            month: 'MMM DD',
+                            quarter: 'MMM DD',
+                            year: 'MMM DD'
+                        }
                     }
                 }]
             }

@@ -1209,6 +1209,10 @@ a.gh-dashboard-container {
     font-size: 2.2rem;
 }
 
+.gh-dashboard5-number.is-solo {
+    margin-top: 46px;
+}
+
 .gh-dashboard5-metric {
     display: flex;
     align-items: center;

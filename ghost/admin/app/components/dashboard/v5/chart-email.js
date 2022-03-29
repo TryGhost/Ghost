@@ -51,7 +51,6 @@ export default class ChartEmailOpenRate extends Component {
                 backgroundColor: '#14b8ff',
                 tension: 0.1,
                 cubicInterpolationMode: 'monotone',
-                fill: false,
                 pointRadius: 0,
                 pointHitRadius: 10,
                 borderColor: '#14b8ff',
