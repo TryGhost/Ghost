@@ -113,10 +113,6 @@ module.exports = {
         return require('./email-previews');
     },
 
-    get snippets() {
-        return require('./snippets');
-    },
-
     get custom_theme_settings() {
         return require('./custom-theme-settings');
     },
