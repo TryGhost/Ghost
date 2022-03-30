@@ -1,5 +1,5 @@
 const logging = require('@tryghost/logging');
-const {uniq, each} = require('lodash');
+const {uniq} = require('lodash');
 const {DateTime, Interval} = require('luxon');
 
 const {createTransactionalMigration} = require('../../utils');
@@ -137,6 +137,8 @@ module.exports = createTransactionalMigration(
                 if (!interval.isValid) {
                     return false;
                 }
+
+                return true;
             });
 
             if (possibleSecondEvents.length === 0) {
