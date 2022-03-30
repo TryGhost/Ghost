@@ -9063,10 +9063,10 @@ node-int64@^0.4.0:
   resolved "https://registry.yarnpkg.com/node-int64/-/node-int64-0.4.0.tgz#87a9065cdb355d3182d8f94ce11188b825c68a3b"
   integrity sha1-h6kGXNs1XTGC2PlM4RGIuCXGijs=
 
-node-jose@2.1.0, node-jose@^2.0.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/node-jose/-/node-jose-2.1.0.tgz#a2d12a7ff2d386f23979c1bf77f939449ce073d8"
-  integrity sha512-Zmm8vFPJabphGBc5Wz1/LUMPS+1cynqw16RIhgVNQMEI2yEQrvl7Gx2EwN9GhP8tkm8f7SH53K2nIx8TeNTIdg==
+node-jose@2.1.1, node-jose@^2.0.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/node-jose/-/node-jose-2.1.1.tgz#7d82e8d9cef8d0a722d7fa385524babfa9e30614"
+  integrity sha512-19nyuUGShNmFmVTeqDfP6ZJCiikbcjI0Pw2kykBCH7rl8AZgSiDZK2Ww8EDaMrOSbRg6IlfIMhI5ZvCklmOhzg==
   dependencies:
     base64url "^3.0.1"
     buffer "^6.0.3"
