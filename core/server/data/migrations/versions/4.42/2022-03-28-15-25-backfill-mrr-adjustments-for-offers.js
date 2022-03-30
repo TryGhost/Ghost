@@ -24,7 +24,7 @@ module.exports = createTransactionalMigration(
         function storeEventOnMemberId(storage, event) {
             const parsedEvent = {
                 ...event,
-                created_at: DateTime.fromISO(event.created_at)
+                datetime: DateTime.fromISO(event.created_at)
             };
             return {
                 ...storage,
@@ -58,13 +58,13 @@ module.exports = createTransactionalMigration(
                 to_plan: event.to_plan,
                 currency: event.currency,
                 source: event.source,
-                created_at: event.created_at.toUTC(),
+                created_at: event.created_at,
                 mrr_delta: event.mrr_delta + mrrAdjustment
             });
         }
 
         function getFirstEvent(events, redemption) {
-            const intervals = events.map(event => Interval.fromDateTimes(event.created_at, redemption.created_at));
+            const intervals = events.map(event => Interval.fromDateTimes(event.datetime, redemption.datetime));
 
             // Invalid intervals would be if the end date was before the start date - e.g. offer redeemed before an MRR event
             const validIntervals = intervals.filter(interval => interval.isValid);
@@ -81,8 +81,8 @@ module.exports = createTransactionalMigration(
             return events[intervals.indexOf(intervals.find(interval => interval.length() === smallestIntervalLength))];
         }
 
-        for (const redemption of offerRedemptions) {
-            redemption.created_at = DateTime.fromISO(redemption.created_at);
+        offerRedemptions.forEach((redemption) => {
+            redemption.datetime = DateTime.fromISO(redemption.created_at);
 
             const possibleEvents = mrrEventsByMemberId[redemption.member_id];
 
@@ -97,13 +97,13 @@ module.exports = createTransactionalMigration(
 
                 updateEvent(firstEvent, -mrrAdjustment);
 
-                const secondEvent = possibleEvents.find(event => event.from_status === firstEvent.to_status);
+                const secondEvent = possibleEvents.find(event => event.from_plan === firstEvent.to_plan);
 
                 if (secondEvent) {
                     updateEvent(secondEvent, +mrrAdjustment);
                 }
 
-                continue;
+                return;
             }
 
             const firstEvent = getFirstEvent(firstEvents, redemption);
@@ -116,10 +116,14 @@ module.exports = createTransactionalMigration(
             const likelyDoesNotHaveSecondEvent = firstEvent.to_plan === redemption.subscription_price;
 
             if (likelyDoesNotHaveSecondEvent) {
-                continue;
+                return;
             }
 
             const possibleSecondEvents = possibleEvents.filter((event) => {
+                if (event.from_plan === null) {
+                    return false;
+                }
+
                 if (event.from_plan !== firstEvent.to_plan) {
                     return false;
                 }
@@ -128,7 +132,7 @@ module.exports = createTransactionalMigration(
                     return false;
                 }
 
-                const interval = Interval.fromDateTimes(firstEvent.created_at, event.created_at);
+                const interval = Interval.fromDateTimes(firstEvent.datetime, event.datetime);
 
                 if (!interval.isValid) {
                     return false;
@@ -139,21 +143,21 @@ module.exports = createTransactionalMigration(
                 if (mustHaveSecondEvent) {
                     logging.error('Missing event, what do?');
                 }
-                continue;
+                return;
             }
 
             if (possibleSecondEvents.length === 1) {
                 const secondEvent = possibleSecondEvents[0];
                 updateEvent(secondEvent, +mrrAdjustment);
-                continue;
+                return;
             }
 
             // How do we determine the most likely second event???
             // We can at least use the most likely event based on whether or not the subscription is canceled, or if we know for sure the tier/cadence has changed
             const secondEvent = possibleSecondEvents[0];
             updateEvent(secondEvent, +mrrAdjustment);
-            continue;
-        }
+            return;
+        });
 
         const idsToDelete = updatedEvents.map(event => event.id);
 
