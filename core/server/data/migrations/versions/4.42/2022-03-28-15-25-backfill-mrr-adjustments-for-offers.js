@@ -104,10 +104,6 @@ module.exports = createTransactionalMigration(
                 if (!interval.isValid) {
                     return false;
                 }
-
-                if (redemption.subscription_status === 'canceled') {
-                    return event.from_plan === event.to_plan || event.to_plan === null;
-                }
             });
 
             const mustHaveSecondEvent = redemption.subscription_status === 'canceled';
