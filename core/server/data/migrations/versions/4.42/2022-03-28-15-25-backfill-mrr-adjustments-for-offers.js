@@ -34,20 +34,43 @@ module.exports = createTransactionalMigration(
 
         const mrrEventsByMemberId = mrrEvents.reduce(storeEventOnMemberId, {});
 
-        function getFirstEvent(events, redemption) {
-            const firstEvents = events.filter(event => event.from_plan === null && event.used !== true);
+        const updatedEvents = [];
 
-            if (firstEvents.length === 1) {
-                return firstEvents[0];
+        function getMRRAdjustment(firstEvent, redemption) {
+            if (redemption.discount_type === 'percentage') {
+                return firstEvent.mrr_delta * (100 - redemption.discount_amount) / 100;
+            } else {
+                if (redemption.discount_interval === 'month') {
+                    return redemption.discount_amount;
+                } else {
+                    return redemption.discount_amount / 12;
+                }
             }
+        }
 
-            const intervals = firstEvents.map(event => Interval.fromDateTimes(event.created_at, redemption.created_at));
+        function updateEvent(event, mrrAdjustment) {
+            event.used = true;
+
+            updatedEvents.push({
+                id: event.id,
+                member_id: event.member_id,
+                from_plan: event.from_plan,
+                to_plan: event.to_plan,
+                currency: event.currency,
+                source: event.source,
+                created_at: event.created_at,
+                mrr_delta: event.mrr_delta + mrrAdjustment
+            });
+        }
+
+        function getFirstEvent(events, redemption) {
+            const intervals = events.map(event => Interval.fromDateTimes(event.created_at, redemption.created_at));
 
             // Invalid intervals would be if the end date was before the start date - e.g. offer redeemed before an MRR event
             const validIntervals = intervals.filter(interval => interval.isValid);
 
             if (validIntervals.length === 1) {
-                return firstEvents[intervals.indexOf(validIntervals[0])];
+                return events[intervals.indexOf(validIntervals[0])];
             }
 
             // At this point we have multiple possible first events, so we should check which is most likely to be correct based on timestamps
@@ -55,40 +78,45 @@ module.exports = createTransactionalMigration(
 
             // This is a butters way of getting the smallest probs better to do a sort or a loop or smth
             const smallestIntervalLength = Math.min(...validIntervals.map(interval => interval.length()));
-            return firstEvents[intervals.indexOf(intervals.find(interval => interval.length() === smallestIntervalLength))];
+            return events[intervals.indexOf(intervals.find(interval => interval.length() === smallestIntervalLength))];
         }
-
-        const updatedEvents = [];
 
         for (const redemption of offerRedemptions) {
             redemption.created_at = DateTime.fromISO(redemption.created_at);
 
             const possibleEvents = mrrEventsByMemberId[redemption.member_id];
 
-            const firstEvent = getFirstEvent(possibleEvents);
-            firstEvent.used = true;
+            const firstEvents = possibleEvents.filter(event => event.from_plan === null && event.used !== true);
 
-            let mrrAdjustment;
-            if (redemption.discount_type === 'percentage') {
-                mrrAdjustment = firstEvent.mrr_delta * (100 - redemption.discount_amount) / 100;
-            } else {
-                if (redemption.discount_interval === 'month') {
-                    mrrAdjustment = redemption.discount_amount;
-                } else {
-                    mrrAdjustment = redemption.discount_amount / 12;
+            // If there is a single first event, then we know for sure that we need to
+            // 1. decrease MRR for it
+            // 2. increase MRR for a second event if it exists
+            if (firstEvents.length === 1) {
+                const firstEvent = firstEvents[0];
+                const mrrAdjustment = getMRRAdjustment(firstEvent, redemption);
+
+                updateEvent(firstEvent, -mrrAdjustment);
+
+                const secondEvent = possibleEvents.find(event => event.from_status === firstEvent.to_status);
+
+                if (secondEvent) {
+                    updateEvent(secondEvent, +mrrAdjustment);
                 }
+
+                continue;
             }
 
-            updatedEvents.push({
-                id: firstEvent.id,
-                member_id: firstEvent.member_id,
-                from_plan: firstEvent.from_plan,
-                to_plan: firstEvent.to_plan,
-                currency: firstEvent.currency,
-                source: firstEvent.source,
-                created_at: firstEvent.created_at,
-                mrr_delta: firstEvent.mrr_delta - mrrAdjustment
-            });
+            const firstEvent = getFirstEvent(firstEvents, redemption);
+            const mrrAdjustment = getMRRAdjustment(firstEvent, redemption);
+
+            updateEvent(firstEvent, -mrrAdjustment);
+
+            const mustHaveSecondEvent = redemption.subscription_status === 'canceled';
+            const likelyDoesNotHaveSecondEvent = firstEvent.to_plan === redemption.subscription_price;
+
+            if (likelyDoesNotHaveSecondEvent) {
+                continue;
+            }
 
             const possibleSecondEvents = possibleEvents.filter((event) => {
                 if (event.from_plan !== firstEvent.to_plan) {
@@ -106,9 +134,6 @@ module.exports = createTransactionalMigration(
                 }
             });
 
-            const mustHaveSecondEvent = redemption.subscription_status === 'canceled';
-            const likelyDoesNotHaveSecondEvent = firstEvent.to_plan === redemption.subscription_price;
-
             if (possibleSecondEvents.length === 0) {
                 if (mustHaveSecondEvent) {
                     logging.error('Missing event, what do?');
@@ -116,38 +141,15 @@ module.exports = createTransactionalMigration(
                 continue;
             }
 
-            if (likelyDoesNotHaveSecondEvent) {
-                continue;
-            }
-
             if (possibleSecondEvents.length === 1) {
                 const secondEvent = possibleSecondEvents[0];
-                secondEvent.used = true;
-                updatedEvents.push({
-                    id: secondEvent.id,
-                    member_id: secondEvent.member_id,
-                    from_plan: secondEvent.from_plan,
-                    to_plan: secondEvent.to_plan,
-                    currency: secondEvent.currency,
-                    source: secondEvent.source,
-                    created_at: secondEvent.created_at,
-                    mrr_delta: secondEvent.mrr_delta + mrrAdjustment
-                });
+                updateEvent(secondEvent, +mrrAdjustment);
                 continue;
             }
 
+            // How do we determine the most likely second event???
             const secondEvent = possibleSecondEvents[0];
-            secondEvent.used = true;
-            updatedEvents.push({
-                id: secondEvent.id,
-                member_id: secondEvent.member_id,
-                from_plan: secondEvent.from_plan,
-                to_plan: secondEvent.to_plan,
-                currency: secondEvent.currency,
-                source: secondEvent.source,
-                created_at: secondEvent.created_at,
-                mrr_delta: secondEvent.mrr_delta + mrrAdjustment
-            });
+            updateEvent(secondEvent, +mrrAdjustment);
             continue;
         }
 
