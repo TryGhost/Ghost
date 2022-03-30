@@ -4,20 +4,10 @@ const {DateTime, Interval} = require('luxon');
 
 const {createTransactionalMigration} = require('../../utils');
 
-/*
- * 1. Get all offer redemptions for "forever" offers
- * 2. Get the MRR events for all members associated with the forever offer redemptions
- * 3. Get the current subscription status & price for each redemption
- * 4. For each redemption find the most likely starting MRR event - (member_id matches, created_at close by, from_plan = null, to_plan = subscription price if still active)
- * 5. Find a path from the starting MRR event to the "final" one, based one status & price
- * ? Should we favour a longer path or shorter?
- * 6. Adjust the first two MRR events
- */
-
 module.exports = createTransactionalMigration(
     async function up(knex) {
         const offerRedemptions = await knex
-            .select('or.*', 'o.discount_type', 'o.discount_amount', 's.status AS subscription_status', 's.stripe_price_id AS subscription_price')
+            .select('or.*', 'o.discount_type', 'o.discount_amount', 'o.interval AS discount_interval', 's.status AS subscription_status', 's.stripe_price_id AS subscription_price')
             .from('offer_redemptions AS or')
             .join('offers AS o', 'or.offer_id', '=', 'o.id')
             .join('members_stripe_customers_subscriptions AS s', 'or.subscription_id', '=', 's.id')
@@ -31,28 +21,6 @@ module.exports = createTransactionalMigration(
             .from('members_paid_subscription_events')
             .whereIn('member_id', memberIds);
 
-        /** @typedef {string} MemberID */
-
-        /**
-         * @typedef {object} MRREvent
-         * @prop {MemberID} member_id
-         * @prop {string} from_plan
-         * @prop {string} to_plan
-         * @prop {number} mrr_delta
-         * @prop {string} created_at
-         */
-
-        /**
-         * @typedef {MRREvent} ParsedMRREvent
-         * @prop {DateTime} created_at
-         */
-
-        /**
-         * @param {Object.<MemberID, ParsedMRREvent[]>} storage
-         * @param {MRREvent} event
-         *
-         * @returns {Object.<MemberID, ParsedMRREvent[]>}
-         */
         function storeEventOnMemberId(storage, event) {
             const parsedEvent = {
                 ...event,
@@ -90,17 +58,37 @@ module.exports = createTransactionalMigration(
             return firstEvents[intervals.indexOf(intervals.find(interval => interval.length() === smallestIntervalLength))];
         }
 
+        const updatedEvents = [];
+
         for (const redemption of offerRedemptions) {
             redemption.created_at = DateTime.fromISO(redemption.created_at);
 
             const possibleEvents = mrrEventsByMemberId[redemption.member_id];
 
             const firstEvent = getFirstEvent(possibleEvents);
-
-            // Ensure this event cannot be used anymore
             firstEvent.used = true;
 
-            // Update first event
+            let mrrAdjustment;
+            if (redemption.discount_type === 'percentage') {
+                mrrAdjustment = firstEvent.mrr_delta * (100 - redemption.discount_amount) / 100;
+            } else {
+                if (redemption.discount_interval === 'month') {
+                    mrrAdjustment = redemption.discount_amount;
+                } else {
+                    mrrAdjustment = redemption.discount_amount / 12;
+                }
+            }
+
+            updatedEvents.push({
+                id: firstEvent.id,
+                member_id: firstEvent.member_id,
+                from_plan: firstEvent.from_plan,
+                to_plan: firstEvent.to_plan,
+                currency: firstEvent.currency,
+                source: firstEvent.source,
+                created_at: firstEvent.created_at,
+                mrr_delta: firstEvent.mrr_delta - mrrAdjustment
+            });
 
             const possibleSecondEvents = possibleEvents.filter((event) => {
                 if (event.from_plan !== firstEvent.to_plan) {
@@ -139,16 +127,38 @@ module.exports = createTransactionalMigration(
             if (possibleSecondEvents.length === 1) {
                 const secondEvent = possibleSecondEvents[0];
                 secondEvent.used = true;
-                // Update second event
+                updatedEvents.push({
+                    id: secondEvent.id,
+                    member_id: secondEvent.member_id,
+                    from_plan: secondEvent.from_plan,
+                    to_plan: secondEvent.to_plan,
+                    currency: secondEvent.currency,
+                    source: secondEvent.source,
+                    created_at: secondEvent.created_at,
+                    mrr_delta: secondEvent.mrr_delta + mrrAdjustment
+                });
                 continue;
             }
 
             const secondEvent = possibleSecondEvents[0];
             secondEvent.used = true;
-            // Update second event
+            updatedEvents.push({
+                id: secondEvent.id,
+                member_id: secondEvent.member_id,
+                from_plan: secondEvent.from_plan,
+                to_plan: secondEvent.to_plan,
+                currency: secondEvent.currency,
+                source: secondEvent.source,
+                created_at: secondEvent.created_at,
+                mrr_delta: secondEvent.mrr_delta + mrrAdjustment
+            });
             continue;
         }
+
+        const idsToDelete = updatedEvents.map(event => event.id);
+
+        await knex('member_paid_subscription_events').whereIn('id', idsToDelete).del();
+        await knex('members_paid_subscription_events').insert(updatedEvents);
     },
-    async function down(knex) {
-    }
+    async function down() {}
 );
