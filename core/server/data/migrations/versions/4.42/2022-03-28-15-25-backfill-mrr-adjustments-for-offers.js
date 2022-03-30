@@ -12,7 +12,7 @@ module.exports = createTransactionalMigration(
             .join('offers AS o', 'or.offer_id', '=', 'o.id')
             .join('members_stripe_customers_subscriptions AS s', 'or.subscription_id', '=', 's.id')
             .where('o.duration', '=', 'forever')
-            .orderByRaw('or.created_at ASC');
+            .orderBy('or.created_at', 'asc');
 
         const memberIds = uniq(offerRedemptions.map(redemption => redemption.member_id));
 
