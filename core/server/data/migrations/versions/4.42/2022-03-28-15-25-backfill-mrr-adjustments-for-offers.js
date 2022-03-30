@@ -1,129 +1,152 @@
 const logging = require('@tryghost/logging');
+const {uniq, each} = require('lodash');
+const {DateTime, Interval} = require('luxon');
 
 const {createTransactionalMigration} = require('../../utils');
 
+/*
+ * 1. Get all offer redemptions for "forever" offers
+ * 2. Get the MRR events for all members associated with the forever offer redemptions
+ * 3. Get the current subscription status & price for each redemption
+ * 4. For each redemption find the most likely starting MRR event - (member_id matches, created_at close by, from_plan = null, to_plan = subscription price if still active)
+ * 5. Find a path from the starting MRR event to the "final" one, based one status & price
+ * ? Should we favour a longer path or shorter?
+ * 6. Adjust the first two MRR events
+ */
+
 module.exports = createTransactionalMigration(
     async function up(knex) {
-        const offerRedemptions = await knex('offer_redemptions').select('*');
-        const foreverOffers = await knex('offers').select('*').where({duration: 'forever'});
-        const foreverOfferIds = foreverOffers.map(x => x.id);
+        const offerRedemptions = await knex
+            .select('or.*', 'o.discount_type', 'o.discount_amount', 's.status AS subscription_status', 's.stripe_price_id AS subscription_price')
+            .from('offer_redemptions AS or')
+            .join('offers AS o', 'or.offer_id', '=', 'o.id')
+            .join('members_stripe_customers_subscriptions AS s', 'or.subscription_id', '=', 's.id')
+            .where('o.duration', '=', 'forever')
+            .orderBy('or.created_at ASC');
 
-        const foreverOfferRedemptions = offerRedemptions.filter(redemption => foreverOfferIds.includes(redemption.offer_id));
+        const memberIds = uniq(offerRedemptions.map(redemption => redemption.member_id));
 
-        const redemptionsKeyedByMemberID = foreverOfferRedemptions.reduce((memo, redemption) => {
-            return {
-                [redemption.member_id]: memo[redemption.member_id] ? memo[redemption.member_id].concat(redemption) : [redemption],
-                ...memo
+        const mrrEvents = await knex
+            .select('*')
+            .from('members_paid_subscription_events')
+            .whereIn('member_id', memberIds);
+
+        /** @typedef {string} MemberID */
+
+        /**
+         * @typedef {object} MRREvent
+         * @prop {MemberID} member_id
+         * @prop {string} from_plan
+         * @prop {string} to_plan
+         * @prop {number} mrr_delta
+         * @prop {string} created_at
+         */
+
+        /**
+         * @typedef {MRREvent} ParsedMRREvent
+         * @prop {DateTime} created_at
+         */
+
+        /**
+         * @param {Object.<MemberID, ParsedMRREvent[]>} storage
+         * @param {MRREvent} event
+         *
+         * @returns {Object.<MemberID, ParsedMRREvent[]>}
+         */
+        function storeEventOnMemberId(storage, event) {
+            const parsedEvent = {
+                ...event,
+                created_at: DateTime.fromISO(event.created_at)
             };
-        }, {});
-
-        const mrrEvents = await knex('members_paid_subscription_events').select('*').whereIn('member_id', Object.keys(redemptionsKeyedByMemberID));
-
-        const eventsKeyedByMemberID = mrrEvents.reduce((memo, event) => {
             return {
-                [event.member_id]: memo[event.member_id] ? memo[event.member_id].concat(event) : [event],
-                ...memo
+                ...storage,
+                [event.member_id]: storage[event.member_id] ? storage[event.member_id].concat(parsedEvent) : [parsedEvent]
             };
-        }, {});
-
-        const foreverOffersKeyedByID = foreverOffers.reduce((memo, offer) => {
-            return {
-                [offer.id]: offer,
-                ...memo
-            };
-        }, {});
-
-        function findNextEvent(events, current) {
-            if (current.to_plan === null || current.to_plan === current.from_plan) {
-                return null;
-            }
-            const candidates = events.filter(event => event.from_plan === event.to_plan);
-            if (candidates.length === 0) {
-                return null;
-            }
-            return candidates[0];
         }
 
-        function buildSequence(events, sequence) {
-            const next = findNextEvent(events, sequence[sequence.length - 1]);
+        const mrrEventsByMemberId = mrrEvents.reduce(storeEventOnMemberId, {});
 
-            if (!next) {
-                return sequence;
+        function getFirstEvent(events, redemption) {
+            const firstEvents = events.filter(event => event.from_plan === null && event.used !== true);
+
+            if (firstEvents.length === 1) {
+                return firstEvents[0];
             }
 
-            return buildSequence(events.filter(event => event.id !== next.id), sequence.concat(next));
+            const intervals = firstEvents.map(event => Interval.fromDateTimes(event.created_at, redemption.created_at));
+
+            // Invalid intervals would be if the end date was before the start date - e.g. offer redeemed before an MRR event
+            const validIntervals = intervals.filter(interval => interval.isValid);
+
+            if (validIntervals.length === 1) {
+                return firstEvents[intervals.indexOf(validIntervals[0])];
+            }
+
+            // At this point we have multiple possible first events, so we should check which is most likely to be correct based on timestamps
+            // Picking the closest one to when the redemption occured
+
+            // This is a butters way of getting the smallest probs better to do a sort or a loop or smth
+            const smallestIntervalLength = Math.min(...validIntervals.map(interval => interval.length()));
+            return firstEvents[intervals.indexOf(intervals.find(interval => interval.length() === smallestIntervalLength))];
         }
 
-        const mrrEventSequences = Object.keys(eventsKeyedByMemberID).reduce((memo, memberID) => {
-            const initialEvents = eventsKeyedByMemberID[memberID].filter(event => event.from_plan === null);
-            const nonInitialEvents = eventsKeyedByMemberID[memberID].filter(event => event.from_plan !== null);
+        for (const redemption of offerRedemptions) {
+            redemption.created_at = DateTime.fromISO(redemption.created_at);
 
-            const sequences = initialEvents.map(event => {
-                return buildSequence(nonInitialEvents, [event]);
+            const possibleEvents = mrrEventsByMemberId[redemption.member_id];
+
+            const firstEvent = getFirstEvent(possibleEvents);
+
+            // Ensure this event cannot be used anymore
+            firstEvent.used = true;
+
+            // Update first event
+
+            const possibleSecondEvents = possibleEvents.filter((event) => {
+                if (event.from_plan !== firstEvent.to_plan) {
+                    return false;
+                }
+
+                if (event.used) {
+                    return false;
+                }
+
+                const interval = Interval.fromDateTimes(firstEvent.created_at, event.created_at);
+
+                if (!interval.isValid) {
+                    return false;
+                }
+
+                if (redemption.subscription_status === 'canceled') {
+                    return event.from_plan === event.to_plan || event.to_plan === null;
+                }
             });
 
-            return memo.concat(sequences);
-        }, []);
+            const mustHaveSecondEvent = redemption.subscription_status === 'canceled';
+            const likelyDoesNotHaveSecondEvent = firstEvent.to_plan === redemption.subscription_price;
 
-        for (const events of mrrEventSequences) {
-            let diff;
-
-            if (events[0]) {
-                const event = events[0];
-
-                if (event.from_plan !== null) {
-                    logging.error('Invalid event found');
-                    continue;
+            if (possibleSecondEvents.length === 0) {
+                if (mustHaveSecondEvent) {
+                    logging.error('Missing event, what do?');
                 }
-
-                if (event.to_plan === null) {
-                    logging.error('Invalid event found');
-                    continue;
-                }
-
-                const redemptions = redemptionsKeyedByMemberID[event.member_id];
-                let redemption;
-
-                if (redemptions.length === 1) {
-                    redemption = redemptions[0];
-                } else {
-                    redemption = redemptions.find(r => {
-                        // find closest one to the created_at date
-                    });
-                    redemption = redemptions[0];
-                }
-
-                const offer = foreverOffersKeyedByID[redemption.offer_id];
-
-                if (offer.discount_type === 'percent') {
-                    diff = event.mrr_delta * (100 - offer.discount_amount) / 100;
-                } else {
-                    if (offer.interval === 'month') {
-                        diff = offer.discount_amount;
-                    } else {
-                        diff = offer.discount_amount / 12;
-                    }
-                }
-
-                console.log(`About to update mrr_delta from ${event.mrr_delta} to ${event.mrr_delta - diff}`);
-                // await knex('members_paid_subscription_events')
-                //     .update({mrr_delta: event.mrr_delta - diff})
-                //     .where({id: event.id});
+                continue;
             }
 
-            if (events[1]) {
-                const event = events[1];
-
-                if (event.from_plan !== events[0].to_plan) {
-                    logging.error('Invalid event found');
-                    continue;
-                }
-
-                console.log(`About to update mrr_delta from ${event.mrr_delta} to ${event.mrr_delta + diff}`);
-                // await knex('members_paid_subscription_events')
-                //     .update({mrr_delta: event.mrr_delta + diff})
-                //     .where({id: event.id});
+            if (likelyDoesNotHaveSecondEvent) {
+                continue;
             }
+
+            if (possibleSecondEvents.length === 1) {
+                const secondEvent = possibleSecondEvents[0];
+                secondEvent.used = true;
+                // Update second event
+                continue;
+            }
+
+            const secondEvent = possibleSecondEvents[0];
+            secondEvent.used = true;
+            // Update second event
+            continue;
         }
     },
     async function down(knex) {
