@@ -82,10 +82,6 @@ module.exports = createTransactionalMigration(
         }
 
         for (const redemption of offerRedemptions) {
-            // Short circuit if subscription is canceled, current MRR won't be affect, only historical
-            if (redemption.subscription_status === 'canceled') {
-                continue;
-            }
             redemption.created_at = DateTime.fromISO(redemption.created_at);
 
             const possibleEvents = mrrEventsByMemberId[redemption.member_id];
@@ -115,6 +111,8 @@ module.exports = createTransactionalMigration(
 
             updateEvent(firstEvent, -mrrAdjustment);
 
+            const mustHaveSecondEvent = redemption.subscription_status === 'canceled' || firstEvent.to_plan !== redemption.subscription_price;
+
             const likelyDoesNotHaveSecondEvent = firstEvent.to_plan === redemption.subscription_price;
 
             if (likelyDoesNotHaveSecondEvent) {
@@ -138,6 +136,9 @@ module.exports = createTransactionalMigration(
             });
 
             if (possibleSecondEvents.length === 0) {
+                if (mustHaveSecondEvent) {
+                    logging.error('Missing event, what do?');
+                }
                 continue;
             }
 
@@ -148,6 +149,7 @@ module.exports = createTransactionalMigration(
             }
 
             // How do we determine the most likely second event???
+            // We can at least use the most likely event based on whether or not the subscription is canceled, or if we know for sure the tier/cadence has changed
             const secondEvent = possibleSecondEvents[0];
             updateEvent(secondEvent, +mrrAdjustment);
             continue;
