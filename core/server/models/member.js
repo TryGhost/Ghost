@@ -3,7 +3,6 @@ const uuid = require('uuid');
 const _ = require('lodash');
 const config = require('../../shared/config');
 const crypto = require('crypto');
-const errors = require('@tryghost/errors');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',

@@ -412,19 +412,17 @@ module.exports = {
             method: 'browse'
         },
         async query() {
-            const memberStats = await membersService.stats.getTotalMembersByStatusHistory();
+            const memberStats = await membersService.api.events.getStatuses();
             let totalMembers = _.last(memberStats) ? (_.last(memberStats).paid + _.last(memberStats).free + _.last(memberStats).comped) : 0;
 
             return {
                 resource: 'members',
                 total: totalMembers,
                 data: memberStats.map((d) => {
-                    // eslint-disable-next-line camelcase
-                    const {paid, free, comped, paid_subscribed, paid_canceled} = d;
+                    const {paid, free, comped} = d;
                     return {
                         date: moment(d.date).format('YYYY-MM-DD'),
-                        // eslint-disable-next-line camelcase
-                        paid, free, comped, paid_subscribed, paid_canceled
+                        paid, free, comped
                     };
                 })
             };
