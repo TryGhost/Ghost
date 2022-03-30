@@ -1,7 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {currentURL} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
-import {disableLabsFlag, enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -10,10 +9,6 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Members activity', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
-
-    beforeEach(function () {
-        enableLabsFlag(this.server, 'membersActivityFeed');
-    });
 
     it('redirects when not authenticated', async function () {
         await invalidateSession();
@@ -43,12 +38,6 @@ describe('Acceptance: Members activity', function () {
         it('renders', async function () {
             await visit('/members-activity');
             expect(currentURL()).to.equal('/members-activity');
-        });
-
-        it('requires feature flag', async function () {
-            disableLabsFlag(this.server, 'membersActivityFeed');
-            await visit('/members-activity');
-            expect(currentURL()).to.equal('/dashboard');
         });
     });
 });
