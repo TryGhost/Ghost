@@ -157,7 +157,7 @@ module.exports = createTransactionalMigration(
 
         const idsToDelete = updatedEvents.map(event => event.id);
 
-        await knex('member_paid_subscription_events').whereIn('id', idsToDelete).del();
+        await knex('members_paid_subscription_events').whereIn('id', idsToDelete).del();
         await knex('members_paid_subscription_events').insert(updatedEvents);
     },
     async function down() {}
