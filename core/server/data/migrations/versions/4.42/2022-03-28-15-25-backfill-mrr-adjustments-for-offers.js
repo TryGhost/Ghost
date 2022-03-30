@@ -82,6 +82,10 @@ module.exports = createTransactionalMigration(
         }
 
         for (const redemption of offerRedemptions) {
+            // Short circuit if subscription is canceled, current MRR won't be affect, only historical
+            if (redemption.subscription_status === 'canceled') {
+                continue;
+            }
             redemption.created_at = DateTime.fromISO(redemption.created_at);
 
             const possibleEvents = mrrEventsByMemberId[redemption.member_id];
@@ -111,7 +115,6 @@ module.exports = createTransactionalMigration(
 
             updateEvent(firstEvent, -mrrAdjustment);
 
-            const mustHaveSecondEvent = redemption.subscription_status === 'canceled';
             const likelyDoesNotHaveSecondEvent = firstEvent.to_plan === redemption.subscription_price;
 
             if (likelyDoesNotHaveSecondEvent) {
@@ -135,9 +138,6 @@ module.exports = createTransactionalMigration(
             });
 
             if (possibleSecondEvents.length === 0) {
-                if (mustHaveSecondEvent) {
-                    logging.error('Missing event, what do?');
-                }
                 continue;
             }
 
