@@ -1231,3 +1231,4 @@ add|ember-template-lint|no-action|290|48|290|48|9ba0927837b1ab440136aff1d92f0b69
 add|ember-template-lint|no-action|291|45|291|45|3c80294f3c8009bf5e59ff31d44e18cbc4c0ab89|1647993600000|1650582000000|1653174000000|app/components/settings/members-email.hbs
 add|ember-template-lint|no-action|148|60|148|60|9ba0927837b1ab440136aff1d92f0b694752dea8|1648080000000|1650668400000|1653260400000|app/components/settings/members-email.hbs
 add|ember-template-lint|no-action|149|57|149|57|3c80294f3c8009bf5e59ff31d44e18cbc4c0ab89|1648080000000|1650668400000|1653260400000|app/components/settings/members-email.hbs
+remove|ember-template-lint|no-implicit-this|2|50|2|50|bd48f6e7d00782426eb9404abb796a62e1b1fddd|1646611200000|1649199600000|1651791600000|app/components/member/activity-feed.hbs

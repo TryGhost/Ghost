@@ -81,9 +81,6 @@ export default class FeatureService extends Service {
     @feature('tweetGridCard')
         tweetGridCard;
 
-    @feature('membersActivityFeed')
-        membersActivityFeed;
-
     @feature('improvedOnboarding')
         improvedOnboarding;
 
