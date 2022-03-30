@@ -8483,16 +8483,16 @@ metascraper-image@5.28.2:
   dependencies:
     "@metascraper/helpers" "^5.28.2"
 
-metascraper-logo-favicon@5.28.3:
-  version "5.28.3"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.28.3.tgz#ed253c186212ecc14927206bc97eba6ffefe4aba"
-  integrity sha512-iLumDZxJlpQWc58YEFAna+RML3+I0yoySot6OBHVlRUkfy49642ellVw41XY50a/2CN26bfxZMtHNt7xbJTyrA==
+metascraper-logo-favicon@5.28.5:
+  version "5.28.5"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.28.5.tgz#4c3704f46f06e995ae89ce2d1c2c995e1f084533"
+  integrity sha512-kjneM95aXY7Z8EGzz2pKTFUwJrM3S4ikAivERa/WGBFKU41lcT7avQtUzXOq0zbqSXJOy4zqArAzTdLqSQuosA==
   dependencies:
     "@keyvhq/memoize" "~1.6.6"
     "@metascraper/helpers" "^5.28.2"
     lodash "~4.17.21"
-    reachable-url "~1.6.7"
-    tldts "~5.7.70"
+    reachable-url "~1.6.8"
+    tldts "~5.7.73"
 
 metascraper-logo@5.28.2:
   version "5.28.2"
@@ -8890,12 +8890,12 @@ nanoclone@^0.2.1:
   resolved "https://registry.yarnpkg.com/nanoclone/-/nanoclone-0.2.1.tgz#dd4090f8f1a110d26bb32c49ed2f5b9235209ed4"
   integrity sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==
 
-nanoid@3.3.1, nanoid@^3.3.1:
+nanoid@3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.1.tgz#6347a18cac88af88f58af0b3594b723d5e99bb35"
   integrity sha512-n6Vs/3KGyxPQd6uO0eH4Bv0ojGSUvuLlIHtC3Y0kEO23YRge8H9x1GCzLn28YX0H66pMkxuaeESFq4tKISKwdw==
 
-nanoid@^3.2.0:
+nanoid@^3.3.1:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.2.tgz#c89622fafb4381cd221421c69ec58547a1eec557"
   integrity sha512-CuHBogktKwpm5g2sRgv83jEy2ijFzBwMoYA60orPDR7ynsLijJDqgsi4RDGj3OJpy3Ieb+LYwiRmIOGyytgITA==
@@ -10005,21 +10005,12 @@ postcss-value-parser@^4.2.0:
   resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz#723c09920836ba6d3e5af019f92bc0971c02e514"
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
-postcss@8.4.12:
+postcss@8.4.12, postcss@^8.3.11:
   version "8.4.12"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.12.tgz#1e7de78733b28970fa4743f7da6f3763648b1905"
   integrity sha512-lg6eITwYe9v6Hr5CncVbK70SoioNQIq81nsaG86ev5hAidQvmOeETBqs7jm43K2F5/Ley3ytDtriImV6TpNiSg==
   dependencies:
     nanoid "^3.3.1"
-    picocolors "^1.0.0"
-    source-map-js "^1.0.2"
-
-postcss@^8.3.11:
-  version "8.4.6"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.6.tgz#c5ff3c3c457a23864f32cb45ac9b741498a09ae1"
-  integrity sha512-OovjwIzs9Te46vlEx7+uXB0PLijpwjXGKXjVGGPIGubGpq7uh5Xgf6D6FiJ/SzJMBosHDp6a2hiXOS97iBXcaA==
-  dependencies:
-    nanoid "^3.2.0"
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
@@ -10356,7 +10347,7 @@ re2@~1.17.4:
     nan "^2.15.0"
     node-gyp "^8.4.1"
 
-reachable-url@~1.6.7:
+reachable-url@~1.6.8:
   version "1.6.8"
   resolved "https://registry.yarnpkg.com/reachable-url/-/reachable-url-1.6.8.tgz#2280080e6e8e5607f4671728c520848264c071c2"
   integrity sha512-GIO9oHD2rAj+jAHhyh+k8Y1+Wlu1DoAWm7V2o2bro34Z3SfES9pp0OPXtqv08qZxJFov+0gikbfwbstO+PX8Ag==
@@ -11650,7 +11641,7 @@ tldts-core@^5.7.73:
   resolved "https://registry.yarnpkg.com/tldts-core/-/tldts-core-5.7.73.tgz#c5e279da1aea8ed990dd08e9becd1ac9c0d8a7de"
   integrity sha512-rTT318D4+HEw0WR3gYbmc2DGqgkLjvfwwD4M1K8hALW1dnnEvG3aGxfVMRv3V7QMTHBuhFoSFlWfbcvKYWtcUQ==
 
-tldts@~5.7.70:
+tldts@~5.7.73:
   version "5.7.73"
   resolved "https://registry.yarnpkg.com/tldts/-/tldts-5.7.73.tgz#c1bd385fa951d1dff7df2fd26f96f147ada1cb87"
   integrity sha512-+xhcsIsf0RZYSVxnr6iP43WP4pAqYugEBXA+cpHeatuo6UIUXgE/X+Dakxa+nsO8xhyWtD7eKP7HjNBiFhdTvA==
