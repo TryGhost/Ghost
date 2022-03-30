@@ -58,7 +58,7 @@ module.exports = createTransactionalMigration(
                 to_plan: event.to_plan,
                 currency: event.currency,
                 source: event.source,
-                created_at: event.created_at,
+                created_at: event.created_at.toUTC(),
                 mrr_delta: event.mrr_delta + mrrAdjustment
             });
         }
