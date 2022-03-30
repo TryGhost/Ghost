@@ -1015,10 +1015,6 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-feed {
-    margin: -12px 0 -8px;
-}
-
-.gh-member-settings .gh-member-feed-labs {
     margin: 0;
     padding: 16px 20px;
     background: var(--white);
@@ -1036,12 +1032,7 @@ textarea.gh-member-details-textarea {
 .gh-member-feed-row {
     display: flex;
     align-items: center;
-    height: 52px;
     padding: 0;
-}
-
-.gh-member-feed-row-labs {
-    height: unset;
 }
 
 .gh-member-feed-activity {
@@ -1094,10 +1085,6 @@ textarea.gh-member-details-textarea {
 
 .gh-member-feed-row:hover .gh-member-feed-date {
     color: var(--darkgrey);
-}
-
-.gh-member-btn-expandfeed {
-    margin-top: 16px;
 }
 
 .gh-member-feed-row:first-child .gh-member-feed-container {

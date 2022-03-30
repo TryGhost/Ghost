@@ -2,7 +2,7 @@
     <div class="gh-dashboard-box activity gh-list" data-test-dashboard-member-activity>
     <h4 class="gh-dashboard5-metric is-split">Recent activity</h4>
         <div class="content">
-            {{#let (members-event-fetcher filter=(if (feature "membersActivityFeed") (members-event-filter excludeEmailEvents=true)) pageSize=5) as |eventsFetcher|}}
+            {{#let (members-event-fetcher filter=(members-event-filter excludeEmailEvents=true) pageSize=5) as |eventsFetcher|}}
                 {{#if eventsFetcher.isError}}
                     <p class="error">
                         There was an error loading events
@@ -49,11 +49,9 @@
                         {{/if}}
                     </div>
 
-                    {{#if (feature "membersActivityFeed")}}
-                        <div class="footer">
-                            <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity →</LinkTo>
-                        </div>
-                    {{/if}}
+                    <div class="footer">
+                        <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity →</LinkTo>
+                    </div>
                 {{/if}}
             {{/let}}
         </div>
