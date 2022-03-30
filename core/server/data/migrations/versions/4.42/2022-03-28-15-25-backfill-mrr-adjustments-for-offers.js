@@ -161,6 +161,10 @@ module.exports = createTransactionalMigration(
             return;
         });
 
+        if (updatedEvents.length === 0) {
+            return;
+        }
+
         const idsToDelete = updatedEvents.map(event => event.id);
 
         await knex('members_paid_subscription_events').whereIn('id', idsToDelete).del();
