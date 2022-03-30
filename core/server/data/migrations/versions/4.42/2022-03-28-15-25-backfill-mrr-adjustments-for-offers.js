@@ -115,7 +115,7 @@ module.exports = createTransactionalMigration(
 
             const likelyDoesNotHaveSecondEvent = firstEvent.to_plan === redemption.subscription_price;
 
-            if (likelyDoesNotHaveSecondEvent) {
+            if (likelyDoesNotHaveSecondEvent && !mustHaveSecondEvent) {
                 return;
             }
 
