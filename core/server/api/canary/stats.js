@@ -8,11 +8,7 @@ module.exports = {
             method: 'browse'
         },
         async query() {
-            const data = await statsService.members.getCountHistory();
-
-            return {
-                data
-            };
+            return await statsService.members.getCountHistory();
         }
     }
 };

@@ -43,7 +43,7 @@ describe('MembersStatsService', function () {
             currentCounts.free = 2;
             currentCounts.comped = 3;
 
-            const results = await membersStatsService.getCountHistory();
+            const {data: results} = await membersStatsService.getCountHistory();
             results.length.should.eql(1);
             results[0].should.eql({
                 date: today,
@@ -73,7 +73,7 @@ describe('MembersStatsService', function () {
             currentCounts.free = 2;
             currentCounts.comped = 3;
 
-            const results = await membersStatsService.getCountHistory();
+            const {data: results} = await membersStatsService.getCountHistory();
             results.length.should.eql(1);
             results[0].should.eql({
                 date: today,
@@ -112,7 +112,7 @@ describe('MembersStatsService', function () {
             currentCounts.free = 3;
             currentCounts.comped = 4;
 
-            const results = await membersStatsService.getCountHistory();
+            const {data: results} = await membersStatsService.getCountHistory();
             results.should.eql([
                 {
                     date: yesterday,
@@ -166,7 +166,7 @@ describe('MembersStatsService', function () {
             currentCounts.free = 2;
             currentCounts.comped = 3;
 
-            const results = await membersStatsService.getCountHistory();
+            const {data: results} = await membersStatsService.getCountHistory();
             results.should.eql([
                 {
                     date: yesterday,

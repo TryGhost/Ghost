@@ -60,7 +60,7 @@ class MembersStatsService {
 
     /**
      * Returns a list of the total members by status for each day, including the paid deltas paid_subscribed and paid_canceled
-     * @returns {Promise<TotalMembersByStatusItem[]>}
+     * @returns {Promise<CountHistory>}
      */
     async getCountHistory() {
         const rows = await this.fetchAllStatusDeltas();
@@ -110,7 +110,19 @@ class MembersStatsService {
             });
         }
 
-        return cumulativeResults;
+        return {
+            data: cumulativeResults,
+            meta: {
+                pagination: {
+                    page: 1,
+                    limit: 'all',
+                    pages: 1,
+                    total: cumulativeResults.length,
+                    next: null,
+                    prev: null
+                }
+            }
+        };
     }
 }
 
@@ -142,4 +154,10 @@ module.exports = MembersStatsService;
  * @property {number} comped Total comped members
  * @property {number} paid_subscribed Paid members that subscribed on this day
  * @property {number} paid_canceled Paid members that canceled on this day
+ */
+
+/**
+ * @typedef {Object} CountHistory
+ * @property {TotalMembersByStatusItem[]} data List of the total members by status for each day, including the paid deltas paid_subscribed and paid_canceled
+ * @property {Object} meta
  */
