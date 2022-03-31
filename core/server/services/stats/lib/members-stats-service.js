@@ -66,7 +66,8 @@ class MembersStatsService {
         const rows = await this.fetchAllStatusDeltas();
 
         // Fetch current total amounts and start counting from there
-        let {paid, free, comped} = await this.getCount();
+        const totals = await this.getCount();
+        let {paid, free, comped} = totals;
 
         // Get today in UTC (default timezone for Luxon)
         const today = DateTime.local().toISODate();
@@ -120,7 +121,8 @@ class MembersStatsService {
                     total: cumulativeResults.length,
                     next: null,
                     prev: null
-                }
+                },
+                totals
             }
         };
     }
