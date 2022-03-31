@@ -1,9 +1,10 @@
 <div ...attributes>
-    <header class="gh-publishmenu-heading">Ready to
+    <header class="gh-publishmenu-heading" data-test-publishmenu-header>Ready to
         {{#if @canSendEmail}}
             <GhDistributionActionSelect
                 @distributionAction={{@distributionAction}}
                 @setDistributionAction={{@setDistributionAction}}
+                data-test-distribution-action-select
             />
         {{else}}
             publish

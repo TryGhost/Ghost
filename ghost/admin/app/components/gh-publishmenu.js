@@ -217,6 +217,10 @@ export default Component.extend({
 
         const defaultEmailRecipients = this.get('defaultEmailRecipients');
 
+        if (this.post.status === 'scheduled' && this.post.emailOnly) {
+            this.set('distributionAction', 'send');
+        }
+
         if (this.post.isPage || !defaultEmailRecipients) {
             this.set('distributionAction', 'publish');
         }
@@ -488,7 +492,9 @@ export default Component.extend({
     },
 
     _cleanup() {
-        if (this.post.isPage || !this.defaultEmailRecipients) {
+        if (this.post.isScheduled && this.post.emailOnly) {
+            this.set('distributionAction', 'send');
+        } else if (this.post.isPage || !this.defaultEmailRecipients) {
             this.set('distributionAction', 'publish');
         } else {
             this.set('distributionAction', 'publish_send');
