@@ -261,7 +261,7 @@ export default class DashboardStatsService extends Service {
             return;
         }
 
-        let statsUrl = this.ghostPaths.url.api('stats/member-count');
+        let statsUrl = this.ghostPaths.url.api('stats/member_count');
         let stats = yield this.ajax.request(statsUrl);
         this.memberCountStats = stats.stats.map((d) => {
             return {
