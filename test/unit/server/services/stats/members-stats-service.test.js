@@ -43,7 +43,7 @@ describe('MembersStatsService', function () {
             currentCounts.free = 2;
             currentCounts.comped = 3;
 
-            const {data: results} = await membersStatsService.getCountHistory();
+            const {data: results, meta} = await membersStatsService.getCountHistory();
             results.length.should.eql(1);
             results[0].should.eql({
                 date: today,
@@ -53,6 +53,7 @@ describe('MembersStatsService', function () {
                 paid_subscribed: 0,
                 paid_canceled: 0
             });
+            meta.totals.should.eql(currentCounts);
 
             fakeStatuses.calledOnce.should.eql(true);
             fakeTotal.calledOnce.should.eql(true);
@@ -73,7 +74,7 @@ describe('MembersStatsService', function () {
             currentCounts.free = 2;
             currentCounts.comped = 3;
 
-            const {data: results} = await membersStatsService.getCountHistory();
+            const {data: results, meta} = await membersStatsService.getCountHistory();
             results.length.should.eql(1);
             results[0].should.eql({
                 date: today,
@@ -83,6 +84,7 @@ describe('MembersStatsService', function () {
                 paid_subscribed: 4,
                 paid_canceled: 3
             });
+            meta.totals.should.eql(currentCounts);
 
             fakeStatuses.calledOnce.should.eql(true);
             fakeTotal.calledOnce.should.eql(true);
@@ -112,7 +114,7 @@ describe('MembersStatsService', function () {
             currentCounts.free = 3;
             currentCounts.comped = 4;
 
-            const {data: results} = await membersStatsService.getCountHistory();
+            const {data: results, meta} = await membersStatsService.getCountHistory();
             results.should.eql([
                 {
                     date: yesterday,
@@ -131,6 +133,7 @@ describe('MembersStatsService', function () {
                     paid_canceled: 3
                 }
             ]);
+            meta.totals.should.eql(currentCounts);
             fakeStatuses.calledOnce.should.eql(true);
             fakeTotal.calledOnce.should.eql(true);
         });
@@ -166,7 +169,7 @@ describe('MembersStatsService', function () {
             currentCounts.free = 2;
             currentCounts.comped = 3;
 
-            const {data: results} = await membersStatsService.getCountHistory();
+            const {data: results, meta} = await membersStatsService.getCountHistory();
             results.should.eql([
                 {
                     date: yesterday,
@@ -185,6 +188,7 @@ describe('MembersStatsService', function () {
                     paid_canceled: 3
                 }
             ]);
+            meta.totals.should.eql(currentCounts);
             fakeStatuses.calledOnce.should.eql(true);
             fakeTotal.calledOnce.should.eql(true);
         });
