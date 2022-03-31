@@ -695,7 +695,7 @@ describe('Members API', function () {
         await agent
             .delete(`/members/${newMember.id}`)
             .expectStatus(204)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
@@ -732,7 +732,7 @@ describe('Members API', function () {
                 return [500];
             });
 
-        // TODO This is wrong because it changes the state for teh rest of the tests
+        // @TODO This is wrong because it changes the state for the rest of the tests
         // We need to add a member via a fixture and then remove them OR work out how
         // to reapply fixtures before each test
         const memberToDelete = fixtureManager.get('members', 2);
@@ -740,10 +740,10 @@ describe('Members API', function () {
         await agent
             .delete(`members/${memberToDelete.id}/`)
             .expectStatus(204)
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag
-            })
-            .matchBodySnapshot();
+            });
 
         assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
     });
@@ -754,7 +754,7 @@ describe('Members API', function () {
         const res = await agent
             .get(`/members/upload/`)
             .expectStatus(200)
-            .matchBodySnapshot()
+            .expectEmptyBody() // express-test body parsing doesn't support CSV
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-length': anyString, //For some reason the content-length changes between 1220 and 1317
@@ -774,7 +774,7 @@ describe('Members API', function () {
         const res = await agent
             .get(`/members/upload/?search=Egg`)
             .expectStatus(200)
-            .matchBodySnapshot()
+            .expectEmptyBody() // express-test body parsing doesn't support CSV
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-disposition': anyString

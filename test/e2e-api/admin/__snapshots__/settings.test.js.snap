@@ -1123,9 +1123,7 @@ Object {
 }
 `;
 
-exports[`Settings API can do disconnectStripeConnectIntegration 1: [body] 1`] = `Object {}`;
-
-exports[`Settings API can do disconnectStripeConnectIntegration 2: [headers] 1`] = `
+exports[`Settings API can do disconnectStripeConnectIntegration 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -1137,9 +1135,7 @@ Object {
 }
 `;
 
-exports[`Settings API can do updateMembersEmail 1: [body] 1`] = `Object {}`;
-
-exports[`Settings API can do updateMembersEmail 2: [headers] 1`] = `
+exports[`Settings API can do updateMembersEmail 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -1151,9 +1147,7 @@ Object {
 }
 `;
 
-exports[`Settings API can do validateMembersEmailUpdate 1: [body] 1`] = `Object {}`;
-
-exports[`Settings API can do validateMembersEmailUpdate 2: [headers] 1`] = `
+exports[`Settings API can do validateMembersEmailUpdate 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",

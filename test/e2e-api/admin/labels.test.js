@@ -113,7 +113,7 @@ describe('Labels API', function () {
         await agent
             .delete(`labels/${id}`)
             .expectStatus(204)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag
             });

@@ -119,7 +119,7 @@ describe('Snippets API', function () {
         await agent
             .delete(`snippets/${newSnippet.id}`)
             .expectStatus(204)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag
             });

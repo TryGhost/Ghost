@@ -172,7 +172,7 @@ describe('Settings API', function () {
                 type: 'fromAddressUpdate'
             })
             .expectStatus(200)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
@@ -189,7 +189,7 @@ describe('Settings API', function () {
         await agent
             .get(`settings/members/email/?token=${token}&action=fromAddressUpdate`)
             .expectStatus(302)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot();
 
         // Assert that the setting is changed as a side effect
@@ -207,7 +207,7 @@ describe('Settings API', function () {
         await agent
             .delete('/settings/stripe/connect/')
             .expectStatus(200)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag
             });

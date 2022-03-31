@@ -14,7 +14,7 @@ describe('Members Stripe Connect API', function () {
         await agent
             .get(`members/stripe_connect`)
             .expectStatus(302)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 location: stringMatching(/^https:\/\/connect\.stripe\.com\/oauth\/authorize\?response_type=code&scope=read_write&client_id=/),
                 'set-cookie': [
