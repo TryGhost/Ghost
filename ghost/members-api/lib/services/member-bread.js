@@ -220,12 +220,16 @@ module.exports = class MemberBREADService {
             throw error;
         }
 
+        const sharedOptions = options.transacting ? {
+            transacting: options.transacting
+        } : {};
+
         try {
             if (data.stripe_customer_id) {
                 await this.memberRepository.linkStripeCustomer({
                     customer_id: data.stripe_customer_id,
                     member_id: model.id
-                }, options);
+                }, sharedOptions);
             }
         } catch (error) {
             const isStripeLinkingError = error.message && (error.message.match(/customer|plan|subscription/g));
@@ -245,7 +249,7 @@ module.exports = class MemberBREADService {
 
         if (!this.labsService.isSet('multipleProducts')) {
             if (data.comped) {
-                await this.memberRepository.setComplimentarySubscription(model, options);
+                await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
             }
         }
 
