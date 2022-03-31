@@ -1826,12 +1826,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.7.tgz#c176e54dc631d0f35c45429b0e93370842b1d4ed"
   integrity sha512-DjHuOyPgULMxoXyVUakGtHLvfJeucHnxHSgdGveG0IRWbhUOfUU5+hJT1bvaBhWRQ+bGeLKmxJwxUk5bO8zk8Q==
 
-"@tryghost/express-test@0.7.1":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.7.1.tgz#67370ebf66784d58ab3928c13cb69ba843420b32"
-  integrity sha512-Lzv/H3QRw8p6+wpfpxO6U24KO7BOkPpQW8Pqheopx1wegUWvEgh04FyYZOawIY6qdOd3aLid14N1kFA27pG44w==
+"@tryghost/express-test@0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-test/-/express-test-0.8.0.tgz#1e8ce435f798ca916752761027d29b5c65e4337e"
+  integrity sha512-7uCtoOmjUkiu/+Ldtgd8EShDbXIopwKdhc4FNgGrAaFnWHHA1szKCcqSccfFaYfaYdaIRkg40Qts96ulHPUY/w==
   dependencies:
-    "@tryghost/jest-snapshot" "^0.3.7"
+    "@tryghost/jest-snapshot" "^0.3.8"
     cookiejar "^2.1.3"
     reqresnext "^1.7.0"
 
@@ -1870,10 +1870,10 @@
   optionalDependencies:
     sharp "^0.30.0"
 
-"@tryghost/jest-snapshot@^0.3.7":
-  version "0.3.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.3.7.tgz#96bf2a3c95232e1f0be1f6758635bb8f21b9226d"
-  integrity sha512-9m5zzfXJ0OhmDCDiKP3ieSmkvEQvGenp7piAUPOl4INifczGNslZuuEOBFQe+QfYf+vfAknfbyOjMD4Fmecrdw==
+"@tryghost/jest-snapshot@^0.3.8":
+  version "0.3.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/jest-snapshot/-/jest-snapshot-0.3.8.tgz#c0bfe25ecddde291f76ca6f60a2e29f601af23c2"
+  integrity sha512-BwexomJqsTmP1vpiv0qXAMjnzS2UUDOFtBWrkm4MvzUJrVEcqHZ9vWYBsUJFIa2bpGs52+H47c/6Wr4Ht22JSg==
   dependencies:
     "@tryghost/errors" "^1.2.7"
     expect "^27.5.0"

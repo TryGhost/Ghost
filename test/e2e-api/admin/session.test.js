@@ -19,7 +19,7 @@ describe('Sessions API', function () {
                 password: owner.password
             })
             .expectStatus(201)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyString,
                 'set-cookie': [
@@ -47,7 +47,7 @@ describe('Sessions API', function () {
         await agent
             .delete('session/')
             .expectStatus(204)
-            .matchBodySnapshot()
+            .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyString
             });

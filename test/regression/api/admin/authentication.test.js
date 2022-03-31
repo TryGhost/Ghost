@@ -473,8 +473,9 @@ describe('Authentication API', function () {
             await agent.post('authentication/reset_all_passwords')
                 .header('Accept', 'application/json')
                 .body({})
+                // @TODO: change to a 204 in 5.0
                 .expectStatus(200)
-                .matchBodySnapshot()
+                .expectEmptyBody()
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 });
