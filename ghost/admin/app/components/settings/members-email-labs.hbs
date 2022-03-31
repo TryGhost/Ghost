@@ -1,0 +1,237 @@
+<section class="gh-main-section">
+    <div class="gh-expandable">
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Enable newsletter sending</h4>
+                    <p class="gh-expandable-description">Newsletter features are active, posts can be sent by email</p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch" for="email-newsletter-enabled" {{on "click" (action "toggleEmailNewsletterEnabled")}}>
+                        <input type="checkbox" checked={{this.emailNewsletterEnabled}} class="gh-input" {{on "click" (action "toggleEmailNewsletterEnabled")}} name="email-newsletter-enabled" data-test-checkbox="email-newsletter-enabled">
+                        <span class="input-toggle-component mt1"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{#if this.emailNewsletterEnabled}}
+    <div class="gh-main-section gh-newsletters">
+        <div class="flex justify-between items-center">
+            <h4 class="gh-main-section-header small bn">Newsletters</h4>
+            {{#if (not-eq this.archivedNewsletterCount 0)}}
+            <div>
+                <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
+                    {{!-- <PowerSelect
+                        @selected={{this.selectedType}}
+                        @options={{this.availableTypes}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.onTypeChange}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="gh-contentfilter-menu-trigger gh-contentfilter-menu-trigger-tiers"
+                        @dropdownClass="gh-contentfilter-menu-dropdown"
+                        @matchTriggerWidth={{false}}
+                        as |type|
+                    >
+                        {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
+                    </PowerSelect> --}}
+                    <span>Active</span>
+                    <span>{{svg-jar "arrow-down-small" class="w2"}}</span>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+        <section class="gh-expandable">
+            <div class="gh-expandable-block">
+                {{#each this.newsletters.newsletters as |newsletter|}}
+                    {{#if (eq newsletter.status "active")}}
+                        <div class="gh-main-content-card gh-newsletter-card {{if (gt this.activeNewsletterCount 1) "multiple"}}">
+                            {{svg-jar "grab" class="grab-newsletter"}}
+                            <div class="gh-newsletter-card-block title-block">
+                                <h3 class="gh-newsletter-card-name">
+                                    {{newsletter.name}}
+                                </h3>
+                                <p class="gh-newsletter-card-description">
+                                    {{newsletter.description}}
+                                </p>
+                            </div>
+                            <div class="gh-newsletter-card-block stats-block {{if (gt this.activeNewsletterCount 1) "multiple"}}">
+                                <div>
+                                    <h3 class="gh-newsletter-card-name">{{newsletter.members.total}}</h3>
+                                    <p class="gh-newsletter-card-description">Subscribers</p>
+                                </div>
+                                <div>
+                                    <h3 class="gh-newsletter-card-name">{{newsletter.posts.total}}</h3>
+                                    <p class="gh-newsletter-card-description">Posts sent</p>
+                                </div>
+                            </div>
+                            <div class="gh-newsletter-card-block cta-block">
+                                {{#if (eq this.activeNewsletterCount 1)}}
+                                    <button class="gh-btn gh-btn-green" type="button" {{on "click" @toggleEmailDesignSettings}}><span>Customize &rarr;</span></button>
+                                {{else}}
+                                    <span class="dropdown">
+                                        <GhDropdownButton
+                                            @dropdownName="newsletter-actions-menu-newsletter-{{newsletter.id}}"
+                                            @classNames="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-actions-button icon-only"
+                                        >
+                                            <span>
+                                                {{svg-jar "dotdotdot"}}
+                                                <span class="hidden">Actions</span>
+                                            </span>
+                                        </GhDropdownButton>
+                                            <GhDropdown
+                                                @name="newsletter-actions-menu-newsletter-{{newsletter.id}}"
+                                                @tagName="ul"
+                                                @classNames="gh-newsletter-actions-menu dropdown-menu dropdown-triangle-top-right"
+                                            >
+                                                <li>
+                                                    <button class="mr2" type="button" {{on "click" @toggleEmailDesignSettings}}>
+                                                        <span>Edit</span>
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter.id)}}>
+                                                        <span>Archive</span>
+                                                    </button>
+                                                </li>
+                                            </GhDropdown>
+                                    </span>
+                                {{/if}}
+                            </div>
+                        </div>
+                    {{/if}}
+                {{/each}}
+            </div>
+        </section>
+        <button type="button" class="gh-add-newsletter" {{on "click" @toggleEmailDesignSettings}} {{on "click" this.addNewsletter}}>{{svg-jar "add-stroke"}}Add newsletter</button>
+    </div>
+
+    <section class="gh-main-section">
+        <h4 class="gh-main-section-header small bn">General settings</h4>
+        <div class="gh-expandable">
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Default newsletter recipients</h4>
+                        <p class="gh-expandable-description">When you publish new content, who do you usually want to send it to?</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{action (toggle "defaultRecipientsOpen" this)}} data-test-toggle-membersemail>
+                        <span>{{if this.defaultRecipientsOpen "Close" "Expand"}}</span>
+                    </button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.defaultRecipientsOpen}}
+                        {{#if (gt this.activeNewsletterCount 1)}}
+                            <div class="form-group">
+                                <label class="fw6 f8">Default newsletter</label>
+                                <div class="gh-input"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="fw6 f8">Default member selection</label>
+                                <div class="gh-setting-richdd-container gh-setting-rich-dropdown">
+                                    <Settings::MembersEmail::DefaultRecipientsSelect
+                                        @recipients={{this.recipientsSelectValue}}
+                                        @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
+                                        @onRecipientsChange={{action "setDefaultEmailRecipients"}}
+                                        @onSegmentChange={{action "setDefaultEmailRecipientsFilter"}}
+                                    />
+                                </div>
+                            </div>
+                        {{else}}
+                            <div class="gh-setting-richdd-container gh-setting-rich-dropdown form-group">
+                                <Settings::MembersEmail::DefaultRecipientsSelect
+                                    @recipients={{this.recipientsSelectValue}}
+                                    @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
+                                    @onRecipientsChange={{action "setDefaultEmailRecipients"}}
+                                    @onSegmentChange={{action "setDefaultEmailRecipientsFilter"}}
+                                />
+                            </div>
+                        {{/if}}
+                    {{/liquid-if}}
+                </div>
+            </div>
+
+            {{#unless this.config.mailgunIsConfigured}}
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Mailgun configuration</h4>
+                            <p class="gh-expandable-description">The Mailgun API is used for bulk email newsletter delivery. <a href="https://ghost.org/docs/faq/mailgun-newsletters/" target="_blank" rel="noopener noreferrer">Why is this required?</a></p>
+                        </div>
+                        <button type="button" class="gh-btn" {{action (toggle "membersEmailOpen" this)}} data-test-toggle-membersemail>
+                            <span>{{if this.membersEmailOpen "Close" "Expand"}}</span>
+                        </button>
+                    </div>
+                    <div class="gh-expandable-content">
+                        {{#liquid-if this.membersEmailOpen}}
+                            <div class="flex flex-column flex">
+                                <GhFormGroup>
+                                    <div class="flex items-center">
+                                        <GhFormGroup @class="gh-mailgun-region no-margin">
+                                            <label class="fw6 f8">Mailgun region</label>
+                                            <div class="mt1">
+                                                <PowerSelect
+                                                    @options={{this.mailgunRegions}}
+                                                    @selected={{this.mailgunRegion}}
+                                                    @onChange={{action "setMailgunRegion"}}
+                                                    @class="gh-select"
+                                                    @searchEnabled={{false}}
+                                                    @triggerComponent="gh-power-select/trigger"
+                                                    as |region|
+                                                >
+                                                    {{region.flag}} {{region.name}}
+                                                </PowerSelect>
+                                            </div>
+                                        </GhFormGroup>
+                                        <GhFormGroup @class="no-margin">
+                                            <label class="fw6 f8">Mailgun domain</label>
+                                            <GhTextInput
+                                                @value={{readonly this.mailgunSettings.domain}}
+                                                @input={{action "setMailgunDomain"}}
+                                                @class="mt1"
+                                                data-test-mailgun-domain-input={{true}}
+                                            />
+                                        </GhFormGroup>
+                                    </div>
+                                    <p>Find your Mailgun region and domain
+                                        <a href="https://app.mailgun.com/app/sending/domains" target="_blank" class="fw5" rel="noopener noreferrer">here</a>
+                                    </p>
+                                </GhFormGroup>
+                                <GhFormGroup>
+                                    <label class="fw6 f8">Mailgun Private API key</label>
+                                    <GhTextInput
+                                        @type="password"
+                                        @value={{readonly this.mailgunSettings.apiKey}}
+                                        @input={{action "setMailgunApiKey"}}
+                                        @class="mt1 password" @autocomplete="new-password"
+                                        data-test-mailgun-api-key-input={{true}}
+                                    />
+                                    <p>Find your Mailgun API keys
+                                        <a href="https://app.mailgun.com/app/account/security/api_keys" target="_blank" class="fw5" rel="noopener noreferrer">here</a>
+                                    </p>
+                                </GhFormGroup>
+                            </div>
+                        {{/liquid-if}}
+                    </div>
+                </div>
+            {{/unless}}
+
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Enable newsletter open-rate</h4>
+                        <p class="gh-expandable-description">Track how many members are reading your emails</p>
+                    </div>
+                    <div class="for-switch">
+                        <label class="switch" for="email-track-opens" {{on "click" (action "toggleEmailTrackOpens")}}>
+                            <input type="checkbox" checked={{this.settings.emailTrackOpens}} class="gh-input" {{on "click" (action "toggleEmailTrackOpens")}} name="email-track-opens" data-test-checkbox="email-track-opens">
+                            <span class="input-toggle-component mt1"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{{/if}}

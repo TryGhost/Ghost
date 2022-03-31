@@ -43,6 +43,7 @@ Router.map(function () {
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.membership', {path: '/settings/members'});
     this.route('settings.members-email', {path: '/settings/members-email'});
+    this.route('settings.members-email-labs', {path: '/settings/members-email-labs'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
 
     this.route('settings.design', {path: '/settings/design'}, function () {

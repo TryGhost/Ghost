@@ -1,11 +1,12 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find} from '@ember/test-helpers';
+import {disableLabsFlag, enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Members email', function () {
+describe('Acceptance: Settings - Members email (multipleNewsletters)', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -15,18 +16,26 @@ describe('Acceptance: Settings - Members email', function () {
         const role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
 
+        enableLabsFlag(this.server, 'multipleNewsletters');
+
         return await authenticateSession();
     });
 
-    it('loads non-labs route', async function () {
-        await visit('/settings/members-email');
+    it('without flag - redirects labs to original', async function () {
+        disableLabsFlag(this.server, 'multipleNewsletters');
+        await visit('/settings/members-email-labs');
         expect(currentURL()).to.equal('/settings/members-email');
+    });
+
+    it('with flag - redirects original to labs', async function () {
+        await visit('/settings/members-email');
+        expect(currentURL()).to.equal('/settings/members-email-labs');
     });
 
     it('can manage open rate tracking', async function () {
         this.server.db.settings.update({key: 'email_track_opens'}, {value: 'true'});
 
-        await visit('/settings/members-email');
+        await visit('/settings/members-email-labs');
         expect(find('[data-test-checkbox="email-track-opens"]')).to.be.checked;
 
         await click('label[for="email-track-opens"]');
