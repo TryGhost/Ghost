@@ -46,6 +46,19 @@ export default class ChartMembersCountInsert extends Component {
             return 0;
         }
 
-        return Math.round((to - from) / from * 100);
+        const percentage = (to - from) / from * 100;
+        if (Math.abs(percentage) < 0.05) {
+            // Round on two decimals
+            return Math.round(percentage * 100) / 100;
+        }
+        if (Math.abs(percentage) < 0.25) {
+            // Round on one decimal
+            return Math.round(percentage * 10) / 10;
+        }
+        if (Math.abs(percentage) < 1) {
+            // Round on 0.5
+            return Math.round(percentage * 2) / 2;
+        }
+        return Math.round(percentage);
     }
 }

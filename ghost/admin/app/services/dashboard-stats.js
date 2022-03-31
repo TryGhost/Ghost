@@ -17,8 +17,8 @@ import {tracked} from '@glimmer/tracking';
  * @property {number} paid Amount of paid members
  * @property {number} free Amount of free members
  * @property {number} comped Amount of comped members
- * @property {number} newPaid Amount of new paid members
- * @property {number} canceledPaid Amount of canceled paid members
+ * @property {number} paidSubscribed Amount of new paid members
+ * @property {number} paidCanceled Amount of canceled paid members
  */
 
 /**
@@ -70,18 +70,6 @@ export default class DashboardStatsService extends Service {
      * @type {?SiteStatus} Contains information on what graphs need to be shown
      */
     @tracked siteStatus = null;
-
-    /**
-     * @type {?MemberCounts} memberCounts
-     */
-    @tracked
-        memberCounts = null;
-
-    /**
-     * @type {?MemberCounts} Member counts to compare against for trends (30 days ago)
-     */
-    @tracked
-        memberCountsTrend = null;
 
     /**
      * @type {?MemberCountStat[]}
@@ -147,6 +135,53 @@ export default class DashboardStatsService extends Service {
      * @type {'free'|'paid'|'total'}
      */
     @tracked lastSeenFilterStatus = 'total';
+ 
+    /**
+     * @type {?MemberCounts}
+     */
+    get memberCounts() {
+        if (!this.memberCountStats) {
+            return null;
+        }
+
+        const stat = this.memberCountStats[this.memberCountStats.length - 1];
+        return {
+            total: stat.paid + stat.comped + stat.free,
+            paid: stat.paid,
+            free: stat.free + stat.comped
+        };
+    }
+
+    /**
+     * @type {?MemberCountStat}
+     */
+    get memberCountsTrend() {
+        if (!this.memberCountStats) {
+            return null;
+        }
+
+        // Search for the value at chartDays ago (if any, else the first before it, or the next one if not one before it)
+        const searchDate = moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
+
+        for (let index = this.memberCountStats.length - 1; index >= 0; index -= 1) {
+            const stat = this.memberCountStats[index];
+            if (stat.date <= searchDate) {
+                return {
+                    total: stat.paid + stat.comped + stat.free,
+                    paid: stat.paid,
+                    free: stat.free + stat.comped
+                };
+            }            
+        }
+
+        // We don't have any statistic from more than x days ago.
+        // Return all zero values
+        return {
+            total: 0,
+            paid: 0,
+            free: 0
+        };
+    }
 
     loadSiteStatus() {
         return this._loadSiteStatus.perform();
@@ -170,60 +205,11 @@ export default class DashboardStatsService extends Service {
         };
     }
 
+    /**
+     * @deprecated
+     */
     loadMembersCounts() {
-        return this._loadMembersCounts.perform();
-    }
-
-    @task({restartable: true})
-    *_loadMembersCounts() {
-        this.memberCounts = null;
-        this.memberCountsTrend = null;
-
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-            if (this.dashboardMocks.memberCounts === null) {
-                return null;
-            }
-            this.memberCounts = {...this.dashboardMocks.memberCounts};
-
-            this.memberCountsTrend = {
-                // One percentage up
-                total: Math.round(this.dashboardMocks.memberCounts.total * 1.06),
-                // One percentage down
-                free: Math.round(this.dashboardMocks.memberCounts.free * 0.96),
-                // One percentage =
-                paid: this.dashboardMocks.memberCounts.paid
-            };
-            return;
-        }
-
-        // @todo We need to have way to reduce the total number of API requests
-        let paidResult = yield this.store.query('member', {limit: 1, filter: 'status:paid'});
-        let paid = paidResult.meta.pagination.total;
-
-        let freeResult = yield this.store.query('member', {limit: 1, filter: 'status:-paid'});
-        let free = freeResult.meta.pagination.total;
-
-        this.memberCounts = {
-            total: paid + free,
-            paid,
-            free
-        };
-
-        // Now fetch trends (30 days ago)
-        const trendDate = new Date(Date.now() - 30 * 60 * 60 * 24 * 1000);
-        
-        paidResult = yield this.store.query('member', {limit: 1, filter: `status:paid+created_at:<'${trendDate.toISOString()}'`});
-        paid = paidResult.meta.pagination.total;
-
-        freeResult = yield this.store.query('member', {limit: 1, filter: `status:-paid+created_at:<'${trendDate.toISOString()}'`});
-        free = freeResult.meta.pagination.total;
-
-        this.memberCountsTrend = {
-            total: paid + free,
-            paid,
-            free
-        };
+        return this.loadMemberCountStats();
     }
 
     loadMemberCountStats() {
@@ -232,10 +218,7 @@ export default class DashboardStatsService extends Service {
     }
 
     /**
-     * Loads the members graphs
-     * - total paid
-     * - total members
-     * for each day in the last chartDays days
+     * Loads the members count history
      */
     @task({restartable: true})
     *_loadMemberCountStats() {
@@ -247,15 +230,26 @@ export default class DashboardStatsService extends Service {
                 // Note: that this shouldn't happen
                 return null;
             }
-            this.memberCountStats = this.fillMissingDates(this.dashboardMocks.memberCountStats, {paid: 0, free: 0, comped: 0}, this.chartDays);
+            this.memberCountStats = this.dashboardMocks.memberCountStats;
             return;
         }
 
-        // @todo: we need to reuse the result of the call when we reload, because the endpoint returns all available days
-        // at the moment. We can reuse the result to show 7 days, 30 days, ...
-        let statsUrl = this.ghostPaths.url.api('members/stats/count');
+        let statsUrl = this.ghostPaths.url.api('stats/members/count-history');
         let stats = yield this.ajax.request(statsUrl);
-        this.memberCountStats = this.fillMissingDates(stats.data, {paid: 0, free: 0, comped: 0}, this.chartDays);
+        this.memberCountStats = stats.stats.map((d) => {
+            return {
+                ...d,
+                paidCanceled: d.paid_canceled,
+                paidSubscribed: d.paid_subscribed
+            };
+        });
+    }
+
+    get filledMemberCountStats() {
+        if (this.memberCountStats === null) {
+            return null;
+        }
+        return this.fillMissingDates(this.memberCountStats, {paid: 0, free: 0, comped: 0, paidCanceled: 0, paidSubscribed: 0}, this.chartDays);
     }
 
     loadMrrStats() {
@@ -488,7 +482,7 @@ export default class DashboardStatsService extends Service {
      * @param {number} days Amount of days to fill the graph with
      */
     fillMissingDates(data, defaultData, days) {
-        let currentRangeDate = moment().subtract(days, 'days');
+        let currentRangeDate = moment().subtract(days - 1, 'days');
 
         let endDate = moment().add(1, 'hour');
         const output = [];
@@ -508,7 +502,7 @@ export default class DashboardStatsService extends Service {
         while (currentRangeDate.isBefore(endDate)) {
             let dateStr = currentRangeDate.format('YYYY-MM-DD');
             const dataOnDate = data.find(d => d.date === dateStr);
-            lastVal = dataOnDate ? dataOnDate : {...lastVal, date: dateStr};
+            lastVal = dataOnDate ? dataOnDate : {...lastVal, date: dateStr, paidCanceled: 0, paidSubscribed: 0};
             output.push(lastVal);
             currentRangeDate = currentRangeDate.add(1, 'day');
         }

@@ -33,8 +33,10 @@ export default class DashboardController extends Controller {
     }
 
     initialise() {
-        this.loadWhatsNew();
-        this.checkMemberCountTask.perform();
+        if (!this.feature.get('dashboardV5')) {
+            this.loadWhatsNew();
+            this.checkMemberCountTask.perform();
+        }
     }
 
     loadWhatsNew() {

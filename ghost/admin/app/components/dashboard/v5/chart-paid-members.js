@@ -6,8 +6,7 @@ export default class ChartPaidMembers extends Component {
     @service dashboardStats;
     
     /**
-     * Call this method when you need to fetch new data from the server. In this component, it will get called
-     * when the days parameter changes and on initialisation.
+     * Call this method when you need to fetch new data from the server. 
      */
     @action
     loadCharts() {
@@ -24,10 +23,10 @@ export default class ChartPaidMembers extends Component {
     }
 
     get chartData() {
-        const stats = this.dashboardStats.memberCountStats;
+        const stats = this.dashboardStats.filledMemberCountStats;
         const labels = stats.map(stat => stat.date);
-        const newData = stats.map(stat => stat.newPaid);
-        const canceledData = stats.map(stat => -stat.canceledPaid);
+        const newData = stats.map(stat => stat.paidSubscribed);
+        const canceledData = stats.map(stat => -stat.paidCanceled);
 
         return {
             labels: labels,
