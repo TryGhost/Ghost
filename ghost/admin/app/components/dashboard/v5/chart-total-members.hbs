@@ -6,7 +6,7 @@
     Total members
 </h4> --}}
 {{#if this.loading}}
-    <div class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+    <div {{did-insert this.loadCharts}} class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
 {{else}}
     <Dashboard::V5::ChartMembersCountsInsert />
     <EmberChart
