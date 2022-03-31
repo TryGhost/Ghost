@@ -24,7 +24,7 @@ module.exports = createTransactionalMigration(
         function storeEventOnMemberId(storage, event) {
             const parsedEvent = {
                 ...event,
-                datetime: DateTime.fromISO(event.created_at)
+                datetime: DateTime.fromJSDate(event.created_at)
             };
             return {
                 ...storage,
@@ -82,7 +82,7 @@ module.exports = createTransactionalMigration(
         }
 
         offerRedemptions.forEach((redemption) => {
-            redemption.datetime = DateTime.fromISO(redemption.created_at);
+            redemption.datetime = DateTime.fromJSDate(redemption.created_at);
 
             const possibleEvents = mrrEventsByMemberId[redemption.member_id];
 
