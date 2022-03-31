@@ -38,7 +38,7 @@ describe('Acceptance: Settings - Members email (multipleNewsletters)', function 
         await visit('/settings/members-email-labs');
         expect(find('[data-test-checkbox="email-track-opens"]')).to.be.checked;
 
-        await click('label[for="email-track-opens"]');
+        await click('[data-test-label="email-track-opens"]');
         expect(find('[data-test-checkbox="email-track-opens"]')).to.not.be.checked;
 
         await click('[data-test-button="save-members-settings"]');
