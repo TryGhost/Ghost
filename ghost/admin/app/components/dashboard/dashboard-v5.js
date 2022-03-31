@@ -13,7 +13,7 @@ const DAYS_OPTIONS = [{
     value: 90
 }, {
     name: 'All time',
-    value: 365 // todo: add support for all time (not important for prototype)
+    value: 'all'
 }];
 
 export default class DashboardDashboardV5Component extends Component {

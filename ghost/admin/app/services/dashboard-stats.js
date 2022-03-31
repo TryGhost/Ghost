@@ -127,6 +127,7 @@ export default class DashboardStatsService extends Service {
         emailOpenRateStats = null;
 
     /**
+     * @type {number|'all'}
      * Amount of days to load for member count and MRR related charts
      */
     @tracked chartDays = 7;
@@ -161,6 +162,10 @@ export default class DashboardStatsService extends Service {
             return null;
         }
 
+        if (this.chartDays === 'all') {
+            return null;
+        }
+
         // Search for the value at chartDays ago (if any, else the first before it, or the next one if not one before it)
         const searchDate = moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
 
@@ -184,7 +189,25 @@ export default class DashboardStatsService extends Service {
         };
     }
 
+    get filledMemberCountStats() {
+        if (this.memberCountStats === null) {
+            return null;
+        }
+        return this.fillMissingDates(this.memberCountStats, {paid: 0, free: 0, comped: 0, paidCanceled: 0, paidSubscribed: 0}, this.chartDays);
+    }
+
+    get filledMrrStats() {
+        if (this.mrrStats === null) {
+            return null;
+        }
+        return this.fillMissingDates(this.mrrStats, {mrr: 0}, this.chartDays);
+    }
+
     loadSiteStatus() {
+        if (this._loadSiteStatus.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadSiteStatus.last;
+        }
         return this._loadSiteStatus.perform();
     }
 
@@ -214,14 +237,17 @@ export default class DashboardStatsService extends Service {
     }
 
     loadMemberCountStats() {
-        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        if (this._loadMemberCountStats.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadMemberCountStats.last;
+        }
         return this._loadMemberCountStats.perform();
     }
 
     /**
      * Loads the members count history
      */
-    @task({restartable: true})
+    @task
     *_loadMemberCountStats() {
         this.memberCountStats = null;
         if (this.dashboardMocks.enabled) {
@@ -246,22 +272,18 @@ export default class DashboardStatsService extends Service {
         });
     }
 
-    get filledMemberCountStats() {
-        if (this.memberCountStats === null) {
-            return null;
-        }
-        return this.fillMissingDates(this.memberCountStats, {paid: 0, free: 0, comped: 0, paidCanceled: 0, paidSubscribed: 0}, this.chartDays);
-    }
-
     loadMrrStats() {
-        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        if (this._loadMrrStats.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadMrrStats.last;
+        }
         return this._loadMrrStats.perform();
     }
 
     /**
      * Loads the mrr graphs for the current chartDays days
      */
-    @task({restartable: true})
+    @task
     *_loadMrrStats() {
         this.mrrStats = null;
         if (this.dashboardMocks.enabled) {
@@ -269,23 +291,17 @@ export default class DashboardStatsService extends Service {
             if (this.dashboardMocks.mrrStats === null) {
                 return null;
             }
-            this.mrrStats = this.fillMissingDates(this.dashboardMocks.mrrStats, {mrr: 0}, this.chartDays);
+            this.mrrStats = this.dashboardMocks.mrrStats;
             return;
         }
 
-        // @todo: we need to reuse the result of the call when we reload, because the endpoint returns all available days
-        // at the moment. We can reuse the result to show 7 days, 30 days, ...
         let statsUrl = this.ghostPaths.url.api('members/stats/mrr');
         let stats = yield this.ajax.request(statsUrl);
 
         // @todo: add proper support for all different currencies that are returned
-        this.mrrStats = this.fillMissingDates(
-            stats.data[0].data.map((d) => {
-                return {date: d.date, mrr: d.value};
-            }), 
-            {mrr: 0}, 
-            this.chartDays
-        );
+        this.mrrStats = stats.data[0].data.map((d) => {
+            return {date: d.date, mrr: d.value};
+        });
     }
 
     loadLastSeen() {
@@ -296,7 +312,7 @@ export default class DashboardStatsService extends Service {
     /**
      * Loads the last seen counts
      */
-    @task({restartable: true})
+    @task
     *_loadLastSeen() {
         this.membersLastSeen30d = null;
         this.membersLastSeen7d = null;
@@ -332,11 +348,14 @@ export default class DashboardStatsService extends Service {
     }
 
     loadPaidMembersByCadence() {
-        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        if (this._loadPaidMembersByCadence.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadPaidMembersByCadence.last;
+        }
         return this._loadPaidMembersByCadence.perform();
     }
 
-    @task({restartable: true})
+    @task
     *_loadPaidMembersByCadence() {
         this.paidMembersByCadence = null;
 
@@ -345,16 +364,35 @@ export default class DashboardStatsService extends Service {
             this.paidMembersByCadence = {...this.dashboardMocks.paidMembersByCadence};
             return;
         }
-        // Normal implementation
-        // @todo
+
+        // We can use the total count to save a call to the API
+        if (!this.memberCounts) {
+            yield this.loadMemberCountStats();
+
+            if (!this.memberCounts) {
+                // console.warn('Failed to fetch member count by cadence: total paid is missing');
+                return;
+            }
+        }
+
+        const monthCount = yield this.membersCountCache.count('subscriptions.plan_interval:month+status:paid');
+        const totalCount = this.memberCounts.paid;
+
+        this.paidMembersByCadence = {
+            monthly: monthCount,
+            annual: totalCount - monthCount
+        };
     }
 
     loadPaidMembersByTier() {
-        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        if (this._loadPaidMembersByTier.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadPaidMembersByTier.last;
+        }
         return this._loadPaidMembersByTier.perform();
     }
 
-    @task({restartable: true})
+    @task
     *_loadPaidMembersByTier() {
         this.paidMembersByTier = null;
 
@@ -363,16 +401,35 @@ export default class DashboardStatsService extends Service {
             this.paidMembersByTier = this.dashboardMocks.paidMembersByTier.slice();
             return;
         }
-        // Normal implementation
-        // @todo
+
+        const data = yield this.store.query('product', {
+            filter: 'type:paid',
+            limit: 'all'
+        });
+        const products = data.toArray();
+
+        const paidMembersByTier = [];
+        
+        for (const product of products) {
+            const members = yield this.membersCountCache.count(`product:[${product.slug}]`);
+            paidMembersByTier.push({
+                tier: product,
+                members
+            });
+        }
+        
+        this.paidMembersByTier = paidMembersByTier;
     }
 
     loadNewsletterSubscribers() {
-        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        if (this._loadNewsletterSubscribers.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadNewsletterSubscribers.last;
+        }
         return this._loadNewsletterSubscribers.perform();
     }
 
-    @task({restartable: true})
+    @task
     *_loadNewsletterSubscribers() {
         this.newsletterSubscribers = null;
 
@@ -395,11 +452,14 @@ export default class DashboardStatsService extends Service {
     }
 
     loadEmailsSent() {
-        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        if (this._loadEmailsSent.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadEmailsSent.last;
+        }
         return this._loadEmailsSent.perform();
     }
 
-    @task({restartable: true})
+    @task
     *_loadEmailsSent() {
         this.emailsSent30d = null;
 
@@ -415,11 +475,14 @@ export default class DashboardStatsService extends Service {
     }
 
     loadEmailOpenRateStats() {
-        // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
+        if (this._loadEmailOpenRateStats.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadEmailOpenRateStats.last;
+        }
         return this._loadEmailOpenRateStats.perform();
     }
 
-    @task({restartable: true})
+    @task
     *_loadEmailOpenRateStats() {
         this.emailOpenRateStats = null;
 
@@ -467,7 +530,6 @@ export default class DashboardStatsService extends Service {
      * @todo: reload only data that we loaded earlier
      */
     reloadAll() {
-        this.loadMembersCounts();
         this.loadMrrStats();
         this.loadMemberCountStats();
         this.loadLastSeen();
@@ -483,10 +545,16 @@ export default class DashboardStatsService extends Service {
      * Fill data to match a given amount of days
      * @param {MemberCountStat[]|MrrStat[]} data
      * @param {MemberCountStat|MrrStat} defaultData
-     * @param {number} days Amount of days to fill the graph with
+     * @param {number|'all'} days Amount of days to fill the graph with
      */
     fillMissingDates(data, defaultData, days) {
-        let currentRangeDate = moment().subtract(days - 1, 'days');
+        let currentRangeDate;
+
+        if (days === 'all') {
+            currentRangeDate = data.length > 0 ? moment(data[0].date) : moment();
+        } else {
+            currentRangeDate = moment().subtract(days - 1, 'days');
+        }
 
         let endDate = moment().add(1, 'hour');
         const output = [];

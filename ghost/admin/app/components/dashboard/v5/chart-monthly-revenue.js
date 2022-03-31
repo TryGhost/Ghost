@@ -23,7 +23,7 @@ export default class ChartMonthlyRevenue extends Component {
     }
 
     get chartData() {
-        const stats = this.dashboardStats.mrrStats;
+        const stats = this.dashboardStats.filledMrrStats;
         const labels = stats.map(stat => stat.date);
         const data = stats.map(stat => stat.mrr);
 

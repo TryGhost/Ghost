@@ -15,7 +15,7 @@ import {tracked} from '@glimmer/tracking';
  * Service that contains fake data to be used by the DashboardStatsService if useMocks is enabled
  */
 export default class DashboardMocksService extends Service {
-    @tracked enabled = true;
+    @tracked enabled = false;
 
     /**
      * Just a setting for generating mocked data, for how long this site has been active.
