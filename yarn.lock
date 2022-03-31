@@ -1891,10 +1891,10 @@
     fastq "^1.11.0"
     p-wait-for "^3.2.0"
 
-"@tryghost/kg-card-factory@3.1.2":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.1.2.tgz#c34b6bd0338af12a8c08f63963747e577bbb31ae"
-  integrity sha512-dk3nxPtKIHOQjEEA5ChOdTIo7LJAN0bPyILvLObTDgcek2Y4L/pa0ZKBkN/cKDMDM0/inyIsNMvnFuL9Hin23w==
+"@tryghost/kg-card-factory@3.1.3":
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.1.3.tgz#923611065dd4579bf143821663a10fd778ea3476"
+  integrity sha512-ICywZDIOX1RC31vinPbhbKgYuIbZrA9BUzqryL4eNJK6YsjAQ+KfSPyOROyTPtIANGN+FktXCqsgReaWHQImYw==
 
 "@tryghost/kg-clean-basic-html@^2.2.9":
   version "2.2.9"
@@ -2330,22 +2330,10 @@
     lodash "^4.17.21"
     moment "^2.24.0"
 
-"@tryghost/url-utils@2.1.0":
+"@tryghost/url-utils@2.1.0", "@tryghost/url-utils@^2.0.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-2.1.0.tgz#5b30921eeb27fdcb9c1fc1360879a0d99304ddf2"
   integrity sha512-3oID3Pzgew17eZF6YpJvG4Iy8F5CDealvcZ3zRwGFBT/oSUBGHY4nQfAUAH0Uo7dPAEDx9zOcMyNk/cJ/VN3nQ==
-  dependencies:
-    cheerio "^0.22.0"
-    moment "^2.27.0"
-    moment-timezone "^0.5.31"
-    remark "^11.0.2"
-    remark-footnotes "^1.0.0"
-    unist-util-visit "^2.0.0"
-
-"@tryghost/url-utils@^2.0.0":
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-2.0.8.tgz#010ed41fb50e82966839c5bd43ae7b7d38a77e06"
-  integrity sha512-jYz7KHEs6H8lnMkg2/eB9S2lPy8DfUxoMMjO891rrLuALTZW1d7wmfjtyZDMLccT4eXX3wdXXNrFcUC5tUQTxA==
   dependencies:
     cheerio "^0.22.0"
     moment "^2.27.0"
