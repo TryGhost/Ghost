@@ -8,11 +8,12 @@ const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'}
 const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v3'};
 
 @classic
-export default class MembersEmail extends Component {
+export default class MembersEmailLabs extends Component {
     @service config;
     @service ghostPaths;
     @service ajax;
     @service settings;
+    @service newsletters;
 
     replyAddresses = null;
     recipientsSelectValue = null;
@@ -61,6 +62,16 @@ export default class MembersEmail extends Component {
             domain: this.get('settings.mailgunDomain') || '',
             baseUrl: this.get('settings.mailgunBaseUrl') || ''
         };
+    }
+
+    @computed('newsletters.newsletters.@each.status')
+    get activeNewsletterCount() {
+        return this.newsletters.newsletters.filter(n => n.status === 'active').length;
+    }
+
+    @computed('newsletters.newsletters.@each.status')
+    get archivedNewsletterCount() {
+        return this.newsletters.newsletters.filter(n => n.status === 'archived').length;
     }
 
     init() {
@@ -184,6 +195,16 @@ export default class MembersEmail extends Component {
     @action
     setDefaultEmailRecipientsFilter(filter) {
         this.settings.set('editorDefaultEmailRecipientsFilter', filter);
+    }
+
+    @action
+    archiveNewsletter(id) {
+        this.newsletters.archive(id);
+    }
+
+    @action
+    addNewsletter() {
+        this.newsletters.add();
     }
 
     @(task(function* () {
