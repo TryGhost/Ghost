@@ -746,8 +746,6 @@ Object {
 }
 `;
 
-exports[`Members API Can delete a member without cancelling Stripe Subscription 1: [body] 1`] = `Object {}`;
-
 exports[`Members API Can delete a member without cancelling Stripe Subscription 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
@@ -757,8 +755,6 @@ Object {
   "x-powered-by": "Express",
 }
 `;
-
-exports[`Members API Can delete a member without cancelling Stripe Subscription 2: [body] 1`] = `Object {}`;
 
 exports[`Members API Can delete a member without cancelling Stripe Subscription 2: [headers] 1`] = `
 Object {
@@ -811,9 +807,7 @@ Object {
 }
 `;
 
-exports[`Members API Can destroy 3: [body] 1`] = `Object {}`;
-
-exports[`Members API Can destroy 4: [headers] 1`] = `
+exports[`Members API Can destroy 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -823,7 +817,7 @@ Object {
 }
 `;
 
-exports[`Members API Can destroy 5: [body] 1`] = `
+exports[`Members API Can destroy 4: [body] 1`] = `
 Object {
   "errors": Array [
     Object {
@@ -840,7 +834,7 @@ Object {
 }
 `;
 
-exports[`Members API Can destroy 6: [headers] 1`] = `
+exports[`Members API Can destroy 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -933,9 +927,7 @@ Object {
 }
 `;
 
-exports[`Members API Can export CSV 1: [body] 1`] = `Object {}`;
-
-exports[`Members API Can export CSV 2: [headers] 1`] = `
+exports[`Members API Can export CSV 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -948,9 +940,7 @@ Object {
 }
 `;
 
-exports[`Members API Can export a filtered CSV 1: [body] 1`] = `Object {}`;
-
-exports[`Members API Can export a filtered CSV 2: [headers] 1`] = `
+exports[`Members API Can export a filtered CSV 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
