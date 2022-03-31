@@ -178,7 +178,7 @@ function addPermissionToRole(config) {
                 return;
             }
 
-            logging.warn(`Adding permission(${config.permission}) to role(${config.role})`);
+            logging.info(`Adding permission(${config.permission}) to role(${config.role})`);
             await connection('permissions_roles').insert({
                 id: ObjectId().toHexString(),
                 permission_id: permission.id,
