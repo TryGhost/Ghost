@@ -860,7 +860,53 @@ describe('Acceptance: Editor', function () {
             await click('[data-test-publishmenu-scheduled-option]');
             await click('[data-test-publishmenu-save]');
 
-            expect(post.status).to.equal('scheduled');
+            expect(post.attrs.status).to.equal('scheduled');
+        });
+
+        // BUG: re-scheduling a send-only post unexpectedly switched to publish+send
+        // https://github.com/TryGhost/Ghost/issues/14354
+        it('can re-schedule an email-only post', async function () {
+            // enable email functionality
+            this.server.db.settings.find({key: 'mailgun_api_key'})
+                ? this.server.db.settings.update({key: 'mailgun_api_key'}, {value: 'MAILGUN_API_KEY'})
+                : this.server.create('setting', {key: 'mailgun_api_key', value: 'MAILGUN_API_KEY', group: 'email'});
+
+            this.server.db.settings.find({key: 'mailgun_domain'})
+                ? this.server.db.settings.update({key: 'mailgun_domain'}, {value: 'MAILGUN_DOMAIN'})
+                : this.server.create('setting', {key: 'mailgun_domain', value: 'MAILGUN_DOMAIN', group: 'email'});
+
+            this.server.db.settings.find({key: 'mailgun_base_url'})
+                ? this.server.db.settings.update({key: 'mailgun_base_url'}, {value: 'MAILGUN_BASE_URL'})
+                : this.server.create('setting', {key: 'mailgun_base_url', value: 'MAILGUN_BASE_URL', group: 'email'});
+
+            this.server.db.settings.find({key: 'editor_default_email_recipients'})
+                ? this.server.db.settings.update({key: 'editor_default_email_recipients'}, {value: 'visibility'})
+                : this.server.create('setting', {key: 'editor_default_email_recipients', value: 'visibility', group: 'editor'});
+
+            this.server.createList('member', 4);
+
+            const post = this.server.create('post', {status: 'draft', authors: [user]});
+
+            const scheduledTime = moment().add(2, 'hours');
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-publishmenu-trigger]');
+            await selectChoose('[data-test-distribution-action-select]', 'send');
+            await click('[data-test-publishmenu-scheduled-option]');
+            await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', new Date(scheduledTime.format().replace(/\+.*$/, '')));
+            await click('[data-test-publishmenu-save]');
+            await click('[data-test-button="confirm-schedule"]');
+
+            expect(post.attrs.emailOnly).to.be.true;
+
+            await click('[data-test-publishmenu-trigger]');
+
+            expect(find('[data-test-publishmenu-header]')).to.contain.text('Will be sent');
+
+            await datepickerSelect('[data-test-publishmenu-scheduled] [data-test-date-time-picker-datepicker]', new Date(scheduledTime.add(1, 'day').format().replace(/\+.*$/, '')));
+            await click('[data-test-publishmenu-save]');
+
+            expect(post.attrs.emailOnly).to.be.true;
         });
     });
 });

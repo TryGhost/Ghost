@@ -1,5 +1,5 @@
 <div data-test-publishmenu-scheduled="true" ...attributes>
-    <header class="gh-publishmenu-heading">Will be published in {{this.timeToPublished}}</header>
+    <header class="gh-publishmenu-heading" data-test-publishmenu-header>Will be {{if @emailOnly "sent" "published"}} in {{this.timeToPublished}}</header>
     <div class="gh-publishmenu-content">
         <section class="gh-publishmenu-section">
             <div class="gh-publishmenu-radio {{if (eq @saveType "draft") "active"}}" {{on "click" (fn this.setSaveType "draft")}}>
