@@ -24,7 +24,7 @@ module.exports = {
         <div class="kg-card kg-product-card">
             <div class="kg-product-card-container">
                 {{#if productImageEnabled}}
-                    <img src={{productImageSrc}} class="kg-product-card-image" />
+                    <img src="{{productImageSrc}}" class="kg-product-card-image" />
                 {{/if}}
                 <div class="kg-product-card-title-container">
                     <h4 class="kg-product-card-title">{{{productTitle}}}</h4>
@@ -40,7 +40,7 @@ module.exports = {
                 {{/if}}
                 <div class="kg-product-card-description">{{{productDescription}}}</div>
                 {{#if productButtonEnabled}}
-                    <a href={{productUrl}} class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer">
+                    <a href="{{productUrl}}" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer">
                         <span>
                             {{productButton}}
                         </span>
