@@ -133,40 +133,40 @@ describe('Acceptance: Content', function () {
         it('can add and edit custom views', async function () {
             // actions are not visible when there's no filter
             await visit('/posts');
-            expect(find('[data-test-button="edit-view"]')).to.not.exist;
-            expect(find('[data-test-button="add-view"]')).to.not.exist;
+            expect(find('[data-test-button="edit-view"]'), 'edit-view button (no filter)').to.not.exist;
+            expect(find('[data-test-button="add-view"]'), 'add-view button (no filter)').to.not.exist;
 
             // add action is visible after filtering to a non-default filter
             await selectChoose('[data-test-author-select]', admin.name);
-            expect(find('[data-test-button="add-view"]')).to.exist;
+            expect(find('[data-test-button="add-view"]'), 'add-view button (with filter)').to.exist;
 
             // adding view shows it in the sidebar
-            await click('[data-test-button="add-view"]');
-            expect(find('[data-test-modal="custom-view-form"]')).to.exist;
+            await click('[data-test-button="add-view"]'), 'add-view button';
+            expect(find('[data-test-modal="custom-view-form"]'), 'custom view modal (on add)').to.exist;
             expect(find('[data-test-modal="custom-view-form"] h1').textContent.trim()).to.equal('New view');
             await fillIn('[data-test-input="custom-view-name"]', 'Test view');
             await click('[data-test-button="save-custom-view"]');
             // modal closes on save
-            expect(find('[data-test-modal="custom-view-form"]')).to.not.exist;
+            expect(find('[data-test-modal="custom-view-form"]'), 'custom view modal (after add save)').to.not.exist;
             // UI updates
-            expect(find('[data-test-nav-custom="posts-Test view"]')).to.exist;
+            expect(find('[data-test-nav-custom="posts-Test view"]'), 'new view nav').to.exist;
             expect(find('[data-test-nav-custom="posts-Test view"]').textContent.trim()).to.equal('Test view');
-            expect(find('[data-test-button="add-view"]')).to.not.exist;
-            expect(find('[data-test-button="edit-view"]')).to.exist;
+            expect(find('[data-test-button="add-view"]'), 'add-view button (on existing view)').to.not.exist;
+            expect(find('[data-test-button="edit-view"]'), 'edit-view button (on existing view)').to.exist;
 
             // editing view
-            await click('[data-test-button="edit-view"]');
-            expect(find('[data-test-modal="custom-view-form"]')).to.exist;
+            await click('[data-test-button="edit-view"]'), 'edit-view button';
+            expect(find('[data-test-modal="custom-view-form"]'), 'custom view modal (on edit)').to.exist;
             expect(find('[data-test-modal="custom-view-form"] h1').textContent.trim()).to.equal('Edit view');
             await fillIn('[data-test-input="custom-view-name"]', 'Updated view');
             await click('[data-test-button="save-custom-view"]');
             // modal closes on save
-            expect(find('[data-test-modal="custom-view-form"]')).to.not.exist;
+            expect(find('[data-test-modal="custom-view-form"]'), 'custom view modal (after edit save)').to.not.exist;
             // UI updates
             expect(find('[data-test-nav-custom="posts-Updated view"]')).to.exist;
             expect(find('[data-test-nav-custom="posts-Updated view"]').textContent.trim()).to.equal('Updated view');
-            expect(find('[data-test-button="add-view"]')).to.not.exist;
-            expect(find('[data-test-button="edit-view"]')).to.exist;
+            expect(find('[data-test-button="add-view"]'), 'add-view button (after edit)').to.not.exist;
+            expect(find('[data-test-button="edit-view"]'), 'edit-view button (after edit)').to.exist;
         });
 
         it('can navigate to custom views', async function () {
