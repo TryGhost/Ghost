@@ -109,6 +109,11 @@ module.exports = createTransactionalMigration(
             const firstEvent = getFirstEvent(firstEvents, redemption);
             const mrrAdjustment = getMRRAdjustment(firstEvent, redemption);
 
+            if (!firstEvent) {
+                logging.error(`Could not find MRR Event for Offer Redemption ${redemption.id}`);
+                return;
+            }
+
             updateEvent(firstEvent, -mrrAdjustment);
 
             const mustHaveSecondEvent = redemption.subscription_status === 'canceled' || firstEvent.to_plan !== redemption.subscription_price;
