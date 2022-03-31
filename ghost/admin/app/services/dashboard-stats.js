@@ -65,6 +65,7 @@ export default class DashboardStatsService extends Service {
     @service store;
     @service ajax;
     @service ghostPaths;
+    @service membersCountCache;
 
     /**
      * @type {?SiteStatus} Contains information on what graphs need to be shown
@@ -293,7 +294,7 @@ export default class DashboardStatsService extends Service {
     }
 
     /**
-     * Loads the mrr graphs
+     * Loads the last seen counts
      */
     @task({restartable: true})
     *_loadLastSeen() {
@@ -302,18 +303,17 @@ export default class DashboardStatsService extends Service {
 
         if (this.dashboardMocks.enabled) {
             yield this.dashboardMocks.waitRandom();
-            if (this.lastSeenFilterStatus === 'paid') {
-                // @todo
-            }
             this.membersLastSeen30d = this.dashboardMocks.membersLastSeen30d;
             this.membersLastSeen7d = this.dashboardMocks.membersLastSeen7d;
             return;
         }
 
-        // @todo We need to have way to reduce the total number of API requests
-
         const start30d = new Date(Date.now() - 30 * 86400 * 1000);
         const start7d = new Date(Date.now() - 7 * 86400 * 1000);
+
+        // The cache is useless if we don't round on a fixed date.
+        start30d.setHours(0, 0, 0, 0);
+        start7d.setHours(0, 0, 0, 0);
 
         let extraFilter = '';
         if (this.lastSeenFilterStatus === 'paid') {
@@ -322,12 +322,13 @@ export default class DashboardStatsService extends Service {
             extraFilter = '+status:-paid';
         }
 
-        // todo: filter by status here
-        const result30d = yield this.store.query('member', {limit: 1, filter: 'last_seen_at:>' + start30d.toISOString() + extraFilter});
-        this.membersLastSeen30d = result30d.meta.pagination.total;
+        const [result30d, result7d] = yield Promise.all([
+            this.membersCountCache.count('last_seen_at:>' + start30d.toISOString() + extraFilter),
+            this.membersCountCache.count('last_seen_at:>' + start7d.toISOString() + extraFilter)
+        ]);
 
-        const result7d = yield this.store.query('member', {limit: 1, filter: 'last_seen_at:>' + start7d.toISOString() + extraFilter});
-        this.membersLastSeen7d = result7d.meta.pagination.total;
+        this.membersLastSeen30d = result30d;
+        this.membersLastSeen7d = result7d;
     }
 
     loadPaidMembersByCadence() {
@@ -381,12 +382,15 @@ export default class DashboardStatsService extends Service {
             return;
         }
         
-        const resultPaid = yield this.store.query('member', {limit: 1, filter: 'subscribed:true+status:paid'});
-        const resultFree = yield this.store.query('member', {limit: 1, filter: 'subscribed:true+status:-paid'});
+        const [paid, free] = yield Promise.all([
+            this.membersCountCache.count('subscribed:true+status:paid'),
+            this.membersCountCache.count('subscribed:true+status:-paid')
+        ]);
+
         this.newsletterSubscribers = {
-            total: resultFree.meta.pagination.total + resultPaid.meta.pagination.total,
-            free: resultFree.meta.pagination.total,
-            paid: resultPaid.meta.pagination.total
+            total: paid + free,
+            free,
+            paid
         };
     }
 
