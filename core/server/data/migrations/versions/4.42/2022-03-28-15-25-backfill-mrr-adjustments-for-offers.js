@@ -37,8 +37,8 @@ module.exports = createTransactionalMigration(
         const updatedEvents = [];
 
         function getMRRAdjustment(firstEvent, redemption) {
-            if (redemption.discount_type === 'percentage') {
-                return firstEvent.mrr_delta * (100 - redemption.discount_amount) / 100;
+            if (redemption.discount_type === 'percent') {
+                return firstEvent.mrr_delta * (redemption.discount_amount / 100);
             } else {
                 if (redemption.discount_interval === 'month') {
                     return redemption.discount_amount;
