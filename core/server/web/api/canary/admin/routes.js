@@ -138,7 +138,7 @@ module.exports = function apiRoutes() {
     router.get('/members/:id/signin_urls', mw.authAdminApi, http(api.memberSigninUrls.read));
 
     // ## Stats
-    router.get('/stats/member-count', mw.authAdminApi, http(api.stats.memberCountHistory));
+    router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));
 
     // ## Labels
     router.get('/labels', mw.authAdminApi, http(api.labels.browse));
