@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-default-cards",
-  "version": "5.16.1",
+  "version": "5.16.2",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-default-cards",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -30,7 +30,7 @@
     "sinon": "13.0.1"
   },
   "dependencies": {
-    "@tryghost/kg-markdown-html-renderer": "^5.1.4",
+    "@tryghost/kg-markdown-html-renderer": "^5.1.5",
     "@tryghost/url-utils": "^2.0.0",
     "handlebars": "^4.7.6",
     "juice": "^8.0.0",
