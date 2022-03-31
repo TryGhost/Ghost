@@ -12,7 +12,7 @@ export default class MembersCountCacheService extends Service {
     async count(filter) {
         const cachedValue = this.cache[filter];
 
-        if (cachedValue && moment().diff(cachedValue.time, 'seconds') > 60) {
+        if (cachedValue && moment().diff(cachedValue.time, 'seconds') <= 60) {
             return cachedValue.count;
         }
 
