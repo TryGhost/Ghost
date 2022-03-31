@@ -12,7 +12,7 @@ describe('Stats API', function () {
 
     it('Can fetch member count history', async function () {
         await agent
-            .get(`/stats/member-count`)
+            .get(`/stats/member_count`)
             .expectStatus(200)
             .matchBodySnapshot({
                 stats: [{
