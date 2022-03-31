@@ -28,12 +28,6 @@ export default class DashboardMocksService extends Service {
     @tracked siteStatus = null;
 
     /**
-     * @type {?MemberCounts} memberCounts
-     */
-    @tracked
-        memberCounts = null;
-
-    /**
      * @type {?MemberCountStat[]}
      */
     @tracked
@@ -138,8 +132,8 @@ export default class DashboardMocksService extends Service {
                 free: index === 0 ? 0 : Math.max(0, previous.free + Math.round(Math.random() * (growRate))),
                 paid,
                 comped: 0,
-                newPaid: Math.max(paid - previous.paid + 5, 0),
-                canceledPaid: Math.max(previous.paid - paid, 0) + 5
+                paidSubscribed: Math.max(paid - previous.paid + 5, 0),
+                paidCanceled: Math.max(previous.paid - paid, 0) + 5
             });
 
             if (growPeriod) {
@@ -169,8 +163,21 @@ export default class DashboardMocksService extends Service {
             }
         }
 
+        if (stats.length === 0) {
+            stats.push(
+                {
+                    date: new Date().toISOString().split('T')[0],
+                    free: 0,
+                    paid: 0,
+                    comped: 0,
+                    paidSubscribed: 0,
+                    paidCanceled: 0
+                }
+            );
+        }
+
         this.memberCountStats = stats;
-        this.memberCounts = {
+        const currentCounts = {
             total: (stats[stats.length - 1]?.paid ?? 0) + (stats[stats.length - 1]?.free ?? 0) + (stats[stats.length - 1]?.comped ?? 0),
             paid: stats[stats.length - 1]?.paid ?? 0,
             free: (stats[stats.length - 1]?.free ?? 0) + (stats[stats.length - 1]?.comped ?? 0)
@@ -210,8 +217,8 @@ export default class DashboardMocksService extends Service {
 
         this.emailsSent30d = 123;
         
-        this.membersLastSeen7d = Math.round(Math.random() * this.memberCounts.free / 2);
-        this.membersLastSeen30d = this.membersLastSeen7d + Math.round(Math.random() * this.memberCounts.free / 2);
+        this.membersLastSeen7d = Math.round(Math.random() * currentCounts.free / 2);
+        this.membersLastSeen30d = this.membersLastSeen7d + Math.round(Math.random() * currentCounts.free / 2);
 
         this.emailOpenRateStats = [
             {
@@ -223,8 +230,32 @@ export default class DashboardMocksService extends Service {
                 subject: '🎒How to start a blog and make money',
                 openRate: 42,
                 submittedAt: new Date()
-            }
-            ,
+            },
+            {
+                subject: 'How to turn your amateur blogging into a real business',
+                openRate: 89,
+                submittedAt: new Date()
+            },
+            {
+                subject: '💸 The best way to get paid to create',
+                openRate: 58,
+                submittedAt: new Date()
+            },
+            {
+                subject: '🎒How to start a blog and make money',
+                openRate: 42,
+                submittedAt: new Date()
+            },
+            {
+                subject: 'How to turn your amateur blogging into a real business',
+                openRate: 70,
+                submittedAt: new Date()
+            },
+            {
+                subject: '🎒How to start a blog and make money',
+                openRate: 90,
+                submittedAt: new Date()
+            },
             {
                 subject: 'How to turn your amateur blogging into a real business',
                 openRate: 89,

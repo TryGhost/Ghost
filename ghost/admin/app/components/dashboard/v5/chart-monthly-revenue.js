@@ -6,8 +6,7 @@ export default class ChartMonthlyRevenue extends Component {
     @service dashboardStats;
 
     /**
-     * Call this method when you need to fetch new data from the server. In this component, it will get called
-     * when the days parameter changes and on initialisation.
+     * Call this method when you need to fetch new data from the server. 
      */
     @action
     loadCharts() {
