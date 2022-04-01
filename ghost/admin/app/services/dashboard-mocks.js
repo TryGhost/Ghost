@@ -96,7 +96,7 @@ export default class DashboardMocksService extends Service {
         await this.waitRandom();
         this.siteStatus = {
             hasPaidTiers: true,
-            stripeEnabled: true,
+            hasMultipleTiers: true,
             newslettersEnabled: true,
             membersEnabled: true
         };

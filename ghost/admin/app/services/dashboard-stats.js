@@ -55,7 +55,7 @@ import {tracked} from '@glimmer/tracking';
  * @typedef SiteStatus Contains information on what graphs need to be shown
  * @type {Object}
  * @property {boolean} hasPaidTiers Whether the site has paid tiers
- * @property {boolean} stripeEnabled Whether the site has stripe enabled
+ * @property {boolean} hasMultipleTiers Whether the site has multiple paid tiers
  * @property {boolean} newslettersEnabled Whether the site has newsletters
  * @property {boolean} membersEnabled Whether the site has members enabled
  */
@@ -66,6 +66,7 @@ export default class DashboardStatsService extends Service {
     @service ajax;
     @service ghostPaths;
     @service membersCountCache;
+    @service settings;
 
     /**
      * @type {?SiteStatus} Contains information on what graphs need to be shown
@@ -137,6 +138,8 @@ export default class DashboardStatsService extends Service {
      * @type {'free'|'paid'|'total'}
      */
     @tracked lastSeenFilterStatus = 'total';
+
+    paidProducts = null;
  
     /**
      * @type {?MemberCounts}
@@ -155,7 +158,7 @@ export default class DashboardStatsService extends Service {
     }
 
     /**
-     * @type {?MemberCountStat}
+     * @type {?MemberCounts}
      */
     get memberCountsTrend() {
         if (!this.memberCountStats) {
@@ -219,21 +222,15 @@ export default class DashboardStatsService extends Service {
             this.siteStatus = {...this.dashboardMocks.siteStatus};
             return;
         }
-        // Normal implementation
-        // @todo
-        this.siteStatus = {
-            hasPaidTiers: true,
-            stripeEnabled: true,
-            newslettersEnabled: true,
-            membersEnabled: true
-        };
-    }
 
-    /**
-     * @deprecated
-     */
-    loadMembersCounts() {
-        return this.loadMemberCountStats();
+        yield this.loadPaidProducts();
+
+        this.siteStatus = {
+            hasPaidTiers: this.paidProducts && this.paidProducts.length > 0,
+            hasMultipleTiers: this.paidProducts && this.paidProducts.length > 1,
+            newslettersEnabled: this.settings.get('editorDefaultEmailRecipients') !== 'disabled',
+            membersEnabled: this.settings.get('membersSignupAccess') !== 'none'
+        };
     }
 
     loadMemberCountStats() {
@@ -384,6 +381,26 @@ export default class DashboardStatsService extends Service {
         };
     }
 
+    loadPaidProducts() {
+        if (this.paidProducts !== null) {
+            return;
+        }
+        if (this._loadPaidProducts.isRunning) {
+            // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+            return this._loadPaidProducts.last;
+        }
+        return this._loadPaidProducts.perform();
+    }
+
+    @task
+    *_loadPaidProducts() {
+        const data = yield this.store.query('product', {
+            filter: 'type:paid+active:true',
+            limit: 'all'
+        });
+        this.paidProducts = data.toArray();
+    }
+
     loadPaidMembersByTier() {
         if (this._loadPaidMembersByTier.isRunning) {
             // We need to explicitly wait for the already running task instead of dropping it and returning immediately
@@ -402,15 +419,14 @@ export default class DashboardStatsService extends Service {
             return;
         }
 
-        const data = yield this.store.query('product', {
-            filter: 'type:paid',
-            limit: 'all'
-        });
-        const products = data.toArray();
+        yield this.loadPaidProducts();
+        if (!this.paidProducts) {
+            return;
+        }
 
         const paidMembersByTier = [];
         
-        for (const product of products) {
+        for (const product of this.paidProducts) {
             const members = yield this.membersCountCache.count(`product:[${product.slug}]`);
             paidMembersByTier.push({
                 tier: product,

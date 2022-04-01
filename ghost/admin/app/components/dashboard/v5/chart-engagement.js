@@ -21,7 +21,7 @@ export default class ChartEngagement extends Component {
     loadCharts() {
         this.dashboardStats.lastSeenFilterStatus = this.status;
         this.dashboardStats.loadLastSeen();
-        this.dashboardStats.loadMembersCounts();
+        this.dashboardStats.loadMemberCountStats();
     }
 
     @tracked status = 'total';

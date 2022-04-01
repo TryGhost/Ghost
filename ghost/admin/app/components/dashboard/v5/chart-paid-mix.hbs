@@ -1,19 +1,21 @@
 
-<div class="prototype-paid-mix-dropdown">
-    <PowerSelect
-        @selected={{this.selectedModeOption}}
-        @options={{this.modeOptions}}
-        @searchEnabled={{false}}
-        @onChange={{this.onSwitchMode}}
-        @triggerComponent="gh-power-select/trigger"
-        @triggerClass="gh-contentfilter-menu-trigger"
-        @dropdownClass="gh-contentfilter-menu-dropdown"
-        @matchTriggerWidth={{false}}
-        as |option|
-    >
-        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-    </PowerSelect>
-</div>
+{{#if this.hasMultipleTiers }}
+    <div class="prototype-paid-mix-dropdown">
+        <PowerSelect
+            @selected={{this.selectedModeOption}}
+            @options={{this.modeOptions}}
+            @searchEnabled={{false}}
+            @onChange={{this.onSwitchMode}}
+            @triggerComponent="gh-power-select/trigger"
+            @triggerClass="gh-contentfilter-menu-trigger"
+            @dropdownClass="gh-contentfilter-menu-dropdown"
+            @matchTriggerWidth={{false}}
+            as |option|
+        >
+            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+        </PowerSelect>
+    </div>
+{{/if}}
 
 <h4 class="gh-dashboard5-metric is-main" {{did-insert this.loadCharts}}>Paid mix</h4>
 
