@@ -46,10 +46,6 @@ export default class DashboardDashboardV5Component extends Component {
         return this.dashboardStats.siteStatus?.hasPaidTiers;
     }
 
-    get isStripeEnabled() {
-        return this.dashboardStats.siteStatus?.stripeEnabled;
-    }    
-
     get areNewslettersEnabled() {
         return this.dashboardStats.siteStatus?.newslettersEnabled;
     }

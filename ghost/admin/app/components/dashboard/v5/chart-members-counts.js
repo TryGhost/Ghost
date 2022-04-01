@@ -7,7 +7,7 @@ export default class ChartMembersCounts extends Component {
 
     @action
     loadCharts() {
-        this.dashboardStats.loadMembersCounts();
+        this.dashboardStats.loadMemberCountStats();
     }
 
     get totalMembers() {
