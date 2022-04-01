@@ -1,13 +1,9 @@
 <h3 {{did-insert this.loadCharts}}>Email</h3>
 <div class="gh-dashboard5-insert">
     <div class="gh-dashboard5-box">
-        {{!-- <h4 class="gh-dashboard5-metric">Newsletter subscribers</h4> --}}
-        {{!-- <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.total}}</div> --}}
-        {{!-- <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.paid}} paid</div> --}}
-        {{!-- <div class="gh-dashboard5-number is-small">{{format-number this.dataSubscribers.free}} free</div> --}}
-
-        <h4 class="gh-dashboard5-metric is-split">Email</h4>
-        <div class="gh-dashboard5-number">{{format-number this.dataSubscribers.total}}</div>
+        <div class="gh-dashboard5-number is-solo">
+            {{format-number this.dataSubscribers.total}}<small><span class="gh-dashboard5-slash">/</span>{{format-number this.dataSubscribers.paid}} paid</small>
+        </div>
         <small class="gh-dashboard5-info">Newsletter subscribers</small>
     </div>
 
@@ -23,11 +19,10 @@
             <EmberChart
                 @type={{this.chartType}}
                 @data={{this.chartData}}
-                @options={{this.chartOptions}}
-                @height={{this.chartHeight}} />
+                @options={{this.chartOptions}} />
         {{/if}}
         <div>
-            <div class="gh-dashboard5-number">58%</div>
+            <div class="gh-dashboard5-number">{{this.currentOpenRate}}%</div>
             <small class="gh-dashboard5-info">Open rate</small>
         </div>
     </div>

@@ -157,6 +157,15 @@ export default class DashboardStatsService extends Service {
         };
     }
 
+    get currentMRR() {
+        if (!this.mrrStats) {
+            return null;
+        }
+
+        const stat = this.mrrStats[this.mrrStats.length - 1];
+        return stat.mrr;
+    }
+
     /**
      * @type {?MemberCounts}
      */
@@ -190,6 +199,30 @@ export default class DashboardStatsService extends Service {
             paid: 0,
             free: 0
         };
+    }
+
+    get currentMRRTrend() {
+        if (!this.mrrStats) {
+            return null;
+        }
+
+        if (this.chartDays === 'all') {
+            return null;
+        }
+
+        // Search for the value at chartDays ago (if any, else the first before it, or the next one if not one before it)
+        const searchDate = moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
+
+        for (let index = this.mrrStats.length - 1; index >= 0; index -= 1) {
+            const stat = this.mrrStats[index];
+            if (stat.date <= searchDate) {
+                return stat.mrr;
+            }            
+        }
+
+        // We don't have any statistic from more than x days ago.
+        // Return all zero values
+        return 0;
     }
 
     get filledMemberCountStats() {

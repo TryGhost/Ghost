@@ -90,11 +90,12 @@ export default class ChartPaidMix extends Component {
         return {
             legend: {
                 display: false
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 0
             }
         };
-    }
-
-    get chartHeight() {
-        return 100;
     }
 }

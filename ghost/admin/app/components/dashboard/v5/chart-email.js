@@ -25,6 +25,14 @@ export default class ChartEmailOpenRate extends Component {
         };
     }
 
+    get currentOpenRate() {
+        if (this.dashboardStats.emailOpenRateStats === null || this.dashboardStats.emailOpenRateStats.length === 0) {
+            return '-';
+        }
+
+        return this.dashboardStats.emailOpenRateStats[this.dashboardStats.emailOpenRateStats.length - 1].openRate;
+    }
+
     get dataEmailsSent() {
         return this.dashboardStats.emailsSent30d ?? 0;
     }
@@ -62,6 +70,8 @@ export default class ChartEmailOpenRate extends Component {
 
     get chartOptions() {
         return {
+            responsive: true,
+            maintainAspectRatio: true,
             title: {
                 display: false
             },

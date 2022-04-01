@@ -17,14 +17,18 @@
     </div>
 {{/if}}
 
-<h4 class="gh-dashboard5-metric is-main" {{did-insert this.loadCharts}}>Paid mix</h4>
+<small
+    class="gh-dashboard5-info is-solo"
+    {{did-insert this.loadCharts}}
+>Paid mix</small>
 
 {{#if this.loading}}
     <div class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
 {{else}}
-    <EmberChart
-        @type={{this.chartType}}
-        @data={{this.chartData}}
-        @options={{this.chartOptions}}
-        @height={{this.chartHeight}} />
+    <div class="gh-dashboard5-chart">
+        <EmberChart
+            @type={{this.chartType}}
+            @data={{this.chartData}}
+            @options={{this.chartOptions}} />
+    </div>
 {{/if}}
