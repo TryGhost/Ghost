@@ -1,4 +1,4 @@
-import EPMModalsService from 'ember-promise-modals/services/modals';
+import EPMModalsService from '@tryghost/ember-promise-modals/services/modals';
 import {bind} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
