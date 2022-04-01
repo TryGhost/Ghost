@@ -99,6 +99,44 @@ describe('package-json read', function () {
                 .catch(done)
                 .finally(packagePath.removeCallback);
         });
+
+        it('should read directory and include symlinked directories', function (done) {
+            let packagePath;
+            let pkgJson;
+
+            packagePath = tmp.dirSync({unsafeCleanup: true});
+            pkgJson = JSON.stringify({
+                name: 'test'
+            });
+
+            // create example theme
+            fs.mkdirSync(join(packagePath.name, 'testtheme'));
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
+
+            // Symlink one theme to the other so we should have 2 themes
+            fs.symlinkSync(join(packagePath.name, 'testtheme'), join(packagePath.name, 'testtheme2'));
+
+            packageJSON.readPackages(packagePath.name)
+                .then(function (pkgs) {
+                    pkgs.should.eql({
+                        testtheme: {
+                            name: 'testtheme',
+                            path: join(packagePath.name, 'testtheme'),
+                            'package.json': null
+                        },
+                        testtheme2: {
+                            name: 'testtheme2',
+                            path: join(packagePath.name, 'testtheme2'),
+                            'package.json': null
+                        }
+                    });
+
+                    done();
+                })
+                .catch(done)
+                .finally(packagePath.removeCallback);
+        });
     });
 
     describe('readPackage', function () {
