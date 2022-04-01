@@ -6,6 +6,7 @@ const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
+        logging.info('Adjusting MRR based on Offer Redemptions');
         const offerRedemptions = await knex
             .select('or.*', 'o.discount_type', 'o.discount_amount', 'o.interval AS discount_interval', 's.status AS subscription_status', 's.stripe_price_id AS subscription_price')
             .from('offer_redemptions AS or')
@@ -13,6 +14,13 @@ module.exports = createTransactionalMigration(
             .join('members_stripe_customers_subscriptions AS s', 'or.subscription_id', '=', 's.id')
             .where('o.duration', '=', 'forever')
             .orderBy('or.created_at', 'asc');
+
+        if (offerRedemptions.length === 0) {
+            logging.info('No Offers redeemed, skipping migration');
+            return;
+        } else {
+            logging.info(`Adjusting MRR for ${offerRedemptions.length} Offer Redemptions`);
+        }
 
         const memberIds = uniq(offerRedemptions.map(redemption => redemption.member_id));
 
