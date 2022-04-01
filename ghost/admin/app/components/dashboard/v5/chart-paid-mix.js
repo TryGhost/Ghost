@@ -34,6 +34,10 @@ export default class ChartPaidMix extends Component {
         return this.modeOptions.find(option => option.value === this.mode);
     }
 
+    get hasMultipleTiers() {
+        return this.dashboardStats.siteStatus?.hasMultipleTiers;
+    }    
+
     @action 
     onSwitchMode(selected) {
         this.mode = selected.value;

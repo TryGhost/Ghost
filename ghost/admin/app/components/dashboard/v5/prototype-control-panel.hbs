@@ -49,23 +49,6 @@
             <div class="gh-expandable-block">
                 <div class="gh-expandable-header">
                     <div>
-                        <h4 class="gh-expandable-title">Stripe connected</h4>
-                        <p class="gh-expandable-description">
-                            Mock that Stripe is enabled
-                        </p>
-                    </div>
-                    <div class="for-switch">
-                        <label class="switch">
-                            <Input @type="checkbox" @checked={{this.mockStripeEnabled}} />
-                            <span class="input-toggle-component"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gh-expandable-block">
-                <div class="gh-expandable-header">
-                    <div>
                         <h4 class="gh-expandable-title">Newsletters enabled</h4>
                         <p class="gh-expandable-description">
                             All email related charts shown
@@ -109,6 +92,23 @@
                         <div class="for-switch">
                             <label class="switch">
                                 <Input @type="checkbox" @checked={{this.mockPaidTiers}} />
+                                <span class="input-toggle-component"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Has multiple paid tiers</h4>
+                            <p class="gh-expandable-description">
+                                Adds the ability to show paid mix per tier
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <label class="switch">
+                                <Input @type="checkbox" @checked={{this.mockMultipleTiers}} />
                                 <span class="input-toggle-component"></span>
                             </label>
                         </div>

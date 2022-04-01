@@ -55,6 +55,10 @@ export default class PrototypeControlPanel extends Component {
         this.loadState();
         this.dashboardMocks.updateMockedData(this.state);
         // Don't reload all (because then we would load unused graphs too)
+
+        if (this.enabled) {
+            this.updateState();
+        }
     }
 
     saveState() {
@@ -91,10 +95,6 @@ export default class PrototypeControlPanel extends Component {
                 const parsed = JSON.parse(enabledStr);
                 if (typeof parsed === 'boolean' && parsed !== this.dashboardMocks.enabled) {
                     this.dashboardMocks.enabled = parsed;
-
-                    // Needed for now to fix already loaded data:
-                    this.dashboardStats.loadSiteStatus();
-                    this.dashboardStats.reloadAll();
                 }
             }
         } catch (e) {
@@ -110,15 +110,12 @@ export default class PrototypeControlPanel extends Component {
     onStateChange(option) {
         this.state = option.value;
         this.updateMockedData();
-        this.saveState();
+        this.updateState();
     }
 
     @action
     updateMockedData() {    
         this.dashboardMocks.updateMockedData(this.state);
-
-        // Force update all data
-        this.dashboardStats.reloadAll();
     }
 
     // Convenience mappers
@@ -126,10 +123,16 @@ export default class PrototypeControlPanel extends Component {
         return this.dashboardMocks.enabled;
     }
 
-    set enabled(val) {
-        this.dashboardMocks.enabled = val;
+    updateState() {
+        this.dashboardStats.siteStatus = null;
+        this.dashboardStats.loadSiteStatus();
         this.dashboardStats.reloadAll();
         this.saveState();
+    }
+
+    set enabled(val) {
+        this.dashboardMocks.enabled = val;
+        this.updateState();
     }
 
     get mockPaidTiers() {
@@ -138,18 +141,16 @@ export default class PrototypeControlPanel extends Component {
 
     set mockPaidTiers(val) {
         this.dashboardMocks.siteStatus.hasPaidTiers = val;
-        this.dashboardStats.loadSiteStatus();
-        this.saveState();
+        this.updateState();
     }
 
-    get mockStripeEnabled() {
-        return this.dashboardMocks.siteStatus?.stripeEnabled;
+    get mockMultipleTiers() {
+        return this.dashboardMocks.siteStatus?.hasMultipleTiers;
     }
 
-    set mockStripeEnabled(val) {
-        this.dashboardMocks.siteStatus.stripeEnabled = val;
-        this.dashboardStats.loadSiteStatus();
-        this.saveState();
+    set mockMultipleTiers(val) {
+        this.dashboardMocks.siteStatus.hasMultipleTiers = val;
+        this.updateState();
     }
 
     get mockNewslettersEnabled() {
@@ -158,8 +159,7 @@ export default class PrototypeControlPanel extends Component {
 
     set mockNewslettersEnabled(val) {
         this.dashboardMocks.siteStatus.newslettersEnabled = val;
-        this.dashboardStats.loadSiteStatus();
-        this.saveState();
+        this.updateState();
     }
 
     get mockMembersEnabled() {
@@ -168,7 +168,6 @@ export default class PrototypeControlPanel extends Component {
 
     set mockMembersEnabled(val) {
         this.dashboardMocks.siteStatus.membersEnabled = val;
-        this.dashboardStats.loadSiteStatus();
-        this.saveState();
+        this.updateState();
     }
 }
