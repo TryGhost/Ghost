@@ -94,7 +94,7 @@
     "@tryghost/mw-error-handler": "0.1.7",
     "@tryghost/mw-session-from-token": "0.1.28",
     "@tryghost/nodemailer": "0.3.17",
-    "@tryghost/nql": "0.9.0",
+    "@tryghost/nql": "0.9.1",
     "@tryghost/package-json": "1.0.18",
     "@tryghost/promise": "0.1.15",
     "@tryghost/request": "0.1.20",
