@@ -29,6 +29,19 @@ module.exports = createTransactionalMigration(
             .from('members_paid_subscription_events')
             .whereIn('member_id', memberIds);
 
+        const stripePrices = await knex
+            .select('*')
+            .from('stripe_prices');
+
+        function storePriceOnId(storage, price) {
+            return {
+                ...storage,
+                [price.stripe_price_id]: price
+            };
+        }
+
+        const stripePricesById = stripePrices.reduce(storePriceOnId, {});
+
         function storeEventOnMemberId(storage, event) {
             const parsedEvent = {
                 ...event,
@@ -44,19 +57,8 @@ module.exports = createTransactionalMigration(
 
         const updatedEvents = [];
 
-        function getMRRAdjustment(firstEvent, redemption) {
-            if (redemption.discount_type === 'percent') {
-                return firstEvent.mrr_delta * (redemption.discount_amount / 100);
-            } else {
-                if (redemption.discount_interval === 'month') {
-                    return redemption.discount_amount;
-                } else {
-                    return redemption.discount_amount / 12;
-                }
-            }
-        }
-
-        function updateEvent(event, mrrAdjustment) {
+        function updateEvent(event, mrrDelta) {
+            logging.info(`Updating MRR Delta from ${event.mrr_delta} -> ${mrrDelta}`);
             event.used = true;
 
             updatedEvents.push({
@@ -67,7 +69,7 @@ module.exports = createTransactionalMigration(
                 currency: event.currency,
                 source: event.source,
                 created_at: event.created_at,
-                mrr_delta: event.mrr_delta + mrrAdjustment
+                mrr_delta: mrrDelta
             });
         }
 
@@ -89,6 +91,64 @@ module.exports = createTransactionalMigration(
             return events[intervals.indexOf(intervals.find(interval => interval.length() === smallestIntervalLength))];
         }
 
+        function calculateMRR(price, redemption) {
+            if (redemption && price.interval !== redemption.discount_interval) {
+                logging.error('Found invalid price & redemption pair');
+                return calculateMRR(price);
+            }
+
+            if (!redemption) {
+                return price.interval === 'year' ? price.amount / 12 : price.amount;
+            }
+
+            if (redemption.discount_type === 'percent') {
+                return calculateMRR({
+                    interval: price.interval,
+                    amount: price.amount * (100 - redemption.discount_amount) / 100
+                });
+            }
+
+            return calculateMRR({
+                interval: price.interval,
+                amount: price.amount - redemption.discount_amount
+            });
+        }
+
+        function updateEvents(firstEvent, secondEvent, redemption) {
+            let firstEventPrice = stripePricesById[firstEvent.to_plan];
+
+            if (!firstEventPrice) {
+                logging.warn('Could not find price for event, falling back to inaccurate calculation');
+                firstEventPrice = {
+                    interval: redemption.discount_interval,
+                    amount: firstEvent.mrr_delta * 12
+                };
+            }
+
+            const mrr = calculateMRR(firstEventPrice, redemption);
+
+            updateEvent(firstEvent, mrr);
+
+            if (secondEvent) {
+                if (secondEvent.to_plan === null || secondEvent.to_plan === secondEvent.from_plan) {
+                    updateEvent(secondEvent, -mrr);
+                } else {
+                    const secondEventPrice = stripePricesById[secondEvent.to_plan];
+                    let secondMrr;
+
+                    if (secondEventPrice) {
+                        secondMrr = calculateMRR(secondEventPrice);
+                    } else {
+                        logging.warn('Could not find price for event, falling back to inaccurate calculation');
+                        const mrrAdjustment = firstEvent.mrr_delta - mrr;
+                        secondMrr = secondEvent.mrr_delta + mrrAdjustment;
+                    }
+
+                    updateEvent(secondEvent, secondMrr - mrr);
+                }
+            }
+        }
+
         offerRedemptions.forEach((redemption) => {
             redemption.datetime = DateTime.fromJSDate(redemption.created_at);
 
@@ -101,34 +161,21 @@ module.exports = createTransactionalMigration(
             // 2. increase MRR for a second event if it exists
             if (firstEvents.length === 1) {
                 const firstEvent = firstEvents[0];
-                const mrrAdjustment = getMRRAdjustment(firstEvent, redemption);
-
-                updateEvent(firstEvent, -mrrAdjustment);
-
                 const secondEvent = possibleEvents.find(event => event.from_plan === firstEvent.to_plan);
 
-                if (secondEvent) {
-                    updateEvent(secondEvent, +mrrAdjustment);
-                }
+                updateEvents(firstEvent, secondEvent, redemption);
 
                 return;
             }
 
             const firstEvent = getFirstEvent(firstEvents, redemption);
-            const mrrAdjustment = getMRRAdjustment(firstEvent, redemption);
-
-            if (!firstEvent) {
-                logging.error(`Could not find MRR Event for Offer Redemption ${redemption.id}`);
-                return;
-            }
-
-            updateEvent(firstEvent, -mrrAdjustment);
 
             const mustHaveSecondEvent = redemption.subscription_status === 'canceled' || firstEvent.to_plan !== redemption.subscription_price;
 
             const likelyDoesNotHaveSecondEvent = firstEvent.to_plan === redemption.subscription_price;
 
             if (likelyDoesNotHaveSecondEvent && !mustHaveSecondEvent) {
+                updateEvents(firstEvent, null, redemption);
                 return;
             }
 
@@ -158,19 +205,20 @@ module.exports = createTransactionalMigration(
                 if (mustHaveSecondEvent) {
                     logging.error('Missing event, what do?');
                 }
+                updateEvents(firstEvent, null, redemption);
                 return;
             }
 
             if (possibleSecondEvents.length === 1) {
                 const secondEvent = possibleSecondEvents[0];
-                updateEvent(secondEvent, +mrrAdjustment);
+                updateEvents(firstEvent, secondEvent, redemption);
                 return;
             }
 
             // How do we determine the most likely second event???
             // We can at least use the most likely event based on whether or not the subscription is canceled, or if we know for sure the tier/cadence has changed
             const secondEvent = possibleSecondEvents[0];
-            updateEvent(secondEvent, +mrrAdjustment);
+            updateEvents(firstEvent, secondEvent, redemption);
             return;
         });
 
