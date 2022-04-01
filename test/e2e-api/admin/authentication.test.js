@@ -75,13 +75,6 @@ describe('Authentication API', function () {
             });
             assert.equal(requestMock.isDone(), true, 'The dawn github URL should have been used');
 
-            const activeTheme = await settingsCache.get('active_theme');
-            const accentColor = await settingsCache.get('accent_color');
-            const description = await settingsCache.get('description');
-            assert.equal(activeTheme, 'dawn', 'The theme dawn should have been installed');
-            assert.equal(accentColor, '#85FF00', 'The accent color should have been set');
-            assert.equal(description, 'Custom Site Description on Setup &mdash; great for everyone', 'The site description should have been set');
-
             // Test that we would not show any notifications (errors) to the user
             await agent.loginAs(email, password);
             await agent
@@ -89,6 +82,22 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .expect(({body}) => {
                     assert.deepEqual(body.notifications, [], 'The setup should not create notifications');
+                });
+
+            await agent
+                .get('settings/')
+                .expectStatus(200)
+                .expect(({body}) => {
+                    const activeTheme = body.settings.find(setting => setting.key === 'active_theme').value;
+                    const accentColor = body.settings.find(setting => setting.key === 'accent_color').value;
+                    const description = body.settings.find(setting => setting.key === 'description').value;
+
+                    assert.equal(activeTheme, 'dawn', 'The theme dawn should have been installed');
+                    assert.equal(accentColor, '#85FF00', 'The accent color should have been set');
+                    assert.equal(description, 'Custom Site Description on Setup &mdash; great for everyone', 'The site description should have been set');
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag
                 });
 
             // Test that the default Tier has been renamed from 'Default Product'
