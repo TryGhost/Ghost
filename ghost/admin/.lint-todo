@@ -1277,3 +1277,9 @@ remove|ember-template-lint|no-action|228|83|228|83|259aa927a526d3449245a05298d5c
 remove|ember-template-lint|no-action|229|123|229|123|259aa927a526d3449245a05298d5cb8b1961de4e|1648684800000|1651276800000|1653868800000|app/components/settings/members-email-labs.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|192|48|192|48|a302b99c2a5682fd9186a16dce373578fe74a18b|1648684800000|1651276800000|1653868800000|app/components/settings/members-email-labs.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|207|40|207|40|7ca43fc52964fe52050eacf376e788422c34cf7a|1648684800000|1651276800000|1653868800000|app/components/settings/members-email-labs.hbs
+remove|ember-template-lint|no-unused-block-params|189|74|189|74|1ae2f6f18de70d2f2a881a48c048eb10ef38fe6d|1646611200000|1649199600000|1651791600000|app/components/modal-product.hbs
+remove|ember-template-lint|style-concatenation|168|57|168|57|665a1558cb4618790daff51f9c99fcb62948b414|1646611200000|1649199600000|1651791600000|app/components/modal-product.hbs
+remove|ember-template-lint|no-action|240|71|240|71|141d456b03124abca146e58e4ae15825fdd040bb|1646611200000|1649199600000|1651791600000|app/components/modal-product.hbs
+remove|ember-template-lint|no-action|242|8|242|8|d465b362b15b90cf42a093e72895155f49cdf6f2|1646611200000|1649199600000|1651791600000|app/components/modal-product.hbs
+remove|ember-template-lint|no-down-event-binding|242|41|242|41|b3e87879e52edc06bb07f1ad0becc6ec762bbb39|1646611200000|1649199600000|1651791600000|app/components/modal-product.hbs
+remove|ember-template-lint|no-action|86|51|86|51|682c80ff5163c8e4a2bea89f2066dfd1248b5889|1646611200000|1649199600000|1651791600000|app/components/modal-product.hbs

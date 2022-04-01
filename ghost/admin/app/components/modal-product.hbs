@@ -1,4 +1,4 @@
-<button class="close" href title="Close" type="button" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+<button class="close" href title="Close" type="button" {{on "click" this.closeModal}}>
     {{svg-jar "close"}}
 </button>
 
@@ -83,7 +83,7 @@
                                         @value={{readonly this.stripeMonthlyAmount}}
                                         @type="number"
                                         @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                                        @focus-out={{action "validateStripePlans"}}
+                                        @focus-out={{this.validateStripePlans}}
                                     />
                                     <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
                                 </div>
@@ -162,70 +162,100 @@
                     {{#if this.isFreeProduct}}
                         <h4 class="gh-main-section-header small bn" data-test-tierpreview-title>Free Membership Preview</h4>
                     {{else}}
-                        <h4 class="gh-main-section-header small bn" data-test-tierpreview-title>Tier Preview</h4>
-                    {{/if}}
-                    <div class="gh-main-section-content" style="border-color: {{this.settings.accentColor}}">
-                        <span class="checkmark" style="background-color: {{this.settings.accentColor}}"></span>
-
-                        {{#if this.product.name}}
-                            <h4 data-test-tierpreview-name>{{this.product.name}}</h4>
-                        {{else}}
-                            <h4 class="placeholder" data-test-tierpreview-name>Bronze</h4>
-                        {{/if}}
-
-                        {{#if this.product.description}}
-                            <p data-test-tierpreview-description>{{this.product.description}}</p>
-                        {{else}}
-                            {{#if this.isFreeProduct}}
-                                <p class="placeholder" data-test-tierpreview-description>Free preview of {{this.settings.title}}</p>
-                            {{else}}
-                                <p class="placeholder" data-test-tierpreview-description>Full access to premium content</p>
-                            {{/if}}
-                        {{/if}}
-
-                        {{#if this.benefits}}
-                            <ul data-test-tierpreview-benefits>
-                            {{#each this.benefits as |benefitItem index|}}
-                                <li>{{svg-jar "check-2"}} <span>{{benefitItem.name}}</span></li>
-                            {{/each}}
-                            </ul>
-                        {{else}}
-                            <ul class="placeholder" data-test-tierpreview-benefits>
-                                {{#if this.isFreeProduct}}
-                                    <li>{{svg-jar "check-2"}} <span>Access to all public posts</span></li>
-                                {{else}}
-                                    <li>{{svg-jar "check-2"}} <span>Expert analysis</span></li>
-                                {{/if}}
-                            </ul>
-                        {{/if}}
-                        <div class="price" data-test-tierpreview-price>
-                            {{#if this.isFreeProduct}}
-                                <span class="monthly-price">
-                                    <span class="currency">{{currency-symbol this.currency}}</span>
-                                    0
-                                </span>
-                            {{else}}
-                                {{#if this.stripeMonthlyAmount}}
-                                    <span class="monthly-price">
-                                        <span class="currency">{{currency-symbol this.currency}}</span>
-                                        {{format-number this.stripeMonthlyAmount}}
-                                        <span class="period">/month</span>
-                                    </span>
-                                {{else}}
-                                    <span class="monthly-price placeholder">
-                                        <span class="currency">{{currency-symbol this.currency}}</span>
-                                        0
-                                        <span class="period">/month</span>
-                                    </span>
-                                {{/if}}
-
-                                {{#if this.stripeYearlyAmount}}
-                                    <span class="yearly-price">{{currency-symbol this.currency}}{{format-number this.stripeYearlyAmount}}/year</span>
-                                {{else}}
-                                    <span class="yearly-price placeholder">0<span class="currency">{{this.currency}}</span>/year</span>
-                                {{/if}}
-                            {{/if}}
+                        <div class="gh-product-form-tierpreivew-cadence">
+                            <h4 class="gh-main-section-header small bn" data-test-tierpreview-title>Tier Preview</h4>
+                            <div>
+                                <button class="gh-btn {{if (eq this.previewCadence "monthly") "selected"}}" type="button" {{on "click" (fn this.changeCadence "monthly")}}><span>Monthly</span></button>
+                                <button class="gh-btn {{if (eq this.previewCadence "yearly") "selected"}}" type="button" {{on "click" (fn this.changeCadence "yearly")}}><span>Yearly</span></button>
+                            </div>
                         </div>
+                    {{/if}}
+                    <div class="gh-main-section-content">
+                        <div class="gh-portal-product-card-header">
+                            {{#if this.product.name}}
+                                <h4 class="gh-portal-product-name" data-test-tierpreview-name style={{this.accentColorStyle}}>{{this.product.name}}</h4>
+                            {{else}}
+                                <h4 class="placeholder gh-portal-product-name" style={{this.accentColorStyle}} data-test-tierpreview-name>Bronze</h4>
+                            {{/if}}
+
+                            <div class="gh-portal-product-card-pricecontainer" data-test-tierpreview-price>
+                                    {{#if this.isFreeProduct}}
+                                    <div class="gh-portal-product-price">
+                                        <span class="currency-sign">{{currency-symbol this.currency}}</span>
+                                        <span class="amount">0</span>
+                                    </div>
+                                    {{else}}
+                                        {{#if this.stripeYearlyAmount}}
+                                        <div class="gh-portal-product-price">
+                                            <span class="currency-sign">{{currency-symbol this.currency}}</span>
+                                            {{#if (eq this.previewCadence "monthly")}}
+                                                <span class="amount">
+                                                    {{format-number this.stripeMonthlyAmount}}
+                                                </span>
+                                                <span class="billing-period">/month</span>
+                                            {{else}}
+                                                <span class="amount">
+                                                    {{format-number this.stripeYearlyAmount}}
+                                                </span>
+                                                <span class="billing-period">/year</span>
+                                            {{/if}}
+                                        </div>
+                                        {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
+                                            <span class="gh-portal-discount-label">
+                                                <span style="background-color: {{this.settings.accentColor}}"></span>
+                                                {{this.discountValue}}% discount</span>
+                                        {{/if}}
+                                        {{else}}
+                                        <div class="gh-portal-product-price placeholder">
+                                            <span class="currency-sign">{{currency-symbol this.currency}}</span>
+                                            <span class="amount">0</span>
+                                            <span class="billing-period">/year</span>
+                                        </div>
+                                        {{/if}}
+
+                                    {{/if}}
+                            </div>
+                        </div>
+
+                        <div class="gh-portal-product-card-details">
+                            <div class="gh-portal-product-card-detaildata">
+                                {{#if this.product.description}}
+                                    <div class="gh-portal-product-description" data-test-tierpreview-description>{{this.product.description}}</div>
+                                {{else}}
+                                    {{#if this.isFreeProduct}}
+                                        <div class="placeholder gh-portal-product-description" data-test-tierpreview-description>Free preview of {{this.settings.title}}</div>
+                                    {{else}}
+                                        <div class="placeholder gh-portal-product-description" data-test-tierpreview-description>Full access to premium content</div>
+                                    {{/if}}
+                                {{/if}}
+
+                                {{#if this.benefits}}
+                                    <div class="gh-portal-product-benefits" data-test-tierpreview-benefits>
+                                    {{#each this.benefits as |benefitItem|}}
+                                        <div class="gh-portal-product-benefit">{{svg-jar "check-2"}}
+                                            <div class="gh-portal-benefit-title">{{benefitItem.name}}</div>
+                                        </div>
+                                    {{/each}}
+                                    </div>
+                                {{else}}
+                                    <div class="placeholder gh-portal-product-benefits" data-test-tierpreview-benefits>
+                                        {{#if this.isFreeProduct}}
+                                            <div class="gh-portal-product-benefit">{{svg-jar "check-2"}}
+                                                <div class="gh-portal-benefit-title">
+                                                    Access to all public posts
+                                                </div>
+                                            </div>
+                                        {{else}}
+                                            <div class="gh-portal-product-benefit">
+                                                {{svg-jar "check-2"}}
+                                                <div class="gh-portal-benefit-title">Expert analysis</div>
+                                            </div>
+                                        {{/if}}
+                                    </div>
+                                {{/if}}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
