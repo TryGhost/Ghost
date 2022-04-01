@@ -56,7 +56,7 @@ export default class ChartPaidMix extends Component {
     }
     
     get chartType() {
-        return 'pie';
+        return 'doughnut';
     }
 
     get chartData() {
@@ -81,6 +81,7 @@ export default class ChartPaidMix extends Component {
                 data,
                 fill: false,
                 backgroundColor: ['#14b8ff'],
+                borderWidth: 3,
                 tension: 0.1
             }]
         };
@@ -88,11 +89,10 @@ export default class ChartPaidMix extends Component {
 
     get chartOptions() {
         return {
+            cutoutPercentage: (this.mode === 'cadence' ? 85 : 75),
             legend: {
                 display: false
             },
-            responsive: true,
-            maintainAspectRatio: false,
             animation: {
                 duration: 0
             }

@@ -77,6 +77,10 @@ export default class ChartAnchor extends Component {
         return this.calculatePercentage(this.dashboardStats.currentMRRTrend, this.dashboardStats.currentMRR);
     }
 
+    get hasPaidTiers() {
+        return this.dashboardStats.siteStatus?.hasPaidTiers;
+    }
+
     get chartType() {
         return 'line';
     }

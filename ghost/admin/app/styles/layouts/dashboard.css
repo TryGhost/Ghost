@@ -1068,7 +1068,7 @@ a.gh-dashboard-container {
 
 .gh-dashboard5-box {
     flex: 1;
-    border: 1px solid #ebeef0;
+    border: 1px solid var(--whitegrey);
     padding: 28px;
     border-radius: 3px;
     display: flex;
@@ -1116,7 +1116,7 @@ a.gh-dashboard-container {
 .gh-dashboard5-number small {
     font-size: 1.4rem;
     padding: 0 0 0.25rem;
-    color: var(--darkgrey);
+    color: var(--midgrey);
 }
 
 .gh-dashboard5-slash {
@@ -1132,7 +1132,7 @@ a.gh-dashboard-container {
     letter-spacing: .2px;
     margin: 0 0 8px;
     padding: 0;
-    color: var(--black);
+    color: var(--midgrey);
 }
 
 .gh-dashboard5-metric.is-main {
@@ -1143,7 +1143,7 @@ a.gh-dashboard-container {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     text-transform: none;
     margin: 0 0 32px;
 }
@@ -1159,7 +1159,7 @@ a.gh-dashboard-container {
 }
 
 .gh-dashboard5-info {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     text-transform: none;
     font-weight: 500;
     letter-spacing: .2px;
@@ -1423,17 +1423,17 @@ a.gh-dashboard-container {
 .gh-dashboard5-section .prototype-selection {
     position: absolute;
     top: 18px;
-    right: 16px;
+    right: 12px;
 }
 
 .gh-dashboard5-section .ember-power-select-selected-item {
+    color: var(--darkgrey);
     font-size: 1.1rem;
     text-transform: uppercase;
     font-weight: 500;
     letter-spacing: .2px;
     margin: 0 0 8px;
     padding: 0;
-    color: #15171a;
 }
 
 .gh-dashboard5 .gh-list-header {
@@ -1444,10 +1444,6 @@ a.gh-dashboard-container {
     font-weight: 600;
     font-size: 14px !important;
     color: rgb(21, 23, 26);
-    /* white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%; */
 }
 
 .gh-dashboard5-posts .gh-dashboard5-box {

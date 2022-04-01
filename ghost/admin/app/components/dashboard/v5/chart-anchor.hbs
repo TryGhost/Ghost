@@ -8,24 +8,26 @@
         </div>
         <small class="gh-dashboard5-info">{{gh-pluralize this.totalMembers "Total member" without-count=true}}</small>
     </button>
-    <button type="button" {{on "click" (fn this.changeChartDisplay "paid")}} class={{if this.chartShowingPaid 'is-selected'}}>
-        <div class="gh-dashboard5-number">
-            {{format-number this.paidMembers}}
-            {{#if this.hasTrends}}
-                <Dashboard::v5::parts::ChartPercentage @percentage={{this.paidMembersTrend}}/>
-            {{/if}}
-        </div>
-        <small class="gh-dashboard5-info">{{gh-pluralize this.paidMembers "Paid member" without-count=true}}</small>
-    </button>
-    <button type="button" {{on "click" (fn this.changeChartDisplay "monthly")}} class={{if this.chartShowingMonthly 'is-selected'}}>
-        <div class="gh-dashboard5-number">
-            ${{gh-price-amount this.currentMRR}}
-            {{#if this.hasTrends}}
-                <Dashboard::v5::parts::ChartPercentage @percentage={{this.mrrTrend}}/>
-            {{/if}}
-        </div>
-        <small class="gh-dashboard5-info">Monthly revenue (MRR)</small>
-    </button>
+    {{#if this.hasPaidTiers}}
+        <button type="button" {{on "click" (fn this.changeChartDisplay "paid")}} class={{if this.chartShowingPaid 'is-selected'}}>
+            <div class="gh-dashboard5-number">
+                {{format-number this.paidMembers}}
+                {{#if this.hasTrends}}
+                    <Dashboard::v5::parts::ChartPercentage @percentage={{this.paidMembersTrend}}/>
+                {{/if}}
+            </div>
+            <small class="gh-dashboard5-info">{{gh-pluralize this.paidMembers "Paid member" without-count=true}}</small>
+        </button>
+        <button type="button" {{on "click" (fn this.changeChartDisplay "monthly")}} class={{if this.chartShowingMonthly 'is-selected'}}>
+            <div class="gh-dashboard5-number">
+                ${{gh-price-amount this.currentMRR}}
+                {{#if this.hasTrends}}
+                    <Dashboard::v5::parts::ChartPercentage @percentage={{this.mrrTrend}}/>
+                {{/if}}
+            </div>
+            <small class="gh-dashboard5-info">Monthly revenue (MRR)</small>
+        </button>
+    {{/if}}
 </div>
 <div class="gh-dashboard5-chart">
     {{#if this.loading}}

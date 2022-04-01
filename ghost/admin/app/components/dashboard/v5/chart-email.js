@@ -62,7 +62,7 @@ export default class ChartEmailOpenRate extends Component {
                 pointHitRadius: 10,
                 borderColor: '#14b8ff',
                 borderJoinStyle: 'miter',
-                maxBarThickness: 20,
+                maxBarThickness: 15,
                 minBarLength: 2
             }]
         };
@@ -70,8 +70,6 @@ export default class ChartEmailOpenRate extends Component {
 
     get chartOptions() {
         return {
-            responsive: true,
-            maintainAspectRatio: true,
             title: {
                 display: false
             },

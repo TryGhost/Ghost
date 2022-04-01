@@ -1045,6 +1045,11 @@ input:focus,
     background: var(--white);
 }
 
+.gh-dashboard5-box {
+    flex: 1;
+    border: 1px solid var(--lightgrey);
+}
+
 .gh-notification {
     background: var(--lightgrey);
 }
