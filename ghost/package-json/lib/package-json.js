@@ -128,11 +128,17 @@ async function readPackage(packagePath, packageName) {
  */
 async function readPackages(packagePath) {
     return Bluebird.resolve(fs.readdir(packagePath, {withFileTypes: true}))
-        .filter(function (packageFile) {
+        .filter(async function (packageFile) {
             // Filter out things which are not packages by regex
             if (packageFile.name.match(notAPackageRegex)) {
                 return;
             }
+
+            if (packageFile.isSymbolicLink()) {
+                const packageFileOrig = await fs.stat(join(packagePath, packageFile.name));
+                return packageFileOrig.isDirectory();
+            }
+
             // Check the remaining items to ensure they are a directory
             return packageFile.isDirectory();
         })
