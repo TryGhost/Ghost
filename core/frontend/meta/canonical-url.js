@@ -18,6 +18,9 @@ function getCanonicalUrl(data) {
         url = url.replace(/\/amp\/$/i, '/');
     }
 
+    if (url === 'https://mundi.to') return 'https://mundi.to/blog';
+    if (url === 'https://mundi.io') return 'https://mundi.io/blog';
+
     return url;
 }
 
