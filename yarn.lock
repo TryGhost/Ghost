@@ -2203,10 +2203,10 @@
     "@tryghost/nql-lang" "^0.3.0"
     mingo "^2.2.2"
 
-"@tryghost/package-json@1.0.17":
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-1.0.17.tgz#adb21bb4a87f62f109b222837b5914613e00bac2"
-  integrity sha512-mxDyx9QAIULTW/ycMrT+6yfDVk7IMgXnC1wviomBx3CSmY7eWHlb9gONHQX4BUmOxcqgChkhjuc8OdYgcVnQ0w==
+"@tryghost/package-json@1.0.18":
+  version "1.0.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/package-json/-/package-json-1.0.18.tgz#e9fb962362db19f1955a937739c04d172b85e4eb"
+  integrity sha512-tFREcOccnjfVrSAP08D2s5iUqRyvQK9XzwN2eeZPA+epVkopeTyddPnL/ALV+/4+xkXiS/JN3sSz1tom47+9iA==
   dependencies:
     "@tryghost/errors" "^1.2.1"
     "@tryghost/tpl" "^0.1.5"
