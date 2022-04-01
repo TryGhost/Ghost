@@ -12,7 +12,6 @@ export default class MembersEmailLabs extends Component {
     @service ghostPaths;
     @service ajax;
     @service settings;
-    @service newsletters;
 
     // set recipientsSelectValue as a static property because within this
     // component's lifecycle it's not always derived from the settings values.
@@ -72,14 +71,6 @@ export default class MembersEmailLabs extends Component {
             domain: this.settings.get('mailgunDomain') || '',
             baseUrl: this.settings.get('mailgunBaseUrl') || ''
         };
-    }
-
-    get activeNewsletterCount() {
-        return this.newsletters.newsletters.filter(n => n.status === 'active').length;
-    }
-
-    get archivedNewsletterCount() {
-        return this.newsletters.newsletters.filter(n => n.status === 'archived').length;
     }
 
     @action
@@ -182,16 +173,6 @@ export default class MembersEmailLabs extends Component {
     @action
     setDefaultEmailRecipientsFilter(filter) {
         this.settings.set('editorDefaultEmailRecipientsFilter', filter);
-    }
-
-    @action
-    archiveNewsletter(id) {
-        this.newsletters.archive(id);
-    }
-
-    @action
-    addNewsletter() {
-        this.newsletters.add();
     }
 
     @task({drop: true})
