@@ -2146,14 +2146,6 @@
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
 
-"@tryghost/mongo-knex@^0.6.2":
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.6.2.tgz#8eb246d9311fce6e8fcdced263c1efc8a507b3b8"
-  integrity sha512-Ef1/TE74ZQaMPMy5dMmmtlqmFq3F8GtzRSvPbaNnPMN1Jn0200CQP8L5akh0r77YGtCKj5foMNsvmlTe5DqmRw==
-  dependencies:
-    debug "^4.3.3"
-    lodash "^4.17.21"
-
 "@tryghost/mongo-knex@^0.6.3":
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.6.3.tgz#9b0e4bcb06caa57be0de342b30297c1e5f9d2024"
@@ -2161,13 +2153,6 @@
   dependencies:
     debug "^4.3.3"
     lodash "^4.17.21"
-
-"@tryghost/mongo-utils@^0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-utils/-/mongo-utils-0.3.3.tgz#1f35b9e9acd2762d63c72cfd097376dd8049d59c"
-  integrity sha512-9Qo4jKBr8cTzgZriGQIfpq0X5bJDPDyqlLxeWHNyhIT3J8R2Mtp83zGSeuuwng33JO1cFZKMyaAQs2YTdZWeIA==
-  dependencies:
-    lodash "^4.17.11"
 
 "@tryghost/mongo-utils@^0.3.4":
   version "0.3.4"
@@ -2203,17 +2188,12 @@
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/nql-lang@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.3.0.tgz#47e3658e46fc89222095d6cfa1927291901b2e73"
-  integrity sha512-rjE0r0Fi5TCjFOL0p8wllbSb42YSgLqEXnS5AgxvhOgjMjHYkFfDX7SWN6eGFt2HeW8B15LxvG2x4eFWNoB1QA==
-
 "@tryghost/nql-lang@^0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.3.1.tgz#01dc1b124e820927130e7c1f5e48db205959c290"
   integrity sha512-S/5cpAhyeNzMfaEvaRKnCy6uMABd8FGTwIoZcZmeAeLBigxs7LO+Q2vQexufu6TxOud+YhMT7UQX3vy076L5HQ==
 
-"@tryghost/nql@0.9.1":
+"@tryghost/nql@0.9.1", "@tryghost/nql@^0.9.0":
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.9.1.tgz#f50bc32713e857a7c60e0cbaaee2cbeb6f3123a6"
   integrity sha512-Ihx+htB+H/nzV8a+ud68ViCe5TwwZlWNUM2TbBn9WpgDXw579PgsAUvusaOhbLVVJKZDeJnlmY/gNXO0e6NUqQ==
@@ -2221,16 +2201,6 @@
     "@tryghost/mongo-knex" "^0.6.3"
     "@tryghost/mongo-utils" "^0.3.4"
     "@tryghost/nql-lang" "^0.3.1"
-    mingo "^2.2.2"
-
-"@tryghost/nql@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.9.0.tgz#706d91add48043303260f92c67d7f6b8c429e982"
-  integrity sha512-1b0YHY9aOI74YgA8zXA962BCYR3fofZaM1NLmoXXLwSORT9Q4yajNygMZH328NqCUiyg6KRjNnMyC/E8kLwBgQ==
-  dependencies:
-    "@tryghost/mongo-knex" "^0.6.2"
-    "@tryghost/mongo-utils" "^0.3.3"
-    "@tryghost/nql-lang" "^0.3.0"
     mingo "^2.2.2"
 
 "@tryghost/package-json@1.0.18":
@@ -2340,17 +2310,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/tpl@0.1.14", "@tryghost/tpl@^0.1.14":
+"@tryghost/tpl@0.1.14", "@tryghost/tpl@^0.1.14", "@tryghost/tpl@^0.1.2", "@tryghost/tpl@^0.1.3", "@tryghost/tpl@^0.1.4", "@tryghost/tpl@^0.1.5", "@tryghost/tpl@^0.1.7", "@tryghost/tpl@^0.1.8":
   version "0.1.14"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.14.tgz#414641a06e3b6c1cc50e91db4b50ed355bd67a57"
   integrity sha512-3TKovOH4RZX2OhysqzduSlHB0LjLlXUpKRsIsyOD5TcxVRF7MLo0iVjFuWZh1e/ZLxJFfmS1Sk7OGC9izkNuLw==
-  dependencies:
-    lodash.template "^4.5.0"
-
-"@tryghost/tpl@^0.1.2", "@tryghost/tpl@^0.1.3", "@tryghost/tpl@^0.1.4", "@tryghost/tpl@^0.1.5", "@tryghost/tpl@^0.1.7", "@tryghost/tpl@^0.1.8":
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.13.tgz#8319c62d05bc058fdf0d5fb85c914a2f832ad409"
-  integrity sha512-Xwv5+JBKr/5UsxqyPBoFXMszcqSPMUm+CSNnwYXf4XFZ92Dd+eZhRblhowm1V4lPHj9raNLQQfiCsVpMRzRmZg==
   dependencies:
     lodash.template "^4.5.0"
 
@@ -4213,10 +4176,10 @@ cssesc@^3.0.0:
   resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-3.0.0.tgz#37741919903b868565e1c09ea747445cd18983ee"
   integrity sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==
 
-cssnano-preset-default@^5.2.6:
-  version "5.2.6"
-  resolved "https://registry.yarnpkg.com/cssnano-preset-default/-/cssnano-preset-default-5.2.6.tgz#3a2a17b7bccdbf27dbc6d4b9a8ae2c1f1720d50c"
-  integrity sha512-QwnYv/ZuNH0eWOxs3ME7w5uXXdWZKKXVGn1c6P877nPLl7SR8pAQQNe1CKbcPc+qpIbb2cq554Cv3QYG0MxTSQ==
+cssnano-preset-default@^5.2.7:
+  version "5.2.7"
+  resolved "https://registry.yarnpkg.com/cssnano-preset-default/-/cssnano-preset-default-5.2.7.tgz#791e3603fb8f1b46717ac53b47e3c418e950f5f3"
+  integrity sha512-JiKP38ymZQK+zVKevphPzNSGHSlTI+AOwlasoSRtSVMUU285O7/6uZyd5NbW92ZHp41m0sSHe6JoZosakj63uA==
   dependencies:
     css-declaration-sorter "^6.2.2"
     cssnano-utils "^3.1.0"
@@ -4227,7 +4190,7 @@ cssnano-preset-default@^5.2.6:
     postcss-discard-duplicates "^5.1.0"
     postcss-discard-empty "^5.1.1"
     postcss-discard-overridden "^5.1.0"
-    postcss-merge-longhand "^5.1.3"
+    postcss-merge-longhand "^5.1.4"
     postcss-merge-rules "^5.1.1"
     postcss-minify-font-values "^5.1.0"
     postcss-minify-gradients "^5.1.1"
@@ -4253,12 +4216,12 @@ cssnano-utils@^3.1.0:
   resolved "https://registry.yarnpkg.com/cssnano-utils/-/cssnano-utils-3.1.0.tgz#95684d08c91511edfc70d2636338ca37ef3a6861"
   integrity sha512-JQNR19/YZhz4psLX/rQ9M83e3z2Wf/HdJbryzte4a3NSuafyp9w/I4U+hx5C2S9g41qlstH7DEWnZaaj83OuEA==
 
-cssnano@5.1.6:
-  version "5.1.6"
-  resolved "https://registry.yarnpkg.com/cssnano/-/cssnano-5.1.6.tgz#8133722e93049ac5c284bbe5c32cbf7fc829ceca"
-  integrity sha512-A7oX6Vxgpc/VzyKDTLEFpv6M0n06foVSWPAb+Xg0k6ikgSaI04SnGUKOQeBdvrXZCqhp3xdlii0cp+bUCgbCRQ==
+cssnano@5.1.7:
+  version "5.1.7"
+  resolved "https://registry.yarnpkg.com/cssnano/-/cssnano-5.1.7.tgz#99858bef6c76c9240f0cdc9239570bc7db8368be"
+  integrity sha512-pVsUV6LcTXif7lvKKW9ZrmX+rGRzxkEdJuVJcp5ftUjWITgwam5LMZOgaTvUrWPkcORBey6he7JKb4XAJvrpKg==
   dependencies:
-    cssnano-preset-default "^5.2.6"
+    cssnano-preset-default "^5.2.7"
     lilconfig "^2.0.3"
     yaml "^1.10.2"
 
@@ -9830,10 +9793,10 @@ postcss-discard-overridden@^5.1.0:
   resolved "https://registry.yarnpkg.com/postcss-discard-overridden/-/postcss-discard-overridden-5.1.0.tgz#7e8c5b53325747e9d90131bb88635282fb4a276e"
   integrity sha512-21nOL7RqWR1kasIVdKs8HNqQJhFxLsyRfAnUDm4Fe4t4mCWL9OJiHvlHPjcd8zc5Myu89b/7wZDnOSjFgeWRtw==
 
-postcss-merge-longhand@^5.1.3:
-  version "5.1.3"
-  resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-5.1.3.tgz#a49e2be6237316e3b55e329e0a8da15d1f9f47ab"
-  integrity sha512-lX8GPGvZ0iGP/IboM7HXH5JwkXvXod1Rr8H8ixwiA372hArk0zP4ZcCy4z4Prg/bfNlbbTf0KCOjCF9kKnpP/w==
+postcss-merge-longhand@^5.1.4:
+  version "5.1.4"
+  resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-5.1.4.tgz#0f46f8753989a33260efc47de9a0cdc571f2ec5c"
+  integrity sha512-hbqRRqYfmXoGpzYKeW0/NCZhvNyQIlQeWVSao5iKWdyx7skLvCfQFGIUsP9NUs3dSbPac2IC4Go85/zG+7MlmA==
   dependencies:
     postcss-value-parser "^4.2.0"
     stylehacks "^5.1.0"
