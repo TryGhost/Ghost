@@ -58,6 +58,7 @@ module.exports = function price(planOrAmount, options) {
     }
     options = options || {};
     options.hash = options.hash || {};
+    // NOTE: potentially breaking place once site.lang is removed in favor of site.locale
     const {currency, numberFormat = 'short', currencyFormat = 'symbol', locale = _.get(options, 'data.site.lang', 'en')} = options.hash;
     if (plan) {
         return formatter({
