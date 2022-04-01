@@ -187,7 +187,7 @@
   },
   "devDependencies": {
     "@lodder/grunt-postcss": "3.1.1",
-    "@playwright/test": "1.20.1",
+    "@playwright/test": "1.20.2",
     "@tryghost/express-test": "0.8.0",
     "c8": "7.11.0",
     "coffeescript": "2.6.1",
