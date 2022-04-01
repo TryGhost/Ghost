@@ -34,19 +34,23 @@ export default class ChartPaidMembers extends Component {
                 {
                     data: newData,
                     fill: true,
-                    backgroundColor: '#14b8ff',
+                    borderColor: '#9B90F9',
+                    backgroundColor: '#9B90F9',
                     tension: 0.1,
-                    borderWidth: 0,
                     barThickness: 10,
-                    minBarLength: 3
+                    minBarLength: 3,
+                    borderWidth: 2,
+                    borderRadius: 5
                 },{
                     data: canceledData,
                     fill: true,
-                    backgroundColor: '#E16262',
+                    borderColor: '#E28B9D',
+                    backgroundColor: '#E28B9D',
                     tension: 0.1,
-                    borderWidth: 0,
                     barThickness: 10,
-                    minBarLength: 3
+                    minBarLength: 3,
+                    borderWidth: 2,
+                    borderRadius: 5
                 }]
         };
     }
@@ -64,6 +68,7 @@ export default class ChartPaidMembers extends Component {
             },
             scales: {
                 yAxes: [{
+                    offset: true,
                     gridLines: {
                         drawTicks: false,
                         display: true,
@@ -78,17 +83,17 @@ export default class ChartPaidMembers extends Component {
                     }
                 }],
                 xAxes: [{
+                    offset: true,
+                    stacked: true,
                     gridLines: {
-                        drawTicks: false,
+                        drawTicks: true,
                         display: false,
                         drawBorder: false
                     },
                     ticks: {
                         display: false,
                         maxTicksLimit: 5,
-                        autoSkip: true,
-                        maxRotation: 0,
-                        minRotation: 0
+                        autoSkip: true
                     },
                     type: 'time',
                     time: {
