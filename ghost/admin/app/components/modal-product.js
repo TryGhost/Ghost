@@ -4,6 +4,7 @@ import ProductBenefitItem from '../models/product-benefit-item';
 import classic from 'ember-classic-decorator';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {A as emberA} from '@ember/array';
+import {htmlSafe} from '@ember/template';
 import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -33,6 +34,10 @@ export default class ModalProductPrice extends ModalBase {
     @tracked benefits = emberA([]);
     @tracked newBenefit = null;
     @tracked welcomePageURL;
+    @tracked previewCadence = 'yearly';
+    @tracked discountValue = 0;
+
+    accentColorStyle = '';
 
     confirm() {}
 
@@ -76,6 +81,9 @@ export default class ModalProductPrice extends ModalBase {
             isNew: true,
             name: ''
         });
+        this.calculateDiscount();
+
+        this.accentColorStyle = htmlSafe(`color: ${this.settings.get('accentColor')}`);
     }
 
     @action
@@ -203,6 +211,33 @@ export default class ModalProductPrice extends ModalBase {
         this.newBenefit = ProductBenefitItem.create({isNew: true, name: ''});
     }
 
+    calculateDiscount() {
+        const discount = this.stripeMonthlyAmount ? 100 - Math.floor((this.stripeYearlyAmount / 12 * 100) / this.stripeMonthlyAmount) : 0;
+        this.discountValue = discount > 0 ? discount : 0;
+    }
+
+    @action
+    changeCadence(cadence) {
+        this.previewCadence = cadence;
+    }
+
+    @action
+    validateStripePlans() {
+        this.calculateDiscount();
+        this.stripePlanError = undefined;
+
+        try {
+            const yearlyAmount = this.stripeYearlyAmount;
+            const monthlyAmount = this.stripeMonthlyAmount;
+            const symbol = getSymbol(this.currency);
+            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
+                throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
+            }
+        } catch (err) {
+            this.stripePlanError = err.message;
+        }
+    }
+
     actions = {
         addBenefit(item) {
             return item.validate().then(() => {
@@ -239,20 +274,6 @@ export default class ModalProductPrice extends ModalBase {
         setCurrency(event) {
             const newCurrency = event.value;
             this.currency = newCurrency;
-        },
-        validateStripePlans() {
-            this.stripePlanError = undefined;
-
-            try {
-                const yearlyAmount = this.stripeYearlyAmount;
-                const monthlyAmount = this.stripeMonthlyAmount;
-                const symbol = getSymbol(this.currency);
-                if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
-                    throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
-                }
-            } catch (err) {
-                this.stripePlanError = err.message;
-            }
         },
         // needed because ModalBase uses .send() for keyboard events
         closeModal() {

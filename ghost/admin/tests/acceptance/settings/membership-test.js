@@ -260,19 +260,19 @@ describe('Acceptance: Settings - Membership', function () {
         await click(`${newBenefit} [data-test-button="add-benefit"]`);
 
         expect(find(`${modal} [data-test-tierpreview-benefits]`)).to.contain.text('Second benefit');
-        expect(findAll(`${modal} [data-test-tierpreview-benefits] li`).length).to.equal(2);
+        expect(findAll(`${modal} [data-test-tierpreview-benefits] div`).length).to.equal(4);
 
         await click(`${modal} [data-test-benefit-item="0"] [data-test-button="delete-benefit"]`);
 
         expect(find(`${modal} [data-test-tierpreview-benefits]`)).to.not.contain.text('First benefit');
-        expect(findAll(`${modal} [data-test-tierpreview-benefits] li`).length).to.equal(1);
+        expect(findAll(`${modal} [data-test-tierpreview-benefits] div`).length).to.equal(2);
 
         // Add a new benefit that we will later rename to an empty name
         await fillIn(`${newBenefit} [data-test-input="benefit-label"]`, 'Third benefit');
         await click(`${newBenefit} [data-test-button="add-benefit"]`);
 
         expect(find(`${modal} [data-test-tierpreview-benefits]`)).to.contain.text('Third benefit');
-        expect(findAll(`${modal} [data-test-tierpreview-benefits] li`).length).to.equal(2);
+        expect(findAll(`${modal} [data-test-tierpreview-benefits] div`).length).to.equal(4);
 
         // Clear the second benefit's name (it should get removed after saving)
         const secondBenefitItem = `${modal} [data-test-benefit-item="1"]`;

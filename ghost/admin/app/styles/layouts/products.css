@@ -181,7 +181,6 @@
     line-height: 1;
     margin-right: 2px;
     font-size: 2.2rem;
-    font-weight: 500;
     letter-spacing: 0.1px;
 }
 
@@ -190,7 +189,6 @@
     position: relative;
     top: 2px;
     font-size: 1.4rem;
-    font-weight: 500;
     letter-spacing: 0.4px;
     line-height: 1;
 }
@@ -436,7 +434,7 @@
 
 /* Add/edit product modal */
 .fullscreen-modal-edit-product {
-    max-width: 900px;
+    max-width: 1080px;
 }
 
 .gh-product-modal-content {
@@ -448,7 +446,7 @@
 
 .gh-form-edit-product .gh-main-section {
     margin-bottom: 32px;
-    grid-template-columns: 1fr 0.9fr 1.1fr;
+    grid-template-columns: 1fr 0.8fr 1.2fr;
 }
 
 .gh-form-edit-product .gh-main-section-block {
@@ -568,66 +566,109 @@
 }
 
 .gh-product-form-tierpreview .gh-main-section-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: #fff;
-    border: 2px solid var(--blackgrey);
-    border-radius: 4px;
-    padding: 24px;
-}
-
-.gh-product-form-tierpreview .gh-main-section-content .checkmark {
+    flex: 1;
+    max-width: 420px;
+    min-width: 320px;
     position: relative;
-    background-color: var(--blackgrey);
-    border-radius: 999px;
-    height: 18px;
-    width: 18px;
-}
-
-.gh-product-form-tierpreview .gh-main-section-content .checkmark::after {
-    display: block;
-    position: absolute;
-    content: "";
-    left: 6.5px;
-    top: 2.5px;
-    width: 5px;
-    height: 11px;
-    border: solid #fff;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
-.gh-product-form-tierpreview .gh-main-section-content h4 {
-    font-size: 1.3rem;
-    font-weight: 500;
-    line-height: 1.45em;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-top: 7px;
-    text-align: center;
-    min-height: 24px;
-    word-break: break-word;
-    color: #333;
-}
-
-.gh-product-form-tierpreview .gh-main-section-content p {
-    font-size: 1.35rem;
-    font-weight: 500;
-    line-height: 1.45em;
-    text-align: center;
-    color: #474747;
-    padding: 16px 0;
-    margin: 8px 0 20px;
-    width: 100%;
-    border-top: 1px solid #eaeaea;
-    border-bottom: 1px solid #eaeaea;
-}
-
-.gh-product-form-tierpreview .price {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: stretch;
+    background: white;
+    padding: 32px;
+    border-radius: 7px;
+    border: 1px solid #e1e1e1;
+    min-height: 200px;
+    letter-spacing: normal;
+}
+
+.gh-portal-product-card-header {
+    width: 100%;
+    min-height: 56px;
+}
+
+.gh-product-form-tierpreview .gh-main-section-content .gh-portal-product-name {
+    font-size: 1.8rem;
+    font-weight: 600;
+    line-height: 1.3em;
+    letter-spacing: 0px;
+    margin-top: -4px;
+    margin-bottom: 0;
+    word-break: break-word;
+    width: 100%;
+}
+
+.gh-product-form-tierpreview .gh-main-section-content .gh-portal-product-description {
+    font-size: 1.55rem;
+    font-weight: 600;
+    line-height: 1.4em;
+    width: 100%;
+    margin-top: 16px;
+    color: #3d3d3d;
+}
+
+.gh-portal-product-card-pricecontainer {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    row-gap: 10px;
+    column-gap: 4px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+.gh-portal-product-price {
+    display: flex;
+    justify-content: center;
+    color: #1d1d1d;
+}
+
+.gh-portal-product-card-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.gh-portal-product-card-detaildata {
+    flex: 1;
+}
+
+.gh-portal-product-price .amount {
+    font-size: 3.4rem;
+    font-weight: 700;
+    line-height: 1em;
+    letter-spacing: -1.3px;
+}
+
+.gh-product-form-tierpreivew-cadence {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.gh-product-form-tierpreivew-cadence .gh-btn,
+.gh-product-form-tierpreivew-cadence .gh-btn span {
+    background: transparent !important;
+    padding: 0;
+    line-height: 1em;
+    height: auto;
+    font-size: 1.3rem;
+    color: var(--midlightgrey);
+    margin-left: 4px;
+    font-weight: 400;
+    overflow: unset;
+}
+
+.gh-product-form-tierpreivew-cadence .gh-btn:hover span {
+    color: var(--middarkgrey);
+}
+
+.gh-product-form-tierpreivew-cadence .gh-btn.selected span {
+    font-weight: 500;
+    color: var(--darkgrey);
 }
 
 .gh-product-form-tierpreview .monthly-price {
@@ -639,65 +680,82 @@
     color: #3d3d3d;
 }
 
-.gh-product-form-tierpreview .monthly-price .period {
-    font-size: 1.3rem;
-    line-height: 1.6em;
-    color: #515151;
-    letter-spacing: 0.3px;
-    margin-left: 2px;
-}
-
-.gh-product-form-tierpreview .yearly-price {
-    font-size: 1.2rem;
-    line-height: 1.6em;
-    color: #aeaeae;
-    text-align: center;
-    margin-top: 4px;
-    letter-spacing: 0.3px;
-    height: 18px;
-    margin-top: -1px;
-}
-
-.gh-product-form-tierpreview .currency {
+.gh-product-form-tierpreview .currency-sign {
+    align-self: flex-start;
+    font-size: 2.7rem;
+    font-weight: 700;
+    line-height: 1.115em;
     text-transform: uppercase;
 }
 
-.gh-product-form-tierpreview .monthly-price .currency {
-    align-self: flex-start;
-    font-size: 2.0rem;
-    font-weight: 500;
-    line-height: 1.3em;
+.gh-product-form-tierpreview .billing-period {
+    align-self: flex-end;
+    font-size: 1.5rem;
+    line-height: 1.4em;
+    color: #686868;
+    letter-spacing: 0.3px;
+    margin-left: 5px;
+    font-weight: 400;
 }
 
-.gh-product-form-tierpreview ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+.gh-portal-discount-label {
+    position: relative;
+    font-size: 1.25rem;
+    line-height: 1em;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: #1d1d1d;
+    padding: 6px 9px;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 999px;
+    margin-right: -4px;
+    margin-top: -4px;
+    max-height: 24.5px;
+}
+
+.gh-portal-discount-label span {
+    position: absolute;
+    content: "";
+    display: block;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 999px;
+    opacity: 0.2;
+}
+
+.gh-product-form-tierpreview .gh-portal-product-benefits {
+    font-size: 1.5rem;
+    line-height: 1.4em;
     width: 100%;
-    min-height: 100px;
-    margin-bottom: 12px;
+    margin-top: 16px;
 }
 
-.gh-product-form-tierpreview li {
+.gh-product-form-tierpreview .gh-portal-product-benefit {
     display: flex;
     align-items: flex-start;
-    font-size: 1.3rem;
-    line-height: 1.45em;
-    color: #686868;
-    margin: 0 0 12px;
-    padding: 0;
+    margin-bottom: 10px;
+    color: #3d3d3d;
 }
 
-.gh-product-form-tierpreview li svg {
-    width: 13px;
-    height: 13px;
-    min-width: 12px;
-    margin: 3px 6px 0 0;
+.gh-portal-product-benefit svg {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    margin: 3px 10px 0 0;
     overflow: visible;
 }
 
-.gh-product-form-tierpreview li svg path {
+.gh-product-form-tierpreview .gh-portal-product-benefit polyline,
+.gh-product-form-tierpreview .gh-portal-product-benefit g,
+.gh-product-form-tierpreview .gh-portal-product-benefit path {
     stroke-width: 3px;
+}
+
+.gh-product-form-tierpreview .gh-portal-benefit-title {
+    letter-spacing: normal;
 }
 
 .gh-product-form-tierpreview .placeholder {
