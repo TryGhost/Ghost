@@ -1963,7 +1963,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.1.1", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1", "@tryghost/logging@^2.0.5":
+"@tryghost/logging@2.1.1", "@tryghost/logging@2.1.2", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1", "@tryghost/logging@^2.0.5":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.1.1.tgz#bb5b777f18e8d7ca5219cf5f6ca90a4a7a23db82"
   integrity sha512-cpaUSxSHMuavFHKJ9zmFloFUayyCyBK8QPiBBIHoM8wLGMLP+NxxHtbF5kMiqJxjotO2CoIi3Ra/+zr5fHai7w==
@@ -6230,16 +6230,16 @@ grunt@1.4.1:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.26.0:
-  version "4.26.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.26.0.tgz#f5190fb7165bc3cbed7d7a9d6f7de39af6597f7f"
-  integrity sha512-N9drQBUvTKdpAYAg+A93+kAErjvAhDqiGJTWUXGBLYUCeAZU06aIl1Ezs1hm7vWrHNBL0ynDnBg9AOj6mEkI/A==
+gscan@4.26.1:
+  version "4.26.1"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.26.1.tgz#7dd45b8c2e7e9bfccb5f1e3d4293cabf779046ed"
+  integrity sha512-55KOr0g3EzdKhbRhw3sCIBALP1wKgdUJqwWhgwUx4mmDnMddmAqSttErqKiRfuL33Yfx1dFGVx/r6dRb7ZMKog==
   dependencies:
     "@sentry/node" "6.19.3"
     "@tryghost/config" "0.2.2"
     "@tryghost/debug" "0.1.11"
     "@tryghost/errors" "1.2.7"
-    "@tryghost/logging" "2.1.1"
+    "@tryghost/logging" "2.1.2"
     "@tryghost/pretty-cli" "1.2.24"
     "@tryghost/server" "0.1.4"
     "@tryghost/zip" "1.1.22"
