@@ -58,7 +58,7 @@
     "@sentry/node": "6.19.3",
     "@tryghost/adapter-manager": "0.2.28",
     "@tryghost/admin-api-schema": "2.12.1",
-    "@tryghost/bookshelf-plugins": "0.3.14",
+    "@tryghost/bookshelf-plugins": "0.3.15",
     "@tryghost/bootstrap-socket": "0.2.17",
     "@tryghost/color-utils": "0.1.12",
     "@tryghost/config-url-helpers": "0.1.5",
@@ -80,7 +80,7 @@
     "@tryghost/kg-markdown-html-renderer": "5.1.5",
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.5",
     "@tryghost/limit-service": "1.0.10",
-    "@tryghost/logging": "2.1.1",
+    "@tryghost/logging": "2.1.2",
     "@tryghost/magic-link": "1.0.21",
     "@tryghost/member-events": "0.4.1",
     "@tryghost/members-api": "5.4.1",
@@ -94,20 +94,20 @@
     "@tryghost/mw-error-handler": "0.1.7",
     "@tryghost/mw-session-from-token": "0.1.28",
     "@tryghost/nodemailer": "0.3.17",
-    "@tryghost/nql": "0.9.0",
+    "@tryghost/nql": "0.9.1",
     "@tryghost/package-json": "1.0.18",
     "@tryghost/promise": "0.1.15",
-    "@tryghost/request": "0.1.20",
+    "@tryghost/request": "0.1.21",
     "@tryghost/root-utils": "0.3.12",
     "@tryghost/security": "0.2.15",
     "@tryghost/session-service": "0.1.38",
     "@tryghost/settings-path-manager": "0.1.4",
     "@tryghost/social-urls": "0.1.29",
     "@tryghost/string": "0.1.23",
-    "@tryghost/tpl": "0.1.13",
+    "@tryghost/tpl": "0.1.14",
     "@tryghost/update-check-service": "0.3.2",
     "@tryghost/url-utils": "2.1.0",
-    "@tryghost/validator": "0.1.18",
+    "@tryghost/validator": "0.1.19",
     "@tryghost/verification-trigger": "0.1.6",
     "@tryghost/version": "0.1.12",
     "@tryghost/vhost-middleware": "1.0.22",
@@ -182,7 +182,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "1.8.5",
+    "@tryghost/html-to-mobiledoc": "1.8.6",
     "@vscode/sqlite3": "5.0.8"
   },
   "devDependencies": {
@@ -219,7 +219,7 @@
     "tmp": "0.2.1"
   },
   "resolutions": {
-    "@tryghost/logging": "2.1.1",
+    "@tryghost/logging": "2.1.2",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   }
