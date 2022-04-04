@@ -59,6 +59,7 @@
     display: flex;
     justify-content: center;
     overflow: auto;
+    align-items: unset;
 }
 
 .epm-animating .epm-modal-container {
