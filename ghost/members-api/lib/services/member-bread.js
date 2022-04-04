@@ -133,7 +133,8 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
             'products',
-            'offerRedemptions'
+            'offerRedemptions',
+            'newsletters'
         ];
 
         const withRelated = new Set((options.withRelated || []).concat(defaultWithRelated));
@@ -194,6 +195,10 @@ module.exports = class MemberBREADService {
     async add(data, options) {
         if (!this.labsService.isSet('multipleProducts')) {
             delete data.products;
+        }
+
+        if (!this.labsService.isSet('multipleNewsletters')) {
+            delete data.newsletters;
         }
 
         if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
@@ -267,6 +272,10 @@ module.exports = class MemberBREADService {
             delete data.products;
         }
 
+        if (!this.labsService.isSet('multipleNewsletters')) {
+            delete data.newsletters;
+        }
+
         let model;
 
         try {
@@ -306,7 +315,8 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.customer',
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
-            'products'
+            'products',
+            'newsletters'
         ];
 
         const originalWithRelated = options.withRelated || [];
