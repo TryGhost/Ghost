@@ -72,6 +72,7 @@
     animation-duration: var(--epm-animation-modal-in-duration);
     -webkit-overflow-scrolling: touch; /* momentum-based scrolling for Safari on iOS */
     pointer-events: none;
+    transform: none;
 }
 
 .epm-modal * {
@@ -99,6 +100,7 @@
     animation-delay: var(--epm-animation-modal-out-delay);
     animation-duration: var(--epm-animation-modal-out-duration);
     pointer-events: none;
+    transform: none;
 }
 
 @keyframes epm-backdrop-in {
