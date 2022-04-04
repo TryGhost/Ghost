@@ -897,6 +897,18 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createMemberWithNewsletter(overrides) {
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId().toHexString(),
+            email: 'member@ghost.org',
+            newsletters: [{
+                id: 'newsletter-1'
+            }]
+        });
+    }
+
     function createLabel(overrides) {
         const newObj = _.cloneDeep(overrides);
 
@@ -1346,6 +1358,7 @@ DataGenerator.forKnex = (function () {
         createSetting,
         createToken,
         createMember,
+        createMemberWithNewsletter,
         createLabel,
         createMembersLabels,
         createMembersStripeCustomer: createBasic,
