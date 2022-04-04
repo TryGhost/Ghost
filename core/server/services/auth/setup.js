@@ -142,7 +142,10 @@ async function doFixtures(data) {
         mobiledoc = mobiledoc.replace(/{{date}}/, date);
 
         const post = await models.Post.findOne({slug: key});
-        await models.Post.edit({mobiledoc}, {id: post.id});
+
+        if (post) {
+            await models.Post.edit({mobiledoc}, {id: post.id});
+        }
     });
 
     return data;
