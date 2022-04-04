@@ -76,7 +76,8 @@ module.exports = class StripeService {
             checkoutSessionSuccessUrl: config.checkoutSessionSuccessUrl,
             checkoutSessionCancelUrl: config.checkoutSessionCancelUrl,
             checkoutSetupSessionSuccessUrl: config.checkoutSetupSessionSuccessUrl,
-            checkoutSetupSessionCancelUrl: config.checkoutSetupSessionCancelUrl
+            checkoutSetupSessionCancelUrl: config.checkoutSetupSessionCancelUrl,
+            testEnv: config.testEnv
         });
 
         await this.webhookManager.configure({

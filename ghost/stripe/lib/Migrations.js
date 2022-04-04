@@ -22,7 +22,11 @@ module.exports = class StripeMigrations {
         if (!this.api._configured) {
             logging.info('Stripe not configured - skipping migrations');
             return;
+        } else if (this.api.testEnv) {
+            logging.info('Stripe is in test mode - skipping migrations');
+            return;
         }
+
         await this.populateProductsAndPrices();
         await this.populateStripePricesFromStripePlansSetting();
         await this.populateMembersMonthlyPriceIdSettings();

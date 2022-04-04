@@ -24,6 +24,7 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {string} checkoutSessionCancelUrl
  * @prop {string} checkoutSetupSessionSuccessUrl
  * @prop {string} checkoutSetupSessionCancelUrl
+ * @prop {boolean} param.testEnv  - indicates if the module is run in test environment (note, NOT the test mode)
  */
 
 module.exports = class StripeAPI {
@@ -41,6 +42,10 @@ module.exports = class StripeAPI {
 
     get configured() {
         return this._configured;
+    }
+
+    get testEnv() {
+        return this._config.testEnv;
     }
 
     get mode() {

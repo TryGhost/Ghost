@@ -4,6 +4,61 @@ const Migrations = require('../../../lib/Migrations');
 
 describe('Migrations', function () {
     describe('updateStripeProductNamesFromDefaultProduct', function () {
+        it('Does not run migration if api is not configured', async function () {
+            const api = {
+                getProduct: sinon.stub().resolves({
+                    id: 'prod_123',
+                    name: 'Bronze'
+                }),
+                _configured: false
+            };
+            const models = {
+                Product: {
+                    transaction: sinon.spy()
+                }
+            };
+
+            const migrations = new Migrations({
+                models,
+                api
+            });
+
+            await migrations.execute();
+
+            assert(
+                models.Product.transaction.called === false,
+                'Stripe should not call any of the populateProductsAndPrices method parts if api is not configured'
+            );
+        });
+
+        it('Does not run migration if api is in test environment', async function () {
+            const api = {
+                getProduct: sinon.stub().resolves({
+                    id: 'prod_123',
+                    name: 'Bronze'
+                }),
+                _configured: true,
+                testEnv: true
+            };
+            const models = {
+                Product: {
+                    transaction: sinon.spy()
+                }
+            };
+
+            const migrations = new Migrations({
+                models,
+                api
+            });
+
+            await migrations.execute();
+
+            assert(
+                models.Product.transaction.called === false,
+                'Stripe should not call any of the populateProductsAndPrices method parts if api is not configured'
+            );
+        });
+
         it('Does not update Stripe product if name is not "Default Product"', async function () {
             const api = {
                 getProduct: sinon.stub().resolves({
