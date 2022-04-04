@@ -45,6 +45,9 @@
           "products": {
             "$ref": "members.canary#/definitions/member-products"
           },
+          "newsletters": {
+            "$ref": "members.canary#/definitions/member-newsletters"
+          },
           "labels": {
             "$ref": "members.canary#/definitions/member-labels"
           },

@@ -48,6 +48,9 @@
         "products": {
           "$ref": "#/definitions/member-products"
         },
+        "newsletters": {
+          "$ref": "#/definitions/member-newsletters"
+        },
         "email_count": {
           "strip": true
         },
@@ -99,6 +102,35 @@
               { "required": ["id"] },
               { "required": ["name"] },
               { "required": ["slug"] }
+            ]
+          },
+          {
+            "type": "string",
+            "maxLength": 191
+          }
+        ]
+      }
+    },
+    "member-newsletters": {
+      "description": "Newsletters of the member",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 191
+              }
+            },
+            "anyOf": [
+              { "required": ["id"] },
+              { "required": ["name"] }
             ]
           },
           {
