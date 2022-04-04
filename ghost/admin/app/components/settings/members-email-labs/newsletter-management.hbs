@@ -25,8 +25,10 @@
     </div>
     <section class="gh-expandable">
         <div class="gh-expandable-block">
-            {{#each this.newsletters.newsletters as |newsletter|}}
-                {{#if (eq newsletter.status "active")}}
+            {{#if this.loadNewslettersTask.isRunning}}
+                <div class="gh-main-content">... loading</div>
+            {{else}}
+                {{#each this.activeNewsletters as |newsletter|}}
                     <div class="gh-main-content-card gh-newsletter-card {{if this.hasMultiple "multiple"}}">
                         {{svg-jar "grab" class="grab-newsletter"}}
                         <div class="gh-newsletter-card-block title-block">
@@ -65,25 +67,25 @@
                                         @classNames="gh-newsletter-actions-menu dropdown-menu dropdown-triangle-top-right"
                                     >
                                         <li>
-                                            <button class="mr2" type="button" {{on "click" @toggleEmailDesignSettings}}>
-                                                <span>Edit</span>
-                                            </button>
+                                            <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="mr2"><span>Edit</span></LinkTo>
                                         </li>
                                         <li>
-                                            <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter.id)}}>
+                                            <button class="mr2" type="button" {{on "click" (perform this.archiveNewsletterTask newsletter)}}>
                                                 <span>Archive</span>
                                             </button>
                                         </li>
                                     </GhDropdown>
                                 </span>
                             {{else}}
-                                <button class="gh-btn gh-btn-green" type="button" {{on "click" @toggleEmailDesignSettings}}><span>Customize &rarr;</span></button>
+                                <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="gh-btn gh-btn-green"><span>Customize &rarr;</span></LinkTo>
                             {{/if}}
                         </div>
                     </div>
-                {{/if}}
-            {{/each}}
+                {{else}}
+                    <div class="gh-main-content">No newsletters found</div>
+                {{/each}}
+            {{/if}}
         </div>
     </section>
-    <button type="button" class="gh-add-newsletter" {{on "click" this.addNewsletter}} {{on "click" @toggleEmailDesignSettings}}>{{svg-jar "add-stroke"}}Add newsletter</button>
+    <LinkTo @route="settings.members-email-labs.new-newsletter" class="gh-add-newsletter">{{svg-jar "add-stroke"}}Add newsletter</LinkTo>
 </div>

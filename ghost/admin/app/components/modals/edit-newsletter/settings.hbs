@@ -1,0 +1,86 @@
+<div>
+    <fieldset class="modal-fullsettings-form">
+        <div class="modal-fullsettings-section first">
+            <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="name">
+                <label for="newsletter-title" class="modal-fullsettings-title">Name</label>
+                <input
+                    id="newsletter-title"
+                    type="text"
+                    class="gh-input miw-100 form-text"
+                    value={{@newsletter.name}}
+                    placeholder={{this.config.blogTitle}}
+                    {{on "input" (fn this.onInput "name")}}
+                />
+                <GhErrorMessage @errors={{@newsletter.errors}} @property="name" />
+            </GhFormGroup>
+
+            <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="description">
+                <label for="newsletter-description" class="modal-fullsettings-title">Description</label>
+                <textarea
+                    id="newsletter-description"
+                    class="gh-input miw-100 form-text"
+                    {{on "input" (fn this.onInput "description")}}
+                >{{@newsletter.description}}</textarea>
+                <GhErrorMessage @errors={{@newsletter.errors}} @property="description" />
+            </GhFormGroup>
+        </div>
+
+        <div class="modal-fullsettings-section divider-top">
+            <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderName">
+                <label for="newsletter-sender-name" class="modal-fullsettings-title">Sender name</label>
+                <input
+                    id="newsletter-sender-name"
+                    type="text"
+                    class="gh-input miw-100 form-text"
+                    value={{@newsletter.senderName}}
+                    placeholder={{this.config.blogTitle}}
+                    {{on "input" (fn this.onInput "senderName")}}
+                />
+                <GhErrorMessage @errors={{@newsletter.errors}} @property="senderName" />
+            </GhFormGroup>
+
+            <GhFormGroup @classNames="vertical"  @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderEmail">
+                <label for="newsletter-sender-email" class="modal-fullsettings-title">Newsletter email address</label>
+                <input
+                    id="newsletter-sender-email"
+                    type="text"
+                    class="gh-input miw-100 form-text"
+                    value={{@newsletter.senderEmail}}
+                    placeholder={{full-email-address this.settings.membersFromAddress}}
+                    {{on "input" (fn this.onInput "senderEmail")}}
+                />
+                <GhErrorMessage @errors={{@newsletter.errors}} @property="senderEmail" />
+            </GhFormGroup>
+
+            <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderReplyTo">
+                <label for="newsletter-reply-to" class="modal-fullsettings-title">Reply-to address</label>
+                <input
+                    id="newsletter-reply-to"
+                    type="text"
+                    class="gh-input miw-100 form-text"
+                    value={{@newsletter.senderReplyTo}}
+                    placeholder={{full-email-address this.settings.membersFromAddress}}
+                    {{on "input" (fn this.onInput "senderReplyTo")}}
+                />
+                <GhErrorMessage @errors={{@newsletter.errors}} @property="senderReplyTo" />
+            </GhFormGroup>
+        </div>
+
+        <div class="modal-fullsettings-section divider-top">
+            <GhFormGroup>
+                <label for="subscribe-on-signup" class="modal-fullsettings-title">Subscribe new members on signup</label>
+                <div class="for-switch small">
+                    <div class="container">
+                        <input
+                            type="checkbox"
+                            id="subscribe-on-signup"
+                            checked={{@newsletter.subscribeOnSignup}}
+                            {{on "change" (fn this.onChange "subscribeOnSignup")}}
+                        >
+                        <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "subscribeOnSignup")}}></button>
+                    </div>
+                </div>
+            </GhFormGroup>
+        </div>
+    </fieldset>
+</div>

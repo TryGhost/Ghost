@@ -4,7 +4,7 @@ import {inject as service} from '@ember/service';
 export default class FullEmailAddressHelper extends Helper {
     @service config;
 
-    compute([email]) {
+    compute([email = '']) {
         if (email.indexOf('@') > -1) {
             return email;
         }
