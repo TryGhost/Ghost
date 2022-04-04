@@ -208,7 +208,8 @@ module.exports = class MemberRepository {
             'subscribed',
             'labels',
             'geolocation',
-            'products'
+            'products',
+            'newsletters'
         ]);
 
         const memberStatusData = {};
