@@ -1,8 +1,16 @@
+const labsService = require('../../../shared/labs');
+
+function formatNewsletterResponse(newsletters) {
+    return newsletters.map(({id, name, description, sort_order: sortOrder}) => {
+        return {id, name, description, sort_order: sortOrder};
+    });
+}
+
 module.exports.formattedMemberResponse = function formattedMemberResponse(member) {
     if (!member) {
         return null;
     }
-    return {
+    const data = {
         uuid: member.uuid,
         email: member.email,
         name: member.name,
@@ -12,4 +20,8 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         subscriptions: member.subscriptions || [],
         paid: member.status !== 'free'
     };
+    if (member.newsletters && labsService.isSet('multipleNewsletters')) {
+        data.newsletters = formatNewsletterResponse(member.newsletters);
+    }
+    return data;
 };
