@@ -23,4 +23,18 @@ describe('Stats API', function () {
                 etag: anyEtag
             });
     });
+
+    it('Can fetch MRR history', async function () {
+        await agent
+            .get(`/stats/mrr`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                stats: [{
+                    date: anyISODate
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 });
