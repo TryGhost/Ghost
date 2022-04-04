@@ -65,7 +65,12 @@ function addColumn(tableName, column, transaction = db.knex, columnSpec) {
     });
 }
 
-function dropColumn(tableName, column, transaction = db.knex) {
+async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}) {
+    if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
+        const [toTable, toColumn] = columnSpec.references.split('.');
+        await dropForeign({fromTable: tableName, fromColumn: column, toTable, toColumn, transaction});
+    }
+
     return transaction.schema.table(tableName, function (table) {
         table.dropColumn(column);
     });

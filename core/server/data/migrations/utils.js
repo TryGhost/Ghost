@@ -375,7 +375,8 @@ function createAddColumnMigration(table, column, columnDefinition) {
             column,
             dbIsInCorrectState: hasColumn => hasColumn === false,
             operation: commands.dropColumn,
-            operationVerb: 'Removing'
+            operationVerb: 'Removing',
+            columnDefinition
         })
     );
 }
