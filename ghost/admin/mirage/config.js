@@ -8,6 +8,7 @@ import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockLabels from './config/labels';
 import mockMembers from './config/members';
+import mockNewsletters from './config/newsletters';
 import mockOffers from './config/offers';
 import mockPages from './config/pages';
 import mockPosts from './config/posts';
@@ -38,7 +39,7 @@ export default function () {
     // this.put('/posts/:id/', versionMismatchResponse);
     // mockTags(this);
     // this.loadFixtures('settings');
-    mockSnippets(this);
+    mockNewsletters(this);
 
     // keep this line, it allows all other API requests to hit the real server
     this.passthrough();
@@ -78,6 +79,8 @@ export function testConfig() {
     mockWebhooks(this);
     mockProducts(this);
     mockOffers(this);
+    mockSnippets(this);
+    mockNewsletters(this);
 
     /* Notifications -------------------------------------------------------- */
 

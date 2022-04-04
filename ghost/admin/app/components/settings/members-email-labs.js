@@ -20,7 +20,6 @@ export default class MembersEmailLabs extends Component {
     @tracked recipientsSelectValue = this._getDerivedRecipientsSelectValue();
 
     @tracked showFromAddressConfirmation = false;
-    @tracked showEmailDesignSettings = false;
 
     mailgunRegions = [US, EU];
 
@@ -76,11 +75,6 @@ export default class MembersEmailLabs extends Component {
     @action
     toggleFromAddressConfirmation() {
         this.showFromAddressConfirmation = !this.showFromAddressConfirmation;
-    }
-
-    @action
-    closeEmailDesignSettings() {
-        this.showEmailDesignSettings = false;
     }
 
     @action

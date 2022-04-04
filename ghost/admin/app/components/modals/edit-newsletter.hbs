@@ -1,0 +1,43 @@
+<div class="modal-content">
+    <div class="modal-body modal-fullsettings">
+        <div class="flex items-center justify-between w-100 modal-fullsettings-topbar">
+            <h2 class="modal-fullsettings-heading">
+                {{if @data.newsletter.isNew "Add" "Edit"}} newsletter
+            </h2>
+            <div class="flex items-center">
+                <button class="gh-btn mr3" type="button" {{on "click" @close}}>
+                    <span>Cancel</span>
+                </button>
+
+                <GhTaskButton
+                    @buttonText="Save and close"
+                    @successText="Saved"
+                    @task={{this.saveTask}}
+                    @idleClass="gh-btn-primary"
+                    @class="gh-btn gh-btn-icon"
+                    {{on-key "cmd+s" this.saveViaKeyboard priority=1}}
+                    data-test-button="save-newsletter"
+                />
+            </div>
+        </div>
+
+        <div class="modal-fullsettings-body">
+            <div class="modal-fullsettings-sidebar with-footer">
+                <div class="gh-btn-group">
+                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.tab "settings") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "settings")}}><span>Settings</span></button>
+                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.tab "design") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "design")}}><span>Design</span></button>
+                </div>
+
+                {{#if (eq this.tab "settings")}}
+                    <Modals::EditNewsletter::Settings @newsletter={{@data.newsletter}} />
+                {{else}}
+                    <Modals::EditNewsletter::Design @newsletter={{@data.newsletter}} />
+                {{/if}}
+            </div>
+
+            <div class="modal-fullsettings-main">
+                <Modals::EditNewsletter::Preview @newsletter={{@data.newsletter}} />
+            </div>
+        </div>
+    </div>
+</div>
