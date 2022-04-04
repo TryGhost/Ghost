@@ -49,6 +49,13 @@ const Member = ghostBookshelf.Model.extend({
                 joinFrom: 'member_id',
                 joinTo: 'product_id'
             },
+            newsletters: {
+                tableName: 'newsletters',
+                type: 'manyToMany',
+                joinTable: 'members_newsletters',
+                joinFrom: 'member_id',
+                joinTo: 'newsletter_id'
+            },
             subscriptions: {
                 tableName: 'members_stripe_customers_subscriptions',
                 tableNameAs: 'subscriptions',
@@ -61,7 +68,7 @@ const Member = ghostBookshelf.Model.extend({
         };
     },
 
-    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients'],
+    relationships: ['products', 'labels', 'stripeCustomers', 'email_recipients', 'newsletters'],
 
     // do not delete email_recipients records when a member is destroyed. Recipient
     // records are used for analytics and historical records
@@ -73,6 +80,7 @@ const Member = ghostBookshelf.Model.extend({
 
     relationshipBelongsTo: {
         products: 'products',
+        newsletters: 'newsletters',
         labels: 'labels',
         stripeCustomers: 'members_stripe_customers',
         email_recipients: 'email_recipients'
@@ -91,6 +99,15 @@ const Member = ghostBookshelf.Model.extend({
                 // avoids bookshelf adding a `DISTINCT` to the query
                 // we know the result set will already be unique and DISTINCT hurts query performance
                 qb.columns('products.*');
+            });
+    },
+
+    newsletters() {
+        return this.belongsToMany('Newsletter', 'members_newsletters', 'member_id', 'newsletter_id')
+            .query((qb) => {
+                // avoids bookshelf adding a `DISTINCT` to the query
+                // we know the result set will already be unique and DISTINCT hurts query performance
+                qb.columns('newsletters.*');
             });
     },
 

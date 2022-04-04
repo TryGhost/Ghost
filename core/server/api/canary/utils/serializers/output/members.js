@@ -1,6 +1,7 @@
 //@ts-check
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
+const labsService = require('../../../../../../shared/labs');
 
 module.exports = {
     hasActiveStripeSubscriptions: createSerializer('hasActiveStripeSubscriptions', passthrough),
@@ -129,6 +130,10 @@ function serializeMember(member, options) {
 
     if (json.products) {
         serialized.products = json.products;
+    }
+
+    if (json.newsletters && labsService.isSet('multipleNewsletters')) {
+        serialized.newsletters = json.newsletters;
     }
 
     return serialized;
