@@ -9,46 +9,14 @@ export default class MembersEmailLabsController extends Controller {
     @service session;
     @service settings;
 
-    queryParams = ['showEmailDesignSettings'];
-
     // from/supportAddress are set here so that they can be reset to saved values on save
     // to avoid it looking like they've been saved when they have a separate update process
     @tracked fromAddress = '';
     @tracked supportAddress = '';
 
-    @tracked showEmailDesignSettings = false;
-    @tracked showLeaveSettingsModal = false;
-
     @action
     setEmailAddress(property, email) {
         this[property] = email;
-    }
-
-    @action
-    toggleEmailDesignSettings() {
-        this.showEmailDesignSettings = !this.showEmailDesignSettings;
-    }
-
-    leaveRoute(transition) {
-        if (this.settings.get('hasDirtyAttributes')) {
-            transition.abort();
-            this.leaveSettingsTransition = transition;
-            this.showLeaveSettingsModal = true;
-        }
-        this.showEmailDesignSettings = false;
-    }
-
-    @action
-    async confirmLeave() {
-        this.settings.rollbackAttributes();
-        this.showLeaveSettingsModal = false;
-        this.leaveSettingsTransition.retry();
-    }
-
-    @action
-    cancelLeave() {
-        this.showLeaveSettingsModal = false;
-        this.leaveSettingsTransition = null;
     }
 
     parseEmailAddress(address) {

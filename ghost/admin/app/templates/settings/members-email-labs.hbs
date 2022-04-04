@@ -24,25 +24,7 @@
                 @fromAddress={{this.fromAddress}}
                 @supportAddress={{this.supportAddress}}
                 @setEmailAddress={{this.setEmailAddress}}
-                @toggleEmailDesignSettings={{this.toggleEmailDesignSettings}}
             />
         </div>
     </section>
-
-    {{#if this.showLeaveSettingsModal}}
-        <GhFullscreenModal
-            @modal="leave-settings"
-            @confirm={{this.confirmLeave}}
-            @close={{this.cancelLeave}}
-            @modifier="action wide"
-        />
-    {{/if}}
 </section>
-
-{{#if this.showEmailDesignSettings}}
-    <GhFullscreenModal @modifier="full-overlay portal-settings">
-        <ModalEmailDesignSettings
-            @closeModal={{this.toggleEmailDesignSettings}}
-        />
-    </GhFullscreenModal>
-{{/if}}
