@@ -6,7 +6,6 @@ const {blogIcon} = require('../lib/image');
 const urlUtils = require('../../shared/url-utils');
 const urlService = require('./url');
 const settingsCache = require('../../shared/settings-cache');
-const schema = require('../data/schema').checks;
 const moment = require('moment');
 
 // Used to receive post.published model event, but also the slack.test event from the API which iirc this was done to avoid circular deps a long time ago
@@ -37,6 +36,15 @@ function getSlackSettings() {
     };
 }
 
+/**
+ * @TODO: change this function to check for the properties we depend on
+ * @param {Object} data
+ * @returns {boolean}
+ */
+function hasPostProperties(data) {
+    return Object.prototype.hasOwnProperty.call(data, 'html') && Object.prototype.hasOwnProperty.call(data, 'title') && Object.prototype.hasOwnProperty.call(data, 'slug');
+}
+
 function ping(post) {
     let message;
     let title;
@@ -47,7 +55,7 @@ function ping(post) {
     let blogTitle = settingsCache.get('title');
 
     // If this is a post, we want to send the link of the post
-    if (schema.isPost(post)) {
+    if (hasPostProperties(post)) {
         message = urlService.getUrlByResourceId(post.id, {absolute: true});
         title = post.title ? post.title : null;
         author = post.authors ? post.authors[0] : null;
@@ -79,7 +87,7 @@ function ping(post) {
             return;
         }
 
-        if (schema.isPost(post)) {
+        if (hasPostProperties(post)) {
             slackData = {
                 // We are handling the case of test notification here by checking
                 // if it is a post or a test message to check webhook working.
