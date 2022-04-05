@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "v4.*"
+      - "5.0"
       - main
       - "renovate/*"
 jobs:
