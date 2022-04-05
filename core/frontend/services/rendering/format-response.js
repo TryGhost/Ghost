@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const {prepareContextResource} = require('../../proxy');
+const {prepareContextResource} = require('../proxy');
 
 /**
  * @description Formats API response into handlebars/theme format.

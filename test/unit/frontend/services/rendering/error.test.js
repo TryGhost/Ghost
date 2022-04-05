@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const helpers = require('../../../../../../core/frontend/services/routing/helpers');
+const helpers = require('../../../../../core/frontend/services/rendering');
 
 describe('handleError', function () {
     let next;

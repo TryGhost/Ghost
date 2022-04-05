@@ -5,7 +5,7 @@ const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/configUtils');
 const api = require('../../../../../../core/server/api').canary;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
-const helpers = require('../../../../../../core/frontend/services/routing/helpers');
+const renderer = require('../../../../../../core/frontend/services/rendering');
 const urlService = require('../../../../../../core/server/services/url');
 const urlUtils = require('../../../../../../core/shared/url-utils');
 
@@ -64,12 +64,12 @@ describe('Unit - services/routing/controllers/preview', function () {
         sinon.stub(urlUtils, 'redirect301');
         sinon.stub(urlService, 'getUrlByResourceId');
 
-        sinon.stub(helpers, 'secure').get(function () {
+        sinon.stub(renderer, 'secure').get(function () {
             return secureStub;
         });
 
         renderStub = sinon.stub();
-        sinon.stub(helpers, 'renderEntry').get(function () {
+        sinon.stub(renderer, 'renderEntry').get(function () {
             return function () {
                 return renderStub;
             };

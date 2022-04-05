@@ -6,8 +6,8 @@ const _ = require('lodash');
 
 const path = require('path');
 const url = require('url');
-const config = require('../../../../shared/config');
-const themeEngine = require('../../theme-engine');
+const config = require('../../../shared/config');
+const themeEngine = require('../theme-engine');
 const _private = {};
 
 /**

@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('services:routing:helpers:renderer');
+const debug = require('@tryghost/debug')('services:routing:renderer:renderer');
 const setContext = require('./context');
 const templates = require('./templates');
 

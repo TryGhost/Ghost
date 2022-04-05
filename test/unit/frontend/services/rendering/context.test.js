@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
-const testUtils = require('../../../../../utils');
-const helpers = require('../../../../../../core/frontend/services/routing/helpers');
-const labs = require('../../../../../../core/shared/labs');
+const testUtils = require('../../../../utils');
+const renderer = require('../../../../../core/frontend/services/rendering');
+const labs = require('../../../../../core/shared/labs');
 
 describe('Contexts', function () {
     let req;
@@ -33,14 +33,14 @@ describe('Contexts', function () {
             res = {};
             data = {};
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(0);
         });
 
         it('should return empty array with no error with basic parameters', function () {
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(0);
@@ -52,7 +52,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/does/not/matter/';
             res.routerOptions.context = ['index'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -64,7 +64,7 @@ describe('Contexts', function () {
             res.routerOptions.context = ['index'];
 
             // Execute test
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             // Check context
             should.exist(res.locals.context);
@@ -78,7 +78,7 @@ describe('Contexts', function () {
             res.routerOptions.context = [];
 
             // Execute test
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             // Check context
             should.exist(res.locals.context);
@@ -90,7 +90,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/page/2/';
             res.routerOptions.context = ['index'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -102,7 +102,7 @@ describe('Contexts', function () {
             req.params.page = 2;
             res.routerOptions.context = ['index'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
@@ -116,7 +116,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/tag/getting-started/';
             res.routerOptions.context = ['tag'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -127,7 +127,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/tag/getting-started/';
             res.routerOptions.context = [];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(0);
@@ -137,7 +137,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/tag/getting-started/page/2/';
             res.routerOptions.context = ['tag'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -149,7 +149,7 @@ describe('Contexts', function () {
             req.params.page = 2;
             res.routerOptions.context = ['tag'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
@@ -163,7 +163,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/author/pat/';
             res.routerOptions.context = ['author'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -174,7 +174,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/author/pat/';
             res.routerOptions.context = [];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(0);
@@ -184,7 +184,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/author/pat/page/2/';
             res.routerOptions.context = ['author'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -196,7 +196,7 @@ describe('Contexts', function () {
             req.params.page = 2;
             res.routerOptions.context = ['author'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
@@ -210,7 +210,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = 'anything';
             res.routerOptions.context = ['custom-context', 'test'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
@@ -224,7 +224,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/welcome-to-ghost/';
             res.routerOptions.context = ['post'];
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -237,7 +237,7 @@ describe('Contexts', function () {
             res.locals.relativeUrl = '/private/?r=';
             delete res.routerOptions;
 
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -252,7 +252,7 @@ describe('Contexts', function () {
             data.post = testUtils.DataGenerator.forKnex.createPost();
 
             delete res.routerOptions;
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(1);
@@ -266,7 +266,7 @@ describe('Contexts', function () {
             data.post = testUtils.DataGenerator.forKnex.createPost();
 
             delete res.routerOptions;
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);
@@ -279,7 +279,7 @@ describe('Contexts', function () {
             data.page = testUtils.DataGenerator.forKnex.createPost({page: true});
 
             delete res.routerOptions;
-            helpers.context(req, res, data);
+            renderer.context(req, res, data);
 
             should.exist(res.locals.context);
             res.locals.context.should.be.an.Array().with.lengthOf(2);

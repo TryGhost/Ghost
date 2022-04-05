@@ -4,7 +4,7 @@ const url = require('url');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../../shared/settings-cache');
 const rssService = require('../../rss');
-const helpers = require('../helpers');
+const renderer = require('../../rendering');
 const dataService = require('../../data');
 
 // @TODO: is this really correct? Should we be using meta data title?
@@ -48,5 +48,5 @@ module.exports = function rssController(req, res, next) {
         .then(function (data) {
             return rssService.render(res, baseUrl, data);
         })
-        .catch(helpers.handleError(next));
+        .catch(renderer.handleError(next));
 };

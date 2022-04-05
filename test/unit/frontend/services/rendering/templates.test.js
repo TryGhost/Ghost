@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const templates = rewire('../../../../../../core/frontend/services/routing/helpers/templates');
-const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
+const templates = rewire('../../../../../core/frontend/services/rendering/templates');
+const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 
 describe('templates', function () {
     let getActiveThemeStub;

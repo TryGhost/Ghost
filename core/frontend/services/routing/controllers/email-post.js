@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('services:routing:controllers:emailpost
 const config = require('../../../../shared/config');
 const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
-const helpers = require('../helpers');
+const renderer = require('../../rendering');
 
 /**
  * @description Email Post Controller.
@@ -55,11 +55,10 @@ module.exports = function emailPostController(req, res, next) {
                 post.access = !!post.html;
             }
 
-            // @TODO: See helpers/secure
-            helpers.secure(req, post);
+            // @TODO: See renderer/secure
+            renderer.secure(req, post);
 
-            const renderer = helpers.renderEntry(req, res);
-            return renderer(post);
+            return renderer.renderEntry(req, res)(post);
         })
-        .catch(helpers.handleError(next));
+        .catch(renderer.handleError(next));
 };

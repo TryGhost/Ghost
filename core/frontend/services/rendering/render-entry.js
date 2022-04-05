@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('services:routing:helpers:render-post');
+const debug = require('@tryghost/debug')('services:routing:renderer:render-post');
 const formatResponse = require('./format-response');
 const renderer = require('./renderer');
 /**

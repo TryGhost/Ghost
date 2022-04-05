@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const path = require('path');
 const ampController = require('../../../../../core/frontend/apps/amp/lib/router');
 const urlService = require('../../../../../core/server/services/url');
-const helpers = require('../../../../../core/frontend/services/routing/helpers');
+const renderer = require('../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../core/frontend/services/data');
 const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/configUtils');
@@ -27,7 +27,7 @@ describe('Unit - apps/amp/lib/router', function () {
     beforeEach(function () {
         rendererStub = sinon.stub();
 
-        sinon.stub(helpers, 'renderer').get(function () {
+        sinon.stub(renderer, 'renderer').get(function () {
             return rendererStub;
         });
 
@@ -59,7 +59,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
     describe('fn: renderer', function () {
         it('should render default amp page when theme has no amp template', function (done) {
-            helpers.renderer.callsFake(function (_req, _res, data) {
+            renderer.renderer.callsFake(function (_req, _res, data) {
                 _res.routerOptions.defaultTemplate.should.eql(defaultPath);
                 data.should.eql({post: {title: 'test'}});
                 done();
@@ -73,7 +73,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             ampController.renderer(req, res, function (err) {
                 (err instanceof errors.NotFoundError).should.be.true();
-                helpers.renderer.called.should.be.false();
+                renderer.renderer.called.should.be.false();
                 done();
             });
         });
@@ -87,7 +87,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             ampController.renderer(req, res, function (err) {
                 (err instanceof errors.NotFoundError).should.be.true();
-                helpers.renderer.called.should.be.false();
+                renderer.renderer.called.should.be.false();
                 done();
             });
         });

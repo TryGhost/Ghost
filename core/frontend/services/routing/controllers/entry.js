@@ -4,7 +4,7 @@ const config = require('../../../../shared/config');
 const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
 const dataService = require('../../data');
-const helpers = require('../helpers');
+const renderer = require('../../rendering');
 
 /**
  * @description Entry controller.
@@ -84,10 +84,9 @@ module.exports = function entryController(req, res, next) {
                 }));
             }
 
-            helpers.secure(req, entry);
+            renderer.secure(req, entry);
 
-            const renderer = helpers.renderEntry(req, res);
-            return renderer(entry);
+            return renderer.renderEntry(req, res)(entry);
         })
-        .catch(helpers.handleError(next));
+        .catch(renderer.handleError(next));
 };

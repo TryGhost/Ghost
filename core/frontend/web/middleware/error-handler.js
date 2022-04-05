@@ -4,7 +4,7 @@ const tpl = require('@tryghost/tpl');
 const sentry = require('../../../shared/sentry');
 
 const config = require('../../../shared/config');
-const helpers = require('../../services/routing/helpers');
+const renderer = require('../../services/rendering');
 
 // @TODO: make this properly shared code
 const {prepareError, prepareStack} = require('@tryghost/mw-error-handler');
@@ -55,7 +55,7 @@ const themeErrorRenderer = (err, req, res, next) => {
 
     // Template
     // @TODO: very dirty !!!!!!
-    helpers.templates.setTemplate(req, res);
+    renderer.templates.setTemplate(req, res);
 
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
