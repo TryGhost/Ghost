@@ -1,11 +1,12 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
-const testUtils = require('../../../../../utils');
-const api = require('../../../../../../core/server/api');
-const helpers = require('../../../../../../core/frontend/services/routing/helpers');
 
-describe('Unit - services/routing/helpers/entry-lookup', function () {
+const API_VERSION = 'canary';
+const api = require('../../../../../core/server/api')[API_VERSION];
+const data = require('../../../../../core/frontend/services/data');
+const testUtils = require('../../../../utils');
+
+describe('Unit - frontend/data/entry-lookup', function () {
     let locals;
 
     afterEach(function () {
@@ -35,25 +36,25 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
                     pages: pages
                 });
 
-            sinon.stub(api.canary, 'posts').get(() => {
+            sinon.stub(api, 'posts').get(() => {
                 return {
                     read: postsReadStub
                 };
             });
 
-            sinon.stub(api.canary, 'pagesPublic').get(() => {
+            sinon.stub(api, 'pagesPublic').get(() => {
                 return {
                     read: pagesReadStub
                 };
             });
 
-            locals = {apiVersion: 'canary'};
+            locals = {apiVersion: API_VERSION};
         });
 
         it('ensure pages controller is triggered', function () {
             const testUrl = 'http://127.0.0.1:2369' + pages[0].url;
 
-            return helpers.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
+            return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
                 postsReadStub.called.should.be.false();
                 pagesReadStub.calledOnce.should.be.true();
                 should.exist(lookup.entry);
@@ -65,7 +66,7 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
 
     describe('posts', function () {
         const routerOptions = {
-            permalinks: '/:slug/',
+            permalinks: '/:slug/:options(edit)?/',
             query: {controller: 'posts', resource: 'posts'}
         };
 
@@ -86,30 +87,42 @@ describe('Unit - services/routing/helpers/entry-lookup', function () {
                     posts: posts
                 });
 
-            sinon.stub(api.canary, 'posts').get(() => {
+            sinon.stub(api, 'posts').get(() => {
                 return {
                     read: postsReadStub
                 };
             });
 
-            sinon.stub(api.canary, 'pagesPublic').get(() => {
+            sinon.stub(api, 'pagesPublic').get(() => {
                 return {
                     read: pagesReadStub
                 };
             });
 
-            locals = {apiVersion: 'canary'};
+            locals = {apiVersion: API_VERSION};
         });
 
         it('ensure posts controller is triggered', function () {
             const testUrl = 'http://127.0.0.1:2369' + posts[0].url;
 
-            return helpers.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
+            return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
                 postsReadStub.calledOnce.should.be.true();
                 pagesReadStub.called.should.be.false();
                 should.exist(lookup.entry);
                 lookup.entry.should.have.property('url', posts[0].url);
                 lookup.isEditURL.should.be.false();
+            });
+        });
+
+        it('can handle an edit url', function () {
+            const testUrl = `http://127.0.0.1:2369${posts[0].url}edit/`;
+
+            return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
+                postsReadStub.calledOnce.should.be.true();
+                pagesReadStub.called.should.be.false();
+                should.exist(lookup.entry);
+                lookup.entry.should.have.property('url', posts[0].url);
+                lookup.isEditURL.should.be.true();
             });
         });
     });

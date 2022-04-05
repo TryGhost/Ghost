@@ -4,6 +4,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const themeEngine = require('../../theme-engine');
+const dataService = require('../../data');
 const helpers = require('../helpers');
 
 const messages = {
@@ -50,7 +51,7 @@ module.exports = function channelController(req, res, next) {
         }
     }
 
-    return helpers.fetchData(pathOptions, res.routerOptions, res.locals)
+    return dataService.fetchData(pathOptions, res.routerOptions, res.locals)
         .then(function handleResult(result) {
             // CASE: requested page is greater than number of pages we have
             if (pathOptions.page > result.meta.pagination.pages) {

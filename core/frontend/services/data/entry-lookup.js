@@ -1,11 +1,11 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
 const url = require('url');
-const debug = require('@tryghost/debug')('services:routing:helpers:entry-lookup');
+const debug = require('@tryghost/debug')('services:data:entry-lookup');
 const routeMatch = require('path-match')();
 
 /**
- * @description Query API for a single entry/resource.
+ * Query API for a single entry/resource.
  * @param {String} postUrl
  * @param {Object} routerOptions
  * @param {Object} locals
@@ -14,7 +14,7 @@ const routeMatch = require('path-match')();
 function entryLookup(postUrl, routerOptions, locals) {
     debug(postUrl);
 
-    const api = require('../../proxy').api[locals.apiVersion];
+    const api = require('../proxy').api[locals.apiVersion];
     const targetPath = url.parse(postUrl).path;
     const permalinks = routerOptions.permalinks;
     let isEditURL = false;

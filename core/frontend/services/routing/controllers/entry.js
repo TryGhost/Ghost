@@ -3,6 +3,7 @@ const url = require('url');
 const config = require('../../../../shared/config');
 const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
+const dataService = require('../../data');
 const helpers = require('../helpers');
 
 /**
@@ -15,7 +16,7 @@ const helpers = require('../helpers');
 module.exports = function entryController(req, res, next) {
     debug('entryController', res.routerOptions);
 
-    return helpers.entryLookup(req.path, res.routerOptions, res.locals)
+    return dataService.entryLookup(req.path, res.routerOptions, res.locals)
         .then(function then(lookup) {
             // Format data 1
             const entry = lookup ? lookup.entry : false;

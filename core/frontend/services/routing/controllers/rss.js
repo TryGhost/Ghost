@@ -5,6 +5,7 @@ const security = require('@tryghost/security');
 const settingsCache = require('../../../../shared/settings-cache');
 const rssService = require('../../rss');
 const helpers = require('../helpers');
+const dataService = require('../../data');
 
 // @TODO: is this really correct? Should we be using meta data title?
 function getTitle(relatedData) {
@@ -35,7 +36,7 @@ module.exports = function rssController(req, res, next) {
     // @TODO: This belongs to the rss service O_o
     const baseUrl = url.parse(req.originalUrl).pathname;
 
-    helpers.fetchData(pathOptions, res.routerOptions, res.locals)
+    dataService.fetchData(pathOptions, res.routerOptions, res.locals)
         .then(function formatResult(result) {
             const response = _.pick(result, ['posts', 'meta']);
 

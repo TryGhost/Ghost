@@ -6,6 +6,7 @@ const security = require('@tryghost/security');
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
+const dataService = require('../../../../../../core/frontend/services/data');
 
 function failTest(done) {
     return function (err) {
@@ -34,7 +35,7 @@ describe('Unit - services/routing/controllers/channel', function () {
         fetchDataStub = sinon.stub();
         renderStub = sinon.stub();
 
-        sinon.stub(helpers, 'fetchData').get(function () {
+        sinon.stub(dataService, 'fetchData').get(function () {
             return fetchDataStub;
         });
 
