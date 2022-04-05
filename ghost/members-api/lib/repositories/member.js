@@ -34,6 +34,8 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomer
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.productRepository
+     * @param {any} deps.newslettersService
+     * @param {any} deps.labsService
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
      * @param {ITokenService} deps.tokenService
      */
@@ -49,8 +51,10 @@ module.exports = class MemberRepository {
         StripeCustomerSubscription,
         OfferRedemption,
         stripeAPIService,
+        labsService,
         productRepository,
-        tokenService
+        tokenService,
+        newslettersService
     }) {
         this._Member = Member;
         this._MemberCancelEvent = MemberCancelEvent;
@@ -64,6 +68,8 @@ module.exports = class MemberRepository {
         this._stripeAPIService = stripeAPIService;
         this._productRepository = productRepository;
         this.tokenService = tokenService;
+        this._newslettersService = newslettersService;
+        this._labsService = labsService;
 
         DomainEvents.subscribe(SubscriptionCreatedEvent, async function (event) {
             if (!event.data.offerId) {
@@ -120,7 +126,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products']);
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters']);
 
         if (memberData.products && memberData.products.length > 1) {
             throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
@@ -141,6 +147,12 @@ module.exports = class MemberRepository {
 
         if (memberData.products && memberData.products.length === 1) {
             memberStatusData.status = 'comped';
+        }
+
+        // Subscribe member to all newsletters by default
+        if (!memberData.newsletters && this._labsService.isSet('multipleNewsletters')) {
+            const newsletters = await this._newslettersService.browse(_.pick(options, 'transacting'));
+            memberData.newsletters = newsletters || [];
         }
 
         const member = await this._Member.add({
