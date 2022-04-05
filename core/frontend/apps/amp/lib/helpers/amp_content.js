@@ -12,7 +12,7 @@ const {DateTime, Interval} = require('luxon');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
-const {SafeString} = require('../../../../services/rendering');
+const {SafeString} = require('../../../../services/handlebars');
 
 const amperizeCache = {};
 let allowedAMPTags = [];

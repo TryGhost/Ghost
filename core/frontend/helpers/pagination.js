@@ -1,7 +1,7 @@
 // ### Pagination Helper
 // `{{pagination}}`
 // Outputs previous and next buttons, along with info about the current page
-const {templates, hbs} = require('../services/rendering');
+const {templates, hbs} = require('../services/handlebars');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');

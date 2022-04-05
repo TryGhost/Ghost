@@ -4,7 +4,7 @@
 // Returns a string of the products with access to the post.
 // By default, products are separated by commas.
 const {labs} = require('../services/proxy');
-const {SafeString} = require('../services/rendering');
+const {SafeString} = require('../services/handlebars');
 
 const isString = require('lodash/isString');
 

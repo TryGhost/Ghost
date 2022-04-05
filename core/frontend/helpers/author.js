@@ -10,7 +10,7 @@
 // Block helper: `{{#author}}{{/author}}`
 // This is the default handlebars behaviour of dropping into the author object scope
 const {urlService} = require('../services/proxy');
-const {SafeString, escapeExpression, hbs, templates} = require('../services/rendering');
+const {SafeString, escapeExpression, hbs, templates} = require('../services/handlebars');
 const isString = require('lodash/isString');
 
 const builtInHelpers = hbs.handlebars.helpers;

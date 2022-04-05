@@ -3,7 +3,7 @@
 //
 // Outputs inline scripts used for analytics
 const {settingsCache} = require('../../../../services/proxy');
-const {SafeString} = require('../../../../services/rendering');
+const {SafeString} = require('../../../../services/handlebars');
 
 function ampComponents() {
     let components = [];

@@ -7,7 +7,7 @@
 //
 // Note that the standard {{#each authors}} implementation is unaffected by this helper.
 const {urlService} = require('../services/proxy');
-const {SafeString, escapeExpression, templates} = require('../services/rendering');
+const {SafeString, escapeExpression, templates} = require('../services/handlebars');
 const isString = require('lodash/isString');
 const {utils} = require('@tryghost/helpers');
 

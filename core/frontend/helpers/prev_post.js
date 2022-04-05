@@ -3,7 +3,7 @@
 // `{{#prev_post}}<a href ="{{url}}>previous post</a>{{/prev_post}}'
 // `{{#next_post}}<a href ="{{url absolute="true">next post</a>{{/next_post}}'
 const {api} = require('../services/proxy');
-const {hbs} = require('../services/rendering');
+const {hbs} = require('../services/handlebars');
 const {checks} = require('../services/data');
 
 const logging = require('@tryghost/logging');

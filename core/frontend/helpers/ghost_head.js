@@ -3,7 +3,7 @@
 //
 // Outputs scripts and other assets at the top of a Ghost theme
 const {metaData, settingsCache, config, blogIcon, urlUtils, labs} = require('../services/proxy');
-const {escapeExpression, SafeString} = require('../services/rendering');
+const {escapeExpression, SafeString} = require('../services/handlebars');
 
 // BAD REQUIRE
 // @TODO fix this require

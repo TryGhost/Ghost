@@ -2,8 +2,8 @@
 const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
 
-// Require from the rendering framework
-const {SafeString} = require('./rendering');
+// Require from the handlebars framework
+const {SafeString} = require('./handlebars');
 
 module.exports = {
     /**
