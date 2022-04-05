@@ -1821,7 +1821,7 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.8", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5", "@tryghost/errors@^1.2.7":
+"@tryghost/errors@1.2.8", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.7":
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.8.tgz#b4ba1c31831216222be332ee7a37d9c4a376ac2a"
   integrity sha512-O8CUS4SHsBYFc6/7yUDJ5yk0vhcdzPxFiISgrFhzptOd79ZdXwk9c8Pz5uSDUXPaCqKaWMYLTjSof30IxVvvAA==
@@ -2170,13 +2170,13 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/mw-error-handler@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.1.7.tgz#9be3e27e4c00adf419ff8a34742659f9eaa20178"
-  integrity sha512-Xa8JLh3YJLPqPL+rLuamP+Xqny7biycYnOSzrIcZtjwydUW5T3ah63DQjgJa/xDHGrR85GvEjD/gxfc21y8Cbg==
+"@tryghost/mw-error-handler@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.1.8.tgz#03861566314e2d3e3bbd9d8f77b0db83813a0d45"
+  integrity sha512-wUXcQ2T/iX2pOGuBr8uvNb2EtbvAAis7l0tgwzJt5Kx4K4fzUzASsYVrqmXvv3b+vhMfBWesD7FlTafLi/euHg==
   dependencies:
     "@tryghost/debug" "^0.1.9"
-    "@tryghost/errors" "^1.2.5"
+    "@tryghost/errors" "1.2.8"
     "@tryghost/tpl" "^0.1.8"
     lodash "^4.17.21"
 
