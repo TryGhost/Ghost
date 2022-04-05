@@ -7,6 +7,7 @@ const themeEngine = require('../../../../../../core/frontend/services/theme-engi
 const routerManager = require('../../../../../../core/frontend/services/routing/').routerManager;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
+const dataService = require('../../../../../../core/frontend/services/data');
 
 function failTest(done) {
     return function (err) {
@@ -36,7 +37,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         fetchDataStub = sinon.stub();
         renderStub = sinon.stub();
 
-        sinon.stub(helpers, 'fetchData').get(function () {
+        sinon.stub(dataService, 'fetchData').get(function () {
             return fetchDataStub;
         });
 

@@ -3,7 +3,7 @@ const testUtils = require('../../../../../utils');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
-const helpers = require('../../../../../../core/frontend/services/routing/helpers');
+const dataService = require('../../../../../../core/frontend/services/data');
 const rssService = require('../../../../../../core/frontend/services/rss');
 
 // Helper function to prevent unit tests
@@ -43,7 +43,7 @@ describe('Unit - services/routing/controllers/rss', function () {
         next = sinon.stub();
         fetchDataStub = sinon.stub();
 
-        sinon.stub(helpers, 'fetchData').get(function () {
+        sinon.stub(dataService, 'fetchData').get(function () {
             return fetchDataStub;
         });
 

@@ -6,6 +6,7 @@ const urlUtils = require('../../../../../../core/shared/url-utils');
 const routerManager = require('../../../../../../core/frontend/services/routing/').routerManager;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const helpers = require('../../../../../../core/frontend/services/routing/helpers');
+const dataService = require('../../../../../../core/frontend/services/data');
 const EDITOR_URL = `/#/editor/post/`;
 
 describe('Unit - services/routing/controllers/entry', function () {
@@ -27,7 +28,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         entryLookUpStub = sinon.stub();
         renderStub = sinon.stub();
 
-        sinon.stub(helpers, 'entryLookup').get(function () {
+        sinon.stub(dataService, 'entryLookup').get(function () {
             return entryLookUpStub;
         });
 

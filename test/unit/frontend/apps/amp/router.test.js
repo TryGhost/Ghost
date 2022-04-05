@@ -5,6 +5,7 @@ const path = require('path');
 const ampController = require('../../../../../core/frontend/apps/amp/lib/router');
 const urlService = require('../../../../../core/server/services/url');
 const helpers = require('../../../../../core/frontend/services/routing/helpers');
+const dataService = require('../../../../../core/frontend/services/data');
 const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/configUtils');
 
@@ -107,7 +108,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             entryLookupStub = sinon.stub();
 
-            sinon.stub(helpers, 'entryLookup').get(function () {
+            sinon.stub(dataService, 'entryLookup').get(function () {
                 return entryLookupStub;
             });
 
@@ -123,7 +124,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
+            dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
                 .resolves({
                     entry: post
                 });
@@ -140,7 +141,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}}).resolves({
+            dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}}).resolves({
                 entry: post
             });
 
@@ -155,7 +156,7 @@ describe('Unit - apps/amp/lib/router', function () {
 
             urlService.getPermalinkByUrl.withArgs('/welcome/').returns('/:slug/');
 
-            helpers.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
+            dataService.entryLookup.withArgs('/welcome/', {permalinks: '/:slug/', query: {controller: 'postsPublic', resource: 'posts'}})
                 .rejects(new errors.NotFoundError());
 
             ampController.getPostData(req, res, function (err) {
