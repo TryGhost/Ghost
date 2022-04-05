@@ -1963,7 +1963,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.1.1", "@tryghost/logging@2.1.2", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1", "@tryghost/logging@^2.0.5":
+"@tryghost/logging@2.1.2", "@tryghost/logging@2.1.3", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1", "@tryghost/logging@^2.0.5":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.1.2.tgz#8f613b50d3dabdcc78e131240cd2cedede3cb8d9"
   integrity sha512-OwVHlPTmElfeYnQNNjLxc7qeMXAE+kX2o38fk2/Uf/sncYQMvjXohqC/v/sEGxczw2chGZmyCF00T+46a6MwXQ==
@@ -2100,24 +2100,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.9.4":
+"@tryghost/members-stripe-service@0.9.4", "@tryghost/members-stripe-service@^0.9.3":
   version "0.9.4"
   resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.9.4.tgz#2e07cfa31dddba1d2bdde2d6b7449bc2c4bc6118"
   integrity sha512-22e7IlNx3D49YK4bdi3wknQ0Tz1nW9zqpq4MIlbLYjGeC8zBR1v1LSMG7NyQR8chErgp8u51xnC6YyQgDd9iAw==
-  dependencies:
-    "@tryghost/debug" "^0.1.4"
-    "@tryghost/domain-events" "^0.1.9"
-    "@tryghost/errors" "^1.2.5"
-    "@tryghost/logging" "^2.0.5"
-    "@tryghost/member-events" "^0.4.1"
-    leaky-bucket "^2.2.0"
-    lodash "^4.17.21"
-    stripe "^8.174.0"
-
-"@tryghost/members-stripe-service@^0.9.3":
-  version "0.9.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.9.3.tgz#e5f6995f77c8bbee8ba839bc6f02298c680b8057"
-  integrity sha512-r8n2qrUtkGLE7xAUkVYhCwpo4cfxtiPDa/MiBg9ycvRg81Azz33i9mQpZjiKJlAVn9IzsKaEfQBKioIFun0YyQ==
   dependencies:
     "@tryghost/debug" "^0.1.4"
     "@tryghost/domain-events" "^0.1.9"
@@ -3854,7 +3840,7 @@ commander@5.1.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-5.1.0.tgz#46abbd1652f8e059bddaef99bbdcb2ad9cf179ae"
   integrity sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==
 
-commander@8.3.0, commander@^8.3.0:
+commander@8.3.0:
   version "8.3.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-8.3.0.tgz#4837ea1b2da67b9c616a67afbb0fafee567bca66"
   integrity sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==
@@ -7771,19 +7757,19 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-knex-migrator@4.2.5:
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.5.tgz#cac7dc1a0821968117ca504621eb98a96e9accde"
-  integrity sha512-BGD59HjXia3C6kSjHYYeKoctHK2FBuk/KkNCmWS5SbaDxpQ3HqSohGUFYDsLOHoZM4JMEDWhbJRAcR2qSaCJgw==
+knex-migrator@4.2.6:
+  version "4.2.6"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.6.tgz#7f298873df4dc0ad27cc6d3922461a59f5ae1ded"
+  integrity sha512-GZ1/m68IJqIisZvS2kzUXDF/+ctFklQK+vY/SR3eohEBUY6iLOQ8RpymaPXFWLd3DR3Jqy6T9XgxElkgeRsTHQ==
   dependencies:
     "@tryghost/database-info" "0.3.0"
-    "@tryghost/logging" "2.1.1"
+    "@tryghost/logging" "2.1.3"
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.4"
     ghost-ignition "4.6.3"
-    knex "1.0.4"
+    knex "1.0.5"
     lodash "4.17.21"
     moment "2.24.0"
     mysql2 "2.3.3"
@@ -7791,25 +7777,6 @@ knex-migrator@4.2.5:
     resolve "1.22.0"
   optionalDependencies:
     "@vscode/sqlite3" "5.0.8"
-
-knex@1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-1.0.4.tgz#b9db3c60d0e3a4af37239bb879244e50eb748124"
-  integrity sha512-cMQ81fpkVmr4ia20BtyrD3oPere/ir/Q6IGLAgcREKOzRVhMsasQ4nx1VQuDRJjqq6oK5kfcxmvWoYkHKrnuMA==
-  dependencies:
-    colorette "2.0.16"
-    commander "^8.3.0"
-    debug "4.3.3"
-    escalade "^3.1.1"
-    esm "^3.2.25"
-    getopts "2.3.0"
-    interpret "^2.2.0"
-    lodash "^4.17.21"
-    pg-connection-string "2.5.0"
-    rechoir "^0.8.0"
-    resolve-from "^5.0.0"
-    tarn "^3.0.2"
-    tildify "2.0.0"
 
 knex@1.0.5:
   version "1.0.5"
