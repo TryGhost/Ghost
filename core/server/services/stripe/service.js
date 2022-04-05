@@ -12,6 +12,7 @@ const {getConfig} = require('./config');
 async function configureApi() {
     const cfg = getConfig(settings, config, urlUtils);
     if (cfg) {
+        cfg.testEnv = process.env.NODE_ENV.startsWith('test');
         await module.exports.configure(cfg);
         return true;
     }
