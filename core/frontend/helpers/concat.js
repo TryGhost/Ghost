@@ -1,4 +1,4 @@
-const {SafeString} = require('../services/rendering');
+const {SafeString} = require('../services/handlebars');
 
 module.exports = function concat(...args) {
     const options = args.pop();

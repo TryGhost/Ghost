@@ -2,7 +2,7 @@
 // Usage: `{{post_class}}`
 //
 // Output classes for the body element
-const {SafeString} = require('../services/rendering');
+const {SafeString} = require('../services/handlebars');
 
 // We use the name post_class to match the helper for consistency:
 module.exports = function post_class() { // eslint-disable-line camelcase

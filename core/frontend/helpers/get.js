@@ -2,7 +2,7 @@
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
 const {config, api, prepareContextResource} = require('../services/proxy');
-const {hbs} = require('../services/rendering');
+const {hbs} = require('../services/handlebars');
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');

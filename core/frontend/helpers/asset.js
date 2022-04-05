@@ -3,7 +3,7 @@
 //
 // Returns the path to the specified asset.
 const {metaData, urlUtils} = require('../services/proxy');
-const {SafeString} = require('../services/rendering');
+const {SafeString} = require('../services/handlebars');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');

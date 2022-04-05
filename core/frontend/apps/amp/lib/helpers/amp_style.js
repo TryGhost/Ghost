@@ -1,4 +1,4 @@
-const {SafeString, escapeExpression} = require('../../../../services/rendering');
+const {SafeString, escapeExpression} = require('../../../../services/handlebars');
 
 module.exports = function amp_style(options) { // eslint-disable-line camelcase
     if (options.data.site.accent_color) {

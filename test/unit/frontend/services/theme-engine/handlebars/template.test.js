@@ -1,6 +1,6 @@
 const should = require('should');
 const errors = require('@tryghost/errors');
-const {hbs, templates} = require('../../../../../../core/frontend/services/rendering');
+const {hbs, templates} = require('../../../../../../core/frontend/services/handlebars');
 
 describe('Helpers Template', function () {
     it('can execute a template', function () {
