@@ -1,6 +1,6 @@
-const schema = require('../../server/data/schema').checks;
 const urlUtils = require('../../shared/url-utils');
 const urlService = require('../../server/services/url');
+const {checks} = require('../services/data');
 
 // This cleans the url from any `/amp` postfixes, so we'll never
 // output a url with `/amp` in the end, except for the needed `amphtml`
@@ -13,7 +13,7 @@ function sanitizeAmpUrl(url) {
 }
 
 function getUrl(data, absolute) {
-    if (schema.isPost(data)) {
+    if (checks.isPost(data)) {
         /**
          * @NOTE
          *
@@ -33,11 +33,11 @@ function getUrl(data, absolute) {
         return urlService.getUrlByResourceId(data.id, {secure: data.secure, absolute: absolute, withSubdirectory: true});
     }
 
-    if (schema.isTag(data) || schema.isUser(data)) {
+    if (checks.isTag(data) || checks.isUser(data)) {
         return urlService.getUrlByResourceId(data.id, {secure: data.secure, absolute: absolute, withSubdirectory: true});
     }
 
-    if (schema.isNav(data)) {
+    if (checks.isNav(data)) {
         return urlUtils.urlFor('nav', {nav: data, secure: data.secure}, absolute);
     }
 

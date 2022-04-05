@@ -10,7 +10,7 @@
 //
 // Returns estimated reading time for post
 
-const {checks} = require('../services/proxy');
+const {checks} = require('../services/data');
 const {SafeString} = require('../services/rendering');
 
 const {readingTime: calculateReadingTime} = require('@tryghost/helpers');

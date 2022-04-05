@@ -2,7 +2,7 @@
 // Usage: `{{#foreach data}}{{/foreach}}`
 //
 // Block helper designed for looping through posts
-const {checks} = require('../services/proxy');
+const {checks} = require('../services/data');
 const {hbs} = require('../services/rendering');
 
 const _ = require('lodash');

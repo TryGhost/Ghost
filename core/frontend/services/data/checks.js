@@ -19,8 +19,8 @@ function isNav(jsonData) {
 }
 
 module.exports = {
-    isPost: isPost,
-    isTag: isTag,
-    isUser: isUser,
-    isNav: isNav
+    isPost,
+    isTag,
+    isUser,
+    isNav
 };

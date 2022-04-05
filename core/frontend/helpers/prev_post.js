@@ -2,8 +2,9 @@
 //  Example usages
 // `{{#prev_post}}<a href ="{{url}}>previous post</a>{{/prev_post}}'
 // `{{#next_post}}<a href ="{{url absolute="true">next post</a>{{/next_post}}'
-const {api, checks} = require('../services/proxy');
+const {api} = require('../services/proxy');
 const {hbs} = require('../services/rendering');
+const {checks} = require('../services/data');
 
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -50,8 +51,8 @@ const buildApiOptions = function buildApiOptions(options, post) {
 };
 
 /**
- * @param {*} options 
- * @param {*} data 
+ * @param {*} options
+ * @param {*} data
  * @returns {Promise<any>}
  */
 const fetch = function fetch(options, data) {
@@ -84,7 +85,7 @@ const fetch = function fetch(options, data) {
 // then the promise is handled in the api call.
 
 /**
- * @param {*} options 
+ * @param {*} options
  * @returns {Promise<any>}
  */
 module.exports = function prevNext(options) {
