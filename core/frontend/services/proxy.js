@@ -22,8 +22,6 @@ module.exports = {
             }
         });
     },
-    // This is used to decide e.g. if a JSON object is a Post, Page, Tag etc
-    checks: require('../../server/data/schema').checks,
 
     /**
      * Section three: Core API
