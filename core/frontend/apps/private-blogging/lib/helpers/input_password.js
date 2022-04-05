@@ -4,7 +4,7 @@
 // Password input used on private.hbs for password-protected blogs
 
 // (less) dirty requires
-const {SafeString, templates} = require('../../../../services/rendering');
+const {SafeString, templates} = require('../../../../services/handlebars');
 
 // We use the name input_password to match the helper for consistency:
 module.exports = function input_password(options) { // eslint-disable-line camelcase

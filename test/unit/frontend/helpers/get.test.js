@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const {SafeString} = require('../../../../core/frontend/services/rendering');
+const {SafeString} = require('../../../../core/frontend/services/handlebars');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');

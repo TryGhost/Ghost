@@ -5,7 +5,7 @@
 // `absolute` flag outputs absolute URL, else URL is relative
 
 const {metaData} = require('../services/proxy');
-const {SafeString} = require('../services/rendering');
+const {SafeString} = require('../services/handlebars');
 const logging = require('@tryghost/logging');
 const sentry = require('../../shared/sentry');
 const errors = require('@tryghost/errors');

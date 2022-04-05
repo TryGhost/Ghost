@@ -10,7 +10,7 @@
 // because often other helpers need that (t) returns a string to be able to work as subexpression; e.g.:
 // {{tags prefix=(t " on ")}}
 
-const {themeI18n} = require('../services/rendering');
+const {themeI18n} = require('../services/handlebars');
 
 module.exports = function t(text, options) {
     const bindings = {};

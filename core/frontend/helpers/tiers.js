@@ -4,7 +4,7 @@
 // Returns a string of the tiers with access to the post.
 // By default, tiers are separated by commas.
 const {labs} = require('../services/proxy');
-const {SafeString, escapeExpression} = require('../services/rendering');
+const {SafeString, escapeExpression} = require('../services/handlebars');
 
 const isString = require('lodash/isString');
 

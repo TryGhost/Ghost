@@ -1,5 +1,5 @@
 /**
- * This is a loose concept of a frontend rendering framework
+ * This is a loose concept of a frontend handlebars toolkit
  * Note: everything here gets deep-required from the theme-engine
  * This indicates that the theme engine is a set of services, rather than a single service
  * and could do with a further refactor.
@@ -17,6 +17,7 @@ module.exports = {
     templates: require('./theme-engine/handlebars/template'),
 
     // Theme i18n
+    // @TODO: this should live somewhere else...
     themeI18n: require('./theme-engine/i18n'),
 
     // TODO: these need a more sensible home

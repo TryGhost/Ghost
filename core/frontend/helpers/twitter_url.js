@@ -3,7 +3,7 @@
 //
 // Output a url for a twitter username
 const {socialUrls} = require('../services/proxy');
-const {localUtils} = require('../services/rendering');
+const {localUtils} = require('../services/handlebars');
 
 // We use the name twitter_url to match the helper for consistency:
 module.exports = function twitter_url(username, options) { // eslint-disable-line camelcase

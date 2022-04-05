@@ -6,7 +6,7 @@
 //
 // Defaults to class="cancel-subscription-link" errorClass="cancel-subscription-error" cancelLabel="Cancel subscription" continueLabel="Continue subscription"
 const {labs} = require('../services/proxy');
-const {templates} = require('../services/rendering');
+const {templates} = require('../services/handlebars');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');

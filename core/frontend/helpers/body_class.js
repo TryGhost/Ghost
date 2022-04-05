@@ -2,7 +2,7 @@
 // Usage: `{{body_class}}`
 //
 // Output classes for the body element
-const {SafeString} = require('../services/rendering');
+const {SafeString} = require('../services/handlebars');
 
 // We use the name body_class to match the helper for consistency
 module.exports = function body_class(options) { // eslint-disable-line camelcase

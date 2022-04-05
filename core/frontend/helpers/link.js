@@ -1,6 +1,6 @@
 // # link helper
 const {config} = require('../services/proxy');
-const {SafeString, localUtils} = require('../services/rendering');
+const {SafeString, localUtils} = require('../services/handlebars');
 
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
