@@ -76,12 +76,6 @@ module.exports = {
                 ]]
             }
         },
-        {
-            files: 'core/server/api/**/utils/validators/**/index.js',
-            rules: {
-                'max-lines': ['off']
-            }
-        },
         /**
          * @TODO: enable these soon
          */
