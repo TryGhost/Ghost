@@ -34,7 +34,7 @@ const defaultPostQuery = _.cloneDeep(queryDefaults);
 defaultPostQuery.options = defaultQueryOptions.options;
 
 /**
- * @description Process query request.
+ * Process query request.
  *
  * Takes a 'query' object, ensures that type, resource and options are set
  * Replaces occurrences of `%s` in options with slugParam
@@ -45,7 +45,7 @@ defaultPostQuery.options = defaultQueryOptions.options;
  * @returns {Promise}
  */
 function processQuery(query, slugParam, locals) {
-    const api = require('../../proxy').api[locals.apiVersion];
+    const api = require('../proxy').api[locals.apiVersion];
 
     query = _.cloneDeep(query);
 
@@ -62,7 +62,7 @@ function processQuery(query, slugParam, locals) {
 }
 
 /**
- * @description Fetch data from API helper for controllers.
+ * Fetch data from API helper for controllers.
  *
  * Calls out to get posts per page, builds the final posts query & builds any additional queries
  * Wraps the queries using Promise.props to ensure it gets named responses
