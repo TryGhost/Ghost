@@ -247,18 +247,17 @@ async function showPopupNotification({data, state}) {
     };
 }
 
-async function updateNewsletterPreference({data, state}) {
+async function updateNewsletterPreference({data, state, api}) {
     try {
-        const {newsletter} = data;
-        if (!newsletter) {
+        const {newsletters} = data;
+        if (!newsletters) {
             return {};
         }
-        await new Promise(r => setTimeout(r, 2000));
-
+        const member = await api.member.update({newsletters});
         const action = 'updateNewsletterPref:success';
         return {
             action,
-            member: state.member
+            member
         };
     } catch (e) {
         return {

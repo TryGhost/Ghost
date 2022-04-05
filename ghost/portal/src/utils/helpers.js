@@ -384,7 +384,7 @@ export function hasMultipleNewsletters({site}) {
     const {
         newsletters
     } = site || {};
-    return newsletters?.length > 1;
+    return newsletters?.length > 0;
 }
 
 export function hasOnlyFreeProduct({site}) {

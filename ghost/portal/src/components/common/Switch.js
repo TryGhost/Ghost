@@ -91,7 +91,7 @@ function Switch({id, label = '', onToggle, checked = false}) {
                 />
                 <span className="input-toggle-component" onClick={(e) => {
                     setIsChecked(!isChecked);
-                    onToggle(e);
+                    onToggle(e, !isChecked);
                 }} data-testid="switch-input"></span>
             </label>
         </div>
