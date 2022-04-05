@@ -1,3 +1,8 @@
+// ESLint Override Notice
+// This file was named incorrectly and it didn't flag up in our eslint rules.
+// The ESLint match-regex rule has now been updated to catch this, but this file has to be excluded.
+/* eslint-disable ghost/filenames/match-regex */
+
 const {addTable} = require('../../utils');
 
 module.exports = addTable('newsletters', {
