@@ -57,7 +57,8 @@ module.exports = function MembersAPI({
     },
     stripeAPIService,
     offersAPI,
-    labsService
+    labsService,
+    newslettersService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -79,6 +80,8 @@ module.exports = function MembersAPI({
     const memberRepository = new MemberRepository({
         stripeAPIService,
         tokenService,
+        newslettersService,
+        labsService,
         productRepository,
         Member,
         MemberCancelEvent,
