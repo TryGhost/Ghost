@@ -55,7 +55,7 @@
     "cli": "^1.17.0"
   },
   "dependencies": {
-    "@sentry/node": "6.19.3",
+    "@sentry/node": "6.19.4",
     "@tryghost/adapter-manager": "0.2.28",
     "@tryghost/admin-api-schema": "2.13.0",
     "@tryghost/bookshelf-plugins": "0.3.15",
