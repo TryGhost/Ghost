@@ -7,9 +7,5 @@ module.exports = {
 
     get registry() {
         return registry;
-    },
-
-    get helpers() {
-        return require('./helpers');
     }
 };

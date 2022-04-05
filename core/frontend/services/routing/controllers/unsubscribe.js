@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:unsubscribe');
 const path = require('path');
 const megaService = require('../../../../server/services/mega');
-const helpers = require('../../../services/routing/helpers');
+const renderer = require('../../rendering');
 
 module.exports = async function unsubscribeController(req, res) {
     debug('unsubscribeController');
@@ -22,5 +22,5 @@ module.exports = async function unsubscribeController(req, res) {
         defaultTemplate: path.resolve(__dirname, '../../../views/', templateName)
     };
 
-    return helpers.renderer(req, res, data);
+    return renderer.renderer(req, res, data);
 };

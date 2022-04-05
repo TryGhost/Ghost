@@ -30,7 +30,7 @@ class CollectionRouter extends ParentRouter {
             value: object.permalink
         };
 
-        // @NOTE: see helpers/templates - we use unshift to prepend the templates
+        // @NOTE: see renderer/templates - we use unshift to prepend the templates
         this.templates = (object.templates || []).reverse();
 
         this.filter = object.filter;

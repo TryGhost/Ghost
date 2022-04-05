@@ -8,7 +8,7 @@ const errors = require('@tryghost/errors');
 // Dirty requires
 const urlService = require('../../../../server/services/url');
 const dataService = require('../../../services/data');
-const helpers = require('../../../services/routing/helpers');
+const renderer = require('../../../services/rendering');
 const templateName = 'amp';
 
 const messages = {
@@ -32,7 +32,7 @@ function _renderer(req, res, next) {
     }
 
     // Render Call
-    return helpers.renderer(req, res, body);
+    return renderer.renderer(req, res, body);
 }
 
 // This here is a controller.
