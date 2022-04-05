@@ -5,7 +5,7 @@ const testUtils = require('../../../../../utils');
 const security = require('@tryghost/security');
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
-const helpers = require('../../../../../../core/frontend/services/routing/helpers');
+const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
 
 function failTest(done) {
@@ -41,7 +41,7 @@ describe('Unit - services/routing/controllers/channel', function () {
 
         sinon.stub(security.string, 'safe').returns('safe');
 
-        sinon.stub(helpers, 'secure').get(function () {
+        sinon.stub(renderer, 'secure').get(function () {
             return secureStub;
         });
 
@@ -53,7 +53,7 @@ describe('Unit - services/routing/controllers/channel', function () {
             }
         });
 
-        sinon.stub(helpers, 'renderEntries').returns(renderStub);
+        sinon.stub(renderer, 'renderEntries').returns(renderStub);
 
         req = {
             path: '/',

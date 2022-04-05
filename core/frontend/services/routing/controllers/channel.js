@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const themeEngine = require('../../theme-engine');
 const dataService = require('../../data');
-const helpers = require('../helpers');
+const renderer = require('../../rendering');
 
 const messages = {
     pageNotFound: 'Page not found.'
@@ -61,16 +61,15 @@ module.exports = function channelController(req, res, next) {
             }
 
             // Format data 1
-            // @TODO: See helpers/secure for explanation.
-            helpers.secure(req, result.posts);
+            // @TODO: See renderer/secure for explanation.
+            renderer.secure(req, result.posts);
 
-            // @TODO: See helpers/secure for explanation.
+            // @TODO: See renderer/secure for explanation.
             _.each(result.data, function (data) {
-                helpers.secure(req, data);
+                renderer.secure(req, data);
             });
 
-            const renderer = helpers.renderEntries(req, res);
-            return renderer(result);
+            return renderer.renderEntries(req, res)(result);
         })
-        .catch(helpers.handleError(next));
+        .catch(renderer.handleError(next));
 };

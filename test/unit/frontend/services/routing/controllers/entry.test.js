@@ -5,7 +5,7 @@ const configUtils = require('../../../../../utils/configUtils');
 const urlUtils = require('../../../../../../core/shared/url-utils');
 const routerManager = require('../../../../../../core/frontend/services/routing/').routerManager;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
-const helpers = require('../../../../../../core/frontend/services/routing/helpers');
+const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
 const EDITOR_URL = `/#/editor/post/`;
 
@@ -32,11 +32,11 @@ describe('Unit - services/routing/controllers/entry', function () {
             return entryLookUpStub;
         });
 
-        sinon.stub(helpers, 'secure').get(function () {
+        sinon.stub(renderer, 'secure').get(function () {
             return secureStub;
         });
 
-        sinon.stub(helpers, 'renderEntry').get(function () {
+        sinon.stub(renderer, 'renderEntry').get(function () {
             return renderStub;
         });
 
