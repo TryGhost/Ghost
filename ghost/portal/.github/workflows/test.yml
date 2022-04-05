@@ -24,7 +24,7 @@ jobs:
       - run: yarn build
       - run: yarn test:ci
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
