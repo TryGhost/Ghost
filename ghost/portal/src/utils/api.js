@@ -119,11 +119,12 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        update({name, subscribed}) {
+        update({name, subscribed, newsletters}) {
             const url = endpointFor({type: 'members', resource: 'member'});
             const body = {
                 name,
-                subscribed
+                subscribed,
+                newsletters
             };
             const analyticsData = getAnalyticsMetadata();
             if (analyticsData) {
