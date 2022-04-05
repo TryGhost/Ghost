@@ -73,7 +73,7 @@ jobs:
 
       # Merge coverage reports and upload
       - run: yarn ember coverage-merge
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
