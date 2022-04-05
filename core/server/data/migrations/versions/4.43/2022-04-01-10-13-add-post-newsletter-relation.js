@@ -3,7 +3,7 @@ const DatabaseInfo = require('@tryghost/database-info');
 const commands = require('../../../schema/commands');
 
 const table = 'posts';
-const column = 'newsletters_id';
+const column = 'newsletter_id';
 const columnDefinition = {
     type: 'string',
     maxlength: 24,
