@@ -1,8 +1,18 @@
 const logging = require('@tryghost/logging');
 const DatabaseInfo = require('@tryghost/database-info');
+const commands = require('../../../schema/commands');
 
 const table = 'posts';
 const column = 'newsletter_id';
+const targetTable = 'newsletters';
+const targetColumn = 'id';
+
+const columnDefinition = {
+    type: 'string',
+    maxlength: 24,
+    nullable: true,
+    references: `${targetTable}.${targetColumn}`
+};
 
 /**
  * This migration is adding a new column `newsletter_id` to the table posts
@@ -29,6 +39,12 @@ module.exports = {
 
         logging.info(`Adding ${table}.${column} column`);
 
+        // Use the default flow for SQLite because .toSQL() is tricky with SQLite
+        if (DatabaseInfo.isSQLite(knex)) {
+            await commands.addColumn(table, column, knex, columnDefinition);
+            return;
+        }
+
         // Add the column
 
         let sql = knex.schema.table(table, function (t) {
@@ -43,8 +59,13 @@ module.exports = {
 
         // Add the foreign key constraint
 
-        await knex.schema.alterTable(table, function (t) {
-            t.foreign(column).references('newsletters.id');
+        await commands.addForeign({
+            fromTable: table,
+            fromColumn: column,
+            toTable: targetTable,
+            toColumn: targetColumn,
+            cascadeDelete: false,
+            transaction: knex
         });
     },
     async down(config) {
@@ -59,10 +80,20 @@ module.exports = {
 
         logging.info(`Removing ${table}.${column} column`);
 
+        // Use the default flow for SQLite because .toSQL() is tricky with SQLite
+        if (DatabaseInfo.isSQLite(knex)) {
+            await commands.dropColumn(table, column, knex, columnDefinition);
+            return;
+        }
+
         // Drop the foreign key constraint
 
-        await knex.schema.alterTable(table, function (t) {
-            t.dropForeign(column);
+        await commands.dropForeign({
+            fromTable: table,
+            fromColumn: column,
+            toTable: targetTable,
+            toColumn: targetColumn,
+            transaction: knex
         });
 
         // Drop the column
