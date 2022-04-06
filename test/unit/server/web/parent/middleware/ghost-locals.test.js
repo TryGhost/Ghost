@@ -26,9 +26,7 @@ describe('Theme Handler', function () {
             res.locals.should.be.an.Object();
             should.exist(res.locals.version);
             should.exist(res.locals.safeVersion);
-            should.exist(res.locals.apiVersion);
             res.locals.relativeUrl.should.equal(req.path);
-            res.locals.apiVersion.should.equal('canary');
             next.called.should.be.true();
         });
     });

@@ -190,8 +190,8 @@ module.exports = {
      *
      * @NOTE:
      *
-     * Please create separate controllers for Content & Admin API. The goal is to expose `api.canary.content` and
-     * `api.canary.admin` soon. Need to figure out how serializers & validation works then.
+     * Please create separate controllers for Content & Admin API. The goal is to expose `api.content` and
+     * `api.admin` soon. Need to figure out how serializers & validation works then.
      */
     get pagesPublic() {
         return shared.pipeline(require('./pages-public'), localUtils, 'content');

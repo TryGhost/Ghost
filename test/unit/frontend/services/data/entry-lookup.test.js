@@ -48,7 +48,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
                 };
             });
 
-            locals = {apiVersion: API_VERSION};
+            locals = {};
         });
 
         it('ensure pages controller is triggered', function () {
@@ -99,7 +99,7 @@ describe('Unit - frontend/data/entry-lookup', function () {
                 };
             });
 
-            locals = {apiVersion: API_VERSION};
+            locals = {};
         });
 
         it('ensure posts controller is triggered', function () {

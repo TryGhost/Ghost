@@ -5,14 +5,9 @@ const {SafeString} = require('../../../../core/frontend/services/handlebars');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
-
 const models = require('../../../../core/server/models');
-
 const proxy = require('../../../../core/frontend/services/proxy');
-
-const API_VERSION = 'canary';
-
-const api = require('../../../../core/server/api')[API_VERSION];
+const api = require('../../../../core/server/api').canary;
 
 describe('{{#get}} helper', function () {
     let fn;
@@ -27,7 +22,7 @@ describe('{{#get}} helper', function () {
         fn = sinon.spy();
         inverse = sinon.spy();
 
-        locals = {root: {_locals: {apiVersion: API_VERSION}}, globalProp: {foo: 'bar'}};
+        locals = {root: {}, globalProp: {foo: 'bar'}};
     });
 
     afterEach(function () {
@@ -39,7 +34,7 @@ describe('{{#get}} helper', function () {
         const meta = {pagination: {}};
 
         beforeEach(function () {
-            locals = {root: {_locals: {apiVersion: 'canary'}}};
+            locals = {root: {_locals: {}}};
 
             browsePostsStub = sinon.stub(api, 'postsPublic').get(() => {
                 return {
@@ -64,12 +59,12 @@ describe('{{#get}} helper', function () {
         });
     });
 
-    describe('authors canary', function () {
+    describe('authors', function () {
         let browseAuthorsStub;
         const meta = {pagination: {}};
 
         beforeEach(function () {
-            locals = {root: {_locals: {apiVersion: API_VERSION}}};
+            locals = {root: {_locals: {}}};
 
             browseAuthorsStub = sinon.stub(api, 'authorsPublic').get(() => {
                 return {
@@ -274,7 +269,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('Behaves normally without config', async function () {
-            locals = {root: {_locals: {apiVersion: API_VERSION}}};
+            locals = {root: {_locals: {}}};
             await get.call(
                 {},
                 'posts',
@@ -286,7 +281,7 @@ describe('{{#get}} helper', function () {
         it('Replaces "all" with "getHelperLimitAllMax" config, if present', async function () {
             sinon.stub(proxy.config, 'get').withArgs('getHelperLimitAllMax').returns(2);
 
-            locals = {root: {_locals: {apiVersion: API_VERSION}}};
+            locals = {root: {_locals: {}}};
             await get.call(
                 {},
                 'posts',
@@ -315,7 +310,7 @@ describe('{{#get}} helper', function () {
         });
 
         it('should pass the member context', async function () {
-            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+            locals = {root: {_locals: {}}, member};
             await get.call(
                 {},
                 'posts',
