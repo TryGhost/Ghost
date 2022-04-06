@@ -137,6 +137,10 @@ module.exports = function (Bookshelf) {
                 options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
             }
 
+            if (options.forUpdate) {
+                options.lock = 'forUpdate';
+            }
+
             return model.fetch(options)
                 .catch((err) => {
                     // CASE: SQL syntax is incorrect
