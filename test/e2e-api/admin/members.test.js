@@ -17,20 +17,6 @@ async function assertMemberEvents({eventType, memberId, asserts}) {
     assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
 }
 
-/**
- * @deprecated
- */
-async function assertEvents({eventType, eventName, quantity, asserts}) {
-    const events = await models[eventType].findAll();
-    assert.equal(events.models.length, quantity, `Only one ${eventType} should have been added after ${eventName}.`);
-    const event = events.models[events.models.length - 1].toJSON();
-
-    for (const attribute of Object.keys(assert)) {
-        const value = asserts[attribute];
-        assert.equal(event[attribute], value, `The ${attribute} attribute of ${eventType} should have been ${value}`);
-    }
-}
-
 async function getPaidProduct() {
     return await Product.findOne({type: 'paid'});
 }
@@ -1510,7 +1496,7 @@ describe('Members API: with multiple newsletters', function () {
             labels: ['test-label']
         };
 
-        await agent
+        const {body} = await agent
             .post(`/members/`)
             .body({members: [member]})
             .expectStatus(201)
@@ -1522,16 +1508,22 @@ describe('Members API: with multiple newsletters', function () {
                 location: anyLocationFor('members')
             });
 
+        const newMember = body.members[0];
+
         await agent
             .post(`/members/`)
             .body({members: [member]})
             .expectStatus(422);
 
-        await assertEvents({
-            eventName: 'creating a subscription',
+        await assertMemberEvents({
             eventType: 'MemberStatusEvent',
-            quantity: 1,
-            asserts: {from_status: null, to_status: 'free'}
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null, 
+                    to_status: 'free'
+                }
+            ]
         });
     });
 
@@ -1559,29 +1551,33 @@ describe('Members API: with multiple newsletters', function () {
                 location: anyString
             });
 
+        const newMember = body.members[0];
+
         mockManager.assert.sentEmail({
             subject: '🙌 Complete your sign up to Ghost!',
             to: 'member_getting_confirmation@test.com'
         });
 
-        await assertEvents({
-            eventName: 'creating a subscription',
+        await assertMemberEvents({
             eventType: 'MemberStatusEvent',
-            quantity: 2,
-            asserts: {
-                from_status: null,
-                to_status: 'free'
-            }
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
         });
 
-        await assertEvents({
-            eventName: 'creating a subscription',
+        await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
-            quantity: 1,
-            asserts: {
-                subscribed: true,
-                source: 'admin'
-            }
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin'
+                }
+            ]
         });
 
         // @TODO: do we really need to delete this member here?
@@ -1694,24 +1690,26 @@ describe('Members API: with multiple newsletters', function () {
                 etag: anyEtag
             });
 
-        await assertEvents({
-            eventName: 'creating a subscription',
+        await assertMemberEvents({
             eventType: 'MemberStatusEvent',
-            quantity: 2,
-            asserts: {
-                from_status: null,
-                to_status: 'free'
-            }
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
         });
 
-        await assertEvents({
-            eventName: 'creating a subscription',
+        await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
-            quantity: 1,
-            asserts: {
-                subscribed: true,
-                source: 'admin'
-            }
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin'
+                }
+            ]
         });
     });
 
@@ -1741,27 +1739,28 @@ describe('Members API: with multiple newsletters', function () {
                 etag: anyEtag,
                 location: anyLocationFor('members')
             });
-
-        await assertEvents({
-            eventName: 'creating a subscription',
-            eventType: 'MemberSubscribeEvent',
-            quantity: 2,
-            asserts: {
-                subscribed: true,
-                source: 'admin'
-            }
-        });
-        await assertEvents({
-            eventName: 'updating a memer',
-            eventType: 'MemberStatusEvent',
-            quantity: 3,
-            asserts: {
-                from_status: null,
-                to_status: 'free'
-            }
-        });
-
         const newMember = body.members[0];
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin'
+                }
+            ]
+        });
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
 
         await agent
             .put(`/members/${newMember.id}/`)
@@ -1774,23 +1773,29 @@ describe('Members API: with multiple newsletters', function () {
                 etag: anyEtag
             });
 
-        await assertEvents({
-            eventName: 'updating a member email',
+        await assertMemberEvents({
             eventType: 'MemberEmailChangeEvent',
-            quantity: 1,
-            asserts: {
-                from_email: memberToChange.email,
-                to_email: memberChanged.email
-            }
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_email: memberToChange.email,
+                    to_email: memberChanged.email
+                }
+            ]
         });
-        await assertEvents({
-            eventName: 'removing a subscription',
+        await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
-            quantity: 3,
-            asserts: {
-                subscribed: false,
-                source: 'admin'
-            }
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin'
+                },
+                {
+                    subscribed: false,
+                    source: 'admin'
+                }
+            ]
         });
     });
 
