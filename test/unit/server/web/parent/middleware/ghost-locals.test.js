@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const ghostLocals = require('../../../../../../core/server/web/parent/middleware/ghost-locals');
-const bridge = require('../../../../../../core/bridge');
 
 describe('Theme Handler', function () {
     let req;
@@ -12,14 +11,6 @@ describe('Theme Handler', function () {
         req = sinon.spy();
         res = sinon.spy();
         next = sinon.spy();
-
-        sinon.stub(bridge, 'getActiveTheme').callsFake(() => {
-            return {
-                engine() {
-                    return 'canary';
-                }
-            };
-        });
     });
 
     afterEach(function () {

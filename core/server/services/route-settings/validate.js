@@ -1,8 +1,6 @@
 const _ = require('lodash');
-const debug = require('@tryghost/debug')('frontend:services:settings:validate');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const bridge = require('../../../bridge');
 const _private = {};
 let RESOURCE_CONFIG;
 
@@ -430,12 +428,8 @@ module.exports = function validate(object) {
         object.taxonomies = {};
     }
 
-    const apiVersion = bridge.getFrontendApiVersion();
-
-    debug('api version', apiVersion);
-
     // TODO: extract this config outta here! the config should be passed into this module
-    RESOURCE_CONFIG = require(`../../../frontend/services/routing/config/${apiVersion}`);
+    RESOURCE_CONFIG = require('../../../frontend/services/routing/config/canary');
 
     object.routes = _private.validateRoutes(object.routes);
     object.collections = _private.validateCollections(object.collections);
