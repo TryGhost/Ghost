@@ -55,7 +55,7 @@ module.exports = {
 
         await knex.raw('alter table `posts` drop foreign key `posts_newsletter_id_foreign`;');
 
-        await knex.raw('alter table `posts` drop `newsletter_id`;');
+        await knex.raw('alter table `posts` drop `newsletter_id`, algorithm=copy;');
     }
 };
 
