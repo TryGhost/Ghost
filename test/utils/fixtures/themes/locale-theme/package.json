@@ -2,9 +2,6 @@
     "name": "locale-theme",
     "description": "A fake theme for testing locales.",
     "version": "1.0.0",
-    "engines": {
-        "ghost-api": "canary"
-    },
     "license": "MIT",
     "config": {
         "posts_per_page": 5

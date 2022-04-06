@@ -15,7 +15,6 @@ const join = require('path').join;
 
 const _ = require('lodash');
 const themeConfig = require('./config');
-const themeEngines = require('./engines');
 const config = require('../../../shared/config');
 const engine = require('./engine');
 const themeI18n = require('./i18n');
@@ -52,9 +51,6 @@ class ActiveTheme {
 
         // Create a theme config object
         this._config = themeConfig.create(this._packageInfo);
-
-        // Create a theme engines object
-        this._engines = themeEngines.create(this._packageInfo);
 
         this.initI18n();
     }
@@ -93,10 +89,6 @@ class ActiveTheme {
 
     config(key) {
         return this._config[key];
-    }
-
-    engine(key) {
-        return this._engines[key];
     }
 
     /**
