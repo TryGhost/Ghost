@@ -1,15 +1,8 @@
 const logging = require('@tryghost/logging');
 const DatabaseInfo = require('@tryghost/database-info');
-const commands = require('../../../schema/commands');
 
 const table = 'posts';
 const column = 'newsletter_id';
-const columnDefinition = {
-    type: 'string',
-    maxlength: 24,
-    nullable: true,
-    references: 'newsletters.id'
-};
 
 /**
  * This migration is adding a new column `newsletter_id` to the table posts
@@ -36,6 +29,8 @@ module.exports = {
 
         logging.info(`Adding ${table}.${column} column`);
 
+        // Add the column
+
         let sql = knex.schema.table(table, function (t) {
             t.string(column, 24);
         }).toSQL()[0].sql;
@@ -45,6 +40,8 @@ module.exports = {
         }
 
         await knex.raw(sql);
+
+        // Add the foreign key constraint
 
         await knex.schema.alterTable(table, function (t) {
             t.foreign(column).references('newsletters.id');
@@ -62,9 +59,13 @@ module.exports = {
 
         logging.info(`Removing ${table}.${column} column`);
 
+        // Drop the foreign key constraint
+
         await knex.schema.alterTable(table, function (t) {
             t.dropForeign(column);
         });
+
+        // Drop the column
 
         let sql = knex.schema.table(table, function (t) {
             t.dropColumn(column);
