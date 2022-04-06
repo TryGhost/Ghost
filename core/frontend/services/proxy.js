@@ -39,7 +39,7 @@ module.exports = {
     settingsCache: settingsCache,
 
     // TODO: Expose less of the API to make this safe
-    api: require('../../server/api'),
+    api: require('../../server/api').canary,
 
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),
