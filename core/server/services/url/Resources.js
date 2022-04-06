@@ -59,9 +59,7 @@ class Resources {
             return;
         }
 
-        const bridge = require('../../../bridge');
-        const resourcesAPIVersion = bridge.getFrontendApiVersion();
-        this.resourcesConfig = require(`./configs/${resourcesAPIVersion}`);
+        this.resourcesConfig = require('./configs/canary');
     }
 
     /**

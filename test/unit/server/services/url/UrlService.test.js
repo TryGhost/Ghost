@@ -1,10 +1,7 @@
 const errors = require('@tryghost/errors');
-const _ = require('lodash');
-const Promise = require('bluebird');
 const rewire = require('rewire');
 const should = require('should');
 const sinon = require('sinon');
-const events = require('../../../../../core/server/lib/common/events');
 const Queue = require('../../../../../core/server/services/url/Queue');
 const Resources = require('../../../../../core/server/services/url/Resources');
 const UrlGenerator = require('../../../../../core/server/services/url/UrlGenerator');
@@ -36,8 +33,6 @@ describe('Unit: services/url/UrlService', function () {
         UrlService.__set__('Urls', UrlsStub);
         UrlService.__set__('UrlGenerator', UrlGeneratorStub);
 
-        sinon.stub(events, 'on');
-
         urlService = new UrlService();
     });
 
@@ -57,9 +52,6 @@ describe('Unit: services/url/UrlService', function () {
         urlService.queue.addListener.calledTwice.should.be.true();
         urlService.queue.addListener.args[0][0].should.eql('started');
         urlService.queue.addListener.args[1][0].should.eql('ended');
-
-        events.on.calledOnce.should.be.true();
-        events.on.args[0][0].should.eql('services.themes.api.changed');
     });
 
     it('fn: _onQueueStarted', function () {

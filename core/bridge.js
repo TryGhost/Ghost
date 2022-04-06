@@ -56,19 +56,7 @@ class Bridge {
         // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme
         try {
-            let previousGhostAPI;
-
-            if (this.getActiveTheme()) {
-                previousGhostAPI = this.getActiveTheme().engine('ghost-api');
-            }
-
             themeEngine.setActive(settings, loadedTheme, checkedTheme);
-            const currentGhostAPI = this.getActiveTheme().engine('ghost-api');
-
-            if (previousGhostAPI !== undefined && (previousGhostAPI !== currentGhostAPI)) {
-                events.emit('services.themes.api.changed');
-                await this.reloadFrontend();
-            }
 
             const cardAssetConfig = this.getCardAssetConfig();
             debug('reload card assets config', cardAssetConfig);
@@ -81,11 +69,6 @@ class Bridge {
         }
     }
 
-    getFrontendApiVersion() {
-        // @NOTE: we've pinned the frontend to canary in a step towards removing API versions
-        return 'canary';
-    }
-
     getCardAssetConfig() {
         if (this.getActiveTheme()) {
             return this.getActiveTheme().config('card_assets');
@@ -95,11 +78,9 @@ class Bridge {
     }
 
     async reloadFrontend() {
-        const apiVersion = this.getFrontendApiVersion();
-
-        debug('reload frontend', apiVersion);
+        debug('reload frontend');
         const siteApp = require('./frontend/web/site');
-        await siteApp.reload({apiVersion});
+        await siteApp.reload();
     }
 }
 

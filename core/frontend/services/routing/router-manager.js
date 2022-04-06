@@ -13,9 +13,8 @@ const UnsubscribeRouter = require('./UnsubscribeRouter');
 const events = require('../../../server/lib/common/events');
 
 class RouterManager {
-    constructor({registry, defaultApiVersion = 'v4'}) {
+    constructor({registry}) {
         this.registry = registry;
-        this.defaultApiVersion = defaultApiVersion;
         this.siteRouter = null;
         this.urlService = null;
     }
@@ -62,14 +61,13 @@ class RouterManager {
      *
      * @param {Object} options
      * @param {Boolean} [options.start] - flag controlling if the frontend Routes should be reinitialized
-     * @param {String} options.apiVersion - API version frontend Routes should communicate through
      * @param {Object} options.routerSettings - JSON configuration to build frontend Routes
      * @param {Object} options.urlService - service providing resource URL utility functions such as owns, getUrlByResourceId, and getResourceById
      * @returns {ExpressRouter}
      */
-    init({start = false, routerSettings, apiVersion, urlService}) {
+    init({start = false, routerSettings, urlService}) {
         this.urlService = urlService;
-        debug('routing init', start, apiVersion, routerSettings);
+        debug('routing init', start, routerSettings);
 
         this.registry.resetAllRouters();
         this.registry.resetAllRoutes();
@@ -82,8 +80,7 @@ class RouterManager {
         this.registry.setRouter('siteRouter', this.siteRouter);
 
         if (start) {
-            apiVersion = apiVersion || this.defaultApiVersion;
-            this.start(apiVersion, routerSettings);
+            this.start(routerSettings);
         }
 
         return this.siteRouter.router();
@@ -102,12 +99,11 @@ class RouterManager {
      * 5. Static Pages: Weaker than collections, because we first try to find a post slug and fallback to lookup a static page.
      * 6. Internal Apps: Weakest
      *
-     * @param {string} apiVersion
      * @param {object} routerSettings
      */
-    start(apiVersion, routerSettings) {
-        debug('routing start', apiVersion, routerSettings);
-        const RESOURCE_CONFIG = require(`./config/${apiVersion}`);
+    start(routerSettings) {
+        debug('routing start', routerSettings);
+        const RESOURCE_CONFIG = require(`./config/canary`);
 
         const unsubscribeRouter = new UnsubscribeRouter();
         this.siteRouter.mountRouter(unsubscribeRouter.router());
