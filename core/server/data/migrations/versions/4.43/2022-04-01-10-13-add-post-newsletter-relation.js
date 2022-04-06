@@ -11,6 +11,15 @@ const columnDefinition = {
     references: 'newsletters.id'
 };
 
+/**
+ * This migration is adding a new column `newsletter_id` to the table posts
+ * that is a foreign key to `newsletters.id`.
+ *
+ * It isn't using the existing utils because of a performance issue. In MySQL,
+ * adding a new row without `algorithm=copy` uses the INPLACE algorithm which
+ * was too slow on big `posts` tables (~3 minutes for 10k posts). Switching to
+ * the COPY algorithm fixed the issue (~3 seconds for 10k posts).
+ */
 module.exports = {
     config: {
         transaction: true
@@ -27,14 +36,19 @@ module.exports = {
 
         logging.info(`Adding ${table}.${column} column`);
 
-        if (DatabaseInfo.isSQLite(knex)) {
-            await commands.addColumn(table, column, knex, columnDefinition);
-            return;
+        let sql = knex.schema.table(table, function (t) {
+            t.string(column, 24);
+        }).toSQL()[0].sql;
+
+        if (DatabaseInfo.isMySQL(knex)) {
+            sql += ', algorithm=copy';
         }
 
-        await knex.raw('alter table `posts` add column `newsletter_id` varchar(24) null, algorithm=copy;');
+        await knex.raw(sql);
 
-        await knex.raw('alter table `posts` add constraint `posts_newsletter_id_foreign` foreign key (`newsletter_id`) references `newsletters` (`id`);');
+        await knex.schema.alterTable(table, function (t) {
+            t.foreign(column).references('newsletters.id');
+        });
     },
     async down(config) {
         const knex = config.transacting;
@@ -48,14 +62,19 @@ module.exports = {
 
         logging.info(`Removing ${table}.${column} column`);
 
-        if (DatabaseInfo.isSQLite(knex)) {
-            await commands.dropColumn(table, column, knex, columnDefinition);
-            return;
+        await knex.schema.alterTable(table, function (t) {
+            t.dropForeign(column);
+        });
+
+        let sql = knex.schema.table(table, function (t) {
+            t.dropColumn(column);
+        }).toSQL()[0].sql;
+
+        if (DatabaseInfo.isMySQL(knex)) {
+            sql += ', algorithm=copy';
         }
 
-        await knex.raw('alter table `posts` drop foreign key `posts_newsletter_id_foreign`;');
-
-        await knex.raw('alter table `posts` drop `newsletter_id`, algorithm=copy;');
+        await knex.raw(sql);
     }
 };
 
