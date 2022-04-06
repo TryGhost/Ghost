@@ -1,7 +1,6 @@
 const debug = require('@tryghost/debug')('web:api:default:app');
 const config = require('../../../shared/config');
 const express = require('../../../shared/express');
-const urlUtils = require('../../../shared/url-utils');
 const sentry = require('../../../shared/sentry');
 const errorHandler = require('@tryghost/mw-error-handler');
 const versionMissmatchHandler = require('@tryghost/mw-api-version-mismatch');
@@ -15,20 +14,8 @@ module.exports = function setupApiApp() {
         apiApp.use(require('./testmode')());
     }
 
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app'));
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app'));
-
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v3', type: 'content'}), require('./v3/content/app'));
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v3', type: 'admin'}), require('./v3/admin/app'));
-
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v4', type: 'content'}), require('./canary/content/app'));
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v4', type: 'admin'}), require('./canary/admin/app'));
-
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v5', type: 'content'}), require('./canary/content/app'));
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'v5', type: 'admin'}), require('./canary/admin/app'));
-
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'canary', type: 'content'}), require('./canary/content/app'));
-    apiApp.lazyUse(urlUtils.getVersionPath({version: 'canary', type: 'admin'}), require('./canary/admin/app'));
+    apiApp.lazyUse('/content/', require('./canary/content/app'));
+    apiApp.lazyUse('/admin/', require('./canary/admin/app'));
 
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);

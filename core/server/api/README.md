@@ -1,8 +1,4 @@
-# API Versioning
-
-Ghost supports multiple API versions.
-Each version lives in a separate folder e.g. api/v2, api/v3, api/canary etc.
-Next to the API folders there is a shared folder, which contains shared code, which all API versions use.
+# API
 
 ## Stages
 
@@ -19,7 +15,7 @@ The framework we are building pipes a request through these stages in respect of
 
 ## Frame
 
-Is a class, which holds all the information for request processing. We pass this instance by reference. 
+Is a class, which holds all the information for request processing. We pass this instance by reference.
 Each function can modify the original instance. No need to return the class instance.
 
 ### Structure

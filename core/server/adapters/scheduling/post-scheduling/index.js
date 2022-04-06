@@ -9,7 +9,7 @@ const getSchedulerIntegration = require('./scheduler-intergation');
  * @return {Promise}
  */
 const loadScheduledResources = async function () {
-    const api = require('../../../api');
+    const api = require('../../../api').endpoints;
     const SCHEDULED_RESOURCES = ['post', 'page'];
 
     // Fetches all scheduled resources(posts/pages) with default API
