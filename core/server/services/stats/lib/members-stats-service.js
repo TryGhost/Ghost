@@ -28,8 +28,8 @@ class MembersStatsService {
     }
 
     /**
-     * Get the member deltas by status for all days (from new to old)
-     * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free and comped users per day, sorted from new to old
+     * Get the member deltas by status for all days, sorted ascending
+     * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free and comped users per day, sorted ascending
      */
     async fetchAllStatusDeltas() {
         const knex = this.db.knex;
@@ -54,7 +54,7 @@ class MembersStatsService {
                 ELSE 0 END
             ) as free_delta`))
             .groupByRaw('DATE(created_at)')
-            .orderByRaw('DATE(created_at) DESC');
+            .orderByRaw('DATE(created_at)');
         return rows;
     }
 
@@ -73,7 +73,11 @@ class MembersStatsService {
         const today = DateTime.local().toISODate();
 
         const cumulativeResults = [];
-        for (const row of rows) {
+
+        // Loop in reverse order (needed to have correct sorted result)
+        for (let i = rows.length - 1; i >= 0; i -= 1) {
+            const row = rows[i];
+
             // Convert JSDates to YYYY-MM-DD (in UTC)
             const date = DateTime.fromJSDate(row.date).toISODate();
             if (date > today) {
@@ -82,9 +86,9 @@ class MembersStatsService {
             }
             cumulativeResults.unshift({
                 date,
-                paid,
-                free,
-                comped,
+                paid: Math.max(0, paid),
+                free: Math.max(0, free),
+                comped: Math.max(0, comped),
 
                 // Deltas
                 paid_subscribed: row.paid_subscribed,
@@ -92,36 +96,28 @@ class MembersStatsService {
             });
 
             // Update current counts
-            paid = Math.max(0, paid - row.paid_subscribed + row.paid_canceled);
-            free = Math.max(0, free - row.free_delta);
-            comped = Math.max(0, comped - row.comped_delta);
+            paid -= row.paid_subscribed - row.paid_canceled;
+            free -= row.free_delta;
+            comped -= row.comped_delta;
         }
 
-        // Always make sure we have at least one result
-        if (cumulativeResults.length === 0) {
-            cumulativeResults.push({
-                date: today,
-                paid,
-                free,
-                comped,
+        // Now also add the oldest day we have left over (this one will be zero, which is also needed as a data point for graphs)
+        const oldestDate = rows.length > 0 ? DateTime.fromJSDate(rows[0].date).plus({days: -1}).toISODate() : today;
 
-                // Deltas
-                paid_subscribed: 0,
-                paid_canceled: 0
-            });
-        }
+        cumulativeResults.unshift({
+            date: oldestDate,
+            paid: Math.max(0, paid),
+            free: Math.max(0, free),
+            comped: Math.max(0, comped),
+
+            // Deltas
+            paid_subscribed: 0,
+            paid_canceled: 0
+        });
 
         return {
             data: cumulativeResults,
             meta: {
-                pagination: {
-                    page: 1,
-                    limit: 'all',
-                    pages: 1,
-                    total: cumulativeResults.length,
-                    next: null,
-                    prev: null
-                },
                 totals
             }
         };
