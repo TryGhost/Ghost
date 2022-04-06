@@ -53,7 +53,10 @@ const membersImporter = new MembersCSVImporter({
     isSet: labsService.isSet.bind(labsService),
     addJob: jobsService.addJob.bind(jobsService),
     knex: db.knex,
-    urlFor: urlUtils.urlFor.bind(urlUtils)
+    urlFor: urlUtils.urlFor.bind(urlUtils),
+    context: {
+        importer: true
+    }
 });
 
 const processImport = async (options) => {
