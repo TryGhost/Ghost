@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('routing');
+const debug = require('@tryghost/debug')('frontend:routes');
 
 const routing = require('../services/routing');
 const urlService = require('../../server/services/url');
