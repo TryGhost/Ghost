@@ -1,4 +1,3 @@
-/* eslint-disable */
 module.exports.QUERY = {
     tag: {
         controller: 'tagsPublic',
@@ -58,4 +57,3 @@ module.exports.TAXONOMIES = {
         resource: 'authors'
     }
 };
-/* eslint-enable */
