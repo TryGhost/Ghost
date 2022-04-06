@@ -4,7 +4,7 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const TaxonomyRouter = require('../../../../../core/frontend/services/routing/TaxonomyRouter');
 
-const RESOURCE_CONFIG = require('../../../../../core/frontend/services/routing/config/canary');
+const RESOURCE_CONFIG = require('../../../../../core/frontend/services/routing/config');
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
     let req;
