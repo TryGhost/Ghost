@@ -114,6 +114,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     authors: hasMany('user', {embedded: 'always', async: false}),
     createdBy: belongsTo('user', {async: true}),
     email: belongsTo('email', {async: false}),
+    newsletter: belongsTo('newsletter', {embedded: 'always', async: false}),
     publishedBy: belongsTo('user', {async: true}),
     tags: hasMany('tag', {embedded: 'always', async: false}),
 
