@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
 
-const API_VERSION = 'canary';
 const DEFAULT_POST_FIXTURE_COUNT = 7;
 
 const get = require('../../../core/frontend/helpers/get');
@@ -31,7 +30,7 @@ function buildMember(status, products = []) {
 function testPosts(posts, map) {
     posts.should.be.an.Array();
     posts.length.should.eql(DEFAULT_POST_FIXTURE_COUNT + Object.keys(map).length);
-    
+
     // Free post
     for (const postID in map) {
         const expectData = map[postID];
@@ -94,7 +93,7 @@ describe('e2e {{#get}} helper', function () {
     beforeEach(function () {
         fn = sinon.spy();
         inverse = sinon.spy();
-        locals = {root: {_locals: {apiVersion: API_VERSION}}};
+        locals = {root: {_locals: {}}};
     });
 
     describe('{{access}} property', function () {
@@ -102,7 +101,7 @@ describe('e2e {{#get}} helper', function () {
 
         it('not authenticated member', async function () {
             member = null;
-            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+            locals = {root: {_locals: {}}, member};
             await get.call(
                 {},
                 'posts',
@@ -126,7 +125,7 @@ describe('e2e {{#get}} helper', function () {
 
         it('free member', async function () {
             member = buildMember('free');
-            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+            locals = {root: {_locals: {}}, member};
             await get.call(
                 {},
                 'posts',
@@ -150,7 +149,7 @@ describe('e2e {{#get}} helper', function () {
 
         it('paid member', async function () {
             member = buildMember('paid');
-            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+            locals = {root: {_locals: {}}, member};
             await get.call(
                 {},
                 'posts',
@@ -174,7 +173,7 @@ describe('e2e {{#get}} helper', function () {
 
         it('comped member', async function () {
             member = buildMember('comped');
-            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+            locals = {root: {_locals: {}}, member};
             await get.call(
                 {},
                 'posts',
@@ -206,8 +205,8 @@ describe('e2e {{#get}} helper', function () {
                 type: 'paid',
                 active: true
             }]);
-            
-            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+
+            locals = {root: {_locals: {}}, member};
             await get.call(
                 {},
                 'posts',
@@ -236,8 +235,8 @@ describe('e2e {{#get}} helper', function () {
                 type: 'paid',
                 active: true
             }]);
-            
-            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+
+            locals = {root: {_locals: {}}, member};
             await get.call(
                 {},
                 'posts',
@@ -266,8 +265,8 @@ describe('e2e {{#get}} helper', function () {
                 type: 'paid',
                 active: true
             }]);
-            
-            locals = {root: {_locals: {apiVersion: API_VERSION}}, member};
+
+            locals = {root: {_locals: {}}, member};
             await get.call(
                 {},
                 'posts',

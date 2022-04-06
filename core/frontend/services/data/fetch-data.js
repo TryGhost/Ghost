@@ -45,7 +45,7 @@ defaultPostQuery.options = defaultQueryOptions.options;
  * @returns {Promise}
  */
 function processQuery(query, slugParam, locals) {
-    const api = require('../proxy').api[locals.apiVersion];
+    const api = require('../proxy').api;
 
     query = _.cloneDeep(query);
 

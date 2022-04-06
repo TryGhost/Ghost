@@ -7,16 +7,13 @@ const api = require('../../../../core/server/api');
 const should = require('should');
 
 describe('{{next_post}} helper', function () {
-    const apiVersion = 'canary';
     let locals;
     let browsePostsStub;
 
     beforeEach(function () {
         locals = {
             root: {
-                _locals: {
-                    apiVersion: apiVersion
-                },
+                _locals: {},
                 context: ['post']
             }
         };
@@ -130,9 +127,7 @@ describe('{{next_post}} helper', function () {
         beforeEach(function () {
             locals = {
                 root: {
-                    _locals: {
-                        apiVersion: apiVersion
-                    },
+                    _locals: {},
                     context: ['page']
                 }
             };
@@ -169,9 +164,6 @@ describe('{{next_post}} helper', function () {
         beforeEach(function () {
             locals = {
                 root: {
-                    _locals: {
-                        apiVersion: apiVersion
-                    },
                     context: ['preview', 'post']
                 }
             };
@@ -413,9 +405,7 @@ describe('{{next_post}} helper', function () {
             });
             locals = {
                 root: {
-                    _locals: {
-                        apiVersion: apiVersion
-                    },
+                    _locals: {},
                     context: ['post']
                 },
                 member
@@ -446,7 +436,7 @@ describe('{{next_post}} helper', function () {
             fn.firstCall.args[1].should.be.an.Object().and.have.property('data');
             browsePostsStub.calledOnce.should.be.true();
             browsePostsStub.firstCall.args[0].include.should.eql('author,authors,tags,tiers');
-            
+
             // Check context passed
             browsePostsStub.firstCall.args[0].context.member.should.eql(member);
         });

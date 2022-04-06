@@ -74,9 +74,7 @@ describe('Unit - services/routing/controllers/static', function () {
             routerOptions: {},
             render: sinon.spy(),
             redirect: sinon.spy(),
-            locals: {
-                apiVersion: API_VERSION
-            }
+            locals: {}
         };
     });
 
