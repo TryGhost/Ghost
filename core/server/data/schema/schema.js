@@ -510,7 +510,7 @@ module.exports = {
     },
     members_paid_subscription_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        name: {type: 'string', maxlength: 50, nullable: true},
+        type: {type: 'string', maxlength: 50, nullable: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         from_plan: {type: 'string', maxlength: 255, nullable: true},
         to_plan: {type: 'string', maxlength: 255, nullable: true},
