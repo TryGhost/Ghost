@@ -103,7 +103,7 @@ class RouterManager {
      */
     start(routerSettings) {
         debug('routing start', routerSettings);
-        const RESOURCE_CONFIG = require(`./config/canary`);
+        const RESOURCE_CONFIG = require(`./config`);
 
         const unsubscribeRouter = new UnsubscribeRouter();
         this.siteRouter.mountRouter(unsubscribeRouter.router());
