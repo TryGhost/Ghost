@@ -23,8 +23,9 @@ module.exports = class MembersCSVImporter {
      * @param {({name, at, job, data, offloaded}) => void} options.addJob - Method registering an async job
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
+     * @param {Object} options.context
      */
-    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor}) {
+    constructor({storagePath, getTimezone, getMembersApi, sendEmail, isSet, addJob, knex, urlFor, context}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersApi = getMembersApi;
@@ -33,6 +34,7 @@ module.exports = class MembersCSVImporter {
         this._addJob = addJob;
         this._knex = knex;
         this._urlFor = urlFor;
+        this._context = context;
     }
 
     /**
@@ -134,7 +136,8 @@ module.exports = class MembersCSVImporter {
 
             const trx = await this._knex.transaction();
             const options = {
-                transacting: trx
+                transacting: trx,
+                context: this._context
             };
 
             try {
