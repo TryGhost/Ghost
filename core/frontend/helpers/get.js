@@ -134,7 +134,7 @@ module.exports = function get(resource, options) {
     const start = Date.now();
     const data = createFrame(options.data);
     const ghostGlobals = _.omit(data, ['_parent', 'root']);
-    const apiVersion = _.get(data, 'root._locals.apiVersion');
+
     let apiOptions = options.hash;
     let returnedRowsCount;
 
@@ -151,7 +151,7 @@ module.exports = function get(resource, options) {
     }
 
     const controllerName = RESOURCES[resource].alias;
-    const controller = api[apiVersion][controllerName];
+    const controller = api[controllerName];
     const action = isBrowse(apiOptions) ? 'browse' : 'read';
 
     // Parse the options we're going to pass to the API
@@ -194,7 +194,7 @@ module.exports = function get(resource, options) {
                 message: `{{#get}} helper took ${totalMs}ms to complete`,
                 code: 'SLOW_GET_HELPER',
                 errorDetails: {
-                    api: `${apiVersion}.${controllerName}.${action}`,
+                    api: `${controllerName}.${action}`,
                     apiOptions,
                     returnedRows: returnedRowsCount
                 }

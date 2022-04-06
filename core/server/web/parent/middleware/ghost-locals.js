@@ -11,8 +11,6 @@ module.exports = function ghostLocals(req, res, next) {
     res.locals.safeVersion = ghostVersion.safe;
     // relative path from the URL
     res.locals.relativeUrl = req.path;
-    // @TODO: remove
-    res.locals.apiVersion = 'canary';
 
     next();
 };

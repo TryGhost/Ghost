@@ -50,9 +50,7 @@ describe('Unit - services/routing/controllers/preview', function () {
             routerOptions: {
                 query: {controller: 'preview', resource: 'preview'}
             },
-            locals: {
-                apiVersion: 'canary'
-            },
+            locals: {},
             render: sinon.spy(),
             redirect: sinon.spy(),
             set: sinon.spy()
