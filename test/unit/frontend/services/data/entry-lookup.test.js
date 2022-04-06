@@ -1,8 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const API_VERSION = 'canary';
-const api = require('../../../../../core/server/api')[API_VERSION];
+const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
 const testUtils = require('../../../../utils');
 

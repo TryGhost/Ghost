@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const Promise = require('bluebird');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const next_post = require('../../../../core/frontend/helpers/prev_post');
-const api = require('../../../../core/server/api');
+const api = require('../../../../core/frontend/services/proxy').api;
 const should = require('should');
 
 describe('{{next_post}} helper', function () {
