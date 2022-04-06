@@ -1,6 +1,9 @@
 import Component from '@glimmer/component';
+import moment from 'moment';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+
+const DATE_FORMAT = 'D MMM YYYY';
 
 export default class ChartPaidMembers extends Component {
     @service dashboardStats;
@@ -34,37 +37,52 @@ export default class ChartPaidMembers extends Component {
                 {
                     data: newData,
                     fill: true,
-                    borderColor: '#9B90F9',
-                    backgroundColor: '#9B90F9',
-                    tension: 0.1,
-                    barThickness: 10,
-                    minBarLength: 3,
-                    borderWidth: 2,
-                    borderRadius: 5
+                    backgroundColor: '#7BA4F3',
+                    barThickness: 10
                 },{
                     data: canceledData,
                     fill: true,
-                    borderColor: '#E28B9D',
-                    backgroundColor: '#E28B9D',
-                    tension: 0.1,
-                    barThickness: 10,
-                    minBarLength: 3,
-                    borderWidth: 2,
-                    borderRadius: 5
+                    backgroundColor: '#E5E5E5',
+                    barThickness: 10
                 }]
         };
     }
 
     get chartOptions() {
         return {
-            animation: {
-                duration: 0
-            },
+            responsive: true,
+            maintainAspectRatio: false,
             title: {
                 display: false
             },
             legend: {
                 display: false
+            },
+            hover: {
+                onHover: function (e) {
+                    e.target.style.cursor = 'pointer';
+                }
+            },
+            tooltips: {
+                intersect: false,
+                mode: 'index',
+                displayColors: false,
+                backgroundColor: '#15171A',
+                xPadding: 7,
+                yPadding: 7,
+                cornerRadius: 5,
+                caretSize: 7,
+                caretPadding: 5,
+                bodyFontSize: 12.5,
+                titleFontSize: 12,
+                titleFontStyle: 'normal',
+                titleFontColor: 'rgba(255, 255, 255, 0.7)',
+                titleMarginBottom: 3,
+                callbacks: {
+                    title: (tooltipItems) => {
+                        return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                    }
+                }
             },
             scales: {
                 yAxes: [{
@@ -112,5 +130,9 @@ export default class ChartPaidMembers extends Component {
                 }]
             }
         };
+    }
+
+    get chartHeight() {
+        return 125;
     }
 }

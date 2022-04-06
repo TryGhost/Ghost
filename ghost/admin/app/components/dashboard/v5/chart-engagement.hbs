@@ -1,15 +1,17 @@
-<h3 {{did-insert this.loadCharts}}>Engagement</h3>
-
-<article class="gh-dashboard5-box">
+<article {{did-insert this.loadCharts}} class="gh-dashboard5-box">
     <div class="gh-dashboard5-insert">
-        <div class="gh-dashboard5-box">
-            <div class="gh-dashboard5-number is-solo">{{this.data30Days}}<small><span class="gh-dashboard5-slash">/</span>99 members</small></div>
-            <small class="gh-dashboard5-info">Engaged over 30 days</small>
+        <div class="gh-dashboard5-insert-item">
+            <Dashboard::v5::parts::ChartMetric
+                @label="Engaged over 30 days"
+                @value={{this.data30Days}}
+                @extra="99 members" />
         </div>
 
-        <div class="gh-dashboard5-box">
-            <div class="gh-dashboard5-number is-solo">{{this.data7Days}}<small><span class="gh-dashboard5-slash">/</span>99 members</small></div>
-            <small class="gh-dashboard5-info">Engaged over 7 days</small>
+        <div class="gh-dashboard5-insert-item">
+            <Dashboard::v5::parts::ChartMetric
+                @label="Engaged over 7 days"
+                @value={{this.data7Days}}
+                @extra="99 members" />
         </div>
     </div>
 </article>

@@ -1,0 +1,20 @@
+<div class="gh-dashboard5-metric {{if @extra "is-stretch"}}">
+    <div class="gh-dashboard5-metric-data">
+        <h5 class="gh-dashboard5-metric-label">
+            {{@label}}
+        </h5>
+        {{#if @value}}
+            <div class="gh-dashboard5-metric-value {{if @large "is-large"}}">
+                {{@value}}
+                {{#if @trends}}
+                    <Dashboard::v5::parts::ChartPercentage @percentage={{@percentage}}/>
+                {{/if}}
+            </div>
+        {{/if}}
+    </div>
+    {{#if @extra}}
+        <div class="gh-dashboard5-metric-extra">
+            {{@extra}}
+        </div>
+    {{/if}}
+</div>
