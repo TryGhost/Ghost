@@ -228,7 +228,7 @@ module.exports = class MemberRepository {
             source = 'import';
         } else if (context.internal) {
             source = 'system';
-        } else if (context.user) {
+        } else if (context.user || context.importer) {
             source = 'admin';
         } else if (context.api_key) {
             source = 'api';
