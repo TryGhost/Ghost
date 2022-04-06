@@ -59,7 +59,7 @@ class Resources {
             return;
         }
 
-        this.resourcesConfig = require('./configs/canary');
+        this.resourcesConfig = require('./config');
     }
 
     /**
