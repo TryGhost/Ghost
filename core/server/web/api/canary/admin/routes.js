@@ -1,5 +1,6 @@
 const express = require('../../../../../shared/express');
-const api = require('../../../../api').canary;
+const api = require('../../../../api').endpoints;
+const http = require('../../../../api').shared.http;
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
@@ -12,8 +13,6 @@ module.exports = function apiRoutes() {
     router.del = router.delete;
 
     router.use(apiMw.cors);
-
-    const http = api.http;
 
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));

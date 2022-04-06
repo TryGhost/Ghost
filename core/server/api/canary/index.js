@@ -8,10 +8,6 @@ const localUtils = require('./utils');
 /* eslint-disable max-lines */
 
 module.exports = {
-    get http() {
-        return shared.http;
-    },
-
     get authentication() {
         return shared.pipeline(require('./authentication'), localUtils);
     },
