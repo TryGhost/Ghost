@@ -71,14 +71,20 @@ export default function mockPosts(server) {
         });
     });
 
-    server.put('/posts/:id/', function ({posts, users, tags}, {params}) {
-        let attrs = this.normalizedRequestAttrs();
-        let post = posts.find(params.id);
+    server.put('/posts/:id/', function ({newsletters, posts, users, tags}, {params}) {
+        const attrs = this.normalizedRequestAttrs();
+        const post = posts.find(params.id);
 
         attrs.authors = extractAuthors(attrs, users);
         attrs.tags = extractTags(attrs, tags);
 
         attrs.updatedAt = moment.utc().toDate();
+
+        if (params.newsletter_id) {
+            const newsletter = newsletters.find(params.newsletter_id);
+            post.newsletter = newsletter;
+            post.save();
+        }
 
         return post.update(attrs);
     });

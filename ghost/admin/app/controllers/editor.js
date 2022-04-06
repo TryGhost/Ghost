@@ -490,7 +490,10 @@ export default class EditorController extends Controller {
             let isPublishing = status === 'published' && !this.post.isPublished;
             let isScheduling = status === 'scheduled' && !this.post.isScheduled;
             if (options.sendEmailWhenPublished && (isPublishing || isScheduling)) {
-                options.adapterOptions = Object.assign({}, options.adapterOptions, {sendEmailWhenPublished: options.sendEmailWhenPublished});
+                options.adapterOptions = Object.assign({}, options.adapterOptions, {
+                    sendEmailWhenPublished: options.sendEmailWhenPublished,
+                    newsletterId: options.newsletterId
+                });
             }
         }
 

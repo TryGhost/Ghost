@@ -61,6 +61,22 @@
                                 </p>
                             {{else}}
                                 <div class="form-group">
+                                    {{#if (and (feature "multipleNewsletters") (gt @availableNewsletters.length 1))}}
+                                        <div class="mb3">
+                                            <p>Newsletter</p>
+                                            <PowerSelect
+                                                @selected={{@selectedNewsletter}}
+                                                @options={{@availableNewsletters}}
+                                                @onChange={{@selectNewsletter}}
+                                                @triggerComponent="gh-power-select/trigger"
+                                                @renderInPlace={{true}}
+                                                as |newsletter|
+                                            >
+                                                {{newsletter.name}}
+                                            </PowerSelect>
+                                        </div>
+                                    {{/if}}
+
                                     <GhMembersRecipientSelect
                                         @filter={{@recipientsFilter}}
                                         @onChange={{@setSendEmailWhenPublished}}
