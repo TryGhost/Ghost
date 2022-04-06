@@ -10,7 +10,8 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         publishedAtUTC: {key: 'published_at'},
         createdAtUTC: {key: 'created_at'},
         updatedAtUTC: {key: 'updated_at'},
-        email: {embedded: 'always'}
+        email: {embedded: 'always'},
+        newsletter: {embedded: 'always'}
     };
 
     serialize(/*snapshot, options*/) {
@@ -23,6 +24,7 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         delete json.url;
         delete json.send_email_when_published;
         delete json.email_recipient_filter;
+        delete json.newsletter;
         // Deprecated property (replaced with data.authors)
         delete json.author;
 

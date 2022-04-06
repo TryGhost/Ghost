@@ -1,8 +1,8 @@
 import Component from '@ember/component';
 import ConfirmPublishModal from './modals/editor/confirm-publish';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
+import {action, computed} from '@ember/object';
 import {bind, schedule} from '@ember/runloop';
-import {computed} from '@ember/object';
 import {or, reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
@@ -32,6 +32,7 @@ export default Component.extend({
     typedDateError: null,
     isSendingEmailLimited: false,
     sendingEmailLimitError: '',
+    selectedNewsletter: null,
 
     _publishedAtBlogTZ: null,
     _previousStatus: null,
@@ -226,6 +227,11 @@ export default Component.extend({
         }
     },
 
+    didInsertElement() {
+        this._super(...arguments);
+        this.fetchNewslettersTask.perform();
+    },
+
     actions: {
         setSaveType(saveType) {
             let post = this.post;
@@ -313,6 +319,10 @@ export default Component.extend({
         }
     },
 
+    get availableNewsletters() {
+        return this.store.peekAll('newsletter').filter(n => n.status === 'active');
+    },
+
     updateSaveTypeForPostStatus(status) {
         if (status === 'draft' || status === 'published') {
             this.set('saveType', 'publish');
@@ -395,6 +405,7 @@ export default Component.extend({
                 post: this.post,
                 emailOnly: this.emailOnly,
                 sendEmailWhenPublished: this.sendEmailWhenPublished,
+                newsletterId: this.newsletterId,
                 isScheduled: saveType === 'schedule',
                 confirm: this.saveWithConfirmedPublish.perform,
                 retryEmailSend: this.retryEmailSendTask.perform
@@ -437,6 +448,24 @@ export default Component.extend({
         return email;
     }),
 
+    selectNewsletter: action(function (newsletter) {
+        this.set('selectedNewsletter', newsletter);
+    }),
+
+    fetchNewslettersTask: task(function* () {
+        if (this.feature.multipleNewsletters) {
+            const newsletters = yield this.store.query('newsletter', {
+                filter: 'status:active',
+                order: 'sort_order ASC'
+            });
+
+            const defaultNewsletter = newsletters.toArray()[0];
+
+            this.defaultNewsletter = defaultNewsletter;
+            this.set('selectedNewsletter', defaultNewsletter);
+        }
+    }),
+
     _saveTask: task(function* () {
         let {
             post,
@@ -453,7 +482,7 @@ export default Component.extend({
 
         try {
             // will show alert for non-date related failed validations
-            post = yield this.saveTask.perform({sendEmailWhenPublished, emailOnly});
+            post = yield this.saveTask.perform({sendEmailWhenPublished, newsletterId: this.selectedNewsletter?.id, emailOnly});
 
             this._cachePublishedAtBlogTZ();
 
@@ -492,6 +521,8 @@ export default Component.extend({
     },
 
     _cleanup() {
+        this.set('selectedNewsletter', this.defaultNewsletter);
+
         if (this.post.isScheduled && this.post.emailOnly) {
             this.set('distributionAction', 'send');
         } else if (this.post.isPage || !this.defaultEmailRecipients) {
