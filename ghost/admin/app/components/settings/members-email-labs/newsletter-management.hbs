@@ -3,22 +3,20 @@
         <h4 class="gh-main-section-header small bn">Newsletters</h4>
         {{#if this.archivedNewsletters}}
             <div>
-                <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
-                    {{!-- <PowerSelect
-                        @selected={{this.selectedType}}
-                        @options={{this.availableTypes}}
+                <div>
+                    <PowerSelect
+                        @selected={{this.statusFilter}}
+                        @options={{this.statusFilters}}
                         @searchEnabled={{false}}
-                        @onChange={{this.onTypeChange}}
+                        @onChange={{this.changeStatusFilter}}
                         @triggerComponent="gh-power-select/trigger"
-                        @triggerClass="gh-contentfilter-menu-trigger gh-contentfilter-menu-trigger-tiers"
+                        @triggerClass="ember-power-select-inline"
                         @dropdownClass="gh-contentfilter-menu-dropdown"
                         @matchTriggerWidth={{false}}
-                        as |type|
+                        as |status|
                     >
-                        {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
-                    </PowerSelect> --}}
-                    <span>Active</span>
-                    <span>{{svg-jar "arrow-down-small" class="w2"}}</span>
+                        {{titleize status}}
+                    </PowerSelect>
                 </div>
             </div>
         {{/if}}
@@ -28,8 +26,8 @@
             {{#if this.loadNewslettersTask.isRunning}}
                 <div class="gh-main-content">... loading</div>
             {{else}}
-                {{#each this.activeNewsletters as |newsletter|}}
-                    <div class="gh-main-content-card gh-newsletter-card {{if this.hasMultiple "multiple"}}">
+                {{#each this.filteredNewsletters as |newsletter|}}
+                    <div class="gh-main-content-card gh-newsletter-card {{unless this.displayingDefault "multiple"}}">
                         {{svg-jar "grab" class="grab-newsletter"}}
                         <div class="gh-newsletter-card-block title-block">
                             <h3 class="gh-newsletter-card-name">
@@ -39,7 +37,7 @@
                                 {{newsletter.description}}
                             </p>
                         </div>
-                        <div class="gh-newsletter-card-block stats-block {{if this.hasMultiple "multiple"}}">
+                        <div class="gh-newsletter-card-block stats-block {{unless this.displayingDefault "multiple"}}">
                             <div>
                                 <h3 class="gh-newsletter-card-name">{{newsletter.members.total}}</h3>
                                 <p class="gh-newsletter-card-description">Subscribers</p>
@@ -50,7 +48,9 @@
                             </div>
                         </div>
                         <div class="gh-newsletter-card-block cta-block">
-                            {{#if this.hasMultiple}}
+                            {{#if this.displayingDefault}}
+                                <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="gh-btn gh-btn-green"><span>Customize &rarr;</span></LinkTo>
+                            {{else}}
                                 <span class="dropdown">
                                     <GhDropdownButton
                                         @dropdownName="newsletter-actions-menu-newsletter-{{newsletter.id}}"
@@ -69,15 +69,22 @@
                                         <li>
                                             <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="mr2"><span>Edit</span></LinkTo>
                                         </li>
-                                        <li>
-                                            <button class="mr2" type="button" {{on "click" (perform this.archiveNewsletterTask newsletter)}}>
-                                                <span>Archive</span>
-                                            </button>
-                                        </li>
+                                        {{#if (eq newsletter.status "active")}}
+                                            <li>
+                                                <button class="mr2" type="button" {{on "click" (perform this.archiveNewsletterTask newsletter)}}>
+                                                    <span>Archive</span>
+                                                </button>
+                                            </li>
+                                        {{/if}}
+                                        {{#if (eq newsletter.status "archived")}}
+                                            <li>
+                                                <button class="mr2" type="button" {{on "click" (perform this.unarchiveNewsletterTask newsletter)}}>
+                                                    <span>Un-archive</span>
+                                                </button>
+                                            </li>
+                                        {{/if}}
                                     </GhDropdown>
                                 </span>
-                            {{else}}
-                                <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="gh-btn gh-btn-green"><span>Customize &rarr;</span></LinkTo>
                             {{/if}}
                         </div>
                     </div>
