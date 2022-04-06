@@ -3,7 +3,8 @@ const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
-const api = require('../../api').canary;
+const api = require('../../api').endpoints;
+const apiShared = require('../../api').shared;
 const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
 const htmlToText = require('html-to-text');
@@ -89,7 +90,7 @@ const serializePostModel = async (model) => {
     const frame = {options: {context: {user: true}, formats: 'mobiledoc'}};
     const docName = 'posts';
 
-    await api.shared
+    await apiShared
         .serializers
         .handle
         .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);

@@ -1,14 +1,13 @@
 const express = require('../../../../../shared/express');
 const cors = require('cors');
-const api = require('../../../../api').canary;
+const api = require('../../../../api').endpoints;
+const http = require('../../../../api').shared.http;
 const mw = require('./middleware');
 
 module.exports = function apiRoutes() {
     const router = express.Router('canary content');
 
     router.use(cors());
-
-    const http = api.http;
 
     // ## Posts
     router.get('/posts', mw.authenticatePublic, http(api.postsPublic.browse));
