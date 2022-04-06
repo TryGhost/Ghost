@@ -18,7 +18,7 @@ describe('Unit: api/shared/http', function () {
         req.vhost = {
             host: 'example.com'
         };
-        req.url = 'https://example.com/ghost/api/canary/',
+        req.url = 'https://example.com/ghost/api/content/',
 
         res.status = sinon.stub();
         res.json = sinon.stub();

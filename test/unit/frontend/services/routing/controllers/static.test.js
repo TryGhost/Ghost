@@ -1,8 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const API_VERSION = 'canary';
-const api = require('../../../../../../core/server/api')[API_VERSION];
+const api = require('../../../../../../core/frontend/services/proxy').api;
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
