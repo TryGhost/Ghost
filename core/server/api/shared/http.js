@@ -64,7 +64,7 @@ const http = (apiImpl) => {
             const result = await apiImpl(frame);
 
             debug(`External API request to ${frame.docName}.${frame.method}`);
-            const headers = await shared.headers.get(result, apiImpl.headers, frame);
+            const headers = await shared.headers.get(result, apiImpl.headers, frame) || {};
 
             // CASE: api ctrl wants to handle the express response (e.g. streams)
             if (typeof result === 'function') {
@@ -82,6 +82,9 @@ const http = (apiImpl) => {
             res.status(statusCode);
 
             // CASE: generate headers based on the api ctrl configuration
+            if (req && req.headers && req.headers['accept-version'] && res.locals) {
+                headers['content-version'] = `v${res.locals.safeVersion}`;
+            }
             res.set(headers);
 
             const send = (format) => {
