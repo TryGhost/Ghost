@@ -1,7 +1,7 @@
 module.exports = (event, model) => {
     const _ = require('lodash');
     const {sequence} = require('@tryghost/promise');
-    const api = require('../../api').canary;
+    const api = require('../../api').endpoints;
 
     const resourceName = event.match(/(\w+)\./)[1];
     const docName = `${resourceName}s`;

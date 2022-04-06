@@ -7,7 +7,7 @@ const configUtils = require('../../../utils/configUtils');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const url = require('../../../../core/frontend/helpers/url');
 const urlService = require('../../../../core/server/services/url');
-const api = require('../../../../core/server/api');
+const api = require('../../../../core/server/api').endpoints;
 
 describe('{{url}} helper', function () {
     let rendered;
