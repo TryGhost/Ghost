@@ -1,0 +1,24 @@
+<div {{did-insert this.load}}>
+    {{#if (not (or this.loading this.error))}}
+        <div class="gh-dashboard-box whats-new {{if this.whatsNew.hasNew "has-new"}}">
+            <div class="gh-dashboard-header-container">
+                <h4 class="gh-dashboard-header">What's new?</h4>
+                {{svg-jar "gift"}}
+            </div>
+            <div class="content">
+                {{#each this.entries as |entry|}}
+                    <LinkTo @route="whatsnew" @query={{hash entry=entry.slug}}>
+                        <h2>{{entry.title}}</h2>
+                        <span class="wn-date">{{moment-format entry.published_at "D MMM YYYY"}}</span>
+                        {{#if entry.custom_excerpt}}
+                            <p>{{entry.custom_excerpt}}</p>
+                        {{/if}}
+                    </LinkTo>
+                {{/each}}
+            </div>
+            <div class="footer">
+                <LinkTo @route="whatsnew" @query={{hash entry=null}} class="green">See more &rarr;</LinkTo>
+            </div>
+        </div>
+    {{/if}}
+</div>
