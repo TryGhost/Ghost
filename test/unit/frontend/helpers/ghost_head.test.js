@@ -286,11 +286,8 @@ describe('{{ghost_head}} helper', function () {
         // @TODO: this is a LOT of mocking :/
         sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
         sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
-        sinon.stub(themeEngine, 'getActive').returns({
-            engine: () => 'canary'
-        });
-
         sinon.stub(settingsCache, 'get');
+
         settingsCache.get.withArgs('title').returns('Ghost');
         settingsCache.get.withArgs('description').returns('site description');
         settingsCache.get.withArgs('cover_image').returns('/content/images/site-cover.png');
