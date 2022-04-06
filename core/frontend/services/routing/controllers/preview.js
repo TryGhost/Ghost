@@ -14,7 +14,7 @@ const renderer = require('../../rendering');
 module.exports = function previewController(req, res, next) {
     debug('previewController');
 
-    const api = require('../../proxy').api[res.locals.apiVersion];
+    const api = require('../../proxy').api;
 
     const params = {
         uuid: req.params.uuid,
@@ -53,9 +53,7 @@ module.exports = function previewController(req, res, next) {
                 return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
-            if (res.locals.apiVersion !== 'v0.1' && res.locals.apiVersion !== 'v2') {
-                post.access = !!post.html;
-            }
+            post.access = !!post.html;
 
             // @TODO: See renderer/secure
             renderer.secure(req, post);
