@@ -1,16 +1,23 @@
-<small
-    class="gh-dashboard5-info is-solo"
+<Dashboard::v5::parts::ChartMetric
     {{did-insert this.loadCharts}}
->Paid members</small>
+    @label="Paid member" />
 
-{{#if this.loading}}
-    <div class="gh-dashboard5-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
-{{else}}
-    <div class="gh-dashboard5-chart">
-        <EmberChart
-            @type={{this.chartType}}
-            @data={{this.chartData}}
-            @options={{this.chartOptions}}
-            @height={{150}} />
-    </div>
-{{/if}}
+<div class="gh-dashboard5-chart">
+    {{#if this.loading}}
+        <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+    {{else}}
+        <div class="gh-dashboard5-chart-ticks">
+            <span>10</span>
+            <span>5</span>
+            <span>0</span>
+            <span>-5</span>
+        </div>
+        <div class="gh-dashboard5-chart-container">
+            <EmberChart
+                @type={{this.chartType}}
+                @data={{this.chartData}}
+                @options={{this.chartOptions}}
+                @height={{this.chartHeight}} />
+        </div>
+    {{/if}}
+</div>
