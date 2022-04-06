@@ -49,7 +49,7 @@ describe('Unit - frontend/data/fetch-data', function () {
             };
         });
 
-        locals = {apiVersion: API_VERSION};
+        locals = {};
     });
 
     afterEach(function () {
