@@ -183,6 +183,8 @@ module.exports = function (Bookshelf) {
                 model.hasTimestamps = false;
             }
 
+            options.lock = 'forUpdate';
+
             const object = await model.fetch(options);
             if (object) {
                 options.method = 'update';
