@@ -4,13 +4,13 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 const STATUS_OPTIONS = [{
-    name: 'All members',
+    name: 'All',
     value: 'total'
 }, {
-    name: 'Paid members',
+    name: 'Paid',
     value: 'paid'
 }, {
-    name: 'Free members',
+    name: 'Free',
     value: 'free'
 }];
 

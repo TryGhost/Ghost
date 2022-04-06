@@ -7,7 +7,7 @@
                 <article class="gh-dashboard5-box">
                     <Dashboard::V5::ChartAnchor @days={{this.days}} />
                 </article>
-                <div class="prototype-selection">
+                <div id="gh-dashboard5-anchor-selection" class="prototype-selection">
                     <PowerSelect
                         @selected={{this.selectedDaysOption}}
                         @options={{this.daysOptions}}
@@ -21,6 +21,9 @@
                     >
                         {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
                     </PowerSelect>
+                </div>
+                <div id="gh-dashboard5-anchor-globaldate">
+                    March 31, 2022
                 </div>
             </section>
 
@@ -42,14 +45,14 @@
 
             {{#if this.areNewslettersEnabled}}
                 <section class="gh-dashboard5-split is-third">
+                    <section class="gh-dashboard5-section gh-dashboard5-engagement">
+                        <Dashboard::V5::ChartEngagement />
+                    </section>
+
                     <section class="gh-dashboard5-section gh-dashboard5-email">
                         <article class="gh-dashboard5-box">
                             <Dashboard::V5::ChartEmail />
                         </article>
-                    </section>
-
-                    <section class="gh-dashboard5-section gh-dashboard5-engagement">
-                        <Dashboard::V5::ChartEngagement />
                     </section>
                 </section> 
             {{else}}
@@ -76,7 +79,9 @@
             </section>
 
             <section class="gh-dashboard5-section gh-dashboard5-activity">
-                <Dashboard::V5::RecentActivity />
+                <article class="gh-dashboard5-box">
+                    <Dashboard::V5::RecentActivity />
+                </article>
             </section>
         </section>
 

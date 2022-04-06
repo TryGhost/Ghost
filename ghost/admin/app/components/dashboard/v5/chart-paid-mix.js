@@ -66,8 +66,7 @@ export default class ChartPaidMix extends Component {
                 datasets: [{
                     data: [this.dashboardStats.paidMembersByCadence.monthly, this.dashboardStats.paidMembersByCadence.annual],
                     fill: false,
-                    backgroundColor: ['#14b8ff'],
-                    tension: 0.1
+                    backgroundColor: ['#7BA4F3']
                 }]
             };
         }
@@ -80,22 +79,48 @@ export default class ChartPaidMix extends Component {
             datasets: [{
                 data,
                 fill: false,
-                backgroundColor: ['#14b8ff'],
-                borderWidth: 3,
-                tension: 0.1
+                backgroundColor: ['#7BA4F3'],
+                borderWidth: 3
             }]
         };
     }
 
     get chartOptions() {
         return {
+            responsive: true,
+            maintainAspectRatio: false,
             cutoutPercentage: (this.mode === 'cadence' ? 85 : 75),
             legend: {
                 display: false
             },
             animation: {
                 duration: 0
+            },
+            hover: {
+                onHover: function (e) {
+                    e.target.style.cursor = 'pointer';
+                }
+            },
+            tooltips: {
+                intersect: false,
+                mode: 'index',
+                displayColors: false,
+                backgroundColor: '#15171A',
+                xPadding: 7,
+                yPadding: 7,
+                cornerRadius: 5,
+                caretSize: 7,
+                caretPadding: 5,
+                bodyFontSize: 12.5,
+                titleFontSize: 12,
+                titleFontStyle: 'normal',
+                titleFontColor: 'rgba(255, 255, 255, 0.7)',
+                titleMarginBottom: 3
             }
         };
+    }
+
+    get chartHeight() {
+        return 75;
     }
 }
