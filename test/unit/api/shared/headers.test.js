@@ -77,7 +77,7 @@ describe('Unit: api/shared/headers', function () {
                 original: {
                     url: {
                         host: 'example.com',
-                        pathname: `/api/canary/posts/`
+                        pathname: `/api/content/posts/`
                     }
                 }
             };
@@ -86,7 +86,7 @@ describe('Unit: api/shared/headers', function () {
                 .then((result) => {
                     result.should.eql({
                         // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
-                        Location: 'https://example.com/api/canary/posts/id_value/'
+                        Location: 'https://example.com/api/content/posts/id_value/'
                     });
                 });
         });
@@ -105,7 +105,7 @@ describe('Unit: api/shared/headers', function () {
                 original: {
                     url: {
                         host: 'example.com',
-                        pathname: `/api/canary/posts`
+                        pathname: `/api/content/posts`
                     }
                 }
             };
@@ -114,7 +114,7 @@ describe('Unit: api/shared/headers', function () {
                 .then((result) => {
                     result.should.eql({
                         // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
-                        Location: 'https://example.com/api/canary/posts/id_value/'
+                        Location: 'https://example.com/api/content/posts/id_value/'
                     });
                 });
         });
@@ -129,7 +129,7 @@ describe('Unit: api/shared/headers', function () {
                 original: {
                     url: {
                         host: 'example.com',
-                        pathname: `/api/canary/posts/`
+                        pathname: `/api/content/posts/`
                     }
                 }
             };
