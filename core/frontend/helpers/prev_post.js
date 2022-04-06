@@ -58,10 +58,9 @@ const buildApiOptions = function buildApiOptions(options, post) {
 const fetch = function fetch(options, data) {
     const self = this;
     const apiOptions = buildApiOptions(options, this);
-    const apiVersion = data.root._locals.apiVersion;
 
     // @TODO: https://github.com/TryGhost/Ghost/issues/10548
-    const controller = api[apiVersion].postsPublic || api[apiVersion].posts;
+    const controller = api.postsPublic || api.posts;
 
     return controller
         .browse(apiOptions)
