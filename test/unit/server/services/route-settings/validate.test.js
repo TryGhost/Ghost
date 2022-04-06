@@ -1,28 +1,10 @@
 const should = require('should');
-const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 const validate = require('../../../../../core/server/services/route-settings/validate');
 
 should.equal(true, true);
 
 describe('UNIT: services/settings/validate', function () {
-    let apiVersion;
-
-    before(function () {
-        apiVersion = 'canary';
-
-        sinon.stub(themeEngine, 'getActive').returns({
-            engine: () => {
-                return apiVersion;
-            }
-        });
-    });
-
-    after(function () {
-        sinon.restore();
-    });
-
     it('no type definitions / empty yaml file', function () {
         const object = validate({});
 
