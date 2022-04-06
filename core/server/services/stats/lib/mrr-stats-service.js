@@ -44,10 +44,12 @@ class MrrStatsService {
         const knex = this.db.knex;
         const rows = await knex('members_paid_subscription_events')
             .select('currency')
-            .select(knex.raw('DATE(created_at) as date'))
+            // In SQLite, DATE(created_at) would map to a string value, while DATE(created_at) would map to a JSDate object in MySQL
+            // That is why we need the cast here (to have some consistency)
+            .select(knex.raw('CAST(DATE(created_at) as CHAR) as date'))
             .select(knex.raw(`SUM(mrr_delta) as delta`))
-            .groupByRaw('DATE(created_at), currency')
-            .orderByRaw('DATE(created_at), currency');
+            .groupByRaw('CAST(DATE(created_at) as CHAR), currency')
+            .orderByRaw('CAST(DATE(created_at) as CHAR), currency');
         return rows;
     }
 
