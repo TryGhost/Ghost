@@ -13,7 +13,7 @@ const models = require('../../models');
  * @return {Function}
  */
 const http = (apiImpl) => {
-    return (req, res, next) => {
+    return async (req, res, next) => {
         debug(`External API request to ${req.url}`);
         let apiKey = null;
         let integration = null;
@@ -60,69 +60,67 @@ const http = (apiImpl) => {
             data: apiImpl.data
         });
 
-        apiImpl(frame)
-            .then((result) => {
-                debug(`External API request to ${frame.docName}.${frame.method}`);
-                return shared.headers.get(result, apiImpl.headers, frame)
-                    .then(headers => ({result, headers}));
-            })
-            .then(({result, headers}) => {
-                // CASE: api ctrl wants to handle the express response (e.g. streams)
-                if (typeof result === 'function') {
-                    debug('ctrl function call');
-                    return result(req, res, next);
+        try {
+            const result = await apiImpl(frame);
+
+            debug(`External API request to ${frame.docName}.${frame.method}`);
+            const headers = await shared.headers.get(result, apiImpl.headers, frame);
+
+            // CASE: api ctrl wants to handle the express response (e.g. streams)
+            if (typeof result === 'function') {
+                debug('ctrl function call');
+                return result(req, res, next);
+            }
+
+            let statusCode = 200;
+            if (typeof apiImpl.statusCode === 'function') {
+                statusCode = apiImpl.statusCode(result);
+            } else if (apiImpl.statusCode) {
+                statusCode = apiImpl.statusCode;
+            }
+
+            res.status(statusCode);
+
+            // CASE: generate headers based on the api ctrl configuration
+            res.set(headers);
+
+            const send = (format) => {
+                if (format === 'plain') {
+                    debug('plain text response');
+                    return res.send(result);
                 }
 
-                let statusCode = 200;
-                if (typeof apiImpl.statusCode === 'function') {
-                    statusCode = apiImpl.statusCode(result);
-                } else if (apiImpl.statusCode) {
-                    statusCode = apiImpl.statusCode;
-                }
+                debug('json response');
+                res.json(result || {});
+            };
 
-                res.status(statusCode);
+            let responseFormat;
 
-                // CASE: generate headers based on the api ctrl configuration
-                res.set(headers);
+            if (apiImpl.response){
+                if (typeof apiImpl.response.format === 'function') {
+                    const apiResponseFormat = apiImpl.response.format();
 
-                const send = (format) => {
-                    if (format === 'plain') {
-                        debug('plain text response');
-                        return res.send(result);
-                    }
-
-                    debug('json response');
-                    res.json(result || {});
-                };
-
-                let responseFormat;
-
-                if (apiImpl.response){
-                    if (typeof apiImpl.response.format === 'function') {
-                        const apiResponseFormat = apiImpl.response.format();
-
-                        if (apiResponseFormat.then) { // is promise
-                            return apiResponseFormat.then((formatName) => {
-                                send(formatName);
-                            });
-                        } else {
-                            responseFormat = apiResponseFormat;
-                        }
+                    if (apiResponseFormat.then) { // is promise
+                        return apiResponseFormat.then((formatName) => {
+                            send(formatName);
+                        });
                     } else {
-                        responseFormat = apiImpl.response.format;
+                        responseFormat = apiResponseFormat;
                     }
+                } else {
+                    responseFormat = apiImpl.response.format;
                 }
+            }
 
-                send(responseFormat);
-            })
-            .catch((err) => {
-                req.frameOptions = {
-                    docName: frame.docName,
-                    method: frame.method
-                };
+            send(responseFormat);
+        } catch (err) {
+            req.frameOptions = {
+                docName: frame.docName,
+                method: frame.method
+            };
 
-                next(err);
-            });
+            next(err);
+        }
     };
 };
 
