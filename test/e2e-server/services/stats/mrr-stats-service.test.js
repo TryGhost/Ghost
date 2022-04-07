@@ -174,7 +174,7 @@ describe('MRR Stats Service', function () {
             ]);
 
             // Floor 11/12 to 0, don't combine with previous addition
-            await createMemberWithSubscription('year', 5, 'usd', '2000-01-12');
+            await createMemberWithSubscription('year', 11, 'usd', '2000-01-12');
             result = await statsService.mrr.getCurrentMrr();
             result.should.eql([
                 {
