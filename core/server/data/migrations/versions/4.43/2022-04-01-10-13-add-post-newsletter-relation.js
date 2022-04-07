@@ -1,6 +1,7 @@
 const logging = require('@tryghost/logging');
 const DatabaseInfo = require('@tryghost/database-info');
 const commands = require('../../../schema/commands');
+const {createTransactionalMigration} = require('../../utils');
 
 const table = 'posts';
 const column = 'newsletter_id';
@@ -23,13 +24,8 @@ const columnDefinition = {
  * was too slow on big `posts` tables (~3 minutes for 10k posts). Switching to
  * the COPY algorithm fixed the issue (~3 seconds for 10k posts).
  */
-module.exports = {
-    config: {
-        transaction: true
-    },
-    async up(config) {
-        const knex = config.transacting;
-
+module.exports = createTransactionalMigration(
+    async function up(knex) {
         const hasColumn = await knex.schema.hasColumn(table, column);
 
         if (hasColumn) {
@@ -52,7 +48,8 @@ module.exports = {
         }).toSQL()[0].sql;
 
         if (DatabaseInfo.isMySQL(knex)) {
-            sql += ', algorithm=copy';
+            // Guard against an ending semicolon
+            sql = sql.replace(/;\s*$/, '') + ', algorithm=copy';
         }
 
         await knex.raw(sql);
@@ -68,9 +65,7 @@ module.exports = {
             transaction: knex
         });
     },
-    async down(config) {
-        const knex = config.transacting;
-
+    async function down(knex) {
         const hasColumn = await knex.schema.hasColumn(table, column);
 
         if (!hasColumn) {
@@ -103,10 +98,11 @@ module.exports = {
         }).toSQL()[0].sql;
 
         if (DatabaseInfo.isMySQL(knex)) {
-            sql += ', algorithm=copy';
+            // Guard against an ending semicolon
+            sql = sql.replace(/;\s*$/, '') + ', algorithm=copy';
         }
 
         await knex.raw(sql);
     }
-};
+);
 
