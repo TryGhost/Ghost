@@ -33,7 +33,7 @@
                 >
                     {{#each this.filteredNewsletters as |newsletter|}}
                         <DraggableObject
-                            class="gh-main-content-card gh-newsletter-card {{if (eq newsletter.status "active") "gh-newsletter-card-draggable"}} {{unless this.displayingDefault "multiple"}}"
+                            class="gh-main-content-card gh-newsletter-card {{if (and (eq newsletter.status "active") (not this.displayingDefault)) "gh-newsletter-card-draggable"}} {{unless this.displayingDefault "multiple"}}"
                             @content={{newsletter}}
                             @dragHandle=".grab-newsletter"
                             @isSortable={{true}}
