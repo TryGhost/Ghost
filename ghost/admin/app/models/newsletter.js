@@ -5,6 +5,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     validationType = 'newsletter';
 
     @attr name;
+    @attr slug;
     @attr description;
 
     @attr senderName;
@@ -26,7 +27,4 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: 'sans_serif'}) bodyFontCategory;
     @attr() footerContent;
     @attr({defaultValue: true}) showBadge;
-
-    // TODO: delete attr, incorrectly needed for save to complete in API
-    @attr({defaultValue: false}) default;
 }
