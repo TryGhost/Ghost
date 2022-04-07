@@ -104,6 +104,30 @@ describe('Models: crud', function () {
                 should.equal(fetchStub.args[0][0], filteredOptions);
             });
         });
+
+        it('Sets the `lock` option to "forUpdate" when the `forUpdate` option is passed', function () {
+            const data = {
+                id: 670
+            };
+            const unfilteredOptions = {
+                donny: 'donson',
+                forUpdate: true
+            };
+            const model = models.Base.Model.forge({});
+            const fetchedModel = models.Base.Model.forge({});
+            sinon.spy(models.Base.Model, 'filterOptions');
+            sinon.spy(models.Base.Model, 'filterData');
+            sinon.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const fetchStub = sinon.stub(model, 'fetch')
+                .resolves(fetchedModel);
+
+            const findOneReturnValue = models.Base.Model.findOne(data, unfilteredOptions);
+
+            return findOneReturnValue.then((result) => {
+                should.equal(fetchStub.args[0][0].lock, 'forUpdate');
+            });
+        });
     });
 
     describe('edit', function () {
@@ -137,6 +161,7 @@ describe('Models: crud', function () {
                 should.deepEqual(forgeStub.args[0][0], {id: filteredOptions.id});
 
                 should.equal(fetchStub.args[0][0], filteredOptions);
+                should.equal(fetchStub.args[0][0].lock, 'forUpdate');
 
                 const filteredData = filterDataSpy.returnValues[0];
                 should.equal(saveStub.args[0][0], filteredData);
