@@ -920,13 +920,24 @@
     transition: margin 125ms ease-in-out, padding 125ms ease-in-out;
 }
 
+.gh-newsletter-card[draggable="true"] {
+    /* required to avoid background being picked up when dragging */
+    z-index: 1;
+}
+
 .gh-newsletter-card.multiple {
     cursor: pointer;
 }
 
-.gh-newsletter-card.multiple:hover {
+.gh-newsletter-card-draggable:hover {
     margin-left: 4px;
     padding-left: 20px;
+}
+.gh-newsletter-card .grab-newsletter {
+    display: none;
+}
+.gh-newsletter-card-draggable .grab-newsletter {
+    display: inline-block;
 }
 
 @media (max-width: 980px) {
