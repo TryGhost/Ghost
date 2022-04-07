@@ -2260,7 +2260,6 @@ Object {
       "name": "test",
       "newsletters": Array [
         Object {
-          "default": false,
           "description": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Daily newsletter",
@@ -2273,7 +2272,6 @@ Object {
           "subscribe_on_signup": true,
         },
         Object {
-          "default": false,
           "description": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Weekly newsletter",
@@ -2302,7 +2300,7 @@ exports[`Members API: with multiple newsletters Can add with default newsletters
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1179",
+  "content-length": "1147",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2329,7 +2327,6 @@ Object {
       "name": "test newsletter",
       "newsletters": Array [
         Object {
-          "default": false,
           "description": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Weekly newsletter",
@@ -2358,7 +2355,7 @@ exports[`Members API: with multiple newsletters Can and and edit with custom new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "903",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2385,7 +2382,6 @@ Object {
       "name": "test newsletter",
       "newsletters": Array [
         Object {
-          "default": false,
           "description": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Daily newsletter",
@@ -2414,7 +2410,7 @@ exports[`Members API: with multiple newsletters Can and and edit with custom new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "918",
+  "content-length": "902",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
