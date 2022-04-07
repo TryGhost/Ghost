@@ -15,7 +15,7 @@ class MrrStatsService {
             .select(knex.raw(`plan_currency as currency`))
             .select(knex.raw(`SUM(
                 CASE WHEN plan_interval = 'year' THEN
-                    plan_amount / 12
+                    FLOOR(plan_amount / 12)
                 ELSE 
                     plan_amount
                 END
