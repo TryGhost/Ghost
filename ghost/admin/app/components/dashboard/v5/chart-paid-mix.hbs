@@ -18,10 +18,9 @@
 {{/if}}
 
 <Dashboard::v5::parts::ChartMetric
-    {{did-insert this.loadCharts}}
     @label="Paid mix" />
 
-<div class="gh-dashboard5-chart">
+<div class="gh-dashboard5-chart" {{did-insert this.loadCharts}}>
     {{#if this.loading}}
         <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
     {{else}}
