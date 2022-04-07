@@ -27,7 +27,6 @@ describe('Newsletters API', function () {
             sender_name: 'Test',
             sender_email: 'test@example.com',
             sender_reply_to: 'test@example.com',
-            default: false,
             status: 'active',
             recipient_filter: '',
             subscribe_on_signup: true,

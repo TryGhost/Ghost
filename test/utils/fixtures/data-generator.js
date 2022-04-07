@@ -369,6 +369,7 @@ DataGenerator.Content = {
         {
             id: ObjectId().toHexString(),
             name: 'Daily newsletter',
+            slug: 'daily-newsletter',
             description: '',
             sender_name: 'Jamie',
             sender_email: 'jamie@example.com',
@@ -377,6 +378,7 @@ DataGenerator.Content = {
         {
             id: ObjectId().toHexString(),
             name: 'Weekly newsletter',
+            slug: 'weekly-newsletter',
             description: '',
             sender_name: 'Jamie',
             sender_email: 'jamie@example.com',
@@ -909,14 +911,13 @@ DataGenerator.forKnex = (function () {
 
     function createNewsletter(overrides) {
         const newObj = _.cloneDeep(overrides);
-
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
+            slug: 'daily-newsletter',
             name: 'Daily Newsletter',
             sender_name: 'Jamie Larsen',
             sender_email: 'jamie@example.com',
             sender_reply_to: 'jamie@example.com',
-            default: false,
             status: 'active',
             recipient_filter: '',
             subscribe_on_signup: true,
