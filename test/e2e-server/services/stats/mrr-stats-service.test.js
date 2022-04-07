@@ -78,6 +78,8 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
         .post(`/members/`)
         .body({members: [initialMember]})
         .expectStatus(201);
+
+    nock.cleanAll();
 }
 
 describe('MRR Stats Service', function () {
@@ -142,12 +144,69 @@ describe('MRR Stats Service', function () {
                 }
             ]);
         });
+
+        it('Floors results', async function () {
+            await createMemberWithSubscription('year', 17, 'usd', '2000-01-12');
+            let result = await statsService.mrr.getCurrentMrr();
+            result.should.eql([
+                {
+                    currency: 'eur',
+                    mrr: 500
+                },
+                {
+                    currency: 'usd',
+                    mrr: 3
+                }
+            ]);
+
+            // Floor 11/12 to 0 (same as getMRRDelta method)
+            await createMemberWithSubscription('year', 11, 'usd', '2000-01-12');
+            result = await statsService.mrr.getCurrentMrr();
+            result.should.eql([
+                {
+                    currency: 'eur',
+                    mrr: 500
+                },
+                {
+                    currency: 'usd',
+                    mrr: 3
+                }
+            ]);
+
+            // Floor 11/12 to 0, don't combine with previous addition
+            await createMemberWithSubscription('year', 5, 'usd', '2000-01-12');
+            result = await statsService.mrr.getCurrentMrr();
+            result.should.eql([
+                {
+                    currency: 'eur',
+                    mrr: 500
+                },
+                {
+                    currency: 'usd',
+                    mrr: 3
+                }
+            ]);
+
+            // Floor 13/12 to 1
+            await createMemberWithSubscription('year', 13, 'usd', '2000-01-12');
+            result = await statsService.mrr.getCurrentMrr();
+            result.should.eql([
+                {
+                    currency: 'eur',
+                    mrr: 500
+                },
+                {
+                    currency: 'usd',
+                    mrr: 4
+                }
+            ]);
+        });
     });
 
     describe('fetchAllDeltas', function () {
         it('Returns deltas in ascending order', async function () {
             const results = await statsService.mrr.fetchAllDeltas();
-            results.length.should.equal(3);
+            results.length.should.equal(4);
             results.should.match([
                 {
                     date: '2000-01-10',
@@ -162,6 +221,11 @@ describe('MRR Stats Service', function () {
                 {
                     date: '2000-01-11',
                     delta: 1,
+                    currency: 'usd'
+                },
+                {
+                    date: '2000-01-12',
+                    delta: 2,
                     currency: 'usd'
                 }
             ]);
