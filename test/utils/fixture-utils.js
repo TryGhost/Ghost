@@ -577,6 +577,12 @@ const fixtures = {
         });
     },
 
+    insertNewsletters: async function insertNewsletters() {
+        return Promise.map(DataGenerator.forKnex.newsletters, function (newsletter) {
+            return models.Newsletter.add(newsletter, context.internal);
+        });
+    },
+
     insertSnippets: function insertSnippets() {
         return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
             return models.Snippet.add(snippet, context.internal);
@@ -629,6 +635,9 @@ const toDoList = {
     },
     members: function insertMembersAndLabelsAndProducts() {
         return fixtures.insertMembersAndLabelsAndProducts();
+    },
+    newsletters: function insertNewsletters() {
+        return fixtures.insertNewsletters();
     },
     'members:emails': function insertEmailsAndRecipients() {
         return fixtures.insertEmailsAndRecipients();

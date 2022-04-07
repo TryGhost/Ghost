@@ -13,6 +13,7 @@ const SingleUseTokenProvider = require('./SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
+const getNewslettersServiceInstance = require('../newsletters');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
@@ -195,7 +196,8 @@ function createApiInstance(config) {
         },
         stripeAPIService: stripeService.api,
         offersAPI: offersService.api,
-        labsService: labsService
+        labsService: labsService,
+        newslettersService: getNewslettersServiceInstance({NewsletterModel: models.Newsletter})
     });
 
     return membersApiInstance;

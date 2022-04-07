@@ -365,6 +365,25 @@ DataGenerator.Content = {
         }
     ],
 
+    newsletters: [
+        {
+            id: ObjectId().toHexString(),
+            name: 'Daily newsletter',
+            description: '',
+            sender_name: 'Jamie',
+            sender_email: 'jamie@example.com',
+            sender_reply_to: 'jamie@example.com'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Weekly newsletter',
+            description: '',
+            sender_name: 'Jamie',
+            sender_email: 'jamie@example.com',
+            sender_reply_to: 'jamie@example.com'
+        }
+    ],
+
     products: [
         {
             // No ID because these are in the core fixtures.json
@@ -888,6 +907,23 @@ DataGenerator.forKnex = (function () {
         };
     }
 
+    function createNewsletter(overrides) {
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId().toHexString(),
+            name: 'Daily Newsletter',
+            sender_name: 'Jamie Larsen',
+            sender_email: 'jamie@example.com',
+            sender_reply_to: 'jamie@example.com',
+            default: false,
+            status: 'active',
+            recipient_filter: '',
+            subscribe_on_signup: true,
+            sort_order: 0
+        });
+    }
+
     function createMember(overrides) {
         const newObj = _.cloneDeep(overrides);
 
@@ -1169,6 +1205,14 @@ DataGenerator.forKnex = (function () {
         }
     ];
 
+    const members_newsletters = [
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.posts[0].id,
+            newsletter_id: DataGenerator.Content.tags[0].id
+        }
+    ];
+
     const posts_authors = [
         {
             id: ObjectId().toHexString(),
@@ -1280,6 +1324,11 @@ DataGenerator.forKnex = (function () {
         createMember(DataGenerator.Content.members[7])
     ];
 
+    const newsletters = [
+        createNewsletter(DataGenerator.Content.newsletters[0]),
+        createNewsletter(DataGenerator.Content.newsletters[1])
+    ];
+
     const labels = [
         createLabel(DataGenerator.Content.labels[0]),
         createLabel(DataGenerator.Content.labels[2])
@@ -1369,6 +1418,7 @@ DataGenerator.forKnex = (function () {
         createEmail,
         createCustomThemeSetting: createBasic,
         createProduct,
+        createNewsletter,
 
         invites,
         posts,
@@ -1376,6 +1426,7 @@ DataGenerator.forKnex = (function () {
         posts_meta,
         posts_tags,
         posts_authors,
+        members_newsletters,
         roles,
         users,
         roles_users,
@@ -1388,6 +1439,7 @@ DataGenerator.forKnex = (function () {
         labels,
         members,
         products,
+        newsletters,
         members_labels,
         members_stripe_customers,
         stripe_customer_subscriptions,
