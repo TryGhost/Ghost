@@ -1579,6 +1579,11 @@ Dashboard v5 Section Anchor */
 /* --------------------------------- 
 Dashboard v5 Section Growth */
 
+/* Delete me */
+.dashboard-prototype-newsletters .gh-dashboard-container {
+    margin: 20px 0;
+}
+
 .gh-dashboard5-growth {
     display: flex;
     margin-top: -25px;
