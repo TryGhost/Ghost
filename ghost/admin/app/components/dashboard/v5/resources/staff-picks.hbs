@@ -1,0 +1,25 @@
+<div class="gh-dashboard5-list" {{did-insert this.load}}>
+    {{#if (not (or this.loading this.error))}}
+    <div class="gh-dashboard5-list-header">
+        <Dashboard::v5::parts::ChartMetric @label="Staff picks" />
+    </div>
+    <div class="gh-dashboard5-list-body">
+        {{#each this.staffPicks as |entry|}}
+            <div class="gh-dashboard5-list-item">
+                <a class="gh-dashboard5-list-post permalink" href={{set-query-params entry.link utm_source='ghost'}} target="_blank" rel="noopener noreferrer">
+                    <span>{{entry.title}}</span><br>
+                    <span class="dashboard-prototype-staff-picks-author">{{entry.creator}}</span>
+                </a>
+            </div>
+        {{else}}
+            <div class="gh-dashboard5-list-empty">
+                {{svg-jar "no-data-list"}}
+                <p>No staff picks yet.</p>
+            </div>
+        {{/each}}
+    </div>
+    <div class="gh-dashboard5-list-footer">
+        <a href="https://twitter.com/ghoststaffpicks" target="_blank" rel="noopener noreferrer">Follow →</a>
+    </div>
+    {{/if}}
+</div>

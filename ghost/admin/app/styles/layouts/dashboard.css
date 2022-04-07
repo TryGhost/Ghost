@@ -1583,6 +1583,11 @@ Dashboard v5 Section Growth */
 .dashboard-prototype-newsletters .gh-dashboard-container {
     margin: 20px 0;
 }
+/* Delete me */
+.dashboard-prototype-staff-picks-author {
+    color: #7c8b9a;
+    font-weight: 400;
+}
 
 .gh-dashboard5-growth {
     display: flex;
