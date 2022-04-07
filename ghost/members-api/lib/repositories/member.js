@@ -575,7 +575,7 @@ module.exports = class MemberRepository {
         }
         const member = await this._Member.findOne({
             id: data.id
-        }, options);
+        }, {...options, forUpdate: true});
 
         const customer = await member.related('stripeCustomers').query({
             where: {
@@ -599,18 +599,19 @@ module.exports = class MemberRepository {
         }
         const paymentMethod = paymentMethodId ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId) : null;
 
-        const model = await this.getSubscriptionByStripeID(subscription.id, options);
+        const model = await this.getSubscriptionByStripeID(subscription.id, {...options, forUpdate: true});
 
         const subscriptionPriceData = _.get(subscription, 'items.data[0].price');
         let ghostProduct;
         try {
-            ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, options);
+            ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, {...options, forUpdate: true});
             // Use first Ghost product as default product in case of missing link
             if (!ghostProduct) {
                 let {data: pageData} = await this._productRepository.list({
                     limit: 1,
                     filter: 'type:paid',
-                    ...options
+                    ...options,
+                    forUpdate: true
                 });
                 ghostProduct = (pageData && pageData[0]) || null;
             }
