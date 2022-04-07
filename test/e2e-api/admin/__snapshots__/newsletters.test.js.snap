@@ -4,7 +4,6 @@ exports[`Newsletters API Can add a newsletter 1: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
-      "default": false,
       "description": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "My test newsletter",
@@ -24,7 +23,7 @@ exports[`Newsletters API Can add a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "288",
+  "content-length": "272",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -47,7 +46,6 @@ Object {
   },
   "newsletters": Array [
     Object {
-      "default": false,
       "description": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "My test newsletter",
@@ -67,7 +65,7 @@ exports[`Newsletters API Can add a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "376",
+  "content-length": "360",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -89,7 +87,6 @@ Object {
   },
   "newsletters": Array [
     Object {
-      "default": false,
       "description": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "My test newsletter",
@@ -109,7 +106,7 @@ exports[`Newsletters API Can browse newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "376",
+  "content-length": "360",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -131,7 +128,6 @@ Object {
   },
   "newsletters": Array [
     Object {
-      "default": false,
       "description": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "My test newsletter",
@@ -151,7 +147,7 @@ exports[`Newsletters API Can edit newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "375",
+  "content-length": "359",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -163,7 +159,6 @@ exports[`Newsletters API Can edit newsletters 3: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
-      "default": false,
       "description": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Updated newsletter name",
@@ -183,7 +178,7 @@ exports[`Newsletters API Can edit newsletters 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "293",
+  "content-length": "277",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",

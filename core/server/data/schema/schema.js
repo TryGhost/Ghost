@@ -15,7 +15,6 @@ module.exports = {
         sender_name: {type: 'string', maxlength: 191, nullable: false},
         sender_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
         sender_reply_to: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
-        default: {type: 'bool', nullable: false, defaultTo: false},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active'},
         recipient_filter: {
             type: 'text',
