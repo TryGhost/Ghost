@@ -356,198 +356,6 @@ Object {
 }
 `;
 
-exports[`Members API Can add complimentary subscription by assigning a product to a member 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest2@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Name",
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can add complimentary subscription by assigning a product to a member 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "445",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can add complimentary subscription by assigning a product to a member 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": true,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest2@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Name",
-      "note": null,
-      "products": Array [
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Default Product",
-          "slug": "default-product",
-          "type": "paid",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": "/welcome-paid",
-          "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        },
-      ],
-      "status": "comped",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can add complimentary subscription by assigning a product to a member 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1730",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can add complimentary subscription in the new way 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest2@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Name",
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can add complimentary subscription in the new way 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "445",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can add complimentary subscription in the new way 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": true,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest2@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Name",
-      "note": null,
-      "products": Array [
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "name": "Default Product",
-          "slug": "default-product",
-          "type": "paid",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": "/welcome-paid",
-          "yearly_price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        },
-      ],
-      "status": "comped",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can add complimentary subscription in the new way 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1730",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API Can browse 1: [body] 1`] = `
 Object {
   "members": Array [
@@ -973,19 +781,7 @@ Object {
 }
 `;
 
-exports[`Members API Can delete a member without cancelling Stripe Subscription 1: [body] 1`] = `Object {}`;
-
 exports[`Members API Can delete a member without cancelling Stripe Subscription 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can delete a member without cancelling Stripe Subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -1063,23 +859,6 @@ Object {
 }
 `;
 
-exports[`Members API Can destroy 5: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Member not found.",
-      "details": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Resource not found error, cannot read member.",
-      "property": null,
-      "type": "NotFoundError",
-    },
-  ],
-}
-`;
-
 exports[`Members API Can destroy 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
@@ -1092,47 +871,7 @@ Object {
 }
 `;
 
-exports[`Members API Can destroy 6: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "224",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API Can edit by id 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2Change@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "change me",
-      "note": "initial note",
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can edit by id 2: [body] 1`] = `
 Object {
   "members": Array [
     Object {
@@ -1201,47 +940,6 @@ Object {
 }
 `;
 
-exports[`Members API Can edit by id 3: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "462",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can edit by id 4: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "cantChangeMe@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "changed",
-      "note": "edited note",
-      "products": Array [],
-      "status": "free",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
 exports[`Members API Can edit by id 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
@@ -1253,20 +951,6 @@ Object {
   "x-powered-by": "Express",
 }
 `;
-
-exports[`Members API Can edit by id 5: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "459",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can export CSV 1: [body] 1`] = `Object {}`;
 
 exports[`Members API Can export CSV 1: [headers] 1`] = `
 Object {
@@ -1281,35 +965,7 @@ Object {
 }
 `;
 
-exports[`Members API Can export CSV 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": Any<String>,
-  "content-length": Any<String>,
-  "content-type": "text/csv; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can export a filtered CSV 1: [body] 1`] = `Object {}`;
-
 exports[`Members API Can export a filtered CSV 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": Any<String>,
-  "content-length": "215",
-  "content-type": "text/csv; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can export a filtered CSV 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -2319,1924 +1975,7 @@ Object {
 }
 `;
 
-exports[`Members API with newsletters Add should fail when passing incorrect email_type query parameter 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Validation (AllowedValues) failed for email_type",
-      "details": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Validation error, cannot save member.",
-      "property": null,
-      "type": "ValidationError",
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Add should fail when passing incorrect email_type query parameter 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "249",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can add 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "memberTestAdd@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "test",
-      "newsletters": Array [],
-      "note": "test note",
-      "products": Array [],
-      "status": "free",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can add 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "625",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can add a subscription 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Array [
-        Object {
-          "cancel_at_period_end": false,
-          "cancellation_reason": null,
-          "current_period_end": Any<String>,
-          "customer": Object {
-            "email": "member1@test.com",
-            "id": "cus_123",
-            "name": null,
-          },
-          "default_payment_card_last4": null,
-          "id": "sub_123",
-          "offer": null,
-          "plan": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
-            "interval": "month",
-            "nickname": "month",
-          },
-          "price": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
-            "interval": "month",
-            "nickname": "Monthly",
-            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "product": Object {
-              "id": "109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d",
-              "name": "Default Product",
-              "product_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            },
-            "type": "recurring",
-          },
-          "start_date": Any<String>,
-          "status": "active",
-        },
-      ],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can add a subscription 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1408",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can add a subscription 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Array [
-        Object {
-          "cancel_at_period_end": false,
-          "cancellation_reason": null,
-          "current_period_end": Any<String>,
-          "customer": Object {
-            "email": "member1@test.com",
-            "id": "cus_123",
-            "name": null,
-          },
-          "default_payment_card_last4": null,
-          "id": "sub_123",
-          "offer": null,
-          "plan": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
-            "interval": "month",
-            "nickname": "month",
-          },
-          "price": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
-            "interval": "month",
-            "nickname": "Monthly",
-            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "product": Object {
-              "id": "109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d",
-              "name": "Default Product",
-              "product_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            },
-            "type": "recurring",
-          },
-          "start_date": Any<String>,
-          "status": "active",
-        },
-      ],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can add a subscription 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1408",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can add and send a signup confirmation email 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member_getting_confirmation@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Array [],
-      "last_seen_at": null,
-      "name": "Send Me Confirmation",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can add and send a signup confirmation email 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "494",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": Any<String>,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can add and send a signup confirmation email 3: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can add complimentary subscription 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Name",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can add complimentary subscription 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "461",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can add complimentary subscription 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Name",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can add complimentary subscription 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "461",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can browse 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Winston Zeddemore",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 8,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Can browse 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8435",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can browse with filter 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Can browse with filter 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "681",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can browse with search 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Can browse with search 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "681",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can delete a member without cancelling Stripe Subscription 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can destroy 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "memberTestDestroy@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "test",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can destroy 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "468",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can destroy 3: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can destroy 4: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Member not found.",
-      "details": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Resource not found error, cannot read member.",
-      "property": null,
-      "type": "NotFoundError",
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can destroy 5: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "224",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can edit by id 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2Change@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "change me",
-      "newsletters": Array [],
-      "note": "initial note",
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can edit by id 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "479",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can edit by id 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "cantChangeMe@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "changed",
-      "newsletters": Array [],
-      "note": "edited note",
-      "products": Array [],
-      "status": "free",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can edit by id 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "476",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can export CSV 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": Any<String>,
-  "content-length": Any<String>,
-  "content-type": "text/csv; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can export a filtered CSV 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": Any<String>,
-  "content-length": "215",
-  "content-type": "text/csv; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can fetch member counts stats 1: [body] 1`] = `
-Object {
-  "data": Array [
-    Object {
-      "comped": 0,
-      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-      "free": 2,
-      "paid": 1,
-    },
-  ],
-  "resource": "members",
-  "total": 3,
-}
-`;
-
-exports[`Members API with newsletters Can fetch member counts stats 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "92",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can filter by paid status 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 5,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Can filter by paid status 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "6849",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can filter using contains operators 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Can filter using contains operators 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "681",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can ignore any unknown includes 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 5,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Can ignore any unknown includes 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "6849",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can order by email_open_rate 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Winston Zeddemore",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 8,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Can order by email_open_rate 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": Any<String>,
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can order by email_open_rate 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Winston Zeddemore",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 8,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Can order by email_open_rate 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": Any<String>,
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can read 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can read 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "607",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Can read and include email_recipients 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_recipients": Array [],
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Can read and include email_recipients 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "629",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Errors when fetching stats with unknown days param value 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Validation (matches) failed for id undefined.id",
-      "details": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Validation error, cannot read member.",
-      "property": null,
-      "type": "ValidationError",
-    },
-  ],
-}
-`;
-
-exports[`Members API with newsletters Errors when fetching stats with unknown days param value 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "248",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Search by case-insensitive email MEMBER2 receives member with email member2@test.com 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Search by case-insensitive email MEMBER2 receives member with email member2@test.com 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "528",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Search by case-insensitive name egg receives member with name Mr Egg 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Search by case-insensitive name egg receives member with name Mr Egg 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "681",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Search for non existing member returns empty result set 1: [body] 1`] = `
-Object {
-  "members": Array [],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 0,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Search for non existing member returns empty result set 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "102",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API with newsletters Search for paid members retrieves member with email paid@test.com 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Array [],
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API with newsletters Search for paid members retrieves member with email paid@test.com 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1699",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API without Stripe Add should fail when comped flag is passed in but Stripe is not enabled 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Missing Stripe connection. Attempting to import members with Stripe data when there is no Stripe account connected.",
-      "details": null,
-      "help": "You need to connect to Stripe to import Stripe customers. ",
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Validation error, cannot save member.",
-      "property": "comped",
-      "type": "ValidationError",
-    },
-  ],
-}
-`;
-
-exports[`Members API without Stripe Add should fail when comped flag is passed in but Stripe is not enabled 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "376",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API without Stripe Add should fail when comped flag is passed in but Stripe is not enabled 2: [body] 1`] = `
 Object {
   "errors": Array [
     Object {
@@ -4265,28 +2004,196 @@ Object {
 }
 `;
 
-exports[`Members API: with multiple newsletters Add should fail when passing incorrect email_type query parameter 1: [body] 1`] = `
+exports[`Members API: wit multiple newsletters Can browse 1: [body] 1`] = `
 Object {
-  "errors": Array [
+  "members": Array [
     Object {
-      "code": null,
-      "context": "Validation (AllowedValues) failed for email_type",
-      "details": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Validation error, cannot save member.",
-      "property": null,
-      "type": "ValidationError",
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member1@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Mr Egg",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member2@test.com",
+      "email_count": 0,
+      "email_open_rate": 50,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "paid@test.com",
+      "email_count": 0,
+      "email_open_rate": 80,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Egon Spengler",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "trialing@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Ray Stantz",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "comped@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Vinz Clortho",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "vip@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Winston Zeddemore",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "vip-paid@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Peter Venkman",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "with-product@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Dana Barrett",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
   ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 8,
+    },
+  },
 }
 `;
 
-exports[`Members API: with multiple newsletters Add should fail when passing incorrect email_type query parameter 2: [headers] 1`] = `
+exports[`Members API: wit multiple newsletters Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "249",
+  "content-length": "8435",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -4294,14 +2201,55 @@ Object {
 }
 `;
 
-exports[`Members API: with multiple newsletters Can add 1: [body] 1`] = `
+exports[`Members API: wit multiple newsletters Can read 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "memberTestAdd@test.com",
+      "email": "member1@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Mr Egg",
+      "newsletters": Any<Array>,
+      "note": null,
+      "products": Array [],
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: wit multiple newsletters Can read 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "607",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: with multiple newsletters Can add with default newsletters 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "memberTestNewsletterAdd@test.com",
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
@@ -4310,7 +2258,34 @@ Object {
       "labels": Any<Array>,
       "last_seen_at": null,
       "name": "test",
-      "newsletters": Any<Array>,
+      "newsletters": Array [
+        Object {
+          "default": false,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Daily newsletter",
+          "recipient_filter": "",
+          "sender_email": "jamie@example.com",
+          "sender_name": "Jamie",
+          "sender_reply_to": "jamie@example.com",
+          "sort_order": 0,
+          "status": "active",
+          "subscribe_on_signup": true,
+        },
+        Object {
+          "default": false,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Weekly newsletter",
+          "recipient_filter": "",
+          "sender_email": "jamie@example.com",
+          "sender_name": "Jamie",
+          "sender_reply_to": "jamie@example.com",
+          "sort_order": 0,
+          "status": "active",
+          "subscribe_on_signup": true,
+        },
+      ],
       "note": "test note",
       "products": Array [],
       "status": "free",
@@ -4323,11 +2298,11 @@ Object {
 }
 `;
 
-exports[`Members API: with multiple newsletters Can add 2: [headers] 1`] = `
+exports[`Members API: with multiple newsletters Can add with default newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "625",
+  "content-length": "1179",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -4336,14 +2311,14 @@ Object {
 }
 `;
 
-exports[`Members API: with multiple newsletters Can add a subscription 1: [body] 1`] = `
+exports[`Members API: with multiple newsletters Can and and edit with custom newsletters 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
+      "email": "memberTestAddNewsletter2@test.com",
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
@@ -4351,220 +2326,26 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "labels": Any<Array>,
       "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Array [
+      "name": "test newsletter",
+      "newsletters": Array [
         Object {
-          "cancel_at_period_end": false,
-          "cancellation_reason": null,
-          "current_period_end": Any<String>,
-          "customer": Object {
-            "email": "member1@test.com",
-            "id": "cus_123",
-            "name": null,
-          },
-          "default_payment_card_last4": null,
-          "id": "sub_123",
-          "offer": null,
-          "plan": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
-            "interval": "month",
-            "nickname": "month",
-          },
-          "price": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
-            "interval": "month",
-            "nickname": "Monthly",
-            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "product": Object {
-              "id": "109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d",
-              "name": "Default Product",
-              "product_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            },
-            "type": "recurring",
-          },
-          "start_date": Any<String>,
+          "default": false,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Weekly newsletter",
+          "recipient_filter": "",
+          "sender_email": "jamie@example.com",
+          "sender_name": "Jamie",
+          "sender_reply_to": "jamie@example.com",
+          "sort_order": 0,
           "status": "active",
+          "subscribe_on_signup": true,
         },
       ],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Can add a subscription 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1408",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can add a subscription 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Array [],
-      "note": null,
-      "products": Array [],
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Array [
-        Object {
-          "cancel_at_period_end": false,
-          "cancellation_reason": null,
-          "current_period_end": Any<String>,
-          "customer": Object {
-            "email": "member1@test.com",
-            "id": "cus_123",
-            "name": null,
-          },
-          "default_payment_card_last4": null,
-          "id": "sub_123",
-          "offer": null,
-          "plan": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
-            "interval": "month",
-            "nickname": "month",
-          },
-          "price": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
-            "interval": "month",
-            "nickname": "Monthly",
-            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "product": Object {
-              "id": "109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d",
-              "name": "Default Product",
-              "product_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            },
-            "type": "recurring",
-          },
-          "start_date": Any<String>,
-          "status": "active",
-        },
-      ],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Can add a subscription 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1408",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can add and send a signup confirmation email 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member_getting_confirmation@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Array [],
-      "last_seen_at": null,
-      "name": "Send Me Confirmation",
-      "newsletters": Array [],
-      "note": null,
+      "note": "test note",
       "products": Array [],
       "status": "free",
-      "subscribed": true,
-      "subscriptions": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Can add and send a signup confirmation email 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "494",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": Any<String>,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can add and send a signup confirmation email 3: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can add complimentary subscription 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Name",
-      "newsletters": Any<Array>,
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
+      "subscribed": false,
       "subscriptions": Any<Array>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -4573,11 +2354,11 @@ Object {
 }
 `;
 
-exports[`Members API: with multiple newsletters Can add complimentary subscription 2: [headers] 1`] = `
+exports[`Members API: with multiple newsletters Can and and edit with custom newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "461",
+  "content-length": "919",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -4586,14 +2367,14 @@ Object {
 }
 `;
 
-exports[`Members API: with multiple newsletters Can add complimentary subscription 3: [body] 1`] = `
+exports[`Members API: with multiple newsletters Can and and edit with custom newsletters 3: [body] 1`] = `
 Object {
   "members": Array [
     Object {
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "compedtest@test.com",
+      "email": "memberTestAddNewsletter2@test.com",
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
@@ -4601,12 +2382,26 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "labels": Any<Array>,
       "last_seen_at": null,
-      "name": "Name",
-      "newsletters": Any<Array>,
-      "note": null,
+      "name": "test newsletter",
+      "newsletters": Array [
+        Object {
+          "default": false,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Daily newsletter",
+          "recipient_filter": "",
+          "sender_email": "jamie@example.com",
+          "sender_name": "Jamie",
+          "sender_reply_to": "jamie@example.com",
+          "sort_order": 0,
+          "status": "active",
+          "subscribe_on_signup": true,
+        },
+      ],
+      "note": "test note",
       "products": Array [],
       "status": "free",
-      "subscribed": true,
+      "subscribed": false,
       "subscriptions": Any<Array>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -4615,11 +2410,11 @@ Object {
 }
 `;
 
-exports[`Members API: with multiple newsletters Can add complimentary subscription 4: [headers] 1`] = `
+exports[`Members API: with multiple newsletters Can and and edit with custom newsletters 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "461",
+  "content-length": "918",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -4824,1045 +2619,6 @@ Object {
 }
 `;
 
-exports[`Members API: with multiple newsletters Can browse with filter 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Can browse with filter 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "681",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can browse with search 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Can browse with search 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "681",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can delete a member without cancelling Stripe Subscription 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can destroy 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "memberTestDestroy@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "test",
-      "newsletters": Any<Array>,
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Can destroy 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "468",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can destroy 3: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can destroy 4: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Member not found.",
-      "details": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Resource not found error, cannot read member.",
-      "property": null,
-      "type": "NotFoundError",
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Can destroy 5: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "224",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can edit by id 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2Change@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "change me",
-      "newsletters": Any<Array>,
-      "note": "initial note",
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Can edit by id 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "479",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can edit by id 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "cantChangeMe@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "changed",
-      "newsletters": Any<Array>,
-      "note": "edited note",
-      "products": Array [],
-      "status": "free",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Can edit by id 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "476",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can export CSV 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": Any<String>,
-  "content-length": Any<String>,
-  "content-type": "text/csv; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can export a filtered CSV 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": Any<String>,
-  "content-length": "215",
-  "content-type": "text/csv; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can fetch member counts stats 1: [body] 1`] = `
-Object {
-  "data": Array [
-    Object {
-      "comped": 0,
-      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-      "free": 2,
-      "paid": 1,
-    },
-  ],
-  "resource": "members",
-  "total": 3,
-}
-`;
-
-exports[`Members API: with multiple newsletters Can fetch member counts stats 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "92",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can filter by paid status 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 5,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Can filter by paid status 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "6849",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can filter using contains operators 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Can filter using contains operators 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "681",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can ignore any unknown includes 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 5,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Can ignore any unknown includes 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "6849",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can order by email_open_rate 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Winston Zeddemore",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 8,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Can order by email_open_rate 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": Any<String>,
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can order by email_open_rate 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "trialing@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Ray Stantz",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Vinz Clortho",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Winston Zeddemore",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "vip-paid@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Peter Venkman",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "with-product@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Dana Barrett",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 8,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Can order by email_open_rate 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": Any<String>,
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API: with multiple newsletters Can read 1: [body] 1`] = `
 Object {
   "members": Array [
@@ -5897,255 +2653,6 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "607",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Can read and include email_recipients 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_recipients": Array [],
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Any<Array>,
-      "note": null,
-      "products": Array [],
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Can read and include email_recipients 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "629",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Errors when fetching stats with unknown days param value 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Validation (matches) failed for id undefined.id",
-      "details": null,
-      "help": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Validation error, cannot read member.",
-      "property": null,
-      "type": "ValidationError",
-    },
-  ],
-}
-`;
-
-exports[`Members API: with multiple newsletters Errors when fetching stats with unknown days param value 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "248",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Search by case-insensitive email MEMBER2 receives member with email member2@test.com 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Search by case-insensitive email MEMBER2 receives member with email member2@test.com 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "528",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Search by case-insensitive name egg receives member with name Mr Egg 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member1@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Mr Egg",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Search by case-insensitive name egg receives member with name Mr Egg 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "681",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Search for non existing member returns empty result set 1: [body] 1`] = `
-Object {
-  "members": Array [],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 0,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Search for non existing member returns empty result set 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "102",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: with multiple newsletters Search for paid members retrieves member with email paid@test.com 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "paid@test.com",
-      "email_count": 0,
-      "email_open_rate": 80,
-      "email_opened_count": 0,
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": "Egon Spengler",
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 1,
-    },
-  },
-}
-`;
-
-exports[`Members API: with multiple newsletters Search for paid members retrieves member with email paid@test.com 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1699",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
