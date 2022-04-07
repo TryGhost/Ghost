@@ -1,5 +1,5 @@
 const MrrStatsService = require('../../../../../core/server/services/stats/lib/mrr-stats-service');
-const {DateTime} = require('luxon');
+const moment = require('moment');
 const sinon = require('sinon');
 require('should');
 
@@ -23,10 +23,10 @@ describe('MrrStatsService', function () {
         const yesterday = '2000-01-09';
         const dayBeforeYesterday = '2000-01-08';
         const twoDaysBeforeYesterday = '2000-01-07';
-        const todayDate = DateTime.fromISO(today).toJSDate();
-        const tomorrowDate = DateTime.fromISO(tomorrow).toJSDate();
-        const yesterdayDate = DateTime.fromISO(yesterday).toJSDate();
-        const dayBeforeYesterdayDate = DateTime.fromISO(dayBeforeYesterday).toJSDate();
+        const todayDate = moment(today).toDate();
+        const tomorrowDate = moment(tomorrow).toDate();
+        const yesterdayDate = moment(yesterday).toDate();
+        const dayBeforeYesterdayDate = moment(dayBeforeYesterday).toDate();
 
         before(function () {
             sinon.useFakeTimers(todayDate.getTime());

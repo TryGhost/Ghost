@@ -1,6 +1,6 @@
 const statsService = require('../../../../core/server/services/stats');
 const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
-const {DateTime} = require('luxon');
+const moment = require('moment');
 require('should');
 const nock = require('nock');
 
@@ -30,7 +30,7 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
         cancel_at_period_end: false,
         metadata: {},
         current_period_end: Date.now() / 1000 + 1000,
-        start_date: DateTime.fromISO(date).toJSDate().getTime() / 1000,
+        start_date: moment(date).unix(),
         plan: fakePrice,
         items: {
             data: [{

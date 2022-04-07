@@ -1,4 +1,4 @@
-const {DateTime} = require('luxon');
+const moment = require('moment');
 
 class MrrStatsService {
     constructor({db}) {
@@ -64,8 +64,8 @@ class MrrStatsService {
 
         const rows = await this.fetchAllDeltas();
 
-        // Get today in UTC (default timezone for Luxon)
-        const today = DateTime.local().toISODate();
+        // Get today in UTC (default timezone)
+        const today = moment().format('YYYY-MM-DD');
 
         const results = [];
 
@@ -85,7 +85,7 @@ class MrrStatsService {
             }
 
             // Convert JSDates to YYYY-MM-DD (in UTC)
-            const date = DateTime.fromJSDate(row.date).toISODate();
+            const date = moment(row.date).format('YYYY-MM-DD');
             
             if (date > today) {
                 // Skip results that are in the future for some reason
@@ -102,7 +102,7 @@ class MrrStatsService {
         }
 
         // Now also add the oldest days we have left over and do not have deltas
-        const oldestDate = rows.length > 0 ? DateTime.fromJSDate(rows[0].date).plus({days: -1}).toISODate() : today;
+        const oldestDate = rows.length > 0 ? moment(rows[0].date).add(-1, 'days').format('YYYY-MM-DD') : today;
         
         // Note that we also need to loop the totals in reverse order because we need to unshift
         for (let i = totals.length - 1; i >= 0; i -= 1) {
