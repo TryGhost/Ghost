@@ -2108,14 +2108,14 @@
     papaparse "5.3.2"
     pump "^3.0.0"
 
-"@tryghost/members-events-service@0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.3.2.tgz#0f1a4e85b820184ceb29f46ce8c4cc7abf9c1d79"
-  integrity sha512-Z2vF1N6VJSmS1/1PHqi8+6xLeNW1Vs7IeHtILbCL7abmx/jcKFpPz9T8zVYSSJoGs7NjY5QMJThlMQZFhQ7usg==
+"@tryghost/members-events-service@0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.3.3.tgz#54ad6ad7da28e5fbbfee35936efe6ee27aa919ce"
+  integrity sha512-N5oW7HgTAHPljXbXUQoB+oRi/4s/IKArbewmMDq70znxRpacWe3bEJY8RUFYDZEMzYTC57/eyaoFIk7oHVlVdA==
   dependencies:
     "@tryghost/domain-events" "^0.1.9"
     "@tryghost/member-events" "^0.4.1"
-    moment-timezone "0.5.34"
+    moment-timezone "^0.5.34"
 
 "@tryghost/members-importer@0.5.6":
   version "0.5.6"
@@ -8851,7 +8851,7 @@ mock-knex@TryGhost/mock-knex#master:
     lodash "^4.14.2"
     semver "^5.3.0"
 
-moment-timezone@0.5.23, moment-timezone@0.5.34, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
+moment-timezone@0.5.23, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33, moment-timezone@^0.5.34:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
