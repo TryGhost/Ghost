@@ -557,7 +557,7 @@ Post = ghostBookshelf.Model.extend({
                 if (!tag.id && !tag.tag_id && tag.slug) {
                     // Clean up the provided slugs before we do any matching with existing tags
                     tag.slug = await ghostBookshelf.Model.generateSlug(
-                        Tag, 
+                        Tag,
                         tag.slug,
                         {skipDuplicateChecks: true}
                     );
@@ -877,6 +877,9 @@ Post = ghostBookshelf.Model.extend({
 
         // CASE: never expose the revisions
         delete attrs.mobiledoc_revisions;
+
+        // CASE: hide the newsletter_id for now
+        delete attrs.newsletter_id;
 
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
