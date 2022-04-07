@@ -8,6 +8,24 @@
  * Long text = length 1,000,000,000
  */
 module.exports = {
+    newsletters: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        name: {type: 'string', maxlength: 191, nullable: false},
+        description: {type: 'string', maxlength: 2000, nullable: true},
+        sender_name: {type: 'string', maxlength: 191, nullable: false},
+        sender_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        sender_reply_to: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        default: {type: 'bool', nullable: false, defaultTo: false},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active'},
+        recipient_filter: {
+            type: 'text',
+            maxlength: 1000000000,
+            nullable: false,
+            defaultTo: ''
+        },
+        subscribe_on_signup: {type: 'bool', nullable: false, defaultTo: false},
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
+    },
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
@@ -56,6 +74,7 @@ module.exports = {
         codeinjection_foot: {type: 'text', maxlength: 65535, nullable: true},
         custom_template: {type: 'string', maxlength: 100, nullable: true},
         canonical_url: {type: 'text', maxlength: 2000, nullable: true},
+        newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id'},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['slug', 'type']
         ]
@@ -711,24 +730,6 @@ module.exports = {
             }
         },
         value: {type: 'text', maxlength: 65535, nullable: true}
-    },
-    newsletters: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        name: {type: 'string', maxlength: 191, nullable: false},
-        description: {type: 'string', maxlength: 2000, nullable: true},
-        sender_name: {type: 'string', maxlength: 191, nullable: false},
-        sender_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
-        sender_reply_to: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
-        default: {type: 'bool', nullable: false, defaultTo: false},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active'},
-        recipient_filter: {
-            type: 'text',
-            maxlength: 1000000000,
-            nullable: false,
-            defaultTo: ''
-        },
-        subscribe_on_signup: {type: 'bool', nullable: false, defaultTo: false},
-        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     members_newsletters: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
