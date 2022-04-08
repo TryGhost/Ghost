@@ -1,13 +1,15 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
+const should = require('should');
 const {InternalServerError} = require('@tryghost/errors');
 const {
     prepareError,
     handleJSONResponse,
     handleJSONResponseV2,
     handleHTMLResponse,
-    prepareStack
+    prepareStack,
+    resourceNotFound
 } = require('../');
 
 describe('Prepare Error', function () {
@@ -109,5 +111,57 @@ describe('Error renderers', function () {
         });
 
         renderer.length.should.eql(3);
+    });
+});
+
+describe('Resource Not Found', function () {
+    it('Returns 404 Not Found Error for a generic case', function (done) {
+        resourceNotFound({}, {}, (error) => {
+            should.equal(error.statusCode, 404);
+            should.equal(error.message, 'Resource not found');
+            done();
+        });
+    });
+
+    it('Returns 406 Request Not Acceptable Error for when requested version is behind current version', function (done) {
+        const req = {
+            headers: {
+                'accept-version': 'v3.9'
+            }
+        };
+
+        const res = {
+            locals: {
+                safeVersion: '4.3'
+            }
+        };
+
+        resourceNotFound(req, res, (error) => {
+            should.equal(error.statusCode, 406);
+            should.equal(error.message, 'Request not acceptable for provided Accept-Version header.');
+            should.equal(error.context, 'Provided client version v3.9 is outdated and is behind current Ghost version v4.3.');
+            should.equal(error.help, 'Upgrade your Ghost API client.');
+            done();
+        });
+    });
+
+    it('Returns 404 Not Found Error for when requested version is the same as current version', function (done) {
+        const req = {
+            headers: {
+                'accept-version': 'v4.3'
+            }
+        };
+
+        const res = {
+            locals: {
+                safeVersion: '4.3'
+            }
+        };
+
+        resourceNotFound(req, res, (error) => {
+            should.equal(error.statusCode, 404);
+            should.equal(error.message, 'Resource not found');
+            done();
+        });
     });
 });

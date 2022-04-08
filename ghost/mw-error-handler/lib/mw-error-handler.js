@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const semver = require('semver');
 const debug = require('@tryghost/debug')('error-handler');
 const errors = require('@tryghost/errors');
 const {prepareStackForUser} = require('@tryghost/errors').utils;
@@ -7,6 +8,11 @@ const tpl = require('@tryghost/tpl');
 const messages = {
     pageNotFound: 'Page not found',
     resourceNotFound: 'Resource not found',
+    methodNotAcceptable: {
+        message: 'Request not acceptable for provided Accept-Version header.',
+        context: 'Provided client version {acceptVersion} is outdated and is behind current Ghost version {ghostVersion}.',
+        help: 'Upgrade your Ghost API client.'
+    },
     actions: {
         images: {
             upload: 'upload image'
@@ -174,7 +180,22 @@ const prepareUserMessage = (err, req) => {
 };
 
 module.exports.resourceNotFound = (req, res, next) => {
-    next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
+    if (req && req.headers && req.headers['accept-version']
+        && res.locals && res.locals.safeVersion
+        && semver.compare(semver.coerce(req.headers['accept-version']), semver.coerce(res.locals.safeVersion)) === -1) {
+        next(new errors.RequestNotAcceptableError({
+            message: tpl(
+                messages.methodNotAcceptable.message
+            ),
+            context: tpl(messages.methodNotAcceptable.context, {
+                acceptVersion: req.headers['accept-version'],
+                ghostVersion: `v${res.locals.safeVersion}`
+            }),
+            help: tpl(messages.methodNotAcceptable.help)
+        }));
+    } else {
+        next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
+    }
 };
 
 module.exports.pageNotFound = (req, res, next) => {
