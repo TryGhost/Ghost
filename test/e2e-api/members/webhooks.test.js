@@ -170,6 +170,129 @@ describe('Members API', function () {
                 .expectStatus(200);
         });
 
+        describe('Handling cancelled subscriptions', function () {
+            it('Handles cancellation of paid subscriptions correctly', async function () {
+                const customer_id = 'cust_3433289013';
+                const subscription_id = 'sub_3432';
+
+                // Create a new subscription in Stripe
+                set(subscription, {
+                    id: subscription_id,
+                    customer: customer_id,
+                    status: 'active',
+                    items: {
+                        type: 'list',
+                        data: [{
+                            id: 'item_123',
+                            price: {
+                                id: 'price_123',
+                                product: 'product_123',
+                                active: true,
+                                nickname: 'Monthly',
+                                currency: 'USD',
+                                recurring: {
+                                    interval: 'month'
+                                },
+                                unit_amount: 500,
+                                type: 'recurring'
+                            }
+                        }]
+                    },
+                    start_date: Date.now() / 1000,
+                    current_period_end: Date.now() / 1000 + (60 * 60 * 24 * 31),
+                    cancel_at_period_end: false
+                });
+
+                // Create a new customer in Stripe
+                set(customer, {
+                    id: customer_id,
+                    name: 'Test Member',
+                    email: 'expired-paid-test@email.com',
+                    subscriptions: {
+                        type: 'list',
+                        data: [subscription]
+                    }
+                });
+
+                // Make sure this customer has a corresponding member in the database
+                // And all the subscriptions are setup correctly
+                const initialMember = await createMemberFromStripe();
+                assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
+                assert.equal(initialMember.products.length, 1, 'The member should have one product');
+                should(initialMember.subscriptions).match([
+                    {
+                        status: 'active'
+                    }
+                ]);
+
+                // Cancel the previously created subscription in Stripe
+                set(subscription, {
+                    ...subscription,
+                    cancel_at_period_end: true
+                });
+
+                // Send the webhook call to anounce the cancelation
+                const webhookPayload = JSON.stringify({
+                    type: 'customer.subscription.updated',
+                    data: {
+                        object: subscription
+                    }
+                });
+                const webhookSignature = stripe.webhooks.generateTestHeaderString({
+                    payload: webhookPayload,
+                    secret: process.env.WEBHOOK_SECRET
+                });
+
+                await membersAgent.post('/webhooks/stripe/')
+                    .body(webhookPayload)
+                    .header('stripe-signature', webhookSignature)
+                    .expectStatus(200);
+
+                // Check status has been updated to 'free' after cancelling
+                const {body: body2} = await adminAgent.get('/members/' + initialMember.id + '/');
+                assert.equal(body2.members.length, 1, 'The member does not exist');
+                const updatedMember = body2.members[0];
+                assert.equal(updatedMember.status, 'paid');
+                assert.equal(updatedMember.products.length, 1, 'The member should have products');
+                should(updatedMember.subscriptions).match([
+                    {
+                        cancel_at_period_end: true
+                    }
+                ]);
+
+                // Check the status events for this newly created member (should be NULL -> paid only)
+                assertMemberEvents({
+                    eventType: 'MemberStatusEvent',
+                    memberId: updatedMember.id,
+                    asserts: [
+                        {
+                            from_status: null,
+                            to_status: 'free'
+                        },
+                        {
+                            from_status: 'free',
+                            to_status: 'paid'
+                        }
+                    ]
+                });
+
+                assertMemberEvents({
+                    eventType: 'MemberPaidSubscriptionEvent',
+                    memberId: updatedMember.id,
+                    asserts: [
+                        {
+                            type: 'created',
+                            mrr_delta: 500
+                        },
+                        {
+                            type: 'cancelled',
+                            mrr_delta: -500
+                        }
+                    ]
+                });
+            });
+        });
+
         describe('Handling the end of subscriptions', function () {
             let canceledPaidMember;
 
@@ -287,9 +410,11 @@ describe('Members API', function () {
                     memberId: updatedMember.id,
                     asserts: [
                         {
+                            type: 'created',
                             mrr_delta: 500
                         },
                         {
+                            type: 'expired',
                             mrr_delta: -500
                         }
                     ]
