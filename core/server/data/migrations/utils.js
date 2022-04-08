@@ -89,6 +89,7 @@ function recreateTable(name, tableSpec) {
         },
         async function down() {
             // noop: we cannot go back to old table schema
+            logging.warn(`Ignoring rollback for table recreate: ${name}`);
             return Promise.resolve();
         }
     );
