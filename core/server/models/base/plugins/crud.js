@@ -137,7 +137,7 @@ module.exports = function (Bookshelf) {
                 options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
             }
 
-            if (options.forUpdate) {
+            if (options.transacting && options.forUpdate) {
                 options.lock = 'forUpdate';
             }
 
@@ -183,7 +183,9 @@ module.exports = function (Bookshelf) {
                 model.hasTimestamps = false;
             }
 
-            options.lock = 'forUpdate';
+            if (options.transacting) {
+                options.lock = 'forUpdate';
+            }
 
             const object = await model.fetch(options);
             if (object) {
