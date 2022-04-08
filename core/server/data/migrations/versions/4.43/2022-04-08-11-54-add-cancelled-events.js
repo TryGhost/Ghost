@@ -7,7 +7,8 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         const cancelledSubscriptions = await knex
             .select(
-                'members.id',
+                'members.id as member_id',
+                'members_stripe_customers_subscriptions.id',
                 'members_stripe_customers_subscriptions.plan_currency',
                 'members_stripe_customers_subscriptions.updated_at'
             )
@@ -26,7 +27,8 @@ module.exports = createTransactionalMigration(
             const event = {
                 id: (new ObjectID()).toHexString(),
                 type: 'cancelled',
-                member_id: subscription.id,
+                member_id: subscription.member_id,
+                subscription_id: subscription.id,
                 from_plan: null,
                 to_plan: null,
                 currency: subscription.plan_currency,
