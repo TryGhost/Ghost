@@ -27,7 +27,6 @@ describe('Newsletters API', function () {
             sender_name: 'Test',
             sender_email: 'test@example.com',
             sender_reply_to: 'test@example.com',
-            default: false,
             status: 'active',
             recipient_filter: '',
             subscribe_on_signup: true,
@@ -91,6 +90,43 @@ describe('Newsletters API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
+            });
+    });
+
+    it('Cannot add newsletter with same name', async function () {
+        const newsletter = {
+            name: 'My test newsletter',
+            sender_name: 'Test',
+            sender_email: 'test@example.com',
+            sender_reply_to: 'test@example.com',
+            status: 'active',
+            recipient_filter: '',
+            subscribe_on_signup: true,
+            sort_order: 0
+        };
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [newsletter]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyString
+            });
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [newsletter]})
+            .expectStatus(400)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyString
             });
     });
 });

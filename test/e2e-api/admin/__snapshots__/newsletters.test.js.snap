@@ -11,6 +11,7 @@ Object {
       "sender_email": "test@example.com",
       "sender_name": "Test",
       "sender_reply_to": "test@example.com",
+      "slug": "my-test-newsletter",
       "sort_order": 0,
       "status": "active",
       "subscribe_on_signup": true,
@@ -23,7 +24,7 @@ exports[`Newsletters API Can add a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "272",
+  "content-length": "300",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -53,6 +54,7 @@ Object {
       "sender_email": "test@example.com",
       "sender_name": "Test",
       "sender_reply_to": "test@example.com",
+      "slug": "my-test-newsletter",
       "sort_order": 0,
       "status": "active",
       "subscribe_on_signup": true,
@@ -65,7 +67,7 @@ exports[`Newsletters API Can add a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "360",
+  "content-length": "388",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -94,6 +96,7 @@ Object {
       "sender_email": "test@example.com",
       "sender_name": "Test",
       "sender_reply_to": "test@example.com",
+      "slug": "my-test-newsletter",
       "sort_order": 0,
       "status": "active",
       "subscribe_on_signup": true,
@@ -106,7 +109,7 @@ exports[`Newsletters API Can browse newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "360",
+  "content-length": "388",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -135,6 +138,7 @@ Object {
       "sender_email": "test@example.com",
       "sender_name": "Test",
       "sender_reply_to": "test@example.com",
+      "slug": "my-test-newsletter",
       "sort_order": 0,
       "status": "active",
       "subscribe_on_signup": true,
@@ -147,7 +151,7 @@ exports[`Newsletters API Can edit newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "359",
+  "content-length": "387",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -166,6 +170,7 @@ Object {
       "sender_email": "test@example.com",
       "sender_name": "Test",
       "sender_reply_to": "test@example.com",
+      "slug": "my-test-newsletter",
       "sort_order": 0,
       "status": "active",
       "subscribe_on_signup": true,
@@ -178,9 +183,42 @@ exports[`Newsletters API Can edit newsletters 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "277",
+  "content-length": "305",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Cannot add newsletter with same name 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "My test newsletter",
+      "recipient_filter": "",
+      "sender_email": "test@example.com",
+      "sender_name": "Test",
+      "sender_reply_to": "test@example.com",
+      "slug": "my-test-newsletter-2",
+      "sort_order": 0,
+      "status": "active",
+      "subscribe_on_signup": true,
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Cannot add newsletter with same name 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "302",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": Any<String>,
   "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
