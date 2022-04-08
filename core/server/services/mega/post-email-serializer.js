@@ -3,7 +3,7 @@ const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 const moment = require('moment-timezone');
-const api = require('../../api');
+const api = require('../../api').canary;
 const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
 const htmlToText = require('html-to-text');
@@ -83,9 +83,8 @@ const createUnsubscribeUrl = (uuid) => {
     return unsubscribeUrl.href;
 };
 
-// NOTE: serialization is needed to make sure we are using current API and do post transformations
-//       such as image URL transformation from relative to absolute
-const serializePostModel = async (model, apiVersion = 'v4') => {
+// NOTE: serialization is needed to make sure we do post transformations such as image URL transformation from relative to absolute
+const serializePostModel = async (model) => {
     // fetch mobiledoc rather than html and plaintext so we can render email-specific contents
     const frame = {options: {context: {user: true}, formats: 'mobiledoc'}};
     const docName = 'posts';
@@ -93,7 +92,7 @@ const serializePostModel = async (model, apiVersion = 'v4') => {
     await api.shared
         .serializers
         .handle
-        .output(model, {docName: docName, method: 'read'}, api[apiVersion].serializers.output, frame);
+        .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);
 
     return frame.response[docName][0];
 };
@@ -222,8 +221,8 @@ const getTemplateSettings = async (newsletter) => {
     return templateSettings;
 };
 
-const serialize = async (postModel, newsletter, options = {isBrowserPreview: false, apiVersion: 'v4'}) => {
-    const post = await serializePostModel(postModel, options.apiVersion);
+const serialize = async (postModel, newsletter, options = {isBrowserPreview: false}) => {
+    const post = await serializePostModel(postModel);
 
     const timezone = settingsCache.get('timezone');
     const momentDate = post.published_at ? moment(post.published_at) : moment();

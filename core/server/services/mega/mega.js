@@ -51,7 +51,6 @@ const getReplyToAddress = (fromAddress, replyAddressOption) => {
  *
  * @param {Object} postModel - post model instance
  * @param {Object} options
- * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
  */
 const getEmailData = async (postModel, options) => {
     let newsletter = await postModel.related('newsletter').fetch();
@@ -83,11 +82,10 @@ const getEmailData = async (postModel, options) => {
  *
  * @param {Object} postModel - post model instance
  * @param {[string]} toEmails - member email addresses to send email to
- * @param {ValidAPIVersion} apiVersion - api version to be used when serializing email data
  * @param {ValidMemberSegment} [memberSegment]
  */
-const sendTestEmail = async (postModel, toEmails, apiVersion, memberSegment) => {
-    let emailData = await getEmailData(postModel, {apiVersion});
+const sendTestEmail = async (postModel, toEmails, memberSegment) => {
+    let emailData = await getEmailData(postModel);
     emailData.subject = `[Test] ${emailData.subject}`;
 
     if (memberSegment) {
@@ -198,7 +196,6 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
  *
  * @param {object} postModel Post Model Object
  * @param {object} options
- * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
  * @param {string} options.newsletter_id - the newsletter_id to send the email to
  */
 
@@ -615,6 +612,5 @@ module.exports = {
 };
 
 /**
- * @typedef {'v2' | 'v3' | 'v4' | 'canary' } ValidAPIVersion
  * @typedef {'status:free' | 'status:-free'} ValidMemberSegment
  */

@@ -3,15 +3,6 @@ const models = require('../../models');
 
 class EmailPreview {
     /**
-     * @constructor
-     * @param {Object} options
-     * @param {String} options.apiVersion
-     */
-    constructor({apiVersion}) {
-        this.apiVersion = apiVersion;
-    }
-
-    /**
      * @param {Object} post - Post model object instance
      * @param {String} memberSegment - member segment filter
      * @returns {Promise<Object>}
@@ -20,8 +11,7 @@ class EmailPreview {
         const newsletter = await models.Newsletter.getDefaultNewsletter();
 
         let emailContent = await postEmailSerializer.serialize(post, newsletter, {
-            isBrowserPreview: true,
-            apiVersion: this.apiVersion
+            isBrowserPreview: true
         });
 
         if (memberSegment) {
