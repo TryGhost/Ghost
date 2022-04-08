@@ -35,7 +35,12 @@ const Newsletter = ghostBookshelf.Model.extend({
             }
         }
     }
-
+}, {
+    orderDefaultOptions: function orderDefaultOptions() {
+        return {
+            sort_order: 'ASC'
+        };
+    }
 });
 
 module.exports = {

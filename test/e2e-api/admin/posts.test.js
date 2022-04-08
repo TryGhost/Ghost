@@ -418,6 +418,27 @@ describe('Posts API', function () {
         res2.body.posts[0].status.should.eql('draft');
     });
 
+    it('Can\'t change the newsletter_id of a post', async function () {
+        const post = {
+            newsletter_id: '123'
+        };
+
+        const res = await request
+            .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[1].id}/?`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        post.updated_at = res.body.posts[0].updated_at;
+
+        await request
+            .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
+    });
+
     it('Can destroy a post', async function () {
         const res = await request
             .del(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[0].id + '/'))
