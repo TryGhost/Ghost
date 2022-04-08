@@ -1859,7 +1859,7 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.2.10":
+"@tryghost/errors@1.2.10", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5", "@tryghost/errors@^1.2.7":
   version "1.2.10"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.10.tgz#b01b16744986005784ffd6916eec48a3e93976a9"
   integrity sha512-v5r5JzhQTkNLJBk66B75x+jyOE/WxzEBfeAtA3y1YaFtl9SQMaN1qi/7+sQzt0VrLk1qtqAOReWc/1Cncy9gOg==
@@ -1877,19 +1877,10 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5", "@tryghost/errors@^1.2.7":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.8.tgz#b4ba1c31831216222be332ee7a37d9c4a376ac2a"
-  integrity sha512-O8CUS4SHsBYFc6/7yUDJ5yk0vhcdzPxFiISgrFhzptOd79ZdXwk9c8Pz5uSDUXPaCqKaWMYLTjSof30IxVvvAA==
-  dependencies:
-    lodash "^4.17.21"
-    utils-copy-error "^1.0.1"
-    uuid "^8.3.2"
-
-"@tryghost/express-dynamic-redirects@0.2.7":
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.7.tgz#c176e54dc631d0f35c45429b0e93370842b1d4ed"
-  integrity sha512-DjHuOyPgULMxoXyVUakGtHLvfJeucHnxHSgdGveG0IRWbhUOfUU5+hJT1bvaBhWRQ+bGeLKmxJwxUk5bO8zk8Q==
+"@tryghost/express-dynamic-redirects@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.8.tgz#67b4f19c6210734e0226e6c8f18c0ad7ce2a75a2"
+  integrity sha512-kg1vDQ0E8hVJTwu3OYebYdI1KD3wwTwTfRv1dXEA7r8JSMdJw/LdlxJ39WBiQObmCuHYu2nsnTf3/Ccah7Ew+w==
 
 "@tryghost/express-test@0.8.0":
   version "0.8.0"
