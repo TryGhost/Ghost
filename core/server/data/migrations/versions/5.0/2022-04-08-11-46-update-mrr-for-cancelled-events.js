@@ -9,7 +9,7 @@ module.exports = createTransactionalMigration(
                 'members_stripe_customers_subscriptions.id',
                 'members_stripe_customers_subscriptions.plan_currency',
                 'members_stripe_customers_subscriptions.plan_interval',
-                'members_stripe_customers_subscriptions.plan_amount',
+                'members_stripe_customers_subscriptions.plan_amount'
             )
             .from('members_stripe_customers_subscriptions')
             .join('members_stripe_customers', 'members_stripe_customers.customer_id', '=', 'members_stripe_customers_subscriptions.customer_id')
