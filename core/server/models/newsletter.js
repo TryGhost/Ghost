@@ -6,7 +6,7 @@ const Newsletter = ghostBookshelf.Model.extend({
     defaults: {
         sender_reply_to: 'newsletter',
         status: 'active',
-        recipient_filter: 'members',
+        visibility: 'members',
         subscribe_on_signup: true,
         sort_order: 0,
         title_font_category: 'sans_serif',

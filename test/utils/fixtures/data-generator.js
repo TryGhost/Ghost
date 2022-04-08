@@ -935,7 +935,7 @@ DataGenerator.forKnex = (function () {
             sender_email: 'jamie@example.com',
             sender_reply_to: 'newsletter',
             status: 'active',
-            recipient_filter: '',
+            visibility: 'members',
             subscribe_on_signup: true,
             title_font_category: 'serif',
             body_font_category: 'serif',

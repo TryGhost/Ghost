@@ -9,7 +9,7 @@ module.exports = recreateTable('newsletters', {
     sender_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
     sender_reply_to: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'newsletter', validations: {isIn: ['newsletter', 'support']}},
     status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active'},
-    recipient_filter: {
+    visibility: {
         type: 'string',
         maxlength: 50,
         nullable: false,

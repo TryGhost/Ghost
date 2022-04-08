@@ -22,7 +22,7 @@ describe('Unit: models/newsletter', function () {
                     sender_name: 'Jamie',
                     sender_email: 'jamie@example.com',
                     sender_reply_to: 'newsletter',
-                    recipient_filter: '',
+                    visibility: 'members',
                     sort_order: 0
                 })
                     .then(function () {
