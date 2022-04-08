@@ -8,7 +8,12 @@ const tpl = require('@tryghost/tpl');
 const messages = {
     pageNotFound: 'Page not found',
     resourceNotFound: 'Resource not found',
-    methodNotAcceptable: {
+    methodNotAcceptableVersionBehind: {
+        message: 'Request not acceptable for provided Accept-Version header.',
+        context: 'Provided client version {acceptVersion} is ahead of current Ghost instance version {ghostVersion}.',
+        help: 'Upgrade your Ghost instance.'
+    },
+    methodNotAcceptableVersionAhead: {
         message: 'Request not acceptable for provided Accept-Version header.',
         context: 'Provided client version {acceptVersion} is outdated and is behind current Ghost version {ghostVersion}.',
         help: 'Upgrade your Ghost API client.'
@@ -182,17 +187,38 @@ const prepareUserMessage = (err, req) => {
 module.exports.resourceNotFound = (req, res, next) => {
     if (req && req.headers && req.headers['accept-version']
         && res.locals && res.locals.safeVersion
-        && semver.compare(semver.coerce(req.headers['accept-version']), semver.coerce(res.locals.safeVersion)) === -1) {
-        next(new errors.RequestNotAcceptableError({
-            message: tpl(
-                messages.methodNotAcceptable.message
-            ),
-            context: tpl(messages.methodNotAcceptable.context, {
-                acceptVersion: req.headers['accept-version'],
-                ghostVersion: `v${res.locals.safeVersion}`
-            }),
-            help: tpl(messages.methodNotAcceptable.help)
-        }));
+        && semver.compare(semver.coerce(req.headers['accept-version']), semver.coerce(res.locals.safeVersion)) !== 0) {
+        const versionComparison = semver.compare(
+            semver.coerce(req.headers['accept-version']),
+            semver.coerce(res.locals.safeVersion)
+        );
+
+        let errorOptions;
+        if (versionComparison === 1) {
+            errorOptions = {
+                message: tpl(
+                    messages.methodNotAcceptableVersionBehind.message
+                ),
+                context: tpl(messages.methodNotAcceptableVersionBehind.context, {
+                    acceptVersion: req.headers['accept-version'],
+                    ghostVersion: `v${res.locals.safeVersion}`
+                }),
+                help: tpl(messages.methodNotAcceptableVersionBehind.help)
+            };
+        } else {
+            errorOptions = {
+                message: tpl(
+                    messages.methodNotAcceptableVersionAhead.message
+                ),
+                context: tpl(messages.methodNotAcceptableVersionAhead.context, {
+                    acceptVersion: req.headers['accept-version'],
+                    ghostVersion: `v${res.locals.safeVersion}`
+                }),
+                help: tpl(messages.methodNotAcceptableVersionAhead.help)
+            };
+        }
+
+        next(new errors.RequestNotAcceptableError(errorOptions));
     } else {
         next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
     }
