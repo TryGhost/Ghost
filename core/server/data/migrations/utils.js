@@ -66,6 +66,36 @@ function dropTables(names) {
 }
 
 /**
+ * Creates a migration which will drop an existing table and then re-add a new table based on provided spec
+ * @param {string} name - table name
+ * @param {Object} tableSpec - copy of table schema definition as defined in schema.js at the moment of writing the migration,
+ * this parameter MUST be present, otherwise @daniellockyer will hunt you down
+ *
+ * @returns {Object} migration object returning config/up/down properties
+ */
+function recreateTable(name, tableSpec) {
+    return createNonTransactionalMigration(
+        async function up(connection) {
+            const exists = await connection.schema.hasTable(name);
+
+            if (!exists) {
+                logging.warn(`Failed to drop table: ${name} - table does not exist`);
+            } else {
+                logging.info(`Dropping table: ${name}`);
+                await commands.deleteTable(name, connection);
+                logging.info(`Re-adding table: ${name}`);
+                await commands.createTable(name, connection, tableSpec);
+            }
+        },
+        async function down() {
+            // noop: we cannot go back to old table schema
+            logging.warn(`Ignoring rollback for table recreate: ${name}`);
+            return Promise.resolve();
+        }
+    );
+}
+
+/**
  * Creates a migration which will add a permission to the database
  *
  * @param {Object} config
@@ -463,6 +493,7 @@ function addSetting({key, value, type, group}) {
 module.exports = {
     addTable,
     dropTables,
+    recreateTable,
     addPermission,
     addPermissionToRole,
     addPermissionWithRoles,
