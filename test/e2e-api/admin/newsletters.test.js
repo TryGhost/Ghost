@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId} = matchers;
+const {anyEtag, anyObjectId, anyString} = matchers;
 
 const newsletterSnapshot = {
     id: anyObjectId
@@ -26,10 +26,14 @@ describe('Newsletters API', function () {
             name: 'My test newsletter',
             sender_name: 'Test',
             sender_email: 'test@example.com',
-            sender_reply_to: 'test@example.com',
+            sender_reply_to: 'newsletter',
             status: 'active',
-            recipient_filter: '',
             subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
             sort_order: 0
         };
 
@@ -90,43 +94,6 @@ describe('Newsletters API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
-            });
-    });
-
-    it('Cannot add newsletter with same name', async function () {
-        const newsletter = {
-            name: 'My test newsletter',
-            sender_name: 'Test',
-            sender_email: 'test@example.com',
-            sender_reply_to: 'test@example.com',
-            status: 'active',
-            recipient_filter: '',
-            subscribe_on_signup: true,
-            sort_order: 0
-        };
-
-        await agent
-            .post(`newsletters/`)
-            .body({newsletters: [newsletter]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                location: anyString
-            });
-
-        await agent
-            .post(`newsletters/`)
-            .body({newsletters: [newsletter]})
-            .expectStatus(400)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                location: anyString
             });
     });
 });

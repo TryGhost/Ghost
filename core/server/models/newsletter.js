@@ -3,6 +3,19 @@ const ghostBookshelf = require('./base');
 const Newsletter = ghostBookshelf.Model.extend({
     tableName: 'newsletters',
 
+    defaults: {
+        sender_reply_to: 'newsletter',
+        status: 'active',
+        recipient_filter: 'members',
+        subscribe_on_signup: true,
+        sort_order: 0,
+        title_font_category: 'sans_serif',
+        title_alignment: 'center',
+        show_feature_image: true,
+        body_font_category: 'sans_serif',
+        show_badge: true
+    },
+
     async onSaving(model, _attr, options) {
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 

@@ -373,7 +373,15 @@ DataGenerator.Content = {
             description: '',
             sender_name: 'Jamie',
             sender_email: 'jamie@example.com',
-            sender_reply_to: 'jamie@example.com'
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 0
         },
         {
             id: ObjectId().toHexString(),
@@ -382,7 +390,15 @@ DataGenerator.Content = {
             description: '',
             sender_name: 'Jamie',
             sender_email: 'jamie@example.com',
-            sender_reply_to: 'jamie@example.com'
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 0
         }
     ],
 
@@ -917,10 +933,15 @@ DataGenerator.forKnex = (function () {
             name: 'Daily Newsletter',
             sender_name: 'Jamie Larsen',
             sender_email: 'jamie@example.com',
-            sender_reply_to: 'jamie@example.com',
+            sender_reply_to: 'newsletter',
             status: 'active',
             recipient_filter: '',
             subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
             sort_order: 0
         });
     }

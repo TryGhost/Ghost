@@ -21,7 +21,7 @@ describe('Unit: models/newsletter', function () {
                 return models.Newsletter.add({
                     sender_name: 'Jamie',
                     sender_email: 'jamie@example.com',
-                    sender_reply_to: 'jamie@example.com',
+                    sender_reply_to: 'newsletter',
                     recipient_filter: '',
                     sort_order: 0
                 })
@@ -38,7 +38,7 @@ describe('Unit: models/newsletter', function () {
                 return models.Newsletter.add({
                     name: 'Daily report 2',
                     sender_email: 'jamie@example.com',
-                    sender_reply_to: 'jamie@example.com',
+                    sender_reply_to: 'newsletter',
                     sort_order: 0
                 })
                     .then(function () {
@@ -54,7 +54,7 @@ describe('Unit: models/newsletter', function () {
                 return models.Newsletter.add({
                     name: 'Daily Brief 3',
                     sender_name: 'Jamie',
-                    sender_reply_to: 'jamie@example.com',
+                    sender_reply_to: 'newsletter',
                     sort_order: 0
                 })
                     .then(function () {
