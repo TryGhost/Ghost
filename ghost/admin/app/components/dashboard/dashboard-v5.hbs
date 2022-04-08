@@ -27,7 +27,7 @@
                 </div>
             </section>
 
-            {{#if this.hasPaidTiers}}
+            {{!-- {{#if this.hasPaidTiers}}
                 <div class="gh-dashboard5-paid">
                     <section class="gh-dashboard5-section">
                         <div class="gh-dashboard5-growth">             
@@ -41,7 +41,7 @@
                         </div>
                     </section>
                 </div>
-            {{/if}}
+            {{/if}} --}}
 
             {{#if this.areNewslettersEnabled}}
                 <section class="gh-dashboard5-split is-third">
@@ -72,28 +72,24 @@
         {{/if}}
 
         <section class="gh-dashboard5-split">
-            <section class="gh-dashboard5-section gh-dashboard5-posts">
-                <article class="gh-dashboard5-box">
-                    <Dashboard::V5::RecentPosts />
-                </article>
-            </section>
-
             <section class="gh-dashboard5-section gh-dashboard5-activity">
                 <article class="gh-dashboard5-box">
                     <Dashboard::V5::RecentActivity />
                 </article>
             </section>
-        </section>
 
-        <section class="gh-dashboard5-section">
-            <Dashboard::V5::ResourceGeneral />
+            <section class="gh-dashboard5-section gh-dashboard5-resource">
+                <Dashboard::V5::Resources::Help />
+            </section>
+
+            {{!-- <section class="gh-dashboard-section gh-dashboard5-resource">
+                <Dashboard::V5::ResourceGeneral />
+            </section> --}}
         </section>
         
-        <Dashboard::V5::Resources::WhatsNew />
+        {{!-- <Dashboard::V5::Resources::WhatsNew />
         <Dashboard::V5::Resources::LatestNewsletters />
-        <article class="gh-dashboard5-box">
-            <Dashboard::V5::Resources::StaffPicks />
-        </article>
+        <Dashboard::V5::Resources::StaffPicks /> --}}
     {{/if}}
     <Dashboard::V5::PrototypeControlPanel />
 </section>

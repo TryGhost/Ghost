@@ -1,0 +1,24 @@
+<div class="gh-dashboard5-area" {{did-insert this.load}}>
+    {{#if (not (or this.loading this.error))}}
+        {{#each this.newsletters as |entry|}}
+            <div class="gh-dashboard5-area-resource">
+                <div class="gh-dashboard5-area-resource-content">
+                    <h4>{{entry.title}}</h4>
+                    {{#if entry.custom_excerpt}}
+                        <p>{{entry.custom_excerpt}}</p>
+                    {{else if entry.excerpt}}
+                        <p>{{entry.excerpt}}</p>
+                    {{/if}}
+                    <button class="gh-btn" type="button">
+                        <span>Read more</span>
+                    </button>
+                </div>
+            </div>
+        {{/each}}
+    {{/if}}
+    <div class="gh-dashboard5-area-more">
+        <div class="gh-dashboard5-area-dot is-selected"></div>
+        <div class="gh-dashboard5-area-dot"></div>  
+        <div class="gh-dashboard5-area-dot"></div>
+    </div>
+</div>

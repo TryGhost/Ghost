@@ -3,16 +3,16 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const DAYS_OPTIONS = [{
-    name: '7 days',
+    name: '7 Days',
     value: 7
 }, {
-    name: '30 days',
+    name: '30 Days',
     value: 30
 }, {
-    name: '90 days',
+    name: '90 Days',
     value: 90
 }, {
-    name: 'All time',
+    name: 'All Time',
     value: 'all'
 }];
 

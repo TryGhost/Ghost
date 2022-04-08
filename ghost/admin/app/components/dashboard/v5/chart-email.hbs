@@ -1,23 +1,25 @@
+<div class="gh-dashboard5-title">
+    <h4>Email</h4>
+</div>
+
 <div {{did-insert this.loadCharts}} class="gh-dashboard5-insert">
     <div class="gh-dashboard5-insert-item">
         <Dashboard::v5::parts::ChartMetric
             @label="Newsletter subscribers"
             @value={{format-number this.dataSubscribers.total}}
-            @extra="{{format-number this.dataSubscribers.paid}} paid members" />
+            @reverse={true}
+            />
     </div>
 
     <div class="gh-dashboard5-insert-item">
         <Dashboard::v5::parts::ChartMetric
             @label="Emails sent over last 30 days"
             @value={{format-number this.dataEmailsSent}}
-            @extra="All members" />
+            @reverse={true}
+            />
     </div>
 
     <div class="gh-dashboard5-insert-item">
-        <Dashboard::v5::parts::ChartMetric
-            @label="Open rate"
-            @value="{{this.currentOpenRate}}%" />
-
         <div class="gh-dashboard5-chart">
             {{#if this.loading}}
                 <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
@@ -37,5 +39,10 @@
                 </div>
             {{/if}}
         </div>
+        <Dashboard::v5::parts::ChartMetric
+            @label="Open rate"
+            @value="{{this.currentOpenRate}}%"
+            @reverse={true}
+            />
     </div>
 </div>

@@ -55,9 +55,9 @@ export default class ChartEmailOpenRate extends Component {
             datasets: [{
                 data,
                 fill: false,
-                backgroundColor: '#7BA4F3',
+                backgroundColor: '#14B8FF',
                 cubicInterpolationMode: 'monotone',
-                barThickness: 10
+                barThickness: 18
             }]
         };
     }
@@ -110,9 +110,14 @@ export default class ChartEmailOpenRate extends Component {
                 }],
                 xAxes: [{
                     gridLines: {
+                        color: '#DDE1E5',
+                        borderDash: [4,4],
+                        display: true,
+                        drawBorder: true,
                         drawTicks: false,
-                        display: false,
-                        drawBorder: false
+                        zeroLineWidth: 1,
+                        zeroLineColor: '#DDE1E5',
+                        zeroLineBorderDash: [4,4]
                     },
                     ticks: {
                         display: false,
