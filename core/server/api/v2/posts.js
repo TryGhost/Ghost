@@ -9,7 +9,7 @@ const messages = {
     postNotFound: 'Post not found.'
 };
 
-const postsService = getPostServiceInstance('v2');
+const postsService = getPostServiceInstance();
 
 module.exports = {
     docName: 'posts',
