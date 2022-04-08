@@ -1,83 +1,112 @@
-const {agentProvider, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyErrorId, anyString, stringMatching} = matchers;
 
 describe('API Versioning', function () {
-    let agent;
+    describe('Admin API', function () {
+        let agentAdminAPI;
 
-    before(async function () {
-        agent = await agentProvider.getAdminAPIAgent();
+        before(async function () {
+            agentAdminAPI = await agentProvider.getAdminAPIAgent();
+        });
+
+        it('responds with no content version header when accept version header is NOT PRESENT', async function () {
+            await agentAdminAPI
+                .get('site/')
+                .matchBodySnapshot({
+                    site: {
+                        version: stringMatching(/\d+\.\d+/)
+                    }
+                })
+                .matchHeaderSnapshot({
+                    etag: anyString
+                });
+        });
+
+        it('responds with current content version header when requested version is BEHIND current version and CAN respond', async function () {
+            await agentAdminAPI
+                .get('site/')
+                .header('Accept-Version', 'v3.0')
+                .matchBodySnapshot({
+                    site: {
+                        version: stringMatching(/\d+\.\d+/)
+                    }
+                })
+                .matchHeaderSnapshot({
+                    etag: anyString,
+                    'content-version': stringMatching(/v\d+\.\d+/)
+                });
+        });
+
+        it('responds with current content version header when requested version is AHEAD and CAN respond', async function () {
+            await agentAdminAPI
+                .get('site/')
+                .header('Accept-Version', 'v999.5')
+                .matchBodySnapshot({
+                    site: {
+                        version: stringMatching(/\d+\.\d+/)
+                    }
+                })
+                .matchHeaderSnapshot({
+                    etag: anyString,
+                    'content-version': stringMatching(/v\d+\.\d+/)
+                });
+        });
+
+        it('responds with error current content version header when requested version is AHEAD and CANNOT respond', async function () {
+            // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
+            await agentAdminAPI
+                .get('removed_endpoint')
+                .header('Accept-Version', 'v999.1')
+                .matchHeaderSnapshot({
+                    etag: anyString
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+
+        it('responds with error current content version header when requested version is BEHIND and CANNOT respond', async function () {
+            // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
+            await agentAdminAPI
+                .get('removed_endpoint')
+                .header('Accept-Version', 'v3.1')
+                .matchHeaderSnapshot({
+                    etag: anyString
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
     });
 
-    it('responds with no content version header when accept version header is NOT PRESENT', async function () {
-        await agent
-            .get('site/')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
-            .matchHeaderSnapshot({
-                etag: anyString
-            });
-    });
+    describe('Content API', function () {
+        let agentContentAPI;
 
-    it('responds with current content version header when requested version is BEHIND current version and CAN respond', async function () {
-        await agent
-            .get('site/')
-            .header('Accept-Version', 'v3.0')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
-            .matchHeaderSnapshot({
-                etag: anyString,
-                'content-version': stringMatching(/v\d+\.\d+/)
-            });
-    });
+        before(async function () {
+            agentContentAPI = await agentProvider.getContentAPIAgent();
+            await fixtureManager.init('api_keys');
+            agentContentAPI.authenticate();
+        });
 
-    it('responds with current content version header when requested version is AHEAD and CAN respond', async function () {
-        await agent
-            .get('site/')
-            .header('Accept-Version', 'v999.5')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
-            .matchHeaderSnapshot({
-                etag: anyString,
-                'content-version': stringMatching(/v\d+\.\d+/)
-            });
-    });
+        it('responds with no content version header when accept version header is NOT PRESENT', async function () {
+            await agentContentAPI.get('settings/')
+                .expectStatus(200)
+                .matchHeaderSnapshot()
+                .matchBodySnapshot();
+        });
 
-    it('responds with error current content version header when requested version is AHEAD and CANNOT respond', async function () {
-        // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
-        await agent
-            .get('removed_endpoint')
-            .header('Accept-Version', 'v999.1')
-            .matchHeaderSnapshot({
-                etag: anyString
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-    });
-
-    it('responds with error current content version header when requested version is BEHIND and CANNOT respond', async function () {
-        // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
-        await agent
-            .get('removed_endpoint')
-            .header('Accept-Version', 'v3.1')
-            .matchHeaderSnapshot({
-                etag: anyString
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
+        it('responds with current content version header when requested version is BEHIND current version and CAN respond', async function () {
+            await agentContentAPI.get('settings/')
+                .header('Accept-Version', 'v3.0')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': stringMatching(/v\d+\.\d+/)
+                })
+                .matchBodySnapshot();
+        });
     });
 });
