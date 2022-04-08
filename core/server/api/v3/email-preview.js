@@ -7,9 +7,7 @@ const messages = {
     postNotFound: 'Post not found.'
 };
 
-const emailPreview = new mega.EmailPreview({
-    apiVersion: 'v3'
-});
+const emailPreview = new mega.EmailPreview();
 
 module.exports = {
     docName: 'email_preview',
@@ -68,7 +66,7 @@ module.exports = {
             }
 
             const {emails = []} = frame.data;
-            return await mega.mega.sendTestEmail(model, emails, 'v3');
+            return await mega.mega.sendTestEmail(model, emails);
         }
     }
 };

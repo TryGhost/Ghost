@@ -8,7 +8,7 @@ const messages = {
     pageNotFound: 'Page not found'
 };
 
-const postsService = getPostServiceInstance('v3');
+const postsService = getPostServiceInstance();
 
 module.exports = {
     docName: 'pages',
