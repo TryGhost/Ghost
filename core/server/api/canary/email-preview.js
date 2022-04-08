@@ -7,9 +7,7 @@ const messages = {
     postNotFound: 'Post not found.'
 };
 
-const emailPreview = new mega.EmailPreview({
-    apiVersion: 'canary'
-});
+const emailPreview = new mega.EmailPreview();
 
 module.exports = {
     // @TODO make the route match the resource name in 5.0
@@ -70,7 +68,7 @@ module.exports = {
             }
 
             const {emails = [], memberSegment} = frame.data;
-            return await mega.mega.sendTestEmail(model, emails, 'canary', memberSegment);
+            return await mega.mega.sendTestEmail(model, emails, memberSegment);
         }
     }
 };

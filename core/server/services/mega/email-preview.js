@@ -2,23 +2,13 @@ const postEmailSerializer = require('./post-email-serializer');
 
 class EmailPreview {
     /**
-     * @constructor
-     * @param {Object} options
-     * @param {String} options.apiVersion
-     */
-    constructor({apiVersion}) {
-        this.apiVersion = apiVersion;
-    }
-
-    /**
      * @param {Object} post - Post model object instance
      * @param {String} memberSegment - member segment filter
      * @returns {Promise<Object>}
      */
     async generateEmailContent(post, memberSegment) {
         let emailContent = await postEmailSerializer.serialize(post, {
-            isBrowserPreview: true,
-            apiVersion: this.apiVersion
+            isBrowserPreview: true
         });
 
         if (memberSegment) {
