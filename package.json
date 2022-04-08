@@ -93,7 +93,7 @@
     "@tryghost/minifier": "0.1.12",
     "@tryghost/mw-error-handler": "0.2.0",
     "@tryghost/mw-session-from-token": "0.1.28",
-    "@tryghost/nodemailer": "0.3.17",
+    "@tryghost/nodemailer": "0.3.20",
     "@tryghost/nql": "0.9.1",
     "@tryghost/package-json": "1.0.18",
     "@tryghost/promise": "0.1.15",

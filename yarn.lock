@@ -1859,7 +1859,7 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.2.10":
+"@tryghost/errors@1.2.10", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.10", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5", "@tryghost/errors@^1.2.7":
   version "1.2.10"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.10.tgz#b01b16744986005784ffd6916eec48a3e93976a9"
   integrity sha512-v5r5JzhQTkNLJBk66B75x+jyOE/WxzEBfeAtA3y1YaFtl9SQMaN1qi/7+sQzt0VrLk1qtqAOReWc/1Cncy9gOg==
@@ -1872,15 +1872,6 @@
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.7.tgz#f2da9deadb6139167a9e967e1212a66064c5abce"
   integrity sha512-VNqUKiiy4jSOQGBxcwNYMPzf76m1VZ1rnF2gvqwzGIyjrzIGfTs/iNC98n9F6JKROFuOhWS8Ehiuk69/ZAukWg==
-  dependencies:
-    lodash "^4.17.21"
-    utils-copy-error "^1.0.1"
-    uuid "^8.3.2"
-
-"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5", "@tryghost/errors@^1.2.7":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.8.tgz#b4ba1c31831216222be332ee7a37d9c4a376ac2a"
-  integrity sha512-O8CUS4SHsBYFc6/7yUDJ5yk0vhcdzPxFiISgrFhzptOd79ZdXwk9c8Pz5uSDUXPaCqKaWMYLTjSof30IxVvvAA==
   dependencies:
     lodash "^4.17.21"
     utils-copy-error "^1.0.1"
@@ -2242,14 +2233,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.28.tgz#6cddffa53e07a19c13cfc5a72071e59f42e65719"
   integrity sha512-1BXi+twPQVBbfm4NMRa9Ms5mHHZg0P8Z4oq1s0tnkJ+iNIWol2fkuJ5m6Mi6qXiWD0lPqpOL/as/aBGJsyoe7A==
 
-"@tryghost/nodemailer@0.3.17":
-  version "0.3.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.17.tgz#6014d5ba758b1c8e2d89ce66abff2d6d02d6963d"
-  integrity sha512-YKOe8Dk/6cDumOS4oW9ck4oKE6oEERCqVWsd0UISs0y3livErSZBOMxgqFYST9DuXnTrs2m6ajfthl5BoL+V9Q==
+"@tryghost/nodemailer@0.3.20":
+  version "0.3.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.20.tgz#7bdc9e66b93286ed6feb7ba8799c5863d22d4817"
+  integrity sha512-sWpUkeCgSp+rifd7sLYwX2zCPUgnlr6Ip9GF0dbyCCUm6X+p64YEI6UNE4MsU29N4YoCUBYI5c07GVZtD+JDAA==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
     "@aws-sdk/credential-provider-node" "^3.31.0"
-    "@tryghost/errors" "^1.2.7"
+    "@tryghost/errors" "^1.2.10"
     nodemailer "^6.6.3"
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
