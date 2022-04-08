@@ -10,5 +10,14 @@ module.exports = {
         async query() {
             return await statsService.members.getCountHistory();
         }
+    },
+    mrr: {
+        permissions: {
+            docName: 'members',
+            method: 'browse'
+        },
+        async query() {
+            return await statsService.mrr.getHistory();
+        }
     }
 };
