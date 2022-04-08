@@ -102,6 +102,37 @@ export default class DashboardMocksService extends Service {
         };
     }
 
+    _updateGrow(settings) {
+        const change = Math.round(Math.random() * (settings.growRate - settings.shrinkOffset));
+
+        if (settings.growPeriod) {
+            settings.growCount += 1;
+            if (settings.growCount > settings.growLength) {
+                settings.growPeriod = false;
+                settings.growCount = 0;
+                settings.growLength = Math.floor(Math.random() * settings.maxPeriod) + 20;
+            }
+        } else {
+            settings.growCount += 1;
+            if (settings.growCount > settings.growLength) {
+                settings.growPeriod = true;
+                settings.growCount = 0;
+                settings.growLength = Math.floor(Math.random() * settings.maxPeriod) + 20;
+            }
+        }
+
+        if (settings.growPeriod) {
+            if (settings.growRate < settings.maxGrowRate) {
+                settings.growRate *= settings.increaseSpeed;
+            }
+        } else {
+            if (settings.growRate > 2) {
+                settings.growRate *= settings.decreaseSpeed;
+            }
+        }
+        return change;
+    }
+
     /**
      * This method generates new data and forces a reload for all the charts
      * Might be better to move this code to a temporary mocking service
@@ -115,52 +146,127 @@ export default class DashboardMocksService extends Service {
          * @type {MemberCountStat[]}
          */
         const stats = [];
-        let growPeriod = true;
-        let growCount = 0;
-        let growLength = Math.floor(Math.random() * 14);
-        let growRate = 10;
+
+        let viralCounter = Math.floor(Math.random() * 90);
+
+        let paidSubscribedGrowthTier1 = {
+            value: 0,
+            growPeriod: true,
+            growCount: 0,
+            growLength: 3 + Math.floor(Math.random() * 7),
+            growRate: 10,
+            shrinkOffset: 3,
+            maxGrowRate: 200,
+            increaseSpeed: 1.04,
+            decreaseSpeed: 0.99,
+            maxPeriod: 180
+        };
+        let paidCanceledGrowthTier1 = {
+            growPeriod: false,
+            growCount: 0,
+            growLength: Math.floor(Math.random() * 30),
+            growRate: 1,
+            shrinkOffset: 4,
+            maxGrowRate: 50,
+            increaseSpeed: 1.03,
+            decreaseSpeed: 0.99,
+            maxPeriod: 60
+        };
+
+        let paidSubscribedGrowthTier2 = {
+            growPeriod: false,
+            growCount: 0,
+            growLength: Math.floor(Math.random() * 60),
+            growRate: 1,
+            shrinkOffset: 2,
+            maxGrowRate: 50,
+            increaseSpeed: 1.04,
+            decreaseSpeed: 0.99,
+            maxPeriod: 180
+        };
+        let paidCanceledGrowthTier2 = {
+            growPeriod: false,
+            growCount: 0,
+            growLength: Math.floor(Math.random() * 7),
+            growRate: 1,
+            shrinkOffset: 4,
+            maxGrowRate: 10,
+            increaseSpeed: 1.03,
+            decreaseSpeed: 0.99,
+            maxPeriod: 60
+        };
+
+        let freeGrowth = {
+            growPeriod: true,
+            growCount: 0,
+            growLength: Math.floor(Math.random() * 30),
+            growRate: 20,
+            shrinkOffset: 2,
+            maxGrowRate: 200,
+            increaseSpeed: 1.02,
+            decreaseSpeed: 0.99,
+            maxPeriod: 90
+        };
 
         for (let index = 0; index < generateDays; index++) {
             const date = new Date(startDate.getTime());
             date.setDate(date.getDate() + index);
 
-            const previous = stats.length ? stats[stats.length - 1] : {free: 0, paid: 0, comped: 0};
+            if (index === 0) {
+                stats.push({
+                    date: date.toISOString().split('T')[0],
+                    free: 0,
+                    tier1: 0,
+                    tier2: 0,
+                    paid: 0,
+                    comped: 0,
+                    paidSubscribed: 0,
+                    paidCanceled: 0
+                });
+                continue;
+            }
+            const previous = stats[stats.length - 1];
 
-            const paid = index === 0 ? 0 : Math.max(0, previous.paid + Math.round(Math.random() * (growRate - 3)));
+            let paidSubscribed1 = Math.max(0, this._updateGrow(paidSubscribedGrowthTier1));
+            const paidCanceled1 = Math.min(previous.tier1, Math.max(0, this._updateGrow(paidCanceledGrowthTier1)));
+
+            const paidSubscribed2 = Math.max(0, this._updateGrow(paidSubscribedGrowthTier2));
+            const paidCanceled2 = Math.min(previous.tier2, Math.max(0, this._updateGrow(paidCanceledGrowthTier2)));
+
+            let freeDelta = Math.max(0, this._updateGrow(freeGrowth));
+
+            viralCounter -= 1;
+            
+            if (viralCounter <= 0) {
+                viralCounter = Math.floor(Math.random() * 900);
+                freeDelta += Math.floor(Math.random() * 20 * index);
+
+                paidSubscribed1 += Math.floor(Math.random() * 20 * index);
+
+                // End grow periods
+                freeGrowth.growPeriod = true;
+                freeGrowth.growLength = Math.floor(Math.random() * 5);
+                freeGrowth.growRate = freeDelta;
+                paidSubscribedGrowthTier1.growPeriod = true;
+                paidSubscribedGrowthTier1.growLength = 0;
+
+                paidCanceledGrowthTier1.growLength = 14;
+                paidCanceledGrowthTier1.growPeriod = false;
+            }
+
+            const tier1 = Math.max(0, previous.tier1 + paidSubscribed1 - paidCanceled1);
+            const tier2 = Math.max(0, previous.tier2 + paidSubscribed2 - paidCanceled2);
+
             stats.push({
                 date: date.toISOString().split('T')[0],
-                free: index === 0 ? 0 : Math.max(0, previous.free + Math.round(Math.random() * (growRate))),
-                paid,
+                free: previous.free + freeDelta,
+                tier1,
+                tier2,
+                paid: tier1 + tier2,
                 comped: 0,
-                paidSubscribed: Math.max(paid - previous.paid + 5, 0),
-                paidCanceled: Math.max(previous.paid - paid, 0) + 5
+                paidSubscribed: paidSubscribed1 + paidSubscribed2,
+                paidCanceled: paidCanceled1 + paidCanceled2
             });
-
-            if (growPeriod) {
-                growCount += 1;
-                if (growCount > growLength) {
-                    growPeriod = false;
-                    growCount = 0;
-                    growLength = Math.floor(Math.random() * 90) + 20;
-                }
-            } else {
-                growCount += 1;
-                if (growCount > growLength) {
-                    growPeriod = true;
-                    growCount = 0;
-                    growLength = Math.floor(Math.random() * 90) + 20;
-                }
-            }
-
-            if (growPeriod) {
-                if (growRate < Math.min(100, previous.free / 10)) {
-                    growRate *= 1.01;
-                }
-            } else {
-                if (growRate > 2) {
-                    growRate *= 0.99;
-                }
-            }
         }
 
         if (stats.length === 0) {
@@ -183,9 +289,11 @@ export default class DashboardMocksService extends Service {
             free: (stats[stats.length - 1]?.free ?? 0) + (stats[stats.length - 1]?.comped ?? 0)
         };
 
+        const cadenceRate = Math.random();
+
         this.paidMembersByCadence = {
-            annual: 546,
-            monthly: 5162
+            annual: Math.floor(currentCounts.paid * cadenceRate),
+            monthly: Math.floor(currentCounts.paid * (1 - cadenceRate))
         };
 
         this.paidMembersByTier = [
@@ -193,80 +301,93 @@ export default class DashboardMocksService extends Service {
                 tier: {
                     name: 'Bronze tier'
                 },
-                members: 985
+                members: Math.floor(currentCounts.paid * 0.6)
             },
             {
                 tier: {
                     name: 'Silver tier'
                 },
-                members: 459
+                members: Math.floor(currentCounts.paid * 0.25)
             },
             {
                 tier: {
                     name: 'Gold tier'
                 },
-                members: 124
+                members: Math.floor(currentCounts.paid * 0.15)
             }
         ];
 
         this.newsletterSubscribers = {
-            paid: 156,
-            free: 8459,
-            total: 156 + 8459
+            paid: Math.floor(currentCounts.paid * 0.9),
+            free: Math.floor(currentCounts.free * 0.5),
+            total: Math.floor(currentCounts.paid * 0.9) + Math.floor(currentCounts.free * 0.5)
         };
 
-        this.emailsSent30d = 123;
+        this.emailsSent30d = Math.floor(days * 123 / 90);
         
         this.membersLastSeen7d = Math.round(Math.random() * currentCounts.free / 2);
         this.membersLastSeen30d = this.membersLastSeen7d + Math.round(Math.random() * currentCounts.free / 2);
 
-        this.emailOpenRateStats = [
-            {
-                subject: '💸 The best way to get paid to create',
-                openRate: 58,
-                submittedAt: new Date()
-            },
-            {
-                subject: '🎒How to start a blog and make money',
-                openRate: 42,
-                submittedAt: new Date()
-            },
-            {
-                subject: 'How to turn your amateur blogging into a real business',
-                openRate: 89,
-                submittedAt: new Date()
-            },
-            {
-                subject: '💸 The best way to get paid to create',
-                openRate: 58,
-                submittedAt: new Date()
-            },
-            {
-                subject: '🎒How to start a blog and make money',
-                openRate: 42,
-                submittedAt: new Date()
-            },
-            {
-                subject: 'How to turn your amateur blogging into a real business',
-                openRate: 70,
-                submittedAt: new Date()
-            },
-            {
-                subject: '🎒How to start a blog and make money',
-                openRate: 90,
-                submittedAt: new Date()
-            },
-            {
-                subject: 'How to turn your amateur blogging into a real business',
-                openRate: 89,
-                submittedAt: new Date()
-            }
-        ];
+        this.emailOpenRateStats = [];
+        if (days >= 7) {
+            this.emailOpenRateStats.push(
+                {
+                    subject: '💸 The best way to get paid to create',
+                    openRate: 58,
+                    submittedAt: new Date()
+                }
+            );
+        }
+
+        if (days >= 28) {
+            this.emailOpenRateStats.push(
+                {
+                    subject: '🎒How to start a blog and make money',
+                    openRate: 42,
+                    submittedAt: new Date()
+                },
+                {
+                    subject: 'How to turn your amateur blogging into a real business',
+                    openRate: 89,
+                    submittedAt: new Date()
+                },
+                {
+                    subject: '💸 The best way to get paid to create',
+                    openRate: 58,
+                    submittedAt: new Date()
+                }
+            );
+        }
+
+        if (days >= 40) {
+            this.emailOpenRateStats.push(
+                {
+                    subject: '🎒How to start a blog and make money',
+                    openRate: 42,
+                    submittedAt: new Date()
+                },
+                {
+                    subject: 'How to turn your amateur blogging into a real business',
+                    openRate: 70,
+                    submittedAt: new Date()
+                },
+                {
+                    subject: '🎒How to start a blog and make money',
+                    openRate: 90,
+                    submittedAt: new Date()
+                },
+                {
+                    subject: 'How to turn your amateur blogging into a real business',
+                    openRate: 89,
+                    submittedAt: new Date()
+                }
+            );
+        }
 
         this.mrrStats = stats.map((s) => {
             return {
                 date: s.date,
-                mrr: s.paid * 5
+                mrr: s.tier1 * 500 + s.tier2 * 2500
             };
         });
     }
