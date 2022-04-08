@@ -105,13 +105,14 @@ describe('Models: crud', function () {
             });
         });
 
-        it('Sets the `lock` option to "forUpdate" when the `forUpdate` option is passed', function () {
+        it('Sets the `lock` option to "forUpdate" when the `forUpdate` and `transacting` options are passed', function () {
             const data = {
                 id: 670
             };
             const unfilteredOptions = {
                 donny: 'donson',
-                forUpdate: true
+                forUpdate: true,
+                transacting: {}
             };
             const model = models.Base.Model.forge({});
             const fetchedModel = models.Base.Model.forge({});
@@ -161,12 +162,31 @@ describe('Models: crud', function () {
                 should.deepEqual(forgeStub.args[0][0], {id: filteredOptions.id});
 
                 should.equal(fetchStub.args[0][0], filteredOptions);
-                should.equal(fetchStub.args[0][0].lock, 'forUpdate');
+                should.equal(fetchStub.args[0][0].lock, undefined);
 
                 const filteredData = filterDataSpy.returnValues[0];
                 should.equal(saveStub.args[0][0], filteredData);
                 should.equal(saveStub.args[0][1].method, 'update');
                 should.deepEqual(saveStub.args[0][1], filteredOptions);
+            });
+        });
+
+        it('sets options.lock to "forUpdate" if options.transacting is present', function () {
+            const data = {
+                base: 'cannon'
+            };
+            const unfilteredOptions = {
+                transacting: {}
+            };
+
+            const model = models.Base.Model.forge({});
+            sinon.stub(models.Base.Model, 'forge')
+                .returns(model);
+            const fetchStub = sinon.stub(model, 'fetch')
+                .resolves();
+
+            return models.Base.Model.findOne(data, unfilteredOptions).then(() => {
+                should.equal(fetchStub.args[0][0].lock, undefined);
             });
         });
 
