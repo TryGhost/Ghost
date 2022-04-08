@@ -16,7 +16,7 @@ const postsMetaSchema = require('../../../../../../data/schema').tables.posts_me
 const labsService = require('../../../../../../../shared/labs');
 
 const getPostServiceInstance = require('../../../../../../services/posts/posts-service');
-const postsService = getPostServiceInstance('canary');
+const postsService = getPostServiceInstance();
 
 module.exports = async (model, frame, options = {}) => {
     const {tiers: tiersData} = options || {};
