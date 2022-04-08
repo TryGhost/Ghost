@@ -2,7 +2,13 @@
 // const testUtils = require('./utils');
 require('./utils');
 const {InternalServerError} = require('@tryghost/errors');
-const {prepareError, handleJSONResponse, handleJSONResponseV2, handleHTMLResponse, prepareStack} = require('../');
+const {
+    prepareError,
+    handleJSONResponse,
+    handleJSONResponseV2,
+    handleHTMLResponse,
+    prepareStack
+} = require('../');
 
 describe('Prepare Error', function () {
     it('Correctly prepares a normal error', function (done) {
