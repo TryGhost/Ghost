@@ -137,6 +137,10 @@ module.exports = function (Bookshelf) {
                 options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
             }
 
+            if (options.transacting && options.forUpdate) {
+                options.lock = 'forUpdate';
+            }
+
             return model.fetch(options)
                 .catch((err) => {
                     // CASE: SQL syntax is incorrect
@@ -177,6 +181,10 @@ module.exports = function (Bookshelf) {
             // We allow you to disable timestamps when run migration, so that the posts `updated_at` value is the same
             if (options.importing) {
                 model.hasTimestamps = false;
+            }
+
+            if (options.transacting) {
+                options.lock = 'forUpdate';
             }
 
             const object = await model.fetch(options);
