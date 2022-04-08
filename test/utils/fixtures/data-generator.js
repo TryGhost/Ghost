@@ -369,18 +369,36 @@ DataGenerator.Content = {
         {
             id: ObjectId().toHexString(),
             name: 'Daily newsletter',
+            slug: 'daily-newsletter',
             description: '',
             sender_name: 'Jamie',
             sender_email: 'jamie@example.com',
-            sender_reply_to: 'jamie@example.com'
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 0
         },
         {
             id: ObjectId().toHexString(),
             name: 'Weekly newsletter',
+            slug: 'weekly-newsletter',
             description: '',
             sender_name: 'Jamie',
             sender_email: 'jamie@example.com',
-            sender_reply_to: 'jamie@example.com'
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 0
         }
     ],
 
@@ -909,17 +927,21 @@ DataGenerator.forKnex = (function () {
 
     function createNewsletter(overrides) {
         const newObj = _.cloneDeep(overrides);
-
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
+            slug: 'daily-newsletter',
             name: 'Daily Newsletter',
             sender_name: 'Jamie Larsen',
             sender_email: 'jamie@example.com',
-            sender_reply_to: 'jamie@example.com',
-            default: false,
+            sender_reply_to: 'newsletter',
             status: 'active',
-            recipient_filter: '',
+            visibility: 'members',
             subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
             sort_order: 0
         });
     }
