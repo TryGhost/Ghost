@@ -9,8 +9,7 @@ const messages = {
 };
 
 class PostsService {
-    constructor({mega, apiVersion, urlUtils, models, isSet}) {
-        this.apiVersion = apiVersion;
+    constructor({mega, urlUtils, models, isSet}) {
         this.mega = mega;
         this.urlUtils = urlUtils;
         this.models = models;
@@ -87,7 +86,7 @@ class PostsService {
                 let postEmail = model.relations.email;
 
                 if (!postEmail) {
-                    const email = await this.mega.addEmail(model, Object.assign({}, frame.options, {apiVersion: this.apiVersion}));
+                    const email = await this.mega.addEmail(model, Object.assign({}, frame.options));
                     model.set('email', email);
                 } else if (postEmail && postEmail.get('status') === 'failed') {
                     const email = await this.mega.retryFailedEmail(postEmail);
@@ -159,17 +158,15 @@ class PostsService {
 }
 
 /**
- * @param {string} apiVersion - API version to use within the service
  * @returns {PostsService} instance of the PostsService
  */
-const getPostServiceInstance = (apiVersion) => {
+const getPostServiceInstance = () => {
     const urlUtils = require('../../../shared/url-utils');
     const {mega} = require('../mega');
     const labs = require('../../../shared/labs');
     const models = require('../../models');
 
     return new PostsService({
-        apiVersion: apiVersion,
         mega: mega,
         urlUtils: urlUtils,
         models: models,
