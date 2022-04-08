@@ -25,7 +25,6 @@ module.exports = {
         },
         subscribe_on_signup: {type: 'bool', nullable: false, defaultTo: true},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
-
         header_image: {type: 'string', maxlength: 2000, nullable: true},
         show_header_icon: {type: 'bool', nullable: false, defaultTo: true},
         show_header_title: {type: 'bool', nullable: false, defaultTo: true},
