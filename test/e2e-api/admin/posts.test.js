@@ -17,7 +17,7 @@ describe('Posts API', function () {
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
+        await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters');
     });
 
     afterEach(function () {
@@ -420,7 +420,7 @@ describe('Posts API', function () {
 
     it('Can\'t change the newsletter_id of a post', async function () {
         const post = {
-            newsletter_id: '123'
+            newsletter_id: testUtils.DataGenerator.Content.newsletters[0].id
         };
 
         const res = await request
