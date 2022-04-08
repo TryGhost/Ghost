@@ -613,7 +613,23 @@ export default class DashboardStatsService extends Service {
         let currentRangeDate;
 
         if (days === 'all') {
-            currentRangeDate = data.length > 0 ? moment(data[0].date) : moment();
+            const MINIMUM_DAYS = 90;
+            currentRangeDate = moment().subtract(MINIMUM_DAYS - 1, 'days');
+
+            // Make sure all charts are synced correctly and have the same start date when choosing 'all time'
+            if (this.mrrStats !== null && this.mrrStats.length > 0) {
+                const date = moment(this.mrrStats[0].date);
+                if (date.toDate() < currentRangeDate.toDate()) {
+                    currentRangeDate = date;
+                }
+            }
+
+            if (this.memberCountStats !== null && this.memberCountStats.length > 0) {
+                const date = moment(this.memberCountStats[0].date);
+                if (date.toDate() < currentRangeDate.toDate()) {
+                    currentRangeDate = date;
+                }
+            }
         } else {
             currentRangeDate = moment().subtract(days - 1, 'days');
         }
