@@ -9,7 +9,7 @@
         <div class="gh-dashboard5-stats-highlight"></div>
     </button>
     {{#if this.hasPaidTiers}}
-        <button class="gh-dashboard5-stats-button {{if this.chartShowingMonthly 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "monthly")}}>
+        <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid")}}>
             <Dashboard::v5::parts::ChartMetric
                 @label={{gh-pluralize this.paidMembers "Paid member" without-count=true}}
                 @value={{format-number this.paidMembers}}
@@ -18,7 +18,7 @@
                 @large={{true}} />
             <div class="gh-dashboard5-stats-highlight"></div>
         </button>
-        <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid")}}>
+        <button class="gh-dashboard5-stats-button {{if this.chartShowingMonthly 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "monthly")}}>
             <Dashboard::v5::parts::ChartMetric
                 @label="Monthly revenue (MRR)"
                 @value="${{gh-price-amount this.currentMRR}}"
