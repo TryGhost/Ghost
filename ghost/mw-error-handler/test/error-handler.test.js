@@ -145,6 +145,28 @@ describe('Resource Not Found', function () {
         });
     });
 
+    it('Returns 406 Request Not Acceptable Error for when requested version is ahead current version', function (done) {
+        const req = {
+            headers: {
+                'accept-version': 'v4.8'
+            }
+        };
+
+        const res = {
+            locals: {
+                safeVersion: '4.3'
+            }
+        };
+
+        resourceNotFound(req, res, (error) => {
+            should.equal(error.statusCode, 406);
+            should.equal(error.message, 'Request not acceptable for provided Accept-Version header.');
+            should.equal(error.context, 'Provided client version v4.8 is ahead of current Ghost instance version v4.3.');
+            should.equal(error.help, 'Upgrade your Ghost instance.');
+            done();
+        });
+    });
+
     it('Returns 404 Not Found Error for when requested version is the same as current version', function (done) {
         const req = {
             headers: {
