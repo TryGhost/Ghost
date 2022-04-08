@@ -9,8 +9,6 @@ module.exports = createTransactionalMigration(
             .select(
                 'members.id',
                 'members_stripe_customers_subscriptions.plan_currency',
-                'members_stripe_customers_subscriptions.plan_amount',
-                'members_stripe_customers_subscriptions.plan_interval',
                 'members_stripe_customers_subscriptions.updated_at'
             )
             .from('members_stripe_customers_subscriptions')
@@ -19,20 +17,12 @@ module.exports = createTransactionalMigration(
             .where('members_stripe_customers_subscriptions.cancel_at_period_end', true)
             .whereNot('members_stripe_customers_subscriptions.status', 'canceled');
 
+        if (cancelledSubscriptions.length === 0) {
+            logging.info('No missing cancelled events - skipping migration');
+            return;
+        }
+
         const eventsToInsert = cancelledSubscriptions.map((subscription) => {
-            let mrrDelta;
-            if (subscription.plan_interval === 'year') {
-                mrrDelta = -1 * Math.floor(subscription.plan_amount / 12);
-            }
-            if (subscription.plan_interval === 'month') {
-                mrrDelta = -1 * subscription.plan_amount;
-            }
-            if (subscription.plan_interval === 'week') {
-                mrrDelta = -1 * subscription.plan_amount * 4;
-            }
-            if (subscription.plan_interval === 'day') {
-                mrrDelta = -1 * subscription.plan_amount * 30;
-            }
             const event = {
                 id: (new ObjectID()).toHexString(),
                 type: 'cancelled',
@@ -41,17 +31,18 @@ module.exports = createTransactionalMigration(
                 to_plan: null,
                 currency: subscription.plan_currency,
                 source: 'migration',
-                mrr_delta: mrrDelta,
+                mrr_delta: 0,
                 created_at: subscription.updated_at
             };
 
             return event;
         });
 
+        logging.info(`Found ${eventsToInsert.length} missing cancellation events`);
         await knex('members_paid_subscription_events').insert(eventsToInsert);
     },
     async function down(knex) {
-        logging.info('Deleting all members_paid_subscription_events with a "type" of "cancelled"')
+        logging.info('Deleting all members_paid_subscription_events with a "type" of "cancelled"');
         await knex('members_paid_subscription_events').where('type', 'cancelled').del();
     }
 );
