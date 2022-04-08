@@ -1,7 +1,9 @@
-const {createDropColumnMigration} = require('../../utils');
+module.exports.up = () => {
+    // noop - superceded by previous table re-create migration
+    return Promise.resolve();
+};
 
-module.exports = createDropColumnMigration('newsletters', 'default', {
-    type: 'bool',
-    nullable: false,
-    defaultTo: false
-});
+module.exports.down = () => {
+    // noop - superceded by previous table re-create migration
+    return Promise.resolve();
+};
