@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const moment = require('moment');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
-const api = require('../../api');
+const api = require('../../api').canary;
 
 const messages = {
     jobNotFound: 'Job not found.',
@@ -11,15 +11,6 @@ const messages = {
 };
 
 class PostSchedulingService {
-    /**
-     *
-     * @param {Object} options
-     * @param {String} options.apiVersion - api version
-     */
-    constructor({apiVersion}) {
-        this.api = api[apiVersion];
-    }
-
     /**
      * Publishes scheduled resource (a post or a page at the moment of writing)
      *
@@ -32,7 +23,7 @@ class PostSchedulingService {
     async publish(resourceType, id, force, options) {
         const publishAPostBySchedulerToleranceInMinutes = config.get('times').publishAPostBySchedulerToleranceInMinutes;
 
-        const result = await this.api[resourceType].read({id}, options);
+        const result = await api[resourceType].read({id}, options);
         const preScheduledResource = result[resourceType][0];
 
         const publishedAtMoment = moment(preScheduledResource.published_at);
@@ -51,7 +42,7 @@ class PostSchedulingService {
             updated_at: moment(preScheduledResource.updated_at).toISOString(true)
         }];
 
-        const editResult = await this.api[resourceType].edit(
+        const editResult = await api[resourceType].edit(
             editedResource,
             _.pick(options, ['context', 'id', 'transacting', 'forUpdate'])
         );
@@ -88,13 +79,10 @@ class PostSchedulingService {
 }
 
 /**
- * @param {string} apiVersion - API version to use within the service
  * @returns {PostSchedulingService} instance of the PostsService
  */
-const getPostSchedulingServiceInstance = (apiVersion) => {
-    return new PostSchedulingService({
-        apiVersion: apiVersion
-    });
+const getPostSchedulingServiceInstance = () => {
+    return new PostSchedulingService();
 };
 
 module.exports = getPostSchedulingServiceInstance;

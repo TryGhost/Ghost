@@ -1,6 +1,6 @@
 const models = require('../../models');
 
-const postSchedulingService = require('../../services/posts/post-scheduling-service')('canary');
+const postSchedulingService = require('../../services/posts/post-scheduling-service')();
 
 module.exports = {
     docName: 'schedules',
