@@ -1,7 +1,10 @@
 <div class="gh-dashboard5-list" {{did-insert this.load}}>
     {{#if (not (or this.loading this.error))}}
-    <div class="gh-dashboard5-list-header">
+    {{!-- <div class="gh-dashboard5-list-header">
         <Dashboard::v5::parts::ChartMetric @label="Staff picks" />
+    </div> --}}
+     <div class="gh-dashboard5-title">
+        <h4>Staff picks</h4>
     </div>
     <div class="gh-dashboard5-list-body">
         {{#each this.staffPicks as |entry|}}

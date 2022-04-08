@@ -1,17 +1,23 @@
 <article {{did-insert this.loadCharts}} class="gh-dashboard5-box">
+    <div class="gh-dashboard5-title">
+        <h4>Engagement</h4>
+    </div>
+
     <div class="gh-dashboard5-insert">
         <div class="gh-dashboard5-insert-item">
             <Dashboard::v5::parts::ChartMetric
                 @label="Engaged over 30 days"
                 @value={{this.data30Days}}
-                @extra="99 members" />
+                @reverse={true}
+                />
         </div>
 
         <div class="gh-dashboard5-insert-item">
             <Dashboard::v5::parts::ChartMetric
                 @label="Engaged over 7 days"
                 @value={{this.data7Days}}
-                @extra="99 members" />
+                @reverse={true}
+                />
         </div>
     </div>
 </article>

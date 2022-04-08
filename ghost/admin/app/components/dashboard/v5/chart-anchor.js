@@ -86,8 +86,24 @@ export default class ChartAnchor extends Component {
         return this.dashboardStats.siteStatus?.hasPaidTiers;
     }
 
+    get chartTitle() {
+        if (this.chartDisplay === 'total') {
+            return 'Total members';
+        } else if (this.chartDisplay === 'paid') {
+            return 'Paid members';
+        } else if (this.chartDisplay === 'monthly') {
+            return 'MRR';
+        }
+    }
+
     get chartType() {
-        return 'line';
+        if (this.chartDisplay === 'total') {
+            return 'line';
+        } else if (this.chartDisplay === 'paid') {
+            return 'bar';
+        } else if (this.chartDisplay === 'monthly') {
+            return 'line';
+        }
     }
 
     get chartData() {
@@ -120,16 +136,16 @@ export default class ChartAnchor extends Component {
                 tension: 0,
                 cubicInterpolationMode: 'monotone',
                 fill: true,
-                fillColor: '#F3F7FF',
-                backgroundColor: '#F3F7FF',
+                fillColor: 'rgba(20, 184, 255, 0.07)',
+                backgroundColor: 'rgba(20, 184, 255, 0.07)',
                 pointRadius: 0,
                 pointHitRadius: 10,
-                pointBorderColor: '#5597F9',
-                pointBackgroundColor: '#5597F9',
-                pointHoverBackgroundColor: '#5597F9',
-                pointHoverBorderColor: '#5597F9',
+                pointBorderColor: '#14B8FF',
+                pointBackgroundColor: '#14B8FF',
+                pointHoverBackgroundColor: '#14B8FF',
+                pointHoverBorderColor: '#14B8FF',
                 pointHoverRadius: 0,
-                borderColor: '#5597F9',
+                borderColor: '#14B8FF',
                 borderJoinStyle: 'miter'
             }]
         };
@@ -208,9 +224,14 @@ export default class ChartAnchor extends Component {
                 }],
                 xAxes: [{
                     gridLines: {
+                        color: '#DDE1E5',
+                        borderDash: [4,4],
+                        display: true,
+                        drawBorder: true,
                         drawTicks: false,
-                        display: false,
-                        drawBorder: false
+                        zeroLineWidth: 1,
+                        zeroLineColor: '#DDE1E5',
+                        zeroLineBorderDash: [4,4]
                     },
                     ticks: {
                         display: false,
@@ -239,7 +260,7 @@ export default class ChartAnchor extends Component {
     }
 
     get chartHeight() {
-        return 160;
+        return 275;
     }
 
     calculatePercentage(from, to) {

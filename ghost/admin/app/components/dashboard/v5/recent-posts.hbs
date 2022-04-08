@@ -1,7 +1,8 @@
 <div class="gh-dashboard5-list" {{did-insert this.loadPosts}}>
-    <div class="gh-dashboard5-list-header">
-        <Dashboard::v5::parts::ChartMetric @label="Recent posts" />
+    <div class="gh-dashboard5-title">
+        <h4>Recent posts</h4>
     </div>
+
     <div class="gh-dashboard5-list-body">
         {{#each this.posts as |post|}}
             <div class="gh-dashboard5-list-item">
