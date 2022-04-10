@@ -85,7 +85,7 @@ class Bridge {
         const siteApp = require('./frontend/web/site');
 
         const routerConfig = {
-            routeSettings: routeSettings.loadRouteSettingsSync(),
+            routeSettings: await routeSettings.loadRouteSettings(),
             urlService
         };
 

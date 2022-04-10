@@ -31,7 +31,7 @@ describe('UNIT > SettingsLoader:', function () {
             validateStub = sinon.stub();
         });
 
-        it('reads a settings object for routes.yaml file', function () {
+        it('reads a settings object for routes.yaml file', async function () {
             const settingsLoader = new SettingsLoader({
                 parseYaml: yamlParserStub,
                 settingFilePath: '/content/data/routes.yaml'
@@ -49,16 +49,16 @@ describe('UNIT > SettingsLoader:', function () {
                     author: '/author/{slug}/'
                 }
             };
-            const fsReadFileStub = sinon.stub(fs, 'readFileSync').returns(settingsStubFile);
+            const fsReadFileStub = sinon.stub(fs, 'readFile').returns(settingsStubFile);
 
-            const result = settingsLoader.loadSettingsSync();
+            const result = await settingsLoader.loadSettings();
             should.exist(result);
             result.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
             fsReadFileStub.calledOnce.should.be.true();
         });
 
-        it('can find yaml settings file and returns a settings object', function () {
-            const fsReadFileSpy = sinon.spy(fs, 'readFileSync');
+        it('can find yaml settings file and returns a settings object', async function () {
+            const fsReadFileSpy = sinon.spy(fs, 'readFile');
             const storageFolderPath = path.join(__dirname, '../../../../utils/fixtures/settings/');
             const expectedSettingsFile = path.join(storageFolderPath, 'routes.yaml');
 
@@ -71,7 +71,7 @@ describe('UNIT > SettingsLoader:', function () {
                 parseYaml: yamlParserStub,
                 settingFilePath: expectedSettingsFile
             });
-            const setting = settingsLoader.loadSettingsSync();
+            const setting = await settingsLoader.loadSettings();
             should.exist(setting);
             setting.should.be.an.Object().with.properties('routes', 'collections', 'taxonomies');
 
@@ -80,7 +80,7 @@ describe('UNIT > SettingsLoader:', function () {
             yamlParserStub.callCount.should.be.eql(1);
         });
 
-        it('can handle errors from YAML parser', function (done) {
+        it('can handle errors from YAML parser', async function () {
             const storageFolderPath = path.join(__dirname, '../../../../utils/fixtures/settings/');
             yamlParserStub.throws(new errors.InternalServerError({
                 message: 'could not parse yaml file',
@@ -92,25 +92,24 @@ describe('UNIT > SettingsLoader:', function () {
                 settingFilePath: path.join(storageFolderPath, 'routes.yaml')
             });
             try {
-                settingsLoader.loadSettingsSync();
-                done(new Error('Loader should fail'));
+                await settingsLoader.loadSettings();
+                throw new Error('Should have failed already');
             } catch (err) {
                 should.exist(err);
                 err.message.should.be.eql('could not parse yaml file');
                 err.context.should.be.eql('bad indentation of a mapping entry at line 5, column 10');
                 yamlParserStub.calledOnce.should.be.true();
-                done();
             }
         });
 
-        it('throws error if file can\'t be accessed', function (done) {
+        it('throws error if file can\'t be accessed', async function () {
             const storageFolderPath = path.join(__dirname, '../../../utils/fixtures/settings/');
             const expectedSettingsFile = path.join(storageFolderPath, 'routes.yaml');
             const fsError = new Error('no permission');
             fsError.code = 'EPERM';
 
-            const originalFn = fs.readFileSync;
-            const fsReadFileStub = sinon.stub(fs, 'readFileSync').callsFake(function (filePath, options) {
+            const originalFn = fs.readFile;
+            const fsReadFileStub = sinon.stub(fs, 'readFile').callsFake(function (filePath, options) {
                 if (filePath.match(/routes\.yaml/)) {
                     throw fsError;
                 }
@@ -126,13 +125,12 @@ describe('UNIT > SettingsLoader:', function () {
             });
 
             try {
-                settingsLoader.loadSettingsSync();
-                done(new Error('Loader should fail'));
+                await settingsLoader.loadSettings();
+                throw new Error('Should have failed already');
             } catch (err) {
                 err.message.should.match(/Error trying to load YAML setting for routes from/);
                 fsReadFileStub.calledWith(expectedSettingsFile).should.be.true();
                 yamlParserStub.calledOnce.should.be.false();
-                done();
             }
         });
     });

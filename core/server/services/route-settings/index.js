@@ -28,9 +28,6 @@ module.exports = {
         return await defaultSettingsManager.ensureSettingsFileExists();
     },
 
-    get loadRouteSettingsSync() {
-        return settingsLoader.loadSettingsSync.bind(settingsLoader);
-    },
     get loadRouteSettings() {
         return settingsLoader.loadSettings.bind(settingsLoader);
     },
