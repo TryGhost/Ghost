@@ -21,10 +21,9 @@ class SettingsLoader {
     }
 
     /**
-     * Functionally same as loadSettingsSync with exception of loading
-     * settings asynchronously. This method is used at new places to read settings
-     * to prevent blocking the eventloop
-     * @returns {Promise<Object>} settingsFile
+     * Reads the routes.yaml settings file and passes the
+    * file to the YAML parser which then returns a JSON object.
+     * @returns {Promise<RouteSettings>} settingsFileContents
      */
     async loadSettings() {
         try {
@@ -49,36 +48,13 @@ class SettingsLoader {
             });
         }
     }
-
-    /**
-     * Reads the routes.yaml settings file and passes the
-     * file to the YAML parser which then returns a JSON object.
-     *
-     * @returns {Object} settingsFile in following format: {routes: {}, collections: {}, resources: {}}
-     */
-    loadSettingsSync() {
-        try {
-            const file = fs.readFileSync(this.settingFilePath, 'utf8');
-            debug('routes settings file found for:', this.settingFilePath);
-
-            const object = this.parseYaml(file);
-            debug('YAML settings file parsed:', this.settingFilePath);
-
-            return validate(object);
-        } catch (err) {
-            if (errors.utils.isGhostError(err)) {
-                throw err;
-            }
-
-            throw new errors.InternalServerError({
-                message: tpl(messages.settingsLoaderError, {
-                    setting: 'routes',
-                    path: this.settingFilePath
-                }),
-                err: err
-            });
-        }
-    }
 }
 
 module.exports = SettingsLoader;
+
+/**
+ * @typedef {Object} RouteSettings
+ * @property {Object} routes
+ * @property {Object} collections
+ * @property {Object} taxonomies
+ */
