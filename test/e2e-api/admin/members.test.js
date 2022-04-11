@@ -1353,7 +1353,7 @@ describe('Members API: with multiple newsletters', function () {
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
                     labels: anyArray,
-                    newsletters: Array(2).fill({
+                    newsletters: Array(3).fill({
                         id: matchers.anyObjectId
                     })
                 }]
@@ -1365,7 +1365,7 @@ describe('Members API: with multiple newsletters', function () {
     });
 
     // Edit a member
-    it('Can and and edit with custom newsletters', async function () {
+    it('Can add and edit with custom newsletters', async function () {
         // Add custom newsletter list to new member
         const member = {
             name: 'test newsletter',

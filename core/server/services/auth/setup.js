@@ -107,7 +107,9 @@ async function doSettings(data, settingsAPI) {
     return user;
 }
 
-async function doProduct(data, productsAPI) {
+// Update names for default product and newsletter to site title
+async function doProductAndNewsletter(data, api) {
+    const {products: productsAPI, newsletters: newslettersAPI} = api;
     const context = {context: {user: data.user.id}};
     const user = data.user;
     const blogTitle = data.userData.blogTitle;
@@ -116,15 +118,24 @@ async function doProduct(data, productsAPI) {
         return user;
     }
     try {
-        const page = await productsAPI.browse({limit: 'all'});
+        const productPage = await productsAPI.browse({limit: 'all'});
+        const newsletterPage = await newslettersAPI.browse({limit: 'all'});
 
-        const product = page.products.find(p => p.slug === 'default-product');
+        const defaultProduct = productPage.products.find(p => p.slug === 'default-product');
+        const defaultNewsletter = newsletterPage.newsletters.find(p => p.slug === 'default-newsletter');
 
-        if (!product) {
-            return data;
+        if (defaultProduct) {
+            await productsAPI.edit({products: [{
+                name: blogTitle.trim()
+            }]}, {context: context.context, id: defaultProduct.id});
         }
 
-        await productsAPI.edit({products: [{name: blogTitle.trim()}]}, {context: context.context, id: product.id});
+        if (defaultNewsletter) {
+            await newslettersAPI.edit({newsletters: [{
+                name: blogTitle.trim(),
+                sender_name: blogTitle.trim()
+            }]}, {context: context.context, id: defaultNewsletter.id});
+        }
     } catch (e) {
         return data;
     }
@@ -221,7 +232,7 @@ module.exports = {
     assertSetupCompleted: assertSetupCompleted,
     setupUser: setupUser,
     doSettings: doSettings,
-    doProduct: doProduct,
+    doProductAndNewsletter: doProductAndNewsletter,
     installTheme: installTheme,
     doFixtures: doFixtures,
     sendWelcomeEmail: sendWelcomeEmail
