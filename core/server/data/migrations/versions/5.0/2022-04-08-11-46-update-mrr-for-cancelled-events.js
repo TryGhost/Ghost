@@ -40,7 +40,7 @@ module.exports = createTransactionalMigration(
 
             logging.info(`Updating cancelled events for ${subscription.id} to include mrr_delta`);
             await knex('members_paid_subscription_events').update({mrr_delta: mrrDelta}).where({
-                type: 'cancelled',
+                type: 'canceled',
                 subscription_id: subscription.id
             });
             logging.info(`Updating reactivated events for ${subscription.id} to include mrr_delta`);
@@ -51,6 +51,6 @@ module.exports = createTransactionalMigration(
         }
     },
     async function down(knex) {
-        await knex('members_paid_subscription_events').update({mrr_delta: 0}).whereIn('type', ['cancelled', 'reactivated']);
+        await knex('members_paid_subscription_events').update({mrr_delta: 0}).whereIn('type', ['canceled', 'reactivated']);
     }
 );
