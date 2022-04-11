@@ -6182,7 +6182,7 @@ grunt-bg-shell@2.3.3:
   resolved "https://registry.yarnpkg.com/grunt-bg-shell/-/grunt-bg-shell-2.3.3.tgz#139ae8f9c76f68a0db4ee9dbbd4ec825b9227fff"
   integrity sha1-E5ro+cdvaKDbTunbvU7IJbkif/8=
 
-grunt-cli@~1.4.2:
+grunt-cli@~1.4.3:
   version "1.4.3"
   resolved "https://registry.yarnpkg.com/grunt-cli/-/grunt-cli-1.4.3.tgz#22c9f1a3d2780bf9b0d206e832e40f8f499175ff"
   integrity sha512-9Dtx/AhVeB4LYzsViCjUQkd0Kw0McN2gYpdmGYKtE2a5Yt7v1Q+HYZVWhqXc/kGnxlMtqKDxSwotiGeFmkrCoQ==
@@ -6299,17 +6299,17 @@ grunt-update-submodules@0.4.1:
   resolved "https://registry.yarnpkg.com/grunt-update-submodules/-/grunt-update-submodules-0.4.1.tgz#46c485fe6413cc0bdd6988aa2803c4e7d997c366"
   integrity sha1-RsSF/mQTzAvdaYiqKAPE59mXw2Y=
 
-grunt@1.4.1:
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.4.1.tgz#7d1e17db1f9c8108777f7273d6b9359755576f50"
-  integrity sha512-ZXIYXTsAVrA7sM+jZxjQdrBOAg7DyMUplOMhTaspMRExei+fD0BTwdWXnn0W5SXqhb/Q/nlkzXclSi3IH55PIA==
+grunt@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.0.tgz#1302eb21bf8133a97c825e5eca423178451cdeb7"
+  integrity sha512-+mtKngqIbABqa3UP07VJq3aUAJBLfX3CfBsbc+vqxdTdWlWU61B24mf90i5qu99jksVkkz+UewJpuidXdGUBmg==
   dependencies:
     dateformat "~3.0.3"
     eventemitter2 "~0.4.13"
     exit "~0.1.2"
     findup-sync "~0.3.0"
     glob "~7.1.6"
-    grunt-cli "~1.4.2"
+    grunt-cli "~1.4.3"
     grunt-known-options "~2.0.0"
     grunt-legacy-log "~3.0.0"
     grunt-legacy-util "~2.0.1"
