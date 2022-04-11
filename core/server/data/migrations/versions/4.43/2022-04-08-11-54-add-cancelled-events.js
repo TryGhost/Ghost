@@ -9,6 +9,7 @@ module.exports = createTransactionalMigration(
             .select(
                 'members.id as member_id',
                 'members_stripe_customers_subscriptions.id',
+                'members_stripe_customers_subscriptions.stripe_price_id',
                 'members_stripe_customers_subscriptions.plan_currency',
                 'members_stripe_customers_subscriptions.updated_at'
             )
@@ -29,8 +30,8 @@ module.exports = createTransactionalMigration(
                 type: 'canceled',
                 member_id: subscription.member_id,
                 subscription_id: subscription.id,
-                from_plan: null,
-                to_plan: null,
+                from_plan: subscription.stripe_price_id,
+                to_plan: subscription.stripe_price_id,
                 currency: subscription.plan_currency,
                 source: 'migration',
                 mrr_delta: 0,
