@@ -1,5 +1,38 @@
-<div class="gh-dashboard5-title">
-    <h4>{{this.chartTitle}}</h4>
+<div class="gh-dashboard5-stats{{unless this.hasPaidTiers ' is-solo'}}" {{did-insert this.loadCharts}}>
+    <button class="gh-dashboard5-stats-button {{if this.chartShowingTotal 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "total")}}>
+        <Dashboard::v5::parts::ChartMetric
+            @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
+            @value={{format-number this.totalMembers}}
+            @trends={{this.hasTrends}}
+            @percentage={{this.totalMembersTrend}}
+            @large={{true}} /> 
+    </button>
+    {{#if this.hasPaidTiers}}
+        <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid")}}>
+            <Dashboard::v5::parts::ChartMetric
+                @label={{gh-pluralize this.paidMembers "Paid member" without-count=true}}
+                @value={{format-number this.paidMembers}}
+                @trends={{this.hasTrends}}
+                @percentage={{this.paidMembersTrend}}
+                @large={{true}} />
+        </button>
+        <button class="gh-dashboard5-stats-button {{if this.chartShowingBreakdown 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "breakdown")}}>
+            <Dashboard::v5::parts::ChartMetric
+                @label="Paid breakdown"
+                @value={{format-number this.paidBreakdown}}
+                @trends={{this.hasTrends}}
+                @percentage={{this.paidBreakdownTrend}}
+                @large={{true}} />
+        </button>
+        <button class="gh-dashboard5-stats-button {{if this.chartShowingMonthly 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "monthly")}}>
+            <Dashboard::v5::parts::ChartMetric
+                @label="MRR"
+                @value="${{gh-price-amount this.currentMRR}}"
+                @trends={{this.hasTrends}}
+                @percentage={{this.mrrTrend}}
+                @large={{true}} />
+        </button>
+    {{/if}}
 </div>
 
 <div class="gh-dashboard5-chart">
@@ -13,48 +46,5 @@
                 @options={{this.chartOptions}}
                 @height={{this.chartHeight}} />
         </div>
-        <div class="gh-dashboard5-chart-ticks">
-            <span>Mar 1</span>
-            <span>Mar 6</span>
-            <span>Mar 12</span>
-            <span>Mar 18</span>
-            <span>Mar 24</span>
-            <span>Mar 30</span>
-        </div>
-    {{/if}}
-</div>
-
-<div class="gh-dashboard5-stats" {{did-insert this.loadCharts}}>
-    <button class="gh-dashboard5-stats-button {{if this.chartShowingTotal 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "total")}}>
-        <Dashboard::v5::parts::ChartMetric
-            @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
-            @value={{format-number this.totalMembers}}
-            @trends={{this.hasTrends}}
-            @percentage={{this.totalMembersTrend}}
-            @large={{true}}
-            @center={{true}}
-            @reverse={{true}} />
-    </button>
-    {{#if this.hasPaidTiers}}
-        <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid")}}>
-            <Dashboard::v5::parts::ChartMetric
-                @label={{gh-pluralize this.paidMembers "Paid member" without-count=true}}
-                @value={{format-number this.paidMembers}}
-                @trends={{this.hasTrends}}
-                @percentage={{this.paidMembersTrend}}
-                @large={{true}}
-                @center={{true}}
-                @reverse={{true}} />
-        </button>
-        <button class="gh-dashboard5-stats-button {{if this.chartShowingMonthly 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "monthly")}}>
-            <Dashboard::v5::parts::ChartMetric
-                @label="MRR"
-                @value="${{gh-price-amount this.currentMRR}}"
-                @trends={{this.hasTrends}}
-                @percentage={{this.mrrTrend}}
-                @large={{true}}
-                @center={{true}}
-                @reverse={{true}} />
-        </button>
     {{/if}}
 </div>

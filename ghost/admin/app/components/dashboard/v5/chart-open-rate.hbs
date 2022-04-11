@@ -1,0 +1,27 @@
+<article class="gh-dashboard5-box">
+    <div class="gh-dashboard5-insert">
+        <Dashboard::v5::parts::ChartMetric
+            @label="Open rate"
+            @value="{{this.currentOpenRate}}%" />
+
+        <div class="gh-dashboard5-chart">
+            {{#if this.loading}}
+                <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+            {{else}}
+                <div class="gh-dashboard5-chart-ticks">
+                    <span>100%</span>
+                    <span>75%</span>
+                    <span>50%</span>
+                    <span>25%</span>
+                </div>
+                <div class="gh-dashboard5-chart-container">
+                    <EmberChart
+                        @type={{this.chartType}}
+                        @data={{this.chartData}}
+                        @options={{this.chartOptions}}
+                        @height={{this.chartHeight}} />
+                </div>
+            {{/if}}
+        </div>
+    </div>
+</article>

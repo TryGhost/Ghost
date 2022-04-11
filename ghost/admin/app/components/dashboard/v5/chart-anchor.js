@@ -19,8 +19,7 @@ export default class ChartAnchor extends Component {
     @action
     changeChartDisplay(type) {
         this.chartDisplay = type;
-        document.querySelector('#gh-dashboard5-bar').classList.remove('is-show');
-        document.querySelector('#gh-dashboard5-anchor-tooltip').classList.remove('is-show');
+        this.loadCharts();
     }
 
     get chartShowingTotal() {
@@ -31,6 +30,10 @@ export default class ChartAnchor extends Component {
         return (this.chartDisplay === 'paid');
     }
 
+    get chartShowingBreakdown() {
+        return (this.chartDisplay === 'breakdown');
+    }
+
     get chartShowingMonthly() {
         return (this.chartDisplay === 'monthly');
     }
@@ -39,6 +42,8 @@ export default class ChartAnchor extends Component {
         if (this.chartDisplay === 'total') {
             return this.dashboardStats.memberCountStats === null;
         } else if (this.chartDisplay === 'paid') {
+            return this.dashboardStats.memberCountStats === null;
+        } else if (this.chartDisplay === 'breakdown') {
             return this.dashboardStats.memberCountStats === null;
         } else if (this.chartDisplay === 'monthly') {
             return this.dashboardStats.mrrStats === null;
@@ -52,6 +57,10 @@ export default class ChartAnchor extends Component {
 
     get paidMembers() {
         return this.dashboardStats.memberCounts?.paid ?? 0;
+    }
+
+    get paidBreakdown() {
+        return this.dashboardStats.memberCounts?.breakdown ?? 0;
     }
 
     get freeMembers() {
@@ -74,6 +83,10 @@ export default class ChartAnchor extends Component {
         return this.calculatePercentage(this.dashboardStats.memberCountsTrend.paid, this.dashboardStats.memberCounts.paid);
     }
 
+    get paidBreakdownTrend() {
+        return '40%';
+    }
+
     get freeMembersTrend() {
         return this.calculatePercentage(this.dashboardStats.memberCountsTrend.free, this.dashboardStats.memberCounts.free);
     }
@@ -86,30 +99,45 @@ export default class ChartAnchor extends Component {
         return this.dashboardStats.siteStatus?.hasPaidTiers;
     }
 
-    get chartTitle() {
-        if (this.chartDisplay === 'total') {
-            return 'Total members';
-        } else if (this.chartDisplay === 'paid') {
-            return 'Paid members';
-        } else if (this.chartDisplay === 'monthly') {
-            return 'MRR';
-        }
-    }
-
     get chartType() {
-        if (this.chartDisplay === 'total') {
-            return 'line';
-        } else if (this.chartDisplay === 'paid') {
+        if (this.chartDisplay === 'breakdown') {
             return 'bar';
-        } else if (this.chartDisplay === 'monthly') {
-            return 'line';
         }
+    
+        return 'line';
     }
 
     get chartData() {
         let stats = [];
         let labels = [];
         let data = [];
+        let newData;
+        let canceledData;
+
+        if (this.chartDisplay === 'breakdown') {
+            stats = this.dashboardStats.filledMemberCountStats;
+            labels = stats.map(stat => stat.date);
+            newData = stats.map(stat => stat.paidSubscribed);
+            canceledData = stats.map(stat => -stat.paidCanceled);
+    
+            return {
+                labels: labels,
+                datasets: [
+                    {
+                        data: newData,
+                        fill: false,
+                        backgroundColor: '#BD96F6',
+                        cubicInterpolationMode: 'monotone',
+                        barThickness: 18
+                    },{
+                        data: canceledData,
+                        fill: false,
+                        backgroundColor: '#FB76B4',
+                        cubicInterpolationMode: 'monotone',
+                        barThickness: 18
+                    }]
+            };
+        }
 
         if (this.chartDisplay === 'total') {
             stats = this.dashboardStats.filledMemberCountStats;
@@ -152,6 +180,102 @@ export default class ChartAnchor extends Component {
     }
 
     get chartOptions() {
+        if (this.chartDisplay === 'breakdown') {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                title: {
+                    display: false
+                },
+                legend: {
+                    display: false
+                },
+                hover: {
+                    onHover: function (e) {
+                        e.target.style.cursor = 'pointer';
+                    }
+                },
+                tooltips: {
+                    intersect: false,
+                    mode: 'index',
+                    displayColors: false,
+                    backgroundColor: '#15171A',
+                    xPadding: 7,
+                    yPadding: 7,
+                    cornerRadius: 5,
+                    caretSize: 7,
+                    caretPadding: 5,
+                    bodyFontSize: 12.5,
+                    titleFontSize: 12,
+                    titleFontStyle: 'normal',
+                    titleFontColor: 'rgba(255, 255, 255, 0.7)',
+                    titleMarginBottom: 3,
+                    callbacks: {
+                        title: (tooltipItems) => {
+                            return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                        }
+                    }
+                },
+                scales: {
+                    yAxes: [{
+                        offset: true,
+                        gridLines: {
+                            drawTicks: false,
+                            display: true,
+                            drawBorder: false,
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            lineWidth: 0,
+                            zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                            zeroLineWidth: 1
+                        },
+                        ticks: {
+                            display: true,
+                            maxTicksLimit: 5,
+                            fontColor: '#7C8B9A',
+                            padding: 8,
+                            precision: 0
+                        }
+                    }],
+                    xAxes: [{
+                        offset: true,
+                        stacked: true,
+                        gridLines: {
+                            color: 'rgba(200, 204, 217, 0.75)',
+                            borderDash: [4,4],
+                            display: true,
+                            drawBorder: true,
+                            drawTicks: false,
+                            zeroLineWidth: 1,
+                            zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                            zeroLineBorderDash: [4,4]
+                        },
+                        ticks: {
+                            display: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            padding: 8,
+                            autoSkip: true,
+                            maxTicksLimit: 7
+                        },
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                millisecond: 'MMM DD',
+                                second: 'MMM DD',
+                                minute: 'MMM DD',
+                                hour: 'MMM DD',
+                                day: 'MMM DD',
+                                week: 'MMM DD',
+                                month: 'MMM DD',
+                                quarter: 'MMM DD',
+                                year: 'MMM DD'
+                            }
+                        }
+                    }]
+                }
+            };
+        }
+    
         return {
             responsive: true,
             maintainAspectRatio: false,
@@ -209,8 +333,11 @@ export default class ChartAnchor extends Component {
                 yAxes: [{
                     gridLines: {
                         drawTicks: false,
-                        display: false,
-                        drawBorder: false
+                        display: true,
+                        drawBorder: false,
+                        color: 'transparent',
+                        zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                        zeroLineWidth: 1
                     },
                     ticks: {
                         display: false,
@@ -218,26 +345,31 @@ export default class ChartAnchor extends Component {
                         fontColor: '#7C8B9A',
                         padding: 8,
                         precision: 0,
-                        beginAtZero: false
+                        stepSize: 1
                     },
                     display: true
                 }],
                 xAxes: [{
                     gridLines: {
-                        color: '#DDE1E5',
+                        color: 'rgba(200, 204, 217, 0.75)',
                         borderDash: [4,4],
                         display: true,
                         drawBorder: true,
                         drawTicks: false,
                         zeroLineWidth: 1,
-                        zeroLineColor: '#DDE1E5',
+                        zeroLineColor: 'rgba(200, 204, 217, 0.75)',
                         zeroLineBorderDash: [4,4]
                     },
                     ticks: {
-                        display: false,
+                        display: true,
                         maxRotation: 0,
                         minRotation: 0,
-                        beginAtZero: false
+                        padding: 14,
+                        autoSkip: true,
+                        maxTicksLimit: 8,
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif',
+                        fontSize: 11,
+                        fontColor: '#7c8b9a'
                     },
                     type: 'time',
                     time: {
@@ -260,7 +392,7 @@ export default class ChartAnchor extends Component {
     }
 
     get chartHeight() {
-        return 275;
+        return 300;
     }
 
     calculatePercentage(from, to) {
