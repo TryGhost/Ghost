@@ -667,7 +667,8 @@
                     "custom_theme_setting": "all",
                     "offer": "all",
                     "authentication": "resetAllPasswords",
-                    "members_stripe_connect": "auth"
+                    "members_stripe_connect": "auth",
+                    "newsletter": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
