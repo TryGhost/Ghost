@@ -137,8 +137,12 @@ describe('Members API', function () {
             const {body} = await adminAgent
                 .post(`/members/`)
                 .body({members: [initialMember]})
-                .expectStatus(201);
-            assert.equal(body.members.length, 1, 'The member was not created');
+                .expectStatus(201)
+                .expect(({body}) => {
+                    body.should.have.property('members');
+                    body.members.should.have.length(1);
+                });
+                
             const member = body.members[0];
             return member;
         }
