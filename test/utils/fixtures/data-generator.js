@@ -488,7 +488,8 @@ DataGenerator.Content = {
             plan_nickname: 'Monthly',
             plan_interval: 'month',
             plan_amount: '1000',
-            plan_currency: 'usd'
+            plan_currency: 'usd',
+            mrr: 1000
         },
         {
             id: ObjectId().toHexString(),
@@ -504,7 +505,8 @@ DataGenerator.Content = {
             plan_nickname: 'Monthly',
             plan_interval: 'month',
             plan_amount: '1000',
-            plan_currency: 'usd'
+            plan_currency: 'usd',
+            mrr: 1000
         },
         {
             id: ObjectId().toHexString(),
@@ -520,7 +522,8 @@ DataGenerator.Content = {
             plan_nickname: 'Complimentary',
             plan_interval: 'year',
             plan_amount: '0',
-            plan_currency: 'usd'
+            plan_currency: 'usd',
+            mrr: 0
         }
     ],
     stripe_prices: [
