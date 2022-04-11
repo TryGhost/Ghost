@@ -1441,17 +1441,6 @@
     component-type "^1.2.1"
     join-component "^1.1.0"
 
-"@sentry/core@6.19.3":
-  version "6.19.3"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.19.3.tgz#88268afc8c42716c455ad77bb4bed2bbf96abd83"
-  integrity sha512-RcGmYdkrE3VYBMl9Hgv4GKsC8FEVUdWYsfGIcT/btwP2YpBeUaTZl+1vV9r3Ncdl125LqzP5CKSj5otVxiEg6g==
-  dependencies:
-    "@sentry/hub" "6.19.3"
-    "@sentry/minimal" "6.19.3"
-    "@sentry/types" "6.19.3"
-    "@sentry/utils" "6.19.3"
-    tslib "^1.9.3"
-
 "@sentry/core@6.19.6":
   version "6.19.6"
   resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.19.6.tgz#7d4649d0148b5d0be1358ab02e2f869bf7363e9a"
@@ -1463,15 +1452,6 @@
     "@sentry/utils" "6.19.6"
     tslib "^1.9.3"
 
-"@sentry/hub@6.19.3":
-  version "6.19.3"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.19.3.tgz#d555c83404f19ac9b68f336b051b8e7a9d75feb0"
-  integrity sha512-iYbkrxEZt6CrHP3U3r54MARVZSs3YHjAMUMOTlC16s/Amz1McwV95XtI3NJaqMhwzl7R5vbGrs3xOtLg1V1Uyw==
-  dependencies:
-    "@sentry/types" "6.19.3"
-    "@sentry/utils" "6.19.3"
-    tslib "^1.9.3"
-
 "@sentry/hub@6.19.6":
   version "6.19.6"
   resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.19.6.tgz#ada83ceca0827c49534edfaba018221bc1eb75e1"
@@ -1481,15 +1461,6 @@
     "@sentry/utils" "6.19.6"
     tslib "^1.9.3"
 
-"@sentry/minimal@6.19.3":
-  version "6.19.3"
-  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.19.3.tgz#b9b7f0d7f0cd2341b243318668ac01458f9d7889"
-  integrity sha512-xy/6ThHK8B2NJT98nWrx6V9eVgUbzq2N/8lv5/QqrKsICjxx22TRC8Q6zPg/o7BYcrY5vpugSEbIeErTnyxHDA==
-  dependencies:
-    "@sentry/hub" "6.19.3"
-    "@sentry/types" "6.19.3"
-    tslib "^1.9.3"
-
 "@sentry/minimal@6.19.6":
   version "6.19.6"
   resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.19.6.tgz#b6cced3708e25d322039e68ebdf8fadfa445bf7d"
@@ -1497,20 +1468,6 @@
   dependencies:
     "@sentry/hub" "6.19.6"
     "@sentry/types" "6.19.6"
-    tslib "^1.9.3"
-
-"@sentry/node@6.19.3":
-  version "6.19.3"
-  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-6.19.3.tgz#afcf106bf72acc0e4bbacbc54744de8a938cbd1c"
-  integrity sha512-eHreMMbaK4mMAQ45Ki2xJ6in02l66hL6xhltppy/h4m297JIvjaQAFpbQf5XLtO7W4KjdbSV5qnB45D1aOAzFA==
-  dependencies:
-    "@sentry/core" "6.19.3"
-    "@sentry/hub" "6.19.3"
-    "@sentry/types" "6.19.3"
-    "@sentry/utils" "6.19.3"
-    cookie "^0.4.1"
-    https-proxy-agent "^5.0.0"
-    lru_map "^0.3.3"
     tslib "^1.9.3"
 
 "@sentry/node@6.19.6":
@@ -1527,23 +1484,10 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
-"@sentry/types@6.19.3":
-  version "6.19.3"
-  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.19.3.tgz#94b19da68d4d23561efb1014f72968bcea85cd0c"
-  integrity sha512-jHhqxp8MIWSfOc3krorirTGKTEaSFO6XrAvi+2AZhr6gvOChwOgzgrN2ZqesJcZmgCsqWV21u3usSwYeRrjOJA==
-
 "@sentry/types@6.19.6":
   version "6.19.6"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.19.6.tgz#70513f9dca05d23d7ab9c2a6cb08d4db6763ca67"
   integrity sha512-QH34LMJidEUPZK78l+Frt3AaVFJhEmIi05Zf8WHd9/iTt+OqvCHBgq49DDr1FWFqyYWm/QgW/3bIoikFpfsXyQ==
-
-"@sentry/utils@6.19.3":
-  version "6.19.3"
-  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.19.3.tgz#0c3a3f0b86c12e3b079e56e37a44e62a1226043d"
-  integrity sha512-GdC9B/FK7qd0zItY43135bYbhuVSawE18bIrQDNuno8gTpDJ5OgShpTN9zR53AmMh16/lwKNnV3ZZjlpKcxuNw==
-  dependencies:
-    "@sentry/types" "6.19.3"
-    tslib "^1.9.3"
 
 "@sentry/utils@6.19.6":
   version "6.19.6"
@@ -1873,15 +1817,6 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.7":
-  version "1.2.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.7.tgz#f2da9deadb6139167a9e967e1212a66064c5abce"
-  integrity sha512-VNqUKiiy4jSOQGBxcwNYMPzf76m1VZ1rnF2gvqwzGIyjrzIGfTs/iNC98n9F6JKROFuOhWS8Ehiuk69/ZAukWg==
-  dependencies:
-    lodash "^4.17.21"
-    utils-copy-error "^1.0.1"
-    uuid "^8.3.2"
-
 "@tryghost/express-dynamic-redirects@0.2.8":
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.8.tgz#67b4f19c6210734e0226e6c8f18c0ad7ce2a75a2"
@@ -2024,7 +1959,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.1.2", "@tryghost/logging@2.1.3", "@tryghost/logging@2.1.5", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1", "@tryghost/logging@^2.0.5":
+"@tryghost/logging@2.1.3", "@tryghost/logging@2.1.5", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1", "@tryghost/logging@^2.0.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.1.5.tgz#d945d219bea89b197b9631ec28834a687170a13f"
   integrity sha512-Pj0H2resXLVahzXcJBaQytWc7MRVxjTNUn89emCj8JfN8AsXi49tSorppXDcmIpsePLB1laggaUAHhaArXPWXw==
@@ -6320,16 +6255,16 @@ grunt@1.5.0:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-gscan@4.26.1:
-  version "4.26.1"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.26.1.tgz#7dd45b8c2e7e9bfccb5f1e3d4293cabf779046ed"
-  integrity sha512-55KOr0g3EzdKhbRhw3sCIBALP1wKgdUJqwWhgwUx4mmDnMddmAqSttErqKiRfuL33Yfx1dFGVx/r6dRb7ZMKog==
+gscan@4.27.0:
+  version "4.27.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.27.0.tgz#53599242cef15574363d7f07791f0dac63133512"
+  integrity sha512-SJSfKpFlzrTUBvcLYhTxZLEA+7Hke5MtVAqiwz+F0+XlAEY07ZSZq41+vjUQSZhh5nF9/86ex+JpCocbZ15OgQ==
   dependencies:
-    "@sentry/node" "6.19.3"
+    "@sentry/node" "6.19.6"
     "@tryghost/config" "0.2.2"
     "@tryghost/debug" "0.1.11"
-    "@tryghost/errors" "1.2.7"
-    "@tryghost/logging" "2.1.2"
+    "@tryghost/errors" "1.2.10"
+    "@tryghost/logging" "2.1.5"
     "@tryghost/pretty-cli" "1.2.24"
     "@tryghost/server" "0.1.4"
     "@tryghost/zip" "1.1.22"
@@ -6344,7 +6279,7 @@ gscan@4.26.1:
     multer "1.4.4"
     pluralize "8.0.0"
     require-dir "1.2.0"
-    semver "7.3.5"
+    semver "7.3.6"
     uuid "8.3.2"
     validator "13.0.0"
 
@@ -10869,13 +10804,6 @@ secure-keys@^1.0.0:
   version "5.7.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.7.1.tgz#a954f931aeba508d307bbf069eff0c01c96116f7"
   integrity sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==
-
-semver@7.3.5:
-  version "7.3.5"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.5.tgz#0b621c879348d8998e4b0e4be94b3f12e6018ef7"
-  integrity sha512-PoeGJYh8HK4BTO/a9Tf6ZG3veo/A7ZVsYrSA6J8ny9nb3B1VrpkuN+z9OE5wfE5p6H4LchYZsegiQgbJD94ZFQ==
-  dependencies:
-    lru-cache "^6.0.0"
 
 semver@7.3.6, semver@^7.2.1, semver@^7.3.2, semver@^7.3.5, semver@^7.3.6:
   version "7.3.6"
