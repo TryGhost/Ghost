@@ -1808,19 +1808,10 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.2.10", "@tryghost/errors@^1.2.10":
+"@tryghost/errors@1.2.10", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.10", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
   version "1.2.10"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.10.tgz#b01b16744986005784ffd6916eec48a3e93976a9"
   integrity sha512-v5r5JzhQTkNLJBk66B75x+jyOE/WxzEBfeAtA3y1YaFtl9SQMaN1qi/7+sQzt0VrLk1qtqAOReWc/1Cncy9gOg==
-  dependencies:
-    lodash "^4.17.21"
-    utils-copy-error "^1.0.1"
-    uuid "^8.3.2"
-
-"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.8.tgz#b4ba1c31831216222be332ee7a37d9c4a376ac2a"
-  integrity sha512-O8CUS4SHsBYFc6/7yUDJ5yk0vhcdzPxFiISgrFhzptOd79ZdXwk9c8Pz5uSDUXPaCqKaWMYLTjSof30IxVvvAA==
   dependencies:
     lodash "^4.17.21"
     utils-copy-error "^1.0.1"
@@ -6243,10 +6234,10 @@ grunt-update-submodules@0.4.1:
   resolved "https://registry.yarnpkg.com/grunt-update-submodules/-/grunt-update-submodules-0.4.1.tgz#46c485fe6413cc0bdd6988aa2803c4e7d997c366"
   integrity sha1-RsSF/mQTzAvdaYiqKAPE59mXw2Y=
 
-grunt@1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.0.tgz#1302eb21bf8133a97c825e5eca423178451cdeb7"
-  integrity sha512-+mtKngqIbABqa3UP07VJq3aUAJBLfX3CfBsbc+vqxdTdWlWU61B24mf90i5qu99jksVkkz+UewJpuidXdGUBmg==
+grunt@1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.1.tgz#ca7141d7e6d70fad474a0c1d8c3744423c6c7c2c"
+  integrity sha512-Nli2Cu1rSUJOCVypMIY3SHuwUQ7LdyoDJJ9ig7NUSM8jGOdC/BcrjW5i/1/pEaYqn8P4RLpeDmiqEwQ/uVQbOQ==
   dependencies:
     dateformat "~3.0.3"
     eventemitter2 "~0.4.13"
