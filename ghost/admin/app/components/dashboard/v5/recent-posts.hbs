@@ -1,6 +1,8 @@
 <div class="gh-dashboard5-list" {{did-insert this.loadPosts}}>
-    <div class="gh-dashboard5-title">
-        <h4>Recent posts</h4>
+    <div class="gh-dashboard5-list-header">
+        <div class="gh-dashboard5-list-title">Recent posts</div>
+        <div class="gh-dashboard5-list-title">Sends</div>
+        <div class="gh-dashboard5-list-title">Opens</div>
     </div>
 
     <div class="gh-dashboard5-list-body">
@@ -9,6 +11,8 @@
                 <LinkTo class="gh-dashboard5-list-post permalink" @route="editor.edit" @models={{array post.displayName post.id}}>
                     {{post.title}}
                 </LinkTo>
+                <span>231</span>
+                <span>65%</span>
             </div>
         {{else}}
             <div class="gh-dashboard5-list-empty">
