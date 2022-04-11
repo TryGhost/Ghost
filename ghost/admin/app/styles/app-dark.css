@@ -1098,3 +1098,9 @@ kbd {
 .gh-done {
     background: #15171A;
 }
+
+
+/* Dashboard v5 */
+.gh-dashboard5-anchor .gh-dashboard5-stats-button.is-selected {
+    border-color: #394047;
+}

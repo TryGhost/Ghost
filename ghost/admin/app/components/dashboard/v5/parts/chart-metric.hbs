@@ -1,13 +1,13 @@
-<div class="gh-dashboard5-metric {{if @center "is-center"}} {{if @reverse "is-reverse"}}">
+<div class="gh-dashboard5-metric {{if @center "is-center"}} {{if @reverse "is-reverse"}} {{if @large "is-large"}}">
     <div class="gh-dashboard5-metric-data">
         {{#if @reverse}}
             {{#if @value}}
-                <div class="gh-dashboard5-metric-value {{if @large "is-large"}}">
+                <div class="gh-dashboard5-metric-value">
                     {{@value}}
-                </div>
-                {{!-- {{#if @trends}}
+                    {{#if @trends}}
                     <Dashboard::v5::parts::ChartPercentage @percentage={{@percentage}}/>
-                {{/if}} --}}
+                {{/if}}
+                </div>
             {{/if}}
             <h5 class="gh-dashboard5-metric-label">
                 {{@label}}
@@ -17,12 +17,12 @@
                 {{@label}}
             </h5>
             {{#if @value}}
-                <div class="gh-dashboard5-metric-value {{if @large "is-large"}}">
+                <div class="gh-dashboard5-metric-value">
                     {{@value}}
+                    {{#if @trends}}
+                        <Dashboard::v5::parts::ChartPercentage @percentage={{@percentage}}/>
+                    {{/if}}
                 </div>
-                {{#if @trends}}
-                    <Dashboard::v5::parts::ChartPercentage @percentage={{@percentage}}/>
-                {{/if}}
             {{/if}}
         {{/if}}
     </div>

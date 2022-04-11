@@ -22,37 +22,39 @@
                         {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
                     </PowerSelect>
                 </div>
-                <div id="gh-dashboard5-anchor-globaldate">
-                    March 31, 2022
-                </div>
             </section>
 
-            {{!-- {{#if this.hasPaidTiers}}
+            {{!--
+            {{#if this.hasPaidTiers}}
                 <div class="gh-dashboard5-paid">
                     <section class="gh-dashboard5-section">
                         <div class="gh-dashboard5-growth">             
                             <article class="gh-dashboard5-box">
                                 <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
                             </article>
-
                             <article class="gh-dashboard5-box">
                                 <Dashboard::V5::ChartPaidMix />
                             </article>
                         </div>
                     </section>
                 </div>
-            {{/if}} --}}
+            {{/if}}
+            --}}
 
             {{#if this.areNewslettersEnabled}}
-                <section class="gh-dashboard5-split is-third">
-                    <section class="gh-dashboard5-section gh-dashboard5-engagement">
-                        <Dashboard::V5::ChartEngagement />
-                    </section>
+                <section class="gh-dashboard5-split">
+                    <section class="gh-dashboard5-split">
+                        <section class="gh-dashboard5-section gh-dashboard5-engagement">
+                            <Dashboard::V5::ChartEngagement />
+                        </section>
 
-                    <section class="gh-dashboard5-section gh-dashboard5-email">
-                        <article class="gh-dashboard5-box">
+                        <section class="gh-dashboard5-section gh-dashboard5-email">
                             <Dashboard::V5::ChartEmail />
-                        </article>
+                        </section>
+                    </section>
+                
+                    <section class="gh-dashboard5-section gh-dashboard5-rate">
+                        <Dashboard::V5::ChartOpenRate />
                     </section>
                 </section> 
             {{else}}
@@ -63,33 +65,42 @@
 
         {{else}}
             {{#if this.areNewslettersEnabled}}
-                <section class="gh-dashboard5-section gh-dashboard5-email">
-                    <article class="gh-dashboard5-box">
-                        <Dashboard::V5::ChartEmail />
-                    </article>
-                </section>
+                <section class="gh-dashboard5-split">
+                    <section class="gh-dashboard5-split">
+                        <section class="gh-dashboard5-section gh-dashboard5-engagement">
+                            <Dashboard::V5::ChartEngagement />
+                        </section>
+
+                        <section class="gh-dashboard5-section gh-dashboard5-email">
+                            <Dashboard::V5::ChartEmail />
+                        </section>
+                    </section>
+                
+                    <section class="gh-dashboard5-section gh-dashboard5-rate">
+                        <Dashboard::V5::ChartOpenRate />
+                    </section>
+                </section> 
             {{/if}}
         {{/if}}
 
         <section class="gh-dashboard5-split">
+            <section class="gh-dashboard5-section gh-dashboard5-posts">
+                <article class="gh-dashboard5-box">
+                    <Dashboard::V5::RecentPosts />
+                </article>
+            </section>
             <section class="gh-dashboard5-section gh-dashboard5-activity">
                 <article class="gh-dashboard5-box">
                     <Dashboard::V5::RecentActivity />
                 </article>
             </section>
-
-            <section class="gh-dashboard5-section gh-dashboard5-resource">
-                <Dashboard::V5::Resources::Help />
-            </section>
-
-            {{!-- <section class="gh-dashboard-section gh-dashboard5-resource">
-                <Dashboard::V5::ResourceGeneral />
-            </section> --}}
         </section>
         
-        {{!-- <Dashboard::V5::Resources::WhatsNew />
+        {{!--
+        <Dashboard::V5::Resources::WhatsNew />
         <Dashboard::V5::Resources::LatestNewsletters />
-        <Dashboard::V5::Resources::StaffPicks /> --}}
+        <Dashboard::V5::Resources::StaffPicks />
+        --}}
     {{/if}}
     <Dashboard::V5::PrototypeControlPanel />
 </section>

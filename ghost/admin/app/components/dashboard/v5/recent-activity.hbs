@@ -1,6 +1,6 @@
 <div class="gh-dashboard5-list" data-test-dashboard-member-activity>
-    <div class="gh-dashboard5-title">
-        <h4>Recent activity</h4><h4>Recent posts</h4>
+    <div class="gh-dashboard5-list-header">
+        <div class="gh-dashboard5-list-title">Recent activity</div>
     </div>
 
     <div class="gh-dashboard5-list-body">
@@ -23,16 +23,15 @@
                         {{#let (parse-member-event event) as |parsedEvent|}}
                             <div class="gh-dashboard5-list-item" data-test-dashboard-member-activity-item>
                                 <LinkTo class="member-details" @route="member" @model="{{parsedEvent.memberId}}">
-                                    {{!-- {{svg-jar parsedEvent.icon}} --}}
-                                    {{!-- {{parsedEvent.subject}} --}}
-                                    John
+                                    <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                    {{parsedEvent.subject}}
                                     <span>
                                         {{parsedEvent.action}}
                                         {{parsedEvent.object}}
                                         {{parsedEvent.info}}
                                     </span>
                                 </LinkTo>
-                                {{!-- <span class="gh-dashboard-activity-time">{{moment-from-now parsedEvent.timestamp}}</span> --}}
+                                <span class="gh-dashboard-activity-time">{{moment-from-now parsedEvent.timestamp}}</span>
                             </div>
                         {{/let}}
                     {{/each}}
