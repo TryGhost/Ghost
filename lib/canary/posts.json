@@ -190,6 +190,9 @@
         },
         "frontmatter": {
           "strip": true
+        },
+        "newsletter_id": {
+          "strip": true
         }
       }
     },
