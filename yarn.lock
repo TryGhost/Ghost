@@ -1653,10 +1653,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/admin-api-schema@2.13.0":
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.13.0.tgz#2871d44b1d9c7961b38c9f4b366f7c9ee5daa921"
-  integrity sha512-OOFkOwcy+sYbGMO5vp/kYZPq/nY/CaXgZndbU1iYsr8PV2h4PF+SdRhcU2G7M8XZZdtQWmR8+eMCk30V9MM3+w==
+"@tryghost/admin-api-schema@2.14.0":
+  version "2.14.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.14.0.tgz#9e95358b8dae4fbf71d4668b7b8fbcaeedd46a14"
+  integrity sha512-sZ6f1udiFNdhZOg0eoMBDnldJNwnd6+mi/Kob2Zh4ZyNQjWBpdVZDOdeGfYO8G8ZzcRejspUrSVQX5W7k+S5Wg==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.11"
@@ -1905,10 +1905,10 @@
     cookiejar "^2.1.3"
     reqresnext "^1.7.0"
 
-"@tryghost/helpers@1.1.62":
-  version "1.1.62"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.62.tgz#6e339d3d11df7851200f81d55a6b89f02906eaea"
-  integrity sha512-vL5qfzjADPfDXknlVZ1zEHWynV52ETjZsnkKUUUPlIm2sxYrMHxblGaAV4rdrNx/tyQ9uD3WkO9gD8rqzDf1jA==
+"@tryghost/helpers@1.1.63":
+  version "1.1.63"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.63.tgz#7f9ba6d734f9a8d63e036b030fb034a9c76c6234"
+  integrity sha512-BTePojAzyF9sgzDrJYnGoX5tLjYfuYuvsQtat1epJdOOWTOU7rNgJi+BLwjY+cv6XWMODoZRLmf+jV3CWgjn+g==
   dependencies:
     lodash-es "^4.17.11"
 
