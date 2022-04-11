@@ -2,7 +2,6 @@ const assert = require('assert');
 const nock = require('nock');
 const should = require('should');
 const stripe = require('stripe');
-const {MemberStatusEvent} = require('../../../core/server/models/member-status-event');
 const {Product} = require('../../../core/server/models/product');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -18,6 +17,14 @@ async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
     events.map(e => e.toJSON()).should.match(asserts);
     assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
+}
+
+async function assertSubscription(subscriptionId, asserts) {
+    // eslint-disable-next-line dot-notation
+    const subscription = await models['StripeCustomerSubscription'].where('subscription_id', subscriptionId).fetch({require: true});
+
+    // We use the native toJSON to prevent calling the overriden serialize method
+    models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
 }
 
 describe('Members API', function () {
@@ -314,7 +321,7 @@ describe('Members API', function () {
                                 product: 'product_123',
                                 active: true,
                                 nickname: 'Monthly',
-                                currency: 'USD',
+                                currency: 'usd',
                                 recurring: {
                                     interval: 'month'
                                 },
@@ -350,6 +357,17 @@ describe('Members API', function () {
                     }
                 ]);
 
+                // Check whether MRR and status has been set
+                await assertSubscription(initialMember.subscriptions[0].id, {
+                    subscription_id: subscription.id,
+                    status: 'active',
+                    cancel_at_period_end: false,
+                    plan_amount: 500,
+                    plan_interval: 'month',
+                    plan_currency: 'usd',
+                    mrr: 500
+                });
+
                 // Cancel the previously created subscription in Stripe
                 set(subscription, {
                     ...subscription, 
@@ -384,6 +402,17 @@ describe('Members API', function () {
                         status: 'canceled'
                     }
                 ]);
+
+                // Check whether MRR and status has been set
+                await assertSubscription(initialMember.subscriptions[0].id, {
+                    subscription_id: subscription.id,
+                    status: 'canceled',
+                    cancel_at_period_end: false,
+                    plan_amount: 500,
+                    plan_interval: 'month',
+                    plan_currency: 'usd',
+                    mrr: 0
+                });
 
                 // Check the status events for this newly created member (should be NULL -> paid only)
                 assertMemberEvents({
@@ -500,7 +529,7 @@ describe('Members API', function () {
                     product: 'product_123',
                     active: true,
                     nickname: 'Complimentary',
-                    currency: 'USD',
+                    currency: 'usd',
                     recurring: {
                         interval: 'month'
                     },
@@ -628,7 +657,7 @@ describe('Members API', function () {
                                 product: 'product_123',
                                 active: true,
                                 nickname: 'Monthly',
-                                currency: 'USD',
+                                currency: 'usd',
                                 recurring: {
                                     interval: 'month'
                                 },
@@ -638,7 +667,7 @@ describe('Members API', function () {
                         }]
                     },
                     start_date: beforeNow / 1000,
-                    current_period_end: beforeNow / 1000 + (60 * 60 * 24 * 31),
+                    current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
                     cancel_at_period_end: false
                 });
             });
@@ -692,6 +721,18 @@ describe('Members API', function () {
                     to: 'checkout-webhook-test@email.com'
                 });
 
+                // Check whether MRR and status has been set
+                await assertSubscription(member.subscriptions[0].id, {
+                    subscription_id: subscription.id,
+                    status: 'active',
+                    cancel_at_period_end: false,
+                    plan_amount: 500,
+                    plan_interval: 'month',
+                    plan_currency: 'usd',
+                    current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
+                    mrr: 500
+                });
+
                 // Check the status events for this newly created member (should be NULL -> paid only)
                 assertMemberEvents({
                     eventType: 'MemberStatusEvent',
@@ -739,7 +780,7 @@ describe('Members API', function () {
                                 product: 'product_456',
                                 active: true,
                                 nickname: 'Monthly',
-                                currency: 'USD',
+                                currency: 'usd',
                                 recurring: {
                                     interval: 'month'
                                 },
