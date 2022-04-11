@@ -45,6 +45,6 @@ module.exports = createTransactionalMigration(
     },
     async function down(knex) {
         logging.info('Deleting all members_paid_subscription_events with a "type" of "cancelled"');
-        await knex('members_paid_subscription_events').where('type', 'canceled').del();
+        await knex('members_paid_subscription_events').where({type: 'canceled', source: 'migration'}).del();
     }
 );
