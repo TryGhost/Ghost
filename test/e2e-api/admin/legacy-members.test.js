@@ -262,7 +262,7 @@ describe('Legacy Members API', function () {
             .set('Origin', config.get('url'))
             .expect((res) => {
                 should.exist(res.body);
-                should.exist(res.body.members);
+                res.body.should.have.property('members');
                 res.body.members.should.have.length(1);
             })
             .expect(200);
