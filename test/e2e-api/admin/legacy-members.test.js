@@ -260,10 +260,9 @@ describe('Legacy Members API', function () {
             .put(localUtils.API.getApiQuery(`members/${newMember.id}/`))
             .send({members: [compedPayload]})
             .set('Origin', config.get('url'))
-            .expect((res) => {
-                should.exist(res.body);
-                res.body.should.have.property('members');
-                res.body.members.should.have.length(1);
+            .expect(({body}) => {
+                body.should.have.property('members');
+                body.members.should.have.length(1);
             })
             .expect(200);
 
