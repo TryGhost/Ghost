@@ -26,7 +26,7 @@ module.exports = createTransactionalMigration(
         const eventsToInsert = cancelledSubscriptions.map((subscription) => {
             const event = {
                 id: (new ObjectID()).toHexString(),
-                type: 'cancelled',
+                type: 'canceled',
                 member_id: subscription.member_id,
                 subscription_id: subscription.id,
                 from_plan: null,
@@ -45,6 +45,6 @@ module.exports = createTransactionalMigration(
     },
     async function down(knex) {
         logging.info('Deleting all members_paid_subscription_events with a "type" of "cancelled"');
-        await knex('members_paid_subscription_events').where('type', 'cancelled').del();
+        await knex('members_paid_subscription_events').where('type', 'canceled').del();
     }
 );
