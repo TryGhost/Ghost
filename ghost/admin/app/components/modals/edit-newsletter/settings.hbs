@@ -8,7 +8,7 @@
                     type="text"
                     class="gh-input miw-100 form-text"
                     value={{@newsletter.name}}
-                    placeholder={{this.config.blogTitle}}
+                    placeholder={{this.settings.title}}
                     {{on "input" (fn this.onInput "name")}}
                 />
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="name" />
@@ -33,7 +33,6 @@
                     type="text"
                     class="gh-input miw-100 form-text"
                     value={{@newsletter.senderName}}
-                    placeholder={{this.config.blogTitle}}
                     {{on "input" (fn this.onInput "senderName")}}
                 />
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="senderName" />
@@ -46,22 +45,23 @@
                     type="text"
                     class="gh-input miw-100 form-text"
                     value={{@newsletter.senderEmail}}
-                    placeholder={{full-email-address this.settings.membersFromAddress}}
+                    placeholder={{full-email-address "noreply"}}
                     {{on "input" (fn this.onInput "senderEmail")}}
                 />
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="senderEmail" />
             </GhFormGroup>
 
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderReplyTo">
-                <label for="newsletter-reply-to" class="modal-fullsettings-title">Reply-to address</label>
-                <input
+                <label for="newsletter-reply-to" class="modal-fullsettings-title">Reply-to email address</label>
+                <Inputs::Select
                     id="newsletter-reply-to"
-                    type="text"
-                    class="gh-input miw-100 form-text"
-                    value={{@newsletter.senderReplyTo}}
-                    placeholder={{full-email-address this.settings.membersFromAddress}}
-                    {{on "input" (fn this.onInput "senderReplyTo")}}
-                />
+                    @value={{@newsletter.senderReplyTo}}
+                    @onChange={{fn this.onValueChange "senderReplyTo"}}
+                    as |select|
+                >
+                    <select.option @value="newsletter">Newsletter ({{full-email-address (or @newsletter.senderEmail "noreply")}})</select.option>
+                    <select.option @value="support">Support ({{full-email-address this.settings.membersSupportAddress}})</select.option>
+                </Inputs::Select>
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="senderReplyTo" />
             </GhFormGroup>
         </div>
@@ -75,7 +75,7 @@
                             type="checkbox"
                             id="subscribe-on-signup"
                             checked={{@newsletter.subscribeOnSignup}}
-                            {{on "change" (fn this.onChange "subscribeOnSignup")}}
+                            {{on "change" (fn this.onCheckboxChange "subscribeOnSignup")}}
                         >
                         <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "subscribeOnSignup")}}></button>
                     </div>

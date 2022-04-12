@@ -10,7 +10,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
 
     @attr senderName;
     @attr senderEmail;
-    @attr senderReplyTo;
+    @attr({defaultValue: 'newsletter'}) senderReplyTo;
 
     @attr({defaultValue: 'active'}) status;
     @attr({defaultValue: ''}) recipientFilter;

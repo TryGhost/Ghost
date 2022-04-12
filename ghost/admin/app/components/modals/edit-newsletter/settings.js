@@ -3,11 +3,10 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class EditNewsletterSettingsForm extends Component {
-    @service config;
     @service settings;
 
     @action
-    onChange(property, event) {
+    onCheckboxChange(property, event) {
         this.args.newsletter[property] = event.target.checked;
     }
 
@@ -19,5 +18,10 @@ export default class EditNewsletterSettingsForm extends Component {
     @action
     onInput(property, event) {
         this.args.newsletter[property] = event.target.value;
+    }
+
+    @action
+    onValueChange(property, value) {
+        this.args.newsletter[property] = value;
     }
 }
