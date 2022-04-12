@@ -6234,10 +6234,10 @@ grunt-update-submodules@0.4.1:
   resolved "https://registry.yarnpkg.com/grunt-update-submodules/-/grunt-update-submodules-0.4.1.tgz#46c485fe6413cc0bdd6988aa2803c4e7d997c366"
   integrity sha1-RsSF/mQTzAvdaYiqKAPE59mXw2Y=
 
-grunt@1.5.1:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.1.tgz#ca7141d7e6d70fad474a0c1d8c3744423c6c7c2c"
-  integrity sha512-Nli2Cu1rSUJOCVypMIY3SHuwUQ7LdyoDJJ9ig7NUSM8jGOdC/BcrjW5i/1/pEaYqn8P4RLpeDmiqEwQ/uVQbOQ==
+grunt@1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.2.tgz#46b014e28d17c85baac19d5e891bb3f04923c098"
+  integrity sha512-XCtfaIu72OyDqK24MjWiGC9SwlkuhkS1mrULr1xzuJ2XqAFhP3ZAchZGHJeSCY6mkaOXU4F7SbmmCF7xIVoC9w==
   dependencies:
     dateformat "~3.0.3"
     eventemitter2 "~0.4.13"
