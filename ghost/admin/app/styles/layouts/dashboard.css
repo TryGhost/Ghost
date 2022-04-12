@@ -989,11 +989,6 @@ Dashboard v5 Prototype */
     gap: 10px;
 }
 
-.prototype-selection {
-    display: flex;
-    justify-content: flex-end;
-}
-
 .prototype-paid-mix-dropdown {
     position: absolute;
     right: 0px;
@@ -1168,12 +1163,6 @@ Dashboard v5 Misc */
     right: 20px;
 }
 
-.gh-dashboard5-section .prototype-selection {
-    position: absolute;
-    top: 10px;
-    right: 0;
-}
-
 .gh-dashboard5-section .ember-power-select-selected-item {
     font-size: 1.2rem;
     text-transform: uppercase;
@@ -1225,28 +1214,6 @@ Dashboard v5 Misc */
 
 .gh-dashboard5-normal.is-hide {
     visibility: hidden;
-}
-
-#gh-dashboard5-anchor-selection {
-    opacity: 1;
-}
-
-#gh-dashboard5-anchor-selection.is-hide {
-    opacity: 0;
-}
-
-#gh-dashboard5-anchor-globaldate {
-    display: none;
-    position: absolute;
-    top: 28px;
-    right: 31px;
-    color: #394047;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    font-weight: 500;
-    letter-spacing: .2px;
-    margin: 0 0 8px;
-    padding: 0;
 }
 
 #gh-dashboard5-anchor-globaldate.is-show {
@@ -1428,6 +1395,10 @@ Dashboard v5 Layout */
     margin-top: -24px;
 }
 
+.gh-dashboard5 .gh-members-help {
+    margin-top: 0;
+}
+
 
 /* --------------------------------- 
 Dashboard v5 Chart */
@@ -1558,7 +1529,7 @@ Dashboard v5 Metric */
 }
 
 .gh-dashboard5-metric.is-large .gh-dashboard5-metric-value {
-    font-size: 3.4rem;
+    font-size: 3.6rem;
     font-weight: 600;
     margin-bottom: 0;
 }
@@ -1685,22 +1656,15 @@ Dashboard v5 Section Anchor */
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-box {
-    align-items: stretch;
-    padding-top: 8px;
-    padding-bottom: 12px;
-    height: 431px;
-}
-
-.gh-dashboard5-anchor.is-top .gh-dashboard5-box {
-   padding-top: 0;
+    padding: 24px 24px 8px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-stats {
     display: flex;
     flex-direction: row;
     width: calc(100% + 48px);
-    padding: 0 8px 8px;
-    margin: 0 -24px 0;
+    padding: 0 8px;
+    margin: 12px -24px 0;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-title {
@@ -1717,7 +1681,7 @@ Dashboard v5 Section Anchor */
     cursor: pointer;
     position: relative;
     flex: 1;
-    padding: 16px 16px 20px 12px;
+    padding: 20px 16px 24px 12px;
     margin: 2px 4px 2px 2px;
     text-align: left;
     background: transparent;
@@ -1758,6 +1722,7 @@ Dashboard v5 Section Anchor */
     flex-direction: column;
     margin-left: -16px;
     margin-right: -16px;
+    margin-top: 12px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-chart-ticks {
@@ -1775,9 +1740,12 @@ Dashboard v5 Section Anchor */
     opacity: 1;
 }
 
-.gh-dashboard5-anchor .prototype-selection {
+.gh-dashboard5-anchor .gh-dashboard5-selections {
+    position: absolute;
     top: 16px;
     right: 8px;
+    display: flex;
+    flex-direction: row;
 }
 
 
@@ -1898,7 +1866,9 @@ Dashboard v5 Section Engagement */
 }
 
 .gh-dashboard5-engagement .prototype-selection {
+    position: absolute;
     top: 16px;
+    right: 8px;
 }
 
 .gh-dashboard5-engagement .gh-dashboard5-insert {
@@ -1979,11 +1949,18 @@ Dashboard v5 Section Posts */
     display: none;
 }
 
-.gh-dashboard5-posts .gh-dashboard5-list-item a {
+.gh-dashboard5-posts .gh-dashboard5-list-item a > span{
     width: 80%;
-    height: 57px;
     overflow: hidden;
     color: var(--darkgrey);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.gh-dashboard5-posts .gh-dashboard5-list-item a > span {
+    display: inline-block;
+    height: 57px;
 }
 
 
