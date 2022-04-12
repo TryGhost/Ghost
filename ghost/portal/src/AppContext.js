@@ -7,6 +7,7 @@ const AppContext = React.createContext({
     action: '',
     lastPage: '',
     brandColor: '',
+    pageData: {},
     onAction: (action, data) => {
         return {action, data};
     }
