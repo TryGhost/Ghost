@@ -92,6 +92,41 @@ module.exports = class MemberRepository {
         return subscription.plan && subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
     }
 
+    getMRR({interval, amount, status = null, canceled = false}) {
+        if (status === 'trialing') {
+            return 0;
+        }
+        if (status === 'incomplete') {
+            return 0;
+        }
+        if (status === 'incomplete_expired') {
+            return 0;
+        }
+        if (status === 'canceled') {
+            return 0;
+        }
+
+        if (this._labsService.isSet('dashboardV5') && canceled) {
+            return 0;
+        }
+
+        if (interval === 'year') {
+            return Math.floor(amount / 12);
+        }
+
+        if (interval === 'month') {
+            return amount;
+        }
+
+        if (interval === 'week') {
+            return amount * 4;
+        }
+
+        if (interval === 'day') {
+            return amount * 30;
+        }
+    }
+
     async get(data, options) {
         if (data.customer_id) {
             const customer = await this._StripeCustomer.findOne({
@@ -383,10 +418,11 @@ module.exports = class MemberRepository {
                     await this._MemberPaidSubscriptionEvent.add({
                         member_id: member.id,
                         source: 'stripe',
+                        subscription_id: subscription.id,
                         from_plan: subscription.get('plan_id'),
                         to_plan: null,
                         currency: subscription.get('plan_currency'),
-                        mrr_delta: -1 * getMRRDelta({
+                        mrr_delta: -1 * this.getMRR({
                             interval: subscription.get('plan_interval'),
                             amount: subscription.get('plan_amount')
                         })
@@ -670,29 +706,68 @@ module.exports = class MemberRepository {
                 id: model.id
             });
 
-            if (model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status')) {
-                const originalMrrDelta = getMRRDelta({interval: model.get('plan_interval'), amount: model.get('plan_amount'), status: model.get('status')});
-                const updatedMrrDelta = getMRRDelta({interval: updated.get('plan_interval'), amount: updated.get('plan_amount'), status: updated.get('status')});
+            if (model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status') || model.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
+                const originalMrrDelta = this.getMRR({interval: model.get('plan_interval'), amount: model.get('plan_amount'), status: model.get('status'), cancelled: model.get('cancel_at_period_end')});
+                const updatedMrrDelta = this.getMRR({interval: updated.get('plan_interval'), amount: updated.get('plan_amount'), status: updated.get('status'), cancelled: updated.get('cancel_at_period_end')});
+
+                const getStatus = (model) => {
+                    const status = model.get('status');
+                    const canceled = model.get('cancel_at_period_end');
+
+                    if (status === 'canceled') {
+                        return 'expired';
+                    }
+
+                    if (canceled) {
+                        return 'canceled';
+                    }
+
+                    if (this.isActiveSubscriptionStatus(status)) {
+                        return 'active';
+                    }
+
+                    return 'inactive';
+                };
+
+                const getEventName = (originalStatus, updatedStatus) => {
+                    if (originalStatus === updatedStatus) {
+                        return 'updated';
+                    }
+
+                    if (originalStatus === 'canceled' && updatedStatus === 'active') {
+                        return 'reactivated';
+                    }
+
+                    return updatedStatus;
+                };
+
+                const originalStatus = getStatus(model);
+                const updatedStatus = getStatus(updated);
+
                 const mrrDelta = updatedMrrDelta - originalMrrDelta;
                 await this._MemberPaidSubscriptionEvent.add({
                     member_id: member.id,
                     source: 'stripe',
+                    name: getEventName(originalStatus, updatedStatus),
+                    subscription_id: updated.id,
                     from_plan: model.get('plan_id'),
-                    to_plan: updated.get('plan_id'),
+                    to_plan: updated.get('status') === 'canceled' ? null : updated.get('plan_id'),
                     currency: subscriptionPriceData.currency,
                     mrr_delta: mrrDelta
                 }, options);
             }
         } else {
             eventData.created_at = new Date(subscription.start_date * 1000);
-            await this._StripeCustomerSubscription.add(subscriptionData, options);
+            const model = await this._StripeCustomerSubscription.add(subscriptionData, options);
             await this._MemberPaidSubscriptionEvent.add({
                 member_id: member.id,
+                subscription_id: model.id,
+                name: 'created',
                 source: 'stripe',
                 from_plan: null,
                 to_plan: subscriptionPriceData.id,
                 currency: subscriptionPriceData.currency,
-                mrr_delta: getMRRDelta({interval: _.get(subscriptionPriceData, 'recurring.interval'), amount: subscriptionPriceData.unit_amount, status: subscriptionPriceData.status}),
+                mrr_delta: this.getMRR({interval: _.get(subscriptionPriceData, 'recurring.interval'), amount: subscriptionPriceData.unit_amount, status: subscriptionPriceData.status, canceled: subscription.cancel_at_period_end}),
                 ...eventData
             }, options);
         }
@@ -1161,33 +1236,3 @@ module.exports = class MemberRepository {
     }
 };
 
-function getMRRDelta({interval, amount, status = null}) {
-    if (status === 'trialing') {
-        return 0;
-    }
-    if (status === 'incomplete') {
-        return 0;
-    }
-    if (status === 'incomplete_expired') {
-        return 0;
-    }
-    if (status === 'canceled') {
-        return 0;
-    }
-
-    if (interval === 'year') {
-        return Math.floor(amount / 12);
-    }
-
-    if (interval === 'month') {
-        return amount;
-    }
-
-    if (interval === 'week') {
-        return amount * 4;
-    }
-
-    if (interval === 'day') {
-        return amount * 30;
-    }
-}
