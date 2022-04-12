@@ -78,8 +78,8 @@ class PostsService {
             if (sendEmail) {
                 // Set the newsletter_id if it isn't passed to the API
                 if (!frame.options.newsletter_id) {
-                    const newsletters = await this.models.Newsletter.findAll({status: 'active'}, {transacting: frame.options.transacting});
-                    if (newsletters.models.length > 0) {
+                    const newsletters = await this.models.Newsletter.findPage({status: 'active', limit: 1, columns: ['id']}, {transacting: frame.options.transacting});
+                    if (newsletters.data.length > 0) {
                         frame.options.newsletter_id = newsletters.models[0].id;
                     }
                 }
