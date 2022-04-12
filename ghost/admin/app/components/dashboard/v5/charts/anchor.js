@@ -14,7 +14,7 @@ const PAID_OPTIONS = [{
     value: 'breakdown'
 }];
 
-export default class ChartAnchor extends Component {
+export default class Anchor extends Component {
     @service dashboardStats;
     @tracked chartDisplay = 'total';
     @tracked paidOptionSelected = 'paid';

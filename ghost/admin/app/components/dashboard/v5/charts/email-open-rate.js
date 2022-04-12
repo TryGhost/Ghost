@@ -1,24 +1,44 @@
 import Component from '@glimmer/component';
-import moment from 'moment';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-const DATE_FORMAT = 'D MMM YYYY';
-
-export default class ChartPaidMembers extends Component {
+export default class EmailOpenRate extends Component {
     @service dashboardStats;
-    
+
     /**
      * Call this method when you need to fetch new data from the server. 
      */
     @action
     loadCharts() {
         // The dashboard stats service will take care or reusing and limiting API-requests between charts
-        this.dashboardStats.loadMemberCountStats();
+        this.dashboardStats.loadNewsletterSubscribers();
+        this.dashboardStats.loadEmailsSent();
+        this.dashboardStats.loadEmailOpenRateStats();
+    }
+    
+    get dataSubscribers() {
+        // @todo: show paid, free, total together
+        return this.dashboardStats.newsletterSubscribers ?? {
+            total: 0,
+            free: 0,
+            paid: 0
+        };
+    }
+
+    get currentOpenRate() {
+        if (this.dashboardStats.emailOpenRateStats === null || this.dashboardStats.emailOpenRateStats.length === 0) {
+            return '-';
+        }
+
+        return this.dashboardStats.emailOpenRateStats[this.dashboardStats.emailOpenRateStats.length - 1].openRate;
+    }
+
+    get dataEmailsSent() {
+        return this.dashboardStats.emailsSent30d ?? 0;
     }
 
     get loading() {
-        return this.dashboardStats.memberCountStats === null;
+        return this.dashboardStats.emailOpenRateStats === null;
     }
 
     get chartType() {
@@ -26,25 +46,19 @@ export default class ChartPaidMembers extends Component {
     }
 
     get chartData() {
-        const stats = this.dashboardStats.filledMemberCountStats;
-        const labels = stats.map(stat => stat.date);
-        const newData = stats.map(stat => stat.paidSubscribed);
-        const canceledData = stats.map(stat => -stat.paidCanceled);
+        const stats = this.dashboardStats.emailOpenRateStats;
+        const labels = stats.map(stat => stat.subject);
+        const data = stats.map(stat => stat.openRate);
 
         return {
-            labels: labels,
-            datasets: [
-                {
-                    data: newData,
-                    fill: true,
-                    backgroundColor: '#7BA4F3',
-                    barThickness: 10
-                },{
-                    data: canceledData,
-                    fill: true,
-                    backgroundColor: '#E5E5E5',
-                    barThickness: 10
-                }]
+            labels,
+            datasets: [{
+                data,
+                fill: false,
+                backgroundColor: '#14B8FF',
+                cubicInterpolationMode: 'monotone',
+                barThickness: 18
+            }]
         };
     }
 
@@ -77,19 +91,13 @@ export default class ChartPaidMembers extends Component {
                 titleFontSize: 12,
                 titleFontStyle: 'normal',
                 titleFontColor: 'rgba(255, 255, 255, 0.7)',
-                titleMarginBottom: 3,
-                callbacks: {
-                    title: (tooltipItems) => {
-                        return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
-                    }
-                }
+                titleMarginBottom: 3
             },
             scales: {
                 yAxes: [{
-                    offset: true,
                     gridLines: {
                         drawTicks: false,
-                        display: true,
+                        display: false,
                         drawBorder: false
                     },
                     ticks: {
@@ -101,31 +109,22 @@ export default class ChartPaidMembers extends Component {
                     }
                 }],
                 xAxes: [{
-                    offset: true,
-                    stacked: true,
                     gridLines: {
-                        drawTicks: true,
-                        display: false,
-                        drawBorder: false
+                        color: 'rgba(200, 204, 217, 0.75)',
+                        borderDash: [4,4],
+                        display: true,
+                        drawBorder: true,
+                        drawTicks: false,
+                        zeroLineWidth: 1,
+                        zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                        zeroLineBorderDash: [4,4]
                     },
                     ticks: {
                         display: false,
                         maxTicksLimit: 5,
-                        autoSkip: true
-                    },
-                    type: 'time',
-                    time: {
-                        displayFormats: {
-                            millisecond: 'MMM DD',
-                            second: 'MMM DD',
-                            minute: 'MMM DD',
-                            hour: 'MMM DD',
-                            day: 'MMM DD',
-                            week: 'MMM DD',
-                            month: 'MMM DD',
-                            quarter: 'MMM DD',
-                            year: 'MMM DD'
-                        }
+                        autoSkip: true,
+                        maxRotation: 0,
+                        minRotation: 0
                     }
                 }]
             }

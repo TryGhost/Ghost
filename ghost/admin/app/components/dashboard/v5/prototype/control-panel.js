@@ -42,7 +42,7 @@ const STATE_OPTIONS = [
     }
 ];
 
-export default class PrototypeControlPanel extends Component {
+export default class ControlPanel extends Component {
     @service dashboardStats;
     @service dashboardMocks;
     

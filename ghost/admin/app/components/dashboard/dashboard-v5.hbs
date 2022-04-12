@@ -5,7 +5,7 @@
         {{#if this.areMembersEnabled}}
             <section class="gh-dashboard5-section gh-dashboard5-anchor">
                 <article class="gh-dashboard5-box">
-                    <Dashboard::V5::ChartAnchor
+                    <Dashboard::V5::Charts::Anchor
                         @days={{this.days}}
                         @onDaysChange={{this.onDaysChange}}
                         @daysOptions={{this.daysOptions}}
@@ -14,42 +14,25 @@
                 </article>
             </section>
 
-            {{!--
-            {{#if this.hasPaidTiers}}
-                <div class="gh-dashboard5-paid">
-                    <section class="gh-dashboard5-section">
-                        <div class="gh-dashboard5-growth">             
-                            <article class="gh-dashboard5-box">
-                                <Dashboard::V5::ChartPaidMembers @days={{this.days}}/>
-                            </article>
-                            <article class="gh-dashboard5-box">
-                                <Dashboard::V5::ChartPaidMix />
-                            </article>
-                        </div>
-                    </section>
-                </div>
-            {{/if}}
-            --}}
-
             {{#if this.areNewslettersEnabled}}
                 <section class="gh-dashboard5-split">
                     <section class="gh-dashboard5-split">
                         <section class="gh-dashboard5-section gh-dashboard5-engagement">
-                            <Dashboard::V5::ChartEngagement />
+                            <Dashboard::V5::Charts::Engagement />
                         </section>
 
                         <section class="gh-dashboard5-section gh-dashboard5-email">
-                            <Dashboard::V5::ChartEmail />
+                            <Dashboard::V5::Charts::Email />
                         </section>
                     </section>
                 
                     <section class="gh-dashboard5-section gh-dashboard5-rate">
-                        <Dashboard::V5::ChartOpenRate />
+                        <Dashboard::V5::Charts::EmailOpenRate />
                     </section>
                 </section> 
             {{else}}
                 <section class="gh-dashboard5-section gh-dashboard5-engagement">
-                    <Dashboard::V5::ChartEngagement />
+                    <Dashboard::V5::Charts::Engagement />
                 </section>
             {{/if}}
 
@@ -58,16 +41,16 @@
                 <section class="gh-dashboard5-split">
                     <section class="gh-dashboard5-split">
                         <section class="gh-dashboard5-section gh-dashboard5-engagement">
-                            <Dashboard::V5::ChartEngagement />
+                            <Dashboard::V5::Charts::Engagement />
                         </section>
 
                         <section class="gh-dashboard5-section gh-dashboard5-email">
-                            <Dashboard::V5::ChartEmail />
+                            <Dashboard::V5::Charts::Email />
                         </section>
                     </section>
                 
                     <section class="gh-dashboard5-section gh-dashboard5-rate">
-                        <Dashboard::V5::ChartOpenRate />
+                        <Dashboard::V5::Charts:EmailOpenRate />
                     </section>
                 </section> 
             {{/if}}
@@ -76,44 +59,17 @@
         <section class="gh-dashboard5-split">
             <section class="gh-dashboard5-section gh-dashboard5-posts">
                 <article class="gh-dashboard5-box">
-                    <Dashboard::V5::RecentPosts />
+                    <Dashboard::V5::Charts::RecentPosts />
                 </article>
             </section>
             <section class="gh-dashboard5-section gh-dashboard5-activity">
                 <article class="gh-dashboard5-box">
-                    <Dashboard::V5::RecentActivity />
+                    <Dashboard::V5::Charts::RecentActivity />
                 </article>
             </section>
         </section>
 
-        <div class="gh-main-section gh-members-help">
-            <div class="gh-main-section-block">
-                <div class="gh-main-section-content grey">
-                    <a href="https://ghost.org/resources/build-audience-subscriber-signups/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
-                        <div class="gh-members-help-content">
-                            <div class="thumbnail" style="background-image: url(assets/img/marketing/members-1.jpg);"></div>
-                            <div class="text">
-                                <h3>Building your audience with subscriber signups</h3>
-                                <p>Learn how to turn anonymous visitors into logged-in members with memberships in Ghost.</p>
-                                <div class="gh-btn gh-btn-link">Start building &rarr;</div>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="https://ghost.org/resources/first-100-email-subscribers/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
-                        <div class="gh-members-help-content">
-                            <div class="thumbnail right" style="background-image: url(assets/img/marketing/members-2.jpg);"></div>
-                            <div class="text">
-                                <h3>Get your first 100 email subscribers</h3>
-                                <p>Starting from zero? Use this guide to find your founding audience members.</p>
-                                <div class="gh-btn gh-btn-link">Become an expert &rarr;</div>
-                            </div>
-                        </div>
-                    </a>
-
-                </div>
-            </div>
-        </div>
+        <Dashboard::V5::Resources::Help />
         
         {{!--
         <Dashboard::V5::Resources::WhatsNew />
@@ -121,5 +77,5 @@
         <Dashboard::V5::Resources::StaffPicks />
         --}}
     {{/if}}
-    <Dashboard::V5::PrototypeControlPanel />
+    <Dashboard::V5::Prototype::ControlPanel />
 </section>

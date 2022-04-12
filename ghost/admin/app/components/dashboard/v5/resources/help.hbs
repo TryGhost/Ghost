@@ -1,24 +1,28 @@
-<div class="gh-dashboard5-area" {{did-insert this.load}}>
-    {{#if (not (or this.loading this.error))}}
-        {{#each this.newsletters as |entry|}}
-            <div class="gh-dashboard5-area-resource">
-                <div class="gh-dashboard5-area-resource-content">
-                    <h4>{{entry.title}}</h4>
-                    {{#if entry.custom_excerpt}}
-                        <p>{{entry.custom_excerpt}}</p>
-                    {{else if entry.excerpt}}
-                        <p>{{entry.excerpt}}</p>
-                    {{/if}}
-                    <button class="gh-btn" type="button">
-                        <span>Read more</span>
-                    </button>
+<div class="gh-main-section gh-members-help">
+    <div class="gh-main-section-block">
+        <div class="gh-main-section-content grey">
+            <a href="https://ghost.org/resources/build-audience-subscriber-signups/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
+                <div class="gh-members-help-content">
+                    <div class="thumbnail" style="background-image: url(assets/img/marketing/members-1.jpg);"></div>
+                    <div class="text">
+                        <h3>Building your audience with subscriber signups</h3>
+                        <p>Learn how to turn anonymous visitors into logged-in members with memberships in Ghost.</p>
+                        <div class="gh-btn gh-btn-link">Start building &rarr;</div>
+                    </div>
                 </div>
-            </div>
-        {{/each}}
-    {{/if}}
-    <div class="gh-dashboard5-area-more">
-        <div class="gh-dashboard5-area-dot is-selected"></div>
-        <div class="gh-dashboard5-area-dot"></div>  
-        <div class="gh-dashboard5-area-dot"></div>
+            </a>
+
+            <a href="https://ghost.org/resources/first-100-email-subscribers/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
+                <div class="gh-members-help-content">
+                    <div class="thumbnail right" style="background-image: url(assets/img/marketing/members-2.jpg);"></div>
+                    <div class="text">
+                        <h3>Get your first 100 email subscribers</h3>
+                        <p>Starting from zero? Use this guide to find your founding audience members.</p>
+                        <div class="gh-btn gh-btn-link">Become an expert &rarr;</div>
+                    </div>
+                </div>
+            </a>
+
+        </div>
     </div>
 </div>

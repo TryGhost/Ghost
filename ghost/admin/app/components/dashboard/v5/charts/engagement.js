@@ -14,7 +14,7 @@ const STATUS_OPTIONS = [{
     value: 'free'
 }];
 
-export default class ChartEngagement extends Component {
+export default class Engagement extends Component {
     @service dashboardStats;
 
     @action
