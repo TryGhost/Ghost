@@ -575,6 +575,7 @@ module.exports = {
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true},
+        mrr: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         /* Below fields are now redundant as we link prie_id to stripe_prices table */
         plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         plan_nickname: {type: 'string', maxlength: 50, nullable: false},
