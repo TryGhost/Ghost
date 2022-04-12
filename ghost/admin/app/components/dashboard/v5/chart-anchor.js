@@ -6,9 +6,20 @@ import {tracked} from '@glimmer/tracking';
 
 const DATE_FORMAT = 'D MMM YYYY';
 
+const PAID_OPTIONS = [{
+    name: 'Paid total',
+    value: 'paid'
+}, {
+    name: 'Paid breakdown',
+    value: 'breakdown'
+}];
+
 export default class ChartAnchor extends Component {
     @service dashboardStats;
     @tracked chartDisplay = 'total';
+    @tracked paidOptionSelected = 'paid';
+
+    paidOptions = PAID_OPTIONS;
 
     @action
     loadCharts() {
@@ -22,12 +33,22 @@ export default class ChartAnchor extends Component {
         this.loadCharts();
     }
 
+    @action 
+    paidOptionsChange(selected) {
+        this.paidOptionSelected = selected.value;
+        this.changeChartDisplay(selected.value);
+    }
+
+    get selectedPaidOption() {
+        return this.paidOptions.find(d => d.value === this.paidOptionSelected);
+    }
+
     get chartShowingTotal() {
         return (this.chartDisplay === 'total');
     }
 
     get chartShowingPaid() {
-        return (this.chartDisplay === 'paid');
+        return (this.chartDisplay === 'paid' || this.chartDisplay === 'breakdown');
     }
 
     get chartShowingBreakdown() {
@@ -392,7 +413,7 @@ export default class ChartAnchor extends Component {
     }
 
     get chartHeight() {
-        return 300;
+        return 325;
     }
 
     calculatePercentage(from, to) {

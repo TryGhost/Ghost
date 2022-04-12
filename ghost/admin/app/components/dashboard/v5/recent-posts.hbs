@@ -9,14 +9,13 @@
         {{#each this.posts as |post|}}
             <div class="gh-dashboard5-list-item">
                 <LinkTo class="gh-dashboard5-list-post permalink" @route="editor.edit" @models={{array post.displayName post.id}}>
-                    {{post.title}}
+                   {{post.title}}
                 </LinkTo>
                 <span>231</span>
                 <span>65%</span>
             </div>
         {{else}}
             <div class="gh-dashboard5-list-empty">
-                {{svg-jar "no-data-list"}}
                 <p>No published posts yet.</p>
             </div>
         {{/each}}
