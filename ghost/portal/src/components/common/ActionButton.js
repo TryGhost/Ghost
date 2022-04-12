@@ -78,7 +78,7 @@ const Styles = ({brandColor, retry, disabled, style = {}, isPrimary}) => {
     };
 };
 
-function ActionButton({label, type = undefined, onClick, disabled = false, retry = false, brandColor, isRunning, isPrimary = true, isDestructive = false, classes, style = {}, tabindex = undefined}) {
+function ActionButton({label, type = undefined, onClick, disabled = false, retry = false, brandColor, isRunning, isPrimary = true, isDestructive = false, classes = '', style = {}, tabindex = undefined}) {
     let Style = Styles({disabled, retry, brandColor, style, isPrimary});
 
     let className = 'gh-portal-btn';

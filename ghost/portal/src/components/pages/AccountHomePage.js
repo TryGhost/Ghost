@@ -111,7 +111,7 @@ export const AccountHomePageStyles = `
         z-index: 999;
     }
 
-    @media (max-width: 390px) {   
+    @media (max-width: 390px) {
         .gh-portal-account-footer {
             padding: 0 !important;
         }
@@ -315,7 +315,7 @@ const PaidAccountActions = () => {
 
 const AccountActions = () => {
     const {member, onAction} = useContext(AppContext);
-    const {name, email, subscribed} = member;
+    const {name, email} = member;
 
     const openEditProfile = () => {
         onAction('switchPage', {
@@ -324,12 +324,6 @@ const AccountActions = () => {
         });
     };
 
-    const onToggleSubscription = (e, sub) => {
-        e.preventDefault();
-        onAction('updateNewsletter', {subscribed: !sub});
-    };
-
-    let label = subscribed ? 'Subscribed' : 'Unsubscribed';
     return (
         <div>
             <div className='gh-portal-list'>
@@ -343,22 +337,44 @@ const AccountActions = () => {
 
                 <PaidAccountActions />
                 <EmailPreferencesAction />
-                <section>
-                    <div className='gh-portal-list-detail'>
-                        <h3>Email newsletter</h3>
-                        <p>{label}</p>
-                    </div>
-                    <div>
-                        <Switch onToggle={(e) => {
-                            onToggleSubscription(e, subscribed);
-                        }} checked={subscribed} />
-                    </div>
-                </section>
+                <EmailNewsletterAction />
             </div>
             {/* <ProductList openUpdatePlan={openUpdatePlan}></ProductList> */}
         </div>
     );
 };
+
+function EmailNewsletterAction() {
+    const {member, site, onAction} = useContext(AppContext);
+    const {subscribed} = member;
+
+    if (hasMultipleNewsletters({site})) {
+        return null;
+    }
+
+    let label = subscribed ? 'Subscribed' : 'Unsubscribed';
+    const onToggleSubscription = (e, sub) => {
+        e.preventDefault();
+        onAction('updateNewsletter', {subscribed: !sub});
+    };
+
+    return (
+        <section>
+            <div className='gh-portal-list-detail'>
+                <h3>Email newsletter</h3>
+                <p>{label}</p>
+            </div>
+            <div>
+                <Switch
+                    id="default-newsletter-toggle"
+                    onToggle={(e) => {
+                        onToggleSubscription(e, subscribed);
+                    }} checked={subscribed}
+                />
+            </div>
+        </section>
+    );
+}
 
 function EmailPreferencesAction() {
     const {site, onAction} = useContext(AppContext);
