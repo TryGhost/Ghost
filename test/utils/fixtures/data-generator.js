@@ -381,7 +381,7 @@ DataGenerator.Content = {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 0
+            sort_order: 1
         },
         {
             id: ObjectId().toHexString(),
@@ -398,7 +398,7 @@ DataGenerator.Content = {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 0
+            sort_order: 2
         }
     ],
 

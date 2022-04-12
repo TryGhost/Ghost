@@ -42,7 +42,7 @@ describe('Newsletters API', function () {
             .body({newsletters: [newsletter]})
             .expectStatus(201)
             .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
+                newsletters: new Array(1).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -52,7 +52,7 @@ describe('Newsletters API', function () {
         await agent.get('newsletters/')
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
+                newsletters: new Array(2).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -63,7 +63,7 @@ describe('Newsletters API', function () {
         await agent.get('newsletters/')
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
+                newsletters: new Array(2).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag

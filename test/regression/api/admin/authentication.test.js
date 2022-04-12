@@ -93,10 +93,19 @@ describe('Authentication API', function () {
 
             // Test that the default Tier has been renamed from 'Default Product'
             const {body} = await agent.get('/tiers/');
-
             const tierWithDefaultProductName = body.tiers.find(x => x.name === 'Default Product');
 
             assert(tierWithDefaultProductName === undefined, 'The default Tier should have had a name change');
+
+            // Test that the default Newsletter has name and sender name changed to blog title
+            const {body: newsletterBody} = await agent.get('/newsletters/');
+            const defaultNewsletter = newsletterBody.newsletters.find(x => x.slug === 'default-newsletter');
+            const newsletterWithDefaultName = newsletterBody.newsletters.find(x => x.name
+                === 'Default Newsletter');
+
+            assert (defaultNewsletter.name === 'a test blog', 'The default newsletter should have had a name change');
+            assert (defaultNewsletter.sender_name === 'a test blog', 'The default newsletter should have had a sender name change');
+            assert(newsletterWithDefaultName === undefined, 'The default newsletter should have had a name change');
         });
 
         it('is setup? yes', async function () {
