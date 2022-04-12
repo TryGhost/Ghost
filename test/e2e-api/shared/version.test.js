@@ -52,7 +52,7 @@ describe('API Versioning', function () {
                 });
         });
 
-        it('responds with error current content version header when requested version is AHEAD and CANNOT respond', async function () {
+        it('responds with error requested version is AHEAD and CANNOT respond', async function () {
             // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
             await agentAdminAPI
                 .get('removed_endpoint')
@@ -67,7 +67,7 @@ describe('API Versioning', function () {
                 });
         });
 
-        it('responds with error current content version header when requested version is BEHIND and CANNOT respond', async function () {
+        it('responds with error when requested version is BEHIND and CANNOT respond', async function () {
             // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
             await agentAdminAPI
                 .get('removed_endpoint')
