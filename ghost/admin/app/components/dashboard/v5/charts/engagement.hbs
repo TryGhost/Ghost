@@ -1,32 +1,34 @@
-<article {{did-insert this.loadCharts}} class="gh-dashboard5-box">
-    <div class="gh-dashboard5-insert">
-        <div class="gh-dashboard5-insert-item">
-            <Dashboard::v5::Parts::Metric
-                @label="Engaged over 30 days"
-                @value={{this.data30Days}}
-                />
+<section class="gh-dashboard5-section gh-dashboard5-engagement">
+    <article {{did-insert this.loadCharts}} class="gh-dashboard5-box">
+        <div class="gh-dashboard5-insert">
+            <div class="gh-dashboard5-insert-item">
+                <Dashboard::v5::Parts::Metric
+                    @label="Engaged over 30 days"
+                    @value={{this.data30Days}}
+                    />
+            </div>
+            <div class="gh-dashboard5-insert-item">
+                <Dashboard::v5::Parts::Metric
+                    @label="Engaged over 7 days"
+                    @value={{this.data7Days}}
+                    />
+            </div>
         </div>
-        <div class="gh-dashboard5-insert-item">
-            <Dashboard::v5::Parts::Metric
-                @label="Engaged over 7 days"
-                @value={{this.data7Days}}
-                />
-        </div>
-    </div>
-</article>
+    </article>
 
-<div class="prototype-selection">
-    <PowerSelect
-        @selected={{this.selectedStatusOption}}
-        @options={{this.statusOptions}}
-        @searchEnabled={{false}}
-        @onChange={{this.onSwitchStatus}}
-        @triggerComponent="gh-power-select/trigger"
-        @triggerClass="gh-contentfilter-menu-trigger"
-        @dropdownClass="gh-contentfilter-menu-dropdown"
-        @matchTriggerWidth={{false}}
-        as |option|
-    >
-        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-    </PowerSelect>
-</div>
+    <div class="prototype-selection">
+        <PowerSelect
+            @selected={{this.selectedStatusOption}}
+            @options={{this.statusOptions}}
+            @searchEnabled={{false}}
+            @onChange={{this.onSwitchStatus}}
+            @triggerComponent="gh-power-select/trigger"
+            @triggerClass="gh-contentfilter-menu-trigger"
+            @dropdownClass="gh-contentfilter-menu-dropdown"
+            @matchTriggerWidth={{false}}
+            as |option|
+        >
+            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+        </PowerSelect>
+    </div>
+</section>

@@ -1,15 +1,17 @@
-<article class="gh-dashboard5-box">
-    <div {{did-insert this.loadCharts}} class="gh-dashboard5-insert">
-        <div class="gh-dashboard5-insert-item">
-            <Dashboard::v5::Parts::Metric
-                @label="Newsletter subscribers"
-                @value={{format-number this.dataSubscribers.total}} />
-        </div>
+<section class="gh-dashboard5-section gh-dashboard5-email">
+    <article class="gh-dashboard5-box">
+        <div {{did-insert this.loadCharts}} class="gh-dashboard5-insert">
+            <div class="gh-dashboard5-insert-item">
+                <Dashboard::v5::Parts::Metric
+                    @label="Newsletter subscribers"
+                    @value={{format-number this.dataSubscribers.total}} />
+            </div>
 
-        <div class="gh-dashboard5-insert-item">
-            <Dashboard::v5::Parts::Metric
-                @label="Emails sent over last 30 days"
-                @value={{format-number this.dataEmailsSent}} />
+            <div class="gh-dashboard5-insert-item">
+                <Dashboard::v5::Parts::Metric
+                    @label="Emails sent over last 30 days"
+                    @value={{format-number this.dataEmailsSent}} />
+            </div>
         </div>
-    </div>
-</article>
+    </article>
+</section>

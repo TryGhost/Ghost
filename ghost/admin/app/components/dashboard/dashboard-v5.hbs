@@ -3,79 +3,48 @@
         <GhLoadingSpinner />
     {{else}}
         {{#if this.areMembersEnabled}}
-            <section class="gh-dashboard5-section gh-dashboard5-anchor">
-                <article class="gh-dashboard5-box">
-                    <Dashboard::V5::Charts::Anchor
-                        @days={{this.days}}
-                        @onDaysChange={{this.onDaysChange}}
-                        @daysOptions={{this.daysOptions}}
-                        @selected={{this.selectedDaysOption}}
-                    />
-                </article>
-            </section>
-
+            <Dashboard::V5::Charts::Anchor
+                @days={{this.days}}
+                @onDaysChange={{this.onDaysChange}}
+                @daysOptions={{this.daysOptions}}
+                @selected={{this.selectedDaysOption}}
+            />
             {{#if this.areNewslettersEnabled}}
                 <section class="gh-dashboard5-split">
                     <section class="gh-dashboard5-split">
-                        <section class="gh-dashboard5-section gh-dashboard5-engagement">
                             <Dashboard::V5::Charts::Engagement />
-                        </section>
-
-                        <section class="gh-dashboard5-section gh-dashboard5-email">
                             <Dashboard::V5::Charts::Email />
                         </section>
                     </section>
-                
-                    <section class="gh-dashboard5-section gh-dashboard5-rate">
-                        <Dashboard::V5::Charts::EmailOpenRate />
-                    </section>
+                    <Dashboard::V5::Charts:EmailOpenRate />
                 </section> 
             {{else}}
-                <section class="gh-dashboard5-section gh-dashboard5-engagement">
-                    <Dashboard::V5::Charts::Engagement />
-                </section>
+                <Dashboard::V5::Charts::Engagement />
             {{/if}}
-
         {{else}}
             {{#if this.areNewslettersEnabled}}
                 <section class="gh-dashboard5-split">
                     <section class="gh-dashboard5-split">
-                        <section class="gh-dashboard5-section gh-dashboard5-engagement">
                             <Dashboard::V5::Charts::Engagement />
-                        </section>
-
-                        <section class="gh-dashboard5-section gh-dashboard5-email">
                             <Dashboard::V5::Charts::Email />
                         </section>
                     </section>
-                
-                    <section class="gh-dashboard5-section gh-dashboard5-rate">
-                        <Dashboard::V5::Charts:EmailOpenRate />
-                    </section>
+                    <Dashboard::V5::Charts:EmailOpenRate />
                 </section> 
             {{/if}}
         {{/if}}
 
         <section class="gh-dashboard5-split">
-            <section class="gh-dashboard5-section gh-dashboard5-posts">
-                <article class="gh-dashboard5-box">
-                    <Dashboard::V5::Charts::RecentPosts />
-                </article>
-            </section>
-            <section class="gh-dashboard5-section gh-dashboard5-activity">
-                <article class="gh-dashboard5-box">
-                    <Dashboard::V5::Charts::RecentActivity />
-                </article>
-            </section>
+            <Dashboard::V5::Charts::RecentPosts />
+            <Dashboard::V5::Charts::RecentActivity />
         </section>
 
         <Dashboard::V5::Resources::Help />
         
-        {{!--
-        <Dashboard::V5::Resources::WhatsNew />
-        <Dashboard::V5::Resources::LatestNewsletters />
-        <Dashboard::V5::Resources::StaffPicks />
-        --}}
+        {{!-- <Dashboard::V5::Resources::WhatsNew /> --}}
+        {{!-- <Dashboard::V5::Resources::LatestNewsletters /> --}}
+        {{!-- <Dashboard::V5::Resources::StaffPicks /> --}}
     {{/if}}
+
     <Dashboard::V5::Prototype::ControlPanel />
 </section>
