@@ -64,11 +64,27 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
     });
 }
 
-export default function AccountEmailPage() {
-    const {brandColor, member, onAction} = useContext(AppContext);
-    const defaultSubscribedNewsletters = [...(member.newsletters || [])];
-    const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
+export default function NewsletterSelectionPage() {
+    const {brandColor, site, onAction, pageData, action} = useContext(AppContext);
+    const siteNewsletters = getSiteNewsletters({site});
+    const defaultNewsletters = siteNewsletters.filter((d) => {
+        return d.subscribe_on_signup;
+    });
 
+    let isRunning = false;
+    if (action === 'signup:running') {
+        isRunning = true;
+    }
+    let label = 'Continue';
+    let retry = false;
+    if (action === 'signup:failed') {
+        label = 'Retry';
+        retry = true;
+    }
+
+    const disabled = (action === 'signup:running') ? true : false;
+
+    const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     return (
         <div className='gh-portal-content with-footer'>
             <CloseButton />
@@ -85,36 +101,27 @@ export default function AccountEmailPage() {
                 <div style={{width: '100%'}}>
                     <div style={{marginBottom: '12px'}}>
                         <ActionButton
-                            isRunning={false}
+                            isRunning={isRunning}
+                            retry={retry}
+                            disabled={disabled}
                             onClick={(e) => {
+                                /* eslint-disable no-console */
+                                console.log(pageData);
+                                console.log(subscribedNewsletters);
+                                /* eslint-enable no-console */
                                 let newsletters = subscribedNewsletters.map((d) => {
                                     return {
                                         id: d.id
                                     };
                                 });
-                                onAction('showPopupNotification', {
-                                    action: 'updated:success',
-                                    message: `Newsletter preference updated.`
-                                });
-                                onAction('updateNewsletterPreference', {newsletters});
+                                const {name, email, plan} = pageData;
+                                onAction('signup', {name, email, plan, newsletters});
                             }}
-                            disabled={false}
                             brandColor={brandColor}
-                            label='Update'
+                            label={label}
                             style={{width: '100%'}}
                         />
                     </div>
-                    <ActionButton
-                        isRunning={false}
-                        onClick={(e) => {}}
-                        disabled={false}
-                        brandColor={brandColor}
-                        isPrimary={false}
-                        label='Unsubscribe from all'
-                        isDestructive={true}
-                        style={{width: '100%'}}
-                    />
-                    <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>Unsubscribing from emails will not cancel your paid subscription to The Chinese Cinema</p>
                 </div>
             </footer>
         </div>

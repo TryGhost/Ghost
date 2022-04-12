@@ -7,6 +7,7 @@ import AccountPlanPage from './components/pages/AccountPlanPage';
 import AccountProfilePage from './components/pages/AccountProfilePage';
 import AccountEmailPage from './components/pages/AccountEmailPage';
 import OfferPage from './components/pages/OfferPage';
+import NewsletterSelectionPage from './components/pages/NewsletterSelectionPage';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
@@ -18,6 +19,7 @@ const Pages = {
     accountPlan: AccountPlanPage,
     accountProfile: AccountProfilePage,
     accountEmail: AccountEmailPage,
+    signupNewsletter: NewsletterSelectionPage,
     magiclink: MagicLinkPage,
     loading: LoadingPage,
     offer: OfferPage

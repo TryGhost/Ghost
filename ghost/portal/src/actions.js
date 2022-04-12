@@ -1,10 +1,11 @@
 import {createPopupNotification, getMemberEmail, getMemberName, removePortalLinkFromUrl} from './utils/helpers';
 
-function switchPage({data}) {
+function switchPage({data, state}) {
     return {
         page: data.page,
         popupNotification: null,
-        lastPage: data.lastPage || null
+        lastPage: data.lastPage || null,
+        pageData: data.pageData || state.pageData
     };
 }
 
@@ -94,11 +95,13 @@ async function signin({data, api, state}) {
 
 async function signup({data, state, api}) {
     try {
-        const {plan, email, name, offerId} = data;
+        const {plan, email, name, newsletters, offerId} = data;
         if (plan.toLowerCase() === 'free') {
+            /*eslint-disable no-console */
+            console.log('Sending data', data);
             await api.member.sendMagicLink(data);
         } else {
-            await api.member.checkoutPlan({plan, email, name, offerId});
+            await api.member.checkoutPlan({plan, email, name, newsletters, offerId});
         }
         return {
             page: 'magiclink',

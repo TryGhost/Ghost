@@ -5,7 +5,7 @@ import SiteTitleBackButton from '../common/SiteTitleBackButton';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice, hasMultipleNewsletters} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -260,20 +260,32 @@ class SignupPage extends React.Component {
     }
 
     handleSignup(e) {
+        const {site, onAction} = this.context;
         e.preventDefault();
         this.setState((state) => {
             return {
                 errors: ValidateInputForm({fields: this.getInputFields({state})})
             };
         }, () => {
-            const {onAction} = this.context;
             const {name, email, plan, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                onAction('signup', {name, email, plan});
-                this.setState({
-                    errors: {}
-                });
+                if (hasMultipleNewsletters({site})) {
+                    onAction('switchPage', {
+                        page: 'signupNewsletter',
+                        lastPage: 'signup',
+                        pageData: {name, email, plan}
+                    });
+                    this.setState({
+                        errors: {},
+                        showNewsletterSelection: true
+                    });
+                } else {
+                    this.setState({
+                        errors: {}
+                    });
+                    onAction('signup', {name, email, plan});
+                }
             }
         });
     }
@@ -285,14 +297,27 @@ class SignupPage extends React.Component {
                 errors: ValidateInputForm({fields: this.getInputFields({state})})
             };
         }, () => {
-            const {onAction} = this.context;
+            const {onAction, site} = this.context;
             const {name, email, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                onAction('signup', {name, email, plan});
-                this.setState({
-                    errors: {}
-                });
+                if (hasMultipleNewsletters({site})) {
+                    onAction('switchPage', {
+                        page: 'signupNewsletter',
+                        lastPage: 'signup',
+                        pageData: {name, email, plan}
+                    });
+
+                    this.setState({
+                        errors: {},
+                        showNewsletterSelection: true
+                    });
+                } else {
+                    onAction('signup', {name, email, plan});
+                    this.setState({
+                        errors: {}
+                    });
+                }
             }
         });
     }
@@ -484,14 +509,14 @@ class SignupPage extends React.Component {
                     <div>
                         {this.renderProducts()}
 
-                        {(hasOnlyFree ? 
+                        {(hasOnlyFree ?
                             <div className={'gh-portal-btn-container' + (sticky ? ' sticky m24' : '')}>
                                 <div className='gh-portal-logged-out-form-container'>
                                     {this.renderSubmitButton()}
                                     {this.renderLoginMessage()}
                                 </div>
                             </div>
-                            : 
+                            :
                             this.renderLoginMessage())}
                     </div>
                 </div>
@@ -555,9 +580,14 @@ class SignupPage extends React.Component {
         return {sectionClass, footerClass};
     }
 
+    onNewsletterSelectionBack() {
+        this.setState({
+            showNewsletterSelection: false
+        });
+    }
+
     render() {
         let {sectionClass} = this.getClassNames();
-
         return (
             <>
                 <div className='gh-portal-back-sitetitle'>

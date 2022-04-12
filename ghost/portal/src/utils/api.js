@@ -146,11 +146,12 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        sendMagicLink({email, emailType, labels, name, oldEmail}) {
+        sendMagicLink({email, emailType, labels, name, oldEmail, newsletters}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
                 email,
+                newsletters,
                 oldEmail,
                 emailType,
                 labels,
@@ -215,7 +216,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
-        async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, offerId, metadata = {}} = {}) {
+        async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, offerId, newsletters, metadata = {}} = {}) {
             const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
@@ -227,6 +228,7 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             }
             const metadataObj = {
                 name,
+                newsletters: JSON.stringify(newsletters),
                 requestSrc: 'portal',
                 fp_tid: (window.FPROM || window.$FPROM)?.data?.tid,
                 ...metadata
