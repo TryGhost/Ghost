@@ -6,12 +6,15 @@ import {inject as service} from '@ember/service';
 export default class NewNewsletterRoute extends AdminRoute {
     @service modals;
     @service router;
+    @service settings;
     @service store;
 
     newsletterModal = null;
 
     model() {
-        return this.store.createRecord('newsletter');
+        return this.store.createRecord('newsletter', {
+            senderName: this.settings.get('title')
+        });
     }
 
     setupController(controller, model) {
