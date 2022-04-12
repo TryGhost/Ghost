@@ -768,7 +768,13 @@ describe('Members API', function () {
                 await assertMemberEvents({
                     eventType: 'MemberPaidSubscriptionEvent',
                     memberId: updatedMember.id,
-                    asserts: []
+                    asserts: [{
+                        type: 'created',
+                        mrr_delta: 0
+                    }, {
+                        type: 'expired',
+                        mrr_delta: 0
+                    }]
                 });
             });
         });
