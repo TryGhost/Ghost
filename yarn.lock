@@ -2009,10 +2009,10 @@
     "@tryghost/domain-events" "^0.1.9"
     "@tryghost/member-events" "^0.4.1"
 
-"@tryghost/members-api@5.6.1":
-  version "5.6.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.6.1.tgz#5d04716701e813c3bfbc1be8f016a412859e1313"
-  integrity sha512-Wamvr4rwl9ENt+Ue7o5nnBWuRlhXPYc5yoXn/2D87B2S1hMKhk+tu7zQ/0Hjb4ounZ9ypKR4Lp/KdC4RO5lPsQ==
+"@tryghost/members-api@5.7.1":
+  version "5.7.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.7.1.tgz#021db2c2092ad8320b93a76021761aa582c55f94"
+  integrity sha512-zYrm+eP2ttvR+oetlNY1qyJGatmzDtxEp+t5cPq6cIBJdoCKL2Nm8BI9mbo4JEEpRmobJn78tD+IlxrEXtWF9A==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
