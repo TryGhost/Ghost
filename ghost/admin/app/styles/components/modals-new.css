@@ -52,6 +52,7 @@
     animation: var(--epm-animation-backdrop-in);
     animation-delay: var(--epm-animation-backdrop-in-delay);
     animation-duration: var(--epm-animation-backdrop-in-duration);
+    z-index: 10000;
 }
 
 .epm-modal-container {
