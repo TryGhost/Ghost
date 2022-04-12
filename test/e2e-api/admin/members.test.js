@@ -17,6 +17,14 @@ async function assertMemberEvents({eventType, memberId, asserts}) {
     assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
 }
 
+async function assertSubscription(subscriptionId, asserts) {
+    // eslint-disable-next-line dot-notation
+    const subscription = await models['StripeCustomerSubscription'].where('subscription_id', subscriptionId).fetch({require: true});
+
+    // We use the native toJSON to prevent calling the overriden serialize method
+    models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
+}
+
 async function getPaidProduct() {
     return await Product.findOne({type: 'paid'});
 }
@@ -427,7 +435,7 @@ describe('Members API', function () {
             active: true,
             nickname: 'Complimentary',
             unit_amount: 0,
-            currency: 'USD',
+            currency: 'usd',
             type: 'recurring',
             recurring: {
                 interval: 'year'
@@ -723,7 +731,7 @@ describe('Members API', function () {
             active: true,
             nickname: 'Complimentary',
             unit_amount: 0,
-            currency: 'USD',
+            currency: 'usd',
             type: 'recurring',
             recurring: {
                 interval: 'year'
@@ -842,11 +850,11 @@ describe('Members API', function () {
     it('Can create a member with an existing paid subscription', async function () {
         const fakePrice = {
             id: 'price_1',
-            product: '',
+            product: 'product_1234',
             active: true,
             nickname: 'Paid',
             unit_amount: 1200,
-            currency: 'USD',
+            currency: 'usd',
             type: 'recurring',
             recurring: {
                 interval: 'year'
@@ -864,6 +872,7 @@ describe('Members API', function () {
             plan: fakePrice,
             items: {
                 data: [{
+                    id: 'item_123',
                     price: fakePrice
                 }]
             }
@@ -926,6 +935,8 @@ describe('Members API', function () {
 
         const newMember = body.members[0];
         assert.equal(newMember.status, 'paid', 'The created member should have the paid status');
+        assert.equal(newMember.subscriptions.length, 1, 'The member should have a single subscription');
+        assert.equal(newMember.subscriptions[0].id, fakeSubscription.id, 'The returned subscription should have an ID assigned');
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -958,6 +969,16 @@ describe('Members API', function () {
                     mrr_delta: 100
                 }
             ]
+        });
+
+        await assertSubscription(fakeSubscription.id, {
+            subscription_id: fakeSubscription.id,
+            status: 'active',
+            cancel_at_period_end: false,
+            plan_amount: 1200,
+            plan_interval: 'year',
+            plan_currency: 'usd',
+            mrr: 100
         });
     });
 
