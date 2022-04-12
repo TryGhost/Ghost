@@ -755,7 +755,7 @@ module.exports = class MemberRepository {
                 await this._MemberPaidSubscriptionEvent.add({
                     member_id: member.id,
                     source: 'stripe',
-                    name: getEventName(originalStatus, updatedStatus),
+                    type: getEventName(originalStatus, updatedStatus),
                     subscription_id: updated.id,
                     from_plan: model.get('plan_id'),
                     to_plan: updated.get('status') === 'canceled' ? null : updated.get('plan_id'),
@@ -769,7 +769,7 @@ module.exports = class MemberRepository {
             await this._MemberPaidSubscriptionEvent.add({
                 member_id: member.id,
                 subscription_id: model.id,
-                name: 'created',
+                type: 'created',
                 source: 'stripe',
                 from_plan: null,
                 to_plan: subscriptionPriceData.id,
