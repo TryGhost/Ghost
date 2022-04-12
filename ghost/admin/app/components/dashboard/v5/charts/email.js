@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class ChartEmailOpenRate extends Component {
+export default class Email extends Component {
     @service dashboardStats;
 
     /**
