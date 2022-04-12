@@ -697,7 +697,13 @@ module.exports = class MemberRepository {
             plan_nickname: subscriptionPriceData.nickname || _.get(subscriptionPriceData, 'recurring.interval'),
             plan_interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
             plan_amount: subscriptionPriceData.unit_amount,
-            plan_currency: subscriptionPriceData.currency
+            plan_currency: subscriptionPriceData.currency,
+            mrr: this.getMRR({
+                interval: _.get(subscriptionPriceData, 'recurring.interval', ''), 
+                amount: subscriptionPriceData.unit_amount, 
+                status: subscription.status, 
+                canceled: subscription.cancel_at_period_end
+            })
         };
         let eventData = {};
         if (model) {
@@ -707,8 +713,9 @@ module.exports = class MemberRepository {
             });
 
             if (model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status') || model.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
-                const originalMrrDelta = this.getMRR({interval: model.get('plan_interval'), amount: model.get('plan_amount'), status: model.get('status'), cancelled: model.get('cancel_at_period_end')});
-                const updatedMrrDelta = this.getMRR({interval: updated.get('plan_interval'), amount: updated.get('plan_amount'), status: updated.get('status'), cancelled: updated.get('cancel_at_period_end')});
+                // TODO: we should use the previously saved MRR in the future as soon as the MRR column is 'stable' and migrated correctly
+                const originalMrrDelta = this.getMRR({interval: model.get('plan_interval'), amount: model.get('plan_amount'), status: model.get('status'), canceled: model.get('cancel_at_period_end')});
+                const updatedMrrDelta = this.getMRR({interval: updated.get('plan_interval'), amount: updated.get('plan_amount'), status: updated.get('status'), canceled: updated.get('cancel_at_period_end')});
 
                 const getStatus = (model) => {
                     const status = model.get('status');
