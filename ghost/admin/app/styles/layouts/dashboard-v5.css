@@ -93,7 +93,7 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-row:last-child {
-    padding-top: 16px;
+    padding-top: 32px;
 }
 
 .gh-dashboard5-section {
@@ -163,13 +163,13 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-select .ember-power-select-selected-item {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     text-transform: uppercase;
     font-weight: 500;
     letter-spacing: .3px;
     line-height: 1em;
     padding: 0;
-    color: var(--midlightgrey);
+    color: var(--midgrey);
     white-space: nowrap;
 }
 
@@ -266,12 +266,13 @@ Dashboard v5 Metric */
 
 .gh-dashboard5-metric-label {
     align-items: center;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     text-transform: uppercase;
-    font-weight: 600;
+    letter-spacing: .2px;
+    font-weight: 500;
     letter-spacing: .3px;
     line-height: 1em;
-    margin: 0 0 14px;
+    margin: 0 0 12px;
     padding: 0;
     color: var(--midgrey);
     white-space: nowrap;
@@ -293,7 +294,7 @@ Dashboard v5 Metric */
 .gh-dashboard5-metric-value {
     display: flex;
     align-items: flex-end;
-    font-size: 2.8rem;
+    font-size: 2.6rem;
     font-weight: 600;
     letter-spacing: -.1px;
     line-height: 1em;
@@ -303,7 +304,7 @@ Dashboard v5 Metric */
 }
 
 .gh-dashboard5-metric.is-large .gh-dashboard5-metric-value {
-    font-size: 3.6rem;
+    font-size: 3.2rem;
     font-weight: 600;
     margin-bottom: 0;
 }
@@ -399,7 +400,7 @@ Dashboard v5 List */
 }
 
 .gh-dashboard5-list-item > span {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 600;
     display: flex;
     justify-content: flex-start;
@@ -458,7 +459,7 @@ Dashboard v5 Section Anchor */
     cursor: pointer;
     position: relative;
     flex: 1;
-    padding: 20px 16px 24px 12px;
+    padding: 20px 16px 24px 16px;
     margin: 2px 4px 2px 2px;
     text-align: left;
     background: transparent;
@@ -519,20 +520,55 @@ Dashboard v5 Section Anchor */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Email */
-
-.gh-dashboard5-email {
-    grid-area: email;
-    
-}
-
-
-/* --------------------------------- 
 Dashboard v5 Section Engagement */
 
 .gh-dashboard5-engagement {
     grid-area: engagement;
     position: relative;
+}
+
+.gh-dashboard5-engagement .gh-dashboard5-box {
+    padding-top: 28px;
+}
+
+.gh-dashboard5-engagement .gh-dashboard5-select {
+    top: 20px;
+}
+
+
+/* --------------------------------- 
+Dashboard v5 Section Email */
+
+.gh-dashboard5-email {
+    grid-area: email;    
+}
+
+.gh-dashboard5-email .gh-dashboard5-box {
+    padding-top: 28px;
+}
+
+
+/* --------------------------------- 
+Dashboard v5 Section Email Open Rate */
+
+.gh-dashboard5-email-open-rate {
+    grid-area: email-open-rate;
+}
+
+.gh-dashboard5-email-open-rate .gh-dashboard5-box {
+    padding-top: 28px;
+}
+
+.gh-dashboard5-email-open-rate .gh-dashboard5-chart {
+    margin: 24px 0 0;
+}
+
+.gh-dashboard5-email-open-rate .gh-dashboard5-chart-ticks {
+    padding: 0 16px 0 0;
+}
+
+.gh-dashboard5-email-open-rate .gh-dashboard5-metric-label {
+    padding-top: 4px;
 }
 
 
@@ -559,12 +595,7 @@ Dashboard v5 Section Recent Posts */
     height: 100%;
 }
 
-.gh-dashboard5-recent-posts .gh-dashboard5-list-item:nth-child(4),
-.gh-dashboard5-recent-posts .gh-dashboard5-list-item:nth-child(5) {
-    display: none;
-}
-
-.gh-dashboard5-recent-posts .gh-dashboard5-list-item a > span{
+.gh-dashboard5-recent-posts .gh-dashboard5-list-item a > span {
     width: 80%;
     overflow: hidden;
     color: var(--darkgrey);
@@ -637,26 +668,6 @@ Dashboard v5 Section Recent Activity */
     text-align: right;
     padding-right: 0;
     padding-top: 6px;
-}
-
-
-/* --------------------------------- 
-Dashboard v5 Section Email Open Rate */
-
-.gh-dashboard5-email-open-rate {
-    grid-area: email-open-rate;
-}
-
-.gh-dashboard5-email-open-rate .gh-dashboard5-chart {
-    margin: 24px 0 0;
-}
-
-.gh-dashboard5-email-open-rate .gh-dashboard5-chart-ticks {
-    padding: 0 16px 0 0;
-}
-
-.gh-dashboard5-email-open-rate .gh-dashboard5-metric-label {
-    padding-top: 4px;
 }
 
 

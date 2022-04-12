@@ -30,6 +30,7 @@ const PAID_OPTIONS = [{
 
 export default class Anchor extends Component {
     @service dashboardStats;
+    @service feature;
     @tracked chartDisplay = 'total';
     @tracked paidOptionSelected = 'paid';
 
@@ -238,6 +239,16 @@ export default class Anchor extends Component {
     }
 
     get chartOptions() {
+        let maxNumberOfTicks = 7;
+
+        if (this.selectedDaysOption.value === 30) {
+            maxNumberOfTicks = 15;
+        }
+
+        if (this.selectedDaysOption.value === 90 || this.selectedDaysOption.value === 'all') {
+            maxNumberOfTicks = 20;
+        }
+
         if (this.chartDisplay === 'breakdown') {
             return {
                 responsive: true,
@@ -313,7 +324,7 @@ export default class Anchor extends Component {
                             minRotation: 0,
                             padding: 8,
                             autoSkip: true,
-                            maxTicksLimit: 7
+                            maxTicksLimit: maxNumberOfTicks
                         },
                         type: 'time',
                         time: {
@@ -394,7 +405,7 @@ export default class Anchor extends Component {
                         display: true,
                         drawBorder: false,
                         color: 'transparent',
-                        zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.85)',
                         zeroLineWidth: 1
                     },
                     ticks: {
@@ -409,13 +420,13 @@ export default class Anchor extends Component {
                 }],
                 xAxes: [{
                     gridLines: {
-                        color: 'rgba(200, 204, 217, 0.75)',
+                        color: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.85)',
                         borderDash: [4,4],
                         display: true,
                         drawBorder: true,
                         drawTicks: false,
                         zeroLineWidth: 1,
-                        zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.85)',
                         zeroLineBorderDash: [4,4]
                     },
                     ticks: {
@@ -424,10 +435,10 @@ export default class Anchor extends Component {
                         minRotation: 0,
                         padding: 14,
                         autoSkip: true,
-                        maxTicksLimit: 8,
+                        maxTicksLimit: maxNumberOfTicks,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif',
                         fontSize: 11,
-                        fontColor: '#7c8b9a'
+                        fontColor: '#ABB4BE'
                     },
                     type: 'time',
                     time: {
@@ -450,11 +461,11 @@ export default class Anchor extends Component {
     }
 
     get chartHeight() {
-        return 300;
+        return 275;
     }
 
     get chartHeightSmall() {
-        return 250;
+        return 225;
     }
 
     calculatePercentage(from, to) {
