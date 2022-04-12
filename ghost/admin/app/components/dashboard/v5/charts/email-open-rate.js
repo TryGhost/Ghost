@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 
 export default class EmailOpenRate extends Component {
     @service dashboardStats;
+    @service feature;
 
     /**
      * Call this method when you need to fetch new data from the server. 
@@ -110,13 +111,13 @@ export default class EmailOpenRate extends Component {
                 }],
                 xAxes: [{
                     gridLines: {
-                        color: 'rgba(200, 204, 217, 0.75)',
+                        color: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.85)',
                         borderDash: [4,4],
                         display: true,
                         drawBorder: true,
                         drawTicks: false,
                         zeroLineWidth: 1,
-                        zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.85)',
                         zeroLineBorderDash: [4,4]
                     },
                     ticks: {
