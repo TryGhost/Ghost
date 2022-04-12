@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const assert = require('assert');
 const nock = require('nock');
 const should = require('should');
@@ -8,6 +9,10 @@ const models = require('../../../core/server/models');
 
 let membersAgent;
 let adminAgent;
+
+function createStripeID(prefix) {
+    return `prefix_${crypto.randomBytes(16).toString('hex')}`;
+}
 
 async function getPaidProduct() {
     return await Product.findOne({type: 'paid'});
@@ -183,8 +188,8 @@ describe('Members API', function () {
                     mockManager.mockLabsEnabled('dashboardV5');
                 });
                 it('Handles cancellation of paid subscriptions correctly', async function () {
-                    const customer_id = 'cust_3433289013';
-                    const subscription_id = 'sub_3432';
+                    const customer_id = createStripeID('cust');
+                    const subscription_id = createStripeID('sub');
 
                     // Create a new subscription in Stripe
                     set(subscription, {
@@ -306,8 +311,8 @@ describe('Members API', function () {
 
             describe('Without the dashboardV5 flag', function () {
                 it('Handles cancellation of paid subscriptions correctly', async function () {
-                    const customer_id = 'cust_3433289013djalk';
-                    const subscription_id = 'sub_3432dsa';
+                    const customer_id = createStripeID('cust');
+                    const subscription_id = createStripeID('sub');
 
                     // Create a new subscription in Stripe
                     set(subscription, {
@@ -432,8 +437,8 @@ describe('Members API', function () {
             let canceledPaidMember;
 
             it('Handles cancellation of paid subscriptions correctly', async function () {
-                const customer_id = 'cust_3432';
-                const subscription_id = 'sub_3432';
+                const customer_id = createStripeID('cust');
+                const subscription_id = createStripeID('sub');
 
                 // Create a new subscription in Stripe
                 set(subscription, {
@@ -649,8 +654,8 @@ describe('Members API', function () {
             });
 
             it('Handles cancellation of old fashioned comped subscriptions correctly', async function () {
-                const customer_id = 'cust_3433';
-                const subscription_id = 'sub_3433';
+                const customer_id = createStripeID('cust');
+                const subscription_id = createStripeID('sub');
 
                 const price = {
                     id: 'price_123',
