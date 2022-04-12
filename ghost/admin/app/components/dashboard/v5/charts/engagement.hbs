@@ -1,13 +1,13 @@
 <section class="gh-dashboard5-section gh-dashboard5-engagement">
     <article {{did-insert this.loadCharts}} class="gh-dashboard5-box">
-        <div class="gh-dashboard5-insert">
-            <div class="gh-dashboard5-insert-item">
+        <div class="gh-dashboard5-rows">
+            <div class="gh-dashboard5-row">
                 <Dashboard::v5::Parts::Metric
                     @label="Engaged over 30 days"
                     @value={{this.data30Days}}
                     />
             </div>
-            <div class="gh-dashboard5-insert-item">
+            <div class="gh-dashboard5-row">
                 <Dashboard::v5::Parts::Metric
                     @label="Engaged over 7 days"
                     @value={{this.data7Days}}
@@ -16,7 +16,7 @@
         </div>
     </article>
 
-    <div class="prototype-selection">
+    <div class="gh-dashboard5-select">
         <PowerSelect
             @selected={{this.selectedStatusOption}}
             @options={{this.statusOptions}}

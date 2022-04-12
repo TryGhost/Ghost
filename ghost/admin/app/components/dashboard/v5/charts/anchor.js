@@ -6,11 +6,25 @@ import {tracked} from '@glimmer/tracking';
 
 const DATE_FORMAT = 'D MMM YYYY';
 
+const DAYS_OPTIONS = [{
+    name: '7 Days',
+    value: 7
+}, {
+    name: '30 Days',
+    value: 30
+}, {
+    name: '90 Days',
+    value: 90
+}, {
+    name: 'All Time',
+    value: 'all'
+}];
+
 const PAID_OPTIONS = [{
-    name: 'Paid total',
+    name: 'Total Paid Members',
     value: 'paid'
 }, {
-    name: 'Paid breakdown',
+    name: 'Paid Members By Day',
     value: 'breakdown'
 }];
 
@@ -19,7 +33,21 @@ export default class Anchor extends Component {
     @tracked chartDisplay = 'total';
     @tracked paidOptionSelected = 'paid';
 
+    daysOptions = DAYS_OPTIONS;
     paidOptions = PAID_OPTIONS;
+
+    get days() {
+        return this.dashboardStats.chartDays;
+    }
+
+    set days(days) {
+        this.dashboardStats.chartDays = days;
+    }
+
+    @action
+    onInsert() {
+        this.dashboardStats.loadSiteStatus();
+    }
 
     @action
     loadCharts() {
@@ -34,9 +62,18 @@ export default class Anchor extends Component {
     }
 
     @action 
-    paidOptionsChange(selected) {
+    onPaidChange(selected) {
         this.paidOptionSelected = selected.value;
         this.changeChartDisplay(selected.value);
+    }
+
+    @action 
+    onDaysChange(selected) {
+        this.days = selected.value;
+    }
+
+    get selectedDaysOption() {
+        return this.daysOptions.find(d => d.value === this.days);
     }
 
     get selectedPaidOption() {
@@ -413,7 +450,11 @@ export default class Anchor extends Component {
     }
 
     get chartHeight() {
-        return 325;
+        return 300;
+    }
+
+    get chartHeightSmall() {
+        return 250;
     }
 
     calculatePercentage(from, to) {

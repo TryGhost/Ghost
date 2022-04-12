@@ -1,50 +1,35 @@
-<section {{did-insert this.onInsert}}>
+<section class="gh-dashboard5-layout" {{did-insert this.onInsert}}>
     {{#if this.isLoading }}
         <GhLoadingSpinner />
     {{else}}
         {{#if this.areMembersEnabled}}
-            <Dashboard::V5::Charts::Anchor
-                @days={{this.days}}
-                @onDaysChange={{this.onDaysChange}}
-                @daysOptions={{this.daysOptions}}
-                @selected={{this.selectedDaysOption}}
-            />
+            <Dashboard::V5::Charts::Anchor />
+
+            {{!-- Could these if else statements be cleaned up more? --}}
             {{#if this.areNewslettersEnabled}}
-                <section class="gh-dashboard5-split">
-                    <section class="gh-dashboard5-split">
-                            <Dashboard::V5::Charts::Engagement />
-                            <Dashboard::V5::Charts::Email />
-                        </section>
-                    </section>
-                    <Dashboard::V5::Charts:EmailOpenRate />
-                </section> 
+                <Dashboard::V5::Charts::Engagement />
+                <Dashboard::V5::Charts::Email />
+                <Dashboard::V5::Charts::EmailOpenRate />
             {{else}}
                 <Dashboard::V5::Charts::Engagement />
             {{/if}}
+    
         {{else}}
             {{#if this.areNewslettersEnabled}}
-                <section class="gh-dashboard5-split">
-                    <section class="gh-dashboard5-split">
-                            <Dashboard::V5::Charts::Engagement />
-                            <Dashboard::V5::Charts::Email />
-                        </section>
-                    </section>
-                    <Dashboard::V5::Charts:EmailOpenRate />
-                </section> 
+                <Dashboard::V5::Charts::Engagement />
+                <Dashboard::V5::Charts::Email />
+                <Dashboard::V5::Charts::EmailOpenRate />
             {{/if}}
         {{/if}}
 
-        <section class="gh-dashboard5-split">
-            <Dashboard::V5::Charts::RecentPosts />
-            <Dashboard::V5::Charts::RecentActivity />
-        </section>
-
+        <Dashboard::V5::Charts::RecentPosts />
+        <Dashboard::V5::Charts::RecentActivity />
         <Dashboard::V5::Resources::Help />
-        
+
         {{!-- <Dashboard::V5::Resources::WhatsNew /> --}}
         {{!-- <Dashboard::V5::Resources::LatestNewsletters /> --}}
         {{!-- <Dashboard::V5::Resources::StaffPicks /> --}}
     {{/if}}
-
-    <Dashboard::V5::Prototype::ControlPanel />
 </section>
+
+<Dashboard::V5::Prototype::ControlPanel />
