@@ -1338,6 +1338,7 @@ describe('Members API: with multiple newsletters', function () {
                 etag: anyEtag
             });
     });
+
     // Read a member
 
     it('Can read', async function () {
@@ -1382,6 +1383,18 @@ describe('Members API: with multiple newsletters', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 location: anyLocationFor('members')
+            });
+    });
+
+    it('Can filter on newsletter slug', async function () {
+        await agent
+            .get('/members/?filter=newsletters:daily-newsletter')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(memberMatcherShallowIncludesForNewsletters)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
             });
     });
 
