@@ -4,6 +4,10 @@ const _ = require('lodash');
 const StripeCustomerSubscription = ghostBookshelf.Model.extend({
     tableName: 'members_stripe_customers_subscriptions',
 
+    defaults: {
+        mrr: 0
+    },
+
     customer() {
         return this.belongsTo('MemberStripeCustomer', 'customer_id', 'customer_id');
     },

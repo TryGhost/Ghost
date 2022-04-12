@@ -260,15 +260,15 @@ describe('Legacy Members API', function () {
             .put(localUtils.API.getApiQuery(`members/${newMember.id}/`))
             .send({members: [compedPayload]})
             .set('Origin', config.get('url'))
+            .expect(({body}) => {
+                body.should.have.property('members');
+                body.members.should.have.length(1);
+            })
             .expect(200);
 
         should.not.exist(res2.headers['x-cache-invalidate']);
 
         const jsonResponse2 = res2.body;
-
-        should.exist(jsonResponse2);
-        should.exist(jsonResponse2.members);
-        jsonResponse2.members.should.have.length(1);
         localUtils.API.checkResponse(jsonResponse2.members[0], 'member', ['subscriptions', 'products']);
 
         const member = jsonResponse2.members[0];
