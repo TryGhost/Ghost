@@ -11,7 +11,7 @@ let membersAgent;
 let adminAgent;
 
 function createStripeID(prefix) {
-    return `prefix_${crypto.randomBytes(16).toString('hex')}`;
+    return `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
 }
 
 async function getPaidProduct() {
