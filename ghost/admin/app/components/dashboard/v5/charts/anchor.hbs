@@ -14,7 +14,7 @@
 
 <div class="gh-dashboard5-stats{{unless this.hasPaidTiers ' is-solo'}}" {{did-insert this.loadCharts}}>
     <button class="gh-dashboard5-stats-button {{if this.chartShowingTotal 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "total")}}>
-        <Dashboard::v5::parts::ChartMetric
+        <Dashboard::v5::Parts::Metric
             @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
             @value={{format-number this.totalMembers}}
             @trends={{this.hasTrends}}
@@ -23,7 +23,7 @@
     </button>
     {{#if this.hasPaidTiers}}
         <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid")}}>
-            <Dashboard::v5::parts::ChartMetric
+            <Dashboard::v5::Parts::Metric
                 @label={{gh-pluralize this.paidMembers "Paid member" without-count=true}}
                 @value={{format-number this.paidMembers}}
                 @trends={{this.hasTrends}}
@@ -31,7 +31,7 @@
                 @large={{true}} />
         </button>
         <button class="gh-dashboard5-stats-button {{if this.chartShowingMonthly 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "monthly")}}>
-            <Dashboard::v5::parts::ChartMetric
+            <Dashboard::v5::Parts::Metric
                 @label="MRR"
                 @value="${{gh-price-amount this.currentMRR}}"
                 @trends={{this.hasTrends}}
