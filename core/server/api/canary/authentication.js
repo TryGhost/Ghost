@@ -51,14 +51,14 @@ module.exports = {
                 })
                 .then((data) => {
                     try {
-                        return auth.setup.doFixtures(data, api.products);
+                        return auth.setup.doFixtures(data);
                     } catch (e) {
                         return data;
                     }
                 })
                 .then((data) => {
                     try {
-                        return auth.setup.doProduct(data, api.products);
+                        return auth.setup.doProductAndNewsletter(data, api);
                     } catch (e) {
                         return data;
                     }

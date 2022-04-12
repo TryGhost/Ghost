@@ -133,6 +133,9 @@ function serializeMember(member, options) {
     }
 
     if (json.newsletters && labsService.isSet('multipleNewsletters')) {
+        json.newsletters.sort((a, b) => {
+            return a.sort_order - b.sort_order;
+        });
         serialized.newsletters = json.newsletters;
     }
 

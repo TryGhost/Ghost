@@ -13,7 +13,9 @@ const Newsletter = ghostBookshelf.Model.extend({
         title_alignment: 'center',
         show_feature_image: true,
         body_font_category: 'sans_serif',
-        show_badge: true
+        show_badge: true,
+        show_header_icon: true,
+        show_header_title: true
     },
 
     async onSaving(model, _attr, options) {

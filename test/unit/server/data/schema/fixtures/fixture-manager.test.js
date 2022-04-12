@@ -119,6 +119,27 @@ describe('Migration Fixture Utils', function () {
             }).catch(done);
         });
 
+        it('should call add for main newsletter fixture', function (done) {
+            const newsletterOneStub = sinon.stub(models.Newsletter, 'findOne').returns(Promise.resolve());
+            const newsletterAddStub = sinon.stub(models.Newsletter, 'add').returns(Promise.resolve({}));
+
+            const newsletterFixtures = fixtures.models.find((modelFixture) => {
+                return modelFixture.name === 'Newsletter';
+            });
+
+            fixtureManager.addFixturesForModel(newsletterFixtures).then(function (result) {
+                should.exist(result);
+                result.should.be.an.Object();
+                result.should.have.property('expected', 1);
+                result.should.have.property('done', 1);
+
+                newsletterOneStub.callCount.should.eql(1);
+                newsletterAddStub.callCount.should.eql(1);
+
+                done();
+            }).catch(done);
+        });
+
         it('should not call add for main post fixture if it is already found', function (done) {
             const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve({}));
             const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
