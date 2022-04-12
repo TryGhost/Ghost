@@ -14,8 +14,8 @@ async function getPaidProduct() {
 }
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
-    const events = await models[eventType].where('member_id', memberId).fetchAll();
-    events.map(e => e.toJSON()).should.match(asserts);
+    const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
+    events.should.match(asserts);
     assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
 }
 
@@ -268,7 +268,7 @@ describe('Members API', function () {
                 ]);
 
                 // Check the status events for this newly created member (should be NULL -> paid only)
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberStatusEvent',
                     memberId: updatedMember.id,
                     asserts: [
@@ -283,7 +283,7 @@ describe('Members API', function () {
                     ]
                 });
 
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberPaidSubscriptionEvent',
                     memberId: updatedMember.id,
                     asserts: [
@@ -415,7 +415,7 @@ describe('Members API', function () {
                 });
 
                 // Check the status events for this newly created member (should be NULL -> paid only)
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberStatusEvent',
                     memberId: updatedMember.id,
                     asserts: [
@@ -434,7 +434,7 @@ describe('Members API', function () {
                     ]
                 });
 
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberPaidSubscriptionEvent',
                     memberId: updatedMember.id,
                     asserts: [
@@ -483,7 +483,7 @@ describe('Members API', function () {
                 assert.equal(updatedMember.subscriptions.length, 2, 'The member should have two subscriptions');
 
                 // Check the status events for this newly created member (should be NULL -> paid only)
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberStatusEvent',
                     memberId: updatedMember.id,
                     asserts: [
@@ -506,7 +506,7 @@ describe('Members API', function () {
                     ]
                 });
 
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberPaidSubscriptionEvent',
                     memberId: updatedMember.id,
                     asserts: [
@@ -613,7 +613,7 @@ describe('Members API', function () {
                 ]);
 
                 // Check the status events for this newly created member (should be NULL -> paid only)
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberStatusEvent',
                     memberId: updatedMember.id,
                     asserts: [
@@ -632,7 +632,7 @@ describe('Members API', function () {
                     ]
                 });
 
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberPaidSubscriptionEvent',
                     memberId: updatedMember.id,
                     asserts: []
@@ -734,7 +734,7 @@ describe('Members API', function () {
                 });
 
                 // Check the status events for this newly created member (should be NULL -> paid only)
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberStatusEvent',
                     memberId: member.id,
                     asserts: [
@@ -751,7 +751,7 @@ describe('Members API', function () {
                     ]
                 });
 
-                assertMemberEvents({
+                await assertMemberEvents({
                     eventType: 'MemberPaidSubscriptionEvent',
                     memberId: member.id,
                     asserts: [
