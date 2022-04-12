@@ -5,23 +5,13 @@
         {{#if this.areMembersEnabled}}
             <section class="gh-dashboard5-section gh-dashboard5-anchor">
                 <article class="gh-dashboard5-box">
-                    <Dashboard::V5::ChartAnchor @days={{this.days}} />
-                </article>
-                <div id="gh-dashboard5-anchor-selection" class="prototype-selection">
-                    <PowerSelect
+                    <Dashboard::V5::ChartAnchor
+                        @days={{this.days}}
+                        @onDaysChange={{this.onDaysChange}}
+                        @daysOptions={{this.daysOptions}}
                         @selected={{this.selectedDaysOption}}
-                        @options={{this.daysOptions}}
-                        @searchEnabled={{false}}
-                        @onChange={{this.onDaysChange}}
-                        @triggerComponent="gh-power-select/trigger"
-                        @triggerClass="gh-contentfilter-menu-trigger"
-                        @dropdownClass="gh-contentfilter-menu-dropdown"
-                        @matchTriggerWidth={{false}}
-                        as |option|
-                    >
-                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                    </PowerSelect>
-                </div>
+                    />
+                </article>
             </section>
 
             {{!--
@@ -95,6 +85,35 @@
                 </article>
             </section>
         </section>
+
+        <div class="gh-main-section gh-members-help">
+            <div class="gh-main-section-block">
+                <div class="gh-main-section-content grey">
+                    <a href="https://ghost.org/resources/build-audience-subscriber-signups/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
+                        <div class="gh-members-help-content">
+                            <div class="thumbnail" style="background-image: url(assets/img/marketing/members-1.jpg);"></div>
+                            <div class="text">
+                                <h3>Building your audience with subscriber signups</h3>
+                                <p>Learn how to turn anonymous visitors into logged-in members with memberships in Ghost.</p>
+                                <div class="gh-btn gh-btn-link">Start building &rarr;</div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://ghost.org/resources/first-100-email-subscribers/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
+                        <div class="gh-members-help-content">
+                            <div class="thumbnail right" style="background-image: url(assets/img/marketing/members-2.jpg);"></div>
+                            <div class="text">
+                                <h3>Get your first 100 email subscribers</h3>
+                                <p>Starting from zero? Use this guide to find your founding audience members.</p>
+                                <div class="gh-btn gh-btn-link">Become an expert &rarr;</div>
+                            </div>
+                        </div>
+                    </a>
+
+                </div>
+            </div>
+        </div>
         
         {{!--
         <Dashboard::V5::Resources::WhatsNew />
