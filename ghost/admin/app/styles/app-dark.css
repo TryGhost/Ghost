@@ -1102,6 +1102,16 @@ kbd {
 
 
 /* Dashboard v5 */
+
+.gh-dashboard5 .gh-dashboard5-anchor .gh-dashboard5-stats {
+    background: transparent;
+    border-top-color: #2b2d31;
+}
+
+.gh-dashboard5 .gh-dashboard5-anchor .gh-dashboard5-stats-button {
+    border-color: #202429;
+}
+
 .gh-dashboard5 .gh-dashboard5-anchor .gh-dashboard5-stats-button.is-selected {
     border-color: #394047;
 }

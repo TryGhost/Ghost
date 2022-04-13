@@ -86,7 +86,7 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-row {
     flex: 1;
-    padding: 4px 0 16px 0;
+    padding: 0 0 16px 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -103,15 +103,15 @@ Dashboard v5 Layout */
 .gh-dashboard5-title {
     display: flex;
     flex-direction: row;
-    margin: 0 0 16px;
+    margin: 0 0 20px;
 }
 
 .gh-dashboard5-title h4 {
-    margin: 0 16px 0 0;
-    font-size: 1.65rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    line-height: 1.4em;
-    color: #15171a;
+    color: var(--black);
+    margin: 0;
+    padding: 0;
 }
 
 .gh-dashboard5-box {
@@ -144,15 +144,15 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-selects {
     position: absolute;
-    top: 17px;
-    right: 4px;
+    top: 14px;
+    right: 2px;
     display: flex;
     flex-direction: row;
 }
 
 .gh-dashboard5-select {
     position: absolute;
-    top: 17px;
+    top: 16px;
     right: 4px;
 }
 
@@ -165,11 +165,11 @@ Dashboard v5 Layout */
 .gh-dashboard5-select .ember-power-select-selected-item {
     font-size: 1.1rem;
     text-transform: uppercase;
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: .3px;
     line-height: 1em;
     padding: 0;
-    color: var(--midgrey);
+    color: var(--middarkgrey);
     white-space: nowrap;
 }
 
@@ -274,8 +274,13 @@ Dashboard v5 Metric */
     line-height: 1em;
     margin: 0 0 12px;
     padding: 0;
-    color: var(--midgrey);
+    color: var(--middarkgrey);
     white-space: nowrap;
+
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: .2px;
+    font-weight: 500;
 }
 
 .gh-dashboard5-metric.is-large .gh-dashboard5-metric-label {
@@ -294,17 +299,17 @@ Dashboard v5 Metric */
 .gh-dashboard5-metric-value {
     display: flex;
     align-items: flex-end;
-    font-size: 2.6rem;
+    font-size: 2.4rem;
     font-weight: 600;
     letter-spacing: -.1px;
     line-height: 1em;
     white-space: nowrap;
-    margin: 0 0 8px;
+    margin: 0 0 12px;
     gap: 10px;
 }
 
 .gh-dashboard5-metric.is-large .gh-dashboard5-metric-value {
-    font-size: 3.2rem;
+    font-size: 3rem;
     font-weight: 600;
     margin-bottom: 0;
 }
@@ -314,7 +319,7 @@ Dashboard v5 Metric */
 }
 
 .gh-dashboard5-metric.is-reverse.is-large .gh-dashboard5-metric-value {
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .gh-dashboard5-metric-extra {
@@ -434,19 +439,18 @@ Dashboard v5 Section Anchor */
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-box {
-    padding: 24px 24px 8px;
+    padding: 20px 24px 8px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-stats {
     display: flex;
     flex-direction: row;
     width: calc(100% + 48px);
-    padding: 0 8px;
-    margin: 12px -24px 0;
-}
-
-.gh-dashboard5-anchor .gh-dashboard5-title {
-    margin-bottom: 24px;
+    padding: 8px;
+    margin: 4px -24px -8px;
+    border-radius: 0 0 4px 4px;
+    background: rgba(253,253,253,1);
+    border-top: 1px solid var(--whitegrey);
 }
 
 .gh-dashboard5-anchor.is-top .gh-dashboard5-stats {
@@ -459,19 +463,24 @@ Dashboard v5 Section Anchor */
     cursor: pointer;
     position: relative;
     flex: 1;
-    padding: 20px 16px 24px 16px;
-    margin: 2px 4px 2px 2px;
+    padding: 16px 24px 20px;
+    margin: 2px 8px 2px 2px;
     text-align: left;
     background: transparent;
-    border: 1px solid transparent;
     border-radius: 5px;
+    color: var(--black);
+    /* border: 1px solid #eff2f4; */
+}
+
+.gh-dashboard5-anchor .gh-dashboard5-stats-button:last-child {
+    margin-right: 2px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-stats-button.is-selected { 
     color: var(--black);
-    background: var(--white) !important;
-    box-shadow: 0 0 12px rgb(0 0 0 / 3%);
-    border: 1px solid var(--whitegrey);
+    background: var(--white);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 2%);
+    border: 1px solid rgb(235 235 235);
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-stats.is-solo .gh-dashboard5-stats-button.is-selected {
@@ -498,24 +507,13 @@ Dashboard v5 Section Anchor */
 
 .gh-dashboard5-anchor .gh-dashboard5-chart {
     flex-direction: column;
-    margin-left: -16px;
-    margin-right: -16px;
-    margin-top: 12px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-chart-ticks {
     flex-direction: row;
-    padding: 12px 0 4px;
+    padding: 10px 0;
     font-size: 1.2rem;
-}
-
-.gh-dashboard5-anchor .gh-dashboard5-chart-ticks span {
-    opacity: 0.5;
-}
-
-.gh-dashboard5-anchor .gh-dashboard5-chart-ticks span:first-child,
-.gh-dashboard5-anchor .gh-dashboard5-chart-ticks span:last-child {
-    opacity: 1;
+    color: var(--midlightgrey);
 }
 
 
@@ -529,10 +527,6 @@ Dashboard v5 Section Engagement */
 
 .gh-dashboard5-engagement .gh-dashboard5-box {
     padding-top: 28px;
-}
-
-.gh-dashboard5-engagement .gh-dashboard5-select {
-    top: 20px;
 }
 
 
@@ -560,15 +554,11 @@ Dashboard v5 Section Email Open Rate */
 }
 
 .gh-dashboard5-email-open-rate .gh-dashboard5-chart {
-    margin: 24px 0 0;
+    margin: 28px 0 0;
 }
 
 .gh-dashboard5-email-open-rate .gh-dashboard5-chart-ticks {
     padding: 0 16px 0 0;
-}
-
-.gh-dashboard5-email-open-rate .gh-dashboard5-metric-label {
-    padding-top: 4px;
 }
 
 

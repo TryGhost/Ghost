@@ -4,7 +4,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-const DATE_FORMAT = 'D MMM YYYY';
+const DATE_FORMAT = 'D MMM';
 
 const DAYS_OPTIONS = [{
     name: '7 Days',
@@ -150,6 +150,15 @@ export default class Anchor extends Component {
         return this.dashboardStats.siteStatus?.hasPaidTiers;
     }
 
+    get chartTitle() {
+        if (this.chartDisplay === 'paid-total' || this.chartDisplay === 'paid-breakdown') {
+            return 'Total paid members';
+        } else if (this.chartDisplay === 'mrr') {
+            return 'Monthly revenue (MRR)';
+        }
+        return 'Total members';
+    }
+
     get chartType() {
         if (this.chartDisplay === 'paid-breakdown') {
             return 'bar';
@@ -170,7 +179,7 @@ export default class Anchor extends Component {
             labels = stats.map(stat => stat.date);
             newData = stats.map(stat => stat.paidSubscribed);
             canceledData = stats.map(stat => -stat.paidCanceled);
-    
+
             return {
                 labels: labels,
                 datasets: [
@@ -231,16 +240,6 @@ export default class Anchor extends Component {
     }
 
     get chartOptions() {
-        let maxNumberOfTicks = 7;
-
-        if (this.selectedDaysOption.value === 30) {
-            maxNumberOfTicks = 15;
-        }
-
-        if (this.selectedDaysOption.value === 90 || this.selectedDaysOption.value === 'all') {
-            maxNumberOfTicks = 20;
-        }
-
         if (this.chartDisplay === 'paid-breakdown') {
             return {
                 responsive: true,
@@ -279,18 +278,18 @@ export default class Anchor extends Component {
                 },
                 scales: {
                     yAxes: [{
-                        offset: true,
+                        offset: false,
                         gridLines: {
                             drawTicks: false,
                             display: true,
                             drawBorder: false,
                             color: 'rgba(255, 255, 255, 0.1)',
                             lineWidth: 0,
-                            zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                            zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
                             zeroLineWidth: 1
                         },
                         ticks: {
-                            display: true,
+                            display: false,
                             maxTicksLimit: 5,
                             fontColor: '#7C8B9A',
                             padding: 8,
@@ -301,35 +300,25 @@ export default class Anchor extends Component {
                         offset: true,
                         stacked: true,
                         gridLines: {
-                            color: 'rgba(200, 204, 217, 0.75)',
+                            color: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
                             borderDash: [4,4],
                             display: true,
-                            drawBorder: true,
+                            drawBorder: false,
                             drawTicks: false,
                             zeroLineWidth: 1,
-                            zeroLineColor: 'rgba(200, 204, 217, 0.75)',
+                            zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
                             zeroLineBorderDash: [4,4]
                         },
                         ticks: {
-                            display: true,
-                            maxRotation: 0,
-                            minRotation: 0,
-                            padding: 8,
-                            autoSkip: true,
-                            maxTicksLimit: maxNumberOfTicks
-                        },
-                        type: 'time',
-                        time: {
-                            displayFormats: {
-                                millisecond: 'MMM DD',
-                                second: 'MMM DD',
-                                minute: 'MMM DD',
-                                hour: 'MMM DD',
-                                day: 'MMM DD',
-                                week: 'MMM DD',
-                                month: 'MMM DD',
-                                quarter: 'MMM DD',
-                                year: 'MMM DD'
+                            display: false,
+                            callback: function (value, index, values) {
+                                if (index === 0) {
+                                    document.getElementById('gh-dashboard5-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
+                                }
+                                if (index === values.length - 1) {
+                                    document.getElementById('gh-dashboard5-anchor-date-end').innerHTML = moment(value).format(DATE_FORMAT);
+                                }
+                                return value;
                             }
                         }
                     }]
@@ -392,12 +381,13 @@ export default class Anchor extends Component {
             },
             scales: {
                 yAxes: [{
+                    display: true,
                     gridLines: {
                         drawTicks: false,
                         display: true,
                         drawBorder: false,
                         color: 'transparent',
-                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.85)',
+                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
                         zeroLineWidth: 1
                     },
                     ticks: {
@@ -407,46 +397,35 @@ export default class Anchor extends Component {
                         padding: 8,
                         precision: 0,
                         stepSize: 1
-                    },
-                    display: true
+                    }
                 }],
                 xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        align: 'start'
+                    },
                     gridLines: {
-                        color: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.85)',
+                        color: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
                         borderDash: [4,4],
                         display: true,
                         drawBorder: true,
                         drawTicks: false,
                         zeroLineWidth: 1,
-                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.85)',
+                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
                         zeroLineBorderDash: [4,4]
                     },
                     ticks: {
-                        display: true,
-                        maxRotation: 0,
-                        minRotation: 0,
-                        padding: 14,
-                        autoSkip: true,
-                        maxTicksLimit: maxNumberOfTicks,
-                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif',
-                        fontSize: 11,
-                        fontColor: '#ABB4BE'
-                    },
-                    type: 'time',
-                    time: {
-                        displayFormats: {
-                            millisecond: 'MMM DD',
-                            second: 'MMM DD',
-                            minute: 'MMM DD',
-                            hour: 'MMM DD',
-                            day: 'MMM DD',
-                            week: 'MMM DD',
-                            month: 'MMM DD',
-                            quarter: 'MMM DD',
-                            year: 'MMM DD'
+                        display: false,
+                        callback: function (value, index, values) {
+                            if (index === 0) {
+                                document.getElementById('gh-dashboard5-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
+                            }
+                            if (index === values.length - 1) {
+                                document.getElementById('gh-dashboard5-anchor-date-end').innerHTML = moment(value).format(DATE_FORMAT);
+                            }
+                            return value;
                         }
-                    },
-                    display: true
+                    }
                 }]
             }
         };
