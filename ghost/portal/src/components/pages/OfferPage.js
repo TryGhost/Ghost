@@ -3,7 +3,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
-import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 const React = require('react');
 
@@ -208,13 +208,22 @@ export default class OfferPage extends React.Component {
             const {name, email, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                onAction('signup', {
+                const signupData = {
                     name, email, plan: price?.id,
                     offerId: offer?.id
-                });
-                this.setState({
-                    errors: {}
-                });
+                };
+                if (hasMultipleNewsletters({site})) {
+                    onAction('switchPage', {
+                        page: 'signupNewsletter',
+                        lastPage: 'signup',
+                        pageData: signupData
+                    });
+                } else {
+                    onAction('signup', signupData);
+                    this.setState({
+                        errors: {}
+                    });
+                }
             }
         });
     }
@@ -295,7 +304,7 @@ export default class OfferPage extends React.Component {
                 brandColor={brandColor}
                 label={label}
                 isRunning={isRunning}
-                tabIndex='3'
+                tabindex='3'
                 classes={'sticky bottom'}
             />
         );

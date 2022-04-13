@@ -277,8 +277,7 @@ class SignupPage extends React.Component {
                         pageData: {name, email, plan}
                     });
                     this.setState({
-                        errors: {},
-                        showNewsletterSelection: true
+                        errors: {}
                     });
                 } else {
                     this.setState({
@@ -309,8 +308,7 @@ class SignupPage extends React.Component {
                     });
 
                     this.setState({
-                        errors: {},
-                        showNewsletterSelection: true
+                        errors: {}
                     });
                 } else {
                     onAction('signup', {name, email, plan});
@@ -578,12 +576,6 @@ class SignupPage extends React.Component {
         }
 
         return {sectionClass, footerClass};
-    }
-
-    onNewsletterSelectionBack() {
-        this.setState({
-            showNewsletterSelection: false
-        });
     }
 
     render() {

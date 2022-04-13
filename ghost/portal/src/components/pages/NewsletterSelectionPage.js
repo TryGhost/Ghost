@@ -114,8 +114,8 @@ export default function NewsletterSelectionPage() {
                                         id: d.id
                                     };
                                 });
-                                const {name, email, plan} = pageData;
-                                onAction('signup', {name, email, plan, newsletters});
+                                const {name, email, plan, offerId} = pageData;
+                                onAction('signup', {name, email, plan, newsletters, offerId});
                             }}
                             brandColor={brandColor}
                             label={label}
