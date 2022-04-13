@@ -1,5 +1,10 @@
 <section class="gh-dashboard5-section gh-dashboard5-anchor" {{did-insert this.loadCharts}}>
     <article class="gh-dashboard5-box">
+        {{#if this.hasPaidTiers}}
+            <div class="gh-dashboard5-title">
+                <h4>{{this.chartTitle}}</h4>
+            </div>
+        {{/if}}
         <div class="gh-dashboard5-hero {{unless this.hasPaidTiers 'is-solo'}}">
             {{#unless this.hasPaidTiers}}
                 <Dashboard::v5::Parts::Metric
@@ -29,6 +34,10 @@
                                 @height={{if this.hasPaidTiers this.chartHeight this.chartHeightSmall}} />
                         {{/if}}
                     </div>
+                    <div class="gh-dashboard5-chart-ticks">
+                        <span id="gh-dashboard5-anchor-date-start"> </span>
+                        <span id="gh-dashboard5-anchor-date-end"> </span>
+                    </div>
                 {{/if}}
             </div>
 
@@ -38,24 +47,27 @@
                         <Dashboard::v5::Parts::Metric
                             @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
                             @value={{format-number this.totalMembers}}
-                            @trends={{this.hasTrends}}
-                            @percentage={{this.totalMembersTrend}}
+                            {{!-- @trends={{this.hasTrends}} --}}
+                            {{!-- @percentage={{this.totalMembersTrend}} --}}
+                            @center={{true}}
                             @large={{true}} /> 
                     </button> 
                     <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid-total")}}>
                         <Dashboard::v5::Parts::Metric
                             @label={{gh-pluralize this.paidMembers "Total paid member" without-count=true}}
                             @value={{format-number this.paidMembers}}
-                            @trends={{this.hasTrends}}
-                            @percentage={{this.paidMembersTrend}}
+                            {{!-- @trends={{this.hasTrends}} --}}
+                            {{!-- @percentage={{this.paidMembersTrend}} --}}
+                            @center={{true}}
                             @large={{true}} />
                     </button>
                     <button class="gh-dashboard5-stats-button {{if this.chartShowingMrr 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "mrr")}}>
                         <Dashboard::v5::Parts::Metric
-                            @label="MRR"
+                            @label="Monthly Revenue (MRR)"
                             @value="${{gh-price-amount this.currentMRR}}"
-                            @trends={{this.hasTrends}}
-                            @percentage={{this.mrrTrend}}
+                            {{!-- @trends={{this.hasTrends}} --}}
+                            {{!-- @percentage={{this.mrrTrend}} --}}
+                            @center={{true}}
                             @large={{true}} />
                     </button>
                 </div>
