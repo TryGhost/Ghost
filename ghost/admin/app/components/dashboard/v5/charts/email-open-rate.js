@@ -12,30 +12,15 @@ export default class EmailOpenRate extends Component {
     @action
     loadCharts() {
         // The dashboard stats service will take care or reusing and limiting API-requests between charts
-        this.dashboardStats.loadNewsletterSubscribers();
-        this.dashboardStats.loadEmailsSent();
         this.dashboardStats.loadEmailOpenRateStats();
     }
     
-    get dataSubscribers() {
-        // @todo: show paid, free, total together
-        return this.dashboardStats.newsletterSubscribers ?? {
-            total: 0,
-            free: 0,
-            paid: 0
-        };
-    }
-
     get currentOpenRate() {
         if (this.dashboardStats.emailOpenRateStats === null || this.dashboardStats.emailOpenRateStats.length === 0) {
             return '-';
         }
 
         return this.dashboardStats.emailOpenRateStats[this.dashboardStats.emailOpenRateStats.length - 1].openRate;
-    }
-
-    get dataEmailsSent() {
-        return this.dashboardStats.emailsSent30d ?? 0;
     }
 
     get loading() {
