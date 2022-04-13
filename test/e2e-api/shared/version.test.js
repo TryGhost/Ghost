@@ -7,6 +7,8 @@ describe('API Versioning', function () {
 
         before(async function () {
             agentAdminAPI = await agentProvider.getAdminAPIAgent();
+            await fixtureManager.init();
+            await agentAdminAPI.loginAsOwner();
         });
 
         it('responds with no content version header when accept version header is NOT PRESENT', async function () {
@@ -72,6 +74,20 @@ describe('API Versioning', function () {
             await agentAdminAPI
                 .get('removed_endpoint')
                 .header('Accept-Version', 'v3.1')
+                .matchHeaderSnapshot({
+                    etag: anyString
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+
+        it('responds with 404 error when the resource cannot be found', async function () {
+            await agentAdminAPI
+                .get('/members/member_does_not_exist@example.com')
+                .header('Accept-Version', 'v4.1')
                 .matchHeaderSnapshot({
                     etag: anyString
                 })
