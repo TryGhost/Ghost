@@ -44,6 +44,7 @@ describe('Members API', function () {
 
     beforeEach(function () {
         mockManager.mockLabsEnabled('multipleProducts');
+        mockManager.mockLabsEnabled('multipleNewsletters');
         mockManager.mockMail();
         mockManager.mockStripe();
     });
@@ -154,7 +155,7 @@ describe('Members API', function () {
             const member = body.members[0];
             return member;
         }
-  
+
         it('Responds with a 401 when the signature is invalid', async function () {
             await membersAgent.post('/webhooks/stripe/')
                 .body({
@@ -503,7 +504,7 @@ describe('Members API', function () {
 
                 // Cancel the previously created subscription in Stripe
                 set(subscription, {
-                    ...subscription, 
+                    ...subscription,
                     status: 'canceled'
                 });
 
@@ -712,7 +713,7 @@ describe('Members API', function () {
 
                 // Cancel the previously created subscription in Stripe
                 set(subscription, {
-                    ...subscription, 
+                    ...subscription,
                     status: 'canceled'
                 });
 
@@ -811,7 +812,7 @@ describe('Members API', function () {
                 });
             });
 
-            it('Will create a member if one does not exist', async function () {                
+            it('Will create a member if one does not exist', async function () {
                 set(customer, {
                     id: 'cus_123',
                     name: 'Test Member',
@@ -838,7 +839,7 @@ describe('Members API', function () {
                         }
                     }
                 });
-                
+
                 const webhookSignature = stripe.webhooks.generateTestHeaderString({
                     payload: webhookPayload,
                     secret: process.env.WEBHOOK_SECRET
@@ -899,6 +900,100 @@ describe('Members API', function () {
                         }
                     ]
                 });
+            });
+
+            it('Will create a member with default newsletter subscriptions', async function () {
+                set(customer, {
+                    id: 'cus_123',
+                    name: 'Test Member',
+                    email: 'checkout-newsletter-default-test@email.com',
+                    subscriptions: {
+                        type: 'list',
+                        data: [subscription]
+                    }
+                });
+
+                { // ensure member didn't already exist
+                    const {body} = await adminAgent.get('/members/?search=checkout-newsletter-default-test@email.com');
+                    assert.equal(body.members.length, 0, 'A member already existed');
+                }
+
+                const webhookPayload = JSON.stringify({
+                    type: 'checkout.session.completed',
+                    data: {
+                        object: {
+                            mode: 'subscription',
+                            customer: customer.id,
+                            subscription: subscription.id,
+                            metadata: {}
+                        }
+                    }
+                });
+
+                const webhookSignature = stripe.webhooks.generateTestHeaderString({
+                    payload: webhookPayload,
+                    secret: process.env.WEBHOOK_SECRET
+                });
+
+                await membersAgent.post('/webhooks/stripe/')
+                    .body(webhookPayload)
+                    .header('stripe-signature', webhookSignature);
+
+                const {body} = await adminAgent.get('/members/?search=checkout-newsletter-default-test@email.com');
+                assert.equal(body.members.length, 1, 'The member was not created');
+                const member = body.members[0];
+
+                assert.equal(member.status, 'paid', 'The member should be "paid"');
+                assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+                assert.equal(member.newsletters.length, 1, 'The member should have a single newsletter');
+            });
+
+            it('Will create a member with signup newsletter preference', async function () {
+                set(customer, {
+                    id: 'cus_123',
+                    name: 'Test Member',
+                    email: 'checkout-newsletter-test@email.com',
+                    subscriptions: {
+                        type: 'list',
+                        data: [subscription]
+                    }
+                });
+
+                { // ensure member didn't already exist
+                    const {body} = await adminAgent.get('/members/?search=checkout-newsletter-test@email.com');
+                    assert.equal(body.members.length, 0, 'A member already existed');
+                }
+
+                const webhookPayload = JSON.stringify({
+                    type: 'checkout.session.completed',
+                    data: {
+                        object: {
+                            mode: 'subscription',
+                            customer: customer.id,
+                            subscription: subscription.id,
+                            metadata: {
+                                newsletters: JSON.stringify([])
+                            }
+                        }
+                    }
+                });
+
+                const webhookSignature = stripe.webhooks.generateTestHeaderString({
+                    payload: webhookPayload,
+                    secret: process.env.WEBHOOK_SECRET
+                });
+
+                await membersAgent.post('/webhooks/stripe/')
+                    .body(webhookPayload)
+                    .header('stripe-signature', webhookSignature);
+
+                const {body} = await adminAgent.get('/members/?search=checkout-newsletter-test@email.com');
+                assert.equal(body.members.length, 1, 'The member was not created');
+                const member = body.members[0];
+
+                assert.equal(member.status, 'paid', 'The member should be "paid"');
+                assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+                assert.equal(member.newsletters.length, 0, 'The member should not have any newsletter subscription');
             });
 
             it('Does not 500 if the member is unknown', async function () {
