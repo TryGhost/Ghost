@@ -223,7 +223,7 @@ describe('Email verification flow', function () {
         eventStub.callCount.should.eql(1);
         eventStub.lastCall.lastArg.should.have.property('data.source');
         eventStub.lastCall.lastArg.should.have.property('data.created_at');
-        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'admin'`);
+        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'import'`);
         eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
 
         emailStub.callCount.should.eql(1);
