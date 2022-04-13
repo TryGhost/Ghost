@@ -222,7 +222,7 @@ module.exports = function MembersAPI({
     }
 
     async function getMemberDataFromMagicLinkToken(token) {
-        const {email, labels = [], name = '', oldEmail} = await magicLinkService.getDataFromToken(token);
+        const {email, labels = [], name = '', oldEmail, newsletters} = await magicLinkService.getDataFromToken(token);
         if (!email) {
             return null;
         }
@@ -241,8 +241,7 @@ module.exports = function MembersAPI({
             }
             return member;
         }
-
-        const newMember = await users.create({name, email, labels});
+        const newMember = await users.create({name, email, labels, newsletters});
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
     }
