@@ -17,20 +17,17 @@ describe('Unit: models/newsletter', function () {
 
     describe('validation', function () {
         describe('blank', function () {
-            it('name cannot be blank', function () {
-                return models.Newsletter.add({
-                    sender_name: 'Jamie',
-                    sender_email: 'jamie@example.com',
-                    sender_reply_to: 'newsletter',
-                    visibility: 'members',
-                    sort_order: 0
-                })
+            it('throws validation error for mandatory fields', function () {
+                return models.Newsletter.add({})
                     .then(function () {
                         throw new Error('expected ValidationError');
                     })
                     .catch(function (err) {
-                        should(err[0] instanceof errors.ValidationError).eql(true);
+                        err.length.should.eql(2);
+                        (err[0] instanceof errors.ValidationError).should.eql(true);
+                        (err[1] instanceof errors.ValidationError).should.eql(true);
                         err[0].message.should.match(/newsletters\.name/);
+                        err[1].message.should.match(/newsletters\.slug/);
                     });
             });
         });
