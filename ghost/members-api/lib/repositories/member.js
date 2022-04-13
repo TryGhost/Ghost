@@ -220,7 +220,9 @@ module.exports = class MemberRepository {
         const context = options && options.context || {};
         let source;
 
-        if (context.internal) {
+        if (context.import) {
+            source = 'import';
+        } else if (context.internal) {
             source = 'system';
         } else if (context.user) {
             source = 'admin';

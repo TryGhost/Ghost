@@ -153,7 +153,11 @@ module.exports = class MembersCSVImporter {
                         id: existingMember.id
                     });
                 } else {
-                    member = await membersApi.members.create(row, options);
+                    member = await membersApi.members.create(row, Object.assign({}, options, {
+                        context: {
+                            import: true
+                        }
+                    }));
                 }
 
                 if (row.stripe_customer_id) {

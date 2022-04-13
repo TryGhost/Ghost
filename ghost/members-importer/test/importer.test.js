@@ -32,6 +32,7 @@ describe('Importer', function () {
                 id: 'default_product_id'
             };
 
+            const memberCreateStub = sinon.stub().resolves(null);
             const membersApi = {
                 productRepository: {
                     list: async () => {
@@ -44,9 +45,7 @@ describe('Importer', function () {
                     get: async () => {
                         return null;
                     },
-                    create: async (row) => {
-                        return row;
-                    }
+                    create: memberCreateStub
                 }
             };
 
@@ -96,6 +95,10 @@ describe('Importer', function () {
             result.meta.originalImportSize.should.equal(2);
 
             fsWriteSpy.calledOnce.should.be.true();
+
+            // Called at least once
+            memberCreateStub.notCalled.should.be.false();
+            memberCreateStub.firstCall.lastArg.context.import.should.be.true();
         });
     });
 
