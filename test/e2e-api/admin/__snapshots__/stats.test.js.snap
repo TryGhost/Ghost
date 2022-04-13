@@ -77,11 +77,13 @@ Object {
     Object {
       "cadence": StringMatching /month\\|year/,
       "count": 1,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
     Object {
       "cadence": StringMatching /month\\|year/,
       "count": 2,
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
   ],
@@ -92,7 +94,7 @@ exports[`Stats API Can fetch subscriptions count 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "184",
+  "content-length": "224",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",

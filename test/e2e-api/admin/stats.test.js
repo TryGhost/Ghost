@@ -44,9 +44,11 @@ describe('Stats API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 stats: [{
+                    date: anyISODate,
                     tier: anyObjectId,
                     cadence: stringMatching(/month|year/)
                 },{
+                    date: anyISODate,
                     tier: anyObjectId,
                     cadence: stringMatching(/month|year/)
                 }],

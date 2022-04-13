@@ -23,8 +23,15 @@ class MembersStatsService {
             .join('products', 'products.id', '=', 'stripe_products.product_id')
             .groupBy('tier', 'cadence');
 
+        const date = DateTime.now().toISODate();
+
         return {
-            data: data,
+            data: data.map(row => {
+                return {
+                    ...row,
+                    date
+                };
+            }),
             meta: {
                 tiers: data.reduce((tiers, row) => {
                     if (tiers.includes(row.tier)) {
