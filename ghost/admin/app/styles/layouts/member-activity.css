@@ -150,10 +150,15 @@
 }
 
 .gh-members-activity-event {
-    font-weight: 400;
-    font-size: 13px;
-    color:  var(--middarkgrey);
+    display: inline-block;
+    color: var(--middarkgrey);
+    font-weight: 500;
     white-space: nowrap;
+}
+
+.gh-members-activity-event > a {
+    font-weight: 500;
+    color: var(--black);
 }
 
 .gh-member-activity-actions-menu {

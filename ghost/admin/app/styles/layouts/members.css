@@ -1109,10 +1109,9 @@ textarea.gh-member-details-textarea {
 
 .gh-member-feed-event {
     display: inline-block;
-    text-transform: lowercase;
+    color: var(--middarkgrey);
     font-weight: 500;
-    font-size: 14px;
-    color: var(--black);
+    white-space: nowrap;
 }
 
 .gh-member-feed-event:first-letter {

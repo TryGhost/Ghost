@@ -30,6 +30,7 @@
                                                     {{#if event.email}}
                                                         "<GhEmailPreviewLink @data={{event.email}} />"
                                                     {{/if}}
+                                                    {{event.info}}
                                                 </div>
                                                 <div class="gh-member-feed-time">
                                                     {{moment-from-now event.timestamp}}
