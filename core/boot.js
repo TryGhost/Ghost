@@ -207,7 +207,8 @@ async function initExpressApps({frontend, backend, config}) {
 
     if (frontend) {
         // SITE + MEMBERS
-        const frontendApp = require('./server/web/parent/frontend')({});
+        const urlService = require('./server/services/url');
+        const frontendApp = require('./server/web/parent/frontend')({urlService});
         parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
     }
 

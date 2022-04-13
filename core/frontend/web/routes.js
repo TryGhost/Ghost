@@ -1,12 +1,12 @@
 const debug = require('@tryghost/debug')('frontend:routes');
-
 const routing = require('../services/routing');
-const urlService = require('../../server/services/url');
-const routeSettings = require('../../server/services/route-settings');
 
-module.exports = function siteRoutes(options = {}) {
-    debug('site Routes', options);
-    options.routerSettings = routeSettings.loadRouteSettingsSync();
-    options.urlService = urlService;
-    return routing.routerManager.init(options);
+/**
+ *
+ * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
+ * @returns {import('express').Router}
+ */
+module.exports = function siteRoutes(routerConfig) {
+    debug('site Routes', routerConfig);
+    return routing.routerManager.init(routerConfig);
 };
