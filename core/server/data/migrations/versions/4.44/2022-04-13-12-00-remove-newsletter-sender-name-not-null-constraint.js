@@ -21,7 +21,7 @@ module.exports = createNonTransactionalMigration(
         });
 
         await knex.schema.table('newsletters', function (table) {
-            table.string('sender_name', 191).notNullable();
+            table.string('sender_name', 191).notNullable().defaultTo('Ghost');
         });
     }
 );
