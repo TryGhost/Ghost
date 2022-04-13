@@ -21,6 +21,7 @@ module.exports = createNonTransactionalMigration(
         });
 
         await knex.schema.table('newsletters', function (table) {
+            // SQLite doesn't allow adding a non nullable column without any default
             table.string('sender_name', 191).notNullable().defaultTo('Ghost');
         });
     }
