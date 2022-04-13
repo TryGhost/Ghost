@@ -591,7 +591,21 @@ export default class DashboardStatsService extends Service {
      * For now this is only used when reloading all the graphs after changing the mocked data
      * @todo: reload only data that we loaded earlier
      */
-    reloadAll() {
+    async reloadAll() {
+        // Clear all pending tasks (if any)
+        // Promise.all doesn't work here because they sometimes return undefined
+        await this._loadSiteStatus.cancelAll();
+        await this._loadMrrStats.cancelAll();
+        await this._loadMemberCountStats.cancelAll();
+        await this._loadLastSeen.cancelAll();
+        await this._loadPaidMembersByCadence.cancelAll();
+        await this._loadNewsletterSubscribers.cancelAll();
+        await this._loadEmailsSent.cancelAll();
+        await this._loadEmailOpenRateStats.cancelAll();
+
+        // Restart tasks
+        this.loadSiteStatus();
+
         this.loadMrrStats();
         this.loadMemberCountStats();
         this.loadLastSeen();

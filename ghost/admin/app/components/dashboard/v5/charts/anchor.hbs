@@ -1,4 +1,4 @@
-<section class="gh-dashboard5-section gh-dashboard5-anchor">
+<section class="gh-dashboard5-section gh-dashboard5-anchor" {{did-insert this.loadCharts}}>
     <article class="gh-dashboard5-box">
         <div class="gh-dashboard5-hero {{unless this.hasPaidTiers 'is-solo'}}">
             {{#unless this.hasPaidTiers}}
@@ -15,17 +15,25 @@
                     <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
                 {{else}}
                     <div class="gh-dashboard5-chart-container">
-                        <EmberChart
-                            @type={{this.chartType}}
-                            @data={{this.chartData}}
-                            @options={{this.chartOptions}}
-                            @height={{if this.hasPaidTiers this.chartHeight this.chartHeightSmall}} />
+                        {{#if (eq this.chartType 'bar')}}
+                            <EmberChart
+                                @type="bar"
+                                @data={{this.chartData}}
+                                @options={{this.chartOptions}}
+                                @height={{if this.hasPaidTiers this.chartHeight this.chartHeightSmall}} />
+                        {{else}}
+                            <EmberChart
+                                @type="line"
+                                @data={{this.chartData}}
+                                @options={{this.chartOptions}}
+                                @height={{if this.hasPaidTiers this.chartHeight this.chartHeightSmall}} />
+                        {{/if}}
                     </div>
                 {{/if}}
             </div>
 
             {{#if this.hasPaidTiers}}
-                <div class="gh-dashboard5-stats{{unless this.hasPaidTiers ' is-solo'}}" {{did-insert this.loadCharts}}>
+                <div class="gh-dashboard5-stats{{unless this.hasPaidTiers ' is-solo'}}">
                     <button class="gh-dashboard5-stats-button {{if this.chartShowingTotal 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "total")}}>
                         <Dashboard::v5::Parts::Metric
                             @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
@@ -34,7 +42,7 @@
                             @percentage={{this.totalMembersTrend}}
                             @large={{true}} /> 
                     </button> 
-                    <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid")}}>
+                    <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid-total")}}>
                         <Dashboard::v5::Parts::Metric
                             @label={{gh-pluralize this.paidMembers "Total paid member" without-count=true}}
                             @value={{format-number this.paidMembers}}
@@ -42,7 +50,7 @@
                             @percentage={{this.paidMembersTrend}}
                             @large={{true}} />
                     </button>
-                    <button class="gh-dashboard5-stats-button {{if this.chartShowingMonthly 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "monthly")}}>
+                    <button class="gh-dashboard5-stats-button {{if this.chartShowingMrr 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "mrr")}}>
                         <Dashboard::v5::Parts::Metric
                             @label="MRR"
                             @value="${{gh-price-amount this.currentMRR}}"
