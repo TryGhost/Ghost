@@ -1,4 +1,4 @@
-const {DateTime} = require('luxon');
+const moment = require('moment');
 
 class MembersStatsService {
     constructor({db}) {
@@ -114,7 +114,7 @@ class MembersStatsService {
         let {paid, free, comped} = totals;
 
         // Get today in UTC (default timezone)
-        const today = DateTime.now().toISODate();
+        const today = moment().format('YYYY-MM-DD');
 
         const cumulativeResults = [];
 
@@ -123,7 +123,7 @@ class MembersStatsService {
             const row = rows[i];
 
             // Convert JSDates to YYYY-MM-DD (in UTC)
-            const date = DateTime.fromJSDate(row.date).toISODate();
+            const date = moment(row.date).format('YYYY-MM-DD');
             if (date > today) {
                 // Skip results that are in the future (fix for invalid events)
                 continue;
@@ -146,7 +146,7 @@ class MembersStatsService {
         }
 
         // Now also add the oldest day we have left over (this one will be zero, which is also needed as a data point for graphs)
-        const oldestDate = rows.length > 0 ? DateTime.fromJSDate(rows[0].date).minus({days: 1}).toISODate() : today;
+        const oldestDate = rows.length > 0 ? moment(rows[0].date).add(-1, 'days').format('YYYY-MM-DD') : today;
 
         cumulativeResults.unshift({
             date: oldestDate,
