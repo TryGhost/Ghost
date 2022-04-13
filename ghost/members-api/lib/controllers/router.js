@@ -296,7 +296,7 @@ module.exports = class RouterController {
                     await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc});
                 }
             } else {
-                const tokenData = _.pick(req.body, ['labels', 'name']);
+                const tokenData = _.pick(req.body, ['labels', 'name', 'newsletters']);
                 await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, requestSrc});
             }
             res.writeHead(201);
