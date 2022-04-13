@@ -48,15 +48,10 @@ describe('Stats API', function () {
                     tier: anyObjectId,
                     cadence: stringMatching(/month|year/),
                     count: anyNumber
-                },{
-                    date: anyISODate,
-                    tier: anyObjectId,
-                    cadence: stringMatching(/month|year/),
-                    count: anyNumber
                 }],
                 meta: {
                     tiers: [anyObjectId],
-                    cadences: [stringMatching(/month|year/), stringMatching(/month|year/)]
+                    cadences: [stringMatching(/month|year/)]
                 }
             })
             .matchHeaderSnapshot({
