@@ -92,7 +92,7 @@ module.exports = class MemberRepository {
         return subscription.plan && subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
     }
 
-    getMRR({interval, amount, status = null, canceled = false}) {
+    getMRR({interval, amount, status = null, canceled = false, discount = null}) {
         if (status === 'trialing') {
             return 0;
         }
@@ -106,24 +106,37 @@ module.exports = class MemberRepository {
             return 0;
         }
 
-        if (this._labsService.isSet('dashboardV5') && canceled) {
+        const matchStripeBehaviour = this._labsService.isSet('dashboardV5');
+
+        if (matchStripeBehaviour && canceled) {
             return 0;
         }
 
+        let amountWithDiscount = amount;
+
+        if (matchStripeBehaviour && discount && discount.end === null && discount.coupon && discount.coupon.duration === 'forever') {
+            // Discounts should only get applied when they are 'forever' discounts / they don't have an end date
+            if (discount.coupon.amount_off !== null) {
+                amountWithDiscount = Math.max(0, amountWithDiscount - discount.coupon.amount_off);
+            } else {
+                amountWithDiscount = Math.round((amountWithDiscount * (100 - discount.coupon.percent_off)) / 100);
+            }
+        }
+
         if (interval === 'year') {
-            return Math.floor(amount / 12);
+            return Math.floor(amountWithDiscount / 12);
         }
 
         if (interval === 'month') {
-            return amount;
+            return amountWithDiscount;
         }
 
         if (interval === 'week') {
-            return amount * 4;
+            return amountWithDiscount * 4;
         }
 
         if (interval === 'day') {
-            return amount * 30;
+            return amountWithDiscount * 30;
         }
     }
 
@@ -410,7 +423,8 @@ module.exports = class MemberRepository {
                     );
 
                     await this._StripeCustomerSubscription.upsert({
-                        status: updatedSubscription.status
+                        status: updatedSubscription.status,
+                        mrr: 0
                     }, {
                         subscription_id: updatedSubscription.id
                     });
@@ -422,10 +436,7 @@ module.exports = class MemberRepository {
                         from_plan: subscription.get('plan_id'),
                         to_plan: null,
                         currency: subscription.get('plan_currency'),
-                        mrr_delta: -1 * this.getMRR({
-                            interval: subscription.get('plan_interval'),
-                            amount: subscription.get('plan_amount')
-                        })
+                        mrr_delta: -1 * subscription.get('mrr')
                     }, options);
                 }
             }
@@ -702,7 +713,8 @@ module.exports = class MemberRepository {
                 interval: _.get(subscriptionPriceData, 'recurring.interval', ''), 
                 amount: subscriptionPriceData.unit_amount, 
                 status: subscription.status, 
-                canceled: subscription.cancel_at_period_end
+                canceled: subscription.cancel_at_period_end,
+                discount: subscription.discount
             })
         };
         let eventData = {};
@@ -712,10 +724,9 @@ module.exports = class MemberRepository {
                 id: model.id
             });
 
-            if (model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status') || model.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
-                // TODO: we should use the previously saved MRR in the future as soon as the MRR column is 'stable' and migrated correctly
-                const originalMrrDelta = this.getMRR({interval: model.get('plan_interval'), amount: model.get('plan_amount'), status: model.get('status'), canceled: model.get('cancel_at_period_end')});
-                const updatedMrrDelta = this.getMRR({interval: updated.get('plan_interval'), amount: updated.get('plan_amount'), status: updated.get('status'), canceled: updated.get('cancel_at_period_end')});
+            if (model.get('mrr') !== updated.get('mrr') || model.get('plan_id') !== updated.get('plan_id') || model.get('status') !== updated.get('status') || model.get('cancel_at_period_end') !== updated.get('cancel_at_period_end')) {
+                const originalMrrDelta = model.get('mrr');
+                const updatedMrrDelta = updated.get('mrr');
 
                 const getStatus = (model) => {
                     const status = model.get('status');
@@ -774,7 +785,7 @@ module.exports = class MemberRepository {
                 from_plan: null,
                 to_plan: subscriptionPriceData.id,
                 currency: subscriptionPriceData.currency,
-                mrr_delta: this.getMRR({interval: _.get(subscriptionPriceData, 'recurring.interval'), amount: subscriptionPriceData.unit_amount, status: subscriptionPriceData.status, canceled: subscription.cancel_at_period_end}),
+                mrr_delta: model.get('mrr'),
                 ...eventData
             }, options);
         }
