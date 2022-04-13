@@ -23,7 +23,7 @@ class MembersStatsService {
             .join('products', 'products.id', '=', 'stripe_products.product_id')
             .groupBy('tier', 'cadence');
 
-        const date = DateTime.now().toISODate();
+        const date = moment().format('YYYY-MM-DD');
 
         return {
             data: data.map((row) => {
