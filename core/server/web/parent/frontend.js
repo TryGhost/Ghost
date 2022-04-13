@@ -1,15 +1,14 @@
 const debug = require('@tryghost/debug')('frontend');
 const express = require('../../../shared/express');
-
 const shared = require('../shared');
 
 /**
  *
- * @param {object} options
+ * @param {import('../../../frontend/services/routing/router-manager').RouterConfig} routerConfig
  * @returns {import('express').RequestHandler}
  */
-module.exports = (options) => {
-    debug('FrontendApp setup start', options);
+module.exports = (routerConfig) => {
+    debug('FrontendApp setup start', routerConfig);
 
     // FRONTEND
     const frontendApp = express('frontend');
@@ -19,7 +18,7 @@ module.exports = (options) => {
     frontendApp.use(shared.middleware.urlRedirects.frontendSSLRedirect);
 
     frontendApp.lazyUse('/members', require('../members'));
-    frontendApp.use('/', require('../../../frontend/web')(options));
+    frontendApp.use('/', require('../../../frontend/web')(routerConfig));
 
     return frontendApp;
 };

@@ -15,9 +15,12 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
+const appService = require('./frontend/services/apps');
 const cardAssetService = require('./frontend/services/card-assets');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
+const urlService = require('./server/services/url');
+const routeSettings = require('./server/services/route-settings');
 
 // Listen to settings.lang.edited, similar to the member service and models/base/listeners
 const events = require('./server/lib/common/events');
@@ -80,7 +83,23 @@ class Bridge {
     async reloadFrontend() {
         debug('reload frontend');
         const siteApp = require('./frontend/web/site');
-        await siteApp.reload();
+
+        const routerConfig = {
+            routeSettings: routeSettings.loadRouteSettingsSync(),
+            urlService
+        };
+
+        await siteApp.reload(routerConfig);
+
+        // re-initialize apps (register app routers, because we have re-initialized the site routers)
+        appService.init();
+
+        // connect routers and resources again
+        urlService.queue.start({
+            event: 'init',
+            tolerance: 100,
+            requiredSubscriberCount: 1
+        });
     }
 }
 
