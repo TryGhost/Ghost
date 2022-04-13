@@ -80,7 +80,7 @@ class PostsService {
                 if (!frame.options.newsletter_id) {
                     const newsletters = await this.models.Newsletter.findPage({status: 'active', limit: 1, columns: ['id']}, {transacting: frame.options.transacting});
                     if (newsletters.data.length > 0) {
-                        frame.options.newsletter_id = newsletters.models[0].id;
+                        frame.options.newsletter_id = newsletters.data[0].id;
                     }
                 }
 
