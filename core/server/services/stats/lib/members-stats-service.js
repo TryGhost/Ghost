@@ -38,6 +38,12 @@ class MembersStatsService {
                         return tiers;
                     }
                     return tiers.concat(row.tier);
+                }, []),
+                cadences: data.reduce((cadences, row) => {
+                    if (cadences.includes(row.cadence)) {
+                        return cadences;
+                    }
+                    return cadences.concat(row.cadence);
                 }, [])
             }
         };
