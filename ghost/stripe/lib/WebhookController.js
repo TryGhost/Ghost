@@ -224,9 +224,18 @@ module.exports = class WebhookController {
 
             if (!member) {
                 const metadataName = _.get(session, 'metadata.name');
+                const metadataNewsletters = _.get(session, 'metadata.newsletters');
                 const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
                 const name = metadataName || payerName || null;
-                member = await this.deps.memberRepository.create({email: customer.email, name});
+                const memberData = {email: customer.email, name};
+                if (metadataNewsletters) {
+                    try {
+                        memberData.newsletters = JSON.parse(metadataNewsletters);
+                    } catch (e) {
+                        logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
+                    }
+                }
+                member = await this.deps.memberRepository.create(memberData);
             } else {
                 const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
 
