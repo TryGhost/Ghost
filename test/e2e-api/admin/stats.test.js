@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyISODate} = matchers;
+const {anyEtag, anyISODate, anyObjectId, stringMatching} = matchers;
 
 let agent;
 
@@ -32,6 +32,27 @@ describe('Stats API', function () {
                 stats: [{
                     date: anyISODate
                 }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can fetch subscriptions count', async function () {
+        await agent
+            .get(`/stats/subscriptions`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                stats: [{
+                    tier: anyObjectId,
+                    cadence: stringMatching(/month|year/)
+                },{
+                    tier: anyObjectId,
+                    cadence: stringMatching(/month|year/)
+                }],
+                meta: {
+                    tiers: [anyObjectId]
+                }
             })
             .matchHeaderSnapshot({
                 etag: anyEtag

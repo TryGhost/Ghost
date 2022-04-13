@@ -6,6 +6,37 @@ class MembersStatsService {
     }
 
     /**
+     * Get the current total subscriptions grouped by Cadence and Tier
+     * @returns {Promise<TotalSubscriptionStats>}
+     **/
+    async getSubscriptionCount() {
+        const knex = this.db.knex;
+
+        const data = await knex('members_stripe_customers_subscriptions')
+            .select(knex.raw(`
+                 COUNT(members_stripe_customers_subscriptions.id) AS count,
+                 products.id AS tier,
+                 stripe_prices.interval AS cadence
+            `))
+            .join('stripe_prices', 'stripe_prices.stripe_price_id', '=', 'members_stripe_customers_subscriptions.stripe_price_id')
+            .join('stripe_products', 'stripe_products.stripe_product_id', '=', 'stripe_prices.stripe_product_id')
+            .join('products', 'products.id', '=', 'stripe_products.product_id')
+            .groupBy('tier', 'cadence');
+
+        return {
+            data: data,
+            meta: {
+                tiers: data.reduce((tiers, row) => {
+                    if (tiers.includes(row.tier)) {
+                        return tiers;
+                    }
+                    return tiers.concat(row.tier);
+                }, [])
+            }
+        };
+    }
+
+    /**
      * Get the current total members grouped by status
      * @returns {Promise<TotalMembersByStatus>}
      */
@@ -159,3 +190,17 @@ module.exports = MembersStatsService;
  * @property {TotalMembersByStatusItem[]} data List of the total members by status for each day, including the paid deltas paid_subscribed and paid_canceled
  * @property {Object} meta
  */
+
+/**
+ * @typedef {object} SubscriptionCount
+ * @prop {number} count
+ * @prop {'year' | 'month' | 'week' | 'day'} cadence
+ * @prop {string} tier The ID of a Tier
+ **/
+
+/**
+ * @typedef {object} TotalSubscriptionStats
+ * @prop {SubscriptionCount[]} data
+ * @prop {object} meta
+ * @prop {string[]} meta.tiers A list of the Tier IDs present in the dataset
+ **/
