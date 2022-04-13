@@ -132,8 +132,7 @@ async function doProductAndNewsletter(data, api) {
 
         if (defaultNewsletter) {
             await newslettersAPI.edit({newsletters: [{
-                name: blogTitle.trim(),
-                sender_name: blogTitle.trim()
+                name: blogTitle.trim()
             }]}, {context: context.context, id: defaultNewsletter.id});
         }
     } catch (e) {
