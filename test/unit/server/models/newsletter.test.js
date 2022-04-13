@@ -33,22 +33,6 @@ describe('Unit: models/newsletter', function () {
                         err[0].message.should.match(/newsletters\.name/);
                     });
             });
-
-            it('sender name cannot be blank', function () {
-                return models.Newsletter.add({
-                    name: 'Daily report 2',
-                    sender_email: 'jamie@example.com',
-                    sender_reply_to: 'newsletter',
-                    sort_order: 0
-                })
-                    .then(function () {
-                        throw new Error('expected ValidationError');
-                    })
-                    .catch(function (err) {
-                        (err[0] instanceof errors.ValidationError).should.eql(true);
-                        err[0].message.should.match(/newsletters\.sender_name/);
-                    });
-            });
         });
     });
 });
