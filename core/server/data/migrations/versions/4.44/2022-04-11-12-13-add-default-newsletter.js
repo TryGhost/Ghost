@@ -36,7 +36,7 @@ module.exports = createTransactionalMigration(
             description: await getSetting('description', ''),
             slug: slugify(title),
             sender_name: title,
-            sender_email: title, //FIXME: the value should be null, this is only for a CI test as I can't reproduce the CI issue locally
+            sender_email: null,
             sender_reply_to: 'newsletter',
             status: 'active',
             visibility: 'members',
@@ -53,6 +53,8 @@ module.exports = createTransactionalMigration(
             }
             newsletter[setting] = value;
         }
+
+        logging.info('Adding the default newsletter');
 
         await knex('newsletters').insert(newsletter);
     }, async function down() {
