@@ -1,8 +1,77 @@
+import {camelize} from '@ember/string';
 import {paginatedResponse} from '../utils';
 
 export default function mockNewsletters(server) {
-    server.post('/newsletters/');
     server.get('/newsletters/', paginatedResponse('newsletters'));
     server.get('/newsletters/:id/');
-    server.put('/newsletters/:id/');
+
+    server.post('/newsletters/', function ({newsletters}) {
+        const attrs = this.normalizedRequestAttrs();
+
+        // sender email can't be set without verification
+        const senderEmail = attrs.senderEmail;
+        attrs.senderEmail = null;
+
+        const newsletter = newsletters.create(attrs);
+
+        // workaround for mirage output of meta
+        const collection = newsletters.where({id: newsletter.id});
+
+        if (senderEmail) {
+            collection.meta = {
+                sent_email_verification: ['sender_email']
+            };
+        }
+
+        return collection;
+    });
+
+    server.put('/newsletters/:id/', function ({newsletters}, {params}) {
+        const attrs = this.normalizedRequestAttrs();
+        const newsletter = newsletters.find(params.id);
+
+        const previousSenderEmail = newsletter.senderEmail;
+        const newSenderEmail = attrs.senderEmail;
+
+        // sender email can't be changed without verification
+        if (newSenderEmail && newSenderEmail !== previousSenderEmail) {
+            attrs.senderEmail = previousSenderEmail;
+        }
+
+        newsletter.update(attrs);
+
+        // workaround for mirage output of meta
+        const collection = newsletters.where({id: newsletter.id});
+
+        if (newSenderEmail && newSenderEmail !== previousSenderEmail) {
+            collection.meta = {
+                sent_email_verification: ['sender_email']
+            };
+
+            const tokenData = {
+                id: newsletter.id,
+                email: newSenderEmail,
+                type: 'sender_email'
+            };
+            const token = btoa(JSON.stringify(tokenData));
+            const baseUrl = window.location.href.replace(window.location.hash, '');
+            const verifyUrl = `${baseUrl}settings/members-email-labs/?verifyEmail=${token}`;
+            // eslint-disable-next-line
+            console.warn('Verification email sent. Mocked verification URL:', verifyUrl);
+        }
+
+        return collection;
+    });
+
+    // verify email update
+    server.put('/newsletters/verify-email/', function ({newsletters}, request) {
+        const requestBody = JSON.parse(request.requestBody);
+        const tokenData = JSON.parse(atob(requestBody.token));
+
+        const newsletter = newsletters.find(tokenData.id);
+
+        newsletter[camelize(tokenData.type)] = tokenData.email;
+
+        return newsletter.save();
+    });
 }

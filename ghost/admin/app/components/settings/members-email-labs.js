@@ -1,7 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'};
@@ -9,8 +8,6 @@ const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v
 
 export default class MembersEmailLabs extends Component {
     @service config;
-    @service ghostPaths;
-    @service ajax;
     @service settings;
 
     // set recipientsSelectValue as a static property because within this
@@ -19,39 +16,10 @@ export default class MembersEmailLabs extends Component {
     // from settings as it would equate to "none"
     @tracked recipientsSelectValue = this._getDerivedRecipientsSelectValue();
 
-    @tracked showFromAddressConfirmation = false;
-
     mailgunRegions = [US, EU];
-
-    replyAddresses = [
-        {
-            label: 'Newsletter email address (' + this.fromAddress + ')',
-            value: 'newsletter'
-        },
-        {
-            label: 'Support email address (' + this.supportAddress + ')',
-            value: 'support'
-        }
-    ];
 
     get emailNewsletterEnabled() {
         return this.settings.get('editorDefaultEmailRecipients') !== 'disabled';
-    }
-
-    get emailPreviewVisible() {
-        return this.recipientsSelectValue !== 'none';
-    }
-
-    get selectedReplyAddress() {
-        return this.replyAddresses.findBy('value', this.settings.get('membersReplyAddress'));
-    }
-
-    get disableUpdateFromAddressButton() {
-        const savedFromAddress = this.settings.get('membersFromAddress') || '';
-        if (!savedFromAddress.includes('@') && this.config.emailDomain) {
-            return !this.fromAddress || (this.fromAddress === `${savedFromAddress}@${this.config.emailDomain}`);
-        }
-        return !this.fromAddress || (this.fromAddress === savedFromAddress);
     }
 
     get mailgunRegion() {
@@ -73,11 +41,6 @@ export default class MembersEmailLabs extends Component {
     }
 
     @action
-    toggleFromAddressConfirmation() {
-        this.showFromAddressConfirmation = !this.showFromAddressConfirmation;
-    }
-
-    @action
     setMailgunDomain(event) {
         this.settings.set('mailgunDomain', event.target.value);
         if (!this.settings.get('mailgunBaseUrl')) {
@@ -96,11 +59,6 @@ export default class MembersEmailLabs extends Component {
     @action
     setMailgunRegion(region) {
         this.settings.set('mailgunBaseUrl', region.baseUrl);
-    }
-
-    @action
-    setFromAddress(fromAddress) {
-        this.setEmailAddress('fromAddress', fromAddress);
     }
 
     @action
@@ -127,13 +85,6 @@ export default class MembersEmailLabs extends Component {
         }
 
         this.recipientsSelectValue = this._getDerivedRecipientsSelectValue();
-    }
-
-    @action
-    setReplyAddress(event) {
-        const newReplyAddress = event.value;
-
-        this.settings.set('membersReplyAddress', newReplyAddress);
     }
 
     @action
@@ -167,24 +118,6 @@ export default class MembersEmailLabs extends Component {
     @action
     setDefaultEmailRecipientsFilter(filter) {
         this.settings.set('editorDefaultEmailRecipientsFilter', filter);
-    }
-
-    @task({drop: true})
-    *updateFromAddress() {
-        let url = this.ghostPaths.url.api('/settings/members/email');
-        try {
-            const response = yield this.ajax.post(url, {
-                data: {
-                    email: this.fromAddress,
-                    type: 'fromAddressUpdate'
-                }
-            });
-            this.toggleFromAddressConfirmation();
-            return response;
-        } catch (e) {
-            // Failed to send email, retry
-            return false;
-        }
     }
 
     _getDerivedRecipientsSelectValue() {

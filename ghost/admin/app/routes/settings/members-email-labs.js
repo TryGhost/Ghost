@@ -1,5 +1,6 @@
 import AdminRoute from 'ghost-admin/routes/admin';
 import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
+import VerifyNewsletterEmail from '../../components/modals/edit-newsletter/verify-newsletter-email';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
@@ -9,21 +10,20 @@ export default class MembersEmailLabsRoute extends AdminRoute {
     @service notifications;
     @service settings;
 
+    queryParams = {
+        verifyEmail: {
+            replace: true
+        }
+    };
+
     confirmModal = null;
     hasConfirmed = false;
 
-    beforeModel(transition) {
+    beforeModel() {
         super.beforeModel(...arguments);
 
         if (!this.feature.multipleNewsletters) {
             return this.transitionTo('settings.members-email');
-        }
-
-        if (transition.to.queryParams?.fromAddressUpdate === 'success') {
-            this.notifications.showAlert(
-                `Newsletter email address has been updated`,
-                {type: 'success', key: 'members.settings.from-address.updated'}
-            );
         }
     }
 
@@ -31,8 +31,16 @@ export default class MembersEmailLabsRoute extends AdminRoute {
         return this.settings.reload();
     }
 
-    setupController(controller) {
-        controller.resetEmailAddresses();
+    afterModel(model, transition) {
+        if (transition.to.queryParams.verifyEmail) {
+            this.modals.open(VerifyNewsletterEmail, {
+                token: transition.to.queryParams.verifyEmail
+            });
+
+            // clear query param so it doesn't linger and cause problems re-entering route
+            transition.abort();
+            return this.transitionTo('settings.members-email-labs', {queryParams: {verifyEmail: null}});
+        }
     }
 
     @action
