@@ -5,7 +5,7 @@ const {MemberSubscribeEvent} = require('@tryghost/member-events');
 const messages = {
     emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
     emailVerificationEmailSubject: `Email needs verification`,
-    emailVerificationEmailMessageImport: `Email verification needed for site: {siteUrl}, just imported: {importedNumber} members.`,
+    emailVerificationEmailMessageImport: `Email verification needed for site: {siteUrl}, has imported: {importedNumber} members in the last 30 days.`,
     emailVerificationEmailMessageAPI: `Email verification needed for site: {siteUrl} has added: {importedNumber} members through the API in the last 30 days.`
 };
 
@@ -65,6 +65,33 @@ class VerificationTrigger {
             return Math.max(membersTotal, volumeThreshold);
         } else {
             return volumeThreshold;
+        }
+    }
+
+    async testImportThreshold() {
+        const createdAt = new Date();
+        createdAt.setDate(createdAt.getDate() - 30);
+        const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
+            'data.source': `data.source:'import'`,
+            'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
+        });
+
+        if (!isFinite(this._configThreshold)) {
+            // Inifinte threshold, quick path
+            return;
+        }
+
+        const membersTotal = await this._membersStats.getTotalMembers();
+
+        // Import threshold is either the total number of members (discounting any created by imports in
+        // the last 30 days) or the threshold defined in config, whichever is greater.
+        const importThreshold = Math.max(membersTotal - events.meta.pagination.total, this._configThreshold);
+        if (isFinite(importThreshold) && events.meta.pagination.total > importThreshold) {
+            await this.startVerificationProcess({
+                amountImported: events.meta.pagination.total,
+                throwOnTrigger: false,
+                source: 'import'
+            });
         }
     }
 
