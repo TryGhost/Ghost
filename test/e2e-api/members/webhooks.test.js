@@ -1413,7 +1413,7 @@ describe('Members API', function () {
                     });
                 });
 
-                it('Also supports adding a discount to an existing subscription', async function() {
+                it('Also supports adding a discount to an existing subscription', async function () {
                     const interval = 'month';
                     const unit_amount = 500;
                     const mrr_without = 500;
