@@ -159,6 +159,7 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
  * @param {object} postModel Post Model Object
  * @param {object} options
  * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
+ * @param {string} options.newsletter_id - the newsletter_id to send the email to
  */
 
 const addEmail = async (postModel, options) => {
@@ -211,7 +212,8 @@ const addEmail = async (postModel, options) => {
             plaintext: emailData.plaintext,
             submitted_at: moment().toDate(),
             track_opens: !!settingsCache.get('email_track_opens'),
-            recipient_filter: emailRecipientFilter
+            recipient_filter: emailRecipientFilter,
+            newsletter_id: options.newsletter_id
         }, knexOptions);
     } else {
         return existing;

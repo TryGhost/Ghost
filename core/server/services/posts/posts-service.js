@@ -4,7 +4,8 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidEmailRecipientFilter: 'Invalid filter in email_recipient_filter param.',
-    invalidVisibilityFilter: 'Invalid visibility filter.'
+    invalidVisibilityFilter: 'Invalid visibility filter.',
+    invalidNewsletterId: 'The newsletter_id parameter doesn\'t match any active newsletter.'
 };
 
 class PostsService {
@@ -18,6 +19,16 @@ class PostsService {
 
     async editPost(frame) {
         let model;
+
+        // Make sure the newsletter_id is matching an active newsletter
+        if (frame.options.newsletter_id) {
+            const newsletter = await this.models.Newsletter.findOne({id: frame.options.newsletter_id, status: 'active'}, {transacting: frame.options.transacting});
+            if (!newsletter) {
+                throw new BadRequestError({
+                    message: messages.invalidNewsletterId
+                });
+            }
+        }
 
         if (!frame.options.email_recipient_filter && frame.options.send_email_when_published) {
             await this.models.Base.transaction(async (transacting) => {
@@ -65,6 +76,14 @@ class PostsService {
             const sendEmail = model.wasChanged() && this.shouldSendEmail(model.get('status'), model.previous('status'));
 
             if (sendEmail) {
+                // Set the newsletter_id if it isn't passed to the API
+                if (!frame.options.newsletter_id) {
+                    const newsletters = await this.models.Newsletter.findPage({status: 'active', limit: 1, columns: ['id']}, {transacting: frame.options.transacting});
+                    if (newsletters.data.length > 0) {
+                        frame.options.newsletter_id = newsletters.models[0].id;
+                    }
+                }
+
                 let postEmail = model.relations.email;
 
                 if (!postEmail) {

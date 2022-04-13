@@ -17,7 +17,7 @@ describe('Posts API', function () {
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
+        await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters');
     });
 
     afterEach(function () {
@@ -416,6 +416,78 @@ describe('Posts API', function () {
 
         res2.headers['x-cache-invalidate'].should.eql('/*');
         res2.body.posts[0].status.should.eql('draft');
+    });
+
+    it('Can\'t change the newsletter_id of a post from the post body', async function () {
+        const post = {
+            newsletter_id: testUtils.DataGenerator.Content.newsletters[0].id
+        };
+
+        const postId = testUtils.DataGenerator.Content.posts[0].id;
+
+        const res = await request
+            .get(localUtils.API.getApiQuery(`posts/${postId}/?`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        post.updated_at = res.body.posts[0].updated_at;
+
+        await request
+            .put(localUtils.API.getApiQuery('posts/' + postId + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const model = await models.Post.findOne({
+            id: postId
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(null);
+    });
+
+    it('Can change the newsletter_id of a post when publishing', async function () {
+        const post = {
+            title: 'My newsletter_id post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter_id',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'published';
+
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
+
+        const finalPost = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const model = await models.Post.findOne({
+            id
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(newsletterId);
     });
 
     it('Can destroy a post', async function () {

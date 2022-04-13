@@ -674,6 +674,13 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
+        // newsletter_id is read-only and should only be set using a query param when publishing/scheduling
+        if (options.newsletter_id
+            && this.hasChanged('status')
+            && (newStatus === 'published' || newStatus === 'scheduled')) {
+            this.set('newsletter_id', options.newsletter_id);
+        }
+
         // email_recipient_filter is read-only and should only be set using a query param when publishing/scheduling
         if (options.email_recipient_filter
             && (options.email_recipient_filter !== 'none')
@@ -1019,7 +1026,7 @@ Post = ghostBookshelf.Model.extend({
             findPage: ['status'],
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_recipient_filter', 'force_rerender']
+            edit: ['filter', 'email_recipient_filter', 'force_rerender', 'newsletter_id']
         };
 
         // The post model additionally supports having a formats option

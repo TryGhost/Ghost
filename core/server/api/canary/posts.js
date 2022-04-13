@@ -129,6 +129,7 @@ module.exports = {
             'formats',
             'source',
             'email_recipient_filter',
+            'newsletter_id',
             'send_email_when_published',
             'force_rerender',
             // NOTE: only for internal context
