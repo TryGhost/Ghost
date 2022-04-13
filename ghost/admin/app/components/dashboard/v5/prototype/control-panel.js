@@ -86,7 +86,6 @@ export default class ControlPanel extends Component {
                 const parsed = JSON.parse(savedStatus);
                 if (parsed) {
                     this.dashboardMocks.siteStatus = {...this.dashboardMocks.siteStatus, ...parsed};
-                    //this.dashboardStats.loadSiteStatus();
                 }
             }
 
@@ -118,16 +117,14 @@ export default class ControlPanel extends Component {
         this.dashboardMocks.updateMockedData(this.state);
     }
 
+    updateState() {
+        this.dashboardStats.reloadAll();
+        this.saveState();
+    }
+
     // Convenience mappers
     get enabled() {
         return this.dashboardMocks.enabled;
-    }
-
-    updateState() {
-        this.dashboardStats.siteStatus = null;
-        this.dashboardStats.loadSiteStatus();
-        this.dashboardStats.reloadAll();
-        this.saveState();
     }
 
     set enabled(val) {

@@ -22,17 +22,16 @@ const DAYS_OPTIONS = [{
 
 const PAID_OPTIONS = [{
     name: 'Total Paid Members',
-    value: 'paid'
+    value: 'paid-total'
 }, {
     name: 'Paid Members By Day',
-    value: 'breakdown'
+    value: 'paid-breakdown'
 }];
 
 export default class Anchor extends Component {
     @service dashboardStats;
     @service feature;
     @tracked chartDisplay = 'total';
-    @tracked paidOptionSelected = 'paid';
 
     daysOptions = DAYS_OPTIONS;
     paidOptions = PAID_OPTIONS;
@@ -59,13 +58,15 @@ export default class Anchor extends Component {
     @action
     changeChartDisplay(type) {
         this.chartDisplay = type;
-        this.loadCharts();
     }
 
     @action 
     onPaidChange(selected) {
-        this.paidOptionSelected = selected.value;
         this.changeChartDisplay(selected.value);
+
+        // The graph won't switch correctly from line -> bar
+        // So we need to recreate it somehow.
+        // Solution: recreate the DOM by using an #if in hbs
     }
 
     @action 
@@ -78,7 +79,7 @@ export default class Anchor extends Component {
     }
 
     get selectedPaidOption() {
-        return this.paidOptions.find(d => d.value === this.paidOptionSelected);
+        return this.paidOptions.find(d => d.value === this.chartDisplay) ?? this.paidOptions[0];
     }
 
     get chartShowingTotal() {
@@ -86,25 +87,21 @@ export default class Anchor extends Component {
     }
 
     get chartShowingPaid() {
-        return (this.chartDisplay === 'paid' || this.chartDisplay === 'breakdown');
+        return (this.chartDisplay === 'paid-total' || this.chartDisplay === 'paid-breakdown');
     }
 
-    get chartShowingBreakdown() {
-        return (this.chartDisplay === 'breakdown');
-    }
-
-    get chartShowingMonthly() {
-        return (this.chartDisplay === 'monthly');
+    get chartShowingMrr() {
+        return (this.chartDisplay === 'mrr');
     }
 
     get loading() {
         if (this.chartDisplay === 'total') {
             return this.dashboardStats.memberCountStats === null;
-        } else if (this.chartDisplay === 'paid') {
+        } else if (this.chartDisplay === 'paid-total') {
             return this.dashboardStats.memberCountStats === null;
-        } else if (this.chartDisplay === 'breakdown') {
+        } else if (this.chartDisplay === 'paid-breakdown') {
             return this.dashboardStats.memberCountStats === null;
-        } else if (this.chartDisplay === 'monthly') {
+        } else if (this.chartDisplay === 'mrr') {
             return this.dashboardStats.mrrStats === null;
         }
         return true;
@@ -118,10 +115,6 @@ export default class Anchor extends Component {
         return this.dashboardStats.memberCounts?.paid ?? 0;
     }
 
-    get paidBreakdown() {
-        return this.dashboardStats.memberCounts?.breakdown ?? 0;
-    }
-
     get freeMembers() {
         return this.dashboardStats.memberCounts?.free ?? 0;
     }
@@ -131,7 +124,10 @@ export default class Anchor extends Component {
     }
 
     get hasTrends() {
-        return this.dashboardStats.memberCounts !== null && this.dashboardStats.memberCountsTrend !== null;
+        return this.dashboardStats.memberCounts !== null 
+            && this.dashboardStats.memberCountsTrend !== null
+            && this.dashboardStats.currentMRR !== null
+            && this.dashboardStats.currentMRRTrend !== null;
     }
 
     get totalMembersTrend() {
@@ -140,10 +136,6 @@ export default class Anchor extends Component {
 
     get paidMembersTrend() {
         return this.calculatePercentage(this.dashboardStats.memberCountsTrend.paid, this.dashboardStats.memberCounts.paid);
-    }
-
-    get paidBreakdownTrend() {
-        return '40%';
     }
 
     get freeMembersTrend() {
@@ -159,7 +151,7 @@ export default class Anchor extends Component {
     }
 
     get chartType() {
-        if (this.chartDisplay === 'breakdown') {
+        if (this.chartDisplay === 'paid-breakdown') {
             return 'bar';
         }
     
@@ -173,7 +165,7 @@ export default class Anchor extends Component {
         let newData;
         let canceledData;
 
-        if (this.chartDisplay === 'breakdown') {
+        if (this.chartDisplay === 'paid-breakdown') {
             stats = this.dashboardStats.filledMemberCountStats;
             labels = stats.map(stat => stat.date);
             newData = stats.map(stat => stat.paidSubscribed);
@@ -204,13 +196,13 @@ export default class Anchor extends Component {
             data = stats.map(stat => stat.paid + stat.free + stat.comped);
         }
 
-        if (this.chartDisplay === 'paid') {
+        if (this.chartDisplay === 'paid-total') {
             stats = this.dashboardStats.filledMemberCountStats;
             labels = stats.map(stat => stat.date);
             data = stats.map(stat => stat.paid);
         }
 
-        if (this.chartDisplay === 'monthly') {
+        if (this.chartDisplay === 'mrr') {
             stats = this.dashboardStats.filledMrrStats;
             labels = stats.map(stat => stat.date);
             data = stats.map(stat => stat.mrr);
@@ -249,7 +241,7 @@ export default class Anchor extends Component {
             maxNumberOfTicks = 20;
         }
 
-        if (this.chartDisplay === 'breakdown') {
+        if (this.chartDisplay === 'paid-breakdown') {
             return {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -386,10 +378,10 @@ export default class Anchor extends Component {
                         if (this.chartDisplay === 'total') {
                             return `Total members: ${valueText}`;
                         }
-                        if (this.chartDisplay === 'paid') {
+                        if (this.chartDisplay === 'paid-total') {
                             return `Paid members: ${valueText}`;
                         }
-                        if (this.chartDisplay === 'monthly') {
+                        if (this.chartDisplay === 'mrr') {
                             return `Monthly revenue (MRR): ${valueText}`;
                         }
                     },
