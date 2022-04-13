@@ -1,9 +1,13 @@
 import Component from '@glimmer/component';
+import ConfirmNewsletterEmailModal from './edit-newsletter/confirm-newsletter-email';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class EditNewsletterModal extends Component {
+    @service modals;
+
     static modalOptions = {
         className: 'fullscreen-modal-full-overlay fullscreen-modal-portal-settings'
     };
@@ -31,7 +35,16 @@ export default class EditNewsletterModal extends Component {
     @task
     *saveTask() {
         try {
+            const newEmail = this.args.data.newsletter.senderEmail;
+
             const result = yield this.args.data.newsletter.save();
+
+            if (result._meta?.sent_email_verification) {
+                yield this.modals.open(ConfirmNewsletterEmailModal, {
+                    newEmail,
+                    currentEmail: this.args.data.newsletter.senderEmail
+                });
+            }
 
             this.args.data.afterSave?.(result);
 
