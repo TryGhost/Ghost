@@ -26,7 +26,7 @@ class MembersStatsService {
         const date = DateTime.now().toISODate();
 
         return {
-            data: data.map(row => {
+            data: data.map((row) => {
                 return {
                     ...row,
                     date
