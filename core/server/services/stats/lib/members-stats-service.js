@@ -21,9 +21,7 @@ class MembersStatsService {
             .join('stripe_prices', 'stripe_prices.stripe_price_id', '=', 'members_stripe_customers_subscriptions.stripe_price_id')
             .join('stripe_products', 'stripe_products.stripe_product_id', '=', 'stripe_prices.stripe_product_id')
             .join('products', 'products.id', '=', 'stripe_products.product_id')
-            .where('members_stripe_customers_subscriptions.cancel_at_period_end', false)
-            .whereNotIn('members_stripe_customers_subscriptions.status', ['trialing', 'canceled', 'incomplete', 'incomplete_expired'])
-            .whereNot('stripe_prices.amount', 0)
+            .whereNot('members_stripe_customers_subscriptions.mrr', 0)
             .groupBy('tier', 'cadence');
 
         const date = moment().format('YYYY-MM-DD');
