@@ -469,7 +469,7 @@ Dashboard v5 Section Anchor */
     background: transparent;
     border-radius: 5px;
     color: var(--black);
-    /* border: 1px solid #eff2f4; */
+    border: 1px solid transparent;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-stats-button:last-child {
@@ -480,7 +480,7 @@ Dashboard v5 Section Anchor */
     color: var(--black);
     background: var(--white);
     box-shadow: 0 2px 4px rgb(0 0 0 / 2%);
-    border: 1px solid rgb(235 235 235);
+    border-color: rgb(235 235 235);
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-stats.is-solo .gh-dashboard5-stats-button.is-selected {
