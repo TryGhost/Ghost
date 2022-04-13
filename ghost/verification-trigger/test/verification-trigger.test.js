@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 const sinon = require('sinon');
 require('./utils');
-const VerificationTrigger = require('../lib/verification-trigger');
+const VerificationTrigger = require('../index');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberSubscribeEvent} = require('@tryghost/member-events');
 
@@ -150,7 +150,7 @@ describe('Email verification flow', function () {
 
         emailStub.lastCall.firstArg.should.eql({
             subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl}, just imported: {importedNumber} members.',
+            message: 'Email verification needed for site: {siteUrl}, has imported: {importedNumber} members in the last 30 days.',
             amountImported: 10
         });
     });
@@ -189,5 +189,48 @@ describe('Email verification flow', function () {
         eventStub.lastCall.lastArg.should.have.property('data.created_at');
         eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'api'`);
         eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
+    });
+
+    it('Triggers when a number of members are imported', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const eventStub = sinon.stub().resolves({
+            meta: {
+                pagination: {
+                    total: 10
+                }
+            }
+        });
+
+        const trigger = new VerificationTrigger({
+            configThreshold: 2,
+            Settings: {
+                edit: settingsStub
+            },
+            membersStats: {
+                getTotalMembers: () => 15
+            },
+            isVerified: () => false,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub,
+            eventRepository: {
+                getNewsletterSubscriptionEvents: eventStub
+            }
+        });
+
+        await trigger.testImportThreshold();
+
+        eventStub.callCount.should.eql(1);
+        eventStub.lastCall.lastArg.should.have.property('data.source');
+        eventStub.lastCall.lastArg.should.have.property('data.created_at');
+        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'admin'`);
+        eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
+
+        emailStub.callCount.should.eql(1);
+        emailStub.lastCall.firstArg.should.eql({
+            subject: 'Email needs verification',
+            message: 'Email verification needed for site: {siteUrl}, has imported: {importedNumber} members in the last 30 days.',
+            amountImported: 10
+        });
     });
 });
