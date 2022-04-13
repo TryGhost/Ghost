@@ -56,7 +56,7 @@ module.exports = createTransactionalMigration(
 
         logging.info('Adding the default newsletter');
 
-        await knex('newsletters').insert(newsletter);
+        // await knex('newsletters').insert(newsletter);
     }, async function down() {
         // Noop because we don't want to reset the default newsletter values
         logging.info(`Skipping newsletter design settings backfill rollack - not needed`);
