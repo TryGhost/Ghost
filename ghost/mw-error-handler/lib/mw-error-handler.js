@@ -8,12 +8,12 @@ const tpl = require('@tryghost/tpl');
 const messages = {
     pageNotFound: 'Page not found',
     resourceNotFound: 'Resource not found',
-    methodNotAcceptableVersionBehind: {
+    methodNotAcceptableVersionAhead: {
         message: 'Request not acceptable for provided Accept-Version header.',
         context: 'Provided client version {acceptVersion} is ahead of current Ghost instance version {ghostVersion}.',
         help: 'Upgrade your Ghost instance.'
     },
-    methodNotAcceptableVersionAhead: {
+    methodNotAcceptableVersionBehind: {
         message: 'Request not acceptable for provided Accept-Version header.',
         context: 'Provided client version {acceptVersion} is outdated and is behind current Ghost version {ghostVersion}.',
         help: 'Upgrade your Ghost API client.'
@@ -197,17 +197,6 @@ module.exports.resourceNotFound = (req, res, next) => {
         if (versionComparison === 1) {
             errorOptions = {
                 message: tpl(
-                    messages.methodNotAcceptableVersionBehind.message
-                ),
-                context: tpl(messages.methodNotAcceptableVersionBehind.context, {
-                    acceptVersion: req.headers['accept-version'],
-                    ghostVersion: `v${res.locals.safeVersion}`
-                }),
-                help: tpl(messages.methodNotAcceptableVersionBehind.help)
-            };
-        } else {
-            errorOptions = {
-                message: tpl(
                     messages.methodNotAcceptableVersionAhead.message
                 ),
                 context: tpl(messages.methodNotAcceptableVersionAhead.context, {
@@ -215,6 +204,17 @@ module.exports.resourceNotFound = (req, res, next) => {
                     ghostVersion: `v${res.locals.safeVersion}`
                 }),
                 help: tpl(messages.methodNotAcceptableVersionAhead.help)
+            };
+        } else {
+            errorOptions = {
+                message: tpl(
+                    messages.methodNotAcceptableVersionBehind.message
+                ),
+                context: tpl(messages.methodNotAcceptableVersionBehind.context, {
+                    acceptVersion: req.headers['accept-version'],
+                    ghostVersion: `v${res.locals.safeVersion}`
+                }),
+                help: tpl(messages.methodNotAcceptableVersionBehind.help)
             };
         }
 
