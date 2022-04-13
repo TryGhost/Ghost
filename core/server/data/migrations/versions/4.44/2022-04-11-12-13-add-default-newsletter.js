@@ -6,15 +6,15 @@ const {slugify} = require('@tryghost/string');
 // This contains the default settings from core/server/data/schema/default-settings/default-settings.json
 // This is needed to avoid an edge case where this migration runs before the settings are populated
 const defaultSettings = {
-    newsletter_show_badge: "true",
+    newsletter_show_badge: 'true',
     newsletter_header_image: null,
-    newsletter_show_header_icon: "true",
-    newsletter_show_header_title: "true",
-    newsletter_title_alignment: "center",
-    newsletter_title_font_category: "sans_serif",
-    newsletter_show_feature_image: "true",
-    newsletter_body_font_category: "sans_serif",
-    newsletter_footer_content: "",
+    newsletter_show_header_icon: 'true',
+    newsletter_show_header_title: 'true',
+    newsletter_title_alignment: 'center',
+    newsletter_title_font_category: 'sans_serif',
+    newsletter_show_feature_image: 'true',
+    newsletter_body_font_category: 'sans_serif',
+    newsletter_footer_content: ''
 };
 
 module.exports = createTransactionalMigration(
@@ -38,7 +38,7 @@ module.exports = createTransactionalMigration(
 
             if (setting) {
                 return setting.value;
-            } else if(defaultSettings.hasOwnProperty(name)) {
+            } else if (Object.hasOwnProperty.call(defaultSettings, name)) {
                 return defaultSettings[name];
             }
 
