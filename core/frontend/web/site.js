@@ -8,10 +8,8 @@ const {MemberPageViewEvent} = require('@tryghost/member-events');
 const config = require('../../shared/config');
 const constants = require('@tryghost/constants');
 const storage = require('../../server/adapters/storage');
-const urlService = require('../../server/services/url');
 const urlUtils = require('../../shared/url-utils');
 const sitemapHandler = require('../services/sitemap/handler');
-const appService = require('../services/apps');
 const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
@@ -32,8 +30,13 @@ function SiteRouter(req, res, next) {
     router(req, res, next);
 }
 
-module.exports = function setupSiteApp(options = {}) {
-    debug('Site setup start', options);
+/**
+ *
+ * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
+ * @returns {import('express').Application}
+ */
+module.exports = function setupSiteApp(routerConfig) {
+    debug('Site setup start', routerConfig);
 
     const siteApp = express('site');
 
@@ -136,7 +139,7 @@ module.exports = function setupSiteApp(options = {}) {
 
     debug('General middleware done');
 
-    router = siteRoutes(options);
+    router = siteRoutes(routerConfig);
     Object.setPrototypeOf(SiteRouter, router);
 
     // Set up Frontend routes (including private blogging routes)
@@ -158,18 +161,12 @@ module.exports = function setupSiteApp(options = {}) {
     return siteApp;
 };
 
-module.exports.reload = () => {
-    // https://github.com/expressjs/express/issues/2596
-    router = siteRoutes({start: true});
+/**
+ * see https://github.com/expressjs/express/issues/2596
+ * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
+ */
+module.exports.reload = (routerConfig) => {
+    debug('reloading');
+    router = siteRoutes(routerConfig);
     Object.setPrototypeOf(SiteRouter, router);
-
-    // re-initialize apps (register app routers, because we have re-initialized the site routers)
-    appService.init();
-
-    // connect routers and resources again
-    urlService.queue.start({
-        event: 'init',
-        tolerance: 100,
-        requiredSubscriberCount: 1
-    });
 };
