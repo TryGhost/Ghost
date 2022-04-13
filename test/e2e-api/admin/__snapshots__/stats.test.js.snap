@@ -70,8 +70,8 @@ exports[`Stats API Can fetch subscriptions count 1: [body] 1`] = `
 Object {
   "meta": Object {
     "cadences": Array [
-      "month",
-      "year",
+      StringMatching /month\\|year/,
+      StringMatching /month\\|year/,
     ],
     "tiers": Array [
       StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -80,13 +80,13 @@ Object {
   "stats": Array [
     Object {
       "cadence": StringMatching /month\\|year/,
-      "count": 1,
+      "count": Any<Number>,
       "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
     Object {
       "cadence": StringMatching /month\\|year/,
-      "count": 2,
+      "count": Any<Number>,
       "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
