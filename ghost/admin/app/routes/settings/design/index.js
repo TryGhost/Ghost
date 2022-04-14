@@ -21,7 +21,7 @@ export default class SettingsDesignIndexRoute extends AuthenticatedRoute {
         transition.abort();
 
         this.confirmUnsavedChanges().then((shouldLeave) => {
-            if (shouldLeave) {
+            if (shouldLeave === true) {
                 this.hasConfirmed = true;
                 return transition.retry();
             }
