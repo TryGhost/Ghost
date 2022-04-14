@@ -1,7 +1,7 @@
 import AppContext from '../../AppContext';
 import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
-import {useContext, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
@@ -68,6 +68,9 @@ export default function AccountEmailPage() {
     const {brandColor, member, onAction} = useContext(AppContext);
     const defaultSubscribedNewsletters = [...(member.newsletters || [])];
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
+    useEffect(() => {
+        setSubscribedNewsletters(member.newsletters);
+    }, [member.newsletters]);
 
     return (
         <div className='gh-portal-content with-footer'>
@@ -106,7 +109,13 @@ export default function AccountEmailPage() {
                     </div>
                     <ActionButton
                         isRunning={false}
-                        onClick={(e) => {}}
+                        onClick={(e) => {
+                            onAction('showPopupNotification', {
+                                action: 'updated:success',
+                                message: `Newsletter preference updated.`
+                            });
+                            onAction('updateNewsletterPreference', {newsletters: []});
+                        }}
                         disabled={false}
                         brandColor={brandColor}
                         isPrimary={false}
