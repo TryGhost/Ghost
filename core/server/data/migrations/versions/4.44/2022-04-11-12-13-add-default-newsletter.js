@@ -1,7 +1,6 @@
 const ObjectId = require('bson-objectid');
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
-const {slugify} = require('@tryghost/string');
 
 const newsletterPrefixRegexp = /^newsletter_/;
 
