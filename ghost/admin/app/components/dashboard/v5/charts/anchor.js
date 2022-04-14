@@ -156,9 +156,9 @@ export default class Anchor extends Component {
         if (this.chartDisplay === 'paid-total') {
             return 'Total paid members';
         } else if (this.chartDisplay === 'paid-breakdown') {
-            return 'Monthly revenue (MRR) Deltas';
+            return 'MRR Deltas';
         } else if (this.chartDisplay === 'mrr') {
-            return 'Monthly revenue (MRR) Total';
+            return 'MRR Total';
         }
         return 'Total members';
     }
@@ -167,7 +167,6 @@ export default class Anchor extends Component {
         if (this.chartDisplay === 'paid-breakdown') {
             return 'bar';
         }
-    
         return 'line';
     }
 
@@ -178,6 +177,7 @@ export default class Anchor extends Component {
             const newData = stats.map(stat => stat.paidSubscribed);
             const canceledData = stats.map(stat => -stat.paidCanceled);
             const netData = stats.map(stat => stat.paidSubscribed - stat.paidCanceled);
+            const barThickness = (this.selectedDaysOption.value < 90 ? 18 : 7);
 
             return {
                 labels: labels,
@@ -203,14 +203,14 @@ export default class Anchor extends Component {
                         fill: false,
                         backgroundColor: '#BD96F6',
                         cubicInterpolationMode: 'monotone',
-                        barThickness: 18,
+                        barThickness: barThickness,
                         minBarLength: 3
                     }, {
                         data: canceledData,
                         fill: false,
                         backgroundColor: '#FB76B4',
                         cubicInterpolationMode: 'monotone',
-                        barThickness: 18,
+                        barThickness: barThickness,
                         minBarLength: 3
                     }]
             };
@@ -331,7 +331,7 @@ export default class Anchor extends Component {
                             drawBorder: false,
                             color: 'rgba(255, 255, 255, 0.1)',
                             lineWidth: 0,
-                            zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
+                            zeroLineColor: barColor,
                             zeroLineWidth: 1
                         },
                         ticks: {
@@ -357,7 +357,6 @@ export default class Anchor extends Component {
                         },
                         ticks: {
                             display: false,
-                            padding: 20,
                             callback: function (value, index, values) {
                                 if (index === 0) {
                                     document.getElementById('gh-dashboard5-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
