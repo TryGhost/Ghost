@@ -1,12 +1,15 @@
-const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 
 const createWebhookService = require('../../../../../core/server/services/webhooks/webhooks-service');
-const models = require('../../../../../core/server/models');
 
 describe('Webhook Service', function () {
-    before(models.init);
+    const models = {
+        Webhook: {
+            getByEventAndTarget: () => {},
+            add: () => {}
+        }
+    };
 
     afterEach(function () {
         sinon.restore();
