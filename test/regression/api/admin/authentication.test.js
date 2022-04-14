@@ -104,7 +104,7 @@ describe('Authentication API', function () {
                 === 'Default Newsletter');
 
             assert (defaultNewsletter.name === 'a test blog', 'The default newsletter should have had a name change');
-            assert (defaultNewsletter.sender_name === 'a test blog', 'The default newsletter should have had a sender name change');
+
             assert(newsletterWithDefaultName === undefined, 'The default newsletter should have had a name change');
         });
 

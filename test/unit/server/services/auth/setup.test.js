@@ -62,7 +62,7 @@ describe('Auth Service: setup', function () {
             );
             sinon.assert.calledOnceWithExactly(
                 newsletterEditStub,
-                {newsletters: [{name: 'Test Blog', sender_name: 'Test Blog'}]},
+                {newsletters: [{name: 'Test Blog'}]},
                 {context: {user: 'user-1'}, id: 'newsletter-2'}
             );
         });
