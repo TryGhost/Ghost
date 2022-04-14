@@ -1,5 +1,5 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentURL, find, findAll} from '@ember/test-helpers';
+import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
 import {setupApplicationTest} from 'ember-mocha';
@@ -51,6 +51,27 @@ describe('Acceptance: Settings - Design', function () {
         // defaults to "home" desktop preview
         expect(find('[data-test-button="desktop-preview"]')).to.have.class('gh-btn-group-selected');
         expect(find('[data-test-button="mobile-preview"]')).to.not.have.class('gh-btn-group-selected');
+    });
+
+    it('has unsaved-changes confirmation', async function () {
+        await visit('/settings/design');
+        await fillIn('[data-test-input="siteDescription"]', 'Changed');
+        await click('[data-test-link="back-to-settings"]');
+
+        expect(find('[data-test-modal="unsaved-settings"]')).to.exist;
+
+        await click('[data-test-modal="unsaved-settings"] [data-test-button="close"]');
+
+        expect(currentURL()).to.equal('/settings/design');
+
+        await click('[data-test-link="back-to-settings"]');
+        await click('[data-test-modal="unsaved-settings"] [data-test-leave-button]');
+
+        expect(currentURL()).to.equal('/settings');
+
+        await click('[data-test-nav="design"]');
+
+        expect(find('[data-test-input="siteDescription"]')).to.not.have.value('Changed');
     });
 
     it('renders with custom theme settings');
