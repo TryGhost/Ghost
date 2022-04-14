@@ -3,19 +3,27 @@ const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
 const {slugify} = require('@tryghost/string');
 
-// This contains the default settings from core/server/data/schema/default-settings/default-settings.json
-// This is needed to avoid an edge case where this migration runs before the settings are populated
-const defaultSettings = {
-    newsletter_show_badge: 'true',
-    newsletter_header_image: null,
-    newsletter_show_header_icon: 'true',
-    newsletter_show_header_title: 'true',
-    newsletter_title_alignment: 'center',
-    newsletter_title_font_category: 'sans_serif',
-    newsletter_show_feature_image: 'true',
-    newsletter_body_font_category: 'sans_serif',
-    newsletter_footer_content: ''
-};
+const newsletterPrefixRegexp = /^newsletter_/;
+
+function forceBoolean(string) {
+    return string === 'true';
+}
+
+// This also contains the default settings from core/server/data/schema/default-settings/default-settings.json
+// The default settings are needed to avoid an edge case where this migration runs before the settings are populated
+const settingsConfig = [
+    {setting: 'title', default: 'Ghost'},
+    {setting: 'description', default: ''},
+    {setting: 'newsletter_body_font_category', default: 'sans_serif'},
+    {setting: 'newsletter_footer_content', default: ''},
+    {setting: 'newsletter_header_image', default: null},
+    {setting: 'newsletter_show_badge', default: 'true', modifier: forceBoolean},
+    {setting: 'newsletter_show_feature_image', default: 'true', modifier: forceBoolean},
+    {setting: 'newsletter_show_header_icon', default: 'true', modifier: forceBoolean},
+    {setting: 'newsletter_show_header_title', default: 'true', modifier: forceBoolean},
+    {setting: 'newsletter_title_alignment', default: 'center'},
+    {setting: 'newsletter_title_font_category', default: 'sans_serif'}
+];
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
@@ -27,31 +35,32 @@ module.exports = createTransactionalMigration(
             return;
         }
 
-        /**
-         * Helper to return a setting or a default value
-         */
-        async function getSetting(name, defaultValue) {
-            const setting = await knex('settings')
-                .where('key', name)
-                .select(['value'])
-                .first();
+        // Get all settings in one query
+        const settings = await knex('settings')
+            .whereIn('key', settingsConfig.map(config => config.setting))
+            .select(['key', 'value']);
 
+        // Create a settings map taking into account the default value
+        const settingsMap = {};
+        // eslint-disable-next-line no-restricted-syntax
+        for (const config of settingsConfig) {
+            const setting = settings.find(s => s.key === config.setting);
             if (setting) {
-                return setting.value;
-            } else if (Object.hasOwnProperty.call(defaultSettings, name)) {
-                return defaultSettings[name];
+                settingsMap[config.setting] = setting.value;
+            } else {
+                settingsMap[config.setting] = config.default;
             }
-
-            return defaultValue;
+            if (config.modifier) {
+                settingsMap[config.setting] = config.modifier(settingsMap[config.setting]);
+            }
         }
 
-        const title = await getSetting('title', 'Ghost');
         const newsletter = {
             id: ObjectId().toHexString(),
-            name: title,
-            description: await getSetting('description', ''),
-            slug: slugify(title),
-            sender_name: title,
+            name: settingsMap.title,
+            description: settingsMap.description,
+            slug: slugify(settingsMap.title),
+            sender_name: settingsMap.title,
             sender_email: null,
             sender_reply_to: 'newsletter',
             status: 'active',
@@ -60,20 +69,14 @@ module.exports = createTransactionalMigration(
             sort_order: 0
         };
 
-        const designSettings = ['header_image', 'show_header_icon', 'show_header_title', 'title_font_category', 'title_alignment', 'show_feature_image', 'body_font_category', 'footer_content', 'show_badge'];
+        // Special case for the design settings because we are getting rid of the `newsletter_` prefix
+        const designSettings = settingsConfig.filter(config => newsletterPrefixRegexp.test(config.setting));
         // eslint-disable-next-line no-restricted-syntax
-        for (const setting of designSettings) {
-            let value = await getSetting('newsletter_' + setting);
-            if (['show_badge', 'show_feature_image', 'show_header_icon', 'show_header_title'].includes(setting)) {
-                value = value === 'true';
-            }
-            newsletter[setting] = value;
+        for (const config of designSettings) {
+            newsletter[config.setting.replace(newsletterPrefixRegexp, '')] = settingsMap[config.setting];
         }
 
         logging.info('Adding the default newsletter');
-
-        logging.info(knex('newsletters').insert(newsletter).toSQL().sql);
-        logging.info(JSON.stringify(knex('newsletters').insert(newsletter).toSQL().bindings));
 
         await knex('newsletters').insert(newsletter);
     }, async function down() {
