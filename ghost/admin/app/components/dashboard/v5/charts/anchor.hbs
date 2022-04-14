@@ -52,15 +52,6 @@
                             @center={{true}}
                             @large={{true}} /> 
                     </button> 
-                    <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid-total")}}>
-                        <Dashboard::v5::Parts::Metric
-                            @label={{gh-pluralize this.paidMembers "Total paid member" without-count=true}}
-                            @value={{format-number this.paidMembers}}
-                            {{!-- @trends={{this.hasTrends}} --}}
-                            {{!-- @percentage={{this.paidMembersTrend}} --}}
-                            @center={{true}}
-                            @large={{true}} />
-                    </button>
                     <button class="gh-dashboard5-stats-button {{if this.chartShowingMrr 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "mrr")}}>
                         <Dashboard::v5::Parts::Metric
                             @label="Monthly Revenue (MRR)"
@@ -75,7 +66,7 @@
         </div>
 
         <div class="gh-dashboard5-selects">
-            {{#if this.chartShowingPaid}}
+            {{#if this.chartShowingMrr}}
                 <div class="gh-dashboard5-select">
                     <PowerSelect
                         @selected={{this.selectedPaidOption}}

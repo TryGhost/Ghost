@@ -43,7 +43,8 @@ export default class EmailOpenRate extends Component {
                 fill: false,
                 backgroundColor: '#14B8FF',
                 cubicInterpolationMode: 'monotone',
-                barThickness: 18
+                barThickness: 18,
+                minBarLength: 4
             }]
         };
     }

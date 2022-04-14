@@ -73,7 +73,7 @@ Dashboard v5 Layout */
     grid-template-rows: auto auto auto auto;
     grid-template-areas: 
         "anchor             anchor             anchor             anchor"  
-        "engagement         email              email-open-rate    email-open-rate" 
+        "email              engagement         email-open-rate    email-open-rate" 
         "recent-posts       recent-posts       recent-activity    recent-activity"
         "help               help               help               help";
 }
@@ -463,7 +463,7 @@ Dashboard v5 Section Anchor */
     cursor: pointer;
     position: relative;
     flex: 1;
-    padding: 16px 24px 20px;
+    padding: 14px 24px 18px;
     margin: 2px 8px 2px 2px;
     text-align: left;
     background: transparent;
