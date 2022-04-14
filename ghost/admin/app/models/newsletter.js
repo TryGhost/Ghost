@@ -17,7 +17,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: false}) subscribeOnSignup;
     @attr({defaultValue: 0}) sortOrder;
 
-    // Design-related properties - TODO: not currently supported in API
+    // Design-related properties
     @attr headerImage;
     @attr({defaultValue: true}) showHeaderIcon;
     @attr({defaultValue: true}) showHeaderTitle;
@@ -25,7 +25,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: 'center'}) titleAlignment;
     @attr({defaultValue: true}) showFeatureImage;
     @attr({defaultValue: 'sans_serif'}) bodyFontCategory;
-    @attr() footerContent;
+    @attr footerContent;
     @attr({defaultValue: true}) showBadge;
 
     // HACK - not a real model attribute but a workaround for Ember Data not
