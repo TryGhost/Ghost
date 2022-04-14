@@ -1,6 +1,10 @@
 const logging = require('@tryghost/logging');
 const {createNonTransactionalMigration} = require('../../utils');
 
+/**
+ * Note: This doesn't use knex.alterTable as it doesn't work for down migration.
+ * It tries to insert a `null` into non `nullable` column while altering column
+ */
 module.exports = createNonTransactionalMigration(
     async function up(knex) {
         logging.info('Dropping NOT NULL constraint for: sender_name in table: newsletters');
