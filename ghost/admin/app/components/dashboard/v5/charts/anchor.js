@@ -1,11 +1,12 @@
 import Component from '@glimmer/component';
 import moment from 'moment';
 import {action} from '@ember/object';
+import {getSymbol} from 'ghost-admin/utils/currency';
 import {ghPriceAmount} from '../../../../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
-import {tracked} from '@glimmer/tracking'; 
+import {tracked} from '@glimmer/tracking';
+
 const DATE_FORMAT = 'D MMM';
-import {getSymbol} from 'ghost-admin/utils/currency';
 
 const DAYS_OPTIONS = [{
     name: '7 Days',
@@ -152,7 +153,9 @@ export default class Anchor extends Component {
     }
 
     get chartTitle() {
-        if (this.chartDisplay === 'paid-total' || this.chartDisplay === 'paid-breakdown') {
+        if (this.chartDisplay === 'paid-total') {
+            return 'Total paid members';
+        } else if (this.chartDisplay === 'paid-breakdown') {
             return 'Monthly revenue (MRR) Deltas';
         } else if (this.chartDisplay === 'mrr') {
             return 'Monthly revenue (MRR) Total';
@@ -169,8 +172,6 @@ export default class Anchor extends Component {
     }
 
     get chartData() {
-        let returnable = {};
-
         if (this.chartDisplay === 'paid-breakdown') {
             const stats = this.dashboardStats.filledMemberCountStats;
             const labels = stats.map(stat => stat.date);
@@ -194,17 +195,17 @@ export default class Anchor extends Component {
                         pointHoverBackgroundColor: '#14B8FF',
                         pointHoverBorderColor: '#14B8FF',
                         pointHoverRadius: 0,
-                        borderColor: '#14B8FF',
-                        borderJoinStyle: 'miter'
-                    },
-                    {
+                        borderColor: 'rgba(189, 197, 204, 0.5)',
+                        borderJoinStyle: 'miter',
+                        borderWidth: 3
+                    }, {
                         data: newData,
                         fill: false,
                         backgroundColor: '#BD96F6',
                         cubicInterpolationMode: 'monotone',
                         barThickness: 18,
                         minBarLength: 3
-                    },{
+                    }, {
                         data: canceledData,
                         fill: false,
                         backgroundColor: '#FB76B4',
@@ -215,78 +216,47 @@ export default class Anchor extends Component {
             };
         }
 
-        if (this.chartDisplay === 'total') {
-            let stats = this.dashboardStats.filledMemberCountStats;
-            let labels = stats.map(stat => stat.date);
-            let data = stats.map(stat => stat.paid + stat.free + stat.comped);
-            let dataPaid = stats.map(stat => stat.paid);
+        let stats;
+        let labels;
+        let data;
 
-            returnable = {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    tension: 0,
-                    cubicInterpolationMode: 'monotone',
-                    fill: true,
-                    fillColor: 'rgba(20, 184, 255, 0.07)',
-                    backgroundColor: 'rgba(20, 184, 255, 0.07)',
-                    pointRadius: 0,
-                    pointHitRadius: 10,
-                    pointBorderColor: '#14B8FF',
-                    pointBackgroundColor: '#14B8FF',
-                    pointHoverBackgroundColor: '#14B8FF',
-                    pointHoverBorderColor: '#14B8FF',
-                    pointHoverRadius: 0,
-                    borderColor: '#14B8FF',
-                    borderJoinStyle: 'miter'
-                }, {
-                    data: dataPaid,
-                    tension: 0,
-                    cubicInterpolationMode: 'monotone',
-                    fill: true,
-                    fillColor: 'rgba(189, 150, 246, 0.3)',
-                    backgroundColor: 'rgba(189, 150, 246, 0.3)',
-                    pointRadius: 0,
-                    pointHitRadius: 10,
-                    pointBorderColor: 'rgba(189, 150, 246, 1)',
-                    pointBackgroundColor: 'rgba(189, 150, 246, 1)',
-                    pointHoverBackgroundColor: 'rgba(189, 150, 246, 1)',
-                    pointHoverBorderColor: 'rgba(189, 150, 246, 1)',
-                    pointHoverRadius: 0,
-                    borderColor: 'rgba(189, 150, 246, 1)',
-                    borderJoinStyle: 'miter'
-                }]
-            };
+        if (this.chartDisplay === 'paid-total') {
+            // paid-total
+            stats = this.dashboardStats.filledMemberCountStats;
+            labels = stats.map(stat => stat.date);
+            data = stats.map(stat => stat.paid);
+        } else if (this.chartDisplay === 'mrr') {
+            // mrr
+            stats = this.dashboardStats.filledMrrStats;
+            labels = stats.map(stat => stat.date);
+            data = stats.map(stat => stat.mrr);
+        } else {
+            // total
+            stats = this.dashboardStats.filledMemberCountStats;
+            labels = stats.map(stat => stat.date);
+            data = stats.map(stat => stat.paid + stat.free + stat.comped);
         }
 
-        if (this.chartDisplay === 'mrr') {
-            let stats = this.dashboardStats.filledMrrStats;
-            let labels = stats.map(stat => stat.date);
-            let data = stats.map(stat => stat.mrr);
-    
-            returnable = {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    tension: 0,
-                    cubicInterpolationMode: 'monotone',
-                    fill: true,
-                    fillColor: 'rgba(20, 184, 255, 0.07)',
-                    backgroundColor: 'rgba(20, 184, 255, 0.07)',
-                    pointRadius: 0,
-                    pointHitRadius: 10,
-                    pointBorderColor: '#14B8FF',
-                    pointBackgroundColor: '#14B8FF',
-                    pointHoverBackgroundColor: '#14B8FF',
-                    pointHoverBorderColor: '#14B8FF',
-                    pointHoverRadius: 0,
-                    borderColor: '#14B8FF',
-                    borderJoinStyle: 'miter'
-                }]
-            };
-        }
-
-        return returnable;
+        return {
+            labels: labels,
+            datasets: [{
+                data: data,
+                tension: 0,
+                cubicInterpolationMode: 'monotone',
+                fill: true,
+                fillColor: 'rgba(20, 184, 255, 0.07)',
+                backgroundColor: 'rgba(20, 184, 255, 0.07)',
+                pointRadius: 0,
+                pointHitRadius: 10,
+                pointBorderColor: '#14B8FF',
+                pointBackgroundColor: '#14B8FF',
+                pointHoverBackgroundColor: '#14B8FF',
+                pointHoverBorderColor: '#14B8FF',
+                pointHoverRadius: 0,
+                borderColor: '#14B8FF',
+                borderJoinStyle: 'miter'
+            }]
+        };
     }
 
     get mrrCurrencySymbol() {
@@ -336,10 +306,14 @@ export default class Anchor extends Component {
                             let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
                             if (tooltipItems.datasetIndex === 0) {
-                                return `New paid: ${valueText}`;
+                                return `Net: ${valueText}`;
                             }
 
                             if (tooltipItems.datasetIndex === 1) {
+                                return `New paid: ${valueText}`;
+                            }
+
+                            if (tooltipItems.datasetIndex === 2) {
                                 return `Canceled paid: ${Math.abs(valueText)}`;
                             }
                         },
@@ -382,6 +356,7 @@ export default class Anchor extends Component {
                             zeroLineBorderDash: [4,4]
                         },
                         ticks: {
+                            display: false,
                             padding: 20,
                             callback: function (value, index, values) {
                                 if (index === 0) {
@@ -409,7 +384,8 @@ export default class Anchor extends Component {
             },
             layout: {
                 padding: {
-                    top: 0
+                    top: 2,
+                    bottom: 2
                 }
             },
             hover: {
@@ -437,7 +413,7 @@ export default class Anchor extends Component {
                         if (this.chartDisplay === 'mrr') {
                             // Convert integer in cents to value in USD/other currency.
                             const valueText = ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index]);
-                            return `Monthly revenue (MRR): ${this.mrrCurrencySymbol}${valueText}`;
+                            return `MRR: ${this.mrrCurrencySymbol}${valueText}`;
                         }
 
                         let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
