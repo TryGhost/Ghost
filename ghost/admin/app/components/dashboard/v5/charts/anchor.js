@@ -1,10 +1,11 @@
 import Component from '@glimmer/component';
 import moment from 'moment';
 import {action} from '@ember/object';
+import {ghPriceAmount} from '../../../../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
-import {tracked} from '@glimmer/tracking';
-
+import {tracked} from '@glimmer/tracking'; 
 const DATE_FORMAT = 'D MMM';
+import {getSymbol} from 'ghost-admin/utils/currency';
 
 const DAYS_OPTIONS = [{
     name: '7 Days',
@@ -288,6 +289,15 @@ export default class Anchor extends Component {
         return returnable;
     }
 
+    get mrrCurrencySymbol() {
+        if (this.dashboardStats.mrrStats === null) {
+            return '';
+        }
+        
+        const firstCurrency = this.dashboardStats.mrrStats[0] ? this.dashboardStats.mrrStats[0].currency : 'usd';
+        return getSymbol(firstCurrency);
+    }
+
     get chartOptions() {
         let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
 
@@ -424,6 +434,12 @@ export default class Anchor extends Component {
                 titleMarginBottom: 3,
                 callbacks: {
                     label: (tooltipItems, data) => {
+                        if (this.chartDisplay === 'mrr') {
+                            // Convert integer in cents to value in USD/other currency.
+                            const valueText = ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index]);
+                            return `Monthly revenue (MRR): ${this.mrrCurrencySymbol}${valueText}`;
+                        }
+
                         let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                         let returnable = valueText;
 
@@ -433,10 +449,6 @@ export default class Anchor extends Component {
                             } else {
                                 returnable = `Paid members: ${valueText}`;
                             }
-                        }
-
-                        if (this.chartDisplay === 'mrr') {
-                            returnable = `Monthly revenue (MRR): $${valueText}`;
                         }
 
                         return returnable;

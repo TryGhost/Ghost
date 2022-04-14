@@ -55,7 +55,7 @@
                     <button class="gh-dashboard5-stats-button {{if this.chartShowingMrr 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "mrr")}}>
                         <Dashboard::v5::Parts::Metric
                             @label="Monthly Revenue (MRR)"
-                            @value="${{gh-price-amount this.currentMRR}}"
+                            @value="{{this.mrrCurrencySymbol}}{{gh-price-amount this.currentMRR}}"
                             {{!-- @trends={{this.hasTrends}} --}}
                             {{!-- @percentage={{this.mrrTrend}} --}}
                             @center={{true}}
