@@ -28,6 +28,12 @@ class PostsService {
                     message: messages.invalidNewsletterId
                 });
             }
+        } else {
+            // Set the newsletter_id if it isn't passed to the API
+            const newsletters = await this.models.Newsletter.findPage({status: 'active', limit: 1, columns: ['id']}, {transacting: frame.options.transacting});
+            if (newsletters.data.length > 0) {
+                frame.options.newsletter_id = newsletters.data[0].id;
+            }
         }
 
         if (!frame.options.email_recipient_filter && frame.options.send_email_when_published) {
@@ -76,14 +82,6 @@ class PostsService {
             const sendEmail = model.wasChanged() && this.shouldSendEmail(model.get('status'), model.previous('status'));
 
             if (sendEmail) {
-                // Set the newsletter_id if it isn't passed to the API
-                if (!frame.options.newsletter_id) {
-                    const newsletters = await this.models.Newsletter.findPage({status: 'active', limit: 1, columns: ['id']}, {transacting: frame.options.transacting});
-                    if (newsletters.data.length > 0) {
-                        frame.options.newsletter_id = newsletters.data[0].id;
-                    }
-                }
-
                 let postEmail = model.relations.email;
 
                 if (!postEmail) {
