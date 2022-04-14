@@ -83,7 +83,7 @@ const http = (apiImpl) => {
 
             // CASE: generate headers based on the api ctrl configuration
             if (req && req.headers && req.headers['accept-version'] && res.locals) {
-                headers['content-version'] = `v${res.locals.safeVersion}`;
+                headers['Content-Version'] = `v${res.locals.safeVersion}`;
             }
             res.set(headers);
 
