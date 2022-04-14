@@ -36,7 +36,7 @@ const validateRouteSettings = require('../../../../../core/server/services/route
 describe('DB version integrity', function () {
     // Only these variables should need updating
     const currentSchemaHash = '026d0bffc2be9420c1d9fccf76656dac';
-    const currentFixturesHash = 'a08bedf7a552498ed6f4a0d72c732dd5';
+    const currentFixturesHash = '2fb171312dfdd1dc3a569dfb845ac6f5';
     const currentSettingsHash = '71fa38d0c805c18ceebe0fda80886230';
     const currentRoutesHash = '3d180d52c663d173a6be791ef411ed01';
 

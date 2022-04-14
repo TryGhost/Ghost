@@ -24,8 +24,7 @@
             "entries": [
                 {
                     "name":             "Default Newsletter",
-                    "slug":             "default-newsletter",
-                    "sender_name":      "Ghost"
+                    "slug":             "default-newsletter"
                 }
             ]
         },
