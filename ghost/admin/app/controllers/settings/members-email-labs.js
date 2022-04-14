@@ -13,7 +13,6 @@ export default class MembersEmailLabsController extends Controller {
     @task({drop: true})
     *saveSettings() {
         const response = yield this.settings.save();
-        this.resetEmailAddresses();
         return response;
     }
 }
