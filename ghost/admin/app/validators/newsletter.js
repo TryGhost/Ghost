@@ -59,5 +59,19 @@ export default BaseValidator.create({
         }
 
         model.hasValidated.addObject('senderReplyTo');
+    },
+
+    visibility(model) {
+        if (isBlank(model.visibility)) {
+            model.errors.add('visibility', 'Please enter visibility.');
+            this.invalidate();
+        }
+
+        if (!validator.isIn(model.senderReplyTo, ['members', 'paid'])) {
+            model.errors.add('visibility', 'Can only be set to "members" or "paid".');
+            this.invalidate();
+        }
+
+        model.hasValidated.addObject('visibility');
     }
 });

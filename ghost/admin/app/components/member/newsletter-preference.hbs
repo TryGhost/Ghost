@@ -1,0 +1,24 @@
+<h4 class="gh-main-section-header small bn">Newsletters</h4>
+<div class="gh-main-section-content grey">
+    {{#each this.newsletters as |newsletter|}}
+        <div class="flex justify-between items-center">
+            <div>
+                <h4 class="gh-setting-title m">{{newsletter.name}}</h4>
+                <p class="gh-setting-desc">{{newsletter.description}}</p>
+            </div>
+            <div class="for-switch">
+                <label class="switch" for={{newsletter.forId}}>
+                    <Input
+                        @checked={{newsletter.subscribed}}
+                        @type="checkbox"
+                        id={{newsletter.forId}}
+                        name="subscribed"
+                        data-test-checkbox="member-subscribed"
+                        {{on "click" (fn this.updateNewsletterPreference newsletter)}}
+                    />
+                    <span class="input-toggle-component"></span>
+                </label>
+            </div>
+        </div>
+    {{/each}}
+</div>

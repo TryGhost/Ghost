@@ -22,6 +22,7 @@ export default class extends Component {
 
     @tracked showMemberProductModal = false;
     @tracked productsList;
+    @tracked newslettersList;
 
     get canShowStripeInfo() {
         return !this.member.get('isNew') && this.membersUtils.isStripeEnabled;
@@ -110,6 +111,9 @@ export default class extends Component {
     @action
     setup() {
         this.fetchProducts.perform();
+        if (this.feature.get('multipleNewsletters')) {
+            this.fetchNewsletters.perform();
+        }
     }
 
     @action
@@ -120,6 +124,11 @@ export default class extends Component {
     @action
     setLabels(labels) {
         this.member.set('labels', labels);
+    }
+
+    @action
+    setMemberNewsletters(newsletters) {
+        this.member.set('newsletters', newsletters);
     }
 
     @action
@@ -196,5 +205,16 @@ export default class extends Component {
     @task({drop: true})
     *fetchProducts() {
         this.productsList = yield this.store.query('product', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price'});
+    }
+
+    @task({drop: true})
+    *fetchNewsletters() {
+        this.newslettersList = yield this.store.query('newsletter', {filter: 'status:active'});
+        if (this.member.get('isNew')) {
+            const defaultNewsletters = this.newslettersList.filter((newsletter) => {
+                return newsletter.subscribeOnSignup && newsletter.visibility === 'members';
+            });
+            this.setMemberNewsletters(defaultNewsletters);
+        }
     }
 }
