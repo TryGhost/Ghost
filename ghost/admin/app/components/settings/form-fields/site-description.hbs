@@ -11,7 +11,7 @@
                     value={{this.settings.description}}
                     {{on "input" this.update}}
                     {{on "blur" this.validate}}
-                    date-test-input="siteDescription"
+                    data-test-input="siteDescription"
                 >
                 <GhErrorMessage @errors={{this.settings.errors}} @property="description"/>
             </GhFormGroup>
