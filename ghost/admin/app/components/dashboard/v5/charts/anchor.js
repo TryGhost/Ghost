@@ -171,14 +171,31 @@ export default class Anchor extends Component {
         let returnable = {};
 
         if (this.chartDisplay === 'paid-breakdown') {
-            let stats = this.dashboardStats.filledMemberCountStats;
-            let labels = stats.map(stat => stat.date);
-            let newData = stats.map(stat => stat.paidSubscribed);
-            let canceledData = stats.map(stat => -stat.paidCanceled);
-            
-            returnable = {
+            const stats = this.dashboardStats.filledMemberCountStats;
+            const labels = stats.map(stat => stat.date);
+            const newData = stats.map(stat => stat.paidSubscribed);
+            const canceledData = stats.map(stat => -stat.paidCanceled);
+            const netData = stats.map(stat => stat.paidSubscribed - stat.paidCanceled);
+
+            return {
                 labels: labels,
                 datasets: [
+                    {
+                        type: 'line',
+                        data: netData,
+                        tension: 0,
+                        cubicInterpolationMode: 'monotone',
+                        fill: false,
+                        pointRadius: 0,
+                        pointHitRadius: 10,
+                        pointBorderColor: '#14B8FF',
+                        pointBackgroundColor: '#14B8FF',
+                        pointHoverBackgroundColor: '#14B8FF',
+                        pointHoverBorderColor: '#14B8FF',
+                        pointHoverRadius: 0,
+                        borderColor: '#14B8FF',
+                        borderJoinStyle: 'miter'
+                    },
                     {
                         data: newData,
                         fill: false,
@@ -355,7 +372,7 @@ export default class Anchor extends Component {
                             zeroLineBorderDash: [4,4]
                         },
                         ticks: {
-                            display: false,
+                            padding: 20,
                             callback: function (value, index, values) {
                                 if (index === 0) {
                                     document.getElementById('gh-dashboard5-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
