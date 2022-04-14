@@ -104,7 +104,7 @@ describe('Unit: api/shared/http', function () {
         res.json.callsFake(function () {
             shared.headers.get.calledOnce.should.be.true();
             res.status.calledOnce.should.be.true();
-            res.headers['content-version'].should.equal('v5.4');
+            res.headers['Content-Version'].should.equal('v5.4');
             done();
         });
 
