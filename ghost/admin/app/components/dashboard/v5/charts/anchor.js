@@ -21,10 +21,10 @@ const DAYS_OPTIONS = [{
 }];
 
 const PAID_OPTIONS = [{
-    name: 'Total Paid Members',
-    value: 'paid-total'
+    name: 'MRR Total',
+    value: 'mrr'
 }, {
-    name: 'Paid Members By Day',
+    name: 'MRR Deltas',
     value: 'paid-breakdown'
 }];
 
@@ -87,11 +87,11 @@ export default class Anchor extends Component {
     }
 
     get chartShowingPaid() {
-        return (this.chartDisplay === 'paid-total' || this.chartDisplay === 'paid-breakdown');
+        return (this.chartDisplay === 'paid-total');
     }
 
     get chartShowingMrr() {
-        return (this.chartDisplay === 'mrr');
+        return (this.chartDisplay === 'mrr' || this.chartDisplay === 'paid-breakdown');
     }
 
     get loading() {
@@ -152,9 +152,9 @@ export default class Anchor extends Component {
 
     get chartTitle() {
         if (this.chartDisplay === 'paid-total' || this.chartDisplay === 'paid-breakdown') {
-            return 'Total paid members';
+            return 'Monthly revenue (MRR) Deltas';
         } else if (this.chartDisplay === 'mrr') {
-            return 'Monthly revenue (MRR)';
+            return 'Monthly revenue (MRR) Total';
         }
         return 'Total members';
     }
@@ -168,19 +168,15 @@ export default class Anchor extends Component {
     }
 
     get chartData() {
-        let stats = [];
-        let labels = [];
-        let data = [];
-        let newData;
-        let canceledData;
+        let returnable = {};
 
         if (this.chartDisplay === 'paid-breakdown') {
-            stats = this.dashboardStats.filledMemberCountStats;
-            labels = stats.map(stat => stat.date);
-            newData = stats.map(stat => stat.paidSubscribed);
-            canceledData = stats.map(stat => -stat.paidCanceled);
-
-            return {
+            let stats = this.dashboardStats.filledMemberCountStats;
+            let labels = stats.map(stat => stat.date);
+            let newData = stats.map(stat => stat.paidSubscribed);
+            let canceledData = stats.map(stat => -stat.paidCanceled);
+            
+            returnable = {
                 labels: labels,
                 datasets: [
                     {
@@ -188,58 +184,96 @@ export default class Anchor extends Component {
                         fill: false,
                         backgroundColor: '#BD96F6',
                         cubicInterpolationMode: 'monotone',
-                        barThickness: 18
+                        barThickness: 18,
+                        minBarLength: 3
                     },{
                         data: canceledData,
                         fill: false,
                         backgroundColor: '#FB76B4',
                         cubicInterpolationMode: 'monotone',
-                        barThickness: 18
+                        barThickness: 18,
+                        minBarLength: 3
                     }]
             };
         }
 
         if (this.chartDisplay === 'total') {
-            stats = this.dashboardStats.filledMemberCountStats;
-            labels = stats.map(stat => stat.date);
-            data = stats.map(stat => stat.paid + stat.free + stat.comped);
-        }
+            let stats = this.dashboardStats.filledMemberCountStats;
+            let labels = stats.map(stat => stat.date);
+            let data = stats.map(stat => stat.paid + stat.free + stat.comped);
+            let dataPaid = stats.map(stat => stat.paid);
 
-        if (this.chartDisplay === 'paid-total') {
-            stats = this.dashboardStats.filledMemberCountStats;
-            labels = stats.map(stat => stat.date);
-            data = stats.map(stat => stat.paid);
+            returnable = {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    tension: 0,
+                    cubicInterpolationMode: 'monotone',
+                    fill: true,
+                    fillColor: 'rgba(20, 184, 255, 0.07)',
+                    backgroundColor: 'rgba(20, 184, 255, 0.07)',
+                    pointRadius: 0,
+                    pointHitRadius: 10,
+                    pointBorderColor: '#14B8FF',
+                    pointBackgroundColor: '#14B8FF',
+                    pointHoverBackgroundColor: '#14B8FF',
+                    pointHoverBorderColor: '#14B8FF',
+                    pointHoverRadius: 0,
+                    borderColor: '#14B8FF',
+                    borderJoinStyle: 'miter'
+                }, {
+                    data: dataPaid,
+                    tension: 0,
+                    cubicInterpolationMode: 'monotone',
+                    fill: true,
+                    fillColor: 'rgba(189, 150, 246, 0.3)',
+                    backgroundColor: 'rgba(189, 150, 246, 0.3)',
+                    pointRadius: 0,
+                    pointHitRadius: 10,
+                    pointBorderColor: 'rgba(189, 150, 246, 1)',
+                    pointBackgroundColor: 'rgba(189, 150, 246, 1)',
+                    pointHoverBackgroundColor: 'rgba(189, 150, 246, 1)',
+                    pointHoverBorderColor: 'rgba(189, 150, 246, 1)',
+                    pointHoverRadius: 0,
+                    borderColor: 'rgba(189, 150, 246, 1)',
+                    borderJoinStyle: 'miter'
+                }]
+            };
         }
 
         if (this.chartDisplay === 'mrr') {
-            stats = this.dashboardStats.filledMrrStats;
-            labels = stats.map(stat => stat.date);
-            data = stats.map(stat => stat.mrr);
+            let stats = this.dashboardStats.filledMrrStats;
+            let labels = stats.map(stat => stat.date);
+            let data = stats.map(stat => stat.mrr);
+    
+            returnable = {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    tension: 0,
+                    cubicInterpolationMode: 'monotone',
+                    fill: true,
+                    fillColor: 'rgba(20, 184, 255, 0.07)',
+                    backgroundColor: 'rgba(20, 184, 255, 0.07)',
+                    pointRadius: 0,
+                    pointHitRadius: 10,
+                    pointBorderColor: '#14B8FF',
+                    pointBackgroundColor: '#14B8FF',
+                    pointHoverBackgroundColor: '#14B8FF',
+                    pointHoverBorderColor: '#14B8FF',
+                    pointHoverRadius: 0,
+                    borderColor: '#14B8FF',
+                    borderJoinStyle: 'miter'
+                }]
+            };
         }
 
-        return {
-            labels: labels,
-            datasets: [{
-                data: data,
-                tension: 0,
-                cubicInterpolationMode: 'monotone',
-                fill: true,
-                fillColor: 'rgba(20, 184, 255, 0.07)',
-                backgroundColor: 'rgba(20, 184, 255, 0.07)',
-                pointRadius: 0,
-                pointHitRadius: 10,
-                pointBorderColor: '#14B8FF',
-                pointBackgroundColor: '#14B8FF',
-                pointHoverBackgroundColor: '#14B8FF',
-                pointHoverBorderColor: '#14B8FF',
-                pointHoverRadius: 0,
-                borderColor: '#14B8FF',
-                borderJoinStyle: 'miter'
-            }]
-        };
+        return returnable;
     }
 
     get chartOptions() {
+        let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
+
         if (this.chartDisplay === 'paid-breakdown') {
             return {
                 responsive: true,
@@ -271,6 +305,17 @@ export default class Anchor extends Component {
                     titleFontColor: 'rgba(255, 255, 255, 0.7)',
                     titleMarginBottom: 3,
                     callbacks: {
+                        label: (tooltipItems, data) => {
+                            let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+                            if (tooltipItems.datasetIndex === 0) {
+                                return `New paid: ${valueText}`;
+                            }
+
+                            if (tooltipItems.datasetIndex === 1) {
+                                return `Canceled paid: ${Math.abs(valueText)}`;
+                            }
+                        },
                         title: (tooltipItems) => {
                             return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
                         }
@@ -300,13 +345,13 @@ export default class Anchor extends Component {
                         offset: true,
                         stacked: true,
                         gridLines: {
-                            color: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
+                            color: barColor,
                             borderDash: [4,4],
                             display: true,
                             drawBorder: false,
                             drawTicks: false,
                             zeroLineWidth: 1,
-                            zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
+                            zeroLineColor: barColor,
                             zeroLineBorderDash: [4,4]
                         },
                         ticks: {
@@ -363,16 +408,21 @@ export default class Anchor extends Component {
                 callbacks: {
                     label: (tooltipItems, data) => {
                         let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        let returnable = valueText;
 
                         if (this.chartDisplay === 'total') {
-                            return `Total members: ${valueText}`;
+                            if (tooltipItems.datasetIndex === 0) {
+                                returnable = `Total members: ${valueText}`;
+                            } else {
+                                returnable = `Paid members: ${valueText}`;
+                            }
                         }
-                        if (this.chartDisplay === 'paid-total') {
-                            return `Paid members: ${valueText}`;
-                        }
+
                         if (this.chartDisplay === 'mrr') {
-                            return `Monthly revenue (MRR): ${valueText}`;
+                            returnable = `Monthly revenue (MRR): $${valueText}`;
                         }
+
+                        return returnable;
                     },
                     title: (tooltipItems) => {
                         return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
@@ -387,16 +437,11 @@ export default class Anchor extends Component {
                         display: true,
                         drawBorder: false,
                         color: 'transparent',
-                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
+                        zeroLineColor: barColor,
                         zeroLineWidth: 1
                     },
                     ticks: {
-                        display: false,
-                        maxTicksLimit: 5,
-                        fontColor: '#7C8B9A',
-                        padding: 8,
-                        precision: 0,
-                        stepSize: 1
+                        display: false
                     }
                 }],
                 xAxes: [{
@@ -405,17 +450,18 @@ export default class Anchor extends Component {
                         align: 'start'
                     },
                     gridLines: {
-                        color: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
+                        color: barColor,
                         borderDash: [4,4],
                         display: true,
                         drawBorder: true,
                         drawTicks: false,
                         zeroLineWidth: 1,
-                        zeroLineColor: this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)',
+                        zeroLineColor: barColor,
                         zeroLineBorderDash: [4,4]
                     },
                     ticks: {
                         display: false,
+                        beginAtZero: true,
                         callback: function (value, index, values) {
                             if (index === 0) {
                                 document.getElementById('gh-dashboard5-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
@@ -432,7 +478,7 @@ export default class Anchor extends Component {
     }
 
     get chartHeight() {
-        return 275;
+        return 250;
     }
 
     get chartHeightSmall() {

@@ -7,17 +7,17 @@
 
             {{!-- Could these if else statements be cleaned up more? --}}
             {{#if this.areNewslettersEnabled}}
-                <Dashboard::V5::Charts::Engagement />
                 <Dashboard::V5::Charts::Email />
+                <Dashboard::V5::Charts::Engagement />
                 <Dashboard::V5::Charts::EmailOpenRate />
             {{else}}
                 <Dashboard::V5::Charts::Engagement />
             {{/if}}
     
         {{else}}
-            {{#if this.areNewslettersEnabled}}
-                <Dashboard::V5::Charts::Engagement />
+            {{#if this.areNewslettersEnabled}}  
                 <Dashboard::V5::Charts::Email />
+                <Dashboard::V5::Charts::Engagement />
                 <Dashboard::V5::Charts::EmailOpenRate />
             {{/if}}
         {{/if}}
