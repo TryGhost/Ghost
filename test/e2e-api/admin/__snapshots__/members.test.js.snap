@@ -2158,7 +2158,7 @@ Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Default Newsletter",
           "sender_email": null,
-          "sender_name": "Ghost",
+          "sender_name": null,
           "sender_reply_to": "newsletter",
           "show_badge": true,
           "show_feature_image": true,
@@ -2233,7 +2233,7 @@ exports[`Members API: with multiple newsletters Can add with default newsletters
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2126",
+  "content-length": "2123",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2481,7 +2481,7 @@ exports[`Members API: with multiple newsletters Can filter on newsletter slug 2:
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2200",
+  "content-length": "2197",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
