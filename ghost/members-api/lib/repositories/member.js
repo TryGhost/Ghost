@@ -197,9 +197,15 @@ module.exports = class MemberRepository {
             memberStatusData.status = 'comped';
         }
 
-        // Subscribe member to all newsletters by default
+        // Subscribe member to default newsletters
         if (!memberData.newsletters && this._labsService.isSet('multipleNewsletters')) {
-            const newsletters = await this._newslettersService.browse(_.pick(options, 'transacting'));
+            const browseOptions = _.pick(options, 'transacting');
+
+            // By default subscribe to all active auto opt-in newsletters with members visibility
+            //TODO: Will mostly need to be updated later for paid-only newsletters
+            browseOptions.filter = 'status:active+subscribe_on_signup:true+visibility:members';
+            const newsletters = await this._newslettersService.browse(browseOptions);
+
             memberData.newsletters = newsletters || [];
         }
 
@@ -712,9 +718,9 @@ module.exports = class MemberRepository {
             plan_amount: subscriptionPriceData.unit_amount,
             plan_currency: subscriptionPriceData.currency,
             mrr: this.getMRR({
-                interval: _.get(subscriptionPriceData, 'recurring.interval', ''), 
-                amount: subscriptionPriceData.unit_amount, 
-                status: subscription.status, 
+                interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
+                amount: subscriptionPriceData.unit_amount,
+                status: subscription.status,
                 canceled: subscription.cancel_at_period_end,
                 discount: subscription.discount
             })
