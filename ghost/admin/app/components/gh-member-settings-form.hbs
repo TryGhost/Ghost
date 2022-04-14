@@ -90,6 +90,14 @@
                 </div>
             </div>
 
+            {{#if (feature "multipleNewsletters")}}
+                <Member::NewsletterPreference
+                    @member={{this.member}}
+                    @newsletters={{this.newslettersList}}
+                    @setMemberNewsletters={{this.setMemberNewsletters}}
+                />
+            {{/if}}
+
             {{#if this.isStripeConnected}}
                 <h4 class="gh-main-section-header small bn">Subscriptions</h4>
 
