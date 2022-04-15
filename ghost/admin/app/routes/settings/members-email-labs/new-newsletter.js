@@ -13,9 +13,7 @@ export default class NewNewsletterRoute extends AdminRoute {
     newsletterModal = null;
 
     model() {
-        return this.store.createRecord('newsletter', {
-            senderName: this.settings.get('title')
-        });
+        return this.store.createRecord('newsletter');
     }
 
     setupController(controller, model) {
@@ -69,19 +67,7 @@ export default class NewNewsletterRoute extends AdminRoute {
     async confirmUnsavedChanges() {
         const newsletter = this.newsletterModal?._data.newsletter;
 
-        if (newsletter?.hasDirtyAttributes) {
-            // first, check that we're not dirty just because we set the default senderName
-            // TODO: remove when senderName is nullable
-            const changedAttributes = newsletter.changedAttributes();
-            const changedKeys = Object.keys(changedAttributes);
-            const onlyDefaultChanged = changedKeys.length === 1
-                && changedKeys[0] === 'senderName'
-                && newsletter.senderName === this.settings.get('title');
-
-            if (onlyDefaultChanged) {
-                return true;
-            }
-
+        if (newsletter && newsletter.hasDirtyAttributes && Object.keys(newsletter.changedAttributes()).length > 0) {
             this.confirmModal = this.modals.open(ConfirmUnsavedChangesModal)
                 .then((discardChanges) => {
                     if (discardChanges === true) {

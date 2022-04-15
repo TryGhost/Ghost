@@ -20,11 +20,6 @@ export default BaseValidator.create({
     },
 
     senderName(model) {
-        if (isBlank(model.senderName)) {
-            model.errors.add('senderName', 'Please enter a sender name.');
-            this.invalidate();
-        }
-
         if (!validator.isLength(model.senderName || '', 0, 191)) {
             model.errors.add('senderName', 'Cannot be longer than 191 characters.');
             this.invalidate();
