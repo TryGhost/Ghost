@@ -1,10 +1,17 @@
 const NewslettersService = require('./service.js');
+const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const mail = require('../mail');
+const models = require('../../models');
+const config = require('../../../shared/config');
+const settingsCache = require('../../../shared/settings-cache');
+const urlUtils = require('../../../shared/url-utils');
 
-/**
- * @returns {NewslettersService} instance of the NewslettersService
- */
-const getNewslettersServiceInstance = ({NewsletterModel}) => {
-    return new NewslettersService({NewsletterModel});
-};
-
-module.exports = getNewslettersServiceInstance;
+module.exports = new NewslettersService({
+    NewsletterModel: models.Newsletter,
+    config,
+    mail,
+    settingsCache,
+    SingleUseTokenModel: models.SingleUseToken,
+    SingleUseTokenProvider,
+    urlUtils
+});

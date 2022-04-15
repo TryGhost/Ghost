@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const getNewslettersServiceInstance = require('../../../../../core/server/services/newsletters');
+const newslettersService = require('../../../../../core/server/services/newsletters');
 const models = require('../../../../../core/server/models');
 
 describe('Newsletters Service', function () {
@@ -28,8 +28,7 @@ describe('Newsletters Service', function () {
             };
             sinon.stub(models.Newsletter, 'findAll').returns(Promise.resolve(findAllStub));
 
-            const NewslettersService = getNewslettersServiceInstance({NewsletterModel: models.Newsletter});
-            const newsletters = await NewslettersService.browse({});
+            const newsletters = await newslettersService.browse({});
             should(newsletters).deepEqual([
                 {
                     id: 'newsletter-1'
