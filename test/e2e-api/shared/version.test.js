@@ -54,6 +54,7 @@ describe('API Versioning', function () {
                 });
         });
 
+        // eslint-disable-next-line ghost/mocha/no-skipped-tests
         it.skip('responds with error requested version is AHEAD and CANNOT respond', async function () {
             // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
             await agentAdminAPI
@@ -69,6 +70,7 @@ describe('API Versioning', function () {
                 });
         });
 
+        // eslint-disable-next-line ghost/mocha/no-skipped-tests
         it.skip('responds with error when requested version is BEHIND and CANNOT respond', async function () {
             // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
             await agentAdminAPI
