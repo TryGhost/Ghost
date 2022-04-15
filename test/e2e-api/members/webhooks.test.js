@@ -1059,5 +1059,620 @@ describe('Members API', function () {
                     .expectStatus(200);
             });
         });
+
+        describe('Discounts', function () {
+            const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
+
+            /**
+             * Helper for repetitive tests. It tests the MRR and MRR delta given a discount + a price 
+             */
+            async function testDiscount({discount, interval, unit_amount, assert_mrr}) {
+                const customer_id = createStripeID('cust');
+                const subscription_id = createStripeID('sub');
+
+                discount.customer = customer_id;
+
+                set(subscription, {
+                    id: subscription_id,
+                    customer: customer_id,
+                    status: 'active',
+                    discount,
+                    items: {
+                        type: 'list',
+                        data: [{
+                            id: 'item_123',
+                            price: {
+                                id: 'price_123',
+                                product: 'product_123',
+                                active: true,
+                                nickname: interval,
+                                currency: 'usd',
+                                recurring: {
+                                    interval
+                                },
+                                unit_amount,
+                                type: 'recurring'
+                            }
+                        }]
+                    },
+                    start_date: beforeNow / 1000,
+                    current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                    cancel_at_period_end: false
+                });
+
+                set(customer, {
+                    id: customer_id,
+                    name: 'Test Member',
+                    email: `${customer_id}@email.com`,
+                    subscriptions: {
+                        type: 'list',
+                        data: [subscription]
+                    }
+                });
+
+                let webhookPayload = JSON.stringify({
+                    type: 'checkout.session.completed',
+                    data: {
+                        object: {
+                            mode: 'subscription',
+                            customer: customer.id,
+                            subscription: subscription.id,
+                            metadata: {}
+                        }
+                    }
+                });
+                
+                let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                    payload: webhookPayload,
+                    secret: process.env.WEBHOOK_SECRET
+                });
+
+                await membersAgent.post('/webhooks/stripe/')
+                    .body(webhookPayload)
+                    .header('stripe-signature', webhookSignature);
+
+                const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+                assert.equal(body.members.length, 1, 'The member was not created');
+                const member = body.members[0];
+
+                assert.equal(member.status, 'paid', 'The member should be "paid"');
+                assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+                // Check whether MRR and status has been set
+                await assertSubscription(member.subscriptions[0].id, {
+                    subscription_id: subscription.id,
+                    status: 'active',
+                    cancel_at_period_end: false,
+                    plan_amount: unit_amount,
+                    plan_interval: interval,
+                    plan_currency: 'usd',
+                    current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
+                    mrr: assert_mrr
+                });
+
+                await assertMemberEvents({
+                    eventType: 'MemberPaidSubscriptionEvent',
+                    memberId: member.id,
+                    asserts: [
+                        {
+                            mrr_delta: assert_mrr
+                        }
+                    ]
+                });
+
+                // Now cancel, and check if the discount is also applied for the cancellation
+                set(subscription, {
+                    ...subscription, 
+                    status: 'canceled'
+                });
+
+                // Send the webhook call to anounce the cancelation
+                webhookPayload = JSON.stringify({
+                    type: 'customer.subscription.updated',
+                    data: {
+                        object: subscription
+                    }
+                });
+
+                webhookSignature = stripe.webhooks.generateTestHeaderString({
+                    payload: webhookPayload,
+                    secret: process.env.WEBHOOK_SECRET
+                });
+
+                await membersAgent.post('/webhooks/stripe/')
+                    .body(webhookPayload)
+                    .header('stripe-signature', webhookSignature)
+                    .expectStatus(200);
+
+                // Check status has been updated to 'free' after cancelling
+                const {body: body2} = await adminAgent.get('/members/' + member.id + '/');
+                assert.equal(body2.members.length, 1, 'The member does not exist');
+                const updatedMember = body2.members[0];
+                assert.equal(updatedMember.status, 'free');
+                assert.equal(updatedMember.products.length, 0, 'The member should have no products');
+                should(updatedMember.subscriptions).match([
+                    {
+                        status: 'canceled'
+                    }
+                ]);
+
+                // Check whether MRR and status has been set
+                await assertSubscription(member.subscriptions[0].id, {
+                    subscription_id: subscription.id,
+                    status: 'canceled',
+                    cancel_at_period_end: false,
+                    plan_amount: unit_amount,
+                    plan_interval: interval,
+                    plan_currency: 'usd',
+                    mrr: 0
+                });
+
+                await assertMemberEvents({
+                    eventType: 'MemberPaidSubscriptionEvent',
+                    memberId: updatedMember.id,
+                    asserts: [
+                        {
+                            type: 'created',
+                            mrr_delta: assert_mrr
+                        },
+                        {
+                            type: 'expired',
+                            mrr_delta: -assert_mrr
+                        }
+                    ]
+                });
+            }
+
+            describe('With the dashboardV5 flag', function () {
+                beforeEach(function () {
+                    mockManager.mockLabsEnabled('dashboardV5');
+                });
+
+                it('Correctly includes monthly forever percentage discounts in MRR', async function () {    
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'Z4OV52SU',
+                            object: 'coupon',
+                            amount_off: null,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'forever',
+                            duration_in_months: null,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '50% off',
+                            percent_off: 50,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: null,
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };    
+                    await testDiscount({
+                        discount,
+                        unit_amount: 500,
+                        interval: 'month',
+                        assert_mrr: 250
+                    });
+                });
+
+                it('Correctly includes yearly forever percentage discounts in MRR', async function () {    
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'Z4OV52SU',
+                            object: 'coupon',
+                            amount_off: null,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'forever',
+                            duration_in_months: null,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '50% off',
+                            percent_off: 50,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: null,
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };    
+                    await testDiscount({
+                        discount,
+                        unit_amount: 1200,
+                        interval: 'year',
+                        assert_mrr: 50
+                    });
+                });
+
+                it('Correctly includes monthly forever amount off discounts in MRR', async function () {    
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'Z4OV52SU',
+                            object: 'coupon',
+                            amount_off: 1,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'forever',
+                            duration_in_months: null,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '1 cent off',
+                            percent_off: null,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: null,
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };    
+                    await testDiscount({
+                        discount,
+                        unit_amount: 500,
+                        interval: 'month',
+                        assert_mrr: 499
+                    });
+                });
+
+                it('Correctly includes yearly forever amount off discounts in MRR', async function () {    
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'Z4OV52SU',
+                            object: 'coupon',
+                            amount_off: 60,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'forever',
+                            duration_in_months: null,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '60 cent off, yearly',
+                            percent_off: null,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: null,
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };    
+                    await testDiscount({
+                        discount,
+                        unit_amount: 1200,
+                        interval: 'year',
+                        assert_mrr: 95
+                    });
+                });
+
+                it('Does not include repeating discounts in MRR', async function () {    
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'Z4OV52SU',
+                            object: 'coupon',
+                            amount_off: null,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'repeating',
+                            duration_in_months: 3,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '50% off',
+                            percent_off: 50,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31 * 3),
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };    
+                    await testDiscount({
+                        discount,
+                        unit_amount: 500,
+                        interval: 'month',
+                        assert_mrr: 500
+                    });
+                });
+
+                it('Also supports adding a discount to an existing subscription', async function () {
+                    const interval = 'month';
+                    const unit_amount = 500;
+                    const mrr_without = 500;
+                    const mrr_with = 400;
+                    const mrr_difference = 100;
+
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'Z4OV52SU',
+                            object: 'coupon',
+                            amount_off: null,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'forever',
+                            duration_in_months: null,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '20% off',
+                            percent_off: 20,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: null,
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };
+
+                    const customer_id = createStripeID('cust');
+                    const subscription_id = createStripeID('sub');
+
+                    discount.customer = customer_id;
+
+                    set(subscription, {
+                        id: subscription_id,
+                        customer: customer_id,
+                        status: 'active',
+                        discount: null,
+                        items: {
+                            type: 'list',
+                            data: [{
+                                id: 'item_123',
+                                price: {
+                                    id: 'price_123',
+                                    product: 'product_123',
+                                    active: true,
+                                    nickname: interval,
+                                    currency: 'usd',
+                                    recurring: {
+                                        interval
+                                    },
+                                    unit_amount,
+                                    type: 'recurring'
+                                }
+                            }]
+                        },
+                        start_date: beforeNow / 1000,
+                        current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                        cancel_at_period_end: false
+                    });
+
+                    set(customer, {
+                        id: customer_id,
+                        name: 'Test Member',
+                        email: `${customer_id}@email.com`,
+                        subscriptions: {
+                            type: 'list',
+                            data: [subscription]
+                        }
+                    });
+
+                    let webhookPayload = JSON.stringify({
+                        type: 'checkout.session.completed',
+                        data: {
+                            object: {
+                                mode: 'subscription',
+                                customer: customer.id,
+                                subscription: subscription.id,
+                                metadata: {}
+                            }
+                        }
+                    });
+                    
+                    let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                        payload: webhookPayload,
+                        secret: process.env.WEBHOOK_SECRET
+                    });
+
+                    await membersAgent.post('/webhooks/stripe/')
+                        .body(webhookPayload)
+                        .header('stripe-signature', webhookSignature);
+
+                    const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+                    assert.equal(body.members.length, 1, 'The member was not created');
+                    const member = body.members[0];
+
+                    assert.equal(member.status, 'paid', 'The member should be "paid"');
+                    assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+                    // Check whether MRR and status has been set
+                    await assertSubscription(member.subscriptions[0].id, {
+                        subscription_id: subscription.id,
+                        status: 'active',
+                        cancel_at_period_end: false,
+                        plan_amount: unit_amount,
+                        plan_interval: interval,
+                        plan_currency: 'usd',
+                        current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
+                        mrr: mrr_without
+                    });
+
+                    await assertMemberEvents({
+                        eventType: 'MemberPaidSubscriptionEvent',
+                        memberId: member.id,
+                        asserts: [
+                            {
+                                mrr_delta: mrr_without
+                            }
+                        ]
+                    });
+
+                    // Now add the discount
+                    set(subscription, {
+                        ...subscription, 
+                        discount
+                    });
+
+                    // Send the webhook call to anounce the cancelation
+                    webhookPayload = JSON.stringify({
+                        type: 'customer.subscription.updated',
+                        data: {
+                            object: subscription
+                        }
+                    });
+
+                    webhookSignature = stripe.webhooks.generateTestHeaderString({
+                        payload: webhookPayload,
+                        secret: process.env.WEBHOOK_SECRET
+                    });
+
+                    await membersAgent.post('/webhooks/stripe/')
+                        .body(webhookPayload)
+                        .header('stripe-signature', webhookSignature)
+                        .expectStatus(200);
+
+                    // Check status has been updated to 'free' after cancelling
+                    const {body: body2} = await adminAgent.get('/members/' + member.id + '/');
+                    const updatedMember = body2.members[0];
+
+                    // Check whether MRR and status has been set
+                    await assertSubscription(updatedMember.subscriptions[0].id, {
+                        subscription_id: subscription.id,
+                        status: 'active',
+                        cancel_at_period_end: false,
+                        plan_amount: unit_amount,
+                        plan_interval: interval,
+                        plan_currency: 'usd',
+                        mrr: mrr_with
+                    });
+
+                    await assertMemberEvents({
+                        eventType: 'MemberPaidSubscriptionEvent',
+                        memberId: updatedMember.id,
+                        asserts: [
+                            {
+                                type: 'created',
+                                mrr_delta: mrr_without
+                            },
+                            {
+                                type: 'updated',
+                                mrr_delta: -mrr_difference
+                            }
+                        ]
+                    });
+                });
+            });
+
+            describe('Without the dashboardV5 flag', function () {
+                it('Does not include forever percentage discounts in MRR', async function () {    
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'Z4OV52SU',
+                            object: 'coupon',
+                            amount_off: null,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'forever',
+                            duration_in_months: null,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '50% off',
+                            percent_off: 50,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: null,
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };    
+                    await testDiscount({
+                        discount,
+                        unit_amount: 500,
+                        interval: 'month',
+                        assert_mrr: 500
+                    });
+                });
+
+                it('Does not include forever amount off discounts in MRR', async function () {    
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'Z4OV52SU',
+                            object: 'coupon',
+                            amount_off: 1,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'forever',
+                            duration_in_months: null,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '1 cent off',
+                            percent_off: null,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: null,
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };    
+                    await testDiscount({
+                        discount,
+                        unit_amount: 500,
+                        interval: 'month',
+                        assert_mrr: 500
+                    });
+                });
+            });
+        });
     });
 });
