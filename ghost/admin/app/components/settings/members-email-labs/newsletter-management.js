@@ -35,7 +35,7 @@ export default class NewsletterManagementComponent extends Component {
     }
 
     get displayingDefault() {
-        return this.statusFilter === 'active' && this.activeNewsletters.length === 1;
+        return this.statusFilter === 'active' && this.filteredNewsletters.length === 1;
     }
 
     @action

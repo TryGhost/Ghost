@@ -16,7 +16,7 @@ export default function (server) {
         slug: 'site-title',
         description: 'Default newsletter created during setup',
 
-        senderName: 'Site title',
+        senderName: null,
         senderEmail: null,
         senderReplyTo: 'newsletter',
 

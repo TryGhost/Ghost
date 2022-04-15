@@ -33,6 +33,7 @@
                     type="text"
                     class="gh-input miw-100 form-text"
                     value={{@newsletter.senderName}}
+                    placeholder={{this.settings.title}}
                     {{on "input" (fn this.onInput "senderName")}}
                 />
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="senderName" />
