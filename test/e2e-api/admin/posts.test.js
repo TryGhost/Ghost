@@ -533,7 +533,11 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).not.eql(null);
+        const defaultNewsletter = await models.Newsletter.findOne({
+            sort_order: 0
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(defaultNewsletter.get('id'));
     });
 
     it('Can\'t change the newsletter_id once it has been set', async function () {
