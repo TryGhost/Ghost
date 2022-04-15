@@ -17,6 +17,7 @@ const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const labs = require('../../../shared/labs');
 const {getSegmentsFromHtml} = require('./segment-parser');
+const labsService = require('../../../shared/labs');
 
 // Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
 const events = require('../../lib/common/events');
@@ -390,6 +391,11 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
 
     if (memberSegment) {
         filterOptions.filter = `${filterOptions.filter}+${memberSegment}`;
+    }
+
+    if (labsService.isSet('multipleNewsletters') && emailModel.get('newsletter_id')) {
+        const newsletter = await emailModel.related('newsletter').fetch();
+        filterOptions.filter = `${filterOptions.filter}+newsletters:${newsletter.slug}`;
     }
 
     const startRetrieve = Date.now();
