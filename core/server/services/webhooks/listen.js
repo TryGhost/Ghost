@@ -1,7 +1,9 @@
 const _ = require('lodash');
 const limitService = require('../../services/limits');
 const logging = require('@tryghost/logging');
-const trigger = require('./trigger');
+const WebhookTrigger = require('./trigger');
+const models = require('../../models');
+const payload = require('./payload');
 
 // The webhook system is fundamentally built on top of our model event system
 const events = require('../../lib/common/events');
@@ -55,6 +57,7 @@ const listen = async () => {
         }
     }
 
+    const webhookTrigger = new WebhookTrigger({models, payload});
     _.each(WEBHOOKS, (event) => {
         events.on(event, (model, options) => {
             // CASE: avoid triggering webhooks when importing
@@ -62,7 +65,7 @@ const listen = async () => {
                 return;
             }
 
-            trigger(event, model);
+            webhookTrigger.trigger(event, model);
         });
     });
 };
