@@ -1,7 +1,7 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag} = matchers;
 
-describe.only('API Versioning', function () {
+describe('API Versioning', function () {
     describe('Admin API', function () {
         let agentAdminAPI;
 
