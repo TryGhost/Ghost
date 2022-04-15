@@ -140,5 +140,8 @@
     },
     "twitter": {
         "privateReadOnlyToken": null
+    },
+    "gravatar": {
+        "url": "https://gravatar.com/avatar/{hash}?s={size}&d=blank"
     }
 }
