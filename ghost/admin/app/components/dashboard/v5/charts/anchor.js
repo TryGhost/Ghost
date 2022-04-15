@@ -23,10 +23,10 @@ const DAYS_OPTIONS = [{
 }];
 
 const PAID_OPTIONS = [{
-    name: 'MRR Total',
-    value: 'mrr'
+    name: 'Total',
+    value: 'paid-total'
 }, {
-    name: 'MRR Deltas',
+    name: 'By Day',
     value: 'paid-breakdown'
 }];
 
@@ -89,11 +89,11 @@ export default class Anchor extends Component {
     }
 
     get chartShowingPaid() {
-        return (this.chartDisplay === 'paid-total');
+        return (this.chartDisplay === 'paid-total' || this.chartDisplay === 'paid-breakdown');
     }
 
     get chartShowingMrr() {
-        return (this.chartDisplay === 'mrr' || this.chartDisplay === 'paid-breakdown');
+        return (this.chartDisplay === 'mrr');
     }
 
     get loading() {
@@ -156,9 +156,9 @@ export default class Anchor extends Component {
         if (this.chartDisplay === 'paid-total') {
             return 'Total paid members';
         } else if (this.chartDisplay === 'paid-breakdown') {
-            return 'MRR Deltas';
+            return 'Paid members by day';
         } else if (this.chartDisplay === 'mrr') {
-            return 'MRR Total';
+            return 'Monthly revenue (MRR)';
         }
         return 'Total members';
     }
