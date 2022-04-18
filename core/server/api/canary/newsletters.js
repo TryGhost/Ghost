@@ -76,7 +76,7 @@ module.exports = {
         }
     },
 
-    verifyEmailUpdate: {
+    verifyPropertyUpdate: {
         permissions: {
             method: 'edit'
         },
@@ -84,7 +84,7 @@ module.exports = {
             'token'
         ],
         async query(frame) {
-            return newslettersService.verifyAndUpdateEmail(frame.data.token);
+            return newslettersService.verifyPropertyUpdate(frame.data.token);
         }
     }
 };

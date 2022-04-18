@@ -169,15 +169,15 @@ class NewslettersService {
             }
         };
 
-        return this.magicLinkService.sendMagicLink({email, tokenData: {id, email, property}, subject: email, property});
+        return this.magicLinkService.sendMagicLink({email, tokenData: {id, property, value: email}});
     }
 
-    async verifyAndUpdateEmail(token) {
+    async verifyPropertyUpdate(token) {
         const data = await this.magicLinkService.getDataFromToken(token);
-        const {id, email, property} = data;
+        const {id, property, value} = data;
 
         const attrs = {};
-        attrs[property] = email;
+        attrs[property] = value;
 
         return this.NewsletterModel.edit(attrs, {id});
     }
