@@ -884,8 +884,10 @@
 /* Email newsletter LABS
 /* ---------------------------------------------------------- */
 
-.gh-newsletters .intro {
-    margin-bottom: 2rem;
+.gh-newsletters .gh-dropdown-archived {
+    color: var(--darkgrey);
+    font-size: 1.35rem;
+    font-weight: 400;
 }
 
 .gh-newsletters .gh-expandable-title {
@@ -897,10 +899,10 @@
 }
 
 .gh-newsletters .gh-expandable-description {
-    margin: 0;
+    margin: 0 0 1.8rem;
     padding: 0;
-    color: var(--darkgrey);
-    font-size: 1.4rem;
+    color: var(--midgrey);
+    font-size: 1.3rem;
     font-weight: 400;
 }
 
@@ -1023,7 +1025,12 @@
     margin-right: 0;
 }
 
-.gh-newsletter-actions-menu {
+.gh-newsletter-card-block .dropdown {
+    z-index: inherit;
+}
+
+.gh-newsletter-card-block .gh-newsletter-actions-menu {
+    z-index: 9999;
     top: calc(100% + 6px);
     left: auto;
     right: 0;
