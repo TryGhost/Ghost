@@ -9,6 +9,8 @@ const newsletterSnapshot = {
 let agent;
 
 describe('Newsletters API', function () {
+    let mailMocks;
+
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters');
@@ -16,7 +18,7 @@ describe('Newsletters API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockMail();
+        mailMocks = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -192,5 +194,38 @@ describe('Newsletters API', function () {
             subject: 'Verify email address',
             to: 'updated@example.com'
         });
+    });
+
+    it('Can verify restricted property updates', async function () {
+        const cheerio = require('cheerio');
+
+        const res = await agent.get('newsletters?limit=1')
+            .expectStatus(200);
+
+        const id = res.body.newsletters[0].id;
+
+        await agent.put(`newsletters/${id}`)
+            .body({
+                newsletters: [{
+                    name: 'Updated newsletter name',
+                    sender_email: 'verify@example.com'
+                }]
+            })
+            .expectStatus(200);
+
+        const mailHtml = mailMocks.getCall(0).args[0].html;
+        const $mailHtml = cheerio.load(mailHtml);
+
+        const verifyUrl = new URL($mailHtml('[data-test-verify-link]').attr('href'));
+        const token = (new URL(verifyUrl.hash.replace('#', ''), 'http://example.com')).searchParams.get('verifyEmail');
+
+        await agent.put(`newsletters/verifications`)
+            .body({
+                token
+            })
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+            });
     });
 });
