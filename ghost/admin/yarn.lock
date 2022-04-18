@@ -2048,12 +2048,7 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/nql-lang@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.3.0.tgz#47e3658e46fc89222095d6cfa1927291901b2e73"
-  integrity sha512-rjE0r0Fi5TCjFOL0p8wllbSb42YSgLqEXnS5AgxvhOgjMjHYkFfDX7SWN6eGFt2HeW8B15LxvG2x4eFWNoB1QA==
-
-"@tryghost/nql-lang@^0.3.1":
+"@tryghost/nql-lang@0.3.1", "@tryghost/nql-lang@^0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.3.1.tgz#01dc1b124e820927130e7c1f5e48db205959c290"
   integrity sha512-S/5cpAhyeNzMfaEvaRKnCy6uMABd8FGTwIoZcZmeAeLBigxs7LO+Q2vQexufu6TxOud+YhMT7UQX3vy076L5HQ==
