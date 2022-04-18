@@ -1993,10 +1993,10 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/kg-clean-basic-html@2.2.9", "@tryghost/kg-clean-basic-html@^2.2.9":
-  version "2.2.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.9.tgz#46986ef646f4466f9c32fafdc650c6b4fdfef0b3"
-  integrity sha512-E1AkMBrpkXoPgqLlqkfqONqo9c11947K3ev5R5MIxGeCTDl2Ef+9kuRGXDzzsGGFeV5a+eUsOIthfsklrpNVJA==
+"@tryghost/kg-clean-basic-html@2.2.10", "@tryghost/kg-clean-basic-html@^2.2.9":
+  version "2.2.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.10.tgz#af51a7f7c1ba993b6975e0d2b59298c45480ed1c"
+  integrity sha512-WHAtCOGO4ePSIDLi0u8oKquJPJalQbzOX4GkHD6ADH3cFirUK9JbVXfzaN96in9/58TE+YzPsw6aw0hHB/FUCw==
 
 "@tryghost/kg-parser-plugins@2.11.5":
   version "2.11.5"
