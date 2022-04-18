@@ -1375,7 +1375,7 @@ describe('Members API: with multiple newsletters', function () {
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
                     labels: anyArray,
-                    newsletters: Array(3).fill({
+                    newsletters: Array(2).fill({
                         id: matchers.anyObjectId
                     })
                 }]
@@ -1388,7 +1388,7 @@ describe('Members API: with multiple newsletters', function () {
 
     it('Can filter on newsletter slug', async function () {
         await agent
-            .get('/members/?filter=newsletters:daily-newsletter')
+            .get('/members/?filter=newsletters:weekly-newsletter')
             .expectStatus(200)
             .matchBodySnapshot({
                 members: new Array(1).fill(memberMatcherShallowIncludesForNewsletters)
