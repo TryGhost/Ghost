@@ -1547,10 +1547,10 @@
   dependencies:
     "@fortawesome/fontawesome-common-types" "^0.2.36"
 
-"@glimmer/component@1.0.4", "@glimmer/component@^1.0.2", "@glimmer/component@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/component/-/component-1.0.4.tgz#1c85a5181615a6647f6acfaaed68e28ad7e9626e"
-  integrity sha512-sS4N8wtcKfYdUJ6O3m8nbTut6NjErdz94Ap8VB1ekcg4WSD+7sI7Nmv6kt2rdPoe363nUdjUbRBzHNWhLzraBw==
+"@glimmer/component@1.1.2", "@glimmer/component@^1.0.2", "@glimmer/component@^1.0.4":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/component/-/component-1.1.2.tgz#892ec0c9f0b6b3e41c112be502fde073cf24d17c"
+  integrity sha512-XyAsEEa4kWOPy+gIdMjJ8XlzA3qrGH55ZDv6nA16ibalCR17k74BI0CztxuRds+Rm6CtbUVgheCVlcCULuqD7A==
   dependencies:
     "@glimmer/di" "^0.1.9"
     "@glimmer/env" "^0.1.7"
