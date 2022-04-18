@@ -53,7 +53,6 @@ class NewslettersService {
             getSigninURL(token) {
                 const adminUrl = urlUtils.urlFor('admin', true);
                 const signinURL = new URL(adminUrl);
-                signinURL.pathname = path.join(signinURL.pathname, 'ghost/');
                 signinURL.hash = `/settings/members-email-labs/?verifyEmail=${token}`;
                 return signinURL.href;
             }
