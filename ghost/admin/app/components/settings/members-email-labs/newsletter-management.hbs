@@ -27,7 +27,7 @@
                 <div class="gh-main-content">... loading</div>
             {{else}}
                 {{#unless this.displayingDefault}}
-                    {{#if (eq newsletter.status "archived")}}
+                    {{#if (eq this.statusFilter "archived")}}
                     <h4 class="gh-expandable-title">Archived newsletters</h4>
                     <p class="gh-expandable-description">Reactivate newsletters to offer them to members.</p>
                     {{else}}
