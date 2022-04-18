@@ -137,7 +137,7 @@ class NewslettersService {
             }
 
             newsletter.meta = {
-                sent_email_verification: [emailsToVerify.map(v => v.property)]
+                sent_email_verification: emailsToVerify.map(v => v.property)
             };
         }
 
