@@ -552,6 +552,11 @@ const FrameStyles = `
     font-weight: 600;
 }
 
+.gh-portal-list-detail.gh-portal-list-big h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
 .gh-portal-list-detail p {
     font-size: 1.45rem;
     letter-spacing: 0.3px;
@@ -560,6 +565,10 @@ const FrameStyles = `
     margin: 5px 8px 0 0;
     color: var(--grey6);
     word-break: break-all;
+}
+
+.gh-portal-list-detail.gh-portal-list-big p {
+    font-size: 1.6rem;
 }
 
 .gh-portal-list-detail .old-price {
