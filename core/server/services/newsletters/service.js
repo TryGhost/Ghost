@@ -12,7 +12,7 @@ class NewslettersService {
      * @param {Object} options
      * @param {Object} options.NewsletterModel
      */
-    constructor({NewsletterModel, config, mail, settingsCache, SingleUseTokenModel, SingleUseTokenProvider, urlUtils}) {
+    constructor({NewsletterModel, mail, settingsCache, SingleUseTokenModel, SingleUseTokenProvider, urlUtils}) {
         this.NewsletterModel = NewsletterModel;
         this.settingsCache = settingsCache;
         this.urlUtils = urlUtils;
