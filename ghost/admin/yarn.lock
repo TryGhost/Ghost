@@ -2014,15 +2014,15 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/members-csv@1.2.8":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.8.tgz#33189fbdc011edb9a0123b08db830c701518ea45"
-  integrity sha512-cFt7kilHW+z/C+FtuN+BGlD7Cza/umV8rjvyK6EcWi4KORPYKt5vFcqim0g3rllIJjJhpteeZYNyKNKvhWZRXQ==
+"@tryghost/members-csv@1.2.10":
+  version "1.2.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.10.tgz#b69b41bc6eaacb0f6b53f959cdf8dc8ec5d156b3"
+  integrity sha512-D7OVxkcOQ7/bD0f/0XGd4yXEc8+R8HVfxzRckov7DERXNlfa0EBdXMCijWKwfIbGYC9BJLZxykpaCtE7krN5Ww==
   dependencies:
     bluebird "^3.7.2"
     fs-extra "^10.0.0"
     lodash "^4.17.21"
-    papaparse "5.3.2"
+    papaparse "^5.3.2"
     pump "^3.0.0"
 
 "@tryghost/mobiledoc-kit@0.12.5-ghost.1":
@@ -11930,7 +11930,7 @@ pako@~1.0.5:
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
 
-papaparse@5.3.2:
+papaparse@5.3.2, papaparse@^5.3.2:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.2.tgz#d1abed498a0ee299f103130a6109720404fbd467"
   integrity sha512-6dNZu0Ki+gyV0eBsFKJhYr+MdQYAzFUGlBMNj3GNrmHxmz1lfRa24CjFObPXtjcetlOv5Ad299MhIK0znp3afw==
