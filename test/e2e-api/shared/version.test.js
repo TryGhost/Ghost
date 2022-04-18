@@ -54,8 +54,7 @@ describe('API Versioning', function () {
                 });
         });
 
-        // eslint-disable-next-line ghost/mocha/no-skipped-tests
-        it.skip('responds with error requested version is AHEAD and CANNOT respond', async function () {
+        it('responds with error requested version is AHEAD and CANNOT respond', async function () {
             // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
             await agentAdminAPI
                 .get('removed_endpoint')
@@ -65,13 +64,13 @@ describe('API Versioning', function () {
                 })
                 .matchBodySnapshot({
                     errors: [{
+                        context: stringMatching(/Provided client version v999\.1 is ahead of current Ghost instance version v\d+\.\d+/),
                         id: anyErrorId
                     }]
                 });
         });
 
-        // eslint-disable-next-line ghost/mocha/no-skipped-tests
-        it.skip('responds with error when requested version is BEHIND and CANNOT respond', async function () {
+        it('responds with error when requested version is BEHIND and CANNOT respond', async function () {
             // CASE 2: If accept-version is behind, send a 406 & tell them the client needs updating.
             await agentAdminAPI
                 .get('removed_endpoint')
@@ -81,6 +80,7 @@ describe('API Versioning', function () {
                 })
                 .matchBodySnapshot({
                     errors: [{
+                        context: stringMatching(/Provided client version v3.1 is outdated and is behind current Ghost version v\d+\.\d+/),
                         id: anyErrorId
                     }]
                 });
