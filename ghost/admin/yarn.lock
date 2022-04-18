@@ -7160,10 +7160,10 @@ ember-router-generator@^2.0.0:
     "@babel/traverse" "^7.4.5"
     recast "^0.18.1"
 
-ember-simple-auth@4.2.1:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-4.2.1.tgz#6c0e837d30fb00fd90a2efdc2fe04489f478c076"
-  integrity sha512-ausab68MGevJ4/eySjS7oNRDZmbo8AjLBAK+J2zURc/vJWsUxKzQFf0E1MURwGWfhMJrTLIUrn57sHu2sFOhhg==
+ember-simple-auth@4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-4.2.2.tgz#5c1de1bb13a75e519e512fb82cba7cc1e277b07c"
+  integrity sha512-D7W6OREUvf5OzeB0ePptSNBilccchRYukH4f7mkbL6WT+z6VEqRRAIaQuBZdFM6lrcSFGmzctINLZJwsIpI3wg==
   dependencies:
     base-64 "^0.1.0"
     broccoli-file-creator "^2.1.1"
