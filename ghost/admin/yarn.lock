@@ -1986,10 +1986,10 @@
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@tryghost/helpers@1.1.63":
-  version "1.1.63"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.63.tgz#7f9ba6d734f9a8d63e036b030fb034a9c76c6234"
-  integrity sha512-BTePojAzyF9sgzDrJYnGoX5tLjYfuYuvsQtat1epJdOOWTOU7rNgJi+BLwjY+cv6XWMODoZRLmf+jV3CWgjn+g==
+"@tryghost/helpers@1.1.64":
+  version "1.1.64"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.64.tgz#52a4762f72b7c400cccbbf1058f81a96ae4792e1"
+  integrity sha512-Xxw3jDZ6vQWTqF801YuMO3gdvb6ezTogg0lsYDAVma1lseWeufIvmq43FHxhFRdqA+V5dloM8LML7NLmfS6T5Q==
   dependencies:
     lodash-es "^4.17.11"
 
