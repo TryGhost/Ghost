@@ -50,7 +50,7 @@ class NewslettersService {
             getHTML(url, type, email) {
                 return verifyEmailTemplate({url, email});
             },
-            getSigninURL(token, type) {
+            getSigninURL(token) {
                 const adminUrl = urlUtils.urlFor('admin', true);
                 const signinURL = new URL(adminUrl);
                 signinURL.pathname = path.join(signinURL.pathname, 'ghost/');
