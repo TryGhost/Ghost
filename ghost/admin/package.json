@@ -75,7 +75,7 @@
     "ember-cli-chart": "3.7.2",
     "ember-cli-code-coverage": "1.0.3",
     "ember-cli-dependency-checker": "3.3.1",
-    "ember-cli-deprecation-workflow": "1.0.1",
+    "ember-cli-deprecation-workflow": "2.1.0",
     "ember-cli-eslint": "5.1.0",
     "ember-cli-htmlbars": "6.0.1",
     "ember-cli-inject-live-reload": "2.1.0",
