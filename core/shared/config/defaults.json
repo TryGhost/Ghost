@@ -142,6 +142,6 @@
         "privateReadOnlyToken": null
     },
     "gravatar": {
-        "url": "https://gravatar.com/avatar/{hash}?s={size}&d=blank"
+        "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
     }
 }
