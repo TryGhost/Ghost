@@ -1,11 +1,13 @@
 const should = require('should');
 const sinon = require('sinon');
-const newslettersService = require('../../../../../core/server/services/newsletters');
 const models = require('../../../../../core/server/models');
 
 describe('Newsletters Service', function () {
+    let newslettersService;
+
     before(function () {
         models.init();
+        newslettersService = require('../../../../../core/server/services/newsletters');
     });
 
     afterEach(function () {
