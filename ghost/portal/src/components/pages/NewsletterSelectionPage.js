@@ -15,7 +15,6 @@ function AccountHeader() {
             <BackButton brandColor={brandColor} hidden={!lastPage} onClick={(e) => {
                 onAction('back');
             }} />
-            <h3 className='gh-portal-main-title'>Email preferences</h3>
         </header>
     );
 }
@@ -26,7 +25,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     });
     return (
         <section>
-            <div className='gh-portal-list-detail'>
+            <div className='gh-portal-list-detail gh-portal-list-big'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter.description}</p>
             </div>
@@ -89,6 +88,7 @@ export default function NewsletterSelectionPage() {
         <div className='gh-portal-content with-footer'>
             <CloseButton />
             <AccountHeader />
+            <p className="gh-portal-text-center">Pick which emails you want to receive with your <strong>TIER NAME</strong> membership.</p>
             <div className='gh-portal-section'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
