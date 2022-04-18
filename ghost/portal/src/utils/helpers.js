@@ -375,8 +375,11 @@ export function hasFreeProductPrice({site}) {
 
 export function getSiteNewsletters({site}) {
     const {
-        newsletters
+        newsletters = []
     } = site || {};
+    newsletters?.sort((a, b) => {
+        return a.sort_order - b.sort_order;
+    });
     return newsletters;
 }
 
