@@ -1,4 +1,3 @@
-const path = require('path');
 const _ = require('lodash');
 const MagicLink = require('@tryghost/magic-link');
 const logging = require('@tryghost/logging');
