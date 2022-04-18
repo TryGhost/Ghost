@@ -10,7 +10,7 @@
                         @searchEnabled={{false}}
                         @onChange={{this.changeStatusFilter}}
                         @triggerComponent="gh-power-select/trigger"
-                        @triggerClass="ember-power-select-inline"
+                        @triggerClass="gh-dropdown-archived ember-power-select-inline"
                         @dropdownClass="gh-contentfilter-menu-dropdown"
                         @matchTriggerWidth={{false}}
                         as |status|
@@ -26,6 +26,15 @@
             {{#if this.loadNewslettersTask.isRunning}}
                 <div class="gh-main-content">... loading</div>
             {{else}}
+                {{#unless this.displayingDefault}}
+                    {{#if (eq newsletter.status "archived")}}
+                    <h4 class="gh-expandable-title">Archived newsletters</h4>
+                    <p class="gh-expandable-description">Reactivate newsletters to offer them to members.</p>
+                    {{else}}
+                        <h4 class="gh-expandable-title">Active newsletters</h4>
+                        <p class="gh-expandable-description">Drag to set order viewed by members at signup.</p>
+                    {{/if}}
+                {{/unless}}
                 <SortableObjects
                     @sortableObjectList={{this.filteredNewsletters}}
                     @useSwap={{false}}
@@ -90,7 +99,7 @@
                                             {{#if (eq newsletter.status "archived")}}
                                                 <li>
                                                     <button class="mr2" type="button" {{on "click" (perform this.unarchiveNewsletterTask newsletter)}}>
-                                                        <span>Un-archive</span>
+                                                        <span>Reactivate</span>
                                                     </button>
                                                 </li>
                                             {{/if}}

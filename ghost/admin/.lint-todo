@@ -1104,3 +1104,4 @@ add|ember-template-lint|no-action|4|11|4|11|831dd12209c22868d0614c65417281fda799
 add|ember-template-lint|require-valid-alt-text|3|44|3|44|a7f0566c430150bae4153e0dfb489a218bdeb8a4|1649203200000|1651795200000|1654387200000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-valid-alt-text|8|20|8|20|9d0c591086dc9139ff38a7b385c3367a83438786|1649203200000|1651795200000|1654387200000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-input-label|10|12|10|12|8c3c0ea315ff4da828363989a45fa11256a78796|1649203200000|1651795200000|1654387200000|lib/koenig-editor/addon/components/koenig-card-image/selector-tenor.hbs
+add|ember-template-lint|no-implicit-this|30|30|30|30|3029046e8ee3b79910e0fc794b1afbbe3c7bfa7b|1650240000000|1652832000000|1655424000000|app/components/settings/members-email-labs/newsletter-management.hbs
