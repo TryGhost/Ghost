@@ -88,7 +88,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "Provided client version v999.1 is ahead of current Ghost instance version v4.43.",
+      "context": StringMatching /Provided client version v999\\\\\\.1 is ahead of current Ghost instance version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
       "help": "Upgrade your Ghost instance.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -117,7 +117,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "Provided client version v3.1 is outdated and is behind current Ghost version v4.43.",
+      "context": StringMatching /Provided client version v3\\.1 is outdated and is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
       "help": "Upgrade your Ghost API client.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
