@@ -1053,6 +1053,26 @@
     stroke-width: 3;
 }
 
+.gh-newsletters-labs .gh-members-emailsettings-footer {
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+.gh-newsletters-labs .modal-fullsettings-section.divider-top {
+    margin-top: 4rem;
+    padding-top: 4rem;
+}
+
+.modal-fullsettings-main-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+    width: 100%;
+    height: 66px;
+    padding: 2.4rem;
+}
+
 /* Code injection
 /* ---------------------------------------------------------- */
 
