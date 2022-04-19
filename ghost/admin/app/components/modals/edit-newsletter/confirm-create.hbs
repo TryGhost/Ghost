@@ -1,0 +1,47 @@
+<div class="modal-content">
+    <header class="modal-header" data-test-modal="confirm-newsletter-email">
+        <h1>All set? Here's what happens next</h1>
+    </header>
+    <button type="button" class="close" role="button" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            {{#if @data.optInExisting}}
+                {{!-- TODO: add members count once API supports it --}}
+                {{!-- {{#let (members-count-fetcher query=(hash filter="")) as |countFetcher|}}
+                    Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
+                    immediately made live and your
+                    {{#if countFetcher.count}}<strong>{{countFetcher.count}}</strong>{{/if}}
+                    existing newsletter subscribers will be automatically opted-in to receive it.
+                {{/let}} --}}
+
+                Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
+                immediately made live and your existing newsletter subscribers
+                will be automatically opted-in to receive it.
+            {{else}}
+                Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
+                immediately made live. Your existing newsletter subscribers will
+                <strong>not</strong> be opted-in to receive it.
+            {{/if}}
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="gh-btn"
+            {{on "click" (fn @close false)}}
+        >
+            <span>Back to edit</span>
+        </button>
+
+        <button
+            type="button"
+            class="gh-btn gh-btn-black"
+            {{on "click" (fn @close true)}}
+            {{on-key "Enter"}}
+        >
+            <span>Create newsletter</span>
+        </button>
+    </div>
+</div>
