@@ -7,17 +7,12 @@
     <div class="modal-body">
         <p>
             {{#if @data.optInExisting}}
-                {{!-- TODO: add members count once API supports it --}}
-                {{!-- {{#let (members-count-fetcher query=(hash filter="")) as |countFetcher|}}
+                {{#let (members-count-fetcher query=(hash filter=(concat "newsletters:[" (join @data.activeNewsletterSlugs ", ") "]"))) as |countFetcher|}}
                     Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
                     immediately made live and your
                     {{#if countFetcher.count}}<strong>{{countFetcher.count}}</strong>{{/if}}
                     existing newsletter subscribers will be automatically opted-in to receive it.
-                {{/let}} --}}
-
-                Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
-                immediately made live and your existing newsletter subscribers
-                will be automatically opted-in to receive it.
+                {{/let}}
             {{else}}
                 Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
                 immediately made live. Your existing newsletter subscribers will

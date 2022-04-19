@@ -8,6 +8,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class EditNewsletterModal extends Component {
     @service modals;
+    @service store;
 
     static modalOptions = {
         className: 'fullscreen-modal-full-overlay fullscreen-modal-portal-settings'
@@ -15,6 +16,14 @@ export default class EditNewsletterModal extends Component {
 
     @tracked tab = 'settings';
     @tracked optInExisting = this.args.data.newsletter.isNew;
+
+    get activeNewsletterSlugs() {
+        const activeNewsletters = this.store.peekAll('newsletter').filter((n) => {
+            return n.status === 'active' && !n.isNew && !n.isDestroyed;
+        });
+
+        return activeNewsletters.map(n => n.slug);
+    }
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -48,7 +57,8 @@ export default class EditNewsletterModal extends Component {
 
             const shouldCreate = yield this.modals.open(ConfirmCreateModal, {
                 optInExisting,
-                newsletter: this.args.data.newsletter
+                newsletter: this.args.data.newsletter,
+                activeNewsletterSlugs: this.activeNewsletterSlugs
             });
 
             if (!shouldCreate) {
