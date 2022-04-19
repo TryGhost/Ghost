@@ -212,9 +212,18 @@ class OfferRepository {
         }
 
         if (offer.isNew) {
-            const event = OfferCreatedEvent.create({offer});
             await this.OfferModel.add(data, options);
-            DomainEvents.dispatch(event);
+            const event = OfferCreatedEvent.create({offer});
+
+            if (options.transacting) {
+                // Only dispatch the event after the transaction has finished
+                // Because else the offer won't be committed to the database yet
+                options.transacting.executionPromise.then(() => {
+                    DomainEvents.dispatch(event);
+                });
+            } else {
+                DomainEvents.dispatch(event);
+            }
         } else {
             await this.OfferModel.edit(data, {...options, id: data.id});
         }
