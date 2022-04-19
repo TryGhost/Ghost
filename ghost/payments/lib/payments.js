@@ -48,7 +48,11 @@ class PaymentsService {
         /** @type {import('stripe').Stripe.CouponCreateParams} */
         const couponData = {
             name: offer.name,
-            duration: offer.duration
+            duration: offer.duration,
+            // Note that the metadata is not present for older coupons
+            metadata: {
+                offer: offer.id
+            }
         };
 
         if (offer.duration === 'repeating') {

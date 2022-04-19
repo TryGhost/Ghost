@@ -33,11 +33,13 @@ module.exports = class MemberRepository {
      * @param {any} deps.MemberProductEvent
      * @param {any} deps.StripeCustomer
      * @param {any} deps.StripeCustomerSubscription
-     * @param {any} deps.productRepository
-     * @param {any} deps.newslettersService
-     * @param {any} deps.labsService
+     * @param {any} deps.OfferRedemption
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
+     * @param {any} deps.labsService
+     * @param {any} deps.productRepository
+     * @param {any} deps.offerRepository
      * @param {ITokenService} deps.tokenService
+     * @param {any} deps.newslettersService
      */
     constructor({
         Member,
@@ -53,6 +55,7 @@ module.exports = class MemberRepository {
         stripeAPIService,
         labsService,
         productRepository,
+        offerRepository,
         tokenService,
         newslettersService
     }) {
@@ -67,6 +70,7 @@ module.exports = class MemberRepository {
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
         this._productRepository = productRepository;
+        this._offerRepository = offerRepository;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
         this._labsService = labsService;
@@ -698,6 +702,17 @@ module.exports = class MemberRepository {
             logging.error(e);
         }
 
+        let offerId = subscription.discount && (subscription.discount.coupon.metadata.offer || subscription.metadata.offer) ? (subscription.discount.coupon.metadata.offer ? subscription.discount.coupon.metadata.offer : subscription.metadata.offer) : null;
+
+        if (offerId) {
+            // Validate the offer id from the metadata
+            const offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});
+            if (!offer) {
+                logging.error(`Received an invalid offer id (${offerId}) in the metadata of a subscription - ${subscription.id}.`);
+                offerId = null;
+            }
+        }
+
         const subscriptionData = {
             customer_id: subscription.customer,
             subscription_id: subscription.id,
@@ -723,8 +738,12 @@ module.exports = class MemberRepository {
                 status: subscription.status,
                 canceled: subscription.cancel_at_period_end,
                 discount: subscription.discount
-            })
+            }),
+            // We try to use the offer_id that was stored in Stripe coupon and fallback to the one stored in the subscription
+            // This allows us to catch the offer_id from discounts (created by Ghost) that were applied via the Stripe dashboard
+            offer_id: offerId
         };
+
         let eventData = {};
         if (model) {
             const updated = await this._StripeCustomerSubscription.edit(subscriptionData, {

@@ -92,7 +92,8 @@ module.exports = function MembersAPI({
         MemberProductEvent,
         OfferRedemption,
         StripeCustomer,
-        StripeCustomerSubscription
+        StripeCustomerSubscription,
+        offerRepository: offersAPI.repository
     });
 
     const eventRepository = new EventRepository({
