@@ -68,6 +68,7 @@ describe('Members API', function () {
         const customer = {};
         const paymentMethod = {};
         const setupIntent = {};
+        const coupon = {};
 
         beforeEach(function () {
             nock('https://api.stripe.com')
@@ -97,6 +98,13 @@ describe('Members API', function () {
                         }
                         return [200, subscription];
                     }
+
+                    if (resource === 'coupons') {
+                        if (coupon.id !== id) {
+                            return [404];
+                        }
+                        return [200, coupon];
+                    }
                 });
 
             nock('https://api.stripe.com')
@@ -119,6 +127,10 @@ describe('Members API', function () {
 
                     if (resource === 'customers') {
                         return [200, customer];
+                    }
+
+                    if (resource === 'coupons') {
+                        return [200, coupon];
                     }
 
                     return [500];
@@ -1064,6 +1076,7 @@ describe('Members API', function () {
         describe('Discounts', function () {
             const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
             let offer;
+            let couponId = 'testCoupon123';
 
             before(async function () {
                 // Create a random offer_id that we'll use
@@ -1086,6 +1099,12 @@ describe('Members API', function () {
                         id: (await getPaidProduct()).id
                     }
                 };
+
+                // Make sure we link this to the right coupon in Stripe
+                // This will store the offer with stripe_coupon_id = couponId
+                set(coupon, {
+                    id: couponId
+                });
                 
                 const {body} = await adminAgent
                     .post(`offers/`)
@@ -1129,9 +1148,7 @@ describe('Members API', function () {
                     start_date: beforeNow / 1000,
                     current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
                     cancel_at_period_end: false,
-                    metadata: {
-                        offer: offer_id
-                    }
+                    metadata: {}
                 });
 
                 set(customer, {
@@ -1163,7 +1180,8 @@ describe('Members API', function () {
 
                 await membersAgent.post('/webhooks/stripe/')
                     .body(webhookPayload)
-                    .header('stripe-signature', webhookSignature);
+                    .header('stripe-signature', webhookSignature)
+                    .expectStatus(200);
 
                 const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
                 assert.equal(body.members.length, 1, 'The member was not created');
@@ -1270,7 +1288,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId, // This coupon id maps to the created offer above
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1308,7 +1326,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1317,9 +1335,7 @@ describe('Members API', function () {
                             duration_in_months: null,
                             livemode: false,
                             max_redemptions: null,
-                            metadata: {
-                                offer: offer.id
-                            },
+                            metadata: {},
                             name: '50% off',
                             percent_off: 50,
                             redeem_by: null,
@@ -1348,7 +1364,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: 1,
                             created: 1649774041,
@@ -1386,7 +1402,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: 60,
                             created: 1649774041,
@@ -1424,7 +1440,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1468,7 +1484,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1477,10 +1493,7 @@ describe('Members API', function () {
                             duration_in_months: null,
                             livemode: false,
                             max_redemptions: null,
-                            metadata: {
-                                // Note that in this test, we also test that we can read the offer id from a coupon object
-                                offer: offer.id
-                            },
+                            metadata: {},
                             name: '20% off',
                             percent_off: 20,
                             redeem_by: null,
@@ -1655,7 +1668,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: 'unknownCoupon', // this one is unknown in Ghost
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1664,9 +1677,7 @@ describe('Members API', function () {
                             duration_in_months: null,
                             livemode: false,
                             max_redemptions: null,
-                            metadata: {
-                                offer: 'invalid'
-                            },
+                            metadata: {},
                             name: '20% off',
                             percent_off: 20,
                             redeem_by: null,
@@ -1784,7 +1795,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1822,7 +1833,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: 1,
                             created: 1649774041,
