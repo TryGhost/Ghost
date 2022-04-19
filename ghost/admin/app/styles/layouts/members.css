@@ -1006,6 +1006,36 @@ textarea.gh-member-details-textarea {
     stroke-width: 1px;
 }
 
+.gh-member-newsletters {
+    padding: 16px 20px;
+    background: var(--main-bg-color);
+    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 10%);
+    border-radius: 3px;
+}
+
+.gh-member-newsletter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--whitegrey);
+    padding: 16px 0;
+}
+
+.gh-member-newsletter-row:first-child {
+    padding-top: 0;
+}
+
+.gh-member-newsletter-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.gh-member-newsletter-title {
+    font-weight: 600;
+    font-size: 1.4rem !important;
+    margin-bottom: 0!important;
+}
+
 .gh-member-feed-container {
     display: flex;
     flex-grow: 1;
