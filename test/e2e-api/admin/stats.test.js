@@ -37,4 +37,16 @@ describe('Stats API', function () {
                 etag: anyEtag
             });
     });
+
+    it('Can fetch Subscription deltas', async function () {
+        await agent
+            .get(`/stats/subscription_deltas`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                stats: []
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 });

@@ -19,5 +19,14 @@ module.exports = {
         async query() {
             return await statsService.mrr.getHistory();
         }
+    },
+    subscriptionDeltas: {
+        permissions: {
+            docName: 'members',
+            method: 'browse'
+        },
+        async query() {
+            return await statsService.members.getSubscriptionDeltas();
+        }
     }
 };

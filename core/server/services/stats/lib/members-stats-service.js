@@ -27,6 +27,30 @@ class MembersStatsService {
         };
     }
 
+    async getSubscriptionDeltas() {
+        const rows = await this.fetchAllSubscriptionDeltas();
+        return {
+            data: rows
+        };
+    }
+
+    async fetchAllSubscriptionDeltas() {
+        const knex = this.db.knex;
+        const rows = await knex('members_paid_subscription_events')
+            .select(knex.raw('DATE(created_at) as date'))
+            .select(knex.raw(`SUM(
+                CASE WHEN type='created' AND mrr_delta != 0 THEN 1
+                ELSE 0 END
+            ) as positive_subscription_delta`))
+            .select(knex.raw(`SUM(
+                CASE WHEN type IN ('canceled', 'expired') AND mrr_delta != 0 THEN 1
+                ELSE 0 END
+            ) as negative_subscription_delta`))
+            .groupBy('date')
+            .orderBy('date');
+        return rows;
+    }
+
     /**
      * Get the member deltas by status for all days, sorted ascending
      * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free and comped users per day, sorted ascending
