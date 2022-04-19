@@ -15,119 +15,6 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 jobs:
-  lint:
-    runs-on: ubuntu-18.04
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    name: Lint
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: '14.17.0'
-          cache: yarn
-      - run: yarn
-      - run: yarn lint
-      - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  migrations:
-    runs-on: ubuntu-18.04
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    strategy:
-      matrix:
-        env:
-          - DB: sqlite3
-            DB_CLIENT: sqlite3
-          - DB: mysql5
-            DB_CLIENT: mysql
-          - DB: mysql8
-            DB_CLIENT: mysql
-    env:
-      database__client: ${{ matrix.env.DB_CLIENT }}
-      database__connection__filename: /dev/shm/ghost-test.db
-      database__connection__host: 127.0.0.1
-      database__connection__user: root
-      database__connection__password: root
-      database__connection__database: ghost_testing
-    name: Migrations (${{ matrix.env.DB }})
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          submodules: true
-      - uses: actions/setup-node@v2
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: '14.17.0'
-          cache: yarn
-
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql5' || matrix.env.DB == 'mysql8'
-
-      - uses: daniellockyer/mysql-action@main
-        if: matrix.env.DB == 'mysql5'
-        with:
-          mysql version: '5.7'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
-
-      - uses: daniellockyer/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
-
-      - run: yarn
-      - run: |
-          node index.js &
-          sleep 20 && { kill $! && wait $!; } 2>/dev/null
-
-      - run: yarn knex-migrator rollback --v 4.0 --force
-      - run: yarn knex-migrator migrate --force
-
-  unit-tests:
-    runs-on: ubuntu-18.04
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    strategy:
-      matrix:
-        node: [ '12.22.1', '14.17.0', '16.13.0' ]
-    name: Unit Tests (Node ${{ matrix.node }})
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ matrix.node }}
-          cache: yarn
-
-      - run: yarn
-
-      - run: yarn test:unit
-        if: matrix.node == '16.13.0'
-
-      - run: yarn test:unit:base
-        if: matrix.node != '16.13.0'
-
-      - uses: codecov/codecov-action@v2
-
-      - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
   database-tests:
     runs-on: ubuntu-18.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
@@ -144,6 +31,7 @@ jobs:
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
+      DEBUG: 'ghost*'
       database__connection__password: root
     name: Database Tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
@@ -179,7 +67,7 @@ jobs:
       - run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
 
       - name: Run tests
-        run: yarn test:ci
+        run: yarn test:e2e -b
         env:
           database__connection__filename: /dev/shm/ghost-test.db
 
@@ -229,76 +117,3 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  ghost-cli:
-    name: Ghost-CLI
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          submodules: true
-      - uses: actions/setup-node@v2
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: '12.22.1'
-          cache: yarn
-      - run: npm install -g ghost-cli@latest
-      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
-
-      - run: zip -r ghost.zip .
-
-      - name: Clean Install
-        run: |
-          DIR=$(mktemp -d)
-          ghost install local -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
-
-      - name: Latest Release
-        run: |
-          DIR=$(mktemp -d)
-          ghost install local -d $DIR
-          ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
-
-      #- name: Update from latest v1
-          #run: |
-          #DIR=$(mktemp -d)
-          #ghost install v1 --local -d $DIR
-          #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
-
-      #- name: Update from latest v2
-          #run: |
-          #DIR=$(mktemp -d)
-          #ghost install v2 --local -d $DIR
-          #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
-
-      - name: Update from latest v3
-        run: |
-          DIR=$(mktemp -d)
-          ghost install v3 --local -d $DIR
-          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
-
-      - name: Print debug logs
-        if: failure()
-        run: |
-          [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
-
-      - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  canary:
-    runs-on: ubuntu-18.04
-    needs: [lint, migrations, unit-tests, database-tests, ghost-cli]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    name: Canary
-    steps:
-      - name: Invoke Canary Build
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Canary Build
-          token: ${{ secrets.RELEASE_TOKEN }}
