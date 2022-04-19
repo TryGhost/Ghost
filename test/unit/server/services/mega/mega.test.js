@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
+const labs = require('../../../../../core/shared/labs');
 
 const {addEmail, _partitionMembersBySegment, _getEmailMemberRows, _transformEmailRecipientFilter, handleUnsubscribeRequest} = require('../../../../../core/server/services/mega/mega');
 const membersService = require('../../../../../core/server/services/members');
@@ -8,6 +9,10 @@ const labs = require('../../../../../core/shared/labs');
 
 describe('MEGA', function () {
     describe('addEmail', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
         // via transformEmailRecipientFilter
         it('throws when "free" or "paid" strings are used as a email_recipient_filter', async function () {
             const postModel = {
@@ -37,12 +42,37 @@ describe('MEGA', function () {
                 err.message.should.equal('Cannot send email to "none" email_recipient_filter');
             }
         });
+
+        // via transformEmailRecipientFilter
+        it('throws when "none" is used as a email_recipient_filter', async function () {
+            const postModel = {
+                get: sinon.stub().returns('status:free'),
+                fetch: sinon.stub().returns(Promise.resolve({
+                    visibility: 'public'
+                }))
+            };
+            postModel.related = sinon.stub().returns(postModel);
+            sinon.stub(labs, 'isSet').returns(true);
+
+            try {
+                await addEmail(postModel);
+                should.fail('addEmail did not throw');
+            } catch (err) {
+                should.equal(errors.utils.isGhostError(err), true);
+                err.message.should.equal('Unexpected visibility value "public". Use one of the valid: "members", "paid".');
+            }
+        });
     });
 
     describe('transformEmailRecipientFilter', function () {
         it('enforces subscribed:true with correct operator precedence', function () {
             const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free');
             transformedFilter.should.equal('subscribed:true+(status:free,status:-free)');
+        });
+
+        it('doesn\'t enforce subscribed:true when sending an email to a newsletter', function () {
+            const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free', {}, {visibility: 'members'});
+            transformedFilter.should.equal('(status:free,status:-free)');
         });
     });
 
