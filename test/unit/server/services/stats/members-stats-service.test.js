@@ -1,9 +1,159 @@
 const MembersStatsService = require('../../../../../core/server/services/stats/lib/members-stats-service');
+const assert = require('assert');
 const moment = require('moment');
 const sinon = require('sinon');
 require('should');
 
 describe('MembersStatsService', function () {
+    describe('fetchAllSubscriptionDeltas', function () {
+        const knex = require('knex')({
+            client: 'sqlite',
+            useNullAsDefault: true,
+            connection: {
+                filename: ':memory:'
+            }
+        });
+
+        beforeEach(async function() {
+            await knex.schema.dropTableIfExists('products');
+            await knex.schema.dropTableIfExists('stripe_products');
+            await knex.schema.dropTableIfExists('stripe_prices');
+            await knex.schema.dropTableIfExists('members_paid_subscription_events');
+            await knex.schema.createTable('products', function (table) {
+                table.string('id');
+            });
+            await knex.schema.createTable('stripe_products', function (table) {
+                table.string('stripe_product_id');
+                table.string('product_id');
+            });
+            await knex.schema.createTable('stripe_prices', function (table) {
+                table.string('id');
+                table.string('stripe_price_id');
+                table.string('stripe_product_id');
+                table.string('interval');
+            });
+            await knex.schema.createTable('members_paid_subscription_events', function (table) {
+                table.string('type');
+                table.string('from_plan');
+                table.string('to_plan');
+                table.int('mrr_delta');
+                table.date('created_at');
+            });
+        });
+
+        async function createTiers(tiers) {
+            const results = {};
+            for (const tier of tiers) {
+                await knex('products').insert({id: tier});
+                await knex('stripe_products').insert({
+                    product_id: tier,
+                    stripe_product_id: `stripe_product_${tier}`
+                });
+                await knex('stripe_prices').insert({
+                    id: `stripe_price_month_${tier}`,
+                    stripe_price_id: `stripe_price_month_${tier}`,
+                    stripe_product_id: `stripe_product_${tier}`,
+                    interval: 'month'
+                });
+                await knex('stripe_prices').insert({
+                    id: `stripe_price_year_${tier}`,
+                    stripe_price_id: `stripe_price_year_${tier}`,
+                    stripe_product_id: `stripe_product_${tier}`,
+                    interval: 'year'
+                });
+                results[tier] = {
+                    monthly: {
+                        tier: tier,
+                        cadence: 'month',
+                        mrr: 100
+                    },
+                    yearly: {
+                        tier: tier,
+                        cadence: 'year',
+                        mrr: 80
+                    }
+                };
+            }
+            return results;
+        }
+
+        async function insertEvents(days) {
+            const {DateTime} = require('luxon');
+            const subscriptions = {};
+            const toInsert = [];
+            for (let index = 0; index < days.length; index++) {
+                const events = days[index];
+                const day = DateTime.fromISO('1970-01-01').plus({days: index}).toISODate();
+                toInsert.push(...events.map(function (event) {
+                    let last = null;
+                    if (!subscriptions[event.id]) {
+                        subscriptions[event.id] = [event];
+                    } else {
+                        last = subscriptions[event.id][0];
+                        subscriptions[event.id] = [event].concat(subscriptions[event.id]);
+                    }
+                    return {
+                        type: event.type,
+                        from_plan: event.type === 'created' ? null : `stripe_price_${last.cadence}_${last.tier}`,
+                        to_plan: event.cadence && event.tier ? `stripe_price_${event.cadence}_${event.tier}` : `stripe_price_${last.cadence}_${last.tier}`,
+                        mrr_delta: event.type === 'created' ? event.mrr : -last.mrr,
+                        created_at: day
+                    };
+                }));
+            }
+            await knex('members_paid_subscription_events').insert(toInsert);
+        }
+
+        it('Gets the correct data for the basic case', async function () {
+            const tiers = await createTiers(['basic', 'advanced']);
+
+            const thing = type => (id, attr = {}) => Object.assign({}, attr, {id, type});
+            const NEW = thing('created');
+            const CANCEL = thing('canceled');
+
+            const events = [
+                [NEW('A', tiers.basic.monthly), NEW('B', tiers.advanced.yearly)],
+                [CANCEL('B'), NEW('C', tiers.advanced.monthly)],
+                [CANCEL('A'), NEW('D', tiers.basic.monthly)]
+            ];
+
+            await insertEvents(events);
+
+            const stats = new MembersStatsService({db: {knex}});
+
+            const results = await stats.fetchAllSubscriptionDeltas();
+
+            const finder = (tier, cadence, date) => (result) => {
+                return result.tier === tier && result.cadence === cadence && result.date === date;
+            };
+
+            const firstDayBasicMonthly = results.find(finder('basic', 'month', '1970-01-01'));
+            const firstDayAdvancedYearly = results.find(finder('advanced', 'year', '1970-01-01'));
+            const secondDayAdvancedYearly = results.find(finder('advanced', 'year', '1970-01-02'));
+            const secondDayAdvancedMonthly = results.find(finder('advanced', 'month', '1970-01-02'));
+            const thirdDayBasicMonthly = results.find(finder('basic', 'month', '1970-01-03'));
+
+            assert(firstDayBasicMonthly);
+            assert(firstDayBasicMonthly.positive_delta === 1);
+            assert(firstDayBasicMonthly.negative_delta === 0);
+
+            assert(firstDayAdvancedYearly);
+            assert(firstDayAdvancedYearly.positive_delta === 1);
+            assert(firstDayAdvancedYearly.negative_delta === 0);
+
+            assert(secondDayAdvancedYearly);
+            assert(secondDayAdvancedYearly.positive_delta === 0);
+            assert(secondDayAdvancedYearly.negative_delta === 1);
+
+            assert(secondDayAdvancedMonthly);
+            assert(secondDayAdvancedMonthly.positive_delta === 1);
+            assert(secondDayAdvancedMonthly.negative_delta === 0);
+
+            assert(thirdDayBasicMonthly);
+            assert(thirdDayBasicMonthly.positive_delta === 1);
+            assert(thirdDayBasicMonthly.negative_delta === 1);
+        });
+    });
     describe('getCountHistory', function () {
         let membersStatsService;
         let fakeStatuses;

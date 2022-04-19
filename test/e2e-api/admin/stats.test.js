@@ -37,4 +37,16 @@ describe('Stats API', function () {
                 etag: anyEtag
             });
     });
+
+    it('Can fetch Subscription stats', async function () {
+        await agent
+            .get(`/stats/subscriptions`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                stats: []
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 });
