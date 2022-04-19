@@ -702,14 +702,16 @@ module.exports = class MemberRepository {
             logging.error(e);
         }
 
-        let offerId = subscription.discount && (subscription.discount.coupon.metadata.offer || subscription.metadata.offer) ? (subscription.discount.coupon.metadata.offer ? subscription.discount.coupon.metadata.offer : subscription.metadata.offer) : null;
+        let stripeCouponId = subscription.discount && subscription.discount.coupon ? subscription.discount.coupon.id : null;
+        let offerId = null;
 
-        if (offerId) {
-            // Validate the offer id from the metadata
-            const offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});
-            if (!offer) {
-                logging.error(`Received an invalid offer id (${offerId}) in the metadata of a subscription - ${subscription.id}.`);
-                offerId = null;
+        if (stripeCouponId) {
+            // Get the offer from our database
+            const offer = await this._offerRepository.getByStripeCouponId(stripeCouponId, {transacting: options.transacting});
+            if (offer) {
+                offerId = offer.id;
+            } else {
+                logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${subscription.id}.`);
             }
         }
 
@@ -739,8 +741,6 @@ module.exports = class MemberRepository {
                 canceled: subscription.cancel_at_period_end,
                 discount: subscription.discount
             }),
-            // We try to use the offer_id that was stored in Stripe coupon and fallback to the one stored in the subscription
-            // This allows us to catch the offer_id from discounts (created by Ghost) that were applied via the Stripe dashboard
             offer_id: offerId
         };
 

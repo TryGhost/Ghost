@@ -142,6 +142,24 @@ class OfferRepository {
     }
 
     /**
+     * @param {string} id stripe_coupon_id
+     * @param {BaseOptions} [options]
+     * @returns {Promise<Offer>}
+     */
+    async getByStripeCouponId(id, options) {
+        const model = await this.OfferModel.findOne({stripe_coupon_id: id}, {
+            ...options,
+            withRelated: ['product']
+        });
+
+        if (!model) {
+            return null;
+        }
+
+        return this.mapToOffer(model, options);
+    }
+
+    /**
      * @param {ListOptions} options
      * @returns {Promise<Offer[]>}
      */
