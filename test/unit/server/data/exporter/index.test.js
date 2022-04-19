@@ -166,7 +166,7 @@ describe('Exporter', function () {
         });
     });
 
-    describe('Export table whitelists', function () {
+    describe('Export table allowlists', function () {
         it('should be fixed when db schema introduces new tables', function () {
             const {
                 BACKUP_TABLES,

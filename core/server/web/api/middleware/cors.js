@@ -72,7 +72,7 @@ function handleCORS(req, cb) {
         return cb(null, DISABLE_CORS);
     }
 
-    // Origin matches whitelist
+    // Origin matches allowlist
     if (getAllowlist().indexOf(url.parse(origin).hostname) > -1) {
         return cb(null, ENABLE_CORS);
     }

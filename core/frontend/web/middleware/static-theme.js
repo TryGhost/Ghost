@@ -4,18 +4,18 @@ const constants = require('@tryghost/constants');
 const themeEngine = require('../../services/theme-engine');
 const express = require('../../../shared/express');
 
-function isBlackListedFileType(file) {
-    const blackListedFileTypes = ['.hbs', '.md', '.json'];
+function isDeniedFile(file) {
+    const deniedFileTypes = ['.hbs', '.md', '.json'];
     const ext = path.extname(file);
 
-    return blackListedFileTypes.includes(ext);
+    return deniedFileTypes.includes(ext);
 }
 
-function isWhiteListedFile(file) {
-    const whiteListedFiles = ['manifest.json'];
+function isAllowedFile(file) {
+    const allowedFiles = ['manifest.json'];
     const base = path.basename(file);
 
-    return whiteListedFiles.includes(base);
+    return allowedFiles.includes(base);
 }
 
 function forwardToExpressStatic(req, res, next) {
@@ -31,8 +31,8 @@ function forwardToExpressStatic(req, res, next) {
 }
 
 function staticTheme() {
-    return function blackListStatic(req, res, next) {
-        if (!isWhiteListedFile(req.path) && isBlackListedFileType(req.path)) {
+    return function denyStatic(req, res, next) {
+        if (!isAllowedFile(req.path) && isDeniedFile(req.path)) {
             return next();
         }
 

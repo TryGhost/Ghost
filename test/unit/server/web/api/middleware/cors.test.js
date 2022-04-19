@@ -77,7 +77,7 @@ describe('cors', function () {
         done();
     });
 
-    it('should not be enabled the if origin is not whitelisted', function (done) {
+    it('should not be enabled the if origin is not allowed', function (done) {
         const origin = 'http://not-trusted.com';
 
         req.get = sinon.stub().withArgs('origin').returns(origin);

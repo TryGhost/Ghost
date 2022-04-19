@@ -107,7 +107,7 @@ describe('staticTheme', function () {
         });
     });
 
-    it('should NOT skip if file is on whitelist', function (done) {
+    it('should NOT skip if file is allowed', function (done) {
         req.path = 'manifest.json';
 
         staticTheme()(req, res, function next() {

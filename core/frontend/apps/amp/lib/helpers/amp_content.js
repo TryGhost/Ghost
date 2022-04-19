@@ -187,9 +187,8 @@ function ampContent() {
         // Use cheerio to traverse through HTML and make little clean-ups
         $ = cheerio.load(ampHTML);
 
-        // We have to remove source children in video, as source
-        // is whitelisted for audio, but causes validation
-        // errors in video, because video will be stripped out.
+        // We have to remove source children in video, as source is allowed for audio,
+        // but causes validation errors in video, because video will be stripped out.
         // @TODO: remove this, when Amperize support video transform
         $('video').children('source').remove();
         $('video').children('track').remove();
