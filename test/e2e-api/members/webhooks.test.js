@@ -6,6 +6,7 @@ const stripe = require('stripe');
 const {Product} = require('../../../core/server/models/product');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
+const offers = require('../../../core/server/services/offers');
 
 let membersAgent;
 let adminAgent;
@@ -67,6 +68,7 @@ describe('Members API', function () {
         const customer = {};
         const paymentMethod = {};
         const setupIntent = {};
+        const coupon = {};
 
         beforeEach(function () {
             nock('https://api.stripe.com')
@@ -96,6 +98,13 @@ describe('Members API', function () {
                         }
                         return [200, subscription];
                     }
+
+                    if (resource === 'coupons') {
+                        if (coupon.id !== id) {
+                            return [404];
+                        }
+                        return [200, coupon];
+                    }
                 });
 
             nock('https://api.stripe.com')
@@ -118,6 +127,10 @@ describe('Members API', function () {
 
                     if (resource === 'customers') {
                         return [200, customer];
+                    }
+
+                    if (resource === 'coupons') {
+                        return [200, coupon];
                     }
 
                     return [500];
@@ -1062,11 +1075,48 @@ describe('Members API', function () {
 
         describe('Discounts', function () {
             const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
+            let offer;
+            let couponId = 'testCoupon123';
+
+            before(async function () {
+                // Create a random offer_id that we'll use
+                // The actual amounts don't matter as we'll only take the ones from Stripe ATM
+                const newOffer = {
+                    name: 'Black Friday',
+                    code: 'black-friday',
+                    display_title: 'Black Friday Sale!',
+                    display_description: '10% off on yearly plan',
+                    type: 'percent',
+                    cadence: 'year',
+                    amount: 12,
+                    duration: 'once',
+                    duration_in_months: null,
+                    currency_restriction: false,
+                    currency: null,
+                    status: 'active',
+                    redemption_count: 0,
+                    tier: {
+                        id: (await getPaidProduct()).id
+                    }
+                };
+
+                // Make sure we link this to the right coupon in Stripe
+                // This will store the offer with stripe_coupon_id = couponId
+                set(coupon, {
+                    id: couponId
+                });
+                
+                const {body} = await adminAgent
+                    .post(`offers/`)
+                    .body({offers: [newOffer]})
+                    .expectStatus(200);
+                offer = body.offers[0];
+            });
 
             /**
              * Helper for repetitive tests. It tests the MRR and MRR delta given a discount + a price 
              */
-            async function testDiscount({discount, interval, unit_amount, assert_mrr}) {
+            async function testDiscount({discount, interval, unit_amount, assert_mrr, offer_id}) {
                 const customer_id = createStripeID('cust');
                 const subscription_id = createStripeID('sub');
 
@@ -1097,7 +1147,8 @@ describe('Members API', function () {
                     },
                     start_date: beforeNow / 1000,
                     current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
-                    cancel_at_period_end: false
+                    cancel_at_period_end: false,
+                    metadata: {}
                 });
 
                 set(customer, {
@@ -1129,7 +1180,8 @@ describe('Members API', function () {
 
                 await membersAgent.post('/webhooks/stripe/')
                     .body(webhookPayload)
-                    .header('stripe-signature', webhookSignature);
+                    .header('stripe-signature', webhookSignature)
+                    .expectStatus(200);
 
                 const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
                 assert.equal(body.members.length, 1, 'The member was not created');
@@ -1147,7 +1199,8 @@ describe('Members API', function () {
                     plan_interval: interval,
                     plan_currency: 'usd',
                     current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
-                    mrr: assert_mrr
+                    mrr: assert_mrr,
+                    offer_id: offer_id
                 });
 
                 await assertMemberEvents({
@@ -1204,7 +1257,8 @@ describe('Members API', function () {
                     plan_amount: unit_amount,
                     plan_interval: interval,
                     plan_currency: 'usd',
-                    mrr: 0
+                    mrr: 0,
+                    offer_id: offer_id
                 });
 
                 await assertMemberEvents({
@@ -1228,13 +1282,13 @@ describe('Members API', function () {
                     mockManager.mockLabsEnabled('dashboardV5');
                 });
 
-                it('Correctly includes monthly forever percentage discounts in MRR', async function () {    
+                it('Correctly includes monthly forever percentage discounts in MRR', async function () {
                     const discount = {
                         id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId, // This coupon id maps to the created offer above
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1261,7 +1315,8 @@ describe('Members API', function () {
                         discount,
                         unit_amount: 500,
                         interval: 'month',
-                        assert_mrr: 250
+                        assert_mrr: 250,
+                        offer_id: offer.id
                     });
                 });
 
@@ -1271,7 +1326,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1298,7 +1353,8 @@ describe('Members API', function () {
                         discount,
                         unit_amount: 1200,
                         interval: 'year',
-                        assert_mrr: 50
+                        assert_mrr: 50,
+                        offer_id: offer.id
                     });
                 });
 
@@ -1308,7 +1364,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: 1,
                             created: 1649774041,
@@ -1335,7 +1391,8 @@ describe('Members API', function () {
                         discount,
                         unit_amount: 500,
                         interval: 'month',
-                        assert_mrr: 499
+                        assert_mrr: 499,
+                        offer_id: offer.id
                     });
                 });
 
@@ -1345,7 +1402,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: 60,
                             created: 1649774041,
@@ -1372,7 +1429,8 @@ describe('Members API', function () {
                         discount,
                         unit_amount: 1200,
                         interval: 'year',
-                        assert_mrr: 95
+                        assert_mrr: 95,
+                        offer_id: offer.id
                     });
                 });
 
@@ -1382,7 +1440,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1409,7 +1467,8 @@ describe('Members API', function () {
                         discount,
                         unit_amount: 500,
                         interval: 'month',
-                        assert_mrr: 500
+                        assert_mrr: 500,
+                        offer_id: offer.id
                     });
                 });
 
@@ -1425,7 +1484,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1529,7 +1588,8 @@ describe('Members API', function () {
                         plan_interval: interval,
                         plan_currency: 'usd',
                         current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
-                        mrr: mrr_without
+                        mrr: mrr_without,
+                        offer_id: null
                     });
 
                     await assertMemberEvents({
@@ -1578,7 +1638,8 @@ describe('Members API', function () {
                         plan_amount: unit_amount,
                         plan_interval: interval,
                         plan_currency: 'usd',
-                        mrr: mrr_with
+                        mrr: mrr_with,
+                        offer_id: offer.id
                     });
 
                     await assertMemberEvents({
@@ -1596,6 +1657,135 @@ describe('Members API', function () {
                         ]
                     });
                 });
+
+                it('Silently ignores an invalid offer id in metadata', async function () {
+                    const interval = 'month';
+                    const unit_amount = 500;
+                    const mrr_with = 400;
+
+                    const discount = {
+                        id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
+                        object: 'discount',
+                        checkout_session: null,
+                        coupon: {
+                            id: 'unknownCoupon', // this one is unknown in Ghost
+                            object: 'coupon',
+                            amount_off: null,
+                            created: 1649774041,
+                            currency: 'eur',
+                            duration: 'forever',
+                            duration_in_months: null,
+                            livemode: false,
+                            max_redemptions: null,
+                            metadata: {},
+                            name: '20% off',
+                            percent_off: 20,
+                            redeem_by: null,
+                            times_redeemed: 0,
+                            valid: true
+                        },
+                        end: null,
+                        invoice: null,
+                        invoice_item: null,
+                        promotion_code: null,
+                        start: beforeNow / 1000,
+                        subscription: null
+                    };
+
+                    const customer_id = createStripeID('cust');
+                    const subscription_id = createStripeID('sub');
+
+                    discount.customer = customer_id;
+
+                    set(subscription, {
+                        id: subscription_id,
+                        customer: customer_id,
+                        status: 'active',
+                        discount,
+                        items: {
+                            type: 'list',
+                            data: [{
+                                id: 'item_123',
+                                price: {
+                                    id: 'price_123',
+                                    product: 'product_123',
+                                    active: true,
+                                    nickname: interval,
+                                    currency: 'usd',
+                                    recurring: {
+                                        interval
+                                    },
+                                    unit_amount,
+                                    type: 'recurring'
+                                }
+                            }]
+                        },
+                        start_date: beforeNow / 1000,
+                        current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                        cancel_at_period_end: false
+                    });
+
+                    set(customer, {
+                        id: customer_id,
+                        name: 'Test Member',
+                        email: `${customer_id}@email.com`,
+                        subscriptions: {
+                            type: 'list',
+                            data: [subscription]
+                        }
+                    });
+
+                    let webhookPayload = JSON.stringify({
+                        type: 'checkout.session.completed',
+                        data: {
+                            object: {
+                                mode: 'subscription',
+                                customer: customer.id,
+                                subscription: subscription.id,
+                                metadata: {}
+                            }
+                        }
+                    });
+                    
+                    let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                        payload: webhookPayload,
+                        secret: process.env.WEBHOOK_SECRET
+                    });
+
+                    await membersAgent.post('/webhooks/stripe/')
+                        .body(webhookPayload)
+                        .header('stripe-signature', webhookSignature);
+
+                    const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+                    assert.equal(body.members.length, 1, 'The member was not created');
+                    const member = body.members[0];
+
+                    assert.equal(member.status, 'paid', 'The member should be "paid"');
+                    assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+                    // Check whether MRR and status has been set
+                    await assertSubscription(member.subscriptions[0].id, {
+                        subscription_id: subscription.id,
+                        status: 'active',
+                        cancel_at_period_end: false,
+                        plan_amount: unit_amount,
+                        plan_interval: interval,
+                        plan_currency: 'usd',
+                        current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
+                        mrr: mrr_with,
+                        offer_id: null
+                    });
+
+                    await assertMemberEvents({
+                        eventType: 'MemberPaidSubscriptionEvent',
+                        memberId: member.id,
+                        asserts: [
+                            {
+                                mrr_delta: mrr_with
+                            }
+                        ]
+                    });
+                });
             });
 
             describe('Without the dashboardV5 flag', function () {
@@ -1605,7 +1795,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: null,
                             created: 1649774041,
@@ -1632,7 +1822,8 @@ describe('Members API', function () {
                         discount,
                         unit_amount: 500,
                         interval: 'month',
-                        assert_mrr: 500
+                        assert_mrr: 500,
+                        offer_id: offer.id
                     });
                 });
 
@@ -1642,7 +1833,7 @@ describe('Members API', function () {
                         object: 'discount',
                         checkout_session: null,
                         coupon: {
-                            id: 'Z4OV52SU',
+                            id: couponId,
                             object: 'coupon',
                             amount_off: 1,
                             created: 1649774041,
@@ -1669,7 +1860,8 @@ describe('Members API', function () {
                         discount,
                         unit_amount: 500,
                         interval: 'month',
-                        assert_mrr: 500
+                        assert_mrr: 500,
+                        offer_id: offer.id
                     });
                 });
             });
