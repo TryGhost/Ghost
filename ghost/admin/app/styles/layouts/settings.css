@@ -927,10 +927,6 @@
     z-index: 1;
 }
 
-.gh-newsletter-card.multiple {
-    cursor: pointer;
-}
-
 .gh-newsletter-card-draggable:hover {
     margin-left: 4px;
     padding-left: 20px;
@@ -1061,6 +1057,11 @@
 .gh-newsletters-labs .modal-fullsettings-section.divider-top {
     margin-top: 4rem;
     padding-top: 4rem;
+}
+
+.gh-newsletters-labs .form-group.vertical p {
+    margin: 0 0 10px;
+    line-height: 1em;
 }
 
 .modal-fullsettings-main-topbar {

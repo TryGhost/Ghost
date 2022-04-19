@@ -16,6 +16,7 @@
 
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="description">
                 <label for="newsletter-description" class="modal-fullsettings-title">Description</label>
+                <p>Seen by members on your site.</p>
                 <textarea
                     id="newsletter-description"
                     class="gh-input miw-100 form-text"
@@ -53,15 +54,15 @@
             </GhFormGroup>
 
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderReplyTo">
-                <label for="newsletter-reply-to" class="modal-fullsettings-title">Reply-to email address</label>
+                <label for="newsletter-reply-to" class="modal-fullsettings-title">Reply-to email</label>
                 <Inputs::Select
                     id="newsletter-reply-to"
                     @value={{@newsletter.senderReplyTo}}
                     @onChange={{fn this.onValueChange "senderReplyTo"}}
                     as |select|
                 >
-                    <select.option @value="newsletter">Newsletter ({{full-email-address (or @newsletter.senderEmail "noreply")}})</select.option>
-                    <select.option @value="support">Support ({{full-email-address this.settings.membersSupportAddress}})</select.option>
+                    <select.option @value="newsletter">Newsletter address ({{full-email-address (or @newsletter.senderEmail "noreply")}})</select.option>
+                    <select.option @value="support">Support address ({{full-email-address this.settings.membersSupportAddress}})</select.option>
                 </Inputs::Select>
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="senderReplyTo" />
             </GhFormGroup>
