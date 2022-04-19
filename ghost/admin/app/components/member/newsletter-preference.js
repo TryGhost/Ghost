@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import {action} from '@ember/object';
+import {action, get} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 export default class MembersNewsletterPreference extends Component {
@@ -29,15 +29,19 @@ export default class MembersNewsletterPreference extends Component {
     @action
     updateNewsletterPreference(newsletter, event) {
         let updatedNewsletters = [];
+
         const selectedNewsletter = this.args.newsletters.find((d) => {
             return d.id === newsletter.id;
         });
+
+        // get() is required because member can be a proxy object when loaded
+        // directly from the members list
         if (!event.target.checked) {
-            updatedNewsletters = this.args.member.newsletters.filter((d) => {
+            updatedNewsletters = get(this.args.member, 'newsletters').filter((d) => {
                 return d.id !== newsletter.id;
             });
         } else {
-            updatedNewsletters = this.args.member.newsletters.filter((d) => {
+            updatedNewsletters = get(this.args.member, 'newsletters').filter((d) => {
                 return d.id !== newsletter.id;
             }).concat(selectedNewsletter);
         }
