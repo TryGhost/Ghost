@@ -146,6 +146,20 @@ describe('Integration: Component: gh-task-button', function () {
         await settled();
     });
 
+    it('shows idle on canceled response', async function () {
+        defineProperty(this, 'myTask', task(function* () {
+            yield timeout(50);
+            return 'canceled';
+        }));
+
+        await render(hbs`<GhTaskButton @task={{myTask}} />`);
+
+        this.myTask.perform();
+        await waitFor('[data-test-state="idle"]', {timeout: 50});
+
+        await settled();
+    });
+
     it('assigns specified failure class on failure', async function () {
         defineProperty(this, 'myTask', task(function* () {
             yield timeout(50);
