@@ -528,6 +528,23 @@ function addSetting({key, value, type, group}) {
     );
 }
 
+/**
+ * @param {number} major
+ */
+function createFinalMigration(major) {
+    return createTransactionalMigration(
+        async function up() {
+            throw new errors.InternalServerError({
+                message: `Unable to run migrations`,
+                context: `You must be on the latest v${major}.x to update across major versions - https://ghost.org/docs/update/`,
+                help: `Run 'ghost update v${major}' to get the latest v${major}.x version, then run 'ghost update' to get to the latest.`
+            });
+        },
+        async function down() {
+            // no-op
+        });
+}
+
 module.exports = {
     addTable,
     dropTables,
@@ -536,6 +553,7 @@ module.exports = {
     addPermissionToRole,
     addPermissionWithRoles,
     addSetting,
+    createFinalMigration,
     createTransactionalMigration,
     createNonTransactionalMigration,
     createIrreversibleMigration,
