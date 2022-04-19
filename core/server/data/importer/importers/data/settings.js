@@ -80,9 +80,6 @@ class SettingsImporter extends BaseImporter {
         };
     }
 
-    /**
-     * - 'core' and 'theme' are blacklisted
-     */
     beforeImport() {
         debug('beforeImport');
 
