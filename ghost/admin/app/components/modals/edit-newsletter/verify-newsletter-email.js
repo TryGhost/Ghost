@@ -28,7 +28,7 @@ export default class VerifyNewsletterEmail extends Component {
     @task
     *verifyEmailTask(token) {
         try {
-            const url = this.ghostPaths.url.api('newsletters', 'verify-email');
+            const url = this.ghostPaths.url.api('newsletters', 'verifications');
 
             const response = yield this.ajax.put(url, {data: {token}});
 
