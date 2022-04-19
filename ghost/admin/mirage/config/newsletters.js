@@ -5,7 +5,7 @@ export default function mockNewsletters(server) {
     server.get('/newsletters/', paginatedResponse('newsletters'));
     server.get('/newsletters/:id/');
 
-    server.post('/newsletters/', function ({newsletters}) {
+    server.post('/newsletters/', function ({newsletters}, {queryParams}) {
         const attrs = this.normalizedRequestAttrs();
 
         // sender email can't be set without verification
@@ -21,6 +21,13 @@ export default function mockNewsletters(server) {
             collection.meta = {
                 sent_email_verification: ['sender_email']
             };
+        }
+
+        if (queryParams.opt_in_existing === 'true') {
+            newsletters.all().models.forEach((n) => {
+                newsletter.members.mergeCollection(n.members);
+            });
+            newsletter.save();
         }
 
         return collection;
