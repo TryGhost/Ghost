@@ -3,9 +3,6 @@
 const debug = require('@tryghost/debug')('server');
 
 const Promise = require('bluebird');
-const fs = require('fs-extra');
-const path = require('path');
-const _ = require('lodash');
 const config = require('../shared/config');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -68,40 +65,12 @@ class GhostServer {
         debug('Starting...');
         const self = this;
         self.rootApp = rootApp;
-        let socketConfig;
-
-        const socketValues = {
-            path: path.join(config.get('paths').contentPath, config.get('env') + '.socket'),
-            permissions: '660'
-        };
 
         return new Promise(function (resolve, reject) {
-            if (_.has(config.get('server'), 'socket')) {
-                socketConfig = config.get('server').socket;
-
-                if (_.isString(socketConfig)) {
-                    socketValues.path = socketConfig;
-                } else if (_.isObject(socketConfig)) {
-                    socketValues.path = socketConfig.path || socketValues.path;
-                    socketValues.permissions = socketConfig.permissions || socketValues.permissions;
-                }
-
-                // Make sure the socket is gone before trying to create another
-                try {
-                    fs.unlinkSync(socketValues.path);
-                } catch (e) {
-                    // We can ignore this.
-                }
-
-                self.httpServer = rootApp.listen(socketValues.path);
-                fs.chmod(socketValues.path, socketValues.permissions);
-                config.set('server:socket', socketValues);
-            } else {
-                self.httpServer = rootApp.listen(
-                    config.get('server').port,
-                    config.get('server').host
-                );
-            }
+            self.httpServer = rootApp.listen(
+                config.get('server').port,
+                config.get('server').host
+            );
 
             self.httpServer.on('error', function (error) {
                 let ghostError;
@@ -287,7 +256,7 @@ class GhostServer {
             logging.info(tpl(messages.yourBlogIsAvailableOn, {url: this.url}));
         } else {
             logging.info(tpl(messages.listeningOn, {
-                host: config.get('server').socket || config.get('server').host,
+                host: config.get('server').host,
                 port: config.get('server').port
             }));
             logging.info(tpl(messages.urlConfiguredAs, {url: this.url}));
