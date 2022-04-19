@@ -44,7 +44,7 @@ describe('MEGA', function () {
         });
 
         // via transformEmailRecipientFilter
-        it('throws when "none" is used as a email_recipient_filter', async function () {
+        it('throws when "public" is used as newsletter.visibility', async function () {
             const postModel = {
                 get: sinon.stub().returns('status:free'),
                 fetch: sinon.stub().returns(Promise.resolve({
@@ -73,6 +73,11 @@ describe('MEGA', function () {
         it('doesn\'t enforce subscribed:true when sending an email to a newsletter', function () {
             const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free', {}, {visibility: 'members'});
             transformedFilter.should.equal('(status:free,status:-free)');
+        });
+
+        it('combines successfully with the newsletter paid-only visibility', function () {
+            const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free', {}, {visibility: 'paid'});
+            transformedFilter.should.equal('(status:free,status:-free)+status:-free');
         });
     });
 
