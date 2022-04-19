@@ -14,7 +14,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
 
     @attr({defaultValue: 'active'}) status;
     @attr({defaultValue: ''}) recipientFilter;
-    @attr({defaultValue: false}) subscribeOnSignup;
+    @attr({defaultValue: true}) subscribeOnSignup;
     @attr({defaultValue: 'members'}) visibility;
     @attr({defaultValue: 0}) sortOrder;
 
