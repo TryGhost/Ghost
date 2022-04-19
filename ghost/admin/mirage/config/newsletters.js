@@ -64,7 +64,7 @@ export default function mockNewsletters(server) {
     });
 
     // verify email update
-    server.put('/newsletters/verify-email/', function ({newsletters}, request) {
+    server.put('/newsletters/verifications/', function ({newsletters}, request) {
         const requestBody = JSON.parse(request.requestBody);
         const tokenData = JSON.parse(atob(requestBody.token));
 
