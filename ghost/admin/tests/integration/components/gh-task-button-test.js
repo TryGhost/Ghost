@@ -155,7 +155,7 @@ describe('Integration: Component: gh-task-button', function () {
         await render(hbs`<GhTaskButton @task={{myTask}} />`);
 
         this.myTask.perform();
-        await waitFor('[data-test-state="idle"]', {timeout: 50});
+        await waitFor('[data-test-task-button-state="idle"]', {timeout: 50});
 
         await settled();
     });
