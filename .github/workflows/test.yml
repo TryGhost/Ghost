@@ -243,7 +243,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '12.22.1'
+          node-version: '14.17.0'
           cache: yarn
       - run: npm install -g ghost-cli@latest
       - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
