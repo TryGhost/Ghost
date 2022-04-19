@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import ConfirmCreateModal from './edit-newsletter/confirm-create';
 import ConfirmNewsletterEmailModal from './edit-newsletter/confirm-newsletter-email';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -13,6 +14,7 @@ export default class EditNewsletterModal extends Component {
     };
 
     @tracked tab = 'settings';
+    @tracked optInExisting = this.args.data.newsletter.isNew;
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -32,12 +34,33 @@ export default class EditNewsletterModal extends Component {
         this.saveTask.perform();
     }
 
+    @action
+    setOptInExisting(value) {
+        this.optInExisting = value;
+    }
+
     @task
     *saveTask() {
         try {
+            yield this.args.data.newsletter.validate({});
+
+            const {optInExisting} = this;
+
+            const shouldCreate = yield this.modals.open(ConfirmCreateModal, {
+                optInExisting,
+                newsletter: this.args.data.newsletter
+            });
+
+            if (!shouldCreate) {
+                // ensure task button returns to idle state
+                return 'canceled';
+            }
+
             const newEmail = this.args.data.newsletter.senderEmail;
 
-            const result = yield this.args.data.newsletter.save();
+            const result = yield this.args.data.newsletter.save({
+                adapterOptions: {optInExisting}
+            });
 
             if (result._meta?.sent_email_verification) {
                 yield this.modals.open(ConfirmNewsletterEmailModal, {
@@ -51,8 +74,8 @@ export default class EditNewsletterModal extends Component {
             return result;
         } catch (e) {
             if (e === undefined) {
-                // validation error
-                return false;
+                // ensure task button shows failed state
+                throw new Error('Validation failed');
             }
 
             throw e;

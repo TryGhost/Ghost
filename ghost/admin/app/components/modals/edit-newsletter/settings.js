@@ -24,4 +24,14 @@ export default class EditNewsletterSettingsForm extends Component {
     onValueChange(property, value) {
         this.args.newsletter[property] = value;
     }
+
+    @action
+    setOptInExisting(event) {
+        this.args.setOptInExisting(event.target.value);
+    }
+
+    @action
+    toggleOptInExisting() {
+        this.args.setOptInExisting(!this.args.optInExisting);
+    }
 }

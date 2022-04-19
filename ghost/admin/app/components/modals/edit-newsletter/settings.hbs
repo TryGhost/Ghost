@@ -83,6 +83,23 @@
                     </div>
                 </div>
             </GhFormGroup>
+
+            {{#if @newsletter.isNew}}
+                <GhFormGroup>
+                    <label for="opt-in-existing" class="modal-fullsettings-title">Opt-in existing subscribers</label>
+                    <div class="for-switch small">
+                        <div class="container">
+                            <input
+                                type="checkbox"
+                                id="opt-in-existing"
+                                checked={{@optInExisting}}
+                                {{on "check" this.setOptInExisting}}
+                            >
+                            <button type="button" class="input-toggle-component" {{on "click" this.toggleOptInExisting}}></button>
+                        </div>
+                    </div>
+                </GhFormGroup>
+            {{/if}}
         </div>
     </fieldset>
 </div>
