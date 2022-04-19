@@ -32,7 +32,7 @@
                     <p class="gh-expandable-description">Reactivate newsletters to offer them to members.</p>
                     {{else}}
                         <h4 class="gh-expandable-title">Active newsletters</h4>
-                        <p class="gh-expandable-description">Drag to set order viewed by members at signup.</p>
+                        <p class="gh-expandable-description">Drag to set the order viewed by members on your site.</p>
                     {{/if}}
                 {{/unless}}
                 <SortableObjects
@@ -49,14 +49,25 @@
                         >
                             {{svg-jar "grab" class="grab-newsletter"}}
 
-                            <div class="gh-newsletter-card-block title-block">
-                                <h3 class="gh-newsletter-card-name">
-                                    {{newsletter.name}}
-                                </h3>
-                                <p class="gh-newsletter-card-description">
-                                    {{newsletter.description}}
-                                </p>
-                            </div>
+                            {{#if this.displayingDefault}}
+                                <div class="gh-newsletter-card-block title-block">
+                                    <h3 class="gh-newsletter-card-name">
+                                        {{newsletter.name}}
+                                    </h3>
+                                    <p class="gh-newsletter-card-description">
+                                        {{newsletter.description}}
+                                    </p>
+                                </div>
+                            {{else}}
+                                <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="gh-newsletter-card-block title-block">
+                                    <h3 class="gh-newsletter-card-name">
+                                        {{newsletter.name}}
+                                    </h3>
+                                    <p class="gh-newsletter-card-description">
+                                        {{newsletter.description}}
+                                    </p>
+                                </LinkTo>
+                            {{/if}}
                             <div class="gh-newsletter-card-block stats-block {{unless this.displayingDefault "multiple"}}">
                                 <div>
                                     <h3 class="gh-newsletter-card-name">{{newsletter.members.total}}</h3>
