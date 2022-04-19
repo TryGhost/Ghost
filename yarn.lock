@@ -2009,10 +2009,10 @@
     "@tryghost/domain-events" "^0.1.9"
     "@tryghost/member-events" "^0.4.1"
 
-"@tryghost/members-api@5.10.0":
-  version "5.10.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.10.0.tgz#828e2185b677178d9147ae9abd18d05a4ab90201"
-  integrity sha512-SOKRNvmz/9JQ948caWq6IScBABYDoq988zGs2T09wgDZnyNyKaZortocg1JW4VNhjo7TirVH2BPjM9gCFVSUNA==
+"@tryghost/members-api@5.11.0":
+  version "5.11.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-5.11.0.tgz#e4c877524fda37602b2a0e2e6f1b5c353daf1b8f"
+  integrity sha512-EhLReb60zvl4posAgTKJOGX6Snbt/M3edOlR9v4L17eTr+gxQvf2XrrRnvlRcxsHV/uE+0XEsjDnZkwLTRqwNg==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
@@ -2023,7 +2023,7 @@
     "@tryghost/member-analytics-service" "^0.1.11"
     "@tryghost/member-events" "^0.4.1"
     "@tryghost/members-analytics-ingress" "^0.1.12"
-    "@tryghost/members-payments" "^0.2.0"
+    "@tryghost/members-payments" "^0.3.0"
     "@tryghost/members-stripe-service" "^0.10.0"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
@@ -2067,21 +2067,21 @@
     "@tryghost/tpl" "^0.1.3"
     moment-timezone "^0.5.23"
 
-"@tryghost/members-offers@0.10.9", "@tryghost/members-offers@^0.10.9":
-  version "0.10.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.10.9.tgz#68b3936724ba6d4e832090ae26562e27cfb5bb94"
-  integrity sha512-JB441c45JRBkjGmKUWvosZ+ALGf++H+WIKiAlKBkt+MYOJQo13FOa+V2byp6ucCwFMDSAN2s/GeomePSvqwALg==
+"@tryghost/members-offers@0.11.0", "@tryghost/members-offers@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-offers/-/members-offers-0.11.0.tgz#c133ef0892757b3923c5b1771cd768b75bfb6f09"
+  integrity sha512-LK5dwbMngBKWOeWmd8FWqiRQUF5pQ56Yv6Fu7t4AKaGYIxiPIPVDHwEuVhzdk3tKEd9FQcPRtn3aMgam3H8+GQ==
   dependencies:
     "@nexes/mongo-utils" "^0.3.1"
     "@tryghost/string" "^0.1.20"
 
-"@tryghost/members-payments@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-payments/-/members-payments-0.2.0.tgz#761aec1761dfa3aa573a5d53bf6fe13f97ad84e9"
-  integrity sha512-jkNyAtdEDElQvTZD/Hsof0mkP/gUQEZv1OSNhNaP77ATJnze1+TEoz9+/M/dZ/kZ0mhevelsRxYsTOE92NSKWw==
+"@tryghost/members-payments@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-payments/-/members-payments-0.3.0.tgz#601fd84510a0f876d22477843e3eddb4e10316e5"
+  integrity sha512-qLOBwarTiNZx/rGEyNSfKk6nz53/JAy4Dn5IMeTfUWiY9x59oIrMHC877E8/zUrG1b0WLU5XgsgGbeBaKm6i1g==
   dependencies:
     "@tryghost/domain-events" "^0.1.9"
-    "@tryghost/members-offers" "^0.10.9"
+    "@tryghost/members-offers" "^0.11.0"
 
 "@tryghost/members-ssr@1.0.23":
   version "1.0.23"
