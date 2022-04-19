@@ -51,7 +51,7 @@
     "fix": "yarn fix:client && yarn fix:server"
   },
   "engines": {
-    "node": "^12.22.1 || ^14.17.0 || ^16.13.0",
+    "node": "^14.17.0 || ^16.13.0",
     "cli": "^1.17.0"
   },
   "dependencies": {
