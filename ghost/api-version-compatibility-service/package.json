@@ -1,0 +1,30 @@
+{
+  "name": "@tryghost/api-version-compatibility-service",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/api-version-compatibility-service",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "c8": "7.11.0",
+    "mocha": "9.2.2",
+    "should": "13.2.3",
+    "sinon": "13.0.2"
+  },
+  "dependencies": {}
+}
