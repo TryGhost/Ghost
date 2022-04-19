@@ -506,7 +506,7 @@ DataGenerator.Content = {
             plan_interval: 'month',
             plan_amount: '1000',
             plan_currency: 'usd',
-            mrr: 1000
+            mrr: 0
         },
         {
             id: ObjectId().toHexString(),

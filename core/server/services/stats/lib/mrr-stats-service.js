@@ -13,15 +13,7 @@ class MrrStatsService {
         const knex = this.db.knex;
         const rows = await knex('members_stripe_customers_subscriptions')
             .select(knex.raw(`plan_currency as currency`))
-            .select(knex.raw(`SUM(
-                CASE WHEN plan_interval = 'year' THEN
-                    FLOOR(plan_amount / 12)
-                ELSE 
-                    plan_amount
-                END
-            ) AS mrr`))
-            .whereIn('status', ['active', 'unpaid', 'past_due'])
-            .where('cancel_at_period_end', 0)
+            .select(knex.raw(`SUM(mrr) AS mrr`))
             .groupBy('plan_currency')
             .orderBy('currency');
 
