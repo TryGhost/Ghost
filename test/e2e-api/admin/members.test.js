@@ -988,7 +988,7 @@ describe('Members API', function () {
         memberWithPaidSubscription = newMember;
     });
 
-    it('Returns an identical member format for read, edit and browse', async function() {
+    it('Returns an identical member format for read, edit and browse', async function () {
         if (!memberWithPaidSubscription) {
             // Previous test failed
             this.skip();
