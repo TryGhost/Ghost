@@ -1,6 +1,7 @@
 <div>
     <fieldset class="modal-fullsettings-form">
         <div class="modal-fullsettings-section first">
+            <h3 class="gh-newsletters-setting-sectionheading">General</h3>
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="name">
                 <label for="newsletter-title" class="modal-fullsettings-title">Name</label>
                 <input
@@ -26,7 +27,8 @@
             </GhFormGroup>
         </div>
 
-        <div class="modal-fullsettings-section divider-top">
+        <div class="modal-fullsettings-section">
+            <h3 class="gh-newsletters-setting-sectionheading">Email addresses</h3>
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderName">
                 <label for="newsletter-sender-name" class="modal-fullsettings-title">Sender name</label>
                 <input
@@ -42,7 +44,7 @@
 
             <GhFormGroup @classNames="vertical"  @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderEmail">
                 <label for="newsletter-sender-email" class="modal-fullsettings-title">Newsletter email address</label>
-                <p>The address your newsletter posts are sent from</p>
+                <p>Defaults to <span class="green-d1 fw5">{{full-email-address "noreply"}}</span> if empty</p>
                 <input
                     id="newsletter-sender-email"
                     type="text"
@@ -70,7 +72,8 @@
             </GhFormGroup>
         </div>
 
-        <div class="modal-fullsettings-section divider-top">
+        <div class="modal-fullsettings-section">
+            <h3 class="gh-newsletters-setting-sectionheading">Member settings</h3>
             <GhFormGroup>
                 <label for="subscribe-on-signup" class="modal-fullsettings-title">Subscribe new members on signup</label>
                 <div class="for-switch small">
