@@ -14,7 +14,7 @@ describe('MembersStatsService', function () {
             }
         });
 
-        beforeEach(async function() {
+        beforeEach(async function () {
             await knex.schema.dropTableIfExists('products');
             await knex.schema.dropTableIfExists('stripe_products');
             await knex.schema.dropTableIfExists('stripe_prices');
