@@ -152,8 +152,8 @@ export default class DashboardStatsService extends Service {
         const stat = this.memberCountStats[this.memberCountStats.length - 1];
         return {
             total: stat.paid + stat.comped + stat.free,
-            paid: stat.paid,
-            free: stat.free + stat.comped
+            paid: stat.paid + stat.comped,
+            free: stat.free
         };
     }
 
@@ -186,8 +186,8 @@ export default class DashboardStatsService extends Service {
             if (stat.date <= searchDate) {
                 return {
                     total: stat.paid + stat.comped + stat.free,
-                    paid: stat.paid,
-                    free: stat.free + stat.comped
+                    paid: stat.paid + stat.comped,
+                    free: stat.free
                 };
             }            
         }
