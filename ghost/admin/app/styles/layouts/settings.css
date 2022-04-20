@@ -1053,13 +1053,24 @@
     width: 480px;
 }
 
-.gh-newsletters-labs .modal-fullsettings-section.divider-top {
-    margin-top: 4rem;
-    padding-top: 4rem;
+.gh-newsletters-setting-sectionheading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    color: var(--midgrey-l1);
+    margin: 0 0 16px;
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--whitegrey);
 }
 
-.gh-newsletters-labs .modal-fullsettings-section .form-group {
-    margin-bottom: 24px;
+.gh-newsletters-labs .modal-fullsettings-section {
+    margin: 40px 0;
+    padding: 0;
+}
+
+.gh-newsletters-labs .modal-fullsettings-section.first {
+    margin-top: 8px;
 }
 
 .gh-newsletters-labs .form-group.vertical p {
