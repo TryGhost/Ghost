@@ -1,5 +1,5 @@
 <div class="modal-content">
-    <header class="modal-header" data-test-modal="confirm-newsletter-archive">
+    <header class="modal-header" data-test-modal="confirm-newsletter-unarchive">
         <h1>Are you sure?</h1>
     </header>
     <button type="button" class="close" role="button" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
@@ -7,11 +7,11 @@
     <div class="modal-body">
         <p>
             Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
-            immediately archived and no longer be visible to your members.
+            immediately reactivated and become visible to your members.
         </p>
     </div>
 
-    <div class="modal-footer" {{on-key "Enter" (perform @data.archiveNewsletterTask @data.newsletter)}}>
+    <div class="modal-footer" {{on-key "Enter" (perform @data.unarchiveNewsletterTask @data.newsletter)}}>
         <button
             type="button"
             class="gh-btn"
@@ -21,10 +21,10 @@
         </button>
 
         <GhTaskButton
-            @buttonText="Archive"
-            @runningText="Archiving"
+            @buttonText="Reactivate"
+            @runningText="Reactivating"
             @showSuccess={{false}}
-            @task={{@data.archiveNewsletterTask}}
+            @task={{@data.unarchiveNewsletterTask}}
             @taskArgs={{@data.newsletter}}
             @class="gh-btn gh-btn-black gh-btn-icon"
         />

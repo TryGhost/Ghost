@@ -104,7 +104,7 @@
                                                 {{/if}}
                                                 {{#if (eq newsletter.status "archived")}}
                                                     <li>
-                                                        <button class="mr2" type="button" {{on "click" (perform this.unarchiveNewsletterTask newsletter)}}>
+                                                        <button class="mr2" type="button" {{on "click" (fn this.unarchiveNewsletter newsletter)}}>
                                                             <span>Reactivate</span>
                                                         </button>
                                                     </li>
