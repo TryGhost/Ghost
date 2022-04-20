@@ -9,6 +9,7 @@ const settingsCache = require('../../../shared/settings-cache');
 const {formattedMemberResponse} = require('./utils');
 const labsService = require('../../../shared/labs');
 const config = require('../../../shared/config');
+const getNewslettersServiceInstance = require('../newsletters');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
@@ -134,8 +135,15 @@ const getPortalProductPrices = async function () {
 };
 
 const getSiteNewsletters = async function () {
-    const newsletters = await models.Newsletter.findAll();
-    return newsletters.toJSON();
+    try {
+        const newsletterService = getNewslettersServiceInstance({NewsletterModel: models.Newsletter});
+
+        return await newsletterService.browse({filter: 'status:active', limit: 'all'});
+    } catch (err) {
+        logging.warn('Failed to fetch site newsletters');
+        logging.warn(err.message);
+        return [];
+    }
 };
 
 const getMemberSiteData = async function (req, res) {
