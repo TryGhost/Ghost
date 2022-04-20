@@ -45,7 +45,7 @@ describe('Database Migration (special functions)', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(95);
+            permissions.length.should.eql(96);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'DB Backup Integration']);
@@ -164,6 +164,7 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Edit custom theme settings', ['Administrator']);
 
             permissions.should.havePermission('Browse newsletters', ['Administrator']);
+            permissions.should.havePermission('Read newsletters', ['Administrator']);
             permissions.should.havePermission('Edit newsletters', ['Administrator']);
             permissions.should.havePermission('Add newsletters', ['Administrator']);
         });
@@ -223,7 +224,7 @@ describe('Database Migration (special functions)', function () {
                     result.roles.at(7).get('name').should.eql('Scheduler Integration');
 
                     // Permissions
-                    result.permissions.length.should.eql(95);
+                    result.permissions.length.should.eql(96);
                     result.permissions.toJSON().should.be.CompletePermissions();
                 });
             });
