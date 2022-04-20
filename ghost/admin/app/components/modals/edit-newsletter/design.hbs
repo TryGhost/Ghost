@@ -79,6 +79,21 @@
                     </label>
                 </div>
             </GhFormGroup>
+            <GhFormGroup>
+                <h4 class="modal-fullsettings-title">Newsletter name</h4>
+                <div class="for-switch small">
+                    <label class="switch" for="show-header-name">
+                        <input
+                            type="checkbox"
+                            checked={{@newsletter.showHeaderName}}
+                            id="show-header-name"
+                            name="show-header-name"
+                            {{on "click" (fn this.toggleSetting "showHeaderName")}}
+                        >
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </GhFormGroup>
         </div>
         <div class="modal-fullsettings-section">
             <h3 class="gh-newsletters-setting-sectionheading">Body</h3>
