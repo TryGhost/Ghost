@@ -1021,15 +1021,8 @@
     margin-right: 0;
 }
 
-.gh-newsletter-card-block .dropdown {
-    z-index: inherit;
-}
-
-.gh-newsletter-card-block .gh-newsletter-actions-menu {
-    z-index: 9999;
-    top: calc(100% + 6px);
-    left: auto;
-    right: 0;
+.gh-newsletter-actions-menu {
+    margin-top: 4px;
 }
 
 .gh-add-newsletter {
