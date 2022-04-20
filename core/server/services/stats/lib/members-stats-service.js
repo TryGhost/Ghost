@@ -41,7 +41,7 @@ class MembersStatsService {
 
         for (let index = subscriptionDeltaEntries.length - 1; index >= 0; index -= 1) {
             const entry = subscriptionDeltaEntries[index];
-            entry.count = countData[entry.tier][entry.cadence]
+            entry.count = countData[entry.tier][entry.cadence];
             countData[entry.tier][entry.cadence] += entry.negative_delta;
             countData[entry.tier][entry.cadence] -= entry.positive_delta;
         }
@@ -56,7 +56,7 @@ class MembersStatsService {
         const rows = await knex('members_paid_subscription_events')
             .join('stripe_prices AS price', function () {
                 this.on('price.stripe_price_id', '=', 'members_paid_subscription_events.from_plan')
-                    .orOn('price.stripe_price_id', '=', 'members_paid_subscription_events.to_plan')
+                    .orOn('price.stripe_price_id', '=', 'members_paid_subscription_events.to_plan');
             })
             .join('stripe_products AS product', 'product.stripe_product_id', '=', 'price.stripe_product_id')
             .join('products AS tier', 'tier.id', '=', 'product.product_id')
