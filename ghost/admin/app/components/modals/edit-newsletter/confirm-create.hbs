@@ -7,7 +7,7 @@
     <div class="modal-body">
         <p>
             {{#if @data.optInExisting}}
-                {{#let (members-count-fetcher query=(hash filter=(concat "newsletters:[" (join @data.activeNewsletterSlugs ", ") "]"))) as |countFetcher|}}
+                {{#let (members-count-fetcher query=(hash filter=(concat "newsletters.status:active"))) as |countFetcher|}}
                     Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
                     immediately made live and your
                     {{#if countFetcher.count}}<strong>{{countFetcher.count}}</strong>{{/if}}

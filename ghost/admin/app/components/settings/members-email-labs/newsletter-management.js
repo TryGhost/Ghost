@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import ConfirmArchiveModal from '../../modals/edit-newsletter/confirm-archive';
+import ConfirmUnarchiveModal from '../../modals/edit-newsletter/confirm-unarchive';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -28,6 +29,7 @@ export default class NewsletterManagementComponent extends Component {
         this.router.off('routeDidChange', this.handleNewRouteChange);
 
         this.confirmArchiveModal?.close();
+        this.confirmUnarchiveModal?.close();
     }
 
     get activeNewsletters() {
@@ -88,6 +90,14 @@ export default class NewsletterManagementComponent extends Component {
         return result;
     }
 
+    @action
+    unarchiveNewsletter(newsletter) {
+        this.confirmUnarchiveModal = this.modals.open(ConfirmUnarchiveModal, {
+            newsletter,
+            unarchiveNewsletterTask: this.unarchiveNewsletterTask
+        });
+    }
+
     @task
     *unarchiveNewsletterTask(newsletter) {
         newsletter.status = 'active';
@@ -98,6 +108,8 @@ export default class NewsletterManagementComponent extends Component {
         }
 
         this.updateFilteredNewsletters();
+
+        this.confirmUnarchiveModal?.close();
 
         return result;
     }
