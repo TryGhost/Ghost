@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const DatabaseInfo = require('@tryghost/database-info');
-const {chunk} = require('lodash');
 
 const {createTransactionalMigration} = require('../../utils');
 
