@@ -8,11 +8,10 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Adding existing subscribers to default newsletter');
 
-        const [existingCount] = await knex('members_newsletters').count('id as count');
-        if (existingCount.count > 0) {
-            logging.info(`members_newsletters table isn't empty - skipping`);
-            return;
-        }
+        // This is at the start of the up() instead of at the end of the down()
+        // to maintain idempotency
+        logging.info('Removing existing newsletter subscriptions');
+        await knex('members_newsletters').delete();
 
         const newsletter = await knex('newsletters')
             .orderBy('sort_order', 'asc')
@@ -68,7 +67,5 @@ module.exports = createTransactionalMigration(
             .update({
                 subscribed: false
             });
-        logging.info('Removing newsletter subscriptions');
-        await knex('members_newsletters').delete();
     }
 );
