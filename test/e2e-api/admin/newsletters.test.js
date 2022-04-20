@@ -10,7 +10,7 @@ let agent;
 describe('Newsletters API', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init();
+        await fixtureManager.init('newsletters');
         await agent.loginAsOwner();
     });
 
@@ -52,7 +52,7 @@ describe('Newsletters API', function () {
         await agent.get('newsletters/')
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: new Array(2).fill(newsletterSnapshot)
+                newsletters: new Array(4).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -63,7 +63,7 @@ describe('Newsletters API', function () {
         await agent.get('newsletters/')
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: new Array(2).fill(newsletterSnapshot)
+                newsletters: new Array(4).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
