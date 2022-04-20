@@ -22,12 +22,15 @@ const DAYS_OPTIONS = [{
     value: 'all'
 }];
 
-const PAID_OPTIONS = [{
-    name: 'Total',
-    value: 'paid-total'
+const DISPLAY_OPTIONS = [{
+    name: 'All members',
+    value: 'total'
 }, {
-    name: 'By Day',
-    value: 'paid-breakdown'
+    name: 'Paid members',
+    value: 'paid'
+}, {
+    name: 'Free members',
+    value: 'free'
 }];
 
 export default class Anchor extends Component {
@@ -36,7 +39,7 @@ export default class Anchor extends Component {
     @tracked chartDisplay = 'total';
 
     daysOptions = DAYS_OPTIONS;
-    paidOptions = PAID_OPTIONS;
+    displayOptions = DISPLAY_OPTIONS;
 
     get days() {
         return this.dashboardStats.chartDays;
@@ -47,28 +50,17 @@ export default class Anchor extends Component {
     }
 
     @action
-    onInsert() {
-        this.dashboardStats.loadSiteStatus();
-    }
-
-    @action
     loadCharts() {
         this.dashboardStats.loadMemberCountStats();
-        this.dashboardStats.loadMrrStats();
-    }
 
-    @action
-    changeChartDisplay(type) {
-        this.chartDisplay = type;
+        if (this.hasPaidTiers) {
+            this.dashboardStats.loadMrrStats();
+        }
     }
 
     @action 
-    onPaidChange(selected) {
-        this.changeChartDisplay(selected.value);
-
-        // The graph won't switch correctly from line -> bar
-        // So we need to recreate it somehow.
-        // Solution: recreate the DOM by using an #if in hbs
+    onDisplayChange(selected) {
+        this.chartDisplay = selected.value;
     }
 
     @action 
@@ -80,33 +72,12 @@ export default class Anchor extends Component {
         return this.daysOptions.find(d => d.value === this.days);
     }
 
-    get selectedPaidOption() {
-        return this.paidOptions.find(d => d.value === this.chartDisplay) ?? this.paidOptions[0];
-    }
-
-    get chartShowingTotal() {
-        return (this.chartDisplay === 'total');
-    }
-
-    get chartShowingPaid() {
-        return (this.chartDisplay === 'paid-total' || this.chartDisplay === 'paid-breakdown');
-    }
-
-    get chartShowingMrr() {
-        return (this.chartDisplay === 'mrr');
+    get selectedDisplayOption() {
+        return this.displayOptions.find(d => d.value === this.chartDisplay) ?? this.displayOptions[0];
     }
 
     get loading() {
-        if (this.chartDisplay === 'total') {
-            return this.dashboardStats.memberCountStats === null;
-        } else if (this.chartDisplay === 'paid-total') {
-            return this.dashboardStats.memberCountStats === null;
-        } else if (this.chartDisplay === 'paid-breakdown') {
-            return this.dashboardStats.memberCountStats === null;
-        } else if (this.chartDisplay === 'mrr') {
-            return this.dashboardStats.mrrStats === null;
-        }
-        return true;
+        return this.dashboardStats.memberCountStats === null;
     }
 
     get totalMembers() {
@@ -121,15 +92,9 @@ export default class Anchor extends Component {
         return this.dashboardStats.memberCounts?.free ?? 0;
     }
 
-    get currentMRR() {
-        return this.dashboardStats.currentMRR ?? 0;
-    }
-
     get hasTrends() {
         return this.dashboardStats.memberCounts !== null 
-            && this.dashboardStats.memberCountsTrend !== null
-            && this.dashboardStats.currentMRR !== null
-            && this.dashboardStats.currentMRRTrend !== null;
+            && this.dashboardStats.memberCountsTrend !== null;
     }
 
     get totalMembersTrend() {
@@ -144,92 +109,29 @@ export default class Anchor extends Component {
         return this.calculatePercentage(this.dashboardStats.memberCountsTrend.free, this.dashboardStats.memberCounts.free);
     }
 
-    get mrrTrend() {
-        return this.calculatePercentage(this.dashboardStats.currentMRRTrend, this.dashboardStats.currentMRR);
-    }
-
     get hasPaidTiers() {
         return this.dashboardStats.siteStatus?.hasPaidTiers;
     }
 
-    get chartTitle() {
-        if (this.chartDisplay === 'paid-total') {
-            return 'Total paid members';
-        } else if (this.chartDisplay === 'paid-breakdown') {
-            return 'Paid members by day';
-        } else if (this.chartDisplay === 'mrr') {
-            return 'Monthly revenue (MRR)';
-        }
-        return 'Total members';
-    }
-
     get chartType() {
-        if (this.chartDisplay === 'paid-breakdown') {
-            return 'bar';
-        }
         return 'line';
     }
 
     get chartData() {
-        if (this.chartDisplay === 'paid-breakdown') {
-            const stats = this.dashboardStats.filledMemberCountStats;
-            const labels = stats.map(stat => stat.date);
-            const newData = stats.map(stat => stat.paidSubscribed);
-            const canceledData = stats.map(stat => -stat.paidCanceled);
-            const netData = stats.map(stat => stat.paidSubscribed - stat.paidCanceled);
-            const barThickness = (this.selectedDaysOption.value < 90 ? 18 : 7);
-
-            return {
-                labels: labels,
-                datasets: [
-                    {
-                        type: 'line',
-                        data: netData,
-                        tension: 0,
-                        cubicInterpolationMode: 'monotone',
-                        fill: false,
-                        pointRadius: 0,
-                        pointHitRadius: 10,
-                        pointBorderColor: '#14B8FF',
-                        pointBackgroundColor: '#14B8FF',
-                        pointHoverBackgroundColor: '#14B8FF',
-                        pointHoverBorderColor: '#14B8FF',
-                        pointHoverRadius: 0,
-                        borderColor: 'rgba(189, 197, 204, 0.5)',
-                        borderJoinStyle: 'miter',
-                        borderWidth: 3
-                    }, {
-                        data: newData,
-                        fill: false,
-                        backgroundColor: '#BD96F6',
-                        cubicInterpolationMode: 'monotone',
-                        barThickness: barThickness,
-                        minBarLength: 3
-                    }, {
-                        data: canceledData,
-                        fill: false,
-                        backgroundColor: '#FB76B4',
-                        cubicInterpolationMode: 'monotone',
-                        barThickness: barThickness,
-                        minBarLength: 3
-                    }]
-            };
-        }
-
         let stats;
         let labels;
         let data;
 
-        if (this.chartDisplay === 'paid-total') {
-            // paid-total
+        if (this.chartDisplay === 'paid') {
+            // paid
             stats = this.dashboardStats.filledMemberCountStats;
             labels = stats.map(stat => stat.date);
-            data = stats.map(stat => stat.paid);
-        } else if (this.chartDisplay === 'mrr') {
-            // mrr
-            stats = this.dashboardStats.filledMrrStats;
+            data = stats.map(stat => stat.paid + stat.comped);
+        } else if (this.chartDisplay === 'free') {
+            // free
+            stats = this.dashboardStats.filledMemberCountStats;
             labels = stats.map(stat => stat.date);
-            data = stats.map(stat => stat.mrr);
+            data = stats.map(stat => stat.free);
         } else {
             // total
             stats = this.dashboardStats.filledMemberCountStats;
@@ -244,16 +146,16 @@ export default class Anchor extends Component {
                 tension: 0,
                 cubicInterpolationMode: 'monotone',
                 fill: true,
-                fillColor: 'rgba(20, 184, 255, 0.07)',
-                backgroundColor: 'rgba(20, 184, 255, 0.07)',
+                fillColor: 'rgba(142, 66, 255, 0.05)',
+                backgroundColor: 'rgba(142, 66, 255, 0.05)',
                 pointRadius: 0,
                 pointHitRadius: 10,
-                pointBorderColor: '#14B8FF',
-                pointBackgroundColor: '#14B8FF',
-                pointHoverBackgroundColor: '#14B8FF',
-                pointHoverBorderColor: '#14B8FF',
+                pointBorderColor: '#8E42FF',
+                pointBackgroundColor: '#8E42FF',
+                pointHoverBackgroundColor: '#8E42FF',
+                pointHoverBorderColor: '#8E42FF',
                 pointHoverRadius: 0,
-                borderColor: '#14B8FF',
+                borderColor: '#8E42FF',
                 borderJoinStyle: 'miter'
             }]
         };
@@ -270,107 +172,6 @@ export default class Anchor extends Component {
 
     get chartOptions() {
         let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
-
-        if (this.chartDisplay === 'paid-breakdown') {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                title: {
-                    display: false
-                },
-                legend: {
-                    display: false
-                },
-                hover: {
-                    onHover: function (e) {
-                        e.target.style.cursor = 'pointer';
-                    }
-                },
-                tooltips: {
-                    intersect: false,
-                    mode: 'index',
-                    displayColors: false,
-                    backgroundColor: '#15171A',
-                    xPadding: 7,
-                    yPadding: 7,
-                    cornerRadius: 5,
-                    caretSize: 7,
-                    caretPadding: 5,
-                    bodyFontSize: 12.5,
-                    titleFontSize: 12,
-                    titleFontStyle: 'normal',
-                    titleFontColor: 'rgba(255, 255, 255, 0.7)',
-                    titleMarginBottom: 3,
-                    callbacks: {
-                        label: (tooltipItems, data) => {
-                            let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
-                            if (tooltipItems.datasetIndex === 0) {
-                                return `Net: ${valueText}`;
-                            }
-
-                            if (tooltipItems.datasetIndex === 1) {
-                                return `New paid: ${valueText}`;
-                            }
-
-                            if (tooltipItems.datasetIndex === 2) {
-                                return `Canceled paid: ${Math.abs(valueText)}`;
-                            }
-                        },
-                        title: (tooltipItems) => {
-                            return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
-                        }
-                    }
-                },
-                scales: {
-                    yAxes: [{
-                        offset: false,
-                        gridLines: {
-                            drawTicks: false,
-                            display: true,
-                            drawBorder: false,
-                            color: 'rgba(255, 255, 255, 0.1)',
-                            lineWidth: 0,
-                            zeroLineColor: barColor,
-                            zeroLineWidth: 1
-                        },
-                        ticks: {
-                            display: false,
-                            maxTicksLimit: 5,
-                            fontColor: '#7C8B9A',
-                            padding: 8,
-                            precision: 0
-                        }
-                    }],
-                    xAxes: [{
-                        offset: true,
-                        stacked: true,
-                        gridLines: {
-                            color: barColor,
-                            borderDash: [4,4],
-                            display: true,
-                            drawBorder: false,
-                            drawTicks: false,
-                            zeroLineWidth: 1,
-                            zeroLineColor: barColor,
-                            zeroLineBorderDash: [4,4]
-                        },
-                        ticks: {
-                            display: false,
-                            callback: function (value, index, values) {
-                                if (index === 0) {
-                                    document.getElementById('gh-dashboard5-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
-                                }
-                                if (index === values.length - 1) {
-                                    document.getElementById('gh-dashboard5-anchor-date-end').innerHTML = moment(value).format(DATE_FORMAT);
-                                }
-                                return value;
-                            }
-                        }
-                    }]
-                }
-            };
-        }
     
         return {
             responsive: true,
@@ -482,11 +283,11 @@ export default class Anchor extends Component {
     }
 
     get chartHeight() {
-        return 250;
+        return 200;
     }
 
     get chartHeightSmall() {
-        return 225;
+        return 200;
     }
 
     calculatePercentage(from, to) {

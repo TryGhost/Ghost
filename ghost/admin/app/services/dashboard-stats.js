@@ -502,8 +502,8 @@ export default class DashboardStatsService extends Service {
         }
         
         const [paid, free] = yield Promise.all([
-            this.membersCountCache.count('subscribed:true+status:paid'),
-            this.membersCountCache.count('subscribed:true+status:-paid')
+            this.membersCountCache.count('subscribed:true+status:-free'),
+            this.membersCountCache.count('subscribed:true+status:free')
         ]);
 
         this.newsletterSubscribers = {

@@ -1,38 +1,28 @@
 <section class="gh-dashboard5-section gh-dashboard5-anchor" {{did-insert this.loadCharts}}>
     <article class="gh-dashboard5-box">
         {{#if this.hasPaidTiers}}
-            <div class="gh-dashboard5-title">
-                <h4>{{this.chartTitle}}</h4>
-            </div>
+            <Dashboard::v5::Parts::Metric
+                @label="Members over time" /> 
+        {{else}}
+            <Dashboard::v5::Parts::Metric
+                @label="Total members"
+                @value={{format-number this.totalMembers}}
+                @trends={{this.hasTrends}}
+                @percentage={{this.totalMembersTrend}}
+                @large={{true}} /> 
         {{/if}}
-        <div class="gh-dashboard5-hero {{unless this.hasPaidTiers 'is-solo'}}">
-            {{#unless this.hasPaidTiers}}
-                <Dashboard::v5::Parts::Metric
-                    @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
-                    @value={{format-number this.totalMembers}}
-                    @trends={{this.hasTrends}}
-                    @percentage={{this.totalMembersTrend}}
-                    @large={{true}} /> 
-            {{/unless}}
 
+        <div class="gh-dashboard5-hero {{unless this.hasPaidTiers 'is-solo'}}">
             <div class="gh-dashboard5-chart">
                 {{#if this.loading}}
                     <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
                 {{else}}
                     <div class="gh-dashboard5-chart-container">
-                        {{#if (eq this.chartType 'bar')}}
-                            <EmberChart
-                                @type="bar"
-                                @data={{this.chartData}}
-                                @options={{this.chartOptions}}
-                                @height={{if this.hasPaidTiers this.chartHeight this.chartHeightSmall}} />
-                        {{else}}
-                            <EmberChart
-                                @type="line"
-                                @data={{this.chartData}}
-                                @options={{this.chartOptions}}
-                                @height={{if this.hasPaidTiers this.chartHeight this.chartHeightSmall}} />
-                        {{/if}}
+                        <EmberChart
+                            @type="line"
+                            @data={{this.chartData}}
+                            @options={{this.chartOptions}}
+                            @height={{if this.hasPaidTiers this.chartHeight this.chartHeightSmall}} />
                     </div>
                     <div class="gh-dashboard5-chart-ticks">
                         <span id="gh-dashboard5-anchor-date-start"> </span>
@@ -42,46 +32,28 @@
             </div>
 
             {{#if this.hasPaidTiers}}
-                <div class="gh-dashboard5-stats{{unless this.hasPaidTiers ' is-solo'}}">
-                    <button class="gh-dashboard5-stats-button {{if this.chartShowingTotal 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "total")}}>
-                        <Dashboard::v5::Parts::Metric
-                            @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
-                            @value={{format-number this.totalMembers}}
-                            {{!-- @trends={{this.hasTrends}} --}}
-                            {{!-- @percentage={{this.totalMembersTrend}} --}}
-                            @center={{true}}
-                            @large={{true}} /> 
-                    </button> 
-                    <button class="gh-dashboard5-stats-button {{if this.chartShowingPaid 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "paid-total")}}>
-                        <Dashboard::v5::Parts::Metric
-                            @label={{gh-pluralize this.paidMembers "Total paid member" without-count=true}}
-                            @value={{format-number this.paidMembers}}
-                            {{!-- @trends={{this.hasTrends}} --}}
-                            {{!-- @percentage={{this.paidMembersTrend}} --}}
-                            @center={{true}}
-                            @large={{true}} />
-                    </button>
-                    <button class="gh-dashboard5-stats-button {{if this.chartShowingMrr 'is-selected'}}" type="button" {{on "click" (fn this.changeChartDisplay "mrr")}}>
-                        <Dashboard::v5::Parts::Metric
-                            @label="Monthly Revenue (MRR)"
-                            @value="{{this.mrrCurrencySymbol}}{{gh-price-amount this.currentMRR}}"
-                            {{!-- @trends={{this.hasTrends}} --}}
-                            {{!-- @percentage={{this.mrrTrend}} --}}
-                            @center={{true}}
-                            @large={{true}} />
-                    </button>
-                </div>
+                <article class="gh-dashboard5-columns">
+                    <div class="gh-dashboard5-column gh-dashboard5-mrr">
+                        <Dashboard::v5::Charts::Mrr />
+                    </div>
+                    <div class="gh-dashboard5-column gh-dashboard5-breakdown">
+                        <Dashboard::v5::Charts::PaidBreakdown />
+                    </div>
+                    <div class="gh-dashboard5-column gh-dashboard5-mix">
+                        <Dashboard::v5::Charts::PaidMix />
+                    </div>
+                </article>
             {{/if}}
         </div>
 
         <div class="gh-dashboard5-selects">
-            {{#if this.chartShowingPaid}}
+            {{#if this.hasPaidTiers}}
                 <div class="gh-dashboard5-select">
                     <PowerSelect
-                        @selected={{this.selectedPaidOption}}
-                        @options={{this.paidOptions}}
+                        @selected={{this.selectedDisplayOption}}
+                        @options={{this.displayOptions}}
                         @searchEnabled={{false}}
-                        @onChange={{this.onPaidChange}}
+                        @onChange={{this.onDisplayChange}}
                         @triggerComponent="gh-power-select/trigger"
                         @triggerClass="gh-contentfilter-menu-trigger"
                         @dropdownClass="gh-contentfilter-menu-dropdown"
@@ -92,6 +64,7 @@
                     </PowerSelect>
                 </div>
             {{/if}}
+
             <div class="gh-dashboard5-select">
                 <PowerSelect
                     @selected={{this.selectedDaysOption}}
