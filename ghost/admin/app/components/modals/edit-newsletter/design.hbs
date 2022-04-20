@@ -126,14 +126,14 @@
         </div>
         <div class="modal-fullsettings-section divider-top">
             <GhFormGroup @classNames="vertical">
-                <h4 class="modal-fullsettings-title">Email footer</h4>
+                <label class="modal-fullsettings-title">Email footer</label>
+                <p>Any extra information or legal text</p>
                 <KoenigBasicHtmlInput
                     @name="footer"
                     @html={{@newsletter.footerContent}}
                     @class="miw-100 form-text gh-members-emailsettings-footer-input"
                     @onChange={{fn this.changeSetting "footerContent"}}
                 />
-            <p>Any extra information or legal text</p>
             </GhFormGroup>
         </div>
     </fieldset>
