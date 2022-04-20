@@ -196,7 +196,7 @@
     "eslint-plugin-ghost": "2.13.0",
     "grunt": "1.5.2",
     "grunt-bg-shell": "2.3.3",
-    "grunt-contrib-clean": "2.0.0",
+    "grunt-contrib-clean": "2.0.1",
     "grunt-contrib-compress": "2.0.0",
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-symlink": "1.0.0",
