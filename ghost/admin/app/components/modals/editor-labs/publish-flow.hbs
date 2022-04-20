@@ -1,0 +1,28 @@
+<div class="flex flex-column h-100 items-center">
+    <header class="gh-editor-header" data-test-modal="publish">
+        <div class="ml3">
+            <button class="gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
+                <span>{{svg-jar "arrow-left"}} Back to edit</span>
+            </button>
+        </div>
+        <div class="flex-grow-1"></div>
+    </header>
+
+    <div class="flex flex-column flex-auto justify-center items-center w-50">
+        <div class="mb8 f1 fw6 midgrey">
+            Ready?
+            <strong class="darkgrey">Right now</strong>
+            this post will be
+            <strong class="darkgrey">published and sent</strong>
+            to
+            <strong class="darkgrey">all subscribers</strong>
+            of
+            <strong class="darkgrey">The Weekly Roundup</strong>.
+        </div>
+
+        <div class="flex flex-row w-100">
+            <button type="button" class="gh-btn gh-btn-black" {{on "click" (noop)}}><span>Continue</span></button>
+            <button type="button" class="gh-btn gh-btn-link" {{on "click" @close}}><span>Cancel</span></button>
+        </div>
+    </div>
+</div>

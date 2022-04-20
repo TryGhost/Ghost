@@ -78,6 +78,10 @@
     background: var(--white)
 }
 
+.fullscreen-modal-total-overlay .modal-content {
+    height: 100%;
+}
+
 .fullscreen-modal-action {
     margin: 6vw 0;
 }
