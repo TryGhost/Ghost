@@ -75,7 +75,8 @@ Dashboard v5 Layout */
         "overview           overview           overview           overview"  
         "anchor             anchor             anchor             anchor"  
         "engagement         engagement         engagement         engagement" 
-        "recent-posts       recent-posts       recent-activity    recent-activity"
+        "recent-posts       recent-posts       recent-posts       recent-posts"
+        "recent-activity    recent-activity    recent-activity    recent-activity"
         "help               help               help               help";
 }
 
@@ -373,7 +374,7 @@ Dashboard v5 List */
 
 .gh-dashboard5-list-header {
     display: grid;
-    grid-template-columns: 65% 20% 15%;
+    grid-template-columns: 55% 15% 30%;
     padding: 0 0 24px;
     border-bottom: 1px solid var(--whitegrey);
 }
@@ -402,7 +403,7 @@ Dashboard v5 List */
 .gh-dashboard5-list-item {
     padding: 14px 0;
     display: grid;
-    grid-template-columns: 65% 20% 15%;
+    grid-template-columns: 55% 15% 30%;
     padding: 8px 0;
     border-bottom: 1px solid var(--whitegrey);
 }
@@ -754,4 +755,30 @@ Dashboard v5 Misc */
 
 .gh-dashboard5-anchor .gh-dashboard5-mrr .gh-dashboard5-chart {
     margin-top: 0;
+}
+
+/* remove me */
+.prototype-bar {
+    height: 5px;
+    border-radius: 2.5px;
+    background: var(--whitegrey);
+    overflow: hidden;
+    position: relative;
+    display: block;
+    flex-grow: 1;
+}
+
+.prototype-bar + span {
+    flex-shrink: 0;
+    padding-left: 15px;
+}
+
+.prototype-bar > span {
+    background: var(--purple);
+    border-top-right-radius: 2.5px;
+    border-bottom-right-radius: 2.5px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
 }
