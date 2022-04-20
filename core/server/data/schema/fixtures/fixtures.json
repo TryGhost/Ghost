@@ -547,6 +547,11 @@
                     "object_type": "newsletter"
                 },
                 {
+                    "name": "Read newsletters",
+                    "action_type": "read",
+                    "object_type": "newsletter"
+                },
+                {
                     "name": "Add newsletters",
                     "action_type": "add",
                     "object_type": "newsletter"
