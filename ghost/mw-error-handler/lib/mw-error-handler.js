@@ -203,7 +203,8 @@ module.exports.resourceNotFound = (req, res, next) => {
                     acceptVersion: req.headers['accept-version'],
                     ghostVersion: `v${res.locals.safeVersion}`
                 }),
-                help: tpl(messages.methodNotAcceptableVersionAhead.help)
+                help: tpl(messages.methodNotAcceptableVersionAhead.help),
+                code: 'UPDATE_GHOST'
             };
         } else {
             errorOptions = {
@@ -214,7 +215,8 @@ module.exports.resourceNotFound = (req, res, next) => {
                     acceptVersion: req.headers['accept-version'],
                     ghostVersion: `v${res.locals.safeVersion}`
                 }),
-                help: tpl(messages.methodNotAcceptableVersionBehind.help)
+                help: tpl(messages.methodNotAcceptableVersionBehind.help),
+                code: 'UPDATE_CLIENT'
             };
         }
 
