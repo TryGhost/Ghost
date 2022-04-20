@@ -1049,9 +1049,8 @@
     stroke-width: 3;
 }
 
-.gh-newsletters-labs .gh-members-emailsettings-footer {
-    margin-top: auto;
-    margin-bottom: 0;
+.gh-newsletters-labs .modal-fullsettings-sidebar {
+    width: 480px;
 }
 
 .gh-newsletters-labs .modal-fullsettings-section.divider-top {
@@ -1059,9 +1058,18 @@
     padding-top: 4rem;
 }
 
+.gh-newsletters-labs .modal-fullsettings-section .form-group {
+    margin-bottom: 24px;
+}
+
 .gh-newsletters-labs .form-group.vertical p {
-    margin: 0 0 10px;
+    margin: 0 0 12px;
     line-height: 1em;
+}
+
+.gh-newsletters-labs .gh-members-emailsettings-footer {
+    margin-top: auto;
+    margin-bottom: 0;
 }
 
 .modal-fullsettings-main-topbar {
