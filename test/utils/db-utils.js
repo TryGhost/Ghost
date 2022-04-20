@@ -44,7 +44,7 @@ module.exports.isSQLite = () => {
  */
 module.exports.reset = async ({truncate} = {truncate: false}) => {
     // Only run this copy in CI until it gets fleshed out
-    if (process.env.CI && module.exports.isSQLite()) {
+    if (false && process.env.CI && module.exports.isSQLite()) {
         const filename = config.get('database:connection:filename');
         const filenameOrig = `${filename}.${dbHash}-orig`;
 
