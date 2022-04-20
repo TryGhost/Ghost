@@ -76,7 +76,7 @@ module.exports = createTransactionalMigration(
     },
     async function down() {
         // Noop because we don't want to reset the default newsletter values
-        logging.info(`Skipping newsletter design settings backfill rollack - not needed`);
+        logging.info(`Skipping newsletter design settings backfill rollback - not needed`);
         return Promise.resolve();
     }
 );
