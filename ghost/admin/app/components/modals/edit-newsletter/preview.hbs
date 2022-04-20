@@ -13,12 +13,15 @@
                 </div>
             {{/if}}
             {{#if this.showHeader}}
-                <div class={{if @newsletter.showHeaderTitle "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}}>
+                <div class={{if this.showHeaderTitle "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}}>
                     {{#if (and this.settings.icon @newsletter.showHeaderIcon)}}
                         <img src={{this.settings.icon}} alt="" role="presentation" />
                     {{/if}}
-                    {{#if @newsletter.showHeaderTitle}}
-                        <h4>{{or @newsletter.name this.config.blogTitle}}</h4>
+                    {{#if this.headerTitle}}
+                        <h4>{{this.headerTitle}}</h4>
+                    {{/if}}
+                    {{#if this.headerSubtitle}}
+                        <h5>{{this.headerSubtitle}}</h5>
                     {{/if}}
                 </div>
             {{/if}}
@@ -42,7 +45,7 @@
                     {{html-safe @newsletter.footerContent}}
                 </div>
                 <div class="gh-members-emailpreview-footersite">
-                    <span>{{this.config.blogTitle}} &copy; {{moment-format (moment-site-tz) "YYYY"}} – </span> <a href="javascript:">Unsubscribe</a>
+                    <span>{{this.settings.title}} &copy; {{moment-format (moment-site-tz) "YYYY"}} – </span> <a href="javascript:">Unsubscribe</a>
                 </div>
             </div>
             <div class="gh-members-emailpreview-badge {{unless @newsletter.showBadge "hide"}}">

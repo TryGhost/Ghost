@@ -22,6 +22,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr headerImage;
     @attr({defaultValue: true}) showHeaderIcon;
     @attr({defaultValue: true}) showHeaderTitle;
+    @attr({defaultValue: true}) showHeaderName;
     @attr({defaultValue: 'sans_serif'}) titleFontCategory;
     @attr({defaultValue: 'center'}) titleAlignment;
     @attr({defaultValue: true}) showFeatureImage;
