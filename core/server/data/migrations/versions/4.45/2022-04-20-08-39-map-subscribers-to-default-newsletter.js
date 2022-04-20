@@ -47,7 +47,6 @@ module.exports = createTransactionalMigration(
         // eslint-disable-next-line no-restricted-syntax
         for (const pivotChunk of pivotChunks) {
             await knex('members_newsletters').insert(pivotChunk);
-            logging.info(`Subscribed ${memberCount += pivotChunk.length} members`);
         }
     },
     async function down(knex) {
