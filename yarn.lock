@@ -2963,7 +2963,7 @@ async@0.9.x:
   resolved "https://registry.yarnpkg.com/async/-/async-0.9.2.tgz#aea74d5e61c1f899613bf64bda66d4c78f2fd17d"
   integrity sha1-rqdNXmHB+JlhO/ZL2mbUx48v0X0=
 
-async@^1.4.0, async@^1.5.0:
+async@^1.4.0:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
   integrity sha1-7GphrlZIDAw8skHJVhjiCJL5Zyo=
@@ -2975,7 +2975,7 @@ async@^2.1.2, async@^2.6.0, async@^2.6.1:
   dependencies:
     lodash "^4.17.14"
 
-async@^3.0.0, async@^3.0.1, async@^3.2.0, async@~3.2.0:
+async@^3.0.0, async@^3.0.1, async@^3.2.0, async@^3.2.2, async@~3.2.0:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/async/-/async-3.2.3.tgz#ac53dafd3f4720ee9e8a160628f18ea91df196c9"
   integrity sha512-spZRyzKL5l5BZQrr/6m/SqFdBN0q3OCI0f9rjfBzCMBIP4p75P620rR3gTmaksNOhmzgdxcaxdNfMy6anrbM0g==
@@ -5310,12 +5310,12 @@ express-hbs@2.4.0:
   optionalDependencies:
     js-beautify "^1.13.11"
 
-express-jwt@6.1.1:
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-6.1.1.tgz#2b157fb4fa33c2d367ee71c61b5aca762de39657"
-  integrity sha512-m8gkY04v5jtiFZn6bYQINYX/DVXq1DVb5nIW7H8l87qJ4BBvtQKFRpxyRE31odct7OPfHdT+B8678zJHhlMrpw==
+express-jwt@6.1.2:
+  version "6.1.2"
+  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-6.1.2.tgz#4a6cc11d1dcff6f23126dd79ec5b2b441333e78b"
+  integrity sha512-l5dlf5lNM/1EODMsJGfHn1VnrhhsUYEetzrKFStJZLjFQXtR+HGdBiW+jUNZ+ISsFe+h7Wl/hQKjLrY2TX0Qkg==
   dependencies:
-    async "^1.5.0"
+    async "^3.2.2"
     express-unless "^1.0.0"
     jsonwebtoken "^8.1.0"
     lodash "^4.17.21"
