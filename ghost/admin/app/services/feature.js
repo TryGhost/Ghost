@@ -49,52 +49,27 @@ export default class FeatureService extends Service {
     @service lazyLoader;
 
     // features
-    @feature('emailAnalytics')
-        emailAnalytics;
+    @feature('emailAnalytics') emailAnalytics;
 
     // user-specific flags
     @feature('nightShift', {user: true, onChange: '_setAdminTheme'})
         nightShift;
 
     // labs flags
-    @feature('multipleProducts')
-        multipleProducts;
-
-    @feature('dashboardV5')
-        dashboardV5;
-
-    @feature('oauthLogin')
-        oauthLogin;
-
-    @feature('membersActivity')
-        membersActivity;
-
-    @feature('urlCache')
-        urlCache;
-
-    @feature('beforeAfterCard')
-        beforeAfterCard;
-    
-    @feature('multipleNewsletters')
-        multipleNewsletters;
-
-    @feature('tweetGridCard')
-        tweetGridCard;
-
-    @feature('improvedOnboarding')
-        improvedOnboarding;
-
-    @feature('tierWelcomePages')
-        tierWelcomePages;
-
-    @feature('tierName')
-        tierName;
-
-    @feature('membersTableStatus')
-        membersTableStatus;
-
-    @feature('selectablePortalLinks')
-        selectablePortalLinks;
+    @feature('multipleProducts') multipleProducts;
+    @feature('dashboardV5') dashboardV5;
+    @feature('oauthLogin') oauthLogin;
+    @feature('membersActivity') membersActivity;
+    @feature('urlCache') urlCache;
+    @feature('beforeAfterCard') beforeAfterCard;
+    @feature('multipleNewsletters') multipleNewsletters;
+    @feature('tweetGridCard') tweetGridCard;
+    @feature('improvedOnboarding') improvedOnboarding;
+    @feature('tierWelcomePages') tierWelcomePages;
+    @feature('tierName') tierName;
+    @feature('membersTableStatus') membersTableStatus;
+    @feature('selectablePortalLinks') selectablePortalLinks;
+    @feature('publishingFlow') publishingFlow;
 
     _user = null;
 
