@@ -47,8 +47,7 @@ module.exports = createTransactionalMigration(
 
         const chunkSize = 1000;
         const pivotChunks = chunk(pivotRows, chunkSize);
-        
-        let memberCount = 0;
+
         // eslint-disable-next-line no-restricted-syntax
         for (const pivotChunk of pivotChunks) {
             await knex('members_newsletters').insert(pivotChunk);
