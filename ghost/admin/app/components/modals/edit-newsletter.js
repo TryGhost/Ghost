@@ -55,15 +55,17 @@ export default class EditNewsletterModal extends Component {
 
             const {optInExisting} = this;
 
-            const shouldCreate = yield this.modals.open(ConfirmCreateModal, {
-                optInExisting,
-                newsletter: this.args.data.newsletter,
-                activeNewsletterSlugs: this.activeNewsletterSlugs
-            });
+            if (this.args.data.newsletter.isNew) {
+                const shouldCreate = yield this.modals.open(ConfirmCreateModal, {
+                    optInExisting,
+                    newsletter: this.args.data.newsletter,
+                    activeNewsletterSlugs: this.activeNewsletterSlugs
+                });
 
-            if (!shouldCreate) {
-                // ensure task button returns to idle state
-                return 'canceled';
+                if (!shouldCreate) {
+                    // ensure task button returns to idle state
+                    return 'canceled';
+                }
             }
 
             const newEmail = this.args.data.newsletter.senderEmail;
