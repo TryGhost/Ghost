@@ -1,5 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyString} = matchers;
+const testUtils = require('../../utils');
 
 const newsletterSnapshot = {
     id: anyObjectId
@@ -64,6 +65,18 @@ describe('Newsletters API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 newsletters: new Array(4).fill(newsletterSnapshot)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can read a newsletter', async function () {
+        await agent
+            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: new Array(1).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
