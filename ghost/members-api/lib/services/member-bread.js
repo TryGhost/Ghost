@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
 
@@ -20,6 +21,10 @@ const messages = {
 /**
  * @typedef {object} IStripeService
  * @prop {boolean} configured
+ */
+
+/**
+ * @typedef {import('@tryghost/members-offers/lib/application/OfferMapper').OfferDTO} OfferDTO
  */
 
 module.exports = class MemberBREADService {
@@ -45,6 +50,7 @@ module.exports = class MemberBREADService {
 
     /**
      * @private
+     * Adds missing complimentary subscriptions to a member and makes sure the tier of all subscriptions is set correctly.
      */
     attachSubscriptionsToMember(member) {
         if (!member.products || !Array.isArray(member.products)) {
@@ -110,11 +116,45 @@ module.exports = class MemberBREADService {
     }
 
     /**
+     * @private Builds a map between subscriptions and their offer representation (from OfferMapper)
+     * @returns {Promise<Map<string, OfferDTO>>}
+     */
+    async fetchSubscriptionOffers(subscriptions) {
+        const fetchedOffers = new Map();
+        const subscriptionOffers = new Map();
+
+        try {
+            for (const subscriptionModel of subscriptions) {
+                const offerId = subscriptionModel.get('offer_id');
+    
+                if (!offerId) {
+                    continue;
+                }
+                
+                let offer = fetchedOffers.get(offerId);
+                if (!offer) {
+                    offer = await this.offersAPI.getOffer({id: offerId});
+                    fetchedOffers.set(offerId, offer);
+                }
+    
+                subscriptionOffers.set(subscriptionModel.get('subscription_id'), offer);
+            }
+        } catch (e) {
+            logging.error(`Failed to load offers for subscriptions - ${subscriptions.map(s => s.id).join(', ')}.`);
+            logging.error(e);
+        }
+        
+        return subscriptionOffers;
+    }
+
+    /**
      * @private
+     * @param {Object} member JSON serialized member
+     * @param {Map<string, OfferDTO>} subscriptionOffers result from fetchSubscriptionOffers
      */
     attachOffersToSubscriptions(member, subscriptionOffers) {
         member.subscriptions = member.subscriptions.map((subscription) => {
-            const offer = subscriptionOffers[subscription.id];
+            const offer = subscriptionOffers.get(subscription.id);
             if (offer) {
                 subscription.offer = offer;
             } else {
@@ -133,7 +173,6 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
             'products',
-            'offerRedemptions',
             'newsletters'
         ];
 
@@ -156,38 +195,11 @@ module.exports = class MemberBREADService {
             return null;
         }
 
-        const subscriptionOffers = await model.related('offerRedemptions').toJSON().reduce(async (promiseObj, offerRedemption) => {
-            const obj = await promiseObj;
-            const offer = await this.offersAPI.getOffer({id: offerRedemption.offer_id});
-            return {
-                ...obj,
-                [offerRedemption.subscription_id]: offer
-            };
-        }, Promise.resolve({}));
-
-        model.related('stripeSubscriptions').forEach((subscriptionModel) => {
-            const offer = subscriptionOffers[subscriptionModel.id];
-            if (!offer) {
-                return;
-            }
-
-            if (offer.cadence !== subscriptionModel.related('stripePrice').get('interval')) {
-                return;
-            }
-
-            if (offer.tier.id !== subscriptionModel.related('stripePrice').related('stripeProduct').get('product_id')) {
-                return;
-            }
-
-            subscriptionOffers[subscriptionModel.get('subscription_id')] = offer;
-        });
-
         const member = model.toJSON(options);
 
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
-
-        this.attachOffersToSubscriptions(member, subscriptionOffers);
+        this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
 
         return member;
     }
@@ -315,6 +327,7 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.customer',
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
+            'stripeSubscriptions.stripePrice.stripeProduct.product',
             'products',
             'newsletters'
         ];
@@ -340,11 +353,15 @@ module.exports = class MemberBREADService {
             return null;
         }
 
+        const subscriptions = page.data.flatMap(model => model.related('stripeSubscriptions').slice());
+        const offerMap = await this.fetchSubscriptionOffers(subscriptions);
+
         const members = page.data.map(model => model.toJSON(options));
 
         const data = members.map((member) => {
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
+            this.attachOffersToSubscriptions(member, offerMap);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;
             }
