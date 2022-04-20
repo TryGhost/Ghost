@@ -30,30 +30,14 @@ module.exports = createTransactionalMigration(
             const updatedRows = result.length;
             const subscriptionsToUpdate = result;
 
-            // Group by offer ID (we make the assumption that we will have a limited amount of offers)
-            const groupedByOffers = {};
-            // eslint-disable-next-line no-restricted-syntax
-            for (const u of subscriptionsToUpdate) {
-                if (groupedByOffers[u.offer_id]) {
-                    groupedByOffers[u.offer_id].push(u.subscription_id);
-                } else {
-                    groupedByOffers[u.offer_id] = [u.subscription_id];
-                }
-            }
-
             logging.info(`Setting the offer_id for ${updatedRows} members_stripe_customers_subscriptions`);
 
             // eslint-disable-next-line no-restricted-syntax
-            for (const offerId of Object.keys(groupedByOffers)) {
-                const subscriptionIdChunks = chunk(groupedByOffers[offerId], 998);
-
+            for (const u of subscriptionsToUpdate) { 
                 // eslint-disable-next-line no-restricted-syntax
-                for (const subscriptionIdChunk of subscriptionIdChunks) {
-                    // eslint-disable-next-line no-restricted-syntax
-                    await knex('members_stripe_customers_subscriptions')
-                        .update('offer_id', offerId)
-                        .whereIn('id', subscriptionIdChunk);
-                }
+                await knex('members_stripe_customers_subscriptions')
+                    .update('offer_id', u.offer_id)
+                    .where('id', u.subscription_id); 
             }
         } else {
             // Single update query
