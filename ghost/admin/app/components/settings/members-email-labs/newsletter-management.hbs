@@ -12,6 +12,7 @@
                         @triggerComponent="gh-power-select/trigger"
                         @triggerClass="gh-dropdown-archived ember-power-select-inline"
                         @dropdownClass="gh-contentfilter-menu-dropdown"
+                        @horizontalPosition="right"
                         @matchTriggerWidth={{false}}
                         as |status|
                     >
@@ -82,7 +83,7 @@
                                 {{#if this.displayingDefault}}
                                     <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="gh-btn gh-btn-green"><span>Customize &rarr;</span></LinkTo>
                                 {{else}}
-                                    <GhBasicDropdown @verticalPosition="below" @renderInPlace={{true}} as |dd|>
+                                    <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @renderInPlace={{true}} as |dd|>
                                         <dd.Trigger class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-actions-button icon-only">
                                             <span>
                                                 {{svg-jar "dotdotdot"}}
