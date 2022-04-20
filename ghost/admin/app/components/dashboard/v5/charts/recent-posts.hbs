@@ -4,7 +4,7 @@
             <div class="gh-dashboard5-list-header">
                 <div class="gh-dashboard5-list-title">Recent posts</div>
                 <div class="gh-dashboard5-list-title">Sends</div>
-                <div class="gh-dashboard5-list-title">Opens</div>
+                <div class="gh-dashboard5-list-title">Open rate</div>
             </div>
             <div class="gh-dashboard5-list-body">
                 {{#each this.posts as |post|}}
@@ -12,8 +12,11 @@
                         <LinkTo class="gh-dashboard5-list-post permalink" @route="editor.edit" @models={{array post.displayName post.id}}>
                         {{post.title}}
                         </LinkTo>
-                        <span>231</span>
-                        <span>65%</span>
+                        <span>{{format-number post.email.emailCount}}</span>
+                        <span class="with-percentage-bar">
+                            <span class="prototype-bar"><span style={{html-safe (concat "width: " post.email.openRate "%;")}}/></span>
+                            <span>{{post.email.openRate}}%</span>
+                        </span>
                     </div>
                 {{else}}
                     <div class="gh-dashboard5-list-empty">
