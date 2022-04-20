@@ -402,7 +402,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         if (server) {
             const GhostServer = require('./server/ghost-server');
-            ghostServer = new GhostServer({url: config.getSiteUrl()});
+            ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
             debug('End: load server + minimal app');
