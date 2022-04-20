@@ -108,6 +108,11 @@
                     "object_type": "notification"
                 },
                 {
+                    "name": "Read newsletters",
+                    "action_type": "read",
+                    "object_type": "newsletter"
+                },
+                {
                     "name": "Add notifications",
                     "action_type": "add",
                     "object_type": "notification"
