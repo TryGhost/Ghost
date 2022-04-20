@@ -14,6 +14,7 @@ describe('APIVersionCompatibilityService', function () {
 
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
+            emailTo: 'test_env@example.com',
             fetchHandled,
             saveHandled
         });
@@ -25,8 +26,10 @@ describe('APIVersionCompatibilityService', function () {
         });
 
         assert.equal(sendEmail.called, true);
-        assert.match(sendEmail.args[0][0], /Elaborate Fox integration expected Ghost version: v4.5/);
-        assert.match(sendEmail.args[0][0], /Current Ghost version: v5.1/);
+        assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
+        assert.equal(sendEmail.args[0][0].subject, `Ghost has noticed that your Elaborate Fox integration is no longer working as expected`);
+        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
     });
 
     it('Does NOT send an email to the instance owner when previously handled accept-version header mismatch is detected', async function () {
@@ -39,6 +42,7 @@ describe('APIVersionCompatibilityService', function () {
 
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
+            emailTo: 'test_env@example.com',
             fetchHandled,
             saveHandled
         });
@@ -50,8 +54,10 @@ describe('APIVersionCompatibilityService', function () {
         });
 
         assert.equal(sendEmail.calledOnce, true);
-        assert.match(sendEmail.args[0][0], /Elaborate Fox integration expected Ghost version: v4.5/);
-        assert.match(sendEmail.args[0][0], /Current Ghost version: v5.1/);
+        assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
+        assert.equal(sendEmail.args[0][0].subject, `Ghost has noticed that your Elaborate Fox integration is no longer working as expected`);
+        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
 
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
@@ -72,6 +78,7 @@ describe('APIVersionCompatibilityService', function () {
 
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
+            emailTo: 'test_env@example.com',
             fetchHandled,
             saveHandled
         });
@@ -83,8 +90,10 @@ describe('APIVersionCompatibilityService', function () {
         });
 
         assert.equal(sendEmail.calledOnce, true);
-        assert.match(sendEmail.args[0][0], /Elaborate Fox integration expected Ghost version: v4.5/);
-        assert.match(sendEmail.args[0][0], /Current Ghost version: v5.1/);
+        assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
+        assert.equal(sendEmail.args[0][0].subject, `Ghost has noticed that your Elaborate Fox integration is no longer working as expected`);
+        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
 
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.8',
@@ -93,7 +102,9 @@ describe('APIVersionCompatibilityService', function () {
         });
 
         assert.equal(sendEmail.calledTwice, true);
-        assert.match(sendEmail.args[1][0], /Elaborate Fox integration expected Ghost version: v4.8/);
-        assert.match(sendEmail.args[1][0], /Current Ghost version: v5.1/);
+        assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
+        assert.equal(sendEmail.args[0][0].subject, `Ghost has noticed that your Elaborate Fox integration is no longer working as expected`);
+        assert.match(sendEmail.args[1][0].html, /Elaborate Fox integration expected Ghost version: v4.8/);
+        assert.match(sendEmail.args[1][0].html, /Current Ghost version: v5.1/);
     });
 });
