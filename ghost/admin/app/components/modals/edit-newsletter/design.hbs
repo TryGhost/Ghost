@@ -1,6 +1,7 @@
 <div>
     <fieldset class="modal-fullsettings-form">
         <div class="modal-fullsettings-section first">
+            <h3 class="gh-newsletters-setting-sectionheading">Header</h3>
             <GhFormGroup @classNames="vertical">
                 <GhUploader
                     @extensions={{this.imageExtensions}}
@@ -79,7 +80,8 @@
                 </div>
             </GhFormGroup>
         </div>
-        <div class="modal-fullsettings-section divider-top">
+        <div class="modal-fullsettings-section">
+            <h3 class="gh-newsletters-setting-sectionheading">Body</h3>
             <GhFormGroup>
                 <h4 class="modal-fullsettings-title gh-email-design-alignment">Header style</h4>
                 <div class="gh-email-design-typography-wrapper header">
@@ -110,8 +112,6 @@
                     </label>
                 </div>
             </GhFormGroup>
-        </div>
-        <div class="modal-fullsettings-section">
             <GhFormGroup>
                 <h4 class="modal-fullsettings-title">Body style</h4>
                 <div class="gh-email-design-typography-wrapper">
@@ -124,7 +124,9 @@
                 </div>
             </GhFormGroup>
         </div>
-        <div class="modal-fullsettings-section divider-top">
+
+        <div class="modal-fullsettings-section">
+            <h3 class="gh-newsletters-setting-sectionheading">Footer</h3>
             <GhFormGroup @classNames="vertical">
                 <label class="modal-fullsettings-title">Email footer</label>
                 <p>Any extra information or legal text</p>
