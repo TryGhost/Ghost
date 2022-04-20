@@ -1,12 +1,14 @@
 import Component from '@glimmer/component';
+import ConfirmArchiveModal from '../../modals/edit-newsletter/confirm-archive';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class NewsletterManagementComponent extends Component {
-    @service store;
+    @service modals;
     @service router;
+    @service store;
 
     @tracked statusFilter = 'active';
     @tracked filteredNewsletters = [];
@@ -24,6 +26,8 @@ export default class NewsletterManagementComponent extends Component {
     willDestroy() {
         super.willDestroy(...arguments);
         this.router.off('routeDidChange', this.handleNewRouteChange);
+
+        this.confirmArchiveModal?.close();
     }
 
     get activeNewsletters() {
@@ -64,12 +68,22 @@ export default class NewsletterManagementComponent extends Component {
         }
     }
 
+    @action
+    archiveNewsletter(newsletter) {
+        this.confirmArchiveModal = this.modals.open(ConfirmArchiveModal, {
+            newsletter,
+            archiveNewsletterTask: this.archiveNewsletterTask
+        });
+    }
+
     @task
     *archiveNewsletterTask(newsletter) {
         newsletter.status = 'archived';
         const result = yield newsletter.save();
 
         this.updateFilteredNewsletters();
+
+        this.confirmArchiveModal?.close();
 
         return result;
     }
