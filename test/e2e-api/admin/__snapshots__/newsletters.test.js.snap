@@ -368,6 +368,47 @@ Object {
 }
 `;
 
+exports[`Newsletters API Can read a newsletter 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "body_font_category": "serif",
+      "description": null,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sender_email": "jamie@example.com",
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_title": true,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_font_category": "serif",
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Can read a newsletter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "515",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Newsletters API Cannot add newsletter with same name 1: [body] 1`] = `
 Object {
   "newsletters": Array [
