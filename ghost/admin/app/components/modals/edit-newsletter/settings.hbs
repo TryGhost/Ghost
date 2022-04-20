@@ -8,7 +8,7 @@
                     type="text"
                     class="gh-input miw-100 form-text"
                     value={{@newsletter.name}}
-                    placeholder={{this.settings.title}}
+                    placeholder="Weekly Roundup"
                     {{on "input" (fn this.onInput "name")}}
                 />
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="name" />
