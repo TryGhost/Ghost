@@ -160,7 +160,8 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
     }
 
     if (newsletter) {
-        switch (newsletter.visibility) {
+        const visibility = newsletter.get('visibility');
+        switch (visibility) {
         case 'members':
             // No need to add a member status filter as the email is available to all members
             break;
@@ -170,7 +171,7 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
         default:
             throw new errors.InternalServerError({
                 message: tpl(messages.newsletterVisibilityError, {
-                    value: newsletter.visibility
+                    value: visibility
                 })
             });
         }
@@ -207,11 +208,7 @@ const addEmail = async (postModel, options) => {
 
     let newsletter;
     if (labsService.isSet('multipleNewsletters')) {
-        try {
-            newsletter = await postModel.related('newsletter').fetch();
-        } catch (error) {
-            // Ignore NotFoundError
-        }
+        newsletter = await postModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting'])));
     }
     const emailRecipientFilter = postModel.get('email_recipient_filter');
     filterOptions.filter = transformEmailRecipientFilter(emailRecipientFilter, {errorProperty: 'email_recipient_filter'}, newsletter);
@@ -423,11 +420,7 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
 
     let newsletter;
     if (labsService.isSet('multipleNewsletters')) {
-        try {
-            newsletter = await emailModel.related('newsletter').fetch();
-        } catch (error) {
-            // Ignore NotFoundError
-        }
+        newsletter = await emailModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting'])));
     }
     const recipientFilter = transformEmailRecipientFilter(emailModel.get('recipient_filter'), {errorProperty: 'recipient_filter'}, newsletter);
     filterOptions.filter = recipientFilter;
