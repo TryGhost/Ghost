@@ -3,23 +3,14 @@
         <GhLoadingSpinner />
     {{else}}
         {{#if this.areMembersEnabled}}
+            {{#if this.hasPaidTiers}}
+                <Dashboard::V5::Charts::Overview />
+            {{/if}}
             <Dashboard::V5::Charts::Anchor />
+        {{/if}}
 
-            {{!-- Could these if else statements be cleaned up more? --}}
-            {{#if this.areNewslettersEnabled}}
-                <Dashboard::V5::Charts::Email />
-                <Dashboard::V5::Charts::Engagement />
-                <Dashboard::V5::Charts::EmailOpenRate />
-            {{else}}
-                <Dashboard::V5::Charts::Engagement />
-            {{/if}}
-    
-        {{else}}
-            {{#if this.areNewslettersEnabled}}  
-                <Dashboard::V5::Charts::Email />
-                <Dashboard::V5::Charts::Engagement />
-                <Dashboard::V5::Charts::EmailOpenRate />
-            {{/if}}
+        {{#if this.areNewslettersEnabled}}
+            <Dashboard::V5::Charts::Engagement />
         {{/if}}
 
         <Dashboard::V5::Charts::RecentPosts />
