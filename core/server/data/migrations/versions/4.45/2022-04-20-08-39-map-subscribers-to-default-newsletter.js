@@ -8,14 +8,19 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Adding existing subscribers to default newsletter');
 
+        const newsletter = await knex('newsletters')
+            .orderBy('sort_order', 'asc')
+            .first('id', 'name');
+
+        if (!newsletter) {
+            logging.info(`Default newsletter not found - skipping`);
+            return;
+        }
+
         // This is at the start of the up() instead of at the end of the down()
         // to maintain idempotency
         logging.info('Removing existing newsletter subscriptions');
         await knex('members_newsletters').delete();
-
-        const newsletter = await knex('newsletters')
-            .orderBy('sort_order', 'asc')
-            .first('id', 'name');
 
         logging.info(`Subscribing members to newsletter '${newsletter.name}'`);
 
@@ -39,7 +44,7 @@ module.exports = createTransactionalMigration(
                 newsletter_id: newsletter.id
             });
         }
-        
+
         const chunkSize = 1000;
         const pivotChunks = chunk(pivotRows, chunkSize);
         
