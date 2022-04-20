@@ -97,7 +97,7 @@
                                                 </li>
                                                 {{#if (eq newsletter.status "active")}}
                                                     <li>
-                                                        <button class="mr2" type="button" {{on "click" (perform this.archiveNewsletterTask newsletter)}}>
+                                                        <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter)}}>
                                                             <span>Archive</span>
                                                         </button>
                                                     </li>
