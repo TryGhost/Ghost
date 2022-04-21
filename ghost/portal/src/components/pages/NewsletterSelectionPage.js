@@ -3,6 +3,7 @@ import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getProductFromPrice, getSiteNewsletters} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
+import {ReactComponent as LockIcon} from '../../images/icons/lock.svg';
 
 const React = require('react');
 
@@ -10,6 +11,19 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     const isChecked = subscribedNewsletters.some((d) => {
         return d.id === newsletter?.id;
     });
+    if (newsletter.paid) {
+        return (
+            <section>
+                <div className='gh-portal-list-detail gh-portal-list-big'>
+                    <h3>{newsletter.name}</h3>
+                    <p>{newsletter.description}</p>
+                </div>
+                <div class="gh-portal-lock-icon-container">
+                    <LockIcon className='gh-portal-lock-icon' alt='' title="Unlock access to all newsletters by becoming a paid subscriber." />
+                </div>
+            </section>
+        );
+    }
     return (
         <section>
             <div className='gh-portal-list-detail gh-portal-list-big'>
@@ -73,8 +87,8 @@ export default function NewsletterSelectionPage({pageData}) {
 
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     return (
-        <div className='gh-portal-content with-footer'>
-            <p className="gh-portal-text-center">Pick which emails you want to receive with your <strong>{tierName}</strong> membership.</p>
+        <div className='gh-portal-content with-footer gh-portal-newsletter-selection'>
+            <p className="gh-portal-text-center gh-portal-text-large">Pick which emails you want to receive with your <strong>{tierName}</strong> membership.</p>
             <div className='gh-portal-section'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
