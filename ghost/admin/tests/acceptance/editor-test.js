@@ -8,12 +8,12 @@ import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, trigge
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {enableMailgun} from '../helpers/mailgun';
 import {enableNewsletters} from '../helpers/newsletters';
+import {enableStripe} from '../helpers/stripe';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
-import { enableStripe } from '../helpers/stripe';
 
 // TODO: update ember-power-datepicker to expose modern test helpers
 // https://github.com/cibernox/ember-power-datepicker/issues/30
