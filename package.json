@@ -105,7 +105,7 @@
     "@tryghost/session-service": "0.1.38",
     "@tryghost/settings-path-manager": "0.1.4",
     "@tryghost/social-urls": "0.1.29",
-    "@tryghost/stats-service": "0.1.0",
+    "@tryghost/stats-service": "0.2.0",
     "@tryghost/string": "0.1.23",
     "@tryghost/tpl": "0.1.14",
     "@tryghost/update-check-service": "0.3.2",
