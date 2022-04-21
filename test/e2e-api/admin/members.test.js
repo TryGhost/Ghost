@@ -847,6 +847,8 @@ describe('Members API', function () {
         });
     });
 
+    let memberWithPaidSubscription;
+
     it('Can create a member with an existing paid subscription', async function () {
         const fakePrice = {
             id: 'price_1',
@@ -934,6 +936,7 @@ describe('Members API', function () {
             });
 
         const newMember = body.members[0];
+
         assert.equal(newMember.status, 'paid', 'The created member should have the paid status');
         assert.equal(newMember.subscriptions.length, 1, 'The member should have a single subscription');
         assert.equal(newMember.subscriptions[0].id, fakeSubscription.id, 'The returned subscription should have an ID assigned');
@@ -980,6 +983,30 @@ describe('Members API', function () {
             plan_currency: 'usd',
             mrr: 100
         });
+
+        // Save this member for the next test
+        memberWithPaidSubscription = newMember;
+    });
+
+    it('Returns an identical member format for read, edit and browse', async function () {
+        if (!memberWithPaidSubscription) {
+            // Previous test failed
+            this.skip();
+        }
+
+        // Check status has been updated to 'free' after cancelling
+        const {body: readBody} = await agent.get('/members/' + memberWithPaidSubscription.id + '/');
+        assert.equal(readBody.members.length, 1, 'The member was not found in read');
+        const readMember = readBody.members[0];
+
+        // Note that we explicitly need to ask to include products while browsing
+        const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=products`);
+        assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
+        const browseMember = browseBody.members[0];
+
+        // Check for this member with a paid subscription that the body results for the patch, get and browse endpoints are 100% identical
+        should.deepEqual(browseMember, readMember, 'Browsing a member returns a different format than reading a member');
+        should.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
     });
 
     it('Can edit by id', async function () {
