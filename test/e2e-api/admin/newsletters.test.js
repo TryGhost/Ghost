@@ -1,5 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyString} = matchers;
+const testUtils = require('../../utils');
 
 const newsletterSnapshot = {
     id: anyObjectId
@@ -10,7 +11,7 @@ let agent;
 describe('Newsletters API', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init();
+        await fixtureManager.init('newsletters');
         await agent.loginAsOwner();
     });
 
@@ -52,7 +53,7 @@ describe('Newsletters API', function () {
         await agent.get('newsletters/')
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: new Array(2).fill(newsletterSnapshot)
+                newsletters: new Array(4).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -63,7 +64,19 @@ describe('Newsletters API', function () {
         await agent.get('newsletters/')
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: new Array(2).fill(newsletterSnapshot)
+                newsletters: new Array(4).fill(newsletterSnapshot)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can read a newsletter', async function () {
+        await agent
+            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: new Array(1).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
