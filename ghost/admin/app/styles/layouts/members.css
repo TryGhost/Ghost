@@ -1873,6 +1873,12 @@ p.gh-members-import-errordetail:first-of-type {
     color: #15212A;
 }
 
+.gh-members-emailpreview-header h5 {
+    color: var(--midgrey-l1);
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
 .gh-members-emailpreview-title {
     display: flex;
     flex-direction: column;
