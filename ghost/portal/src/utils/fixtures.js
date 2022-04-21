@@ -110,13 +110,15 @@ export const site = getSiteData({
             id: 'weekly',
             name: 'Weekly Rundown',
             description: 'Best of last week',
-            subscribe_on_signup: true
+            subscribe_on_signup: true,
+            paid: true
         },
         {
             id: 'daily',
             name: 'Daily Brief',
             description: 'One email every day',
-            subscribe_on_signup: false
+            subscribe_on_signup: false,
+            paid: false
         }
     ]
 });
