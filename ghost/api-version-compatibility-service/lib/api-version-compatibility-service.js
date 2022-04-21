@@ -24,7 +24,7 @@ class APIVersionCompatibilityService {
             const emails = await this.fetchEmailsToNotify();
             for (const email of emails) {
                 await this.sendEmail({
-                    subject: `Ghost has noticed that your ${userAgent} integration is no longer working as expected`,
+                    subject: `Attention required: Your ${userAgent} integration has failed`,
                     to: email,
                     html: emailTemplate
                 });
