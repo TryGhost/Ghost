@@ -26,7 +26,7 @@ export default class MembersCountCacheService extends Service {
     async countString(filter = '', {knownCount} = {}) {
         const user = this.session.user;
 
-        const basicFilter = filter.replace(/^subscribed:true\+\((.*)\)$/, '$1');
+        const basicFilter = filter.replace(/^newsletters\.status:active\+\((.*)\)$/, '$1');
         const filterParts = basicFilter.split(',');
         const isFree = filterParts.length === 1 && filterParts[0] === 'status:free';
         const isPaid = filterParts.length === 1 && filterParts[0] === 'status:-free';
