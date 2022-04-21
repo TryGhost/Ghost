@@ -135,8 +135,8 @@ describe('Newsletters API', function () {
             });
     });
 
-    it.only('Can include members counts when browsing newsletters', async function () {
-        const res = await agent
+    it('Can include members counts when browsing newsletters', async function () {
+        await agent
             .get(`newsletters/?include=count.members`)
             .expectStatus(200)
             .matchBodySnapshot({
@@ -145,7 +145,6 @@ describe('Newsletters API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
-        console.log(res.body);
     });
 
     it('Can include members counts when reading a newsletter', async function () {
