@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableNewsletters} from '../../helpers/newsletters';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
@@ -20,6 +21,7 @@ describe('Acceptance: Members filtering', function () {
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
+        enableLabsFlag(this.server, 'multipleProducts');
         enableStripe(this.server);
         enableNewsletters(this.server, true);
 
@@ -113,14 +115,15 @@ describe('Acceptance: Members filtering', function () {
 
         it('can filter by tier', async function () {
             // add some labels to test the selection dropdown
+            const newsletter = this.server.create('newsletter', {status: 'active'});
             this.server.createList('product', 4);
 
             // add a labelled member so we can test the filter includes correctly
             const product = this.server.create('product');
-            this.server.createList('member', 3, {products: [product]});
+            this.server.createList('member', 3, {products: [product], newsletters: [newsletter]});
 
             // add some non-labelled members so we can see the filter excludes correctly
-            this.server.createList('member', 4);
+            this.server.createList('member', 4, {newsletters: [newsletter]});
 
             await visit('/members');
 
