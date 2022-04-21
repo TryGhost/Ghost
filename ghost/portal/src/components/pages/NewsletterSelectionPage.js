@@ -1,23 +1,10 @@
 import AppContext from '../../AppContext';
-import CloseButton from '../common/CloseButton';
-import BackButton from '../common/BackButton';
 import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getProductFromPrice, getSiteNewsletters} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 
 const React = require('react');
-
-function AccountHeader() {
-    const {brandColor, lastPage, onAction} = useContext(AppContext);
-    return (
-        <header className='gh-portal-detail-header'>
-            <BackButton brandColor={brandColor} hidden={!lastPage} onClick={(e) => {
-                onAction('back');
-            }} />
-        </header>
-    );
-}
 
 function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters}) {
     const isChecked = subscribedNewsletters.some((d) => {
@@ -104,10 +91,6 @@ export default function NewsletterSelectionPage({pageData}) {
                             retry={retry}
                             disabled={disabled}
                             onClick={(e) => {
-                                /* eslint-disable no-console */
-                                console.log(pageData);
-                                console.log(subscribedNewsletters);
-                                /* eslint-enable no-console */
                                 let newsletters = subscribedNewsletters.map((d) => {
                                     return {
                                         id: d.id
