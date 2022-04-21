@@ -364,10 +364,10 @@
 .gh-publish-settings-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     height: 100%;
-    max-width: 600px;
-    margin-bottom: 8rem;
+    max-width: 740px;
+    margin: 0 auto 8rem;
+    padding-top: 11vw;
 }
 
 .gh-publish-title {
@@ -387,7 +387,7 @@
 
 .gh-publish-setting {
     padding: 4px 8px;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
     background: var(--whitegrey);
     border-radius: var(--border-radius);
