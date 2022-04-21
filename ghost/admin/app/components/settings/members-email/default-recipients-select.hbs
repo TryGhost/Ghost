@@ -20,7 +20,7 @@
         <GhMembersSegmentSelect
             @segment={{@segment}}
             @onChange={{@onSegmentChange}}
-            @enforcedCountFilter="subscribed:true"
+            @enforcedCountFilter="newsletters.status:active"
         />
     </div>
 {{/if}}
