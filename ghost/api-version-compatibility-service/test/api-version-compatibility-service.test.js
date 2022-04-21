@@ -7,14 +7,14 @@ describe('APIVersionCompatibilityService', function () {
         sinon.reset();
     });
 
-    it('Sends an email to the instance owner when fresh accept-version header mismatch detected', async function () {
+    it('Sends an email to the instance owners when fresh accept-version header mismatch detected', async function () {
         const sendEmail = sinon.spy();
         const fetchHandled = sinon.spy();
         const saveHandled = sinon.spy();
 
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
-            emailTo: 'test_env@example.com',
+            fetchEmailsToNotify: async () => ['test_env@example.com'],
             fetchHandled,
             saveHandled
         });
@@ -27,7 +27,7 @@ describe('APIVersionCompatibilityService', function () {
 
         assert.equal(sendEmail.called, true);
         assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
-        assert.equal(sendEmail.args[0][0].subject, `Ghost has noticed that your Elaborate Fox integration is no longer working as expected`);
+        assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
         assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
     });
@@ -42,7 +42,7 @@ describe('APIVersionCompatibilityService', function () {
 
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
-            emailTo: 'test_env@example.com',
+            fetchEmailsToNotify: async () => ['test_env@example.com'],
             fetchHandled,
             saveHandled
         });
@@ -55,7 +55,7 @@ describe('APIVersionCompatibilityService', function () {
 
         assert.equal(sendEmail.calledOnce, true);
         assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
-        assert.equal(sendEmail.args[0][0].subject, `Ghost has noticed that your Elaborate Fox integration is no longer working as expected`);
+        assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
         assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
 
@@ -68,7 +68,7 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.calledTwice, false);
     });
 
-    it('Does send multiple emails to the instance owner when previously unhandled accept-version header mismatch is detected', async function () {
+    it('Does send multiple emails to the instance owners when previously unhandled accept-version header mismatch is detected', async function () {
         const sendEmail = sinon.spy();
         const fetchHandled = sinon.stub()
             .onFirstCall().resolves(null)
@@ -78,7 +78,7 @@ describe('APIVersionCompatibilityService', function () {
 
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
-            emailTo: 'test_env@example.com',
+            fetchEmailsToNotify: async () => ['test_env@example.com', 'test_env2@example.com'],
             fetchHandled,
             saveHandled
         });
@@ -89,11 +89,17 @@ describe('APIVersionCompatibilityService', function () {
             userAgent: 'Elaborate Fox'
         });
 
-        assert.equal(sendEmail.calledOnce, true);
+        assert.equal(sendEmail.calledTwice, true);
         assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
-        assert.equal(sendEmail.args[0][0].subject, `Ghost has noticed that your Elaborate Fox integration is no longer working as expected`);
+        assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
         assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
+
+        assert.equal(sendEmail.calledTwice, true);
+        assert.equal(sendEmail.args[1][0].to, 'test_env2@example.com');
+        assert.equal(sendEmail.args[1][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
+        assert.match(sendEmail.args[1][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
+        assert.match(sendEmail.args[1][0].html, /Current Ghost version: v5.1/);
 
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.8',
@@ -101,10 +107,10 @@ describe('APIVersionCompatibilityService', function () {
             userAgent: 'Elaborate Fox'
         });
 
-        assert.equal(sendEmail.calledTwice, true);
-        assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
-        assert.equal(sendEmail.args[0][0].subject, `Ghost has noticed that your Elaborate Fox integration is no longer working as expected`);
-        assert.match(sendEmail.args[1][0].html, /Elaborate Fox integration expected Ghost version: v4.8/);
-        assert.match(sendEmail.args[1][0].html, /Current Ghost version: v5.1/);
+        assert.equal(sendEmail.callCount, 4);
+        assert.equal(sendEmail.args[2][0].to, 'test_env@example.com');
+        assert.equal(sendEmail.args[2][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
+        assert.match(sendEmail.args[2][0].html, /Elaborate Fox integration expected Ghost version: v4.8/);
+        assert.match(sendEmail.args[2][0].html, /Current Ghost version: v5.1/);
     });
 });
