@@ -17,7 +17,7 @@
 
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="description">
                 <label for="newsletter-description" class="modal-fullsettings-title">Description</label>
-                <p>Seen by members on your site.</p>
+                <p>Seen by members on your site</p>
                 <textarea
                     id="newsletter-description"
                     class="gh-input miw-100 form-text"
@@ -31,6 +31,7 @@
             <h3 class="gh-newsletters-setting-sectionheading">Email addresses</h3>
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderName">
                 <label for="newsletter-sender-name" class="modal-fullsettings-title">Sender name</label>
+                <p>The name members will see in their inbox</p>
                 <input
                     id="newsletter-sender-name"
                     type="text"
