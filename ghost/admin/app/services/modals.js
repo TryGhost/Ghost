@@ -63,6 +63,10 @@ export default class ModalsService extends EPMModalsService {
             }
         }
 
+        if (this.top.options.ignoreBackdropClick) {
+            shouldClose = false;
+        }
+
         if (shouldClose) {
             this.top.close();
         }
