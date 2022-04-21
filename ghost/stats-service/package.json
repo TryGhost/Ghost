@@ -1,5 +1,5 @@
 {
-  "name": "@tryghost/stats",
+  "name": "@tryghost/stats-service",
   "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Analytics/tree/main/packages/stats",
   "author": "Ghost Foundation",
