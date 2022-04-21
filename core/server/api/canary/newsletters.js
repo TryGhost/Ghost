@@ -1,6 +1,7 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const allowedIncludes = ['count.posts', 'count.members'];
 
 const messages = {
     newsletterNotFound: 'Newsletter not found.'
@@ -18,6 +19,13 @@ module.exports = {
             'order',
             'page'
         ],
+        validation: {
+            options: {
+                include: {
+                    values: allowedIncludes
+                }
+            }
+        },
         permissions: true,
         query(frame) {
             return models.Newsletter.findPage(frame.options);
@@ -37,6 +45,13 @@ module.exports = {
             'slug',
             'uuid'
         ],
+        validation: {
+            options: {
+                include: {
+                    values: allowedIncludes
+                }
+            }
+        },
         permissions: true,
         async query(frame) {
             const newsletter = models.Newsletter.findOne(frame.data, frame.options);
@@ -52,6 +67,13 @@ module.exports = {
 
     add: {
         statusCode: 201,
+        validation: {
+            options: {
+                include: {
+                    values: allowedIncludes
+                }
+            }
+        },
         permissions: true,
         async query(frame) {
             return newslettersService.add(frame.data.newsletters[0], frame.options);
@@ -67,6 +89,9 @@ module.exports = {
             options: {
                 id: {
                     required: true
+                },
+                include: {
+                    values: allowedIncludes
                 }
             }
         },

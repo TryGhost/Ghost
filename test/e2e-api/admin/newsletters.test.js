@@ -135,6 +135,43 @@ describe('Newsletters API', function () {
             });
     });
 
+    it.only('Can include members counts when browsing newsletters', async function () {
+        const res = await agent
+            .get(`newsletters/?include=count.members`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: new Array(3).fill(newsletterSnapshot)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+        console.log(res.body);
+    });
+
+    it('Can include members counts when reading a newsletter', async function () {
+        await agent
+            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/?include=count.members`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: new Array(1).fill(newsletterSnapshot)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can include posts counts when reading a newsletter', async function () {
+        await agent
+            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/?include=count.posts`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: new Array(1).fill(newsletterSnapshot)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
     it('Can edit newsletters', async function () {
         const res = await agent.get('newsletters?limit=1')
             .expectStatus(200)
