@@ -43,6 +43,10 @@ describe('MrrStatsService', function () {
             });
         });
 
+        afterEach(async function () {
+            await db.destroy();
+        });
+
         it('Handles no data', async function () {
             const {data: results, meta} = await mrrStatsService.getHistory();
             results.length.should.eql(1);
