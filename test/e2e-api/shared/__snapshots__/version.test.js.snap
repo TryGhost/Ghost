@@ -1,5 +1,38 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`API Versioning Admin API 307 redirects GET with accept version set when version is included in the URL 1: [headers] 1`] = `
+Object {
+  "accept-version": "canary",
+  "content-length": "57",
+  "content-type": "text/plain; charset=utf-8",
+  "location": StringMatching /\\^\\\\/ghost\\\\/api\\\\/admin\\\\/site\\\\/\\$/,
+  "vary": "Accept, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`API Versioning Admin API 307 redirects POST with accept version set when version is included in the URL 1: [headers] 1`] = `
+Object {
+  "accept-version": "v3.0",
+  "content-length": "60",
+  "content-type": "text/plain; charset=utf-8",
+  "location": StringMatching /\\^\\\\/ghost\\\\/api\\\\/admin\\\\/session\\\\/\\$/,
+  "vary": "Accept, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`API Versioning Admin API 307 redirects with accept version set when version is included in the URL 1: [headers] 1`] = `
+Object {
+  "accept-version": "canary",
+  "content-length": "57",
+  "content-type": "text/plain; charset=utf-8",
+  "location": StringMatching /\\^\\\\/ghost\\\\/api\\\\/admin\\\\/site\\\\/\\$/,
+  "vary": "Accept, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`API Versioning Admin API responds with 404 error when the resource cannot be found 1: [body] 1`] = `
 Object {
   "errors": Array [
@@ -221,6 +254,17 @@ Object {
   "content-type": "application/json; charset=utf-8",
   "etag": Any<String>,
   "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`API Versioning Content API 307 redirects with accept version set when version is included in the URL 1: [headers] 1`] = `
+Object {
+  "accept-version": "canary",
+  "content-length": "91",
+  "content-type": "text/plain; charset=utf-8",
+  "location": StringMatching /\\^\\\\/ghost\\\\/api\\\\/content\\\\/posts\\\\//,
+  "vary": "Accept, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

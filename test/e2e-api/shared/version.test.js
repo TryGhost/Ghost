@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyErrorId, anyString, stringMatching} = matchers;
+const {anyErrorId, anyString, stringMatching, anyLocationFor} = matchers;
 
 describe('API Versioning', function () {
     describe('Admin API', function () {
@@ -163,6 +163,26 @@ describe('API Versioning', function () {
                     }]
                 });
         });
+
+        it('307 redirects GET with accept version set when version is included in the URL', async function () {
+            await agentAdminAPI
+                .get('/site/', {baseUrl: '/ghost/api/canary/admin/'})
+                .expectStatus(307)
+                .matchHeaderSnapshot({
+                    location: stringMatching(/^\/ghost\/api\/admin\/site\/$/)
+                })
+                .expectEmptyBody();
+        });
+
+        it('307 redirects POST with accept version set when version is included in the URL', async function () {
+            await agentAdminAPI
+                .post('/session/', {baseUrl: '/ghost/api/v3/admin/'})
+                .expectStatus(307)
+                .matchHeaderSnapshot({
+                    location: stringMatching(/^\/ghost\/api\/admin\/session\/$/)
+                })
+                .expectEmptyBody();
+        });
     });
 
     describe('Content API', function () {
@@ -189,6 +209,16 @@ describe('API Versioning', function () {
                     'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot();
+        });
+
+        it('307 redirects with accept version set when version is included in the URL', async function () {
+            await agentContentAPI
+                .get('/posts/', {baseUrl: '/ghost/api/canary/content/'})
+                .expectStatus(307)
+                .matchHeaderSnapshot({
+                    location: stringMatching(/^\/ghost\/api\/content\/posts\//)
+                })
+                .expectEmptyBody();
         });
     });
 });
