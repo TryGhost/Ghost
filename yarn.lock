@@ -1950,10 +1950,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/limit-service@1.0.10":
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.0.10.tgz#a22ff0c62599d849472f1a073650bc19e34cd7be"
-  integrity sha512-sZrlBRBgzSNg5QM+GULK40wU0x+GxinUYiyf/kMWGAalCdfziYBCQx5aJYz0lBOiMWiM0xkT5FFLPIC7fPSe4w==
+"@tryghost/limit-service@1.0.11":
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.0.11.tgz#93424eac034dacd6bcf8ab661f121eae55bf14ea"
+  integrity sha512-Xuh7rUlmy/nLwDuLAJQOBPTnLHWKZoyHsEnFT7SgA4ra2ZqSDcWECpFW6QyARdB1AXpqCXkT8QGhXkTyytAtUg==
   dependencies:
     "@tryghost/errors" "^1.2.1"
     lodash "^4.17.21"
