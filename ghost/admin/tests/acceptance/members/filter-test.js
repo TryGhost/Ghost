@@ -3,7 +3,8 @@ import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
-import {enableLabsFlag} from '../../helpers/labs-flag';
+import {enableNewsletters} from '../../helpers/newsletters';
+import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support/helpers';
 import {setupApplicationTest} from 'ember-mocha';
@@ -19,17 +20,9 @@ describe('Acceptance: Members filtering', function () {
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
-        enableLabsFlag(this.server, 'multipleProducts');
+        enableStripe(this.server);
+        enableNewsletters(this.server, true);
 
-        // test with stripe connected and email turned on
-        // TODO: add these settings to default fixtures
-        this.server.db.settings.find({key: 'stripe_connect_account_id'})
-            ? this.server.db.settings.update({key: 'stripe_connect_account_id'}, {value: 'stripe_connected'})
-            : this.server.create('setting', {key: 'stripe_connect_account_id', value: 'stripe_connected', group: 'members'});
-
-        this.server.db.settings.find({key: 'editor_default_email_recipients'})
-            ? this.server.db.settings.update({key: 'editor_default_email_recipients'}, {value: 'visibility'})
-            : this.server.create('setting', {key: 'editor_default_email_recipients', value: 'visibility', group: 'editor'});
 
         let role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});

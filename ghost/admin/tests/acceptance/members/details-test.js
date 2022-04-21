@@ -1,6 +1,8 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find, findAll} from '@ember/test-helpers';
 import {enableLabsFlag} from '../../helpers/labs-flag';
+import {enableNewsletters} from '../../helpers/newsletters';
+import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -20,22 +22,8 @@ describe('Acceptance: Member details', function () {
         enableLabsFlag(this.server, 'membersTimeFilters');
         enableLabsFlag(this.server, 'multipleProducts');
 
-        // test with stripe connected and email turned on
-        // TODO: add these settings to default fixtures
-        this.server.db.settings.find({key: 'stripe_connect_account_id'})
-            ? this.server.db.settings.update({key: 'stripe_connect_account_id'}, {value: 'stripe_account_id'})
-            : this.server.create('setting', {key: 'stripe_connect_account_id', value: 'stripe_account_id', group: 'members'});
-        // needed for membersUtils.isStripeEnabled
-        this.server.db.settings.find({key: 'stripe_connect_secret_key'})
-            ? this.server.db.settings.update({key: 'stripe_connect_secret_key'}, {value: 'stripe_secret_key'})
-            : this.server.create('setting', {key: 'stripe_connect_secret_key', value: 'stripe_secret_key', group: 'members'});
-        this.server.db.settings.find({key: 'stripe_connect_publishable_key'})
-            ? this.server.db.settings.update({key: 'stripe_connect_publishable_key'}, {value: 'stripe_secret_key'})
-            : this.server.create('setting', {key: 'stripe_connect_publishable_key', value: 'stripe_secret_key', group: 'members'});
-
-        this.server.db.settings.find({key: 'editor_default_email_recipients'})
-            ? this.server.db.settings.update({key: 'editor_default_email_recipients'}, {value: 'visibility'})
-            : this.server.create('setting', {key: 'editor_default_email_recipients', value: 'visibility', group: 'editor'});
+        enableStripe(this.server);
+        enableNewsletters(this.server, true);
 
         // add a default product that complimentary plans can be assigned to
         product = this.server.create('product', {
