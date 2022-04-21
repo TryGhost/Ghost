@@ -1808,10 +1808,19 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
-"@tryghost/errors@1.2.10", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.10", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
+"@tryghost/errors@1.2.10":
   version "1.2.10"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.10.tgz#b01b16744986005784ffd6916eec48a3e93976a9"
   integrity sha512-v5r5JzhQTkNLJBk66B75x+jyOE/WxzEBfeAtA3y1YaFtl9SQMaN1qi/7+sQzt0VrLk1qtqAOReWc/1Cncy9gOg==
+  dependencies:
+    lodash "^4.17.21"
+    utils-copy-error "^1.0.1"
+    uuid "^8.3.2"
+
+"@tryghost/errors@1.2.11", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.10", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
+  version "1.2.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.11.tgz#3b3725f5ae8c35d4f264386e1e8fe39009713900"
+  integrity sha512-C7zFxqP9QjGBOHd7nRMzsAU9OlK71dhYkqPInYgLFLyIT7j4fFKgn8Z4ZQ6ucs7v7qG3UKoo0U7vnMGJAOFuag==
   dependencies:
     lodash "^4.17.21"
     utils-copy-error "^1.0.1"
@@ -2157,13 +2166,13 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/mw-error-handler@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.2.0.tgz#236c207a0c5b62953445623c105bca00f730f45f"
-  integrity sha512-b+PcBqzTK/ekJ9SeKlMSq874FLjPrWiF4jw73gFilITmTSMDVcaEconaJj54dJ7/zOMQLDuNqDTLJV/WODPywQ==
+"@tryghost/mw-error-handler@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.2.1.tgz#6ce970a6b7f1ec8732ef083e674ee48604c8b4ba"
+  integrity sha512-lQq25Lw9RK6UoIOW1g/A/Vg7hGKXMthbBdc0+fPV0nM0KPqs3a1AXRaOpZA857KO+eDPY6tgY0jmLaKsPDRNcQ==
   dependencies:
     "@tryghost/debug" "^0.1.9"
-    "@tryghost/errors" "1.2.10"
+    "@tryghost/errors" "1.2.11"
     "@tryghost/tpl" "^0.1.8"
     lodash "^4.17.21"
     semver "^7.3.6"
