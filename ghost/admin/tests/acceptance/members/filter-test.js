@@ -23,7 +23,6 @@ describe('Acceptance: Members filtering', function () {
         enableStripe(this.server);
         enableNewsletters(this.server, true);
 
-
         let role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
 
