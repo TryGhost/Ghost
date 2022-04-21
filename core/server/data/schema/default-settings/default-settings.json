@@ -16,6 +16,10 @@
             "defaultValue": "[]",
             "type": "array"
         },
+        "version_notifications": {
+            "defaultValue": "[]",
+            "type": "array"
+        },
         "session_secret": {
             "defaultValue": null,
             "type": "string"
