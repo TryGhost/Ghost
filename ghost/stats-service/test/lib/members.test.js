@@ -46,7 +46,6 @@ describe('MembersStatsService', function () {
             yesterdayDate = moment(yesterday).toDate();
             dayBeforeYesterdayDate = moment(dayBeforeYesterday).toDate();
             sinon.useFakeTimers(todayDate.getTime());
-            membersStatsService = new MembersStatsService({knex: knex({client: 'sqlite3', connection: {filename: ':memory:'}})});
         });
 
         beforeEach(async function () {
@@ -63,6 +62,10 @@ describe('MembersStatsService', function () {
                 table.string('id');
                 table.string('status');
             });
+        });
+
+        afterEach(async function () {
+            await db.destroy();
         });
 
         async function setupDB() {

@@ -1,15 +1,18 @@
 const MRRService = require('./mrr');
 const MembersService = require('./members');
+const SubscriptionStatsService = require('./subscriptions');
 
 class StatsService {
     /**
      * @param {object} deps
      * @param {MRRService} deps.mrr
      * @param {MembersService} deps.members
+     * @param {SubscriptionStatsService} deps.subscriptions
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
         this.members = deps.members;
+        this.subscriptions = deps.subscriptions;
     }
 
     async getMRRHistory() {
@@ -18,6 +21,10 @@ class StatsService {
 
     async getMemberCountHistory() {
         return this.members.getCountHistory();
+    }
+
+    async getSubscriptionCountHistory() {
+        return this.subscriptions.getSubscriptionHistory();
     }
 
     /**
@@ -29,7 +36,8 @@ class StatsService {
     static create(deps) {
         return new StatsService({
             mrr: new MRRService(deps),
-            members: new MembersService(deps)
+            members: new MembersService(deps),
+            subscriptions: new SubscriptionStatsService(deps)
         });
     }
 }
