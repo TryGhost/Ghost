@@ -24,7 +24,8 @@
             "entries": [
                 {
                     "name":             "Default Newsletter",
-                    "slug":             "default-newsletter"
+                    "slug":             "default-newsletter",
+                    "show_header_name": false
                 }
             ]
         },
