@@ -1716,10 +1716,10 @@
   dependencies:
     color "^3.2.1"
 
-"@tryghost/config-url-helpers@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.5.tgz#44c34f5bfaf28d773ddb40cf2644e03828d58f30"
-  integrity sha512-cAWawmolr10ePxy02CXl4vq6hwS0EyiEREmKbXQvGTgbrPoT9yIBnSFCxUOKCzusucwT7dmleQTt0GleQehzdw==
+"@tryghost/config-url-helpers@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.6.tgz#af7a05963db9e1bc843a986f6e3b9730df30bb1e"
+  integrity sha512-q3fxDElht4h/l9Zo85E+zy6DMqY5qf5inxD/OUF1btf+qNObSJeoFMcaKHEaN0Jdya/DnZRWXQyFZDd5S+sBgw==
 
 "@tryghost/config@0.2.2":
   version "0.2.2"
