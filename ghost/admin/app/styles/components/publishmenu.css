@@ -356,3 +356,48 @@
 .gh-publishmenu-checkbox-disabled p {
     color: var(--midgrey) !important;
 }
+
+
+/* Publish Page (Labs)
+/* ---------------------------------------------------------- */
+
+.gh-publish-settings-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    max-width: 600px;
+    margin-bottom: 8rem;
+}
+
+.gh-publish-title {
+    margin-bottom: 3.6rem;
+    color: var(--black);
+    font-size: 3.2rem;
+    font-weight: 700;
+}
+
+.gh-publish-settings {
+    margin-bottom: 4.8rem;
+    color: var(--black);
+    font-size: 2.3rem;
+    font-weight: 400;
+    line-height: 2em;
+}
+
+.gh-publish-setting {
+    padding: 4px 8px;
+    font-weight: 700;
+    white-space: nowrap;
+    background: var(--whitegrey);
+    border-radius: var(--border-radius);
+}
+
+.gh-publish-cta {
+    display: flex;
+    width: 100%;
+}
+
+.gh-publish-cta .gh-btn-black {
+    margin-right: 1.2rem;
+}
