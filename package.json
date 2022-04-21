@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/limit-service",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/limit-service",
   "author": "Ghost Foundation",
   "license": "MIT",
