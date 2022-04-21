@@ -8,7 +8,7 @@ import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
 import moment from 'moment';
-import {action, computed, get} from '@ember/object';
+import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
@@ -277,8 +277,7 @@ export default class EditorController extends Controller {
             post: this.post,
             saveTask: this.saveTask,
             hasDirtyAttributes: this.hasDirtyAttributes,
-            setEditorSaveType: this.setSaveType,
-            memberCount: this.memberCount
+            setEditorSaveType: this.setSaveType
         });
     }
 
@@ -774,13 +773,6 @@ export default class EditorController extends Controller {
 
     // load supplementel data such as the members count in the background
     @restartableTask *backgroundLoaderTask() {
-        try {
-            let membersResponse = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
-            this.set('memberCount', get(membersResponse, 'meta.pagination.total'));
-        } catch (error) {
-            this.set('memberCount', 0);
-        }
-
         yield this.store.query('snippet', {limit: 'all'});
     }
 

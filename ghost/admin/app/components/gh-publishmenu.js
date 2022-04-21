@@ -295,10 +295,6 @@ export default Component.extend({
             return true;
         },
 
-        updateMemberCount(count) {
-            this.memberCount = count;
-        },
-
         publishFromShortcut() {
             // trigger blur for inputs and textareas to trigger any actions
             // before attempting to save so we're saving after the result
