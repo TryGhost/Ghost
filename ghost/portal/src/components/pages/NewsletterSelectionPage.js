@@ -3,7 +3,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
-import {getSiteNewsletters} from '../../utils/helpers';
+import {getProductFromPrice, getSiteNewsletters} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 
 const React = require('react');
@@ -63,13 +63,14 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
     });
 }
 
-export default function NewsletterSelectionPage() {
-    const {brandColor, site, onAction, pageData, action} = useContext(AppContext);
+export default function NewsletterSelectionPage({pageData}) {
+    const {brandColor, site, onAction, action} = useContext(AppContext);
     const siteNewsletters = getSiteNewsletters({site});
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
     });
-
+    const tier = getProductFromPrice({site, priceId: pageData.plan});
+    const tierName = tier?.name;
     let isRunning = false;
     if (action === 'signup:running') {
         isRunning = true;
@@ -86,9 +87,7 @@ export default function NewsletterSelectionPage() {
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     return (
         <div className='gh-portal-content with-footer'>
-            <CloseButton />
-            <AccountHeader />
-            <p className="gh-portal-text-center">Pick which emails you want to receive with your <strong>TIER NAME</strong> membership.</p>
+            <p className="gh-portal-text-center">Pick which emails you want to receive with your <strong>{tierName}</strong> membership.</p>
             <div className='gh-portal-section'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
