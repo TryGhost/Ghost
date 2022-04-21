@@ -1203,6 +1203,13 @@ describe('Members API', function () {
                     offer_id: offer_id
                 });
 
+                // Check whether the offer attribute is passed correctly in the response when fetching a single member
+                member.subscriptions[0].should.match({
+                    offer: {
+                        id: offer_id
+                    }
+                });
+
                 await assertMemberEvents({
                     eventType: 'MemberPaidSubscriptionEvent',
                     memberId: member.id,
@@ -1245,7 +1252,10 @@ describe('Members API', function () {
                 assert.equal(updatedMember.products.length, 0, 'The member should have no products');
                 should(updatedMember.subscriptions).match([
                     {
-                        status: 'canceled'
+                        status: 'canceled',
+                        offer: {
+                            id: offer_id
+                        }
                     }
                 ]);
 
@@ -1592,6 +1602,11 @@ describe('Members API', function () {
                         offer_id: null
                     });
 
+                    // Check whether the offer attribute is passed correctly in the response when fetching a single member
+                    member.subscriptions[0].should.match({
+                        offer: null
+                    });
+
                     await assertMemberEvents({
                         eventType: 'MemberPaidSubscriptionEvent',
                         memberId: member.id,
@@ -1640,6 +1655,13 @@ describe('Members API', function () {
                         plan_currency: 'usd',
                         mrr: mrr_with,
                         offer_id: offer.id
+                    });
+
+                    // Check whether the offer attribute is passed correctly in the response when fetching a single member
+                    updatedMember.subscriptions[0].should.match({
+                        offer: {
+                            id: offer.id
+                        }
                     });
 
                     await assertMemberEvents({
@@ -1774,6 +1796,11 @@ describe('Members API', function () {
                         current_period_end: new Date(Math.floor(beforeNow / 1000) * 1000 + (60 * 60 * 24 * 31 * 1000)),
                         mrr: mrr_with,
                         offer_id: null
+                    });
+
+                    // Check whether the offer attribute is passed correctly in the response when fetching a single member
+                    member.subscriptions[0].should.match({
+                        offer: null
                     });
 
                     await assertMemberEvents({
