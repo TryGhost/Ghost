@@ -313,6 +313,7 @@ module.exports = function apiRoutes() {
     router.put('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.edit));
 
     router.get('/newsletters', mw.authAdminApi, http(api.newsletters.browse));
+    router.get('/newsletters/:id', mw.authAdminApi, http(api.newsletters.read));
     router.post('/newsletters', mw.authAdminApi, http(api.newsletters.add));
     router.put('/newsletters/:id', mw.authAdminApi, http(api.newsletters.edit));
 
