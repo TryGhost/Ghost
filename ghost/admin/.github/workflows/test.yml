@@ -5,6 +5,7 @@ on:
     branches:
       - "v4.*"
       - "5.0"
+      - "multiple-newsletters"
       - main
       - "renovate/*"
 jobs:
