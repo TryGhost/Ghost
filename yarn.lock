@@ -2228,10 +2228,10 @@
     moment "^2.29.1"
     prettyjson "^1.2.5"
 
-"@tryghost/promise@0.1.15":
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.15.tgz#4ac572919ef56e6b00f6c91d23f461ca42def4ee"
-  integrity sha512-cOgTcIMHUrvjwpxAhzBuhOVCciNndi83J/44rpTQmVTnG8KhnVgNpc8aTuorKbJzDR5MucKWcywSc2by3R4ksw==
+"@tryghost/promise@0.1.16":
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.1.16.tgz#dc7b02304fd7be95ce0fff71bd3c40156d603438"
+  integrity sha512-tfOVTp87IExiQvP7ef222Oyx4pr/w0WhEEmSJBXH3ORjzrG1+DZRaHaym9pjF4wz8hIHau4xQls3TS5tTnCJCA==
   dependencies:
     bluebird "^3.7.2"
 
