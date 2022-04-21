@@ -23,6 +23,7 @@ const newsletter = {
     show_feature_image: true,
     show_header_icon: true,
     show_header_title: true,
+    show_header_name: false,
     title_alignment: 'center',
     title_font_category: 'sans_serif'
 };
