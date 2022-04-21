@@ -1065,7 +1065,7 @@ export default class EditorController extends Controller {
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];
 
         if (emailRecipientFilter && emailRecipientFilter !== 'none') {
-            const recipientCount = await this.membersCountCache.countString(`subscribed:true+(${emailRecipientFilter})`);
+            const recipientCount = await this.membersCountCache.countString(`newsletters.status:active+(${emailRecipientFilter})`);
             description.push(`${!emailOnly ? 'and delivered ' : ''}to <span><strong>${recipientCount}</strong></span>`);
         }
 
