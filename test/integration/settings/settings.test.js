@@ -19,6 +19,7 @@ describe('Settings', function () {
         'routes_hash',
         'next_update_check',
         'notifications',
+        'version_notifications',
         'session_secret',
         'theme_session_secret',
         'ghost_public_key',
