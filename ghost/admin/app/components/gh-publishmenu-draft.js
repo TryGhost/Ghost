@@ -84,7 +84,7 @@ export default class GhPublishMenuDraftComponent extends Component {
         const user = yield this.session.user;
 
         if (user.isAdmin) {
-            const result = yield this.store.query('member', {limit: 1, filter: 'subscribed:true'});
+            const result = yield this.store.query('member', {limit: 1, filter: 'newsletters.status:active'});
             this.totalMemberCount = result.meta.pagination.total;
         }
     }
