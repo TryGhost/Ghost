@@ -8,7 +8,7 @@ module.exports = {
             method: 'browse'
         },
         async query() {
-            return await statsService.members.getCountHistory();
+            return await statsService.getMemberCountHistory();
         }
     },
     mrr: {
@@ -17,7 +17,7 @@ module.exports = {
             method: 'browse'
         },
         async query() {
-            return await statsService.mrr.getHistory();
+            return await statsService.getMRRHistory();
         }
     }
 };

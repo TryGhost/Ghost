@@ -2300,6 +2300,13 @@
   resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.29.tgz#09177858959e9521244d0192bf219237f0fb6094"
   integrity sha512-PUgSQj/Y8x4Sbp0/Lq/Pq6ZN8ICSoAIHpVouJwblW3LvY/C0eeDrDLQMrUmR2SSBx59mS+Blavwy5mFlt23lwg==
 
+"@tryghost/stats-service@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/stats-service/-/stats-service-0.1.0.tgz#5638ac07b6de6de40ea4f7a9963e832530eef2e2"
+  integrity sha512-YJRdomtJ8y3f0UDvYjSnK4/RMu5xvZoMvtFAZfxiDC1d0yKA4YostxFQHAKh32t2y0FNO6IJzO7yJ5HnUXjueg==
+  dependencies:
+    moment "^2.29.3"
+
 "@tryghost/string@0.1.23", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.23"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.23.tgz#7d5f556b7e99b7c5d5e4c6966626afc048b21290"
@@ -8828,7 +8835,7 @@ moment-timezone@0.5.23, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.24.0, moment@2.27.0, "moment@>= 2.9.0", moment@^2.18.1, moment@^2.19.3, moment@^2.24.0, moment@^2.27.0, moment@^2.29.1:
+moment@2.24.0, moment@2.27.0, "moment@>= 2.9.0", moment@^2.18.1, moment@^2.19.3, moment@^2.24.0, moment@^2.27.0, moment@^2.29.1, moment@^2.29.3:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
