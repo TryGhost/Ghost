@@ -10,10 +10,13 @@ class NewslettersService {
      *
      * @param {Object} options
      * @param {Object} options.NewsletterModel
+     * @param {Object} options.mail
+     * @param {Object} options.SingleUseTokenModel
+     * @param {Object} options.SingleUseTokenProvider
+     * @param {Object} options.urlUtils
      */
-    constructor({NewsletterModel, mail, settingsCache, SingleUseTokenModel, SingleUseTokenProvider, urlUtils}) {
+    constructor({NewsletterModel, mail, SingleUseTokenModel, SingleUseTokenProvider, urlUtils}) {
         this.NewsletterModel = NewsletterModel;
-        this.settingsCache = settingsCache;
         this.urlUtils = urlUtils;
 
         /* email verification setup */
