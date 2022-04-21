@@ -3,29 +3,33 @@ class APIVersionCompatibilityService {
      *
      * @param {Object} options
      * @param {Function} options.sendEmail - email sending function
-     * @param {String} options.emailTo - email address to receive notifications
+     * @param {() => Promise<any>} options.fetchEmailsToNotify - email address to receive notifications
      * @param {(acceptVersion: String) => Promise<any>} options.fetchHandled - retrives already handled compatibility notifications
      * @param {(acceptVersion: String) => Promise<any>} options.saveHandled - persists already handled compatibility notifications
     */
-    constructor({sendEmail, emailTo, fetchHandled, saveHandled}) {
+    constructor({sendEmail, fetchEmailsToNotify, fetchHandled, saveHandled}) {
         this.sendEmail = sendEmail;
-        this.emailTo = emailTo;
+        this.fetchEmailsToNotify = fetchEmailsToNotify;
         this.fetchHandled = fetchHandled;
         this.saveHandled = saveHandled;
     }
 
-    async handleMismatch({acceptVersion, contentVersion, userAgent}) {
+    async handleMismatch({acceptVersion, contentVersion, userAgent = ''}) {
         if (!await this.fetchHandled(acceptVersion)) {
             const emailTemplate = `
                 ${userAgent} integration expected Ghost version: ${acceptVersion}
                 Current Ghost version: ${contentVersion}
             `;
 
-            await this.sendEmail({
-                subject: `Ghost has noticed that your ${userAgent} integration is no longer working as expected`,
-                to: this.emailTo,
-                html: emailTemplate
-            });
+            const emails = await this.fetchEmailsToNotify();
+            for (const email of emails) {
+                await this.sendEmail({
+                    subject: `Ghost has noticed that your ${userAgent} integration is no longer working as expected`,
+                    to: email,
+                    html: emailTemplate
+                });
+            }
+
             await this.saveHandled(acceptVersion);
         }
     }
