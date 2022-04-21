@@ -66,6 +66,20 @@ export default class App extends React.Component {
         /**Handle custom trigger class change on popup open state change */
         if (prevState.showPopup !== this.state.showPopup) {
             this.handleCustomTriggerClassUpdate();
+
+            /** Remove background scroll when popup is opened */
+            try {
+                if (this.state.showPopup) {
+                    /** When modal is opened, store current overflow and set as hidden */
+                    this.bodyScroll = window.document?.body?.style?.overflow;
+                    window.document.body.style.overflow = 'hidden';
+                } else {
+                    /** When the modal is hidden, reset overflow property for body */
+                    window.document.body.style.overflow = this.bodyScroll || '';
+                }
+            } catch (e) {
+                /** Ignore any errors for scroll handling */
+            }
         }
 
         if (this.state.initStatus === 'success' && prevState.initStatus !== this.state.initStatus) {
