@@ -47,6 +47,7 @@
 
 .gh-product-card-actions-button, .gh-product-card-edit-button {
     margin-right: 0;
+    cursor: pointer;
 }
 
 .gh-product-card-actions-button.gh-btn span, .gh-product-card-edit-button.gh-btn span {

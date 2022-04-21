@@ -1,13 +1,12 @@
 <div class="modal-content">
     <header class="modal-header" data-test-modal="confirm-newsletter-unarchive">
-        <h1>Are you sure?</h1>
+        <h1>Reactivate newsletter</h1>
     </header>
     <button type="button" class="close" role="button" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
         <p>
-            Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
-            immediately reactivated and become visible to your members.
+            Reactivating <strong>{{@data.newsletter.name}}</strong> will immediately make it visible to members and re-enable it as an option when publishing new posts.
         </p>
     </div>
 
