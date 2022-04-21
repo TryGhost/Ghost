@@ -1,8 +1,7 @@
 const sinon = require('sinon');
 const assert = require('assert');
 
-// Unmocked things the newsletter service needs
-const SingleUseTokenProvider = require('../../../../../core/server/services/members/SingleUseTokenProvider');
+// DI requirements
 const models = require('../../../../../core/server/models');
 const mail = require('../../../../../core/server/services/mail');
 
@@ -12,23 +11,36 @@ const {mockManager} = require('../../../../utils/e2e-framework');
 
 const NewslettersService = require('../../../../../core/server/services/newsletters/service');
 
+class TestTokenProvider {
+    async create(data) {
+        return JSON.stringify(data);
+    }
+
+    async validate(token) {
+        return JSON.parse(token);
+    }
+}
+
 describe('NewslettersService', function () {
-    let newsletterService, getStub;
+    let newsletterService, getStub, tokenProvider;
 
     before(function () {
         models.init();
 
+        tokenProvider = new TestTokenProvider();
+
         newsletterService = new NewslettersService({
             NewsletterModel: models.Newsletter,
             mail,
-            SingleUseTokenModel: models.SingleUseToken,
-            SingleUseTokenProvider: SingleUseTokenProvider,
+            singleUseTokenProvider: tokenProvider,
             urlUtils: urlUtils.stubUrlUtilsFromConfig()
         });
     });
 
     beforeEach(function () {
         getStub = sinon.stub();
+        sinon.spy(tokenProvider, 'create');
+        sinon.spy(tokenProvider, 'validate');
         mockManager.mockMail();
     });
 
@@ -91,6 +103,7 @@ describe('NewslettersService', function () {
             });
             sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world'}, options);
             mockManager.assert.sentEmail({to: 'test@example.com'});
+            sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: undefined, property: 'sender_email', value: 'test@example.com'});
         });
     });
 
@@ -139,6 +152,7 @@ describe('NewslettersService', function () {
             sinon.assert.calledOnceWithExactly(editStub, {name: 'hello world'}, options);
             sinon.assert.calledOnceWithExactly(findOneStub, options, {require: true});
             mockManager.assert.sentEmail({to: 'test@example.com'});
+            sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: undefined, property: 'sender_email', value: 'test@example.com'});
         });
 
         it('will NOT trigger verification when sender_email is provided but is already verified', async function () {
@@ -167,6 +181,14 @@ describe('NewslettersService', function () {
 
         it('rejects if called with no data', async function () {
             assert.rejects(await newsletterService.verifyPropertyUpdate, {name: 'TypeError'});
+        });
+
+        it('Updates model with values from token', async function () {
+            const token = JSON.stringify({id: 'abc123', property: 'sender_email', value: 'test@example.com'});
+
+            await newsletterService.verifyPropertyUpdate(token);
+
+            sinon.assert.calledOnceWithExactly(editStub, {sender_email: 'test@example.com'}, {id: 'abc123'});
         });
     });
 });

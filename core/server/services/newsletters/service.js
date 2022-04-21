@@ -3,19 +3,16 @@ const MagicLink = require('@tryghost/magic-link');
 const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
 
-const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
-
 class NewslettersService {
     /**
      *
      * @param {Object} options
      * @param {Object} options.NewsletterModel
      * @param {Object} options.mail
-     * @param {Object} options.SingleUseTokenModel
-     * @param {Object} options.SingleUseTokenProvider
+     * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
      */
-    constructor({NewsletterModel, mail, SingleUseTokenModel, SingleUseTokenProvider, urlUtils}) {
+    constructor({NewsletterModel, mail, singleUseTokenProvider, urlUtils}) {
         this.NewsletterModel = NewsletterModel;
         this.urlUtils = urlUtils;
 
@@ -62,7 +59,7 @@ class NewslettersService {
 
         this.magicLinkService = new MagicLink({
             transporter,
-            tokenProvider: new SingleUseTokenProvider(SingleUseTokenModel, MAGIC_LINK_TOKEN_VALIDITY),
+            tokenProvider: singleUseTokenProvider,
             getSigninURL,
             getText,
             getHTML,
@@ -101,6 +98,16 @@ class NewslettersService {
         const updatedNewsletter = await this.NewsletterModel.edit(cleanedAttrs, options);
 
         return this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
+    }
+
+    async verifyPropertyUpdate(token) {
+        const data = await this.magicLinkService.getDataFromToken(token);
+        const {id, property, value} = data;
+
+        const attrs = {};
+        attrs[property] = value;
+
+        return this.NewsletterModel.edit(attrs, {id});
     }
 
     /* Email verification (private) */
@@ -173,17 +180,6 @@ class NewslettersService {
 
         return this.magicLinkService.sendMagicLink({email, tokenData: {id, property, value: email}});
     }
-
-    async verifyPropertyUpdate(token) {
-        const data = await this.magicLinkService.getDataFromToken(token);
-        const {id, property, value} = data;
-
-        const attrs = {};
-        attrs[property] = value;
-
-        return this.NewsletterModel.edit(attrs, {id});
-    }
 }
 
 module.exports = NewslettersService;
-
