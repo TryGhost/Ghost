@@ -2,6 +2,7 @@ import ActionButton from '../common/ActionButton';
 import AppContext from '../../AppContext';
 import CloseButton from '../common/CloseButton';
 import SiteTitleBackButton from '../common/SiteTitleBackButton';
+import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
@@ -223,7 +224,8 @@ class SignupPage extends React.Component {
         this.state = {
             name: '',
             email: '',
-            plan: 'free'
+            plan: 'free',
+            showNewsletterSelection: false
         };
     }
 
@@ -271,12 +273,9 @@ class SignupPage extends React.Component {
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 if (hasMultipleNewsletters({site})) {
-                    onAction('switchPage', {
-                        page: 'signupNewsletter',
-                        lastPage: 'signup',
-                        pageData: {name, email, plan}
-                    });
                     this.setState({
+                        showNewsletterSelection: true,
+                        pageData: {name, email, plan},
                         errors: {}
                     });
                 } else {
@@ -301,13 +300,9 @@ class SignupPage extends React.Component {
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 if (hasMultipleNewsletters({site})) {
-                    onAction('switchPage', {
-                        page: 'signupNewsletter',
-                        lastPage: 'signup',
-                        pageData: {name, email, plan}
-                    });
-
                     this.setState({
+                        showNewsletterSelection: true,
+                        pageData: {name, email, plan},
                         errors: {}
                     });
                 } else {
@@ -477,6 +472,22 @@ class SignupPage extends React.Component {
         const fields = this.getInputFields({state: this.state});
         const {site, pageQuery} = this.context;
 
+        if (this.state.showNewsletterSelection) {
+            return (
+                <NewsletterSelectionPage
+                    pageData={this.state.pageData}
+                    onSubmit={() => {
+                        // Handle submit
+                    }}
+                    onBack={() => {
+                        this.setState({
+                            showNewsletterSelection: false
+                        });
+                    }}
+                />
+            );
+        }
+
         if (isInviteOnlySite({site, pageQuery})) {
             return (
                 <section>
@@ -583,7 +594,17 @@ class SignupPage extends React.Component {
         return (
             <>
                 <div className='gh-portal-back-sitetitle'>
-                    <SiteTitleBackButton />
+                    <SiteTitleBackButton
+                        onBack={() => {
+                            if (this.state.showNewsletterSelection) {
+                                this.setState({
+                                    showNewsletterSelection: false
+                                });
+                            } else {
+                                this.context.onAction('closePopup');
+                            }
+                        }}
+                    />
                 </div>
                 <CloseButton />
                 <div className={'gh-portal-content signup ' + sectionClass}>
