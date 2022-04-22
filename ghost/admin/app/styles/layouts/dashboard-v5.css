@@ -66,21 +66,6 @@ Dashboard v5 Layout */
     margin: 0 auto;
 }
 
-.gh-dashboard5-layout {
-    display: grid;
-    grid-gap: 24px;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: auto auto auto auto auto;
-    grid-template-areas: 
-        "overview           overview           overview           overview              overview            overview"  
-        "anchor             anchor             anchor             anchor                anchor              anchor"  
-        "engagement         engagement         engagement         engagement            engagement          engagement" 
-        "recents            recents            recents            recents               recents             recents"
-        "resources          resources          resources          resources             community           community";
-        /* "resources          resources          resources          resources             staff-picks         staff-picks" */
-        /* "newsletter         newsletter         newsletter         newsletter            community           community"; */
-}
-
 .gh-dashboard5-rows {
     flex: 1;
     display: flex;
@@ -101,14 +86,21 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-section {
     display: flex;
+    margin-bottom: 24px;
 }
 
 .gh-dashboard5-section-main {
-    margin-right: 16px; /* grid layout adjustments */
+    margin-right: 8px; /* grid layout adjustments */
 }
 
 .gh-dashboard5-section-aside {
-    margin-left: -16px; /* grid layout adjustments */
+    margin-left: -8px; /* grid layout adjustments */
+}
+
+.gh-dashboard5-split {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 2fr 1fr;
 }
 
 .gh-dashboard5-title {
@@ -155,14 +147,19 @@ Dashboard v5 Layout */
     background: #fcfcfc;
 }
 
+.gh-dashboard5-box.is-faded {
+    background: rgb(239,240,243);
+    /* background: linear-gradient(135deg, rgba(239,240,243,1) 0%, rgba(250,251,252,1) 100%); */
+    background: linear-gradient(310deg, rgba(239,240,243,1) 0%, rgba(250,251,252,1) 100%);
+
+}
+
 .gh-dashboard5-box.is-image {
     background: transparent;
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
-    /* background-image: url(img/get-started.jpg); */
     background-image: url(img/abstract-2.jpg);
-
     color: var(--white);
     padding-top: 32px;
 }
@@ -438,35 +435,12 @@ Dashboard v5 List */
 
 .gh-dashboard5-list-title {
     align-items: center;
-    font-size: 1.2rem;
-    /* text-transform: uppercase; */
-    font-weight: 500;
-    letter-spacing: .3px;
     line-height: 1em;
-    padding: 0;
-    color: #7c8b9a;
     white-space: nowrap;
-    padding: 0 24px 0 0;
-/* 
-    align-items: center;
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1em;
-    margin: 0 0 10px;
-    padding: 0;
-    color: #15171a;
-    white-space: nowrap;
-    letter-spacing: .2px;
-    font-size: 1.3rem;
-    font-weight: 500;
-    color: #626d79; */
-
-    /* border-bottom: 1px solid rgb(230, 233, 235); */
     font-size: 1.1rem;
     font-weight: 500;
     letter-spacing: 0.1px;
     color: var(--black);
-    /* padding: 10px 20px; */
     padding: 0 20px 8px 0;
     text-transform: uppercase;
     white-space: nowrap;
@@ -544,7 +518,7 @@ Dashboard v5 List */
 Dashboard v5 Section Overview */
 
 .gh-dashboard5-overview {
-    grid-area: overview;
+    position: relative;
 }
 
 .gh-dashboard5-overview .gh-dashboard5-area {
@@ -574,7 +548,6 @@ Dashboard v5 Section Overview */
 Dashboard v5 Section Anchor */
 
 .gh-dashboard5-anchor {
-    grid-area: anchor;
     position: relative;
 }
 
@@ -691,7 +664,6 @@ Dashboard v5 Section Anchor */
 Dashboard v5 Section Engagement */
 
 .gh-dashboard5-engagement {
-    grid-area: engagement;
     position: relative;
 }
 
@@ -704,7 +676,7 @@ Dashboard v5 Section Engagement */
 Dashboard v5 Section Recent Posts */
 
 .gh-dashboard5-recent-posts {
-    grid-area: recent-posts;
+    position: relative;
 }
 
 .gh-dashboard5-recent-posts .gh-dashboard5-box {
@@ -764,7 +736,7 @@ Dashboard v5 Section Recent Posts */
 Dashboard v5 Section Recent Activity */
 
 .gh-dashboard5-recent-activity {
-    grid-area: recent-activity;
+    position: relative;
 }
 
 .gh-dashboard5-recent-activity .gh-dashboard5-box {
@@ -817,7 +789,7 @@ Dashboard v5 Section Recent Activity */
 Dashboard v5 Section Recents */
 
 .gh-dashboard5-recents {
-    grid-area: recents;
+    position: relative;
 }
 
 .gh-dashboard5-recents .gh-dashboard5-box {
@@ -914,7 +886,7 @@ Dashboard v5 Section Recents */
 Dashboard v5 Section What's New */
 
 .gh-dashboard5-whats-new {
-    grid-area: whats-new;
+    position: relative;
 }
 
 .gh-dashboard5-whats-new .gh-dashboard5-list-header,
@@ -957,7 +929,7 @@ Dashboard v5 Section What's New */
 Dashboard v5 Section Resources */
 
 .gh-dashboard5-resources {
-    grid-area: resources;
+    position: relative;
 }
 
 .gh-dashboard5-resources .gh-dashboard5-articles {
@@ -989,7 +961,7 @@ Dashboard v5 Section Resources */
 Dashboard v5 Section Staff Picks */
 
 .gh-dashboard5-staff-picks {
-    grid-area: staff-picks;
+    position: relative;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-header,
@@ -1013,7 +985,7 @@ Dashboard v5 Section Staff Picks */
 Dashboard v5 Section Latest Newsletters */
 
 .gh-dashboard5-newsletter {
-    grid-area: newsletter;
+    position: relative;
 }
 
 .gh-dashboard5-newsletter .gh-dashboard5-articles {
@@ -1041,7 +1013,7 @@ Dashboard v5 Section Latest Newsletters */
 Dashboard v5 Section Community */
 
 .gh-dashboard5-community {
-    grid-area: community;
+    position: relative;
 }
 
 .gh-dashboard5-community .gh-dashboard5-list-body {
