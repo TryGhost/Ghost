@@ -1,24 +1,28 @@
-<div class="gh-dashboard5-whats-new" {{did-insert this.load}}>
-    {{#if (not (or this.loading this.error))}}
-        <div class="gh-dashboard-box whats-new {{if this.whatsNew.hasNew "has-new"}}">
-            <div class="gh-dashboard-header-container">
-                <h4 class="gh-dashboard-header">What's new?</h4>
-                {{svg-jar "gift"}}
+<section class="gh-dashboard5-section gh-dashboard5-section-aside gh-dashboard5-whats-new" {{did-insert this.load}}>
+    <article class="gh-dashboard5-box">
+        {{#if (not (or this.loading this.error))}}
+            <div class="gh-dashboard5-list {{if this.whatsNew.hasNew "has-new"}}">
+                <div class="gh-dashboard5-list-header">
+                    <Dashboard::v5::Parts::Metric
+                        @label="What's new" />   
+                </div>
+                <div class="gh-dashboard5-list-body">
+                    {{#each this.entries as |entry|}}
+                        <div class="gh-dashboard5-list-item">
+                            <LinkTo @route="whatsnew" @query={{hash entry=entry.slug}}>
+                                <span class="gh-dashboard5-list-link">{{entry.title}}</span>
+                                <div class="gh-dashboard5-list-date">{{moment-format entry.published_at "D MMM YYYY"}}</div>
+                                {{#if entry.custom_excerpt}}
+                                    <p>{{entry.custom_excerpt}}</p>
+                                {{/if}}
+                            </LinkTo>    
+                        </div>
+                    {{/each}}
+                </div>
+                <div class="gh-dashboard5-list-footer">
+                    <LinkTo @route="whatsnew" @query={{hash entry=null}} class="green">See more updates &rarr;</LinkTo>
+                </div>
             </div>
-            <div class="content">
-                {{#each this.entries as |entry|}}
-                    <LinkTo @route="whatsnew" @query={{hash entry=entry.slug}}>
-                        <h2>{{entry.title}}</h2>
-                        <span class="wn-date">{{moment-format entry.published_at "D MMM YYYY"}}</span>
-                        {{#if entry.custom_excerpt}}
-                            <p>{{entry.custom_excerpt}}</p>
-                        {{/if}}
-                    </LinkTo>
-                {{/each}}
-            </div>
-            <div class="footer">
-                <LinkTo @route="whatsnew" @query={{hash entry=null}} class="green">See more &rarr;</LinkTo>
-            </div>
-        </div>
-    {{/if}}
-</div>
+        {{/if}}
+    </article>
+</section>

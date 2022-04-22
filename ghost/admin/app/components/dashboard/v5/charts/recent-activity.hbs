@@ -1,10 +1,9 @@
-<section class="gh-dashboard5-section gh-dashboard5-recent-activity">
+<section class="gh-dashboard5-section gh-dashboard5-section-main gh-dashboard5-recent-activity">
     <article class="gh-dashboard5-box">
         <div class="gh-dashboard5-list" data-test-dashboard-member-activity>
             <div class="gh-dashboard5-list-header">
-                <div class="gh-dashboard5-list-title">Recent activity</div>
+                <Dashboard::v5::Parts::Metric @label="Recent activity" />   
             </div>
-
             <div class="gh-dashboard5-list-body">
                 {{#let (members-event-fetcher filter=(members-event-filter excludeEmailEvents=true) pageSize=5) as |eventsFetcher|}}     
                     {{#if eventsFetcher.isError}}
@@ -33,7 +32,7 @@
                                                 {{parsedEvent.info}}
                                             </span>
                                         </LinkTo>
-                                        <span class="gh-dashboard-activity-time">{{moment-from-now parsedEvent.timestamp}}</span>
+                                        <span class="gh-dashboard5-list-date">{{moment-from-now parsedEvent.timestamp}}</span>
                                     </div>
                                 {{/let}}
                             {{/each}}
@@ -46,7 +45,7 @@
                 {{/let}}
             </div>
             <div class="gh-dashboard5-list-footer">
-                <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity →</LinkTo>
+                <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity &rarr;</LinkTo>
             </div>
         </div>
     </article>
