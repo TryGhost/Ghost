@@ -5,10 +5,12 @@
                 <Dashboard::v5::Parts::Metric
                     @label="Recent posts" /> 
             </button>
-            <button type="button" class="gh-dashboard5-tab {{if this.activityTabSelected 'is-selected'}}" {{on "click" this.changeTabToActivity}}>
-                <Dashboard::v5::Parts::Metric
-                    @label="Member activity" /> 
-            </button>          
+            {{#if this.areMembersEnabled}}
+                <button type="button" class="gh-dashboard5-tab {{if this.activityTabSelected 'is-selected'}}" {{on "click" this.changeTabToActivity}}>
+                    <Dashboard::v5::Parts::Metric
+                        @label="Member activity" /> 
+                </button>          
+            {{/if}}
         </div>
         {{#if this.postsTabSelected}}
             <div class="gh-dashboard5-recents-posts gh-dashboard5-list">
