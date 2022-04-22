@@ -23,7 +23,7 @@ const DAYS_OPTIONS = [{
 }];
 
 const DISPLAY_OPTIONS = [{
-    name: 'All members',
+    name: 'Total members',
     value: 'total'
 }, {
     name: 'Paid members',

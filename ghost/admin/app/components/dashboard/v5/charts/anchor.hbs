@@ -1,8 +1,21 @@
 <section class="gh-dashboard5-section gh-dashboard5-anchor" {{did-insert this.loadCharts}}>
     <article class="gh-dashboard5-box">
         {{#if this.hasPaidTiers}}
-            <Dashboard::v5::Parts::Metric
-                @label="Members over time" /> 
+            <div class="gh-dashboard5-select-title">
+                <PowerSelect
+                    @selected={{this.selectedDisplayOption}}
+                    @options={{this.displayOptions}}
+                    @searchEnabled={{false}}
+                    @onChange={{this.onDisplayChange}}
+                    @triggerComponent="gh-power-select/trigger"
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown"
+                    @matchTriggerWidth={{false}}
+                    as |option|
+                >
+                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                </PowerSelect>
+            </div>
         {{else}}
             <Dashboard::v5::Parts::Metric
                 @label="Total members"
@@ -46,40 +59,20 @@
             {{/if}}
         </div>
 
-        <div class="gh-dashboard5-selects">
-            {{#if this.hasPaidTiers}}
-                <div class="gh-dashboard5-select">
-                    <PowerSelect
-                        @selected={{this.selectedDisplayOption}}
-                        @options={{this.displayOptions}}
-                        @searchEnabled={{false}}
-                        @onChange={{this.onDisplayChange}}
-                        @triggerComponent="gh-power-select/trigger"
-                        @triggerClass="gh-contentfilter-menu-trigger"
-                        @dropdownClass="gh-contentfilter-menu-dropdown"
-                        @matchTriggerWidth={{false}}
-                        as |option|
-                    >
-                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                    </PowerSelect>
-                </div>
-            {{/if}}
-
-            <div class="gh-dashboard5-select">
-                <PowerSelect
-                    @selected={{this.selectedDaysOption}}
-                    @options={{this.daysOptions}}
-                    @searchEnabled={{false}}
-                    @onChange={{this.onDaysChange}}
-                    @triggerComponent="gh-power-select/trigger"
-                    @triggerClass="gh-contentfilter-menu-trigger"
-                    @dropdownClass="gh-contentfilter-menu-dropdown"
-                    @matchTriggerWidth={{false}}
-                    as |option|
-                >
-                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                </PowerSelect>
-            </div>
+        <div class="gh-dashboard5-select">
+            <PowerSelect
+                @selected={{this.selectedDaysOption}}
+                @options={{this.daysOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onDaysChange}}
+                @triggerComponent="gh-power-select/trigger"
+                @triggerClass="gh-contentfilter-menu-trigger"
+                @dropdownClass="gh-contentfilter-menu-dropdown"
+                @matchTriggerWidth={{false}}
+                as |option|
+            >
+                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
         </div>
     </article>
 </section>
