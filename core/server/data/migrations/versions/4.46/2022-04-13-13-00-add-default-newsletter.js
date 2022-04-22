@@ -25,7 +25,8 @@ const newsletter = {
     show_header_title: true,
     show_header_name: false,
     title_alignment: 'center',
-    title_font_category: 'sans_serif'
+    title_font_category: 'sans_serif',
+    created_at: new Date()
 };
 
 module.exports = createTransactionalMigration(
