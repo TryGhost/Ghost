@@ -8887,7 +8887,7 @@ mocha@9.2.2:
     yargs-parser "20.2.4"
     yargs-unparser "2.0.0"
 
-mock-knex@TryGhost/mock-knex#master:
+mock-knex@TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682:
   version "0.4.9"
   resolved "https://codeload.github.com/TryGhost/mock-knex/tar.gz/8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   dependencies:
