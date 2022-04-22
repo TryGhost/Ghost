@@ -676,6 +676,7 @@ Post = ghostBookshelf.Model.extend({
 
         // newsletter_id is read-only and should only be set using a query param when publishing/scheduling
         if (options.newsletter_id
+            && !this.get('newsletter_id')
             && this.hasChanged('status')
             && (newStatus === 'published' || newStatus === 'scheduled')) {
             this.set('newsletter_id', options.newsletter_id);
@@ -695,6 +696,7 @@ Post = ghostBookshelf.Model.extend({
                 return self.related('email').fetch({transacting: options.transacting}).then((email) => {
                     if (!email) {
                         self.set('email_recipient_filter', 'none');
+                        self.set('newsletter_id', null);
                     }
                 });
             });

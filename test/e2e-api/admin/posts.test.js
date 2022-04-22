@@ -17,7 +17,11 @@ describe('Posts API', function () {
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters');
+        /**
+         * Members are needed to enable mega to create an email record so that we can test that newsletter_id
+         * can't be overwritten after an email record is created.
+         */
+        await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters', 'members');
     });
 
     afterEach(function () {
@@ -487,6 +491,135 @@ describe('Posts API', function () {
             id
         }, testUtils.context.internal);
 
+        should(model.get('newsletter_id')).eql(newsletterId);
+    });
+
+    it('Defaults to the default newsletter when publishing without a newsletter_id', async function () {
+        const post = {
+            title: 'My post without newsletter_id',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter_id',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = {
+            status: 'published',
+            updated_at: res.body.posts[0].updated_at
+        };
+
+        await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const model = await models.Post.findOne({
+            id
+        }, testUtils.context.internal);
+
+        const defaultNewsletter = await models.Newsletter.findOne({
+            sort_order: 0
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(defaultNewsletter.get('id'));
+    });
+
+    it('Can\'t change the newsletter_id once it has been set', async function () {
+        let model;
+        const post = {
+            title: 'My post without newsletter_id',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter_id',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
+        const newsletterId2 = testUtils.DataGenerator.Content.newsletters[1].id;
+
+        const updatedPost = {
+            status: 'published',
+            updated_at: res.body.posts[0].updated_at
+        };
+
+        const res2 = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&send_email_when_published=true&newsletter_id=' + newsletterId))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        model = await models.Post.findOne({
+            id: id,
+            status: 'published'
+        }, testUtils.context.internal);
+        should(model.get('newsletter_id')).eql(newsletterId);
+
+        const unpublished = {
+            status: 'draft',
+            updated_at: res2.body.posts[0].updated_at
+        };
+
+        const res3 = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [unpublished]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        model = await models.Post.findOne({
+            id: id,
+            status: 'draft'
+        }, testUtils.context.internal);
+        should(model.get('newsletter_id')).eql(newsletterId);
+
+        const republished = {
+            status: 'published',
+            updated_at: res3.body.posts[0].updated_at
+        };
+
+        await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId2))
+            .set('Origin', config.get('url'))
+            .send({posts: [republished]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        model = await models.Post.findOne({
+            id: id,
+            status: 'published'
+        }, testUtils.context.internal);
         should(model.get('newsletter_id')).eql(newsletterId);
     });
 

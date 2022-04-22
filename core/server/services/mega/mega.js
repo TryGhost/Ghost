@@ -298,11 +298,14 @@ async function pendingEmailHandler(emailModel, options) {
     const emailAnalyticsJobs = require('../email-analytics/jobs');
     emailAnalyticsJobs.scheduleRecurringJobs();
 
-    return jobsService.addJob({
-        job: sendEmailJob,
-        data: {emailModel},
-        offloaded: false
-    });
+    // @TODO move this into the jobService
+    if (!process.env.NODE_ENV.startsWith('test')) {
+        return jobsService.addJob({
+            job: sendEmailJob,
+            data: {emailModel},
+            offloaded: false
+        });
+    }
 }
 
 async function sendEmailJob({emailModel, options}) {
