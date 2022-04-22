@@ -34,7 +34,9 @@ module.exports = {
         body_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
         footer_content: {type: 'text', maxlength: 1000000000, nullable: true},
         show_badge: {type: 'bool', nullable: false, defaultTo: true},
-        show_header_name: {type: 'bool', nullable: false, defaultTo: true}
+        show_header_name: {type: 'bool', nullable: false, defaultTo: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     },
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
