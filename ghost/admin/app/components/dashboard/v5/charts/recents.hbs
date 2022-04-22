@@ -1,0 +1,113 @@
+<section class="gh-dashboard5-section gh-dashboard5-recents" {{did-insert this.loadPosts}}>
+    <article class="gh-dashboard5-box">
+        <div class="gh-dashboard5-tabs">
+            <button type="button" class="gh-dashboard5-tab {{if this.postsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPosts}}>
+                <Dashboard::v5::Parts::Metric
+                    @label="Recent posts" /> 
+            </button>
+            <button type="button" class="gh-dashboard5-tab {{if this.activityTabSelected 'is-selected'}}" {{on "click" this.changeTabToActivity}}>
+                <Dashboard::v5::Parts::Metric
+                    @label="Member activity" /> 
+            </button>          
+        </div>
+        {{#if this.postsTabSelected}}
+            <div class="gh-dashboard5-recents-posts gh-dashboard5-list">
+                <div class="gh-dashboard5-list-header">  
+                    <div class="gh-dashboard5-list-title">Title</div>
+                    <div class="gh-dashboard5-list-title">Sends</div>
+                    <div class="gh-dashboard5-list-title">Open rate</div>
+                </div>
+                <div class="gh-dashboard5-list-body">
+                    {{#each this.posts as |post|}}
+                        <div class="gh-dashboard5-list-item">
+                            <div class="gh-dashboard5-list-item-sub">
+                                <LinkTo class="gh-dashboard5-list-post permalink" @route="editor.edit" @models={{array post.displayName post.id}}>
+                                {{post.title}}
+                                </LinkTo>
+                            </div>
+                            <div class="gh-dashboard5-list-item-sub">
+                                {{!-- DEMO <span class="gh-dashboard5-metric-minivalue">{{format-number 3294}}</span> --}}
+                                <span class="gh-dashboard5-metric-minivalue">{{format-number post.email.emailCount}}</span>
+                            </div>
+                            <div class="gh-dashboard5-list-item-sub">
+                                <span class="gh-dashboard5-rate-bar">
+                                    {{!-- DEMO <span class="gh-dashboard5-metric-minivalue">75%</span> --}}
+                                    {{!-- DEMO <span class="gh-dashboard5-rate-amount"><span style={{html-safe (concat "width: " 75 "%;")}}/></span> --}}
+                                    <span class="gh-dashboard5-metric-minivalue">{{post.email.openRate}}%</span>
+                                    <span class="gh-dashboard5-rate-amount"><span style={{html-safe (concat "width: " post.email.openRate "%;")}}/></span>
+                                </span>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="gh-dashboard5-list-empty">
+                            <p>No published posts yet.</p>
+                        </div>
+                    {{/each}}
+                </div>
+                <div class="gh-dashboard5-list-footer">
+                    <LinkTo @route="posts" @query={{reset-query-params "posts"}}>See all posts &rarr;</LinkTo>
+                </div>
+            </div>
+        {{else}}
+            <div class="gh-dashboard5-recents-activity gh-dashboard5-list" data-test-dashboard-member-activity>
+                <div class="gh-dashboard5-list-header">  
+                    <div class="gh-dashboard5-list-title">Member</div>
+                    <div class="gh-dashboard5-list-title">Event</div>
+                    <div class="gh-dashboard5-list-title">Time</div>
+                </div>
+                <div class="gh-dashboard5-list-body">
+                    {{#let (members-event-fetcher filter=(members-event-filter excludeEmailEvents=true) pageSize=5) as |eventsFetcher|}}     
+                        {{#if eventsFetcher.isError}}
+                            <div class="gh-dashboard5-list-error">
+                                <p>There was an error loading events</p>
+                                {{#if eventsFetcher.errorMessage}}
+                                    <code>{{eventsFetcher.errorMessage}}</code>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+                        
+                        {{#if eventsFetcher.isLoading}}
+                            <div class="gh-dashboard5-list-loading">
+                                <div class="gh-loading-spinner"></div>
+                            </div>
+                        {{else}}
+                            {{#if eventsFetcher.data}}
+                                {{#each eventsFetcher.data as |event|}}
+                                    {{#let (parse-member-event event) as |parsedEvent|}}
+                                        <div class="gh-dashboard5-list-item" data-test-dashboard-member-activity-item> 
+                                            <div class="gh-dashboard5-list-item-sub">
+                                                <LinkTo class="member-details" @route="member" @model="{{parsedEvent.memberId}}">
+                                                    <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                    {{parsedEvent.subject}}
+                                                </LinkTo>
+                                            </div>
+                                            <div class="gh-dashboard5-list-item-sub">
+                                                {{!-- ICON {{svg-jar parsedEvent.icon}} --}}
+                                                <span>
+                                                    {{parsedEvent.action}}
+                                                    {{parsedEvent.object}}
+                                                    {{parsedEvent.info}}
+                                                </span>
+                                            </div>
+                                            <div class="gh-dashboard5-list-item-sub">
+                                                {{!-- FROM TIME <span class="gh-dashboard5-list-date">{{moment-from-now parsedEvent.timestamp}}</span> --}}
+                                                {{moment-format event.timestamp "D MMM YYYY HH:mm"}}
+                                            </div>
+                                        </div>
+                                    {{/let}}
+                                {{/each}}
+                            {{else}}
+                                <div class="gh-dashboard5-list-empty" data-test-no-member-activities>
+                                    <p>No activity yet.</p>
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    {{/let}}
+                </div>
+                <div class="gh-dashboard5-list-footer">
+                    <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity &rarr;</LinkTo>
+                </div>
+            </div>
+        {{/if}}
+    </article>
+</section>

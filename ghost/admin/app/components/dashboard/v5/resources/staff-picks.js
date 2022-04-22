@@ -5,7 +5,7 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const RSS_FEED_URL = 'https://zapier.com/engine/rss/678920/ghoststaffpicks';
-const LIMIT = 5;
+const LIMIT = 3;
 
 export default class StaffPicks extends Component {
     @tracked loading = null;
