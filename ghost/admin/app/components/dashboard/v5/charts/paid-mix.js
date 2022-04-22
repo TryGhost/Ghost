@@ -67,7 +67,7 @@ export default class PaidMix extends Component {
                     data: [this.dashboardStats.paidMembersByCadence.monthly, this.dashboardStats.paidMembersByCadence.annual],
                     fill: false,
                     backgroundColor: ['#8E42FF', '#FB76B4', '#E9B0CC', '#F1D5E3'],
-                    barThickness: 7
+                    barThickness: 6
                 }]
             };
         }
@@ -81,7 +81,7 @@ export default class PaidMix extends Component {
                 data,
                 fill: false,
                 backgroundColor: ['#8E42FF', '#FB76B4', '#E9B0CC', '#F1D5E3'],
-                barThickness: 7
+                barThickness: 6
             }]
         };
     }
@@ -129,7 +129,10 @@ export default class PaidMix extends Component {
                         zeroLineWidth: 1
                     },
                     ticks: {
-                        display: true
+                        display: true,
+                        fontFamily: '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif',
+                        fontSize: 13,
+                        fontColor: '#626d79'
                     }
                 }],
                 xAxes: [{

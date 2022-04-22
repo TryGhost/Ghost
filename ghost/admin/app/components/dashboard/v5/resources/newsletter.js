@@ -6,9 +6,9 @@ import {tracked} from '@glimmer/tracking';
 
 const API_URL = 'https://resources.ghost.io/resources';
 const API_KEY = 'b30afc1721f5d8d021ec3450ef';
-const NEWSLETTER_COUNT = 10;
+const NEWSLETTER_COUNT = 3;
 
-export default class LatestNewsletters extends Component {
+export default class Newsletter extends Component {
     @tracked loading = null;
     @tracked error = null;
     @tracked newsletters = null;
