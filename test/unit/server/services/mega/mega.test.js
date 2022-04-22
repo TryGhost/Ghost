@@ -5,7 +5,6 @@ const labs = require('../../../../../core/shared/labs');
 
 const {addEmail, _partitionMembersBySegment, _getEmailMemberRows, _transformEmailRecipientFilter, handleUnsubscribeRequest} = require('../../../../../core/server/services/mega/mega');
 const membersService = require('../../../../../core/server/services/members');
-const labs = require('../../../../../core/shared/labs');
 
 describe('MEGA', function () {
     describe('addEmail', function () {

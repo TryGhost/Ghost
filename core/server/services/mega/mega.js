@@ -134,6 +134,8 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
 
     if (!newsletter) {
         filter.push(`subscribed:true`);
+    } else {
+        filter.push(`newsletters.id:${newsletter.id}`);
     }
 
     switch (emailRecipientFilter) {
@@ -215,7 +217,7 @@ const addEmail = async (postModel, options) => {
 
     const startRetrieve = Date.now();
     debug('addEmail: retrieving members count');
-    const {meta: {pagination: {total: membersCount}}} = await membersService.api.members.list(Object.assign({}, knexOptions, filterOptions));
+    const {meta: {pagination: {total: membersCount}}} = await membersService.api.members.list({...knexOptions, ...filterOptions});
     debug(`addEmail: retrieved members count - ${membersCount} members (${Date.now() - startRetrieve}ms)`);
 
     // NOTE: don't create email object when there's nobody to send the email to
@@ -418,7 +420,7 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = Object.assign({}, knexOptions);
 
-    let newsletter;
+    let newsletter = null;
     if (labsService.isSet('multipleNewsletters')) {
         newsletter = await emailModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting'])));
     }
