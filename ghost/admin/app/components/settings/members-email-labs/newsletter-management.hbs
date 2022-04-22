@@ -122,5 +122,7 @@
             {{/if}}
         </div>
     </section>
-    <LinkTo @route="settings.members-email-labs.new-newsletter" class="gh-add-newsletter">{{svg-jar "add-stroke"}}Add newsletter</LinkTo>
+    {{#if (feature "multipleNewslettersUI")}}
+        <LinkTo @route="settings.members-email-labs.new-newsletter" class="gh-add-newsletter">{{svg-jar "add-stroke"}}Add newsletter</LinkTo>
+    {{/if}}
 </div>
