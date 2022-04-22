@@ -9,12 +9,31 @@
         <div class="gh-publish-title">Ready?</div>
         <div class="gh-publish-settings">
                 <span class="gh-publish-setting">Right now</span>
-                , this post will be
-                <span class="gh-publish-setting">published and sent</span>
-                to
-                <span class="gh-publish-setting">all subscribers</span>
-                of
-                <span class="gh-publish-setting">The Weekly Roundup</span>.
+
+                , this {{@data.publishOptions.post.displayName}} will be
+
+                {{#if @data.publishOptions.emailUnavailable}}
+                    published
+                {{else}}
+                    <span class="gh-publish-setting">{{@data.publishOptions.selectedPublishTypeOption.display}}</span>
+                {{/if}}
+
+                {{#if (eq @data.publishOptions.publishType "publish")}}
+                    on your site.
+                {{else}}
+                    to
+                    <span class="gh-publish-setting">all subscribers</span>
+
+                    of
+
+                    {{#if @data.publishOptions.onlyDefaultNewsletter}}
+                        your site.
+                    {{else}}
+                        <span class="gh-publish-setting">The Weekly Roundup</span>.
+                    {{/if}}
+                {{/if}}
+
+
         </div>
 
         <div class="gh-publish-cta">
