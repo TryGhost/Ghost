@@ -3,6 +3,7 @@
     class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
     {{on "click" this.openPublishFlow}}
     {{on-key "cmd+shift+p"}}
+    disabled={{this.publishOptions.isLoading}}
     data-test-button="publish-flow"
 >
     <span>Publish</span>
