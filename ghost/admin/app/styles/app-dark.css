@@ -1122,7 +1122,8 @@ kbd {
     border-color: #394047;
 }
 
-.gh-dashboard5 .gh-dashboard5-box.is-secondary {
+.gh-dashboard5 .gh-dashboard5-box.is-secondary,
+.gh-dashboard5 .gh-dashboard5-box.is-faded {
     background: transparent;
 }
 
