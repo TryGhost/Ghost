@@ -8,6 +8,7 @@ export default class Recents extends Component {
     @service feature;
     @service session;
     @service settings;
+    @service dashboardStats;
 
     @tracked selected = 'posts';
 
@@ -49,5 +50,10 @@ export default class Recents extends Component {
         }
 
         return true;
+    }
+
+    get areMembersEnabled() {
+        const enabled = this.dashboardStats.siteStatus?.membersEnabled;
+        return enabled;
     }
 }
