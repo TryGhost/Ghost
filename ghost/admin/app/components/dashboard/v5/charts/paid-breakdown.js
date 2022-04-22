@@ -83,6 +83,14 @@ export default class PaidBreakdown extends Component {
             legend: {
                 display: false
             },
+            layout: {
+                padding: {
+                    top: 8,
+                    bottom: 0,
+                    left: 16,
+                    right: 16
+                }
+            },
             hover: {
                 onHover: function (e) {
                     e.target.style.cursor = 'pointer';
