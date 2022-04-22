@@ -597,7 +597,8 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
         subscribed: {type: 'bool', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
-        source: {type: 'string', maxlength: 50, nullable: true}
+        source: {type: 'string', maxlength: 50, nullable: true},
+        newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false}
     },
     stripe_products: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
