@@ -1,10 +1,14 @@
 const NewslettersService = require('./service.js');
+const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const mail = require('../mail');
+const models = require('../../models');
+const urlUtils = require('../../../shared/url-utils');
 
-/**
- * @returns {NewslettersService} instance of the NewslettersService
- */
-const getNewslettersServiceInstance = ({NewsletterModel}) => {
-    return new NewslettersService({NewsletterModel});
-};
+const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
-module.exports = getNewslettersServiceInstance;
+module.exports = new NewslettersService({
+    NewsletterModel: models.Newsletter,
+    mail,
+    singleUseTokenProvider: new SingleUseTokenProvider(models.SingleUseToken, MAGIC_LINK_TOKEN_VALIDITY),
+    urlUtils
+});
