@@ -8,13 +8,16 @@ const config = require('../../../../core/shared/config');
 const models = require('../../../../core/server/models');
 const localUtils = require('./utils');
 
+const default_newsletter_id = testUtils.DataGenerator.Content.newsletters[0].id;
+const second_newsletter_id = testUtils.DataGenerator.Content.newsletters[1].id;
+
 describe('Posts API (canary)', function () {
     let request;
 
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'members');
+        await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters', 'members:newsletters');
     });
 
     describe('Browse', function () {
@@ -563,7 +566,7 @@ describe('Posts API (canary)', function () {
                 });
         });
 
-        it('publishes a post with email_only and sends email', async function () {
+        it('publishes a post with email_only and sends email to all without specifying the default newsletter_id', async function () {
             const res = await request
                 .post(localUtils.API.getApiQuery('posts/'))
                 .set('Origin', config.get('url'))
@@ -604,10 +607,10 @@ describe('Posts API (canary)', function () {
             publishedRes.body.posts[0].status.should.equal('sent');
 
             should.exist(publishedRes.body.posts[0].email);
-            publishedRes.body.posts[0].email.email_count.should.equal(6);
+            publishedRes.body.posts[0].email.email_count.should.equal(4);
         });
 
-        it('publishes a post while setting email_only flag sends an email', async function () {
+        it('publishes a post while setting email_only flag sends an email to paid without specifying the default newsletter_id', async function () {
             const res = await request
                 .post(localUtils.API.getApiQuery('posts/'))
                 .set('Origin', config.get('url'))
@@ -647,7 +650,137 @@ describe('Posts API (canary)', function () {
             publishedRes.body.posts[0].status.should.equal('sent');
 
             should.exist(publishedRes.body.posts[0].email);
-            publishedRes.body.posts[0].email.email_count.should.equal(3);
+            publishedRes.body.posts[0].email.email_count.should.equal(2);
+        });
+
+        it('publishes a post with email_only and sends email to all', async function () {
+            const res = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Email me',
+                        email_only: true
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+
+            should.exist(res.body.posts);
+            should.exist(res.body.posts[0].title);
+            res.body.posts[0].title.should.equal('Email me');
+            res.body.posts[0].email_only.should.be.true();
+            res.body.posts[0].status.should.equal('draft');
+
+            should.exist(res.headers.location);
+            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+
+            const publishedRes = await request
+                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_recipient_filter=all&newsletter_id=${default_newsletter_id}`))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        status: 'published',
+                        updated_at: res.body.posts[0].updated_at
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            should.exist(publishedRes.body.posts);
+            res.body.posts[0].email_only.should.be.true();
+            publishedRes.body.posts[0].status.should.equal('sent');
+
+            should.exist(publishedRes.body.posts[0].email);
+            publishedRes.body.posts[0].email.email_count.should.equal(4);
+        });
+
+        it('publishes a post while setting email_only flag sends an email to paid', async function () {
+            const res = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Email me'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+
+            should.exist(res.body.posts);
+            should.exist(res.body.posts[0].title);
+            res.body.posts[0].title.should.equal('Email me');
+            res.body.posts[0].email_only.should.be.false();
+            res.body.posts[0].status.should.equal('draft');
+
+            should.exist(res.headers.location);
+            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+
+            const publishedRes = await request
+                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_recipient_filter=paid&newsletter_id=${default_newsletter_id}`))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        status: 'published',
+                        email_only: true,
+                        updated_at: res.body.posts[0].updated_at
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            should.exist(publishedRes.body.posts);
+            publishedRes.body.posts[0].status.should.equal('sent');
+
+            should.exist(publishedRes.body.posts[0].email);
+            publishedRes.body.posts[0].email.email_count.should.equal(2);
+        });
+
+        it('only send an email to paid subscribed members of the selected newsletter', async function () {
+            const res = await request
+                .post(localUtils.API.getApiQuery('posts/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        title: 'Email me'
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+
+            should.exist(res.body.posts);
+            should.exist(res.body.posts[0].title);
+            res.body.posts[0].title.should.equal('Email me');
+            res.body.posts[0].email_only.should.be.false();
+            res.body.posts[0].status.should.equal('draft');
+
+            should.exist(res.headers.location);
+            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+
+            const publishedRes = await request
+                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_recipient_filter=paid&newsletter_id=${second_newsletter_id}`))
+                .set('Origin', config.get('url'))
+                .send({
+                    posts: [{
+                        status: 'published',
+                        email_only: true,
+                        updated_at: res.body.posts[0].updated_at
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            should.exist(publishedRes.body.posts);
+            publishedRes.body.posts[0].status.should.equal('sent');
+
+            should.exist(publishedRes.body.posts[0].email);
+            publishedRes.body.posts[0].email.email_count.should.equal(2);
         });
 
         it('read-only value do not cause errors when edited', function () {
