@@ -20,7 +20,7 @@ module.exports = {
         debug('browse');
         defaultRelations(frame);
 
-        if (labsService.isSet('multipleNewsletters')){
+        if (labsService.isSet('multipleNewsletters')) {
             frame.options.mongoTransformer = mapNQLKeyValues({
                 key: {
                     from: 'subscribed',
@@ -30,9 +30,8 @@ module.exports = {
                     from: true,
                     to: 'active'
                 }, {
-                    // TODO: this doesn't work, and might not be possible
                     from: false,
-                    to: null
+                    to: {$ne: 'active'}
                 }]
             });
         }
