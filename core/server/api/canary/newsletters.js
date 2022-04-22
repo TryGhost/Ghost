@@ -5,6 +5,7 @@ const errors = require('@tryghost/errors');
 const messages = {
     newsletterNotFound: 'Newsletter not found.'
 };
+const newslettersService = require('../../services/newsletters');
 
 module.exports = {
     docName: 'newsletters',
@@ -53,7 +54,7 @@ module.exports = {
         statusCode: 201,
         permissions: true,
         async query(frame) {
-            return models.Newsletter.add(frame.data.newsletters[0], frame.options);
+            return newslettersService.add(frame.data.newsletters[0], frame.options);
         }
     },
 
@@ -71,7 +72,19 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            return models.Newsletter.edit(frame.data.newsletters[0], frame.options);
+            return newslettersService.edit(frame.data.newsletters[0], frame.options);
+        }
+    },
+
+    verifyPropertyUpdate: {
+        permissions: {
+            method: 'edit'
+        },
+        data: [
+            'token'
+        ],
+        async query(frame) {
+            return newslettersService.verifyPropertyUpdate(frame.data.token);
         }
     }
 };
