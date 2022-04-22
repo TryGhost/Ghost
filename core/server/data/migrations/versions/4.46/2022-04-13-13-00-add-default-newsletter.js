@@ -35,7 +35,7 @@ module.exports = createTransactionalMigration(
         const newsletters = await knex('newsletters').count('*', {as: 'total'});
 
         if (newsletters[0].total !== 0) {
-            logging.info('Skipping adding the default newsletter - There is already at least one newsletter');
+            logging.warn('Skipping adding the default newsletter - There is already at least one newsletter');
             return;
         }
 
@@ -76,9 +76,8 @@ module.exports = createTransactionalMigration(
         logging.info('Adding the default newsletter');
         await knex('newsletters').insert(newsletter);
     },
-    async function down() {
-        // Noop because we don't want to reset the default newsletter values
-        logging.info(`Skipping newsletter design settings backfill rollback - not needed`);
-        return Promise.resolve();
+    async function down(knex) {
+        logging.info(`Removing newsletters`);
+        await knex('newsletters').delete();
     }
 );
