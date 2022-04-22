@@ -97,7 +97,7 @@
     "@tryghost/mw-session-from-token": "0.1.28",
     "@tryghost/nodemailer": "0.3.20",
     "@tryghost/nql": "0.9.2",
-    "@tryghost/package-json": "1.0.18",
+    "@tryghost/package-json": "1.0.19",
     "@tryghost/promise": "0.1.15",
     "@tryghost/request": "0.1.24",
     "@tryghost/root-utils": "0.3.12",
