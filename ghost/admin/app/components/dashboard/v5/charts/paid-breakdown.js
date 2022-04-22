@@ -32,8 +32,7 @@ export default class PaidBreakdown extends Component {
         const newData = stats.map(stat => stat.paidSubscribed);
         const canceledData = stats.map(stat => -stat.paidCanceled);
         const netData = stats.map(stat => stat.paidSubscribed - stat.paidCanceled);
-        // const barThickness = (this.daysSelected.value < 90 ? 18 : 7);
-        const barThickness = 4;
+        const barThickness = 5;
 
         return {
             labels: labels,
@@ -104,6 +103,7 @@ export default class PaidBreakdown extends Component {
                 titleFontStyle: 'normal',
                 titleFontColor: 'rgba(255, 255, 255, 0.7)',
                 titleMarginBottom: 3,
+                yAlign: 'center',
                 callbacks: {
                     label: (tooltipItems, data) => {
                         let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -167,6 +167,6 @@ export default class PaidBreakdown extends Component {
     }
 
     get chartHeight() {
-        return 100;
+        return 120;
     }
 }
