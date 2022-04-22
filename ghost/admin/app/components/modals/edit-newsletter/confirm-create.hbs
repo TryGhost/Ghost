@@ -1,6 +1,6 @@
 <div class="modal-content">
     <header class="modal-header" data-test-modal="confirm-newsletter-create">
-        <h1>All set? Here's what happens next</h1>
+        <h1>{{@data.newsletter.name}}</h1>
     </header>
     <button type="button" class="close" role="button" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
@@ -8,15 +8,10 @@
         <p>
             {{#if @data.optInExisting}}
                 {{#let (members-count-fetcher query=(hash filter="newsletters.status:active")) as |countFetcher|}}
-                    Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
-                    immediately made live and your
-                    {{#if countFetcher.count}}<strong>{{countFetcher.count}}</strong>{{/if}}
-                    existing newsletter subscribers will be automatically opted-in to receive it.
+                    This newsletter will be available to <strong>all members</strong>. Your {{#if countFetcher.count}}<strong>{{countFetcher.count}}</strong>{{/if}} existing subscribers will also be opted-in to receive it. Sound good?
                 {{/let}}
             {{else}}
-                Your newsletter <strong>{{@data.newsletter.name}}</strong> will be
-                immediately made live. Your existing newsletter subscribers will
-                <strong>not</strong> be opted-in to receive it.
+                The newsletter will be available to <strong>all new members</strong>. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.
             {{/if}}
         </p>
     </div>
