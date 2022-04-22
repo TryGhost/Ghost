@@ -667,11 +667,15 @@ Dashboard v5 Section Anchor */
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-mix .gh-dashboard5-chart {
-    margin-top: 40px;
+    margin-top: 0;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-mrr .gh-dashboard5-chart {
     margin-top: 0;
+}
+
+.gh-dashboard5-anchor .gh-dashboard5-breakdown .gh-dashboard5-chart {
+    margin-top: 8px;
 }
 
 

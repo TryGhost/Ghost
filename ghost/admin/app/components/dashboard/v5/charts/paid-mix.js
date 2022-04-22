@@ -60,29 +60,54 @@ export default class PaidMix extends Component {
     }
 
     get chartData() {
+        const totalCadence = this.dashboardStats.paidMembersByCadence.monthly + this.dashboardStats.paidMembersByCadence.annual;
+        const monthlyPercentage = Math.round(this.dashboardStats.paidMembersByCadence.monthly / totalCadence * 100);
+        const annualPercentage = Math.round(this.dashboardStats.paidMembersByCadence.annual / totalCadence * 100);
+
         if (this.mode === 'cadence') {
             return {
-                labels: ['Monthly', 'Annual'],
+                labels: ['Candence'],
                 datasets: [{
-                    data: [this.dashboardStats.paidMembersByCadence.monthly, this.dashboardStats.paidMembersByCadence.annual],
-                    fill: false,
-                    backgroundColor: ['#8E42FF', '#FB76B4', '#E9B0CC', '#F1D5E3'],
-                    barThickness: 6
+                    label: 'Monthly',
+                    data: [monthlyPercentage],
+                    fill: true,
+                    backgroundColor: '#8E42FF',
+                    barThickness: 7
+                }, {
+                    label: 'Annual',
+                    data: [annualPercentage],
+                    fill: true,
+                    backgroundColor: '#FB76B4',
+                    barThickness: 7
                 }]
             };
         }
 
         const labels = this.dashboardStats.paidMembersByTier.map(stat => stat.tier.name);
         const data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
+        const colors =  ['#853EED', '#CA3FED', '#E993CC', '#DB7777', '#EE9696', '#FEC7C0', '#853EED', '#CA3FED', '#E993CC', '#DB7777', '#EE9696', '#FEC7C0'];
+
+        let totalTiersAmount = 0;
+        for (let i = 0; i < data.length; i++) {
+            totalTiersAmount += data[i];
+        }
+
+        let datasets = [];
+        for (let i = 0; i < data.length; i++) {
+            let tierPercentage = Math.round(data[i] / totalTiersAmount * 100);
+            datasets.push({
+                data: [tierPercentage],
+                label: labels[i],
+                backgroundColor: colors[i],
+                fill: true,
+                borderRadius: 15,
+                barThickness: 7
+            });
+        }
 
         return {
-            labels,
-            datasets: [{
-                data,
-                fill: false,
-                backgroundColor: ['#8E42FF', '#FB76B4', '#E9B0CC', '#F1D5E3'],
-                barThickness: 6
-            }]
+            labels: ['Tiers'],
+            datasets
         };
     }
 
@@ -90,9 +115,27 @@ export default class PaidMix extends Component {
         return {
             responsive: true,
             maintainAspectRatio: false,
-            cutoutPercentage: (this.mode === 'cadence' ? 85 : 75),
             legend: {
-                display: false
+                display: (this.mode === 'cadence' ? true : false),
+                position: 'left',
+                labels: {
+                    boxWidth: 13,
+                    fontFamily: '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif',
+                    fontColor: '#626d79',
+                    fontSize: 13
+                },
+                onClick: null,
+            },
+            layout: {
+                padding: (this.mode === 'cadence' ? {
+                    left: -9,
+                    right: 5,
+                    top: 10
+                } : {
+                    top: 10,
+                    left: -8,
+                    right: -8
+                })
             },
             animation: {
                 duration: 0
@@ -103,11 +146,11 @@ export default class PaidMix extends Component {
                 }
             },
             tooltips: {
+                enabled: true,
                 intersect: false,
-                mode: 'index',
+                mode: 'single',
                 displayColors: false,
                 backgroundColor: '#15171A',
-                xPadding: 7,
                 yPadding: 7,
                 cornerRadius: 5,
                 caretSize: 7,
@@ -116,39 +159,44 @@ export default class PaidMix extends Component {
                 titleFontSize: 12,
                 titleFontStyle: 'normal',
                 titleFontColor: 'rgba(255, 255, 255, 0.7)',
-                titleMarginBottom: 3
+                titleMarginBottom: 3,
+                yAlign: 'bottom',
+                xAlign: 'center',
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        const label = data.datasets[tooltipItem.datasetIndex].label || '';
+                        const value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || 0;
+                        return `${label}: ${value}%`;
+                    },
+                    title: () => {
+                        return null;
+                    }
+                }
             },
             scales: {
                 yAxes: [{
+                    stacked: true,
                     gridLines: {
-                        display: true,
-                        drawBorder: false,
-                        color: 'transparent',
-                        lineWidth: 0,
-                        zeroLineColor: 'transparent',
-                        zeroLineWidth: 1
+                        display: false,
                     },
                     ticks: {
-                        display: true,
-                        fontFamily: '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif',
-                        fontSize: 13,
-                        fontColor: '#626d79'
+                        display: false
                     }
                 }],
                 xAxes: [{
                     stacked: true,
                     gridLines: {
-                        display: false
+                        display: false,
                     },
                     ticks: {
                         display: false
                     }
-                }]
+                }],
             }
         };
     }
 
     get chartHeight() {
-        return 75;
+        return 130;
     }
 }
