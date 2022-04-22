@@ -128,13 +128,13 @@ export default class PaidMix extends Component {
             },
             layout: {
                 padding: (this.mode === 'cadence' ? {
-                    left: -9,
-                    right: 5,
+                    left: 7,
+                    right: 21,
                     top: 10
                 } : {
                     top: 10,
-                    left: -8,
-                    right: -8
+                    left: 23,
+                    right: 40
                 })
             },
             animation: {
