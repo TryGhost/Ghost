@@ -140,7 +140,7 @@ describe('Newsletters API', function () {
             .get(`newsletters/?include=count.members`)
             .expectStatus(200)
             .matchBodySnapshot({
-                newsletters: new Array(3).fill(newsletterSnapshot)
+                newsletters: new Array(5).fill(newsletterSnapshot)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag

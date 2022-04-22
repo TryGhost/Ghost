@@ -13,6 +13,7 @@ module.exports = {
 
     browse: {
         options: [
+            'include',
             'filter',
             'fields',
             'limit',
@@ -34,6 +35,7 @@ module.exports = {
 
     read: {
         options: [
+            'include',
             'fields',
             'debug',
             // NOTE: only for internal context
@@ -67,6 +69,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
+        options: [
+            'include'
+        ],
         validation: {
             options: {
                 include: {
@@ -83,7 +88,8 @@ module.exports = {
     edit: {
         headers: {},
         options: [
-            'id'
+            'id',
+            'include'
         ],
         validation: {
             options: {
