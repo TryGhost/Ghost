@@ -37,6 +37,7 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'tweetGridCard',
     'multipleNewsletters',
+    'multipleNewslettersUI',
     'dashboardV5',
     'publishingFlow'
 ];
