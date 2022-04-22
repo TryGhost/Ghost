@@ -13,6 +13,7 @@ const init = () => {
 
     this.APIVersionCompatibilityServiceInstance = new APIVersionCompatibilityService({
         sendEmail: (options) => {
+            // NOTE: not using bind here because mockMailer is having trouble mocking bound methods
             return ghostMailer.send(options);
         },
         fetchEmailsToNotify: versionNotificationsDataService.getNotificationEmails.bind(versionNotificationsDataService),
