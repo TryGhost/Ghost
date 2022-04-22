@@ -1,6 +1,6 @@
-<section class="gh-dashboard5-section gh-dashboard5-section-aside gh-dashboard5-staff-picks" {{did-insert this.load}}>
-    <article class="gh-dashboard5-box is-secondary">
-        <div class="gh-dashboard5-list">
+{{!-- <section class="gh-dashboard5-section gh-dashboard5-section-aside gh-dashboard5-staff-picks" {{did-insert this.load}}>
+    <article class="gh-dashboard5-box is-secondary"> --}}
+        <div class="gh-dashboard5-staff-picks gh-dashboard5-list" {{did-insert this.load}}>
             {{#if (not (or this.loading this.error))}}
                 <div class="gh-dashboard5-list-header">
                     <Dashboard::v5::Parts::Metric
@@ -22,9 +22,9 @@
                     {{/each}}
                 </div>
                 <div class="gh-dashboard5-list-footer">
-                    <a href="https://twitter.com/ghoststaffpicks" target="_blank" rel="noopener noreferrer">Follow →</a>
+                    <a href="https://twitter.com/ghoststaffpicks" target="_blank" rel="noopener noreferrer">See all picks →</a>
                 </div>
             {{/if}}
         </div>
-    </article>
-</section>
+    {{!-- </article>
+</section> --}}

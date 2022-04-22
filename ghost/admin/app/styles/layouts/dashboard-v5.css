@@ -103,6 +103,25 @@ Dashboard v5 Layout */
     grid-template-columns: 2fr 1fr;
 }
 
+.gh-dashboard5-thirds {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+}
+
+.gh-dashboard5-thirds .gh-dashboard5-thirds-main {
+    flex: 70%;
+    padding-right: 32px;
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-dashboard5-thirds .gh-dashboard5-thirds-sub {
+    flex: 30%;
+    display: flex;
+    flex-direction: column;
+}
+
 .gh-dashboard5-title {
     display: flex;
     flex-direction: row;
@@ -149,9 +168,8 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-box.is-faded {
-    background: rgb(239,240,243);
-    background: linear-gradient(310deg, rgba(239,240,243,1) 0%, rgba(250,251,252,1) 100%);
-
+    background: rgb(240,240,240);
+    background: linear-gradient(310deg, rgba(249,249,249,1) 0%, rgba(254,254,254,1) 100%);
 }
 
 .gh-dashboard5-box.is-image {
@@ -231,7 +249,7 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-select .ember-power-select-selected-item {
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: .3px;
     line-height: 1em;
     padding: 0;
@@ -247,7 +265,7 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-select-title .ember-power-select-selected-item {
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1em;
     margin: 0;
     padding: 0;
@@ -354,7 +372,7 @@ Dashboard v5 Metric */
 .gh-dashboard5-metric-label {
     align-items: center;
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1em;
     margin: 0 0 10px;
     padding: 0;
@@ -374,7 +392,7 @@ Dashboard v5 Metric */
 
 .gh-dashboard5-metric-label.is-secondary {
     font-size: 1.3rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--middarkgrey);
 }
 
@@ -409,7 +427,7 @@ Dashboard v5 Metric */
 
 .gh-dashboard5-metric-minivalue {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .gh-dashboard5-metric-extra {
@@ -477,7 +495,7 @@ Dashboard v5 List */
 }
 
 .gh-dashboard5-list-item a {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1.5rem;
     color: var(--darkgrey);
     padding: 0 64px 0 0;
@@ -516,7 +534,7 @@ Dashboard v5 List */
     font-size: 1.3rem;
     color: var(--midlightgrey);
     text-align: right;
-    padding: 3px 0 0 0;
+    padding: 1px 0 0 0;
     white-space: nowrap;
 }
 
@@ -968,6 +986,63 @@ Dashboard v5 Section Resources */
 }
 
 
+
+/* --------------------------------- 
+Dashboard v5 Section Multi */
+
+.gh-dashboard5-multi {
+    position: relative;
+}
+
+.gh-dashboard5-multi .gh-dashboard5-articles {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    margin-top: 16px;
+}
+
+.gh-dashboard5-multi .gh-dashboard5-articles-footer {
+    margin-top: 20px;
+}
+
+.gh-dashboard5-multi .gh-members-help-card {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: var(--white);
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 7%);
+    color: #7c8b9a;
+    font-size: 1.4rem;
+    transition: none;
+    margin-right: 16px;
+}
+
+.gh-dashboard5-multi .gh-members-help-card:hover {
+    transform: translate(0);
+}
+
+.gh-dashboard5-multi .gh-dashboard5-list-header {
+    padding-bottom: 12px;
+}
+
+.gh-dashboard5-multi .gh-dashboard5-subtitle h4 {
+    color: var(--darkgrey);
+}
+
+.gh-dashboard5-multi .gh-dashboard5-box {
+    padding-top: 32px;
+}
+
+.gh-dashboard5-multi .gh-dashboard5-thirds-main .gh-dashboard5-list-header {
+    border-bottom: 0 none;
+}
+
+
 /* --------------------------------- 
 Dashboard v5 Section Staff Picks */
 
@@ -980,15 +1055,40 @@ Dashboard v5 Section Staff Picks */
     grid-template-columns: 100%;
 }
 
+.gh-dashboard5-staff-picks .gh-dashboard5-list-item {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-list-item:first-child {
+    padding-top: 8px;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-list-item:last-child {
+    padding-bottom: 0;
+}
+
 .gh-dashboard5-staff-picks .gh-dashboard5-list-item a {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    font-size: 1.65rem;
     font-weight: 600;
+    font-size: 1.4rem;
     line-height: 1.4em;
     margin-bottom: 8px;
     color: var(--black);
+    padding: 0;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-list-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    color: #7c8b9a;
+    font-size: 1.4rem;
+    padding: 16px 64px 16px 0;
+    transition: all .3s ease-in-out;
 }
 
 
