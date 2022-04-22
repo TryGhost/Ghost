@@ -266,6 +266,7 @@ async function initServices({config}) {
     const webhooks = require('./server/services/webhooks');
     const appService = require('./frontend/services/apps');
     const limits = require('./server/services/limits');
+    const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
 
     const urlUtils = require('./shared/url-utils');
@@ -286,6 +287,7 @@ async function initServices({config}) {
         mega.listen(),
         webhooks.listen(),
         appService.init(),
+        apiVersionCompatibility.init(),
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {version: defaultApiVersion, versionType: 'admin'}, true)
         })
