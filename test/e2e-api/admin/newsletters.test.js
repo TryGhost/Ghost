@@ -1,9 +1,11 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyString} = matchers;
+const {anyEtag, anyObjectId, anyString, anyISODateTime} = matchers;
 const testUtils = require('../../utils');
 
 const newsletterSnapshot = {
-    id: anyObjectId
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
 };
 
 let agent;
