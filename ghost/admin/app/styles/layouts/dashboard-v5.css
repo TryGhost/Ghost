@@ -130,6 +130,7 @@ Dashboard v5 Layout */
     color: var(--white);
     margin: 0;
     padding: 0;
+    transition: color .3s;
 }
 
 .gh-dashboard5-box {
@@ -149,7 +150,6 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-box.is-faded {
     background: rgb(239,240,243);
-    /* background: linear-gradient(135deg, rgba(239,240,243,1) 0%, rgba(250,251,252,1) 100%); */
     background: linear-gradient(310deg, rgba(239,240,243,1) 0%, rgba(250,251,252,1) 100%);
 
 }
@@ -223,24 +223,10 @@ Dashboard v5 Layout */
     margin-top: 0;
 }
 
-.gh-dashboard5-selects {
-    position: absolute;
-    top: 14px;
-    right: 2px;
-    display: flex;
-    flex-direction: row;
-}
-
 .gh-dashboard5-select {
     position: absolute;
     top: 16px;
     right: 4px;
-}
-
-.gh-dashboard5-selects .gh-dashboard5-select {
-    position: relative;
-    top: auto;
-    left: auto;
 }
 
 .gh-dashboard5-select .ember-power-select-selected-item {
@@ -251,6 +237,27 @@ Dashboard v5 Layout */
     padding: 0;
     color: var(--middarkgrey);
     white-space: nowrap;
+}
+
+.gh-dashboard5-select-title {
+    display: flex;
+    justify-content: flex-start;
+    margin: -10px 0 -12px -12px;
+}
+
+.gh-dashboard5-select-title .ember-power-select-selected-item {
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1em;
+    margin: 0;
+    padding: 0;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    color: var(--black);
+}
+
+.gh-dashboard5 .ember-power-select-trigger {
+    transition: none;
 }
 
 
@@ -671,6 +678,10 @@ Dashboard v5 Section Engagement */
     padding-top: 32px;
 }
 
+.gh-dashboard5-engagement .gh-dashboard5-select {
+    right: 6px;
+}
+
 
 /* --------------------------------- 
 Dashboard v5 Section Recent Posts */
@@ -1025,6 +1036,7 @@ Dashboard v5 Section Community */
     font-weight: 700;
     line-height: 1.3em;
     padding: 0 64px 0 0;
+    transition: color .3s;
 }
 
 .gh-dashboard5-community .gh-dashboard5-list-footer {
