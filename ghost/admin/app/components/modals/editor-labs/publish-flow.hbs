@@ -1,11 +1,8 @@
 <div class="flex flex-column h-100 items-center">
-    <header class="gh-editor-header" data-test-modal="publish">
-        <div class="ml3">
-            <button class="gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
-                <span>{{svg-jar "arrow-left"}} Back to edit</span>
-            </button>
-        </div>
-        <div class="flex-grow-1"></div>
+    <header class="gh-publish-header" data-test-modal="publish">
+        <button class="gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
+            <span>{{svg-jar "close-stroke"}} Close</span>
+        </button>
     </header>
 
     <div class="gh-publish-settings-container">
@@ -22,7 +19,7 @@
 
         <div class="gh-publish-cta">
             <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" (noop)}}><span>Continue &rarr;</span></button>
-            <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @close}}><span>Cancel</span></button>
+            <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @close}}><span>Back to edit</span></button>
         </div>
     </div>
 </div>
