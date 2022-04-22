@@ -10,6 +10,7 @@ const htmlToText = require('html-to-text');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
+const models = require('../../models');
 
 const ALLOWED_REPLACEMENTS = ['first_name'];
 
@@ -169,7 +170,7 @@ const parseReplacements = (email) => {
     return replacements;
 };
 
-const getTemplateSettings = async () => {
+const getTemplateSettings = async (newsletterId = null) => {
     const accentColor = settingsCache.get('accent_color');
     const adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
     const adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
@@ -188,6 +189,22 @@ const getTemplateSettings = async () => {
         adjustedAccentColor,
         adjustedAccentContrastColor
     };
+
+    if (newsletterId) {
+        const newsletter = await models.Newsletter.findOne({id: newsletterId, status: 'active'}, {require: false});
+        if (newsletter) {
+            templateSettings.headerImage = newsletter.get('header_image');
+            templateSettings.showHeaderIcon = newsletter.get('show_header_icon');
+            templateSettings.showHeaderTitle = newsletter.get('show_header_title');
+            templateSettings.showFeatureImage = newsletter.get('show_feature_image');
+            templateSettings.titleFontCategory = newsletter.get('title_font_category');
+            templateSettings.titleAlignment = newsletter.get('title_alignment');
+            templateSettings.bodyFontCategory = newsletter.get('body_font_category');
+            templateSettings.showBadge = newsletter.get('show_badge');
+            templateSettings.footerContent = newsletter.get('footer_content');
+            templateSettings.showHeaderName = newsletter.get('show_header_name');
+        }
+    }
 
     if (templateSettings.headerImage) {
         if (isUnsplashImage(templateSettings.headerImage)) {
@@ -290,7 +307,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
         }
     }
 
-    const templateSettings = await getTemplateSettings();
+    const templateSettings = await getTemplateSettings(post.newsletter_id);
 
     const render = template;
 
