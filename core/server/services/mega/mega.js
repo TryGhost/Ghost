@@ -15,6 +15,7 @@ const jobsService = require('../jobs');
 const db = require('../../data/db');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
+const labs = require('../../../shared/labs');
 const {getSegmentsFromHtml} = require('./segment-parser');
 
 // Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
@@ -273,7 +274,11 @@ async function handleUnsubscribeRequest(req) {
     }
 
     try {
-        const memberModel = await membersService.api.members.update({subscribed: false}, {id: member.id});
+        let memberData = {subscribed: false};
+        if (labs.isSet('multipleNewsletters')) {
+            memberData.newsletters = [];
+        }
+        const memberModel = await membersService.api.members.update(memberData, {id: member.id});
         return memberModel.toJSON();
     } catch (err) {
         throw new errors.InternalServerError({
