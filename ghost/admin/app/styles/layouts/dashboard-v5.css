@@ -648,11 +648,13 @@ Dashboard v5 Section Anchor */
 .gh-dashboard5-anchor .gh-dashboard5-chart {
     flex-direction: column;
     margin-top: 24px;
+    margin-left: -16px;
+    margin-right: -16px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-chart-ticks {
     flex-direction: row;
-    padding: 10px 0;
+    padding: 10px 16px;
     font-size: 1.2rem;
     color: var(--midlightgrey);
 }
@@ -661,21 +663,27 @@ Dashboard v5 Section Anchor */
     margin-top: 48px;
 }
 
-.gh-dashboard5-anchor .gh-dashboard5-mix .gh-dashboard5-select {
-    top: -8px;
-    right: -18px;
-}
-
-.gh-dashboard5-anchor .gh-dashboard5-mix .gh-dashboard5-chart {
-    margin-top: 0;
-}
-
 .gh-dashboard5-anchor .gh-dashboard5-mrr .gh-dashboard5-chart {
     margin-top: 0;
+    margin-left: -16px;
+    margin-right: -16px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-breakdown .gh-dashboard5-chart {
     margin-top: 8px;
+    margin-left: -16px;
+    margin-right: -16px;
+}
+
+.gh-dashboard5-anchor .gh-dashboard5-mix .gh-dashboard5-chart {
+    margin-top: 0;
+    margin-left: -16px;
+    margin-right: -16px;
+}
+
+.gh-dashboard5-anchor .gh-dashboard5-mix .gh-dashboard5-select {
+    top: -8px;
+    right: -18px;
 }
 
 
