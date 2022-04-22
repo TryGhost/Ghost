@@ -9,6 +9,7 @@ module.exports = createTransactionalMigration(
 
         const newsletter = await knex('newsletters')
             .orderBy('sort_order', 'asc')
+            .orderBy('created_at', 'asc')
             .first('id', 'name');
 
         if (!newsletter) {
