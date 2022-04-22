@@ -54,6 +54,8 @@ export default BaseModel.extend(ValidationEngine, {
     isAdmin: or('isOwnerOnly', 'isAdminOnly'),
     isAuthorOrContributor: or('isAuthor', 'isContributor'),
 
+    canEmail: or('isAdmin', 'isEditor'),
+
     isLoggedIn: computed('id', 'session.user.id', function () {
         return this.id === this.get('session.user.id');
     }),
