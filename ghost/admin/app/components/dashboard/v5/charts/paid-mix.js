@@ -85,7 +85,7 @@ export default class PaidMix extends Component {
 
         const labels = this.dashboardStats.paidMembersByTier.map(stat => stat.tier.name);
         const data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
-        const colors =  ['#853EED', '#CA3FED', '#E993CC', '#DB7777', '#EE9696', '#FEC7C0', '#853EED', '#CA3FED', '#E993CC', '#DB7777', '#EE9696', '#FEC7C0'];
+        const colors = ['#853EED', '#CA3FED', '#E993CC', '#DB7777', '#EE9696', '#FEC7C0', '#853EED', '#CA3FED', '#E993CC', '#DB7777', '#EE9696', '#FEC7C0'];
 
         let totalTiersAmount = 0;
         for (let i = 0; i < data.length; i++) {
@@ -124,7 +124,7 @@ export default class PaidMix extends Component {
                     fontColor: '#626d79',
                     fontSize: 13
                 },
-                onClick: null,
+                onClick: null
             },
             layout: {
                 padding: (this.mode === 'cadence' ? {
@@ -163,7 +163,7 @@ export default class PaidMix extends Component {
                 yAlign: 'bottom',
                 xAlign: 'center',
                 callbacks: {
-                    label: function(tooltipItem, data) {
+                    label: function (tooltipItem, data) {
                         const label = data.datasets[tooltipItem.datasetIndex].label || '';
                         const value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || 0;
                         return `${label}: ${value}%`;
@@ -177,7 +177,7 @@ export default class PaidMix extends Component {
                 yAxes: [{
                     stacked: true,
                     gridLines: {
-                        display: false,
+                        display: false
                     },
                     ticks: {
                         display: false
@@ -186,12 +186,12 @@ export default class PaidMix extends Component {
                 xAxes: [{
                     stacked: true,
                     gridLines: {
-                        display: false,
+                        display: false
                     },
                     ticks: {
                         display: false
                     }
-                }],
+                }]
             }
         };
     }
