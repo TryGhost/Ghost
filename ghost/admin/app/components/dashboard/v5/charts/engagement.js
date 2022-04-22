@@ -88,4 +88,8 @@ export default class Engagement extends Component {
     get dataEmailsSent() {
         return this.dashboardStats.emailsSent30d ?? 0;
     }
+
+    get hasPaidTiers() {
+        return this.dashboardStats.siteStatus?.hasPaidTiers;
+    }
 }
