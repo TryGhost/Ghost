@@ -29,6 +29,12 @@ async function getPaidProduct() {
     return await Product.findOne({type: 'paid'});
 }
 
+const newsletterSnapshot = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
+
 const memberMatcherNoIncludes = {
     id: anyObjectId,
     uuid: anyUuid,
@@ -1402,9 +1408,7 @@ describe('Members API: with multiple newsletters', function () {
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
                     labels: anyArray,
-                    newsletters: Array(2).fill({
-                        id: matchers.anyObjectId
-                    })
+                    newsletters: Array(2).fill(newsletterSnapshot)
                 }]
             })
             .matchHeaderSnapshot({
@@ -1449,9 +1453,7 @@ describe('Members API: with multiple newsletters', function () {
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
                     labels: anyArray,
-                    newsletters: Array(1).fill({
-                        id: matchers.anyObjectId
-                    })
+                    newsletters: Array(1).fill(newsletterSnapshot)
                 }]
             })
             .matchHeaderSnapshot({
@@ -1477,9 +1479,7 @@ describe('Members API: with multiple newsletters', function () {
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
                     labels: anyArray,
-                    newsletters: Array(1).fill({
-                        id: matchers.anyObjectId
-                    })
+                    newsletters: Array(1).fill(newsletterSnapshot)
                 }]
             })
             .matchHeaderSnapshot({
