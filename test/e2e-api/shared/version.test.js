@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyErrorId, anyString, stringMatching} = matchers;
 
 describe('API Versioning', function () {
@@ -9,6 +9,14 @@ describe('API Versioning', function () {
             agentAdminAPI = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init();
             await agentAdminAPI.loginAsOwner();
+        });
+
+        beforeEach(function () {
+            mockManager.mockMail();
+        });
+
+        afterEach(function () {
+            mockManager.restore();
         });
 
         it('responds with no content version header when accept version header is NOT PRESENT', async function () {
@@ -79,6 +87,7 @@ describe('API Versioning', function () {
             await agentAdminAPI
                 .get('removed_endpoint')
                 .header('Accept-Version', 'v3.1')
+                .header('User-Agent', 'Zapier 1.3')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
                     etag: anyString
@@ -89,6 +98,52 @@ describe('API Versioning', function () {
                         id: anyErrorId
                     }]
                 });
+
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: 'Attention required: Your Zapier 1.3 integration has failed',
+                to: 'jbloggs@example.com'
+            });
+        });
+
+        it('responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times', async function () {
+            await agentAdminAPI
+                .get('removed_endpoint')
+                .header('Accept-Version', 'v3.5')
+                .header('User-Agent', 'Zapier 1.4')
+                .expectStatus(406)
+                .matchHeaderSnapshot({
+                    etag: anyString
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        context: stringMatching(/Provided client version v3.5 is outdated and is behind current Ghost version v\d+\.\d+/),
+                        id: anyErrorId
+                    }]
+                });
+
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: 'Attention required: Your Zapier 1.4 integration has failed',
+                to: 'jbloggs@example.com'
+            });
+
+            await agentAdminAPI
+                .get('removed_endpoint')
+                .header('Accept-Version', 'v3.5')
+                .header('User-Agent', 'Zapier 1.4')
+                .expectStatus(406)
+                .matchHeaderSnapshot({
+                    etag: anyString
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        context: stringMatching(/Provided client version v3.5 is outdated and is behind current Ghost version v\d+\.\d+/),
+                        id: anyErrorId
+                    }]
+                });
+
+            mockManager.assert.sentEmailCount(1);
         });
 
         it('responds with 404 error when the resource cannot be found', async function () {
