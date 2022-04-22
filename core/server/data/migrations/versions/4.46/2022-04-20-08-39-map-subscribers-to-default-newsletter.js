@@ -1,4 +1,3 @@
-const chunk = require('lodash/chunk');
 const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid');
 
