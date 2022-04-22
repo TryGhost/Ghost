@@ -8,7 +8,7 @@
         <p>
             {{#if @data.optInExisting}}
                 {{#let (members-count-fetcher query=(hash filter="newsletters.status:active")) as |countFetcher|}}
-                    This newsletter will be available to <strong>all members</strong>. Your {{#if countFetcher.count}}<strong>{{countFetcher.count}}</strong>{{/if}} existing subscribers will also be opted-in to receive it. Sound good?
+                    This newsletter will be available to <strong>all members</strong>. Your {{#if countFetcher.count}}<strong>{{countFetcher.count}}</strong>{{/if}} existing subscriber{{#if (gt countFetcher.count 1)}}s{{/if}} will also be opted-in to receive it. Sound good?
                 {{/let}}
             {{else}}
                 The newsletter will be available to <strong>all new members</strong>. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.
