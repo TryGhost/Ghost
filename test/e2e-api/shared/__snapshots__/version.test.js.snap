@@ -83,11 +83,69 @@ Object {
 }
 `;
 
+exports[`API Versioning Admin API responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "UPDATE_CLIENT",
+      "context": StringMatching /Provided client version v3\\.5 is outdated and is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
+      "details": null,
+      "help": "Upgrade your Ghost API client.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Request not acceptable for provided Accept-Version header.",
+      "property": null,
+      "type": "RequestNotAcceptableError",
+    },
+  ],
+}
+`;
+
+exports[`API Versioning Admin API responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "354",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`API Versioning Admin API responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times 3: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "UPDATE_CLIENT",
+      "context": StringMatching /Provided client version v3\\.5 is outdated and is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
+      "details": null,
+      "help": "Upgrade your Ghost API client.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Request not acceptable for provided Accept-Version header.",
+      "property": null,
+      "type": "RequestNotAcceptableError",
+    },
+  ],
+}
+`;
+
+exports[`API Versioning Admin API responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "354",
+  "content-type": "application/json; charset=utf-8",
+  "etag": Any<String>,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`API Versioning Admin API responds with error requested version is AHEAD and CANNOT respond 1: [body] 1`] = `
 Object {
   "errors": Array [
     Object {
-      "code": null,
+      "code": "UPDATE_GHOST",
       "context": StringMatching /Provided client version v999\\\\\\.1 is ahead of current Ghost instance version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
       "help": "Upgrade your Ghost instance.",
@@ -104,7 +162,7 @@ exports[`API Versioning Admin API responds with error requested version is AHEAD
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "338",
+  "content-length": "348",
   "content-type": "application/json; charset=utf-8",
   "etag": Any<String>,
   "vary": "Origin, Accept-Encoding",
@@ -116,7 +174,7 @@ exports[`API Versioning Admin API responds with error when requested version is 
 Object {
   "errors": Array [
     Object {
-      "code": null,
+      "code": "UPDATE_CLIENT",
       "context": StringMatching /Provided client version v3\\.1 is outdated and is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
       "help": "Upgrade your Ghost API client.",
@@ -133,7 +191,7 @@ exports[`API Versioning Admin API responds with error when requested version is 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "343",
+  "content-length": "354",
   "content-type": "application/json; charset=utf-8",
   "etag": Any<String>,
   "vary": "Origin, Accept-Encoding",
