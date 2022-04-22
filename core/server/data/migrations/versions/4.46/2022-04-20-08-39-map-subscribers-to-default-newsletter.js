@@ -35,23 +35,15 @@ module.exports = createTransactionalMigration(
 
         logging.info(`Found ${memberIds.length} members to subscribe`);
 
-        let pivotRows = [];
-        // eslint-disable-next-line no-restricted-syntax
-        for (const memberId of memberIds) {
-            pivotRows.push({
+        const pivotRows = memberIds.map((memberId) => {
+            return {
                 id: ObjectID().toHexString(),
                 member_id: memberId,
                 newsletter_id: newsletter.id
-            });
-        }
+            };
+        });
 
-        const chunkSize = 1000;
-        const pivotChunks = chunk(pivotRows, chunkSize);
-
-        // eslint-disable-next-line no-restricted-syntax
-        for (const pivotChunk of pivotChunks) {
-            await knex('members_newsletters').insert(pivotChunk);
-        }
+        await knex.batchInsert('members_newsletters', pivotRows);
     },
     async function down(knex) {
         logging.info('Syncing subscriptions from newsletters -> members.subscribed');
