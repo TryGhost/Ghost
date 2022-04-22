@@ -63,6 +63,7 @@ export default class FeatureService extends Service {
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
     @feature('multipleNewsletters') multipleNewsletters;
+    @feature('multipleNewslettersUI') multipleNewslettersUI;
     @feature('tweetGridCard') tweetGridCard;
     @feature('improvedOnboarding') improvedOnboarding;
     @feature('tierWelcomePages') tierWelcomePages;
