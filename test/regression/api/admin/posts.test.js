@@ -410,7 +410,7 @@ describe('Posts API (canary)', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
-            
+
             should.exist(res.body.posts);
             should.exist(res.body.posts[0].title);
             res.body.posts[0].title.should.equal('Tags test 5');
@@ -420,7 +420,7 @@ describe('Posts API (canary)', function () {
             // Expected behaviour when creating a slug with spaces:
             res.body.posts[0].tags[0].name.should.equal('five-spaces');
 
-            // If we create another post again now that the five-spaces tag exists, 
+            // If we create another post again now that the five-spaces tag exists,
             // we need to make sure it matches correctly and doesn't create a new tag again
 
             const res2 = await request
@@ -435,7 +435,7 @@ describe('Posts API (canary)', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
-            
+
             should.exist(res2.body.posts);
             should.exist(res2.body.posts[0].title);
             res2.body.posts[0].title.should.equal('Tags test 6');
@@ -458,7 +458,7 @@ describe('Posts API (canary)', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
-            
+
             should.exist(res.body.posts);
             should.exist(res.body.posts[0].title);
             res.body.posts[0].title.should.equal('Tags test 7');
@@ -466,7 +466,7 @@ describe('Posts API (canary)', function () {
             res.body.posts[0].tags[0].slug.should.equal('six-spaces');
             res.body.posts[0].tags[0].name.should.equal('Not automated name for six spaces');
 
-            // If we create another post again now that the five-spaces tag exists, 
+            // If we create another post again now that the five-spaces tag exists,
             // we need to make sure it matches correctly and doesn't create a new tag again
 
             const res2 = await request
@@ -481,7 +481,7 @@ describe('Posts API (canary)', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
-            
+
             should.exist(res2.body.posts);
             should.exist(res2.body.posts[0].title);
             res2.body.posts[0].title.should.equal('Tags test 8');
@@ -504,14 +504,14 @@ describe('Posts API (canary)', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
-            
+
             should.exist(res.body.posts);
             should.exist(res.body.posts[0].title);
             res.body.posts[0].title.should.equal('Tags test 9');
             res.body.posts[0].tags.length.should.equal(1);
             res.body.posts[0].tags[0].slug.should.equal(tooLongSlug.substring(0, 185));
 
-            // If we create another post again now that the very long tag exists, 
+            // If we create another post again now that the very long tag exists,
             // we need to make sure it matches correctly and doesn't create a new tag again
 
             const res2 = await request
@@ -526,7 +526,7 @@ describe('Posts API (canary)', function () {
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(201);
-            
+
             should.exist(res2.body.posts);
             should.exist(res2.body.posts[0].title);
             res2.body.posts[0].title.should.equal('Tags test 10');
@@ -604,7 +604,7 @@ describe('Posts API (canary)', function () {
             publishedRes.body.posts[0].status.should.equal('sent');
 
             should.exist(publishedRes.body.posts[0].email);
-            publishedRes.body.posts[0].email.email_count.should.equal(8);
+            publishedRes.body.posts[0].email.email_count.should.equal(6);
         });
 
         it('publishes a post while setting email_only flag sends an email', async function () {
@@ -647,7 +647,7 @@ describe('Posts API (canary)', function () {
             publishedRes.body.posts[0].status.should.equal('sent');
 
             should.exist(publishedRes.body.posts[0].email);
-            publishedRes.body.posts[0].email.email_count.should.equal(5);
+            publishedRes.body.posts[0].email.email_count.should.equal(3);
         });
 
         it('read-only value do not cause errors when edited', function () {
