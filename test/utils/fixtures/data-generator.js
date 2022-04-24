@@ -354,14 +354,16 @@ DataGenerator.Content = {
             email: 'vip-paid@test.com',
             name: 'Peter Venkman',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b346',
-            status: 'paid'
+            status: 'paid',
+            subscribed: false
         },
         {
             id: ObjectId().toHexString(),
             email: 'with-product@test.com',
             name: 'Dana Barrett',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
-            status: 'paid'
+            status: 'paid',
+            subscribed: false
         }
     ],
 
@@ -392,6 +394,23 @@ DataGenerator.Content = {
             sender_email: 'jamie@example.com',
             sender_reply_to: 'newsletter',
             status: 'active',
+            subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 2
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Old newsletter',
+            slug: 'old-newsletter',
+            description: '',
+            sender_name: 'Jamie',
+            sender_email: 'jamie@example.com',
+            sender_reply_to: 'newsletter',
+            status: 'inactive',
             subscribe_on_signup: true,
             title_font_category: 'serif',
             body_font_category: 'serif',
@@ -1233,9 +1252,53 @@ DataGenerator.forKnex = (function () {
     const members_newsletters = [
         {
             id: ObjectId().toHexString(),
-            member_id: DataGenerator.Content.posts[0].id,
-            newsletter_id: DataGenerator.Content.tags[0].id
+            member_id: DataGenerator.Content.members[0].id,
+            newsletter_id: DataGenerator.Content.newsletters[0].id
+        },
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[1].id,
+            newsletter_id: DataGenerator.Content.newsletters[0].id
+        },
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[2].id,
+            newsletter_id: DataGenerator.Content.newsletters[0].id
+        },
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[3].id,
+            newsletter_id: DataGenerator.Content.newsletters[1].id
+        },
+        // Member index 4 (comped@test.com), subscribed to two active newsletters
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[4].id,
+            newsletter_id: DataGenerator.Content.newsletters[0].id
+        },
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[4].id,
+            newsletter_id: DataGenerator.Content.newsletters[1].id
+        },
+        // Member index 5 (vip@test.com), subscribed to an active and inactive newsletter
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[5].id,
+            newsletter_id: DataGenerator.Content.newsletters[1].id
+        },
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[5].id,
+            newsletter_id: DataGenerator.Content.newsletters[2].id
+        },
+        // Member index 6 (vip-paid@test.com), subscribed to an inactive newsletter
+        {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[6].id,
+            newsletter_id: DataGenerator.Content.newsletters[2].id
         }
+        // Member index 7 (with-product@test.com), subscribed to no newsletter
     ];
 
     const posts_authors = [
