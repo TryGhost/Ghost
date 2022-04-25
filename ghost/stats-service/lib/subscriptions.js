@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 class SubscriptionStatsService {
     /**
      * @param {object} deps
@@ -41,6 +43,7 @@ class SubscriptionStatsService {
 
             subscriptionHistoryEntries.unshift({
                 ...entry,
+                date: moment(entry.date).format('YYYY-MM-DD'),
                 count: countData[entry.tier][entry.cadence]
             });
 
