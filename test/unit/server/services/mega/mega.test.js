@@ -70,13 +70,13 @@ describe('MEGA', function () {
         });
 
         it('doesn\'t enforce subscribed:true when sending an email to a newsletter', function () {
-            const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free', {}, {get: () => 'members'});
-            transformedFilter.should.equal('(status:free,status:-free)');
+            const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free', {}, {id: 'test', get: () => 'members'});
+            transformedFilter.should.equal('newsletters.id:test+(status:free,status:-free)');
         });
 
         it('combines successfully with the newsletter paid-only visibility', function () {
-            const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free', {}, {get: () => 'paid'});
-            transformedFilter.should.equal('(status:free,status:-free)+status:-free');
+            const transformedFilter = _transformEmailRecipientFilter('status:free,status:-free', {}, {id: 'test', get: () => 'paid'});
+            transformedFilter.should.equal('newsletters.id:test+(status:free,status:-free)+status:-free');
         });
     });
 
@@ -121,7 +121,12 @@ describe('MEGA', function () {
     describe('getEmailMemberRows', function () {
         it('addEmail throws when "free" or "paid" strings are used as a recipient_filter', async function () {
             const emailModel = {
-                get: sinon.stub().returns('paid')
+                get: sinon.stub().returns('paid'),
+                related: sinon.stub().returns({
+                    fetch: sinon.stub().returns({
+                        id: 'test'
+                    })
+                })
             };
 
             try {
@@ -135,7 +140,12 @@ describe('MEGA', function () {
 
         it('addEmail throws when "none" is used as a recipient_filter', async function () {
             const emailModel = {
-                get: sinon.stub().returns('none')
+                get: sinon.stub().returns('none'),
+                related: sinon.stub().returns({
+                    fetch: sinon.stub().returns({
+                        id: 'test'
+                    })
+                })
             };
 
             try {
