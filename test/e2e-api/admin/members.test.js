@@ -67,7 +67,7 @@ describe('Members API without Stripe', function () {
     before(async function () {
         await agent
             .delete('/settings/stripe/connect/')
-            .expectStatus(200);
+            .expectStatus(204);
     });
 
     beforeEach(function () {
