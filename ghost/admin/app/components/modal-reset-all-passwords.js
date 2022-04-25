@@ -21,7 +21,7 @@ export default ModalComponent.extend({
     },
 
     async _resetPasswords() {
-        const res = await fetch('/ghost/api/admin/authentication/reset_all_passwords/', {
+        const res = await fetch('/ghost/api/admin/authentication/global_password_reset/', {
             method: 'POST'
         });
         if (res.status < 200 || res.status >= 300) {
