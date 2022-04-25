@@ -10,7 +10,6 @@ const messages = {
 const emailPreview = new mega.EmailPreview();
 
 module.exports = {
-    // @TODO make the route match the resource name in 5.0
     docName: 'email_previews',
 
     read: {
