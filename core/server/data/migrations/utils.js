@@ -441,6 +441,44 @@ function createDropColumnMigration(table, column, columnDefinition) {
 }
 
 /**
+ * @param {string} table
+ * @param {string} column
+ *
+ * @returns {Migration}
+ */
+function createSetNullableMigration(table, column) {
+    return createNonTransactionalMigration(
+        async function up(knex) {
+            logging.info(`Setting nullable: ${table}.${column}`);
+            await commands.setNullable(table, column, knex);
+        },
+        async function down(knex) {
+            logging.info(`Dropping nullable:  ${table}.${column}`);
+            await commands.dropNullable(table, column, knex);
+        }
+    );
+}
+
+/**
+ * @param {string} table
+ * @param {string} column
+ *
+ * @returns {Migration}
+ */
+function createDropNullableMigration(table, column) {
+    return createNonTransactionalMigration(
+        async function up(knex) {
+            logging.info(`Dropping nullable: ${table}.${column}`);
+            await commands.dropNullable(table, column, knex);
+        },
+        async function down(knex) {
+            logging.info(`Setting nullable: ${table}.${column}`);
+            await commands.setNullable(table, column, knex);
+        }
+    );
+}
+
+/**
  * Creates a migration which will insert a new setting in settings table
  * @param {object} settingSpec - setting key, value, group and type
  *
@@ -505,6 +543,8 @@ module.exports = {
     combineNonTransactionalMigrations,
     createAddColumnMigration,
     createDropColumnMigration,
+    createSetNullableMigration,
+    createDropNullableMigration,
     meta: {
         MIGRATION_USER
     }
