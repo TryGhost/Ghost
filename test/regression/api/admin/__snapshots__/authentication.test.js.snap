@@ -320,7 +320,7 @@ Object {
 
 exports[`Authentication API Password reset reset password 1: [body] 1`] = `
 Object {
-  "passwordreset": Array [
+  "password_reset": Array [
     Object {
       "message": "Password changed successfully.",
     },
@@ -332,7 +332,7 @@ exports[`Authentication API Password reset reset password 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "64",
+  "content-length": "65",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -371,7 +371,7 @@ Object {
 
 exports[`Authentication API Password reset reset password: generate reset token 1: [body] 1`] = `
 Object {
-  "passwordreset": Array [
+  "password_reset": Array [
     Object {
       "message": "Check your email for further instructions.",
     },
@@ -383,7 +383,7 @@ exports[`Authentication API Password reset reset password: generate reset token 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "76",
+  "content-length": "77",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
