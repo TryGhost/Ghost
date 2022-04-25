@@ -82,6 +82,10 @@ class NewslettersService {
         // remove any email properties that are not allowed to be set without verification
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs);
 
+        // add this newsletter last
+        const sortOrder = await this.NewsletterModel.getNextAvailableSortOrder(options);
+        cleanedAttrs.sort_order = sortOrder;
+
         // add the model now because we need the ID for sending verification emails
         const newsletter = await this.NewsletterModel.add(cleanedAttrs, options);
 
