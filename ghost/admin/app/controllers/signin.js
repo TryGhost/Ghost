@@ -114,7 +114,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
     @task(function* () {
         let email = this.get('signin.identification');
-        let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
+        let forgottenUrl = this.get('ghostPaths.url').api('authentication', 'password_reset');
         let notifications = this.notifications;
 
         this.set('flowErrors', '');
