@@ -96,6 +96,7 @@ module.exports = {
     },
 
     updateMembersEmail: {
+        statusCode: 204,
         permissions: {
             method: 'edit'
         },
@@ -122,6 +123,7 @@ module.exports = {
     },
 
     disconnectStripeConnectIntegration: {
+        statusCode: 204,
         permissions: {
             method: 'edit'
         },
