@@ -347,7 +347,7 @@ describe('Authentication API', function () {
                 password: ownerUser.get('password')
             });
 
-            await agent.put('authentication/passwordreset')
+            await agent.put('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
                     passwordreset: [{
@@ -365,7 +365,7 @@ describe('Authentication API', function () {
 
         it('reset password: invalid token', async function () {
             await agent
-                .put('authentication/passwordreset')
+                .put('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
                     passwordreset: [{
@@ -397,7 +397,7 @@ describe('Authentication API', function () {
             });
 
             await agent
-                .put('authentication/passwordreset')
+                .put('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
                     passwordreset: [{
@@ -426,7 +426,7 @@ describe('Authentication API', function () {
             });
 
             await agent
-                .put('authentication/passwordreset')
+                .put('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
                     passwordreset: [{
@@ -448,7 +448,7 @@ describe('Authentication API', function () {
 
         it('reset password: generate reset token', async function () {
             await agent
-                .post('authentication/passwordreset')
+                .post('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
                     passwordreset: [{
