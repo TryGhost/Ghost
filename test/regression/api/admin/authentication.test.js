@@ -479,7 +479,7 @@ describe('Authentication API', function () {
         });
 
         it('reset all passwords returns 204', async function () {
-            await agent.post('authentication/reset_all_passwords')
+            await agent.post('authentication/global_password_reset')
                 .header('Accept', 'application/json')
                 .body({})
                 .expectStatus(204)

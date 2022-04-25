@@ -229,7 +229,7 @@ module.exports = function apiRoutes() {
     router.post('/authentication/setup', http(api.authentication.setup));
     router.put('/authentication/setup', mw.authAdminApi, http(api.authentication.updateSetup));
     router.get('/authentication/setup', http(api.authentication.isSetup));
-    router.post('/authentication/reset_all_passwords', mw.authAdminApi, http(api.authentication.resetAllPasswords));
+    router.post('/authentication/global_password_reset', mw.authAdminApi, http(api.authentication.resetAllPasswords));
 
     // ## Images
     router.post('/images/upload',
