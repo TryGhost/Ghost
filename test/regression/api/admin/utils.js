@@ -185,7 +185,7 @@ const expectedProperties = {
         'created_at',
         'updated_at'
     ],
-    email_preview: ['html', 'subject', 'plaintext']
+    email_previews: ['html', 'subject', 'plaintext']
 };
 
 module.exports = {

@@ -288,8 +288,8 @@ module.exports = function apiRoutes() {
     router.get('/actions', mw.authAdminApi, http(api.actions.browse));
 
     // ## Email Preview
-    router.get('/email_previews/posts/:id', mw.authAdminApi, http(api.email_preview.read));
-    router.post('/email_previews/posts/:id', mw.authAdminApi, http(api.email_preview.sendTestEmail));
+    router.get('/email_previews/posts/:id', mw.authAdminApi, http(api.email_previews.read));
+    router.post('/email_previews/posts/:id', mw.authAdminApi, http(api.email_previews.sendTestEmail));
 
     // ## Emails
     router.get('/emails', mw.authAdminApi, http(api.emails.browse));
