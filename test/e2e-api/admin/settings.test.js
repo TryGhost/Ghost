@@ -171,7 +171,7 @@ describe('Settings API', function () {
                 email: 'test@test.com',
                 type: 'fromAddressUpdate'
             })
-            .expectStatus(200)
+            .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -206,7 +206,7 @@ describe('Settings API', function () {
     it('can do disconnectStripeConnectIntegration', async function () {
         await agent
             .delete('/settings/stripe/connect/')
-            .expectStatus(200)
+            .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag
