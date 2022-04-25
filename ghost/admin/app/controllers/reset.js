@@ -52,10 +52,10 @@ export default Controller.extend(ValidationEngine, {
             try {
                 let resp = yield this.ajax.put(authUrl, {
                     data: {
-                        passwordreset: [credentials]
+                        password_reset: [credentials]
                     }
                 });
-                this.notifications.showAlert(resp.passwordreset[0].message, {type: 'warn', delayed: true, key: 'password.reset'});
+                this.notifications.showAlert(resp.password_reset[0].message, {type: 'warn', delayed: true, key: 'password.reset'});
                 this.session.authenticate('authenticator:cookie', this.email, credentials.newPassword);
                 return true;
             } catch (error) {

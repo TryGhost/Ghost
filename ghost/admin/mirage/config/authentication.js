@@ -10,8 +10,8 @@ export default function mockAuthentication(server) {
     });
 
     server.post('/authentication/password_reset', function (schema, request) {
-        let {passwordreset} = JSON.parse(request.requestBody);
-        let email = passwordreset[0].email;
+        let {password_reset} = JSON.parse(request.requestBody);
+        let email = password_reset[0].email;
 
         if (email === 'unknown@example.com') {
             return new Response(404, {}, {
@@ -24,7 +24,7 @@ export default function mockAuthentication(server) {
             });
         } else {
             return {
-                passwordreset: [
+                password_reset: [
                     {message: 'Check your email for further instructions.'}
                 ]
             };
