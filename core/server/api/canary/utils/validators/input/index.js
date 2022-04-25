@@ -5,8 +5,8 @@
 /* eslint-disable max-lines */
 
 module.exports = {
-    get passwordreset() {
-        return require('./passwordreset');
+    get password_reset() {
+        return require('./password_reset');
     },
 
     get setup() {

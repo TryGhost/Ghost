@@ -350,7 +350,7 @@ describe('Authentication API', function () {
             await agent.put('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
-                    passwordreset: [{
+                    password_reset: [{
                         token: token,
                         newPassword: 'thisissupersafe',
                         ne2Password: 'thisissupersafe'
@@ -368,7 +368,7 @@ describe('Authentication API', function () {
                 .put('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
-                    passwordreset: [{
+                    password_reset: [{
                         token: 'invalid',
                         newPassword: 'thisissupersafe',
                         ne2Password: 'thisissupersafe'
@@ -400,7 +400,7 @@ describe('Authentication API', function () {
                 .put('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
-                    passwordreset: [{
+                    password_reset: [{
                         token: token,
                         newPassword: 'thisissupersafe',
                         ne2Password: 'thisissupersafe'
@@ -429,7 +429,7 @@ describe('Authentication API', function () {
                 .put('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
-                    passwordreset: [{
+                    password_reset: [{
                         token: token,
                         newPassword: 'thisissupersafe',
                         ne2Password: 'thisissupersafe'
@@ -451,7 +451,7 @@ describe('Authentication API', function () {
                 .post('authentication/password_reset')
                 .header('Accept', 'application/json')
                 .body({
-                    passwordreset: [{
+                    password_reset: [{
                         email: email
                     }]
                 })
