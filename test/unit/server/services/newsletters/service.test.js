@@ -139,7 +139,7 @@ describe('NewslettersService', function () {
                 opted_in_member_count: 0
             });
 
-            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world'}, options);
+            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
             mockManager.assert.sentEmailCount(0);
             sinon.assert.calledOnce(fetchMembersStub);
         });
@@ -156,7 +156,7 @@ describe('NewslettersService', function () {
                 opted_in_member_count: 3
             });
 
-            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world'}, options);
+            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
             mockManager.assert.sentEmailCount(0);
             sinon.assert.calledOnceWithExactly(fetchMembersStub, {transacting: 'foo'});
             sinon.assert.calledOnceWithExactly(subscribeStub, fakeMemberIds, options);
