@@ -200,10 +200,6 @@ module.exports = function apiRoutes() {
         http(api.db.backupContent)
     );
 
-    // ## Mail
-    router.post('/mail', mw.authAdminApi, http(api.mail.send));
-    router.post('/mail/test', mw.authAdminApi, http(api.mail.sendTest));
-
     // ## Slack
     router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
