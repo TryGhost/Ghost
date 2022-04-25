@@ -80,7 +80,7 @@ describe('NewslettersService', function () {
 
             assert.equal(result.meta, undefined); // meta property has not been added
             sinon.assert.calledOnce(getNextAvailableSortOrderStub);
-            sinon.assert.calledOnceWithExactly(addStub, {sort_order: 1}, undefined);
+            sinon.assert.calledOnceWithExactly(addStub, {sort_order: 1}, {});
         });
 
         it('will override sort_order', async function () {
@@ -137,7 +137,7 @@ describe('NewslettersService', function () {
             const result = await newsletterService.edit({});
 
             assert.equal(result.meta, undefined); // meta property has not been added
-            sinon.assert.calledOnceWithExactly(editStub, {}, undefined);
+            sinon.assert.calledOnceWithExactly(editStub, {}, {});
         });
 
         it('will pass object and options through to model when there are no fields needing verification', async function () {

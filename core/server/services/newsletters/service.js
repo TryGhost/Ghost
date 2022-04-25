@@ -71,17 +71,23 @@ class NewslettersService {
     }
 
     /**
-     *
-     * @param {Object} options browse options
-     * @returns
+     * @public
+     * @param {Object} [options] options
+     * @returns {Promise<object>} JSONified Newsletter models
      */
-    async browse(options) {
+    async browse(options = {}) {
         let newsletters = await this.NewsletterModel.findAll(options);
 
         return newsletters.toJSON();
     }
-
-    async add(attrs, options) {
+    /**
+     * @public
+     * @param {object} attrs model properties
+     * @param {Object} [options] options
+     * @param {Object} [options] options.transacting
+     * @returns {Promise<{object}>} Newsetter Model with verification metadata
+     */
+    async add(attrs, options = {}) {
         // create newsletter and assign members in the same transaction
         if (!options.transacting) {
             return this.NewsletterModel.transaction((transacting) => {
@@ -134,7 +140,13 @@ class NewslettersService {
         return this.respondWithEmailVerification(newsletter, emailsToVerify);
     }
 
-    async edit(attrs, options) {
+    /**
+     * @public
+     * @param {object} attrs model properties
+     * @param {Object} [options] options
+     * @returns {Promise<{object}>} Newsetter Model with verification metadata
+     */
+    async edit(attrs, options = {}) {
         // fetch newsletter first so we can compare changed emails
         const originalNewsletter = await this.NewsletterModel.findOne(options, {require: true});
 
@@ -145,6 +157,11 @@ class NewslettersService {
         return this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
     }
 
+    /**
+     * @public
+     * @param {string} token - token that provides details of what to update
+     * @returns {Promise<{object}>} Newsetter Model
+     */
     async verifyPropertyUpdate(token) {
         const data = await this.magicLinkService.getDataFromToken(token);
         const {id, property, value} = data;
@@ -155,8 +172,11 @@ class NewslettersService {
         return this.NewsletterModel.edit(attrs, {id});
     }
 
-    /* Email verification (private) */
+    /* Email verification Internals */
 
+    /**
+     * @private
+     */
     async prepAttrsForEmailVerification(attrs, newsletter) {
         const cleanedAttrs = _.cloneDeep(attrs);
         const emailsToVerify = [];
@@ -174,6 +194,9 @@ class NewslettersService {
         return {cleanedAttrs, emailsToVerify};
     }
 
+    /**
+     * @private
+     */
     async requiresEmailVerification({email, hasChanged}) {
         if (!email || !hasChanged) {
             return false;
@@ -184,6 +207,9 @@ class NewslettersService {
         return true;
     }
 
+    /**
+     * @private
+     */
     async respondWithEmailVerification(newsletter, emailsToVerify) {
         if (emailsToVerify.length > 0) {
             for (const {email, property} of emailsToVerify) {
@@ -198,6 +224,9 @@ class NewslettersService {
         return newsletter;
     }
 
+    /**
+     * @private
+     */
     async sendEmailVerificationMagicLink({id, email, property = 'sender_from'}) {
         const [,toDomain] = email.split('@');
 
