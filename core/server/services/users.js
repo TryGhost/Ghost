@@ -73,28 +73,28 @@ class Users {
         const parsedFileName = path.parse(backupPath);
         const filename = `${parsedFileName.name}${parsedFileName.ext}`;
 
-        return this.models.Base.transaction((t) => {
+        return this.models.Base.transaction(async (t) => {
             frameOptions.transacting = t;
 
-            return this.models.Post.destroyByAuthor(frameOptions)
-                .then(() => {
-                    return this.models.ApiKey.destroy({
-                        ...frameOptions,
-                        require: true,
-                        destroyBy: {
-                            user_id: frameOptions.id
-                        }
-                    }).catch((err) => {
-                        if (err instanceof this.models.ApiKey.NotFoundError) {
-                            return; //Do nothing here as it's ok
-                        }
-                        throw err;
-                    });
-                })
-                .then(() => {
-                    return this.models.User.destroy(Object.assign({status: 'all'}, frameOptions));
-                })
-                .then(() => filename);
+            await this.models.Post.destroyByAuthor(frameOptions);
+
+            try {
+                await this.models.ApiKey.destroy({
+                    ...frameOptions,
+                    require: true,
+                    destroyBy: {
+                        user_id: frameOptions.id
+                    }
+                });
+            } catch (err) {
+                if (!(err instanceof this.models.ApiKey.NotFoundError)) {
+                    throw err;
+                }
+            }
+
+            await this.models.User.destroy(Object.assign({status: 'all'}, frameOptions));
+
+            return filename;
         });
     }
 }
