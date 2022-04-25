@@ -294,17 +294,6 @@ DataGenerator.Content = {
         }
     ],
 
-    subscribers: [
-        {
-            id: ObjectId().toHexString(),
-            email: 'subscriber1@test.com'
-        },
-        {
-            id: ObjectId().toHexString(),
-            email: 'subscriber2@test.com'
-        }
-    ],
-
     members: [
         {
             id: ObjectId().toHexString(),
@@ -755,7 +744,6 @@ DataGenerator.Content = {
 };
 
 // set up belongs_to relationships
-DataGenerator.Content.subscribers[0].post_id = DataGenerator.Content.posts[0].id;
 DataGenerator.Content.api_keys[0].integration_id = DataGenerator.Content.integrations[0].id;
 DataGenerator.Content.api_keys[1].integration_id = DataGenerator.Content.integrations[0].id;
 DataGenerator.Content.webhooks[0].integration_id = DataGenerator.Content.integrations[0].id;
