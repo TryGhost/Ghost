@@ -64,6 +64,20 @@ const Newsletter = ghostBookshelf.Model.extend({
             return lastNewsletter.data[0].get('sort_order') + 1;
         }
         return 0;
+    },
+
+    fetchAllSubscribableMembers(unfilteredOptions = {}) {
+        // we use raw queries instead of model relationships because model hydration is expensive
+        const query = ghostBookshelf.knex('members_newsletters')
+            .join('newsletters', 'members_newsletters.newsletter_id', '=', 'newsletters.id')
+            .where('newsletters.status', 'active')
+            .distinct('member_id as id');
+
+        if (unfilteredOptions.transacting) {
+            query.transacting(unfilteredOptions.transacting);
+        }
+
+        return query;
     }
 });
 

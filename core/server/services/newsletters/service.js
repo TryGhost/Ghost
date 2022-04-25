@@ -11,12 +11,14 @@ class NewslettersService {
      *
      * @param {Object} options
      * @param {Object} options.NewsletterModel
+     * @param {Object} options.MemberModel
      * @param {Object} options.mail
      * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
      */
-    constructor({NewsletterModel, mail, singleUseTokenProvider, urlUtils}) {
+    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils}) {
         this.NewsletterModel = NewsletterModel;
+        this.MemberModel = MemberModel;
         this.urlUtils = urlUtils;
 
         /* email verification setup */
@@ -89,7 +91,7 @@ class NewslettersService {
      */
     async add(attrs, options = {}) {
         // create newsletter and assign members in the same transaction
-        if (!options.transacting) {
+        if (options.opt_in_existing && !options.transacting) {
             return this.NewsletterModel.transaction((transacting) => {
                 options.transacting = transacting;
                 return this.add(attrs, options);
@@ -111,13 +113,7 @@ class NewslettersService {
             debug(`Subscribing members to newsletter '${newsletter.get('name')}'`);
 
             // subscribe members that have an existing subscription to an active newsletter
-            // refs https://ghost.slack.com/archives/C02G9E68C/p1650404678237709?thread_ts=1650277304.685079&cid=C02G9E68C
-            // we use raw queries instead of model relationships because model hydration is expensive
-            const memberIds = await knex('members_newsletters')
-                .join('newsletters', 'members_newsletters.newsletter_id', '=', 'newsletters.id')
-                .where('newsletters.status', 'active')
-                .distinct('member_id as id')
-                .transacting(options.transacting);
+            const memberIds = await this.MemberModel.fetchAllSubscribed();
 
             if (memberIds.length) {
                 debug(`Found ${memberIds.length} members to subscribe`);

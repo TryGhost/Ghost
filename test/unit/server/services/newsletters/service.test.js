@@ -31,6 +31,7 @@ describe('NewslettersService', function () {
 
         newsletterService = new NewslettersService({
             NewsletterModel: models.Newsletter,
+            MemberModel: models.Member,
             mail,
             singleUseTokenProvider: tokenProvider,
             urlUtils: urlUtils.stubUrlUtilsFromConfig()
@@ -62,10 +63,11 @@ describe('NewslettersService', function () {
     });
 
     describe('add', function () {
-        let addStub,getNextAvailableSortOrderStub;
+        let addStub, fetchMembersStub, getNextAvailableSortOrderStub;
         beforeEach(function () {
             // Stub add as a function that returns a get
             addStub = sinon.stub(models.Newsletter, 'add').returns({get: getStub});
+            fetchMembersStub = sinon.stub(models.Member, 'fetchAllSubscribed').returns({});
             getNextAvailableSortOrderStub = sinon.stub(models.Newsletter, 'getNextAvailableSortOrder').returns(1);
         });
 
@@ -73,6 +75,7 @@ describe('NewslettersService', function () {
             assert.rejects(await newsletterService.add, {name: 'TypeError'});
             sinon.assert.notCalled(addStub);
             sinon.assert.notCalled(getNextAvailableSortOrderStub);
+            sinon.assert.notCalled(fetchMembersStub);
         });
 
         it('will attempt to add empty object without verification', async function () {
@@ -80,6 +83,7 @@ describe('NewslettersService', function () {
 
             assert.equal(result.meta, undefined); // meta property has not been added
             sinon.assert.calledOnce(getNextAvailableSortOrderStub);
+            sinon.assert.notCalled(fetchMembersStub);
             sinon.assert.calledOnceWithExactly(addStub, {sort_order: 1}, {});
         });
 
@@ -90,6 +94,7 @@ describe('NewslettersService', function () {
             await newsletterService.add(data, options);
 
             sinon.assert.calledOnce(getNextAvailableSortOrderStub);
+            sinon.assert.notCalled(fetchMembersStub);
             sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
         });
 
@@ -101,6 +106,7 @@ describe('NewslettersService', function () {
 
             assert.equal(result.meta, undefined); // meta property has not been added
             sinon.assert.calledOnceWithExactly(addStub, data, options);
+            sinon.assert.notCalled(fetchMembersStub);
         });
 
         it('will trigger verification when sender_email is provided', async function () {
@@ -117,6 +123,18 @@ describe('NewslettersService', function () {
             sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
             mockManager.assert.sentEmail({to: 'test@example.com'});
             sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: undefined, property: 'sender_email', value: 'test@example.com'});
+            sinon.assert.notCalled(fetchMembersStub);
+        });
+
+        it('will subscribe all existing members when opt_in_existing is provided', async function () {
+            const data = {name: 'hello world'};
+            const options = { opt_in_existing: true };
+
+            const result = await newsletterService.add(data, options);
+
+            console.log('result', result)
+            sinon.assert.calledOnceWithExactly(addStub, { name: 'hello world' }, options);
+            mockManager.assert.sentEmailCount(0)
         });
     });
 
