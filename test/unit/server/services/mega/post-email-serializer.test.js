@@ -85,7 +85,7 @@ describe('Post Email Serializer', function () {
         });
     });
 
-    describe.only('getTemplateSettings', function () {
+    describe('getTemplateSettings', function () {
         before(function () {
             models.init();
         });
