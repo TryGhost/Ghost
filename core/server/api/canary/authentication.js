@@ -221,6 +221,7 @@ module.exports = {
     },
 
     resetAllPasswords: {
+        statusCode: 204,
         permissions: true,
         async query(frame) {
             await userService.resetAllPasswords(frame.options);
