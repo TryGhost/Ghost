@@ -2,18 +2,21 @@ const _ = require('lodash');
 const MagicLink = require('@tryghost/magic-link');
 const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
+const debug = require('@tryghost/debug')('services:newsletters');
 
 class NewslettersService {
     /**
      *
      * @param {Object} options
      * @param {Object} options.NewsletterModel
+     * @param {Object} options.MemberModel
      * @param {Object} options.mail
      * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
      */
-    constructor({NewsletterModel, mail, singleUseTokenProvider, urlUtils}) {
+    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils}) {
         this.NewsletterModel = NewsletterModel;
+        this.MemberModel = MemberModel;
         this.urlUtils = urlUtils;
 
         /* email verification setup */
@@ -68,17 +71,23 @@ class NewslettersService {
     }
 
     /**
-     *
-     * @param {Object} options browse options
-     * @returns
+     * @public
+     * @param {Object} [options] options
+     * @returns {Promise<object>} JSONified Newsletter models
      */
-    async browse(options) {
+    async browse(options = {}) {
         let newsletters = await this.NewsletterModel.findAll(options);
 
         return newsletters.toJSON();
     }
-
-    async add(attrs, options) {
+    /**
+     * @public
+     * @param {object} attrs model properties
+     * @param {Object} [options] options
+     * @param {Object} [options] options.transacting
+     * @returns {Promise<{object}>} Newsetter Model with verification metadata
+     */
+    async add(attrs, options = {}) {
         // remove any email properties that are not allowed to be set without verification
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs);
 
@@ -89,11 +98,34 @@ class NewslettersService {
         // add the model now because we need the ID for sending verification emails
         const newsletter = await this.NewsletterModel.add(cleanedAttrs, options);
 
+        // subscribe existing members if opt_in_existing=true
+        if (options.opt_in_existing) {
+            debug(`Subscribing members to newsletter '${newsletter.get('name')}'`);
+
+            // subscribe members that have an existing subscription to an active newsletter
+            const memberIds = await this.MemberModel.fetchAllSubscribed(_.pick(options, 'transacting'));
+
+            newsletter.meta = newsletter.meta || {};
+            newsletter.meta.opted_in_member_count = memberIds.length;
+
+            if (memberIds.length) {
+                debug(`Found ${memberIds.length} members to subscribe`);
+
+                await newsletter.subscribeMembersById(memberIds, options);
+            }
+        }
+
         // send any verification emails and respond with the appropriate meta added
         return this.respondWithEmailVerification(newsletter, emailsToVerify);
     }
 
-    async edit(attrs, options) {
+    /**
+     * @public
+     * @param {object} attrs model properties
+     * @param {Object} [options] options
+     * @returns {Promise<{object}>} Newsetter Model with verification metadata
+     */
+    async edit(attrs, options = {}) {
         // fetch newsletter first so we can compare changed emails
         const originalNewsletter = await this.NewsletterModel.findOne(options, {require: true});
 
@@ -104,6 +136,11 @@ class NewslettersService {
         return this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
     }
 
+    /**
+     * @public
+     * @param {string} token - token that provides details of what to update
+     * @returns {Promise<{object}>} Newsetter Model
+     */
     async verifyPropertyUpdate(token) {
         const data = await this.magicLinkService.getDataFromToken(token);
         const {id, property, value} = data;
@@ -114,8 +151,11 @@ class NewslettersService {
         return this.NewsletterModel.edit(attrs, {id});
     }
 
-    /* Email verification (private) */
+    /* Email verification Internals */
 
+    /**
+     * @private
+     */
     async prepAttrsForEmailVerification(attrs, newsletter) {
         const cleanedAttrs = _.cloneDeep(attrs);
         const emailsToVerify = [];
@@ -133,6 +173,9 @@ class NewslettersService {
         return {cleanedAttrs, emailsToVerify};
     }
 
+    /**
+     * @private
+     */
     async requiresEmailVerification({email, hasChanged}) {
         if (!email || !hasChanged) {
             return false;
@@ -143,20 +186,25 @@ class NewslettersService {
         return true;
     }
 
+    /**
+     * @private
+     */
     async respondWithEmailVerification(newsletter, emailsToVerify) {
         if (emailsToVerify.length > 0) {
             for (const {email, property} of emailsToVerify) {
                 await this.sendEmailVerificationMagicLink({id: newsletter.get('id'), email, property});
             }
 
-            newsletter.meta = {
-                sent_email_verification: emailsToVerify.map(v => v.property)
-            };
+            newsletter.meta = newsletter.meta || {};
+            newsletter.meta.sent_email_verification = emailsToVerify.map(v => v.property);
         }
 
         return newsletter;
     }
 
+    /**
+     * @private
+     */
     async sendEmailVerificationMagicLink({id, email, property = 'sender_from'}) {
         const [,toDomain] = email.split('@');
 
