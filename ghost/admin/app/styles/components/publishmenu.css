@@ -455,11 +455,16 @@
 }
 
 .gh-publish-setting {
+    display: inline-block;
     padding: 4px 8px;
     font-weight: 600;
     white-space: nowrap;
     background: var(--whitegrey);
     border-radius: var(--border-radius);
+}
+
+.gh-publish-setting input[type="radio"]:disabled + label {
+    color: var(--midlightgrey);
 }
 
 .gh-publish-cta {
