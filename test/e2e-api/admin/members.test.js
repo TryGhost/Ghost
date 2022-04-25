@@ -1344,7 +1344,7 @@ describe('Members API', function () {
 describe('Members API: with multiple newsletters', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('members', 'newsletters');
+        await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
     });
 
@@ -1422,7 +1422,7 @@ describe('Members API: with multiple newsletters', function () {
             .get('/members/?filter=newsletters:weekly-newsletter')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludesForNewsletters)
+                members: new Array(4).fill(memberMatcherShallowIncludesForNewsletters)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
