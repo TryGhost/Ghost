@@ -217,12 +217,12 @@ module.exports = function apiRoutes() {
     router.get('/identities', mw.authAdminApi, http(api.identities.read));
 
     // ## Authentication
-    router.post('/authentication/passwordreset',
+    router.post('/authentication/password_reset',
         shared.middleware.brute.globalReset,
         shared.middleware.brute.userReset,
         http(api.authentication.generateResetToken)
     );
-    router.put('/authentication/passwordreset', shared.middleware.brute.globalBlock, http(api.authentication.resetPassword));
+    router.put('/authentication/password_reset', shared.middleware.brute.globalBlock, http(api.authentication.resetPassword));
     router.post('/authentication/invitation', http(api.authentication.acceptInvitation));
     router.get('/authentication/invitation', http(api.authentication.isInvitation));
     router.post('/authentication/setup', http(api.authentication.setup));
