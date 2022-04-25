@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
+import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getUpdatedOfferPrice, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -346,7 +346,7 @@ const AccountActions = () => {
 
 function EmailNewsletterAction() {
     const {member, site, onAction} = useContext(AppContext);
-    const {subscribed} = member;
+    let {subscribed} = member;
 
     if (hasMultipleNewsletters({site})) {
         return null;
@@ -355,9 +355,18 @@ function EmailNewsletterAction() {
     let label = subscribed ? 'Subscribed' : 'Unsubscribed';
     const onToggleSubscription = (e, sub) => {
         e.preventDefault();
-        onAction('updateNewsletter', {subscribed: !sub});
+        const newsletters = getSiteNewsletters({site});
+        if (newsletters?.length === 1) {
+            const subscribedNewsletters = !member?.newsletters?.length ? newsletters : [];
+            onAction('updateNewsletterPreference', {newsletters: subscribedNewsletters});
+        } else {
+            onAction('updateNewsletter', {subscribed: !sub});
+        }
     };
-
+    const newsletters = getSiteNewsletters({site});
+    if (newsletters?.length > 0) {
+        subscribed = !!member?.newsletters?.length;
+    }
     return (
         <section>
             <div className='gh-portal-list-detail'>
