@@ -449,14 +449,12 @@ Object {
 }
 `;
 
-exports[`Authentication API Reset all passwords reset all passwords returns 200 1: [headers] 1`] = `
+exports[`Authentication API Reset all passwords reset all passwords returns 204 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2",
-  "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
+  "vary": "Origin",
   "x-powered-by": "Express",
 }
 `;
