@@ -123,7 +123,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
 
         try {
             yield this.validate({property: 'forgotPassword'});
-            yield this.ajax.post(forgottenUrl, {data: {passwordreset: [{email}]}});
+            yield this.ajax.post(forgottenUrl, {data: {password_reset: [{email}]}});
             notifications.showAlert(
                 'Please check your email for instructions.',
                 {type: 'info', key: 'forgot-password.send.success'}
