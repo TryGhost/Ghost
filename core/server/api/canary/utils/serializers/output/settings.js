@@ -86,5 +86,5 @@ module.exports = {
     download: serializeData,
     upload: serializeData,
 
-    validateMembersEmailUpdate: passthrough,
+    validateMembersEmailUpdate: passthrough
 };
