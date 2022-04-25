@@ -45,9 +45,9 @@ Router.map(function () {
     this.route('settings.members-email', {path: '/settings/members-email'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
 
-    this.route('settings.members-email-labs', {path: '/settings/members-email-labs'}, function () {
-        this.route('new-newsletter', {path: '/newsletters/new'});
-        this.route('edit-newsletter', {path: '/newsletters/:newsletter_id'});
+    this.route('settings.members-email-labs', {path: '/settings/newsletters'}, function () {
+        this.route('new-newsletter', {path: 'new'});
+        this.route('edit-newsletter', {path: ':newsletter_id'});
     });
 
     this.route('settings.design', {path: '/settings/design'}, function () {
