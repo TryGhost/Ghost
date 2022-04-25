@@ -52,7 +52,7 @@ class NewslettersService {
             getSigninURL(token) {
                 const adminUrl = urlUtils.urlFor('admin', true);
                 const signinURL = new URL(adminUrl);
-                signinURL.hash = `/settings/members-email-labs/?verifyEmail=${token}`;
+                signinURL.hash = `/settings/newsletters/?verifyEmail=${token}`;
                 return signinURL.href;
             }
         };
