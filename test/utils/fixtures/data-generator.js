@@ -1281,7 +1281,7 @@ DataGenerator.forKnex = (function () {
             member_id: DataGenerator.Content.members[4].id,
             newsletter_id: DataGenerator.Content.newsletters[1].id
         },
-        // Member index 5 (vip@test.com), subscribed to an active and inactive newsletter
+        // Member index 5 (vip@test.com), subscribed to an active and archived newsletter
         {
             id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[5].id,
@@ -1292,7 +1292,7 @@ DataGenerator.forKnex = (function () {
             member_id: DataGenerator.Content.members[5].id,
             newsletter_id: DataGenerator.Content.newsletters[2].id
         },
-        // Member index 6 (vip-paid@test.com), subscribed to an inactive newsletter
+        // Member index 6 (vip-paid@test.com), subscribed to an archived newsletter
         {
             id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[6].id,
