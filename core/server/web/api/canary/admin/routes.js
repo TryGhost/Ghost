@@ -288,9 +288,8 @@ module.exports = function apiRoutes() {
     router.get('/actions', mw.authAdminApi, http(api.actions.browse));
 
     // ## Email Preview
-    // @TODO: rename to email_previews in 5.0
-    router.get('/email_preview/posts/:id', mw.authAdminApi, http(api.email_preview.read));
-    router.post('/email_preview/posts/:id', mw.authAdminApi, http(api.email_preview.sendTestEmail));
+    router.get('/email_previews/posts/:id', mw.authAdminApi, http(api.email_preview.read));
+    router.post('/email_previews/posts/:id', mw.authAdminApi, http(api.email_preview.sendTestEmail));
 
     // ## Emails
     router.get('/emails', mw.authAdminApi, http(api.emails.browse));

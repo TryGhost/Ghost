@@ -42,7 +42,7 @@ describe('Email Preview API', function () {
 
         it('can read post email preview with fields', async function () {
             const res = await request
-                .get(localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
+                .get(localUtils.API.getApiQuery(`email_previews/posts/${testUtils.DataGenerator.Content.posts[0].id}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
@@ -71,7 +71,7 @@ describe('Email Preview API', function () {
 
             await models.Post.add(post, {context: {internal: true}});
             const res = await request
-                .get(localUtils.API.getApiQuery(`email_preview/posts/${post.id}/`))
+                .get(localUtils.API.getApiQuery(`email_previews/posts/${post.id}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
@@ -109,7 +109,7 @@ describe('Email Preview API', function () {
             await models.Post.add(post, {context: {internal: true}});
 
             const res = await request
-                .get(localUtils.API.getApiQuery(`email_preview/posts/${post.id}/`))
+                .get(localUtils.API.getApiQuery(`email_previews/posts/${post.id}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
@@ -132,7 +132,7 @@ describe('Email Preview API', function () {
 
     describe('As Owner', function () {
         it('can send test email', async function () {
-            const url = localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
+            const url = localUtils.API.getApiQuery(`email_previews/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
             await request
                 .post(url)
                 .set('Origin', config.get('url'))
@@ -161,7 +161,7 @@ describe('Email Preview API', function () {
         });
 
         it('can send test email', async function () {
-            const url = localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
+            const url = localUtils.API.getApiQuery(`email_previews/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
             await request
                 .post(url)
                 .set('Origin', config.get('url'))
@@ -192,7 +192,7 @@ describe('Email Preview API', function () {
         });
 
         it('can send test email', async function () {
-            const url = localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
+            const url = localUtils.API.getApiQuery(`email_previews/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
             await request
                 .post(url)
                 .set('Origin', config.get('url'))
@@ -223,7 +223,7 @@ describe('Email Preview API', function () {
         });
 
         it('cannot send test email', async function () {
-            const url = localUtils.API.getApiQuery(`email_preview/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
+            const url = localUtils.API.getApiQuery(`email_previews/posts/${testUtils.DataGenerator.Content.posts[0].id}/`);
             await request
                 .post(url)
                 .set('Origin', config.get('url'))
