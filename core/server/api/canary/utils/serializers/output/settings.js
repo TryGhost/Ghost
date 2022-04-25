@@ -86,7 +86,5 @@ module.exports = {
     download: serializeData,
     upload: serializeData,
 
-    updateMembersEmail: passthrough,
     validateMembersEmailUpdate: passthrough,
-    disconnectStripeConnectIntegration: passthrough
 };
