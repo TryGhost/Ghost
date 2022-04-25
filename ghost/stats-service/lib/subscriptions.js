@@ -25,6 +25,11 @@ class SubscriptionStatsService {
         /** @type {SubscriptionHistoryEntry[]} */
         let subscriptionHistoryEntries = [];
 
+        /** @type {string[]} */
+        let cadences = [];
+        /** @type {string[]} */
+        let tiers = [];
+
         for (let index = subscriptionDeltaEntries.length - 1; index >= 0; index -= 1) {
             const entry = subscriptionDeltaEntries[index];
             if (!countData[entry.tier]) {
@@ -41,10 +46,22 @@ class SubscriptionStatsService {
 
             countData[entry.tier][entry.cadence] += entry.negative_delta;
             countData[entry.tier][entry.cadence] -= entry.positive_delta;
+
+            if (!cadences.includes(entry.cadence)) {
+                cadences.push(entry.cadence);
+            }
+            if (!tiers.includes(entry.tier)) {
+                tiers.push(entry.tier);
+            }
         }
 
         return {
-            data: subscriptionHistoryEntries
+            data: subscriptionHistoryEntries,
+            meta: {
+                cadences,
+                tiers,
+                totals: counts
+            }
         };
     }
 
