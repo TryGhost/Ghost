@@ -54,7 +54,7 @@ describe('Email Preview API', function () {
             should.exist(jsonResponse);
             should.exist(jsonResponse.email_previews);
 
-            localUtils.API.checkResponse(jsonResponse.email_previews[0], 'email_preview', null, null);
+            localUtils.API.checkResponse(jsonResponse.email_previews[0], 'email_previews', null, null);
         });
 
         it('can read post email preview with email card and replacements', async function () {
