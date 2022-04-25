@@ -2,7 +2,6 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:input:members');
 const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
 const labsService = require('../../../../../../shared/labs');
-const models = require('../../../../../models');
 
 function defaultRelations(frame) {
     if (frame.options.withRelated) {
@@ -14,39 +13,6 @@ function defaultRelations(frame) {
     }
 
     frame.options.withRelated = ['labels'];
-}
-
-async function mapSubscribedFlagToNewsletters(frame) {
-    // CASE: ignore `subscribed` if `newsletters` is also set
-    if (Object.prototype.hasOwnProperty.call(frame.data.members[0], 'newsletters')) {
-        debug('both subscribed and newsletters present - ignoring subscribed');
-        return;
-    }
-
-    if (frame.data.members[0].subscribed) {
-        // CASE: ensure the member has at least one subscription
-        debug('subscribed=true');
-        if (frame.options.id) {
-            const existingMember = await models.Member.findOne(
-                {id: frame.options.id},
-                {withRelated: ['newsletters']}
-            );
-            if (existingMember && existingMember.related('newsletters').length > 0) {
-                debug('subscribed=true and we have newsletters already - nothing to do');
-                return;
-            }
-        }
-
-        // subscribed=true but we don't have any newsletters
-        debug('subscribing to the default newsletter');
-        const defaultNewsletter = await models.Newsletter.getDefaultNewsletter(frame.options);
-        frame.data.members[0].newsletters = [{id: defaultNewsletter.id}];
-    } else {
-        // CASE: unsubscribe from all emails
-        // subscribed=false -> newsletters=[]
-        debug('unsubscribing from newsletters');
-        frame.data.members[0].newsletters = [];
-    }
 }
 
 module.exports = {
@@ -77,7 +43,7 @@ module.exports = {
         this.browse(...arguments);
     },
 
-    async add(apiConfig, frame) {
+    add(apiConfig, frame) {
         debug('add');
         if (frame.data.members[0].labels) {
             frame.data.members[0].labels.forEach((label, index) => {
@@ -88,13 +54,12 @@ module.exports = {
                 }
             });
         }
-        await mapSubscribedFlagToNewsletters(frame);
         defaultRelations(frame);
     },
 
-    async edit(apiConfig, frame) {
+    edit(apiConfig, frame) {
         debug('edit');
-        await this.add(apiConfig, frame);
+        this.add(apiConfig, frame);
     },
 
     async importCSV(apiConfig, frame) {
