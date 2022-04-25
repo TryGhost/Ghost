@@ -133,16 +133,16 @@ function serializeMember(member, options) {
     }
 
     if (labsService.isSet('multipleNewsletters')) {
-        serialized.subscribed = false;
         if (json.newsletters) {
             json.newsletters.sort((a, b) => {
                 return a.sort_order - b.sort_order;
             });
             serialized.newsletters = json.newsletters;
-            // Override the `subscribed` param to use the default newsletter subscription
-            if (json.newsletters[0]) {
-                serialized.subscribed = json.newsletters[0].sort_order === 0;
-            }
+        }
+        // override the `subscribed` param to mean "subscribed to any newsletter"
+        serialized.subscribed = false;
+        if (serialized.newsletters.length > 0) {
+            serialized.subscribed = true;
         }
     }
 
