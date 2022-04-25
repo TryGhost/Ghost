@@ -134,12 +134,13 @@ function serializeMember(member, options) {
 
     if (labsService.isSet('multipleNewsletters')) {
         if (json.newsletters) {
-            json.newsletters.sort((a, b) => {
-                return a.sort_order - b.sort_order;
-            });
-            serialized.newsletters = json.newsletters;
+            serialized.newsletters = json.newsletters
+                .filter(newsletter => newsletter.status === 'active')
+                .sort((a, b) => {
+                    return a.sort_order - b.sort_order;
+                });
         }
-        // override the `subscribed` param to mean "subscribed to any newsletter"
+        // override the `subscribed` param to mean "subscribed to any active newsletter"
         serialized.subscribed = false;
         if (serialized.newsletters.length > 0) {
             serialized.subscribed = true;
