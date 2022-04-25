@@ -44,161 +44,7 @@ Object {
   "content-length": "708",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": Any<String>,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Newsletters API Can add a newsletter - with custom sender_email 3: [body] 1`] = `
-Object {
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 5,
-    },
-  },
-  "newsletters": Array [
-    Object {
-      "body_font_category": "sans_serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Default Newsletter",
-      "sender_email": null,
-      "sender_name": null,
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "default-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "sans_serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "My test newsletter",
-      "sender_email": null,
-      "sender_name": "Test",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "my-test-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "My test newsletter with custom sender_email",
-      "sender_email": null,
-      "sender_name": "Test",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "my-test-newsletter-with-custom-sender_email",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
-      "sender_name": "Jamie",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "daily-newsletter",
-      "sort_order": 1,
-      "status": "active",
-      "subscribe_on_signup": false,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Weekly newsletter",
-      "sender_email": "jamie@example.com",
-      "sender_name": "Jamie",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "weekly-newsletter",
-      "sort_order": 2,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-  ],
-}
-`;
-
-exports[`Newsletters API Can add a newsletter - with custom sender_email 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3135",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -243,13 +89,13 @@ Object {
   "content-length": "606",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": Any<String>,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Newsletters API Can add a newsletter 3: [body] 1`] = `
+exports[`Newsletters API Can browse newsletters 1: [body] 1`] = `
 Object {
   "meta": Object {
     "pagination": Object {
@@ -294,31 +140,6 @@ Object {
       "footer_content": null,
       "header_image": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "My test newsletter",
-      "sender_email": null,
-      "sender_name": "Test",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "my-test-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
       "sender_email": "jamie@example.com",
       "sender_name": "Jamie",
@@ -362,60 +183,6 @@ Object {
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "visibility": "members",
     },
-  ],
-}
-`;
-
-exports[`Newsletters API Can add a newsletter 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2496",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Newsletters API Can browse newsletters 1: [body] 1`] = `
-Object {
-  "meta": Object {
-    "pagination": Object {
-      "limit": 15,
-      "next": null,
-      "page": 1,
-      "pages": 1,
-      "prev": null,
-      "total": 5,
-    },
-  },
-  "newsletters": Array [
-    Object {
-      "body_font_category": "sans_serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Default Newsletter",
-      "sender_email": null,
-      "sender_name": null,
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "default-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "sans_serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
     Object {
       "body_font_category": "serif",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -423,57 +190,7 @@ Object {
       "footer_content": null,
       "header_image": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "My test newsletter",
-      "sender_email": null,
-      "sender_name": "Test",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "my-test-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "My test newsletter with custom sender_email",
-      "sender_email": null,
-      "sender_name": "Test",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "my-test-newsletter-with-custom-sender_email",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
+      "name": "Old newsletter",
       "sender_email": "jamie@example.com",
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
@@ -482,34 +199,9 @@ Object {
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
-      "slug": "daily-newsletter",
-      "sort_order": 1,
-      "status": "active",
-      "subscribe_on_signup": false,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Weekly newsletter",
-      "sender_email": "jamie@example.com",
-      "sender_name": "Jamie",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "weekly-newsletter",
+      "slug": "old-newsletter",
       "sort_order": 2,
-      "status": "active",
+      "status": "inactive",
       "subscribe_on_signup": true,
       "title_alignment": "center",
       "title_font_category": "serif",
@@ -524,7 +216,56 @@ exports[`Newsletters API Can browse newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3135",
+  "content-length": "2506",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Can edit a newsletters and update the sender_email when already set 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "sent_email_verification": Array [
+      "sender_email",
+    ],
+  },
+  "newsletters": Array [
+    Object {
+      "body_font_category": "serif",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Updated newsletter name",
+      "sender_email": "jamie@example.com",
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Can edit a newsletters and update the sender_email when already set 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "678",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -534,39 +275,29 @@ Object {
 
 exports[`Newsletters API Can edit newsletters 1: [body] 1`] = `
 Object {
-  "meta": Object {
-    "pagination": Object {
-      "limit": 1,
-      "next": 2,
-      "page": 1,
-      "pages": 5,
-      "prev": null,
-      "total": 5,
-    },
-  },
   "newsletters": Array [
     Object {
-      "body_font_category": "sans_serif",
+      "body_font_category": "serif",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "footer_content": null,
       "header_image": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Default Newsletter",
-      "sender_email": null,
-      "sender_name": null,
+      "name": "Updated newsletter name",
+      "sender_email": "jamie@example.com",
+      "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
-      "slug": "default-newsletter",
-      "sort_order": 0,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
       "status": "active",
-      "subscribe_on_signup": true,
+      "subscribe_on_signup": false,
       "title_alignment": "center",
-      "title_font_category": "sans_serif",
+      "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "visibility": "members",
     },
@@ -578,7 +309,7 @@ exports[`Newsletters API Can edit newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "698",
+  "content-length": "626",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -586,154 +317,7 @@ Object {
 }
 `;
 
-exports[`Newsletters API Can edit newsletters 3: [body] 1`] = `
-Object {
-  "newsletters": Array [
-    Object {
-      "body_font_category": "sans_serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Updated newsletter name",
-      "sender_email": null,
-      "sender_name": null,
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "default-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "sans_serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-  ],
-}
-`;
-
-exports[`Newsletters API Can edit newsletters 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "619",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Newsletters API Can edit newsletters with updated sender_email 1: [body] 1`] = `
-Object {
-  "meta": Object {
-    "pagination": Object {
-      "limit": 1,
-      "next": 2,
-      "page": 1,
-      "pages": 5,
-      "prev": null,
-      "total": 5,
-    },
-  },
-  "newsletters": Array [
-    Object {
-      "body_font_category": "sans_serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Updated newsletter name",
-      "sender_email": null,
-      "sender_name": null,
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "default-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "sans_serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-  ],
-}
-`;
-
-exports[`Newsletters API Can edit newsletters with updated sender_email 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "703",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Newsletters API Can edit newsletters with updated sender_email 3: [body] 1`] = `
-Object {
-  "meta": Object {
-    "sent_email_verification": Array [
-      "sender_email",
-    ],
-  },
-  "newsletters": Array [
-    Object {
-      "body_font_category": "sans_serif",
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Updated newsletter name",
-      "sender_email": null,
-      "sender_name": null,
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "default-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "sans_serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-  ],
-}
-`;
-
-exports[`Newsletters API Can edit newsletters with updated sender_email 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "671",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Newsletters API Can include members counts when browsing newsletters 1: [body] 1`] = `
+exports[`Newsletters API Can include members & posts counts when browsing newsletters 1: [body] 1`] = `
 Object {
   "meta": Object {
     "pagination": Object {
@@ -742,7 +326,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 5,
+      "total": 4,
     },
   },
   "newsletters": Array [
@@ -750,6 +334,7 @@ Object {
       "body_font_category": "sans_serif",
       "count": Object {
         "members": 0,
+        "posts": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
@@ -777,63 +362,8 @@ Object {
     Object {
       "body_font_category": "serif",
       "count": Object {
-        "members": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "My test newsletter",
-      "sender_email": null,
-      "sender_name": "Test",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "my-test-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "count": Object {
-        "members": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "My test newsletter with custom sender_email",
-      "sender_email": null,
-      "sender_name": "Test",
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_name": true,
-      "show_header_title": true,
-      "slug": "my-test-newsletter-with-custom-sender_email",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "serif",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-    Object {
-      "body_font_category": "serif",
-      "count": Object {
-        "members": 0,
+        "members": 4,
+        "posts": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
@@ -861,7 +391,8 @@ Object {
     Object {
       "body_font_category": "serif",
       "count": Object {
-        "members": 0,
+        "members": 3,
+        "posts": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
@@ -886,36 +417,18 @@ Object {
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "visibility": "members",
     },
-  ],
-}
-`;
-
-exports[`Newsletters API Can include members counts when browsing newsletters 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3245",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Newsletters API Can include members counts when reading a newsletter 1: [body] 1`] = `
-Object {
-  "newsletters": Array [
     Object {
       "body_font_category": "serif",
       "count": Object {
-        "members": 0,
+        "members": 2,
+        "posts": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "footer_content": null,
       "header_image": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
+      "name": "Old newsletter",
       "sender_email": "jamie@example.com",
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
@@ -924,10 +437,10 @@ Object {
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
-      "slug": "daily-newsletter",
-      "sort_order": 1,
-      "status": "active",
-      "subscribe_on_signup": false,
+      "slug": "old-newsletter",
+      "sort_order": 2,
+      "status": "inactive",
+      "subscribe_on_signup": true,
       "title_alignment": "center",
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -937,11 +450,11 @@ Object {
 }
 `;
 
-exports[`Newsletters API Can include members counts when reading a newsletter 2: [headers] 1`] = `
+exports[`Newsletters API Can include members & posts counts when browsing newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "641",
+  "content-length": "2634",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -949,12 +462,13 @@ Object {
 }
 `;
 
-exports[`Newsletters API Can include posts counts when reading a newsletter 1: [body] 1`] = `
+exports[`Newsletters API Can include members & posts counts when reading a newsletter 1: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
       "body_font_category": "serif",
       "count": Object {
+        "members": 4,
         "posts": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -984,11 +498,11 @@ Object {
 }
 `;
 
-exports[`Newsletters API Can include posts counts when reading a newsletter 2: [headers] 1`] = `
+exports[`Newsletters API Can include members & posts counts when reading a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "639",
+  "content-length": "651",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1044,7 +558,7 @@ exports[`Newsletters API Can verify property updates 1: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
-      "body_font_category": "sans_serif",
+      "body_font_category": "serif",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "footer_content": null,
@@ -1052,49 +566,20 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Updated newsletter name",
       "sender_email": "verify@example.com",
-      "sender_name": null,
+      "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
-      "slug": "default-newsletter",
-      "sort_order": 0,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
       "status": "active",
-      "subscribe_on_signup": true,
+      "subscribe_on_signup": false,
       "title_alignment": "center",
-      "title_font_category": "sans_serif",
+      "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "visibility": "members",
-    },
-  ],
-}
-`;
-
-exports[`Newsletters API Can verify restricted property updates 1: [body] 1`] = `
-Object {
-  "newsletters": Array [
-    Object {
-      "body_font_category": "sans_serif",
-      "description": null,
-      "footer_content": null,
-      "header_image": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Updated newsletter name",
-      "sender_email": "verify@example.com",
-      "sender_name": null,
-      "sender_reply_to": "newsletter",
-      "show_badge": true,
-      "show_feature_image": true,
-      "show_header_icon": true,
-      "show_header_title": true,
-      "slug": "default-newsletter",
-      "sort_order": 0,
-      "status": "active",
-      "subscribe_on_signup": true,
-      "title_alignment": "center",
-      "title_font_category": "sans_serif",
       "visibility": "members",
     },
   ],
