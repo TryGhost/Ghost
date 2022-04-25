@@ -478,12 +478,11 @@ describe('Authentication API', function () {
             mockManager.restore();
         });
 
-        it('reset all passwords returns 200', async function () {
+        it('reset all passwords returns 204', async function () {
             await agent.post('authentication/reset_all_passwords')
                 .header('Accept', 'application/json')
                 .body({})
-                // @TODO: change to a 204 in 5.0
-                .expectStatus(200)
+                .expectStatus(204)
                 .expectEmptyBody()
                 .matchHeaderSnapshot({
                     etag: anyEtag

@@ -47,10 +47,6 @@ module.exports = {
         };
     },
 
-    resetAllPasswords(data, apiConfig, frame) {
-        frame.response = data;
-    },
-
     acceptInvitation(data, apiConfig, frame) {
         debug('acceptInvitation');
 
