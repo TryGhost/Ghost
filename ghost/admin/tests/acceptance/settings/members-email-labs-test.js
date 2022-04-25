@@ -23,19 +23,19 @@ describe('Acceptance: Settings - Members email (multipleNewsletters)', function 
 
     it('without flag - redirects labs to original', async function () {
         disableLabsFlag(this.server, 'multipleNewsletters');
-        await visit('/settings/members-email-labs');
+        await visit('/settings/newsletters');
         expect(currentURL()).to.equal('/settings/members-email');
     });
 
     it('with flag - redirects original to labs', async function () {
         await visit('/settings/members-email');
-        expect(currentURL()).to.equal('/settings/members-email-labs');
+        expect(currentURL()).to.equal('/settings/newsletters');
     });
 
     it('can manage open rate tracking', async function () {
         this.server.db.settings.update({key: 'email_track_opens'}, {value: 'true'});
 
-        await visit('/settings/members-email-labs');
+        await visit('/settings/newsletters');
         expect(find('[data-test-checkbox="email-track-opens"]')).to.be.checked;
 
         await click('[data-test-label="email-track-opens"]');

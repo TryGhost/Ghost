@@ -62,7 +62,7 @@ export default function mockNewsletters(server) {
             };
             const token = btoa(JSON.stringify(tokenData));
             const baseUrl = window.location.href.replace(window.location.hash, '');
-            const verifyUrl = `${baseUrl}settings/members-email-labs/?verifyEmail=${token}`;
+            const verifyUrl = `${baseUrl}settings/newsletters/?verifyEmail=${token}`;
             // eslint-disable-next-line
             console.warn('Verification email sent. Mocked verification URL:', verifyUrl);
         }
