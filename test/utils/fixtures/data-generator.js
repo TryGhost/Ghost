@@ -410,7 +410,7 @@ DataGenerator.Content = {
             sender_name: 'Jamie',
             sender_email: 'jamie@example.com',
             sender_reply_to: 'newsletter',
-            status: 'inactive',
+            status: 'archived',
             subscribe_on_signup: true,
             title_font_category: 'serif',
             body_font_category: 'serif',
@@ -1281,7 +1281,7 @@ DataGenerator.forKnex = (function () {
             member_id: DataGenerator.Content.members[4].id,
             newsletter_id: DataGenerator.Content.newsletters[1].id
         },
-        // Member index 5 (vip@test.com), subscribed to an active and inactive newsletter
+        // Member index 5 (vip@test.com), subscribed to an active and archived newsletter
         {
             id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[5].id,
@@ -1292,7 +1292,7 @@ DataGenerator.forKnex = (function () {
             member_id: DataGenerator.Content.members[5].id,
             newsletter_id: DataGenerator.Content.newsletters[2].id
         },
-        // Member index 6 (vip-paid@test.com), subscribed to an inactive newsletter
+        // Member index 6 (vip-paid@test.com), subscribed to an archived newsletter
         {
             id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[6].id,
