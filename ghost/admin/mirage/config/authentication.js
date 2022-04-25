@@ -9,7 +9,7 @@ export default function mockAuthentication(server) {
         return new Response(201);
     });
 
-    server.post('/authentication/passwordreset', function (schema, request) {
+    server.post('/authentication/password_reset', function (schema, request) {
         let {passwordreset} = JSON.parse(request.requestBody);
         let email = passwordreset[0].email;
 
