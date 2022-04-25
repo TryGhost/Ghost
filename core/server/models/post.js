@@ -887,9 +887,6 @@ Post = ghostBookshelf.Model.extend({
         // CASE: never expose the revisions
         delete attrs.mobiledoc_revisions;
 
-        // CASE: hide the newsletter_id for now
-        delete attrs.newsletter_id;
-
         // If the current column settings allow it...
         if (!options.columns || (options.columns && options.columns.indexOf('primary_tag') > -1)) {
             // ... attach a computed property of primary_tag which is the first tag if it is public, else null

@@ -57,6 +57,8 @@ module.exports = async (model, frame, options = {}) => {
         }
         date.forPost(jsonModel);
         gating.forPost(jsonModel, frame);
+
+        delete jsonModel.newsletter_id;
     }
 
     // Transforms post/page metadata to flat structure
