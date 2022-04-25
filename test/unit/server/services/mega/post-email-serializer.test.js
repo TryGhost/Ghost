@@ -1,6 +1,9 @@
 const should = require('should');
+const sinon = require('sinon');
+const settingsCache = require('../../../../../core/shared/settings-cache');
+const models = require('../../../../../core/server/models');
 
-const {parseReplacements, renderEmailForSegment} = require('../../../../../core/server/services/mega/post-email-serializer');
+const {parseReplacements, renderEmailForSegment, _getTemplateSettings} = require('../../../../../core/server/services/mega/post-email-serializer');
 
 describe('Post Email Serializer', function () {
     it('creates replacement pattern for valid format and value', function () {
@@ -80,5 +83,88 @@ describe('Post Email Serializer', function () {
             output.html.should.equal('hello');
             output.plaintext.should.equal('hello');
         });
+    });
+
+    describe.only('getTemplateSettings', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('uses the gloal settings when no newsletter_id is defined', async function () {
+            sinon.stub(settingsCache, 'get').callsFake(function (key) {
+                return {
+                    icon: 'icon',
+                    accent_color: '#990000',
+                    newsletter_header_image: 'image',
+                    newsletter_show_header_icon: true,
+                    newsletter_show_header_title: true,
+                    newsletter_show_feature_image: true,
+                    newsletter_title_font_category: 'sans-serif',
+                    newsletter_title_alignment: 'center',
+                    newsletter_body_font_category: 'serif',
+                    newsletter_show_badge: true,
+                    newsletter_footer_content: 'footer'
+                }[key];
+            });
+
+            const res = await _getTemplateSettings();
+            should(res).eql({
+                headerImage: 'image',
+                showHeaderIcon: 'icon',
+                showHeaderTitle: true,
+                showFeatureImage: true,
+                titleFontCategory: 'sans-serif',
+                titleAlignment: 'center',
+                bodyFontCategory: 'serif',
+                showBadge: true,
+                footerContent: 'footer',
+                accentColor: '#990000',
+                adjustedAccentColor: '#990000',
+                adjustedAccentContrastColor: '#FFFFFF'
+            });
+        });
+
+        // it('uses the newsletter settings when a newsletter_id is defined', async function () {
+        //     sinon.stub(settingsCache, 'get').callsFake(function (key) {
+        //         return {
+        //             icon: 'icon2',
+        //             accent_color: '#000099'
+        //         }[key];
+        //     });
+        //     sinon.stub(models.Newsletter, 'findOne').returns(
+        //         Promise.resolve({
+        //             get: function (key) {
+        //                 return {
+        //                     header_image: 'image',
+        //                     show_header_icon: true,
+        //                     show_header_title: true,
+        //                     show_feature_image: true,
+        //                     title_font_category: 'sans-serif',
+        //                     title_alignment: 'center',
+        //                     body_font_category: 'serif',
+        //                     show_badge: true,
+        //                     footer_content: 'footer',
+        //                     show_header_name: true
+        //                 }[key];
+        //             }
+        //         })
+        //     );
+        //     const res = await _getTemplateSettings('123');
+        //     should(res).eql({
+        //         headerImage: 'image',
+        //         showHeaderIcon: 'icon2',
+        //         showHeaderTitle: true,
+        //         showFeatureImage: true,
+        //         titleFontCategory: 'sans-serif',
+        //         titleAlignment: 'center',
+        //         bodyFontCategory: 'serif',
+        //         showBadge: true,
+        //         footerContent: 'footer',
+        //         accentColor: '#990000',
+        //         adjustedAccentColor: '#990000',
+        //         adjustedAccentContrastColor: '#FFFFFF',
+        //         showHeaderName: true
+        //     });
+        // });
     });
 });

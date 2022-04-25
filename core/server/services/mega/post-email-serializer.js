@@ -194,7 +194,7 @@ const getTemplateSettings = async (newsletterId = null) => {
         const newsletter = await models.Newsletter.findOne({id: newsletterId, status: 'active'}, {require: false});
         if (newsletter) {
             templateSettings.headerImage = newsletter.get('header_image');
-            templateSettings.showHeaderIcon = newsletter.get('show_header_icon');
+            templateSettings.showHeaderIcon = newsletter.get('show_header_icon') && settingsCache.get('icon');
             templateSettings.showHeaderTitle = newsletter.get('show_header_title');
             templateSettings.showFeatureImage = newsletter.get('show_feature_image');
             templateSettings.titleFontCategory = newsletter.get('title_font_category');
@@ -356,5 +356,7 @@ module.exports = {
     serialize,
     createUnsubscribeUrl,
     renderEmailForSegment,
-    parseReplacements
+    parseReplacements,
+    // Export for tests
+    _getTemplateSettings: getTemplateSettings
 };
