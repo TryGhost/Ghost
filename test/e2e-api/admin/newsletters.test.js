@@ -143,7 +143,7 @@ describe('Newsletters API', function () {
 
     it('Can add a newsletter - and subscribe existing members', async function () {
         const newsletter = {
-            name: 'My test newsletter with existing members subscribed',
+            name: 'New newsletter with existing members subscribed',
             sender_name: 'Test',
             sender_email: null,
             sender_reply_to: 'newsletter',
@@ -157,7 +157,7 @@ describe('Newsletters API', function () {
             sort_order: 0
         };
 
-        const {body} = await agent
+        await agent
             .post(`newsletters/?opt_in_existing=true`)
             .body({newsletters: [newsletter]})
             .expectStatus(201)
@@ -166,17 +166,10 @@ describe('Newsletters API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                location: anyString
+                location: anyLocationFor('newsletters')
             });
 
-        await agent.get(`newsletters/${body.newsletters[0].id}/?include=count.members`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
+        // @TODO: assert member relation side effect using models
     });
 
     it('Can edit newsletters', async function () {

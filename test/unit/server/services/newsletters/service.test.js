@@ -67,7 +67,7 @@ describe('NewslettersService', function () {
         beforeEach(function () {
             // Stub add as a function that returns a get
             addStub = sinon.stub(models.Newsletter, 'add').returns({get: getStub});
-            fetchMembersStub = sinon.stub(models.Member, 'fetchAllSubscribed').returns({});
+            fetchMembersStub = sinon.stub(models.Member, 'fetchAllSubscribed').returns([]);
             getNextAvailableSortOrderStub = sinon.stub(models.Newsletter, 'getNextAvailableSortOrder').returns(1);
         });
 
@@ -126,15 +126,19 @@ describe('NewslettersService', function () {
             sinon.assert.notCalled(fetchMembersStub);
         });
 
-        it('will subscribe all existing members when opt_in_existing is provided', async function () {
+        it('will try to find existing members when opt_in_existing is provided', async function () {
             const data = {name: 'hello world'};
-            const options = { opt_in_existing: true };
+            const options = {opt_in_existing: true};
 
             const result = await newsletterService.add(data, options);
 
-            console.log('result', result)
-            sinon.assert.calledOnceWithExactly(addStub, { name: 'hello world' }, options);
-            mockManager.assert.sentEmailCount(0)
+            assert.deepEqual(result.meta, {
+                opted_in_member_count: 0
+            });
+
+            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world'}, options);
+            mockManager.assert.sentEmailCount(0);
+            sinon.assert.calledOnce(fetchMembersStub);
         });
     });
 

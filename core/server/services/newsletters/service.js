@@ -113,7 +113,10 @@ class NewslettersService {
             debug(`Subscribing members to newsletter '${newsletter.get('name')}'`);
 
             // subscribe members that have an existing subscription to an active newsletter
-            const memberIds = await this.MemberModel.fetchAllSubscribed();
+            const memberIds = await this.MemberModel.fetchAllSubscribed(_.pick(options, 'transacting'));
+
+            newsletter.meta = newsletter.meta || {};
+            newsletter.meta.opted_in_member_count = memberIds.length;
 
             if (memberIds.length) {
                 debug(`Found ${memberIds.length} members to subscribe`);
@@ -212,9 +215,9 @@ class NewslettersService {
                 await this.sendEmailVerificationMagicLink({id: newsletter.get('id'), email, property});
             }
 
-            newsletter.meta = {
-                sent_email_verification: emailsToVerify.map(v => v.property)
-            };
+            newsletter.meta = newsletter.meta || {};
+
+            newsletter.meta.sent_email_verification = emailsToVerify.map(v => v.property);
         }
 
         return newsletter;
