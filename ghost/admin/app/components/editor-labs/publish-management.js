@@ -28,13 +28,16 @@ export class PublishOptions {
     get publishTypeOptions() {
         return [{
             value: 'publish+send',
+            label: 'Publish and email',
             display: 'published and sent',
             disabled: this.emailDisabled
         }, {
             value: 'publish',
+            label: 'Publish only',
             display: 'published'
         }, {
             value: 'send',
+            label: 'Email only',
             display: 'sent',
             disabled: this.emailDisabled
         }];
@@ -61,6 +64,12 @@ export class PublishOptions {
         // TODO: check email limit
 
         return !mailgunConfigured;
+    }
+
+    @action
+    setPublishType(publishType) {
+        // TODO: validate publish type is allowed
+        this.publishType = publishType;
     }
 
     // publish date ------------------------------------------------------------
@@ -104,7 +113,7 @@ export class PublishOptions {
 
         // TODO: set up initial state / defaults
 
-        if (this.emailUnavailable) {
+        if (this.emailUnavailable || this.emailDisabled) {
             this.publishType = 'publish';
         }
     }
