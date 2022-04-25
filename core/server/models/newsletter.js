@@ -47,7 +47,12 @@ const Newsletter = ghostBookshelf.Model.extend({
         };
     },
 
-    getNextAvailableSortOrder: async function getNextAvailableSortOrder(options) {
+    getNextAvailableSortOrder: async function getNextAvailableSortOrder(unfilteredOptions = {}) {
+        const options = {};
+        if (unfilteredOptions.transacting) {
+            options.transacting = unfilteredOptions.transacting;
+        }
+
         const lastNewsletter = await this.findPage({
             filter: 'status:active',
             order: 'sort_order DESC', // there's no NQL syntax available here
