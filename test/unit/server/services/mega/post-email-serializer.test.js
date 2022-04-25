@@ -86,6 +86,10 @@ describe('Post Email Serializer', function () {
     });
 
     describe.only('getTemplateSettings', function () {
+        before(function () {
+            models.init();
+        });
+
         afterEach(function () {
             sinon.restore();
         });
@@ -124,47 +128,47 @@ describe('Post Email Serializer', function () {
             });
         });
 
-        // it('uses the newsletter settings when a newsletter_id is defined', async function () {
-        //     sinon.stub(settingsCache, 'get').callsFake(function (key) {
-        //         return {
-        //             icon: 'icon2',
-        //             accent_color: '#000099'
-        //         }[key];
-        //     });
-        //     sinon.stub(models.Newsletter, 'findOne').returns(
-        //         Promise.resolve({
-        //             get: function (key) {
-        //                 return {
-        //                     header_image: 'image',
-        //                     show_header_icon: true,
-        //                     show_header_title: true,
-        //                     show_feature_image: true,
-        //                     title_font_category: 'sans-serif',
-        //                     title_alignment: 'center',
-        //                     body_font_category: 'serif',
-        //                     show_badge: true,
-        //                     footer_content: 'footer',
-        //                     show_header_name: true
-        //                 }[key];
-        //             }
-        //         })
-        //     );
-        //     const res = await _getTemplateSettings('123');
-        //     should(res).eql({
-        //         headerImage: 'image',
-        //         showHeaderIcon: 'icon2',
-        //         showHeaderTitle: true,
-        //         showFeatureImage: true,
-        //         titleFontCategory: 'sans-serif',
-        //         titleAlignment: 'center',
-        //         bodyFontCategory: 'serif',
-        //         showBadge: true,
-        //         footerContent: 'footer',
-        //         accentColor: '#990000',
-        //         adjustedAccentColor: '#990000',
-        //         adjustedAccentContrastColor: '#FFFFFF',
-        //         showHeaderName: true
-        //     });
-        // });
+        it('uses the newsletter settings when a newsletter_id is defined', async function () {
+            sinon.stub(settingsCache, 'get').callsFake(function (key) {
+                return {
+                    icon: 'icon2',
+                    accent_color: '#000099'
+                }[key];
+            });
+            sinon.stub(models.Newsletter, 'findOne').returns(
+                Promise.resolve({
+                    get: function (key) {
+                        return {
+                            header_image: 'image',
+                            show_header_icon: true,
+                            show_header_title: true,
+                            show_feature_image: true,
+                            title_font_category: 'sans-serif',
+                            title_alignment: 'center',
+                            body_font_category: 'serif',
+                            show_badge: true,
+                            footer_content: 'footer',
+                            show_header_name: true
+                        }[key];
+                    }
+                })
+            );
+            const res = await _getTemplateSettings('123');
+            should(res).eql({
+                headerImage: 'image',
+                showHeaderIcon: 'icon2',
+                showHeaderTitle: true,
+                showFeatureImage: true,
+                titleFontCategory: 'sans-serif',
+                titleAlignment: 'center',
+                bodyFontCategory: 'serif',
+                showBadge: true,
+                footerContent: 'footer',
+                accentColor: '#000099',
+                adjustedAccentColor: '#000099',
+                adjustedAccentContrastColor: '#FFFFFF',
+                showHeaderName: true
+            });
+        });
     });
 });
