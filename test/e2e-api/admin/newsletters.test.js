@@ -1,6 +1,15 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyString, anyISODateTime, anyLocationFor} = matchers;
-const testUtils = require('../../utils');
+const {anyEtag, anyObjectId, anyISODateTime, anyLocationFor} = matchers;
+
+const assert = require('assert');
+
+const models = require('../../../core/server/models');
+
+const assertMemberRelationCount = async (newsletterId, expectedCount) => {
+    const newsletter = await models.Newsletter.findOne({id: newsletterId}, {withRelated: 'members'});
+
+    assert.equal(newsletter.related('members').length, expectedCount);
+};
 
 const newsletterSnapshot = {
     id: anyObjectId,
@@ -40,7 +49,7 @@ describe('Newsletters API', function () {
 
     it('Can read a newsletter', async function () {
         await agent
-            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/`)
+            .get(`newsletters/${fixtureManager.get('newsletters', 0).id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
                 newsletters: [newsletterSnapshot]
@@ -65,7 +74,7 @@ describe('Newsletters API', function () {
 
     it('Can include members & posts counts when reading a newsletter', async function () {
         await agent
-            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/?include=count.members,count.posts`)
+            .get(`newsletters/${fixtureManager.get('newsletters', 0).id}/?include=count.members,count.posts`)
             .expectStatus(200)
             .matchBodySnapshot({
                 newsletters: new Array(1).fill(newsletterSnapshot)
@@ -157,7 +166,7 @@ describe('Newsletters API', function () {
             sort_order: 0
         };
 
-        await agent
+        const {body} = await agent
             .post(`newsletters/?opt_in_existing=true`)
             .body({newsletters: [newsletter]})
             .expectStatus(201)
@@ -169,7 +178,8 @@ describe('Newsletters API', function () {
                 location: anyLocationFor('newsletters')
             });
 
-        // @TODO: assert member relation side effect using models
+        // Assert that the newsletter has 6 related members in the DB
+        await assertMemberRelationCount(body.newsletters[0].id, 6);
     });
 
     it('Can edit newsletters', async function () {
