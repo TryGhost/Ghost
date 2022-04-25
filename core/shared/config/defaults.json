@@ -128,7 +128,7 @@
         "emailAnalytics": true
     },
     "portal": {
-        "url": "https://unpkg.com/@tryghost/portal@~1.21.0/umd/portal.min.js",
+        "url": "https://unpkg.com/@tryghost/portal@~1.22.0/umd/portal.min.js",
         "version": "1.20"
     },
     "tenor": {
