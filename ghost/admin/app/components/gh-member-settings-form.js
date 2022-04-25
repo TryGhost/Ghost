@@ -49,6 +49,17 @@ export default class extends Component {
         return hasAnActivePaidProduct;
     }
 
+    get hasSingleNewsletter() {
+        if (!this.feature.get('multipleNewsletters')) {
+            return true;
+        }
+        return this.newslettersList?.length === 1;
+    }
+
+    get hasMultipleNewsletters() {
+        return !!(this.feature.get('multipleNewsletters') && this.newslettersList?.length > 1);
+    }
+
     get isCreatingComplimentary() {
         return this.args.isSaveRunning;
     }
@@ -106,6 +117,16 @@ export default class extends Component {
 
     get isStripeConnected() {
         return this.settings.get('stripeConnectAccountId');
+    }
+
+    @action
+    updateNewsletterPreference(event) {
+        if (!event.target.checked) {
+            this.member.set('newsletters', []);
+        } else if (this.newslettersList.firstObject) {
+            const newsletter = this.newslettersList.firstObject;
+            this.member.set('newsletters', [newsletter]);
+        }
     }
 
     @action
