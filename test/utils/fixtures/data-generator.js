@@ -1414,7 +1414,9 @@ DataGenerator.forKnex = (function () {
 
     const newsletters = [
         createNewsletter(DataGenerator.Content.newsletters[0]),
-        createNewsletter(DataGenerator.Content.newsletters[1])
+        createNewsletter(DataGenerator.Content.newsletters[1]),
+        createNewsletter(DataGenerator.Content.newsletters[2])
+
     ];
 
     const labels = [
