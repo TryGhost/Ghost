@@ -17,7 +17,7 @@ describe('Email Preview API', function () {
 
     describe('Read', function () {
         it('can\'t retrieve for non existent post', async function () {
-            const res = await request.get(localUtils.API.getApiQuery(`posts/${ObjectId().toHexString()}/`))
+            const res = await request.get(localUtils.API.getApiQuery(`email_previews/posts/${ObjectId().toHexString()}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
