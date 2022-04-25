@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:input:members');
+const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
+const labsService = require('../../../../../../shared/labs');
 
 function defaultRelations(frame) {
     if (frame.options.withRelated) {
@@ -17,6 +19,22 @@ module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
         defaultRelations(frame);
+
+        if (labsService.isSet('multipleNewsletters')) {
+            frame.options.mongoTransformer = mapNQLKeyValues({
+                key: {
+                    from: 'subscribed',
+                    to: 'newsletters.status'
+                },
+                values: [{
+                    from: true,
+                    to: 'active'
+                }, {
+                    from: false,
+                    to: {$ne: 'active'}
+                }]
+            });
+        }
     },
 
     read() {

@@ -410,7 +410,7 @@ DataGenerator.Content = {
             sender_name: 'Jamie',
             sender_email: 'jamie@example.com',
             sender_reply_to: 'newsletter',
-            status: 'inactive',
+            status: 'archived',
             subscribe_on_signup: true,
             title_font_category: 'serif',
             body_font_category: 'serif',
