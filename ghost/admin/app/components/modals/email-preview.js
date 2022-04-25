@@ -81,7 +81,7 @@ export default class EmailPreviewModal extends Component {
             subject = this.args.data.email.subject;
         // data is a post? try fetching email preview
         } else {
-            let url = this.ghostPaths.url.api('/email_preview/posts', this.args.data.id);
+            let url = this.ghostPaths.url.api('/email_previews/posts', this.args.data.id);
             let response = await this.ajax.request(url);
             let [emailPreview] = response.email_previews;
             html = emailPreview.html;
