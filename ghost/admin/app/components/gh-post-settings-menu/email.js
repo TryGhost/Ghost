@@ -87,7 +87,7 @@ export default class Email extends Component {
                 return false;
             }
             this.set('sendTestEmailError', '');
-            const url = this.ghostPaths.url.api('/email_preview/posts', resourceId);
+            const url = this.ghostPaths.url.api('/email_previews/posts', resourceId);
             const data = {emails: [testEmail]};
             const options = {
                 data,
