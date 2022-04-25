@@ -1,4 +1,5 @@
 const ghostBookshelf = require('./base');
+const ObjectID = require('bson-objectid');
 
 const Newsletter = ghostBookshelf.Model.extend({
     tableName: 'newsletters',
@@ -19,6 +20,19 @@ const Newsletter = ghostBookshelf.Model.extend({
         show_header_name: true
     },
 
+    members() {
+        return this.belongsToMany('Member', 'members_newsletters', 'newsletter_id', 'member_id')
+            .query((qb) => {
+                // avoids bookshelf adding a `DISTINCT` to the query
+                // we know the result set will already be unique and DISTINCT hurts query performance
+                qb.columns('members.*');
+            });
+    },
+
+    posts() {
+        return this.hasMany('Post');
+    },
+
     async onSaving(model, _attr, options) {
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
 
@@ -37,6 +51,25 @@ const Newsletter = ghostBookshelf.Model.extend({
                 model.set({slug: cleanSlug});
             }
         }
+    },
+
+    subscribeMembersById(memberIds, unfilteredOptions = {}) {
+        let pivotRows = [];
+        for (const memberId of memberIds) {
+            pivotRows.push({
+                id: ObjectID().toHexString(),
+                member_id: memberId.id,
+                newsletter_id: this.id
+            });
+        }
+
+        const query = ghostBookshelf.knex.batchInsert('members_newsletters', pivotRows);
+
+        if (unfilteredOptions.transacting) {
+            query.transacting(unfilteredOptions.transacting);
+        }
+
+        return query;
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {

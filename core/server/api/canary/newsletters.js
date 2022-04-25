@@ -70,7 +70,8 @@ module.exports = {
     add: {
         statusCode: 201,
         options: [
-            'include'
+            'include',
+            'opt_in_existing'
         ],
         validation: {
             options: {
