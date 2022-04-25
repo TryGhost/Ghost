@@ -8,6 +8,7 @@ const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
 module.exports = new NewslettersService({
     NewsletterModel: models.Newsletter,
+    MemberModel: models.Member,
     mail,
     singleUseTokenProvider: new SingleUseTokenProvider(models.SingleUseToken, MAGIC_LINK_TOKEN_VALIDITY),
     urlUtils
