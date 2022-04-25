@@ -8,7 +8,6 @@ const expectedProperties = {
     tags: ['tags', 'meta'],
     users: ['users', 'meta'],
     settings: ['settings', 'meta'],
-    subscribers: ['subscribers', 'meta'],
     roles: ['roles'],
     pagination: ['page', 'limit', 'pages', 'total', 'next', 'prev'],
     slugs: ['slugs'],
