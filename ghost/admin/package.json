@@ -125,7 +125,7 @@
     "glob": "8.0.1",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "grunt": "1.5.2",
-    "grunt-shell": "3.0.1",
+    "grunt-shell": "4.0.0",
     "keymaster": "https://github.com/madrobby/keymaster.git",
     "liquid-fire": "0.34.0",
     "liquid-wormhole": "2.1.5",
