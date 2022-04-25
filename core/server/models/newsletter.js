@@ -41,8 +41,29 @@ const Newsletter = ghostBookshelf.Model.extend({
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
         return {
-            sort_order: 'ASC'
+            sort_order: 'ASC',
+            created_at: 'ASC',
+            id: 'ASC'
         };
+    },
+
+    getNextAvailableSortOrder: async function getNextAvailableSortOrder(unfilteredOptions = {}) {
+        const options = {};
+        if (unfilteredOptions.transacting) {
+            options.transacting = unfilteredOptions.transacting;
+        }
+
+        const lastNewsletter = await this.findPage({
+            filter: 'status:active',
+            order: 'sort_order DESC', // there's no NQL syntax available here
+            limit: 1,
+            columns: ['sort_order']
+        }, options);
+
+        if (lastNewsletter.data.length > 0) {
+            return lastNewsletter.data[0].get('sort_order') + 1;
+        }
+        return 0;
     }
 });
 

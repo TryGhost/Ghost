@@ -62,26 +62,39 @@ describe('NewslettersService', function () {
     });
 
     describe('add', function () {
-        let addStub;
+        let addStub,getNextAvailableSortOrderStub;
         beforeEach(function () {
             // Stub add as a function that returns a get
             addStub = sinon.stub(models.Newsletter, 'add').returns({get: getStub});
+            getNextAvailableSortOrderStub = sinon.stub(models.Newsletter, 'getNextAvailableSortOrder').returns(1);
         });
 
         it('rejects if called with no data', async function () {
             assert.rejects(await newsletterService.add, {name: 'TypeError'});
             sinon.assert.notCalled(addStub);
+            sinon.assert.notCalled(getNextAvailableSortOrderStub);
         });
 
         it('will attempt to add empty object without verification', async function () {
             const result = await newsletterService.add({});
 
             assert.equal(result.meta, undefined); // meta property has not been added
-            sinon.assert.calledOnceWithExactly(addStub, {}, undefined);
+            sinon.assert.calledOnce(getNextAvailableSortOrderStub);
+            sinon.assert.calledOnceWithExactly(addStub, {sort_order: 1}, undefined);
+        });
+
+        it('will override sort_order', async function () {
+            const data = {name: 'hello world', sort_order: 0};
+            const options = {foo: 'bar'};
+
+            await newsletterService.add(data, options);
+
+            sinon.assert.calledOnce(getNextAvailableSortOrderStub);
+            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
         });
 
         it('will pass object and options through to model when there are no fields needing verification', async function () {
-            const data = {name: 'hello world'};
+            const data = {name: 'hello world', sort_order: 1};
             const options = {foo: 'bar'};
 
             const result = await newsletterService.add(data, options);
@@ -101,7 +114,7 @@ describe('NewslettersService', function () {
                     'sender_email'
                 ]
             });
-            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world'}, options);
+            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
             mockManager.assert.sentEmail({to: 'test@example.com'});
             sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: undefined, property: 'sender_email', value: 'test@example.com'});
         });
