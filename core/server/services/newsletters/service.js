@@ -2,8 +2,6 @@ const _ = require('lodash');
 const MagicLink = require('@tryghost/magic-link');
 const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
-const {knex} = require('../../data/db');
-const ObjectID = require('bson-objectid');
 const debug = require('@tryghost/debug')('services:newsletters');
 
 class NewslettersService {
@@ -121,17 +119,7 @@ class NewslettersService {
             if (memberIds.length) {
                 debug(`Found ${memberIds.length} members to subscribe`);
 
-                let pivotRows = [];
-                for (const memberId of memberIds) {
-                    pivotRows.push({
-                        id: ObjectID().toHexString(),
-                        member_id: memberId.id,
-                        newsletter_id: newsletter.id
-                    });
-                }
-
-                await knex.batchInsert('members_newsletters', pivotRows)
-                    .transacting(options.transacting);
+                await newsletter.subscribeMembersById(memberIds, options);
             }
         }
 
@@ -216,7 +204,6 @@ class NewslettersService {
             }
 
             newsletter.meta = newsletter.meta || {};
-
             newsletter.meta.sent_email_verification = emailsToVerify.map(v => v.property);
         }
 

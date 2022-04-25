@@ -1,4 +1,5 @@
 const ghostBookshelf = require('./base');
+const ObjectID = require('bson-objectid');
 
 const Newsletter = ghostBookshelf.Model.extend({
     tableName: 'newsletters',
@@ -50,6 +51,25 @@ const Newsletter = ghostBookshelf.Model.extend({
                 model.set({slug: cleanSlug});
             }
         }
+    },
+
+    subscribeMembersById(memberIds, unfilteredOptions = {}) {
+        let pivotRows = [];
+        for (const memberId of memberIds) {
+            pivotRows.push({
+                id: ObjectID().toHexString(),
+                member_id: memberId.id,
+                newsletter_id: this.id
+            });
+        }
+
+        const query = ghostBookshelf.knex.batchInsert('members_newsletters', pivotRows);
+
+        if (unfilteredOptions.transacting) {
+            query.transacting(unfilteredOptions.transacting);
+        }
+
+        return query;
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {

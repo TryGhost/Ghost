@@ -63,10 +63,13 @@ describe('NewslettersService', function () {
     });
 
     describe('add', function () {
-        let addStub, fetchMembersStub, getNextAvailableSortOrderStub;
+        let addStub, fetchMembersStub, fakeMemberIds, subscribeStub, getNextAvailableSortOrderStub;
         beforeEach(function () {
-            // Stub add as a function that returns a get
-            addStub = sinon.stub(models.Newsletter, 'add').returns({get: getStub});
+            fakeMemberIds = new Array(3).fill({id: 1});
+            subscribeStub = sinon.stub().returns(fakeMemberIds);
+
+            // Stub add as a function that returns get & subscribeMembersById methods
+            addStub = sinon.stub(models.Newsletter, 'add').returns({get: getStub, subscribeMembersById: subscribeStub});
             fetchMembersStub = sinon.stub(models.Member, 'fetchAllSubscribed').returns([]);
             getNextAvailableSortOrderStub = sinon.stub(models.Newsletter, 'getNextAvailableSortOrder').returns(1);
         });
@@ -139,6 +142,24 @@ describe('NewslettersService', function () {
             sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world'}, options);
             mockManager.assert.sentEmailCount(0);
             sinon.assert.calledOnce(fetchMembersStub);
+        });
+
+        it('will try to subscribe existing members when opt_in_existing provided + members exist', async function () {
+            const data = {name: 'hello world'};
+            const options = {opt_in_existing: true, transacting: 'foo'};
+
+            fetchMembersStub.returns(fakeMemberIds);
+
+            const result = await newsletterService.add(data, options);
+
+            assert.deepEqual(result.meta, {
+                opted_in_member_count: 3
+            });
+
+            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world'}, options);
+            mockManager.assert.sentEmailCount(0);
+            sinon.assert.calledOnceWithExactly(fetchMembersStub, {transacting: 'foo'});
+            sinon.assert.calledOnceWithExactly(subscribeStub, fakeMemberIds, options);
         });
     });
 
