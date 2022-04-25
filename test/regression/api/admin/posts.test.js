@@ -17,6 +17,11 @@ describe('Posts API (canary)', function () {
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
+
+        // Archive the default newsletter fixture
+        const defaultNewsletter = await models.Newsletter.findOne({status: 'active'});
+        await models.Newsletter.edit({status: 'archived'}, {id: defaultNewsletter.id});
+
         await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters', 'members:newsletters');
     });
 
