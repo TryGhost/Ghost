@@ -77,7 +77,7 @@ module.exports = {
         this.browse(...arguments);
     },
 
-    add(apiConfig, frame) {
+    async add(apiConfig, frame) {
         debug('add');
         if (frame.data.members[0].labels) {
             frame.data.members[0].labels.forEach((label, index) => {
@@ -88,13 +88,13 @@ module.exports = {
                 }
             });
         }
-        mapSubscribedFlagToNewsletters(frame);
+        await mapSubscribedFlagToNewsletters(frame);
         defaultRelations(frame);
     },
 
-    edit(apiConfig, frame) {
+    async edit(apiConfig, frame) {
         debug('edit');
-        this.add(apiConfig, frame);
+        await this.add(apiConfig, frame);
     },
 
     async importCSV(apiConfig, frame) {
