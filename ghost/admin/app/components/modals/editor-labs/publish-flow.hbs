@@ -15,7 +15,36 @@
                 {{#if @data.publishOptions.emailUnavailable}}
                     published
                 {{else}}
-                    <span class="gh-publish-setting">{{@data.publishOptions.selectedPublishTypeOption.display}}</span>
+                <GhBasicDropdown
+                    class="gh-publish-setting"
+                    @verticalPosition="below"
+                    @horizintalPosition="right"
+                    @renderInPlace={{true}}
+                    as |dd|
+                >
+                    <dd.Trigger>
+                        <span>{{@data.publishOptions.selectedPublishTypeOption.display}}</span>
+                    </dd.Trigger>
+                    <dd.Content>
+                        <fieldset>
+                            {{#each @data.publishOptions.publishTypeOptions as |option|}}
+                                <div class="radio-button">
+                                    <input
+                                        type="radio"
+                                        name="publish-type"
+                                        id="publish-type-{{option.value}}"
+                                        value={{option.value}}
+                                        checked={{eq option.value @data.publishOptions.publishType}}
+                                        disabled={{option.disabled}}
+                                        {{on "change" this.publishTypeChanged}}
+                                    >
+                                    <label for="publish-type-{{option.value}}">{{option.label}}</label>
+                                </div>
+                            {{/each}}
+                        </fieldset>
+                    </dd.Content>
+                </GhBasicDropdown>
+
                 {{/if}}
 
                 {{#if (eq @data.publishOptions.publishType "publish")}}
