@@ -46,7 +46,7 @@
     "@tryghost/members-csv": "1.2.10",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
     "@tryghost/nql": "0.9.2",
-    "@tryghost/nql-lang": "0.3.1",
+    "@tryghost/nql-lang": "0.3.2",
     "@tryghost/string": "0.1.23",
     "@tryghost/timezone-data": "0.2.63",
     "autoprefixer": "9.8.6",
