@@ -79,7 +79,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
             }
             this.sendPreviewEmailError = '';
 
-            const url = this.ghostPaths.url.api('/email_preview/posts', resourceId);
+            const url = this.ghostPaths.url.api('/email_previews/posts', resourceId);
             const data = {emails: [testEmail], memberSegment: this.memberSegment};
             const options = {
                 data,
@@ -137,7 +137,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
             subject = post.email.subject;
         // model is a post, fetch email preview
         } else {
-            let url = new URL(this.ghostPaths.url.api('/email_preview/posts', post.id), window.location.href);
+            let url = new URL(this.ghostPaths.url.api('/email_previews/posts', post.id), window.location.href);
             url.searchParams.set('memberSegment', this.memberSegment);
 
             let response = await this.ajax.request(url.href);
