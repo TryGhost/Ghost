@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyString, anyISODateTime} = matchers;
+const {anyEtag, anyObjectId, anyString, anyISODateTime, anyLocationFor} = matchers;
 const testUtils = require('../../utils');
 
 const newsletterSnapshot = {
@@ -15,7 +15,7 @@ describe('Newsletters API', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('newsletters');
+        await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
     });
 
@@ -25,6 +25,54 @@ describe('Newsletters API', function () {
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    it('Can browse newsletters', async function () {
+        await agent.get('newsletters/')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: new Array(4).fill(newsletterSnapshot)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can read a newsletter', async function () {
+        await agent
+            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can include members & posts counts when browsing newsletters', async function () {
+        await agent
+            .get(`newsletters/?include=count.members,count.posts`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: new Array(4).fill(newsletterSnapshot)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can include members & posts counts when reading a newsletter', async function () {
+        await agent
+            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/?include=count.members,count.posts`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: new Array(1).fill(newsletterSnapshot)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 
     it('Can add a newsletter', async function () {
@@ -52,16 +100,7 @@ describe('Newsletters API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                location: anyString
-            });
-
-        await agent.get('newsletters/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: new Array(4).fill(newsletterSnapshot)
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
+                location: anyLocationFor('newsletters')
             });
     });
 
@@ -93,96 +132,17 @@ describe('Newsletters API', function () {
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                location: anyString
+                location: anyLocationFor('newsletters')
             });
 
         mockManager.assert.sentEmail({
             subject: 'Verify email address',
             to: 'test@example.com'
         });
-
-        await agent.get('newsletters/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: new Array(5).fill(newsletterSnapshot)
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Can browse newsletters', async function () {
-        await agent.get('newsletters/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: new Array(5).fill(newsletterSnapshot)
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Can read a newsletter', async function () {
-        await agent
-            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Can include members counts when browsing newsletters', async function () {
-        await agent
-            .get(`newsletters/?include=count.members`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: new Array(5).fill(newsletterSnapshot)
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Can include members counts when reading a newsletter', async function () {
-        await agent
-            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/?include=count.members`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: new Array(1).fill(newsletterSnapshot)
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Can include posts counts when reading a newsletter', async function () {
-        await agent
-            .get(`newsletters/${testUtils.DataGenerator.Content.newsletters[0].id}/?include=count.posts`)
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: new Array(1).fill(newsletterSnapshot)
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
     });
 
     it('Can edit newsletters', async function () {
-        const res = await agent.get('newsletters?limit=1')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-
-        const id = res.body.newsletters[0].id;
-
+        const id = fixtureManager.get('newsletters', 0).id;
         await agent.put(`newsletters/${id}`)
             .body({
                 newsletters: [{
@@ -198,17 +158,8 @@ describe('Newsletters API', function () {
             });
     });
 
-    it('Can edit newsletters with updated sender_email', async function () {
-        const res = await agent.get('newsletters?limit=1')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-
-        const id = res.body.newsletters[0].id;
+    it('Can edit a newsletters and update the sender_email when already set', async function () {
+        const id = fixtureManager.get('newsletters', 0).id;
 
         await agent.put(`newsletters/${id}`)
             .body({
@@ -237,10 +188,7 @@ describe('Newsletters API', function () {
     it('Can verify property updates', async function () {
         const cheerio = require('cheerio');
 
-        const res = await agent.get('newsletters?limit=1')
-            .expectStatus(200);
-
-        const id = res.body.newsletters[0].id;
+        const id = fixtureManager.get('newsletters', 0).id;
 
         await agent.put(`newsletters/${id}`)
             .body({
