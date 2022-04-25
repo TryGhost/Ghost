@@ -54,6 +54,10 @@ const Email = ghostBookshelf.Model.extend({
         return this.hasMany('EmailRecipient', 'email_id');
     },
 
+    newsletter() {
+        return this.belongsTo('Newsletter', 'newsletter_id');
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'email' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
