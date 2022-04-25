@@ -51,7 +51,7 @@ const session = {
 
             if (err.errorType === 'PasswordResetRequiredError') {
                 await api.authentication.generateResetToken({
-                    passwordreset: [{
+                    password_reset: [{
                         email: object.username
                     }]
                 }, frame.options.context);
