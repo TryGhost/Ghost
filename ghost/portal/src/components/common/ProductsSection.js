@@ -339,6 +339,7 @@ export const ProductsSectionStyles = ({site}) => {
             letter-spacing: 0.2px;
             font-weight: 500;
             background: #f0f0f0;
+            z-index: 900;
         }
 
         .gh-portal-product-card.only-free {
