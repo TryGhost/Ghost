@@ -42,7 +42,7 @@ export default Controller.extend(ValidationEngine, {
 
     resetPassword: task(function* () {
         let credentials = this.getProperties('newPassword', 'ne2Password', 'token');
-        let authUrl = this.get('ghostPaths.url').api('authentication', 'passwordreset');
+        let authUrl = this.get('ghostPaths.url').api('authentication', 'password_reset');
 
         this.set('flowErrors', '');
         this.hasValidated.addObjects(['newPassword', 'ne2Password']);
