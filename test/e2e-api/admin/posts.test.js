@@ -601,7 +601,10 @@ describe('Posts API', function () {
             id: id,
             status: 'draft'
         }, testUtils.context.internal);
-        should(model.get('newsletter_id')).eql(newsletterId);
+
+        // The newsletter id is back to null here, because no email was sent...
+        // This is expected behaviour
+        should(model.get('newsletter_id')).eql(null);
 
         const republished = {
             status: 'published',
@@ -620,7 +623,24 @@ describe('Posts API', function () {
             id: id,
             status: 'published'
         }, testUtils.context.internal);
-        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('newsletter_id')).eql(newsletterId2);
+
+        // Should not change if status remains published
+        await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
+            .set('Origin', config.get('url'))
+            .send({posts: [republished]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        model = await models.Post.findOne({
+            id: id,
+            status: 'published'
+        }, testUtils.context.internal);
+
+        // Test if the newsletter_id option was ignored
+        should(model.get('newsletter_id')).eql(newsletterId2);
     });
 
     it('Can destroy a post', async function () {

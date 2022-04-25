@@ -828,6 +828,10 @@ Post = ghostBookshelf.Model.extend({
         return this.hasOne('Email', 'post_id');
     },
 
+    newsletter: function newsletter() {
+        return this.belongsTo('Newsletter', 'newsletter_id');
+    },
+
     /**
      * @NOTE:
      * If you are requesting models with `columns`, you try to only receive some fields of the model/s.
