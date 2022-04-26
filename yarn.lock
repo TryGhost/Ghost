@@ -1715,10 +1715,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-transaction-events/-/bookshelf-transaction-events-0.1.13.tgz#01d35d843b5ddbf49ea6963584b1d00b2aea7ead"
   integrity sha512-d7f9QCIcbJtUxbzJooZyUiIirwBO5hxQd13VUi12zJ4kyV+fWpqq0xda6lbn9m0rv+BQ1vbBHOpDzcJ9LmfDDA==
 
-"@tryghost/bootstrap-socket@0.2.17":
-  version "0.2.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.17.tgz#fa26685446b35e6376a9da03d1b828b79f0522d8"
-  integrity sha512-vazuTsmeY2HMxMwwWSGYHIav2pCDNKHWOf/sEoGJDRFhrpgBXarMbqQ2WVyhQ4SjjzhGAfDkrTosQfgtmJNvIw==
+"@tryghost/bootstrap-socket@0.2.18":
+  version "0.2.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.18.tgz#3fe172a3b1c07faba5c54c70b426a3d278572cd6"
+  integrity sha512-ee+V/ktCBeI0zFS30lZMOxZDIb27OWq2MgAgACl6xy4V6ORZiFEwCKFMVHgDgMzL7hcrgS+D72iNRUxiQTSR4Q==
   dependencies:
     "@tryghost/logging" "^2.0.0"
 
@@ -1782,7 +1782,7 @@
     "@tryghost/root-utils" "^0.3.9"
     debug "^4.3.1"
 
-"@tryghost/debug@0.1.14", "@tryghost/debug@^0.1.10", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.14", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5", "@tryghost/debug@^0.1.8", "@tryghost/debug@^0.1.9":
+"@tryghost/debug@0.1.14":
   version "0.1.14"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.14.tgz#e7b748803acca9cf4f664824fb3ee542c5e65041"
   integrity sha512-GcLu9eubqSnCyUnSIlT4frBYqzFCNzlt6e/eW8eB36xlNcd0zmtIIQCpMLVKtadwx8pZG8J0cfjSpXeG9q3VYQ==
@@ -1790,7 +1790,7 @@
     "@tryghost/root-utils" "^0.3.12"
     debug "^4.3.1"
 
-"@tryghost/debug@^0.1.15":
+"@tryghost/debug@^0.1.10", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.14", "@tryghost/debug@^0.1.15", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5", "@tryghost/debug@^0.1.8", "@tryghost/debug@^0.1.9":
   version "0.1.15"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.15.tgz#6c157cf545459a69cb56f0d0a4045a842232eb37"
   integrity sha512-sUXs9isa2Zebu+8ls++WRgjvgO68XEoi0F4Oyo0xeHEBsxvIT48pw3Os395z+2u6ys1lkPyujH96TslQ4Y+0SA==
@@ -2290,7 +2290,7 @@
     got "9.6.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.12", "@tryghost/root-utils@^0.3.12", "@tryghost/root-utils@^0.3.8", "@tryghost/root-utils@^0.3.9":
+"@tryghost/root-utils@0.3.12":
   version "0.3.12"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.12.tgz#c0544b79a9b34e543dd94f09173f2f672fa7535c"
   integrity sha512-dmv2GRm0VV6cMHAi9awGZnBs1SmDHivdIJWz86TbxiVZoIFCWAwqlTNnz/RUJiBlLCfZlXsBnIeRkjeFC3m8OA==
@@ -2306,7 +2306,7 @@
     caller "^1.0.1"
     find-root "^1.1.0"
 
-"@tryghost/root-utils@^0.3.13":
+"@tryghost/root-utils@^0.3.12", "@tryghost/root-utils@^0.3.13", "@tryghost/root-utils@^0.3.8", "@tryghost/root-utils@^0.3.9":
   version "0.3.13"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.13.tgz#c6060bc0a57eb01920a2f478eb0b8380704b93b5"
   integrity sha512-e5eR8vXmMyHpdrphnK2Shkf9NUBcouduSgd736eJFXQ1Vhx/oVznZyUCDRM6y6UqeSBEBmW+5c+F31bTM0c++Q==
@@ -2366,14 +2366,14 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/tpl@0.1.14", "@tryghost/tpl@^0.1.14", "@tryghost/tpl@^0.1.2", "@tryghost/tpl@^0.1.3", "@tryghost/tpl@^0.1.4", "@tryghost/tpl@^0.1.5", "@tryghost/tpl@^0.1.7", "@tryghost/tpl@^0.1.8":
+"@tryghost/tpl@0.1.14":
   version "0.1.14"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.14.tgz#414641a06e3b6c1cc50e91db4b50ed355bd67a57"
   integrity sha512-3TKovOH4RZX2OhysqzduSlHB0LjLlXUpKRsIsyOD5TcxVRF7MLo0iVjFuWZh1e/ZLxJFfmS1Sk7OGC9izkNuLw==
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/tpl@^0.1.15":
+"@tryghost/tpl@^0.1.14", "@tryghost/tpl@^0.1.15", "@tryghost/tpl@^0.1.2", "@tryghost/tpl@^0.1.3", "@tryghost/tpl@^0.1.4", "@tryghost/tpl@^0.1.5", "@tryghost/tpl@^0.1.7", "@tryghost/tpl@^0.1.8":
   version "0.1.15"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.15.tgz#e8c077b84cb55114b16216eb18f07f7bfdec621a"
   integrity sha512-YMY9EYsYrj8AZnTWs1CNGWk8ek1GbCJMUlabm3ZoZLfAuAeJ8fIP6PMXNG+a27COiVA6zTiSQipLvONZZPRkjg==
