@@ -54,8 +54,12 @@ const getReplyToAddress = (fromAddress, replyAddressOption) => {
  * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
  */
 const getEmailData = async (postModel, options) => {
-    const newsletter = await postModel.related('newsletter').fetch();
-    const {subject, html, plaintext} = await postEmailSerializer.serialize(postModel, options);
+    let newsletter = await postModel.related('newsletter').fetch();
+    if (!newsletter) {
+        const newsletters = await models.Newsletter.findPage({filter: 'status:active', limit: 1});
+        newsletter = newsletters.data[0];
+    }
+    const {subject, html, plaintext} = await postEmailSerializer.serialize(postModel, newsletter, options);
 
     let senderName = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : '';
     if (newsletter.get('sender_name')) {

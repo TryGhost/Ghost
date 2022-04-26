@@ -222,7 +222,7 @@ const getTemplateSettings = async (newsletter) => {
     return templateSettings;
 };
 
-const serialize = async (postModel, options = {isBrowserPreview: false, apiVersion: 'v4'}) => {
+const serialize = async (postModel, newsletter, options = {isBrowserPreview: false, apiVersion: 'v4'}) => {
     const post = await serializePostModel(postModel, options.apiVersion);
 
     const timezone = settingsCache.get('timezone');
@@ -291,11 +291,11 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
         }
     }
 
-    const templateSettings = await getTemplateSettings(postModel.related('newsletter'));
+    const templateSettings = await getTemplateSettings(newsletter);
 
     const render = template;
 
-    let htmlTemplate = render({post, site: getSite(), templateSettings, newsletter: postModel.related('newsletter').toJSON()});
+    let htmlTemplate = render({post, site: getSite(), templateSettings, newsletter: newsletter.toJSON()});
 
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl(null);
