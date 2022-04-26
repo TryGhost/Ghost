@@ -1661,7 +1661,7 @@ describe('Post Model', function () {
         before(testUtils.teardownDb);
 
         after(async function () {
-            await testUtils.teardownDb()
+            await testUtils.teardownDb();
             await testUtils.setup('users:roles')();
         });
 
