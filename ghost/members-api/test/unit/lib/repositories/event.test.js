@@ -107,7 +107,7 @@ describe('EventRepository', function () {
                 type: 'unused'
             });
             fake.calledOnceWithExactly({
-                withRelated: ['member'],
+                withRelated: ['member', 'newsletter'],
                 filter: ''
             }).should.be.eql(true);
         });
@@ -117,7 +117,7 @@ describe('EventRepository', function () {
                 'data.created_at': 'data.created_at:123'
             });
             fake.calledOnceWithExactly({
-                withRelated: ['member'],
+                withRelated: ['member', 'newsletter'],
                 filter: 'created_at:123'
             }).should.be.eql(true);
         });
@@ -128,7 +128,7 @@ describe('EventRepository', function () {
                 'data.member_id': 'data.member_id:-[3,4,5]+data.member_id:-[1,2,3]'
             });
             fake.calledOnceWithExactly({
-                withRelated: ['member'],
+                withRelated: ['member', 'newsletter'],
                 filter: 'created_at:123+created_at:<99999+member_id:-[3,4,5]+member_id:-[1,2,3]'
             }).should.be.eql(true);
         });
