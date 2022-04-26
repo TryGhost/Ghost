@@ -17,7 +17,6 @@
 
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="description">
                 <label for="newsletter-description" class="modal-fullsettings-title">Description</label>
-                <p>Seen by members on your site</p>
                 <textarea
                     id="newsletter-description"
                     class="gh-input miw-100 form-text"
@@ -31,7 +30,6 @@
             <h3 class="gh-newsletters-setting-sectionheading">Email addresses</h3>
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderName">
                 <label for="newsletter-sender-name" class="modal-fullsettings-title">Sender name</label>
-                <p>The name members will see in their inbox</p>
                 <input
                     id="newsletter-sender-name"
                     type="text"
@@ -43,9 +41,11 @@
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="senderName" />
             </GhFormGroup>
 
-            <GhFormGroup @classNames="vertical"  @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderEmail">
-                <label for="newsletter-sender-email" class="modal-fullsettings-title">Newsletter email address</label>
-                <p>Defaults to <span class="green-d1 fw5">{{full-email-address "noreply"}}</span> if empty</p>
+            <GhFormGroup @classNames="vertical"  @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderEmail"> 
+                <span class="flex items-center justify-between">
+                    <label for="newsletter-sender-email" class="modal-fullsettings-title ml2">Newsletter email address</label>
+                    <span class="tooltip-top-left" data-tooltip="Defaults to {{full-email-address "noreply"}} if empty">{{svg-jar "info" class="fill-darkgrey w4 h4"}}</span>
+                </span>
                 <input
                     id="newsletter-sender-email"
                     type="text"
@@ -59,7 +59,6 @@
 
             <GhFormGroup @classNames="vertical" @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderReplyTo">
                 <label for="newsletter-reply-to" class="modal-fullsettings-title">Reply-to email</label>
-                <p>Where you receive responses to newsletters</p>
                 <Inputs::Select
                     id="newsletter-reply-to"
                     @value={{@newsletter.senderReplyTo}}

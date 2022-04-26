@@ -61,12 +61,12 @@
 
 .gh-portal-settings-sidebar {
     padding: 0;
-    width: 342px;
+    width: 380px;
 }
 
 .gh-portal-form-wrapper {
     overflow: hidden;
-    width: 342px;
+    width: 380px;
 }
 
 .gh-portal-settings-form {
@@ -247,6 +247,7 @@
     align-items: center;
     justify-content: flex-start;
     padding: 2px;
+    gap: 12px;
 }
 
 .gh-portal-setting-first {
