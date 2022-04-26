@@ -105,6 +105,7 @@ describe('Members API without Stripe', function () {
 
 describe('Members API', function () {
     let newsletters;
+    let clock;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -117,12 +118,15 @@ describe('Members API', function () {
     beforeEach(function () {
         mockManager.mockLabsEnabled('multipleProducts');
         mockManager.mockLabsEnabled('multipleNewsletters');
+        mockManager.mockLabsEnabled('membersActivityFeed');
         mockManager.mockStripe();
         mockManager.mockMail();
+        clock = sinon.useFakeTimers(Date.now());
     });
 
     afterEach(function () {
         mockManager.restore();
+        clock.restore();
     });
 
     // List Members
@@ -1216,6 +1220,8 @@ describe('Members API', function () {
                 location: anyLocationFor('members')
             });
         const newMember = body.members[0];
+        const before = new Date();
+        before.setMilliseconds(0);
 
         await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
@@ -1223,9 +1229,16 @@ describe('Members API', function () {
             asserts: [{
                 subscribed: true,
                 source: 'admin',
-                newsletter_id: newsletters[0].id
+                newsletter_id: newsletters[0].id,
+                created_at: before
             }]
         });
+
+        // Wait 5 second sto guarantee event ordering
+        clock.tick(5000);
+
+        const after = new Date();
+        after.setMilliseconds(0);
        
         await agent
             .put(`/members/${newMember.id}/`)
@@ -1245,18 +1258,56 @@ describe('Members API', function () {
                 {
                     subscribed: true,
                     source: 'admin',
-                    newsletter_id: newsletters[0].id
+                    newsletter_id: newsletters[0].id,
+                    created_at: before
                 }, {
                     subscribed: true,
                     source: 'admin',
-                    newsletter_id: newsletters[1].id
+                    newsletter_id: newsletters[1].id,
+                    created_at: after
                 }, {
                     subscribed: false,
                     source: 'admin',
-                    newsletter_id: newsletters[0].id
+                    newsletter_id: newsletters[0].id,
+                    created_at: after
                 }
             ]
         });
+
+        clock.tick(5000);
+
+        // Check activity feed
+        const {body: eventsBody} = await agent
+            .get(`/members/events?filter=data.member_id:${newMember.id}`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const events = eventsBody.events;
+        events.should.match([
+            {
+                type: 'newsletter_event'//,
+                /*data: {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[1].id,
+                    newsletter: {
+                        id: newsletters[1].id
+                    }
+                }*/
+            },
+            {
+                type: 'newsletter_event'
+            },
+            {
+                type: 'newsletter_event'
+            },
+            {
+                type: 'signup_event'
+            }
+        ]);
     });
 
     it('Subscribes to default newsletters', async function () {
