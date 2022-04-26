@@ -11,7 +11,7 @@ const path = require('path');
  * @prop {Object} Base
  * @prop {(callback: function) => Promise} Base.transaction
  * @prop {Object} Post
- * @prop {(frameOptions: Object) => Promise} Post.destroyByAuthor
+ * @prop {(frameOptions: Object) => Promise} Post.reassignByAuthor
  * @prop {Object} ApiKey
  * @prop {(Object) => Promise} ApiKey.destroy
  * @prop {Object} ApiKey.NotFoundError
@@ -76,7 +76,7 @@ class Users {
         return this.models.Base.transaction(async (t) => {
             frameOptions.transacting = t;
 
-            await this.models.Post.destroyByAuthor(frameOptions);
+            await this.models.Post.reassignByAuthor(frameOptions);
 
             try {
                 await this.models.ApiKey.destroy({
