@@ -139,10 +139,8 @@ describe('Email Preview API', function () {
                 .send({
                     emails: ['test@ghost.org']
                 })
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
+                .expect(204)
                 .expect((res) => {
                     res.body.should.be.empty();
                 });
@@ -168,10 +166,8 @@ describe('Email Preview API', function () {
                 .send({
                     emails: ['test@ghost.org']
                 })
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
+                .expect(204)
                 .expect((res) => {
                     res.body.should.be.empty();
                 });
@@ -199,10 +195,8 @@ describe('Email Preview API', function () {
                 .send({
                     emails: ['test@ghost.org']
                 })
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
+                .expect(204)
                 .expect((res) => {
                     res.body.should.be.empty();
                 });
