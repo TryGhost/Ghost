@@ -85,19 +85,10 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             return proto.onFetchingCollection.call(this, collection, attrs, options);
         },
 
-        // NOTE: sending `post.author = {}` was always ignored [unsupported]
         onCreating: function onCreating(model, attrs, options) {
-            if (!model.get('author_id')) {
-                if (model.get('authors')) {
-                    model.set('author_id', model.get('authors')[0].id);
-                } else {
-                    model.set('author_id', this.contextUser(options));
-                }
-            }
-
             if (!model.get('authors')) {
                 model.set('authors', [{
-                    id: model.get('author_id')
+                    id: this.contextUser(options)
                 }]);
             }
 
