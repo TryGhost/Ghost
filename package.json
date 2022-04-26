@@ -209,7 +209,7 @@
     "grunt-shell": "4.0.0",
     "grunt-subgrunt": "1.3.0",
     "grunt-update-submodules": "0.4.1",
-    "jwks-rsa": "2.0.5",
+    "jwks-rsa": "2.1.0",
     "mocha": "9.2.2",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682",
