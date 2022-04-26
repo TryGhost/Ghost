@@ -294,14 +294,14 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         }
     }, {
         /**
-         * ### destroyByAuthor
+         * ### reassignByAuthor
          * @param  {Object} unfilteredOptions has context and id. Context is the user doing the destroy, id is the user to destroy
          * @param {string} unfilteredOptions.id
          * @param {Object} unfilteredOptions.context
          * @param {Object} unfilteredOptions.transacting
          */
-        destroyByAuthor: async function destroyByAuthor(unfilteredOptions) {
-            let options = this.filterOptions(unfilteredOptions, 'destroyByAuthor', {extraAllowedProperties: ['id']});
+        reassignByAuthor: async function reassignByAuthor(unfilteredOptions) {
+            let options = this.filterOptions(unfilteredOptions, 'reassignByAuthor', {extraAllowedProperties: ['id']});
             let authorId = options.id;
 
             if (!authorId) {
