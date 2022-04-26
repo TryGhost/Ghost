@@ -67,11 +67,6 @@ module.exports = {
             nullable: false,
             defaultTo: 'none'
         },
-        /**
-         * @deprecated: single authors was superceded by multiple authors in Ghost 1.22.0
-         * If we keep it, then only, because you can easier query post.author_id than posts_authors[*].sort_order.
-         */
-        author_id: {type: 'string', maxlength: 24, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         /**
          * @deprecated: https://github.com/TryGhost/Ghost/issues/10286
