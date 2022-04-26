@@ -69,6 +69,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'include',
             'opt_in_existing'
@@ -87,7 +90,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'id',
             'include'
