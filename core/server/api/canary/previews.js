@@ -8,7 +8,7 @@ const messages = {
 };
 
 module.exports = {
-    docName: 'preview',
+    docName: 'previews',
 
     read: {
         permissions: true,
