@@ -45,6 +45,8 @@ const mapPost = (model, frame) => {
         }
         date.forPost(jsonModel);
         gating.forPost(jsonModel, frame);
+
+        delete jsonModel.newsletter_id;
     }
 
     if (typeof jsonModel.email_recipient_filter === 'undefined') {
@@ -100,6 +102,7 @@ const mapPage = (model, frame) => {
     delete jsonModel.email_subject;
     delete jsonModel.send_email_when_published;
     delete jsonModel.email_recipient_filter;
+    delete jsonModel.newsletter_id;
 
     return jsonModel;
 };

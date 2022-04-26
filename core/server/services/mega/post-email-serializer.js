@@ -10,6 +10,7 @@ const htmlToText = require('html-to-text');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
+const models = require('../../models');
 
 const ALLOWED_REPLACEMENTS = ['first_name'];
 
@@ -169,21 +170,30 @@ const parseReplacements = (email) => {
     return replacements;
 };
 
-const getTemplateSettings = async () => {
+const getTemplateSettings = async (newsletterId = null) => {
+    let newsletter;
+    if (newsletterId) {
+        newsletter = await models.Newsletter.findOne({id: newsletterId, filter: 'status:active'});
+    } else {
+        const newsletters = await models.Newsletter.findPage({filter: 'status:active', limit: 1});
+        newsletter = newsletters.data[0];
+    }
+
     const accentColor = settingsCache.get('accent_color');
     const adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
     const adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
 
     const templateSettings = {
-        headerImage: settingsCache.get('newsletter_header_image'),
-        showHeaderIcon: settingsCache.get('newsletter_show_header_icon') && settingsCache.get('icon'),
-        showHeaderTitle: settingsCache.get('newsletter_show_header_title'),
-        showFeatureImage: settingsCache.get('newsletter_show_feature_image'),
-        titleFontCategory: settingsCache.get('newsletter_title_font_category'),
-        titleAlignment: settingsCache.get('newsletter_title_alignment'),
-        bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
-        showBadge: settingsCache.get('newsletter_show_badge'),
-        footerContent: settingsCache.get('newsletter_footer_content'),
+        headerImage: newsletter.get('header_image'),
+        showHeaderIcon: newsletter.get('show_header_icon') && settingsCache.get('icon'),
+        showHeaderTitle: newsletter.get('show_header_title'),
+        showFeatureImage: newsletter.get('show_feature_image'),
+        titleFontCategory: newsletter.get('title_font_category'),
+        titleAlignment: newsletter.get('title_alignment'),
+        bodyFontCategory: newsletter.get('body_font_category'),
+        showBadge: newsletter.get('show_badge'),
+        footerContent: newsletter.get('footer_content'),
+        showHeaderName: newsletter.get('show_header_name'),
         accentColor,
         adjustedAccentColor,
         adjustedAccentContrastColor
@@ -290,7 +300,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
         }
     }
 
-    const templateSettings = await getTemplateSettings();
+    const templateSettings = await getTemplateSettings(post.newsletter_id);
 
     const render = template;
 
@@ -339,5 +349,7 @@ module.exports = {
     serialize,
     createUnsubscribeUrl,
     renderEmailForSegment,
-    parseReplacements
+    parseReplacements,
+    // Export for tests
+    _getTemplateSettings: getTemplateSettings
 };
