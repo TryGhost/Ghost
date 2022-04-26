@@ -349,7 +349,7 @@ module.exports = class MemberRepository {
         if (!memberData.newsletters) {
             if (memberData.subscribed === false) {
                 memberData.newsletters = [];
-            } else if (memberData.subscribed === true && !existingNewsletters.find((n) => n.status === 'active')) {
+            } else if (memberData.subscribed === true && !existingNewsletters.find(n => n.status === 'active')) {
                 const browseOptions = _.pick(options, 'transacting');
                 memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
             }
