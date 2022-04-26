@@ -1669,23 +1669,19 @@ describe('Post Model', function () {
 
         before(testUtils.setup('posts:mu'));
 
-        it('can destroy multiple posts by author', function (done) {
+        it('can reassign multiple posts by author', function (done) {
             // We're going to delete all posts by user 1
             const authorData = {id: testUtils.DataGenerator.Content.users[0].id};
 
             models.Post.findAll({context: {internal: true}}).then(function (found) {
                 // There are 10 posts created by posts:mu fixture
                 found.length.should.equal(10);
-                return models.Post.destroyByAuthor(authorData);
-            }).then(function (results) {
-                // User 1 has 2 posts in the database (each user has proportionate amount)
-                // 2 = 10 / 5 (posts / users)
-                results.length.should.equal(2);
+                return models.Post.reassignByAuthor(authorData);
+            }).then(function () {
                 return models.Post.findAll({context: {internal: true}});
             }).then(function (found) {
-                // Only 8 should remain
-                // 8 = 10 - 2
-                found.length.should.equal(8);
+                // All 10 should remain
+                found.length.should.equal(10);
                 done();
             }).catch(done);
         });
