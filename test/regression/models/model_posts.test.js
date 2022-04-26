@@ -1669,17 +1669,34 @@ describe('Post Model', function () {
 
         it('can reassign multiple posts by author', async function () {
             // We're going to delete all posts by user 1
-            const authorData = {id: testUtils.DataGenerator.Content.users[0].id};
+            const authorData = {id: testUtils.DataGenerator.Content.users[1].id};
+            const ownerData = {
+                id: testUtils.DataGenerator.Content.users[0].id,
+                slug: testUtils.DataGenerator.Content.users[0].slug
+            };
 
             const preReassignPosts = await models.Post.findAll({context: {internal: true}});
             // There are 10 posts created by posts:mu fixture
             preReassignPosts.length.should.equal(10);
+
+            const preReassignOwnerWithPosts = await models.Post.findAll({
+                filter: `authors:${ownerData.slug}`,
+                context: {internal: true}
+            });
+            preReassignOwnerWithPosts.length.should.equal(2);
 
             await models.Post.reassignByAuthor(authorData);
 
             const postReassignPosts = await models.Post.findAll({context: {internal: true}});
             // All 10 should remain
             postReassignPosts.length.should.equal(10);
+
+            const postReassignOwnerWithPosts = await models.Post.findAll({
+                filter: `authors:${ownerData.slug}`,
+                context: {internal: true}
+            });
+            // 2 own and 2 reassigned from the other author
+            postReassignOwnerWithPosts.length.should.equal(4);
         });
     });
 
