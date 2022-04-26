@@ -27,11 +27,12 @@ module.exports = function (Bookshelf) {
             const options = this.filterOptions(unfilteredOptions, 'findAll');
             const itemCollection = this.getFilteredCollection(options);
 
-            // @TODO: we can't use order raw when running migrations (see https://github.com/tgriesser/knex/issues/2763)
-            if (this.orderDefaultRaw && !options.migrating) {
+            if (this.orderDefaultRaw) {
                 itemCollection.query((qb) => {
                     qb.orderByRaw(this.orderDefaultRaw(options));
                 });
+            } else if (!options.order && this.orderDefaultOptions) {
+                options.order = this.orderDefaultOptions();
             }
 
             const result = await itemCollection.fetchAll(options);
