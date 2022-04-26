@@ -17,10 +17,12 @@ export default class GhMembersNoMembersComponent extends Component {
     @task({drop: true})
     *addTask() {
         const user = yield this.session.user;
+        const defaultNewsletters = yield this.store.query('newsletter', {filter: 'status:active+subscribe_on_signup:true+visibility:members'});
 
         const member = this.store.createRecord('member', {
             email: user.get('email'),
-            name: user.get('name')
+            name: user.get('name'),
+            newsletters: defaultNewsletters
         });
 
         try {
