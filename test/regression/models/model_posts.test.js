@@ -1660,30 +1660,26 @@ describe('Post Model', function () {
     describe('Multiauthor Posts', function () {
         before(testUtils.teardownDb);
 
-        after(function () {
-            return testUtils.teardownDb()
-                .then(function () {
-                    return testUtils.setup('users:roles')();
-                });
+        after(async function () {
+            await testUtils.teardownDb()
+            await testUtils.setup('users:roles')();
         });
 
         before(testUtils.setup('posts:mu'));
 
-        it('can reassign multiple posts by author', function (done) {
+        it('can reassign multiple posts by author', async function () {
             // We're going to delete all posts by user 1
             const authorData = {id: testUtils.DataGenerator.Content.users[0].id};
 
-            models.Post.findAll({context: {internal: true}}).then(function (found) {
-                // There are 10 posts created by posts:mu fixture
-                found.length.should.equal(10);
-                return models.Post.reassignByAuthor(authorData);
-            }).then(function () {
-                return models.Post.findAll({context: {internal: true}});
-            }).then(function (found) {
-                // All 10 should remain
-                found.length.should.equal(10);
-                done();
-            }).catch(done);
+            const preReassignPosts = await models.Post.findAll({context: {internal: true}});
+            // There are 10 posts created by posts:mu fixture
+            preReassignPosts.length.should.equal(10);
+
+            await models.Post.reassignByAuthor(authorData);
+
+            const postReassignPosts = await models.Post.findAll({context: {internal: true}});
+            // All 10 should remain
+            postReassignPosts.length.should.equal(10);
         });
     });
 
