@@ -45,16 +45,10 @@
             </div>
 
             {{#if this.hasPaidTiers}}
-                <article class="gh-dashboard5-columns">
-                    <div class="gh-dashboard5-column gh-dashboard5-mrr">
-                        <Dashboard::v5::Charts::Mrr />
-                    </div>
-                    <div class="gh-dashboard5-column gh-dashboard5-breakdown">
-                        <Dashboard::v5::Charts::PaidBreakdown />
-                    </div>
-                    <div class="gh-dashboard5-column gh-dashboard5-mix">
-                        <Dashboard::v5::Charts::PaidMix />
-                    </div>
+                <article class="gh-dashboard5-minicharts">
+                    <Dashboard::v5::Charts::Mrr />
+                    <Dashboard::v5::Charts::PaidBreakdown />
+                    <Dashboard::v5::Charts::PaidMix />
                 </article>
             {{/if}}
         </div>

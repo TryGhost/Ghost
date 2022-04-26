@@ -58,6 +58,13 @@ export default class Mrr extends Component {
         const labels = stats.map(stat => stat.date);
         const data = stats.map(stat => stat.mrr);
 
+        // gradient for fill
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+        gradient.addColorStop(0, 'rgba(143, 66, 255, 0.15'); 
+        gradient.addColorStop(1, 'rgba(143, 66, 255, 0.0');
+
         return {
             labels: labels,
             datasets: [{
@@ -65,8 +72,8 @@ export default class Mrr extends Component {
                 tension: 0,
                 cubicInterpolationMode: 'monotone',
                 fill: true,
-                fillColor: 'rgba(142, 66, 255, 0.02)',
-                backgroundColor: 'rgba(142, 66, 255, 0.02)',
+                fillColor: gradient,
+                backgroundColor: gradient,
                 pointRadius: 0,
                 pointHitRadius: 10,
                 pointBorderColor: '#8E42FF',
@@ -105,6 +112,10 @@ export default class Mrr extends Component {
                     e.target.style.cursor = 'pointer';
                 }
             },
+            animation: {
+                duration: 0
+            },
+            responsiveAnimationDuration: 0,
             tooltips: {
                 intersect: false,
                 mode: 'index',
@@ -168,10 +179,6 @@ export default class Mrr extends Component {
                 }]
             }
         };
-    }
-
-    get chartHeight() {
-        return 90;
     }
 
     calculatePercentage(from, to) {
