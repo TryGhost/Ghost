@@ -173,7 +173,7 @@ const parseReplacements = (email) => {
 const getTemplateSettings = async (newsletterId = null) => {
     let newsletter;
     if (newsletterId) {
-        newsletter = await models.Newsletter.findOne({id: newsletterId, status: 'active'});
+        newsletter = await models.Newsletter.findOne({id: newsletterId, filter: 'status:active'});
     } else {
         const newsletters = await models.Newsletter.findPage({status: 'active', limit: 1});
         newsletter = newsletters.data[0];
