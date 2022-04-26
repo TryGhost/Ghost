@@ -30,7 +30,7 @@ module.exports = class EventRepository {
     async getNewsletterSubscriptionEvents(options = {}, filters = {}) {
         options = {
             ...options,
-            withRelated: ['member'],
+            withRelated: ['member', 'newsletter'],
             filter: []
         };
         if (filters['data.created_at']) {
