@@ -63,12 +63,13 @@
                                 <div class="form-group">
                                     {{#if (and (feature "multipleNewsletters") (gt @availableNewsletters.length 1))}}
                                         <div class="mb3">
-                                            <p>Newsletter</p>
                                             <PowerSelect
                                                 @selected={{@selectedNewsletter}}
                                                 @options={{@availableNewsletters}}
                                                 @onChange={{@selectNewsletter}}
                                                 @triggerComponent="gh-power-select/trigger"
+                                                @triggerClass="gh-publishmenu-newsletter-trigger"
+                                                @dropdownClass="gh-publishmenu-newsletter-dropdown"
                                                 @renderInPlace={{true}}
                                                 as |newsletter|
                                             >

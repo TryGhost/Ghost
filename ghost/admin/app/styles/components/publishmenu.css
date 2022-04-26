@@ -357,6 +357,27 @@
     color: var(--midgrey) !important;
 }
 
+.gh-publishmenu-newsletter-trigger {
+    padding: 7px 10px;
+}
+
+.gh-publishmenu-newsletter-trigger svg {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+}
+
+.gh-publishmenu-newsletter-trigger svg {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+}
+
+.gh-publishmenu-newsletter-dropdown .ember-power-select-option[aria-selected="true"] {
+    color: var(--black);
+    font-weight: 600;
+}
+
 
 /* Publish Page (Labs)
 /* ---------------------------------------------------------- */
