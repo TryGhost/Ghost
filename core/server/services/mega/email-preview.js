@@ -1,4 +1,5 @@
 const postEmailSerializer = require('./post-email-serializer');
+const models = require('../../models');
 
 class EmailPreview {
     /**
@@ -16,7 +17,10 @@ class EmailPreview {
      * @returns {Promise<Object>}
      */
     async generateEmailContent(post, memberSegment) {
-        let emailContent = await postEmailSerializer.serialize(post, {
+        const newsletters = await models.Newsletter.findPage({filter: 'status:active', limit: 1});
+        const newsletter = newsletters.data[0];
+
+        let emailContent = await postEmailSerializer.serialize(post, newsletter, {
             isBrowserPreview: true,
             apiVersion: this.apiVersion
         });
