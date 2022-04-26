@@ -587,7 +587,7 @@ const FrameStyles = `
 }
 
 .gh-portal-list-detail.gh-portal-list-big h3 {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 600;
 }
 
@@ -602,7 +602,7 @@ const FrameStyles = `
 }
 
 .gh-portal-list-detail.gh-portal-list-big p {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
 }
 
 .gh-portal-list-toggle-wrapper {
