@@ -140,27 +140,32 @@ export default class PaidMix extends Component {
                 }
             },
             tooltips: {
-                enabled: true,
+                enabled: false,
                 intersect: false,
                 mode: 'single',
-                displayColors: false,
-                backgroundColor: '#15171A',
-                yPadding: 7,
-                cornerRadius: 5,
-                caretSize: 7,
-                caretPadding: 5,
-                bodyFontSize: 12.5,
-                titleFontSize: 12,
-                titleFontStyle: 'normal',
-                titleFontColor: 'rgba(255, 255, 255, 0.7)',
-                titleMarginBottom: 3,
-                yAlign: 'bottom',
-                xAlign: 'center',
+                custom: function (tooltip) {
+                    // get tooltip element
+                    const tooltipEl = document.getElementById('gh-dashboard5-mix-tooltip');
+
+                    // only show tooltip when active
+                    if (tooltip.opacity === 0) {
+                        tooltipEl.style.display = 'none';
+                        tooltipEl.style.opacity = 0;
+                        return; 
+                    }
+
+                    // update tooltip styles
+                    tooltipEl.style.display = 'block';
+                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.position = 'absolute';
+                    tooltipEl.style.left = tooltip.x + 'px';
+                    tooltipEl.style.top = tooltip.y + 'px';    
+                },
                 callbacks: {
-                    label: function (tooltipItem, data) {
-                        const label = data.datasets[tooltipItem.datasetIndex].label || '';
-                        const value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || 0;
-                        return `${label}: ${value}%`;
+                    label: (tooltipItems, data) => {
+                        const label = data.datasets[tooltipItems.datasetIndex].label || '';
+                        const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
+                        document.querySelector('#gh-dashboard5-mix-tooltip .gh-dashboard5-tooltip-value').innerHTML = `${label} ${value}%`;
                     },
                     title: () => {
                         return null;

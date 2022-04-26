@@ -72,7 +72,7 @@ export default class PaidBreakdown extends Component {
     }
 
     get chartOptions() {
-        let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
+        const barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
 
         return {
             responsive: true,
@@ -101,39 +101,38 @@ export default class PaidBreakdown extends Component {
             },
             responsiveAnimationDuration: 0,
             tooltips: {
+                enabled: false,
                 intersect: false,
                 mode: 'index',
-                displayColors: false,
-                backgroundColor: '#15171A',
-                xPadding: 7,
-                yPadding: 7,
-                cornerRadius: 5,
-                caretSize: 7,
-                caretPadding: 5,
-                bodyFontSize: 12.5,
-                titleFontSize: 12,
-                titleFontStyle: 'normal',
-                titleFontColor: 'rgba(255, 255, 255, 0.7)',
-                titleMarginBottom: 3,
-                yAlign: 'center',
+                custom: function (tooltip) {
+                    // get tooltip element
+                    const tooltipEl = document.getElementById('gh-dashboard5-breakdown-tooltip');
+
+                    // only show tooltip when active
+                    if (tooltip.opacity === 0) {
+                        tooltipEl.style.display = 'none';
+                        tooltipEl.style.opacity = 0;
+                        return; 
+                    }
+
+                    // update tooltip styles
+                    tooltipEl.style.display = 'block';
+                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.position = 'absolute';
+                    tooltipEl.style.left = tooltip.x + 'px';
+                    tooltipEl.style.top = tooltip.y + 'px';    
+                },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        let newValue = data.datasets[1].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-2').innerHTML = `New ${newValue}`;
 
-                        if (tooltipItems.datasetIndex === 0) {
-                            return `Net: ${valueText}`;
-                        }
-
-                        if (tooltipItems.datasetIndex === 1) {
-                            return `New paid: ${valueText}`;
-                        }
-
-                        if (tooltipItems.datasetIndex === 2) {
-                            return `Canceled paid: ${Math.abs(valueText)}`;
-                        }
+                        let canceldValue = data.datasets[2].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-3').innerHTML = `Canceled ${canceldValue}`;
                     },
                     title: (tooltipItems) => {
-                        return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                        const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-label').innerHTML = value;
                     }
                 }
             },
