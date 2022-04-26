@@ -1605,7 +1605,6 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-email-design-typography-wrapper {
     display: flex;
-    width: 250px;
 }
 
 .gh-email-design-typography {
@@ -1614,7 +1613,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-email-design-typography .gh-setting-dropdown {
     margin: 0;
-    padding: 0 40px 0 8px;
+    padding: 0 8px 0 8px;
 }
 
 .gh-email-design-typography-wrapper.header .gh-setting-dropdown {
