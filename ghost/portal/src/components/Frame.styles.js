@@ -598,7 +598,7 @@ const FrameStyles = `
     padding: 0;
     margin: 5px 8px 0 0;
     color: var(--grey6);
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .gh-portal-list-detail.gh-portal-list-big p {
