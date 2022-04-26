@@ -16,14 +16,35 @@
         <Dashboard::V5::Charts::Recents />
 
         {{!-- <div class="gh-dashboard5-split"> --}}
-            <Dashboard::V5::Resources::Multi />
+            {{!-- <Dashboard::V5::Resources::Multi /> --}}
             {{!-- <Dashboard::V5::Resources::Community /> --}}
         {{!-- </div>      --}}
+
+        {{!-- <Dashboard::V5::Resources::Triple /> --}}
+
+        {{!-- <div class="gh-dashboard5-split"> --}}
+            {{!-- <Dashboard::V5::Resources::Community /> --}}
+            {{!-- <Dashboard::V5::Reso÷urces::WhatsNew /> --}}
+        {{!-- </div> --}}
 
         {{!-- <Dashboard::V5::Resources::WhatsNew /> --}}
         {{!-- <Dashboard::V5::Resources::StaffPicks /> --}}
         {{!-- <Dashboard::V5::Resources::Newsletter /> --}}
     {{/if}}
+</section>
+
+<section class="gh-dashboard5-breakout">
+    <div class="gh-dashboard5-inner">
+        <div class="gh-dashboard5-split">
+            <Dashboard::V5::Resources::Resources />
+            <Dashboard::V5::Resources::WhatsNew />
+        </div>
+        <div class="gh-dashboard5-split">
+            <Dashboard::V5::Resources::Newsletter />
+            <Dashboard::V5::Resources::StaffPicks />
+        </div>
+        <Dashboard::V5::Resources::Community />
+    </div>
 </section>
 
 <Dashboard::V5::Prototype::ControlPanel />

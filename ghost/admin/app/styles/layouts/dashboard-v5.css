@@ -62,6 +62,10 @@ Dashboard v5 Prototype */
 Dashboard v5 Layout */
 
 .gh-dashboard5 {
+
+}
+
+.gh-dashboard5-layout {
     max-width: 1230px;
     margin: 0 auto;
 }
@@ -146,7 +150,7 @@ Dashboard v5 Layout */
     font-size: 1.2rem;
     font-weight: 600;
     text-transform: uppercase;
-    color: var(--white);
+    color: var(--black);
     margin: 0;
     padding: 0;
     transition: color .3s;
@@ -161,6 +165,7 @@ Dashboard v5 Layout */
     flex-direction: column;
     position: relative;
     align-items: stretch;
+    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.01);
 }
 
 .gh-dashboard5-box.is-secondary {
@@ -170,16 +175,6 @@ Dashboard v5 Layout */
 .gh-dashboard5-box.is-faded {
     background: rgb(240,240,240);
     background: linear-gradient(310deg, rgba(249,249,249,1) 0%, rgba(254,254,254,1) 100%);
-}
-
-.gh-dashboard5-box.is-image {
-    background: transparent;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    background-image: url(img/abstract-2.jpg);
-    color: var(--white);
-    padding-top: 32px;
 }
 
 .gh-dashboard5-columns {
@@ -977,14 +972,30 @@ Dashboard v5 Section Resources */
     padding: 24px;
 }
 
-.gh-dashboard5-resources .gh-dashboard5-subtitle h4 {
-    color: var(--darkgrey);
+.gh-dashboard5-resources .gh-dashboare5-article-content {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    font-size: 1.4rem;
+    padding: 24px 0;
 }
 
-.gh-dashboard5-resources .gh-dashboard5-box {
-    padding-top: 32px;
+.gh-dashboard5-resources .gh-dashboare5-article-thumbnail {
+    flex: 2;
+    height: auto;
+    overflow: hidden;
+    border-radius: 3px;
 }
 
+.gh-dashboard5-resources .gh-dashboare5-article-text {
+    flex: 3;
+    padding: 0 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
 
 
 /* --------------------------------- 
@@ -1056,8 +1067,8 @@ Dashboard v5 Section Staff Picks */
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-item {
-    padding-top: 4px;
-    padding-bottom: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-item:first-child {
@@ -1072,12 +1083,11 @@ Dashboard v5 Section Staff Picks */
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    font-size: 1.65rem;
     font-weight: 600;
-    font-size: 1.4rem;
     line-height: 1.4em;
     margin-bottom: 8px;
     color: var(--black);
-    padding: 0;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-body {
@@ -1087,7 +1097,7 @@ Dashboard v5 Section Staff Picks */
     justify-content: space-between;
     color: #7c8b9a;
     font-size: 1.4rem;
-    padding: 16px 64px 16px 0;
+    padding: 8px 24px 16px 0;
     transition: all .3s ease-in-out;
 }
 
@@ -1099,23 +1109,18 @@ Dashboard v5 Section Latest Newsletters */
     position: relative;
 }
 
-.gh-dashboard5-newsletter .gh-dashboard5-articles {
+.gh-dashboard5-newsletter .gh-dashboard5-newsletter-items {
     display: grid;
     grid-gap: 24px;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
     flex: 1;
 }
 
-.gh-dashboard5-newsletter .gh-dashboard5-article {
-    background: var(--purple);
-    border-radius: 6px;
-    padding: 24px;
-}
+.gh-dashboard5-newsletter .gh-dashboard5-newsletter-item {}
 
-.gh-dashboard5-newsletter .gh-dashboard5-article h5 {
-    color: var(--white);
-    font-size: 1.2rem;
+.gh-dashboard5-newsletter .gh-dashboard5-newsletter-item h5 {
+    font-size: 1.4rem;
     padding: 0 32px 0 0;
 }
 
@@ -1127,8 +1132,14 @@ Dashboard v5 Section Community */
     position: relative;
 }
 
-.gh-dashboard5-community .gh-dashboard5-list-body {
-    justify-content: flex-start;
+.gh-dashboard5-community .gh-dashboard5-resource-box {
+    background: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-image: url(img/community-background.jpg);
+    color: var(--white);
+    padding-top: 32px;
 }
 
 .gh-dashboard5-community .gh-dashboard5-list-body p {
@@ -1137,15 +1148,19 @@ Dashboard v5 Section Community */
     line-height: 1.3em;
     padding: 0 64px 0 0;
     transition: color .3s;
+    color: #fff;
 }
 
-.gh-dashboard5-community .gh-dashboard5-list-footer {
+.gh-dashboard5-community .gh-dashboard5-resource-footer {
     border-color: transparent;
 }
 
-.gh-dashboard5-community .gh-dashboard5-list-footer a {
-    color: var(--white);
-    font-weight: 800;
+.gh-dashboard5-community .gh-dashboard5-resource-footer a {
+    color: #fff;
+}
+
+.gh-dashboard5-community .gh-dashboard5-resource-title h4 {
+    color: #fff;
 }
 
 
@@ -1201,4 +1216,169 @@ Dashboard v5 Misc */
     left: 0;
     top: 0;
     bottom: 0;
+}
+
+
+
+
+.gh-dashboard5-triple {
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-dashboard5-articles {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+}
+
+.gh-dashboard5-article {
+
+}
+
+
+
+
+
+
+
+
+.gh-dashboard5-breakout {
+    width: calc(100% + 48px + 48px);
+    background: #fcfcfc;
+    padding: 24px 0 50vh;
+    margin-left: -48px;
+    margin-right: -48px;
+}
+
+.gh-dashboard5-inner {
+    max-width: 1230px;
+    margin: 0 auto;
+}
+
+.gh-dashboard5-subhead {
+    padding: 0 24px 24px;
+}
+
+
+/* --------------------------------- 
+Dashboard v5 Resources */
+
+.gh-dashboard5-resource {
+    display: flex;
+    margin-bottom: 24px;
+}
+
+.gh-dashboard5-resource-main {
+    margin-right: 8px; /* grid layout adjustments */
+}
+
+.gh-dashboard5-resource-aside {
+    margin-left: -8px; /* grid layout adjustments */
+}
+
+.gh-dashboard5-resource-box {
+    flex: 1;
+    border: 1px solid var(--whitegrey);
+    padding: 28px 24px 24px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: stretch;
+    background: var(--white);
+    box-shadow: 0px 2px 16px 0px rgba(0, 0, 0, 0.02);
+}
+
+.gh-dashboard5-resource-title {
+    display: flex;
+    flex-direction: row;
+    margin: 0 0 20px;
+}
+
+.gh-dashboard5-resource-title h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--black);
+    margin: 0;
+    padding: 0;
+    transition: color .3s;
+}
+
+.gh-dashboard5-resource-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.gh-dashboard5-resource-footer {
+    border-top: 1px solid var(--whitegrey);
+    padding: 20px 0 0;
+}
+
+.gh-dashboard5-resource-footer a {
+    font-weight: 600;
+}
+
+.gh-dashboard5-resource-thumbnail {
+    border-radius: 4px;
+    width: 100%;
+    height: auto;
+}
+
+.gh-dashboard5-resource-bigarticle {
+    display: flex;
+    flex-direction: row;
+    padding: 0 0 24px;
+}
+
+.gh-dashboard5-resource-bigarticle .gh-dashboard5-resource-thumbnail {
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gh-dashboard5-resource-smallarticles {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+}
+
+.gh-dashboard5-resource-smallarticle {
+    flex: 1;
+    margin: 0 24px 0 0;
+    padding: 0 0 32px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+}
+
+.gh-dashboard5-resource-smallarticle .gh-dashboard5-resource-thumbnail {
+    width: 100%;
+    margin: 0 0 12px;
+}
+
+.gh-dashboard5-resource-smallarticle:last-child {
+    margin-right: 0;
+}
+
+.gh-dashboard5-resource-bigarticle .gh-dashboard5-resource-text {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+}
+
+.gh-dashboard5-resource-secondary {
+    font-size: 1.3rem;
+    line-height: 1.5em;
+    font-weight: 600;
+    color: var(--midlightgrey);
+    padding: 3px 0 0 0;
+    white-space: nowrap;
 }

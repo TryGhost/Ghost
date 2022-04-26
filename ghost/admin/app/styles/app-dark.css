@@ -1130,3 +1130,11 @@ kbd {
 .gh-dashboard5 .gh-dashboard5-column {
     border-color: #2b2d31;
 }
+
+.gh-dashboard5 .gh-dashboard5-breakout {
+    background: #111213;
+}
+
+.gh-dashboard5-community .gh-dashboard5-list-footer {
+    border-color: transparent;
+}
