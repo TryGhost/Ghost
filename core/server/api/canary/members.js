@@ -366,6 +366,9 @@ module.exports = {
             if (labsService.isSet('multipleProducts')) {
                 frame.options.withRelated.push('products');
             }
+            if (labsService.isSet('multipleNewsletters')) {
+                frame.options.withRelated.push('newsletters');
+            }
             const page = await membersService.api.members.list(frame.options);
 
             return page;
