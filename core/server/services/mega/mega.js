@@ -56,8 +56,7 @@ const getReplyToAddress = (fromAddress, replyAddressOption) => {
 const getEmailData = async (postModel, options) => {
     let newsletter = await postModel.related('newsletter').fetch();
     if (!newsletter) {
-        const newsletters = await models.Newsletter.findPage({filter: 'status:active', limit: 1});
-        newsletter = newsletters.data[0];
+        newsletter = await models.Newsletter.getDefaultNewsletter();
     }
     const {subject, html, plaintext} = await postEmailSerializer.serialize(postModel, newsletter, options);
 

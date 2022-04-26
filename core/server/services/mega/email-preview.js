@@ -17,8 +17,7 @@ class EmailPreview {
      * @returns {Promise<Object>}
      */
     async generateEmailContent(post, memberSegment) {
-        const newsletters = await models.Newsletter.findPage({filter: 'status:active', limit: 1});
-        const newsletter = newsletters.data[0];
+        const newsletter = await models.Newsletter.getDefaultNewsletter();
 
         let emailContent = await postEmailSerializer.serialize(post, newsletter, {
             isBrowserPreview: true,

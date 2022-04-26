@@ -86,6 +86,21 @@ const Newsletter = ghostBookshelf.Model.extend({
         };
     },
 
+    getDefaultNewsletter: async function getDefaultNewsletter() {
+        const options = {
+            filter: 'status:active',
+            order: this.orderDefaultRaw(),
+            limit: 1
+        };
+
+        const newsletters = await this.findPage(options);
+
+        if (newsletters.data.length > 0) {
+            return newsletters.data[0];
+        }
+        return null;
+    },
+
     getNextAvailableSortOrder: async function getNextAvailableSortOrder(unfilteredOptions = {}) {
         const options = {
             filter: 'status:active',
