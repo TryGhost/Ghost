@@ -202,15 +202,9 @@ module.exports = class MemberRepository {
         }
 
         // Subscribe member to default newsletters
-        if (!memberData.newsletters && this._labsService.isSet('multipleNewsletters')) {
+        if (memberData.subscribed !== false && !memberData.newsletters) {
             const browseOptions = _.pick(options, 'transacting');
-
-            // By default subscribe to all active auto opt-in newsletters with members visibility
-            //TODO: Will mostly need to be updated later for paid-only newsletters
-            browseOptions.filter = 'status:active+subscribe_on_signup:true+visibility:members';
-            const newsletters = await this._newslettersService.browse(browseOptions);
-
-            memberData.newsletters = newsletters || [];
+            memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
         }
 
         const member = await this._Member.add({
@@ -273,10 +267,25 @@ module.exports = class MemberRepository {
         return member;
     }
 
+    async getSubscribeOnSignupNewsletters(browseOptions) {
+        // By default subscribe to all active auto opt-in newsletters with members visibility
+        //TODO: Will mostly need to be updated later for paid-only newsletters
+        browseOptions.filter = 'status:active+subscribe_on_signup:true+visibility:members';
+        const newsletters = await this._newslettersService.browse(browseOptions);
+        return newsletters || [];
+    }
+
     async update(data, options) {
         const sharedOptions = {
             transacting: options.transacting
         };
+
+        const initialMember = await this._Member.findOne({
+            id: options.id
+        }, {...sharedOptions, withRelated: ['products', 'newsletters']});
+
+        const existingProducts = initialMember.related('products').models;
+        const existingNewsletters = initialMember.related('newsletters').models;
 
         const memberData = _.pick(data, [
             'email',
@@ -294,12 +303,6 @@ module.exports = class MemberRepository {
         let productsToAdd = [];
         let productsToRemove = [];
         if (this._stripeAPIService.configured && data.products) {
-            const member = await this._Member.findOne({
-                id: options.id
-            }, sharedOptions);
-
-            const existingProducts = await member.related('products').fetch(sharedOptions);
-
             const existingProductIds = existingProducts.map(product => product.id);
             const incomingProductIds = data.products.map(product => product.id);
 
@@ -312,7 +315,7 @@ module.exports = class MemberRepository {
             const productsToModify = productsToAdd.concat(productsToRemove);
 
             if (productsToModify.length !== 0) {
-                const exisitingSubscriptions = await member.related('stripeSubscriptions').fetch(sharedOptions);
+                const exisitingSubscriptions = await initialMember.related('stripeSubscriptions').fetch(sharedOptions);
                 const existingActiveSubscriptions = exisitingSubscriptions.filter((subscription) => {
                     return this.isActiveSubscriptionStatus(subscription.get('status'));
                 });
@@ -342,18 +345,22 @@ module.exports = class MemberRepository {
             }
         }
 
+        // This maps the old susbcribed property to the new newsletters field
+        if (!memberData.newsletters) {
+            if (memberData.subscribed === false) {
+                memberData.newsletters = [];
+            } else if (memberData.subscribed === true && !existingNewsletters.find((n) => n.status === 'active')) {
+                const browseOptions = _.pick(options, 'transacting');
+                memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
+            }
+        }
+
         // Keep track of the newsletters that were added and removed of a member so we can generate the corresponding events
         let newslettersToAdd = [];
         let newslettersToRemove = [];
-        if (data.newsletters) {
-            const member = await this._Member.findOne({
-                id: options.id
-            }, sharedOptions);
-
-            const existingNewsletters = await member.related('newsletters').fetch(sharedOptions);
-
+        if (memberData.newsletters) {
             const existingNewsletterIds = existingNewsletters.map(newsletter => newsletter.id);
-            const incomingNewsletterIds = data.newsletters.map(newsletter => newsletter.id);
+            const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
 
             newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
             newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
