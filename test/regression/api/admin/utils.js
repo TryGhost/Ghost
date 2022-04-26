@@ -65,7 +65,8 @@ const expectedProperties = {
         'email_subject',
         'frontmatter',
         'email_only',
-        'tiers'
+        'tiers',
+        'newsletter_id'
     ],
     user: [
         'id',
