@@ -579,7 +579,6 @@ const FrameStyles = `
 
 .gh-portal-list-detail {
     flex-grow: 1;
-    margin-right: 24px;
 }
 
 .gh-portal-list-detail h3 {
@@ -604,6 +603,15 @@ const FrameStyles = `
 
 .gh-portal-list-detail.gh-portal-list-big p {
     font-size: 1.6rem;
+}
+
+.gh-portal-list-toggle-wrapper {
+    align-items: flex-start !important;
+    justify-content: space-between;
+}
+
+.gh-portal-list-toggle-wrapper .gh-portal-list-detail {
+    padding: 4px 24px 4px 0px;
 }
 
 .gh-portal-list-detail .old-price {
