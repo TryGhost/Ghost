@@ -102,8 +102,8 @@ describe('Legacy Members API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.members);
         jsonResponse.members.should.have.length(5);
-        jsonResponse.members[0].email.should.equal('paid@test.com');
-        jsonResponse.members[1].email.should.equal('trialing@test.com');
+        jsonResponse.members[0].email.should.equal('with-product@test.com');
+        jsonResponse.members[1].email.should.equal('vip-paid@test.com');
         localUtils.API.checkResponse(jsonResponse, 'members');
         localUtils.API.checkResponse(jsonResponse.members[0], 'member', 'subscriptions');
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
