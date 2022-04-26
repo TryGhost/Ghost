@@ -1288,21 +1288,37 @@ describe('Members API', function () {
         const events = eventsBody.events;
         events.should.match([
             {
-                type: 'newsletter_event'//,
-                /*data: {
+                type: 'newsletter_event',
+                data: {
                     subscribed: true,
                     source: 'admin',
                     newsletter_id: newsletters[1].id,
                     newsletter: {
                         id: newsletters[1].id
                     }
-                }*/
+                }
             },
             {
-                type: 'newsletter_event'
+                type: 'newsletter_event',
+                data: {
+                    subscribed: false,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id,
+                    newsletter: {
+                        id: newsletters[0].id
+                    }
+                }
             },
             {
-                type: 'newsletter_event'
+                type: 'newsletter_event',
+                data: {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id,
+                    newsletter: {
+                        id: newsletters[0].id
+                    }
+                }
             },
             {
                 type: 'signup_event'
