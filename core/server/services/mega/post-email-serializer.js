@@ -10,7 +10,6 @@ const htmlToText = require('html-to-text');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
-const models = require('../../models');
 
 const ALLOWED_REPLACEMENTS = ['first_name'];
 
@@ -170,15 +169,7 @@ const parseReplacements = (email) => {
     return replacements;
 };
 
-const getTemplateSettings = async (newsletterId = null) => {
-    let newsletter;
-    if (newsletterId) {
-        newsletter = await models.Newsletter.findOne({id: newsletterId, filter: 'status:active'});
-    } else {
-        const newsletters = await models.Newsletter.findPage({filter: 'status:active', limit: 1});
-        newsletter = newsletters.data[0];
-    }
-
+const getTemplateSettings = async (newsletter) => {
     const accentColor = settingsCache.get('accent_color');
     const adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
     const adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
@@ -300,7 +291,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
         }
     }
 
-    const templateSettings = await getTemplateSettings(post.newsletter_id);
+    const templateSettings = await getTemplateSettings(postModel.related('newsletter'));
 
     const render = template;
 
