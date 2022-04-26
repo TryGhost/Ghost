@@ -66,7 +66,7 @@
     "@tryghost/constants": "1.0.2",
     "@tryghost/custom-theme-settings-service": "0.3.2",
     "@tryghost/database-info": "0.3.1",
-    "@tryghost/debug": "0.1.14",
+    "@tryghost/debug": "0.1.16",
     "@tryghost/domain-events": "0.1.9",
     "@tryghost/email-analytics-provider-mailgun": "1.0.8",
     "@tryghost/email-analytics-service": "1.0.6",
