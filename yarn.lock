@@ -1845,7 +1845,7 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.11", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.10", "@tryghost/errors@^1.2.11", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
+"@tryghost/errors@1.2.11":
   version "1.2.11"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.11.tgz#3b3725f5ae8c35d4f264386e1e8fe39009713900"
   integrity sha512-C7zFxqP9QjGBOHd7nRMzsAU9OlK71dhYkqPInYgLFLyIT7j4fFKgn8Z4ZQ6ucs7v7qG3UKoo0U7vnMGJAOFuag==
@@ -1854,7 +1854,7 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@^1.2.12":
+"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.10", "@tryghost/errors@^1.2.11", "@tryghost/errors@^1.2.12", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
   version "1.2.12"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.12.tgz#906f2cf603dd90f6e386f4a95b963d613e4279e6"
   integrity sha512-VRRsat58v+bNX/fsjDXc7EVcyoZnOdGmAqNe6mCxmPVLWO55qEic0M+AJFnBh1TOCCkx+kRvH46+C0JOomfKAw==
@@ -2219,10 +2219,10 @@
     lodash "^4.17.21"
     semver "^7.3.6"
 
-"@tryghost/mw-session-from-token@0.1.28":
-  version "0.1.28"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.28.tgz#6cddffa53e07a19c13cfc5a72071e59f42e65719"
-  integrity sha512-1BXi+twPQVBbfm4NMRa9Ms5mHHZg0P8Z4oq1s0tnkJ+iNIWol2fkuJ5m6Mi6qXiWD0lPqpOL/as/aBGJsyoe7A==
+"@tryghost/mw-session-from-token@0.1.29":
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.29.tgz#b7a52753d4738f94f68104f8add55edafdf02acd"
+  integrity sha512-P0lq38a9Nu20+q7V/zpeea+k+fMglCsVCxDoy+GN2XVuUswe95sTk11vbni8L4AVgSn3RXUM7wqnu1TBrvScsQ==
 
 "@tryghost/nodemailer@0.3.22":
   version "0.3.22"

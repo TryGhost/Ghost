@@ -94,7 +94,7 @@
     "@tryghost/minifier": "0.1.12",
     "@tryghost/mw-api-version-mismatch": "0.1.0",
     "@tryghost/mw-error-handler": "0.2.1",
-    "@tryghost/mw-session-from-token": "0.1.28",
+    "@tryghost/mw-session-from-token": "0.1.29",
     "@tryghost/nodemailer": "0.3.22",
     "@tryghost/nql": "0.9.2",
     "@tryghost/package-json": "1.0.18",
