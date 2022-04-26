@@ -72,6 +72,10 @@ const Newsletter = ghostBookshelf.Model.extend({
         return query;
     }
 }, {
+    orderDefaultRaw: function (options) {
+        return 'sort_order ASC, created_at ASC, id ASC';
+    },
+
     orderDefaultOptions: function orderDefaultOptions() {
         return {
             sort_order: 'ASC',
