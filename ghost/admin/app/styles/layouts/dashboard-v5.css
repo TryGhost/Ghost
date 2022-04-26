@@ -165,11 +165,11 @@ Dashboard v5 Layout */
     flex-direction: column;
     position: relative;
     align-items: stretch;
-    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.01);
 }
 
 .gh-dashboard5-box.is-secondary {
-    background: #fcfcfc;
+    background: #f5f6f6;
+    border: transparent;
 }
 
 .gh-dashboard5-box.is-faded {
@@ -357,6 +357,34 @@ Dashboard v5 Layout */
     transition: none;
 }
 
+.gh-dashboard5-triple {
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-dashboard5-articles {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+}
+
+.gh-dashboard5-breakout {
+    width: calc(100% + 48px + 48px);
+    background: #fcfcfc;
+    padding: 24px 0 50vh;
+    margin-left: -48px;
+    margin-right: -48px;
+}
+
+.gh-dashboard5-inner {
+    max-width: 1230px;
+    margin: 0 auto;
+}
+
+.gh-dashboard5-subhead {
+    padding: 0 24px 24px;
+}
+
 
 /* --------------------------------- 
 Dashboard v5 Chart */
@@ -504,6 +532,15 @@ Dashboard v5 Metric */
     margin: 0 0 8px;
 }
 
+.gh-dashboard5-metric.is-tooltip .gh-dashboard5-metric-label {
+    font-size: 1.3rem;   
+    margin-bottom: 8px;
+}
+
+.gh-dashboard5-metric.is-tooltip .gh-dashboard5-metric-value{
+    font-size: 2rem;
+}
+
 .gh-dashboard5-metric-minivalue {
     font-size: 1.5rem;
     font-weight: 700;
@@ -619,7 +656,7 @@ Dashboard v5 List */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Overview */
+Dashboard v5 Overview */
 
 .gh-dashboard5-overview {
     position: relative;
@@ -649,7 +686,7 @@ Dashboard v5 Section Overview */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Anchor */
+Dashboard v5 Anchor */
 
 .gh-dashboard5-anchor {
     position: relative;
@@ -777,7 +814,7 @@ Dashboard v5 Section Anchor */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Engagement */
+Dashboard v5 Engagement */
 
 .gh-dashboard5-engagement {
     position: relative;
@@ -793,7 +830,7 @@ Dashboard v5 Section Engagement */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Recent Posts */
+Dashboard v5 Recent Posts */
 
 .gh-dashboard5-recent-posts {
     position: relative;
@@ -853,7 +890,7 @@ Dashboard v5 Section Recent Posts */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Recent Activity */
+Dashboard v5 Recent Activity */
 
 .gh-dashboard5-recent-activity {
     position: relative;
@@ -906,7 +943,7 @@ Dashboard v5 Section Recent Activity */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Recents */
+Dashboard v5 Recents */
 
 .gh-dashboard5-recents {
     position: relative;
@@ -1003,7 +1040,7 @@ Dashboard v5 Section Recents */
 
 
 /* --------------------------------- 
-Dashboard v5 Section What's New */
+Dashboard v5 What's New */
 
 .gh-dashboard5-whats-new {
     position: relative;
@@ -1047,7 +1084,7 @@ Dashboard v5 Section What's New */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Resources */
+Dashboard v5 Resources */
 
 .gh-dashboard5-resources {
     position: relative;
@@ -1097,7 +1134,7 @@ Dashboard v5 Section Resources */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Multi */
+Dashboard v5 Multi */
 
 .gh-dashboard5-multi {
     position: relative;
@@ -1153,7 +1190,7 @@ Dashboard v5 Section Multi */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Staff Picks */
+Dashboard v5 Staff Picks */
 
 .gh-dashboard5-staff-picks {
     position: relative;
@@ -1187,6 +1224,7 @@ Dashboard v5 Section Staff Picks */
     line-height: 1.4em;
     margin-bottom: 8px;
     color: var(--black);
+    padding: 0;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-body {
@@ -1202,7 +1240,7 @@ Dashboard v5 Section Staff Picks */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Latest Newsletters */
+Dashboard v5 Latest Newsletters */
 
 .gh-dashboard5-newsletter {
     position: relative;
@@ -1217,8 +1255,6 @@ Dashboard v5 Section Latest Newsletters */
     flex: 1;
 }
 
-.gh-dashboard5-newsletter .gh-dashboard5-newsletter-item {}
-
 .gh-dashboard5-newsletter .gh-dashboard5-newsletter-item h5 {
     font-size: 1.4rem;
     padding: 0 32px 0 0;
@@ -1226,7 +1262,7 @@ Dashboard v5 Section Latest Newsletters */
 
 
 /* --------------------------------- 
-Dashboard v5 Section Community */
+Dashboard v5 Community */
 
 .gh-dashboard5-community {
     position: relative;
@@ -1316,48 +1352,6 @@ Dashboard v5 Misc */
     left: 0;
     top: 0;
     bottom: 0;
-}
-
-
-
-
-.gh-dashboard5-triple {
-    display: flex;
-    flex-direction: column;
-}
-
-.gh-dashboard5-articles {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-}
-
-.gh-dashboard5-article {
-
-}
-
-
-
-
-
-
-
-
-.gh-dashboard5-breakout {
-    width: calc(100% + 48px + 48px);
-    background: #fcfcfc;
-    padding: 24px 0 50vh;
-    margin-left: -48px;
-    margin-right: -48px;
-}
-
-.gh-dashboard5-inner {
-    max-width: 1230px;
-    margin: 0 auto;
-}
-
-.gh-dashboard5-subhead {
-    padding: 0 24px 24px;
 }
 
 
@@ -1481,4 +1475,58 @@ Dashboard v5 Resources */
     color: var(--midlightgrey);
     padding: 3px 0 0 0;
     white-space: nowrap;
+}
+
+
+/* --------------------------------- 
+Dashboard v5 Tooltips */
+
+.gh-dashboard5-tooltip {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: var(--white);
+    border: 1px solid var(--whitegrey);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    z-index: 9999;
+    pointer-events: none;
+    transition: top 50ms ease-out, left 50ms ease-out;
+}
+
+.gh-dashboard5-tooltip .gh-dashboard5-metric-value {
+    margin: 0;
+}
+
+.gh-dashboard5-tooltip-label {
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1em;
+    color: var(--midlightgrey);
+    white-space: nowrap;
+    letter-spacing: .2px;
+    margin: 0 0 8px;
+}
+
+.gh-dashboard5-tooltip-value {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -.1px;
+    line-height: 1em;
+    white-space: nowrap;
+    color: var(--black);
+}
+
+.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value {
+    font-size: 1.4rem;
+}
+
+.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 {
+    margin: 0 0 4px;
+}
+
+.gh-dashboard5-mix .gh-dashboard5-tooltip-value {
+    font-size: 1.4rem;
 }

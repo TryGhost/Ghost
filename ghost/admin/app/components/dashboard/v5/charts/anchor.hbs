@@ -36,6 +36,15 @@
                             @data={{this.chartData}}
                             @options={{this.chartOptions}}
                             @height={{if this.hasPaidTiers this.chartHeight this.chartHeightSmall}} />
+
+                        <div id="gh-dashboard5-anchor-tooltip" class="gh-dashboard5-tooltip">
+                            <div class="gh-dashboard5-tooltip-label">
+                                -
+                            </div>
+                            <div class="gh-dashboard5-tooltip-value">
+                                -
+                            </div>
+                        </div>
                     </div>
                     <div class="gh-dashboard5-chart-ticks">
                         <span id="gh-dashboard5-anchor-date-start"> </span>
@@ -68,5 +77,6 @@
                 {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
             </PowerSelect>
         </div>
+
     </article>
 </section>
