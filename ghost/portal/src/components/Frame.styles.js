@@ -579,6 +579,7 @@ const FrameStyles = `
 
 .gh-portal-list-detail {
     flex-grow: 1;
+    margin-right: 24px;
 }
 
 .gh-portal-list-detail h3 {
