@@ -999,8 +999,9 @@
     display: flex;
     align-items: center;
     margin: 0;
-    font-size: 1.9rem;
-    line-height: 22px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    line-height: 1.3em;
 }
 
 .stats-block .gh-newsletter-card-name {
@@ -1043,7 +1044,7 @@
 }
 
 .gh-newsletters-labs .modal-fullsettings-sidebar {
-    width: 480px;
+    width: 380px;
 }
 
 .gh-newsletters-setting-sectionheading {
@@ -1067,8 +1068,7 @@
 }
 
 .gh-newsletters-labs .form-group.vertical p {
-    margin: 0 0 12px;
-    line-height: 1em;
+    margin: 4px 0 0;
 }
 
 .gh-newsletters-labs .gh-members-emailsettings-footer {

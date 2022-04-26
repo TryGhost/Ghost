@@ -48,7 +48,8 @@
                 </GhUploader>
             </GhFormGroup>
 
-            <GhFormGroup data-tooltip={{unless this.settings.icon "A publication icon must be set in Branding settings."}}>
+            {{#if this.settings.icon}}
+            <GhFormGroup>
                 <h4 class="modal-fullsettings-title {{unless this.settings.icon "disabled"}}">Publication icon</h4>
                 <div class="for-switch small {{unless this.settings.icon "disabled"}}">
                     <label class="switch" for="show-header">
@@ -64,6 +65,7 @@
                     </label>
                 </div>
             </GhFormGroup>
+            {{/if}}
             <GhFormGroup>
                 <h4 class="modal-fullsettings-title">Publication title</h4>
                 <div class="for-switch small">
@@ -97,8 +99,8 @@
         </div>
         <div class="modal-fullsettings-section">
             <h3 class="gh-newsletters-setting-sectionheading">Body</h3>
-            <GhFormGroup>
-                <h4 class="modal-fullsettings-title gh-email-design-alignment">Header style</h4>
+            <GhFormGroup @classNames="vertical">
+                <h4 class="modal-fullsettings-title gh-email-design-alignment">Title style</h4>
                 <div class="gh-email-design-typography-wrapper header">
                     <div class="modal-fullsettings-radiogroup gh-email-design-typography">
                         <GhFontSelector
@@ -109,6 +111,17 @@
                     <div class="gh-btn-group icons">
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @newsletter.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
                         <button type="button" class="gh-btn gh-btn-icon {{if (eq @newsletter.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                    </div>
+                </div>
+            </GhFormGroup>
+            <GhFormGroup @classNames="vertical">
+                <h4 class="modal-fullsettings-title">Body style</h4>
+                <div class="gh-email-design-typography-wrapper">
+                    <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                        <GhFontSelector
+                            @selected={{@newsletter.bodyFontCategory}}
+                            @onChange={{fn this.changeSetting "bodyFontCategory"}}
+                        />
                     </div>
                 </div>
             </GhFormGroup>
@@ -127,30 +140,19 @@
                     </label>
                 </div>
             </GhFormGroup>
-            <GhFormGroup>
-                <h4 class="modal-fullsettings-title">Body style</h4>
-                <div class="gh-email-design-typography-wrapper">
-                    <div class="modal-fullsettings-radiogroup gh-email-design-typography">
-                        <GhFontSelector
-                            @selected={{@newsletter.bodyFontCategory}}
-                            @onChange={{fn this.changeSetting "bodyFontCategory"}}
-                        />
-                    </div>
-                </div>
-            </GhFormGroup>
         </div>
 
         <div class="modal-fullsettings-section">
             <h3 class="gh-newsletters-setting-sectionheading">Footer</h3>
             <GhFormGroup @classNames="vertical">
                 <label class="modal-fullsettings-title">Email footer</label>
-                <p>Any extra information or legal text</p>
                 <KoenigBasicHtmlInput
                     @name="footer"
                     @html={{@newsletter.footerContent}}
                     @class="miw-100 form-text gh-members-emailsettings-footer-input"
                     @onChange={{fn this.changeSetting "footerContent"}}
                 />
+                <p>Any extra information or legal text</p>
             </GhFormGroup>
         </div>
     </fieldset>

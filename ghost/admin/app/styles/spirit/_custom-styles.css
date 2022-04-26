@@ -242,6 +242,16 @@ button, .btn-base {
     transform: translate(0, -50%);
 }
 
+.tooltip-top-left:before {
+    right: calc(-16px + 100%);
+    left: auto;
+    transform: translateY(50%);
+}
+
+.tooltip-top-left:hover:before {
+    transform: translate(0, 0);
+}
+
 
 /* Errors
 ---------------------------------------------------------- */
