@@ -20,6 +20,10 @@ module.exports = {
         debug('browse');
         defaultRelations(frame);
 
+        if (!frame.options.order) {
+            frame.options.autoOrder = 'created_at DESC, id DESC';
+        }
+
         if (labsService.isSet('multipleNewsletters')) {
             frame.options.mongoTransformer = mapNQLKeyValues({
                 key: {
