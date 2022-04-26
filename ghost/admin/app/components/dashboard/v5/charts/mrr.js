@@ -88,7 +88,8 @@ export default class Mrr extends Component {
     }
 
     get chartOptions() {
-        let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
+        const that = this;
+        const barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
 
         return {
             responsive: true,
@@ -117,28 +118,35 @@ export default class Mrr extends Component {
             },
             responsiveAnimationDuration: 0,
             tooltips: {
+                enabled: false,
                 intersect: false,
                 mode: 'index',
-                displayColors: false,
-                backgroundColor: '#15171A',
-                xPadding: 7,
-                yPadding: 7,
-                cornerRadius: 5,
-                caretSize: 7,
-                caretPadding: 5,
-                bodyFontSize: 12.5,
-                titleFontSize: 12,
-                titleFontStyle: 'normal',
-                titleFontColor: 'rgba(255, 255, 255, 0.7)',
-                titleMarginBottom: 3,
+                custom: function (tooltip) {
+                    // get tooltip element
+                    const tooltipEl = document.getElementById('gh-dashboard5-mrr-tooltip');
+
+                    // only show tooltip when active
+                    if (tooltip.opacity === 0) {
+                        tooltipEl.style.display = 'none';
+                        tooltipEl.style.opacity = 0;
+                        return; 
+                    }
+
+                    // update tooltip styles
+                    tooltipEl.style.display = 'block';
+                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.position = 'absolute';
+                    tooltipEl.style.left = tooltip.x + 'px';
+                    tooltipEl.style.top = tooltip.y + 'px';    
+                },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        // Convert integer in cents to value in USD/other currency.
-                        const valueText = ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index]);
-                        return `MRR: ${this.mrrCurrencySymbol}${valueText}`;
+                        const value = `${that.mrrCurrencySymbol}${ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index])}`;
+                        document.querySelector('#gh-dashboard5-mrr-tooltip .gh-dashboard5-tooltip-value').innerHTML = value;
                     },
                     title: (tooltipItems) => {
-                        return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                        const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                        document.querySelector('#gh-dashboard5-mrr-tooltip .gh-dashboard5-tooltip-label').innerHTML = value;
                     }
                 }
             },

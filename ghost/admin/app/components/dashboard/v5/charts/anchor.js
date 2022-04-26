@@ -2,7 +2,6 @@ import Component from '@glimmer/component';
 import moment from 'moment';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
-import {ghPriceAmount} from '../../../../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -117,6 +116,18 @@ export default class Anchor extends Component {
         return 'line';
     }
 
+    get chartTitle() {
+        // paid
+        if (this.chartDisplay === 'paid') {
+            return 'Paid members';
+        // free
+        } else if (this.chartDisplay === 'free') {
+            return 'Free members';
+        }
+        // total
+        return 'Total members';
+    }
+
     get chartData() {
         let stats;
         let labels;
@@ -210,43 +221,35 @@ export default class Anchor extends Component {
                 }
             },
             tooltips: {
+                enabled: false,
                 intersect: false,
                 mode: 'index',
-                displayColors: false,
-                backgroundColor: '#15171A',
-                xPadding: 7,
-                yPadding: 7,
-                cornerRadius: 5,
-                caretSize: 7,
-                caretPadding: 5,
-                bodyFontSize: 12.5,
-                titleFontSize: 12,
-                titleFontStyle: 'normal',
-                titleFontColor: 'rgba(255, 255, 255, 0.7)',
-                titleMarginBottom: 3,
+                custom: function (tooltip) {
+                    // get tooltip element
+                    const tooltipEl = document.getElementById('gh-dashboard5-anchor-tooltip');
+
+                    // only show tooltip when active
+                    if (tooltip.opacity === 0) {
+                        tooltipEl.style.display = 'none';
+                        tooltipEl.style.opacity = 0;
+                        return; 
+                    }
+
+                    // update tooltip styles
+                    tooltipEl.style.display = 'block';
+                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.position = 'absolute';
+                    tooltipEl.style.left = tooltip.x + 'px';
+                    tooltipEl.style.top = tooltip.y + 'px';    
+                },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        if (this.chartDisplay === 'mrr') {
-                            // Convert integer in cents to value in USD/other currency.
-                            const valueText = ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index]);
-                            return `MRR: ${this.mrrCurrencySymbol}${valueText}`;
-                        }
-
-                        let valueText = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                        let returnable = valueText;
-
-                        if (this.chartDisplay === 'total') {
-                            if (tooltipItems.datasetIndex === 0) {
-                                returnable = `Total members: ${valueText}`;
-                            } else {
-                                returnable = `Paid members: ${valueText}`;
-                            }
-                        }
-
-                        return returnable;
+                        const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        document.querySelector('#gh-dashboard5-anchor-tooltip .gh-dashboard5-tooltip-value').innerHTML = value;
                     },
                     title: (tooltipItems) => {
-                        return moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                        const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                        document.querySelector('#gh-dashboard5-anchor-tooltip .gh-dashboard5-tooltip-label').innerHTML = value;
                     }
                 }
             },
@@ -303,7 +306,7 @@ export default class Anchor extends Component {
     }
 
     get chartHeightSmall() {
-        return 200;
+        return 180;
     }
 
     calculatePercentage(from, to) {
