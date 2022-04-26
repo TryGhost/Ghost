@@ -110,7 +110,7 @@
     "@tryghost/tpl": "0.1.14",
     "@tryghost/update-check-service": "0.3.2",
     "@tryghost/url-utils": "2.1.0",
-    "@tryghost/validator": "0.1.22",
+    "@tryghost/validator": "0.1.24",
     "@tryghost/verification-trigger": "0.2.0",
     "@tryghost/version": "0.1.12",
     "@tryghost/version-notifications-data-service": "0.1.0",
