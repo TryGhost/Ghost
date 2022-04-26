@@ -38,13 +38,15 @@ const newsletterSnapshot = {
     updated_at: anyISODateTime
 };
 
-const memberMatcherNoIncludes = {
-    id: anyObjectId,
-    uuid: anyUuid,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime,
-    newsletters: anyArray
-};
+function buildMemberWithoutIncludesSnapshot(options) {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        newsletters: new Array(options.newsletters).fill(newsletterSnapshot)
+    };
+}
 
 const memberMatcherShallowIncludes = {
     id: anyObjectId,
@@ -360,7 +362,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: [memberMatcherNoIncludes]
+                members: [news]
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -428,7 +430,11 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: [memberMatcherNoIncludes]
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: 2
+                    })
+                ]
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
