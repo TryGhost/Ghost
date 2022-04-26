@@ -589,8 +589,7 @@
                     "status": "published",
                     "visibility": "public",
                     "created_by": "1",
-                    "published_by": "1",
-                    "author_id": "1"
+                    "published_by": "1"
                 },
                 {
                     "title": "About this site",
@@ -601,8 +600,7 @@
                     "status": "published",
                     "visibility": "public",
                     "created_by": "1",
-                    "published_by": "1",
-                    "author_id": "1"
+                    "published_by": "1"
                 }
             ]
         },
