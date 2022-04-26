@@ -81,17 +81,18 @@ const Newsletter = ghostBookshelf.Model.extend({
     },
 
     getNextAvailableSortOrder: async function getNextAvailableSortOrder(unfilteredOptions = {}) {
-        const options = {};
-        if (unfilteredOptions.transacting) {
-            options.transacting = unfilteredOptions.transacting;
-        }
-
-        const lastNewsletter = await this.findPage({
+        const options = {
             filter: 'status:active',
             order: 'sort_order DESC', // there's no NQL syntax available here
             limit: 1,
             columns: ['sort_order']
-        }, options);
+        };
+
+        if (unfilteredOptions.transacting) {
+            options.transacting = unfilteredOptions.transacting;
+        }
+
+        const lastNewsletter = await this.findPage(options);
 
         if (lastNewsletter.data.length > 0) {
             return lastNewsletter.data[0].get('sort_order') + 1;
