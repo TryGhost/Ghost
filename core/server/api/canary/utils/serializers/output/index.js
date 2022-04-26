@@ -85,8 +85,8 @@ module.exports = {
         return require('./users');
     },
 
-    get preview() {
-        return require('./preview');
+    get previews() {
+        return require('./previews');
     },
 
     get email_post() {

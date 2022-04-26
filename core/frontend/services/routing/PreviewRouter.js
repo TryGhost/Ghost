@@ -9,7 +9,7 @@ class PreviewRouter extends ParentRouter {
     constructor(RESOURCE_CONFIG) {
         super('PreviewRouter');
 
-        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.preview;
+        this.RESOURCE_CONFIG = RESOURCE_CONFIG.QUERY.previews;
 
         // @NOTE: hardcoded, not configureable
         this.route = {value: '/p/'};
@@ -25,8 +25,8 @@ class PreviewRouter extends ParentRouter {
         // REGISTER: prepare context
         this.router().use(this._prepareContext.bind(this));
 
-        // REGISTER: actual preview route
-        this.mountRoute(urlUtils.urlJoin(this.route.value, ':uuid', ':options?'), controllers.preview);
+        // REGISTER: actual previews route
+        this.mountRoute(urlUtils.urlJoin(this.route.value, ':uuid', ':options?'), controllers.previews);
     }
 
     /**

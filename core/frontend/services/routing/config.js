@@ -32,9 +32,9 @@ module.exports.QUERY = {
             slug: '%s'
         }
     },
-    preview: {
-        controller: 'preview',
-        resource: 'preview'
+    previews: {
+        controller: 'previews',
+        resource: 'previews'
     },
     email: {
         controller: 'emailPost',

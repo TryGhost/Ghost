@@ -11,8 +11,8 @@ module.exports = {
         return require('./rss');
     },
 
-    get preview() {
-        return require('./preview');
+    get previews() {
+        return require('./previews');
     },
 
     get email() {
