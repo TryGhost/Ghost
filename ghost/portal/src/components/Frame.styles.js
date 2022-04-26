@@ -561,7 +561,8 @@ const FrameStyles = `
 }
 
 .gh-portal-text-large {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
+    font-weight: 600;
 }
 
 .gh-portal-list section {
