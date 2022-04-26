@@ -43,7 +43,7 @@ module.exports = {
         }
     },
     sendTestEmail: {
-        statusCode: 200,
+        statusCode: 204,
         headers: {},
         options: [
             'id'
