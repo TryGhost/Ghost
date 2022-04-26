@@ -121,8 +121,8 @@ module.exports = {
         return shared.pipeline(require('./users'), localUtils);
     },
 
-    get preview() {
-        return shared.pipeline(require('./preview'), localUtils);
+    get previews() {
+        return shared.pipeline(require('./previews'), localUtils);
     },
 
     get emailPost() {

@@ -5,7 +5,7 @@ const mappers = require('../../../../../../../core/server/api/canary/utils/seria
 const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
 const membersService = require('../../../../../../../core/server/services/members');
 
-describe('Unit: canary/utils/serializers/output/preview', function () {
+describe('Unit: canary/utils/serializers/output/previews', function () {
     let pageModel;
 
     beforeEach(function () {
@@ -46,11 +46,11 @@ describe('Unit: canary/utils/serializers/output/preview', function () {
             type: 'page'
         }));
 
-        await serializers.output.preview.all(ctrlResponse, apiConfig, frame);
+        await serializers.output.previews.all(ctrlResponse, apiConfig, frame);
 
         mappers.posts.callCount.should.equal(1);
         mappers.posts.getCall(0).args.should.eql([ctrlResponse, frame, {tiers: []}]);
 
-        frame.response.preview[0].page.should.equal(true);
+        frame.response.previews[0].page.should.equal(true);
     });
 });

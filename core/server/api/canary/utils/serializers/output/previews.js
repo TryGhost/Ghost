@@ -10,8 +10,8 @@ module.exports = {
 
         const data = await mappers.posts(model, frame, {tiers});
         frame.response = {
-            preview: [data]
+            previews: [data]
         };
-        frame.response.preview[0].page = model.get('type') === 'page';
+        frame.response.previews[0].page = model.get('type') === 'page';
     }
 };
