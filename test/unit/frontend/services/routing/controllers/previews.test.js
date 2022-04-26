@@ -9,7 +9,7 @@ const renderer = require('../../../../../../core/frontend/services/rendering');
 const urlService = require('../../../../../../core/server/services/url');
 const urlUtils = require('../../../../../../core/shared/url-utils');
 
-describe('Unit - services/routing/controllers/preview', function () {
+describe('Unit - services/routing/controllers/previews', function () {
     let secureStub;
     let renderStub;
     let req;
@@ -35,7 +35,7 @@ describe('Unit - services/routing/controllers/preview', function () {
         post = testUtils.DataGenerator.forKnex.createPost({status: 'draft'});
 
         apiResponse = {
-            preview: [post]
+            previews: [post]
         };
 
         req = {
@@ -48,7 +48,7 @@ describe('Unit - services/routing/controllers/preview', function () {
 
         res = {
             routerOptions: {
-                query: {controller: 'preview', resource: 'preview'}
+                query: {controller: 'previews', resource: 'previews'}
             },
             locals: {},
             render: sinon.spy(),
@@ -80,7 +80,7 @@ describe('Unit - services/routing/controllers/preview', function () {
             include: 'authors,tags,tiers'
         }).resolves(apiResponse);
 
-        sinon.stub(api, 'preview').get(() => {
+        sinon.stub(api, 'previews').get(() => {
             return {
                 read: previewStub
             };
@@ -88,7 +88,7 @@ describe('Unit - services/routing/controllers/preview', function () {
     });
 
     it('should render post', function (done) {
-        controllers.preview(req, res, failTest(done)).then(function () {
+        controllers.previews(req, res, failTest(done)).then(function () {
             renderStub.called.should.be.true();
             secureStub.called.should.be.true();
             done();
