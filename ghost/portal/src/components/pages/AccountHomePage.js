@@ -394,6 +394,7 @@ function EmailPreferencesAction() {
         <section>
             <div className='gh-portal-list-detail'>
                 <h3>Email Preferences</h3>
+                <p>Update email preferences</p>
             </div>
             <button className='gh-portal-btn gh-portal-btn-list' onClick={(e) => {
                 onAction('switchPage', {
