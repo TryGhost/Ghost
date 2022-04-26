@@ -25,7 +25,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
         return d.id === newsletter?.id;
     });
     return (
-        <section>
+        <section className='gh-portal-list-toggle-wrapper'>
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter.description}</p>
