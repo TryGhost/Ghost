@@ -46,7 +46,7 @@ const memberMatcherNoIncludes = {
     newsletters: anyArray
 };
 
-const memberMatcherShallowIncludesForNewsletters = {
+const memberMatcherShallowIncludes = {
     id: anyObjectId,
     uuid: anyUuid,
     created_at: anyISODateTime,
@@ -55,7 +55,6 @@ const memberMatcherShallowIncludesForNewsletters = {
     labels: anyArray,
     newsletters: anyArray
 };
-const memberMatcherShallowIncludes = memberMatcherShallowIncludesForNewsletters;
 
 let agent;
 
@@ -1550,7 +1549,7 @@ describe('Members API', function () {
             .get('/members/?filter=newsletters:weekly-newsletter')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(4).fill(memberMatcherShallowIncludesForNewsletters)
+                members: new Array(4).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
