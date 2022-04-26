@@ -295,7 +295,7 @@ const serialize = async (postModel, options = {isBrowserPreview: false, apiVersi
 
     const render = template;
 
-    let htmlTemplate = render({post, site: getSite(), templateSettings});
+    let htmlTemplate = render({post, site: getSite(), templateSettings, newsletter: postModel.related('newsletter').toJSON()});
 
     if (options.isBrowserPreview) {
         const previewUnsubscribeUrl = createUnsubscribeUrl(null);
