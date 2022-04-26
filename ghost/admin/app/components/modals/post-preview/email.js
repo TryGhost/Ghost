@@ -86,7 +86,8 @@ export default class ModalPostPreviewEmailComponent extends Component {
                 dataType: 'json'
             };
 
-            return yield this.ajax.post(url, options);
+            yield this.ajax.post(url, options);
+            return true;
         } catch (error) {
             if (error) {
                 let message = 'Email could not be sent, verify mail settings';
