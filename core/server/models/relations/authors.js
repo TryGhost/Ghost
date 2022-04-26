@@ -295,11 +295,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
     }, {
         /**
          * ### destroyByAuthor
-         * @param  {[type]} options has context and id. Context is the user doing the destroy, id is the user to destroy
+         * @param  {Object} unfilteredOptions has context and id. Context is the user doing the destroy, id is the user to destroy
+         * @param {string} unfilteredOptions.id
+         * @param {Object} unfilteredOptions.context
+         * @param {Object} unfilteredOptions.transacting
          */
-        destroyByAuthor: function destroyByAuthor(unfilteredOptions) {
+        destroyByAuthor: async function destroyByAuthor(unfilteredOptions) {
             let options = this.filterOptions(unfilteredOptions, 'destroyByAuthor', {extraAllowedProperties: ['id']});
-            let postCollection = Posts.forge();
             let authorId = options.id;
 
             if (!authorId) {
@@ -308,34 +310,84 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 }));
             }
 
-            // CASE: if you are the primary author of a post, the whole post and it's relations get's deleted.
-            //       `posts_authors` are automatically removed (bookshelf-relations)
-            // CASE: if you are the secondary author of a post, you are just deleted as author.
-            //       must happen manually
-            const destroyPost = (() => {
-                return postCollection
-                    .query('where', 'author_id', '=', authorId)
-                    .fetch(options)
-                    .call('invokeThen', 'destroy', options)
-                    .then(function (response) {
-                        return (options.transacting || ghostBookshelf.knex)('posts_authors')
-                            .where('author_id', authorId)
-                            .del()
-                            .then(() => response);
-                    })
-                    .catch((err) => {
-                        throw new errors.InternalServerError({err: err});
-                    });
+            const reassignPost = (async () => {
+                let trx = options.transacting;
+                let knex = ghostBookshelf.knex;
+
+                try {
+                    // There's only one possible owner per Ghost instance
+                    const ownerUser = await knex('roles')
+                        .transacting(trx)
+                        .join('roles_users', 'roles.id', '=', 'roles_users.role_id')
+                        .where('roles.name', 'Owner')
+                        .select('roles_users.user_id');
+                    const ownerId = ownerUser[0].user_id;
+
+                    const authorsPosts = await knex('posts_authors')
+                        .transacting(trx)
+                        .where('author_id', authorId)
+                        .select('post_id', 'sort_order');
+
+                    const ownersPosts = await knex('posts_authors')
+                        .transacting(trx)
+                        .where('author_id', ownerId)
+                        .select('post_id');
+
+                    const authorsPrimaryPosts = authorsPosts.filter(ap => ap.sort_order === 0);
+                    const primaryPostsWithOwnerCoauthor = _.intersectionBy(authorsPrimaryPosts, ownersPosts, 'post_id');
+                    const primaryPostsWithOwnerCoauthorIds = primaryPostsWithOwnerCoauthor.map(post => post.post_id);
+
+                    // remove author and bump owner's sort_order to 0 to make them a primary author
+                    // remove author from posts
+                    await knex('posts_authors')
+                        .transacting(trx)
+                        .whereIn('post_id', primaryPostsWithOwnerCoauthorIds)
+                        .where('author_id', authorId)
+                        .del();
+
+                    // make the owner a primary author
+                    await knex('posts_authors')
+                        .transacting(trx)
+                        .whereIn('post_id', primaryPostsWithOwnerCoauthorIds)
+                        .where('author_id', ownerId)
+                        .update('sort_order', 0);
+
+                    const primaryPostsWithoutOwnerCoauthor = _.differenceBy(authorsPrimaryPosts, primaryPostsWithOwnerCoauthor, 'post_id');
+                    const postsWithoutOwnerCoauthorIds = primaryPostsWithoutOwnerCoauthor.map(post => post.post_id);
+
+                    // swap out current author with the owner
+                    await knex('posts_authors')
+                        .transacting(trx)
+                        .whereIn('post_id', postsWithoutOwnerCoauthorIds)
+                        .where('author_id', authorId)
+                        .update('author_id', ownerId);
+
+                    // remove author as secondary author from any other posts
+                    await knex('posts_authors')
+                        .transacting(trx)
+                        .where('author_id', authorId)
+                        .del();
+                    // --------- secondary author cleanup END
+
+                    // make the owner a primary author in post table
+                    // remove this statement once 'author' concept is gone
+                    await knex('posts')
+                        .transacting(trx)
+                        .where('author_id', authorId)
+                        .update('author_id', ownerId);
+                } catch (err) {
+                    throw new errors.InternalServerError({err: err});
+                }
             });
 
             if (!options.transacting) {
                 return ghostBookshelf.transaction((transacting) => {
                     options.transacting = transacting;
-                    return destroyPost();
+                    return reassignPost();
                 });
             }
 
-            return destroyPost();
+            return reassignPost();
         },
 
         permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
