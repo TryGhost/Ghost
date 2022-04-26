@@ -31,24 +31,18 @@ const messages = {
     newsletterVisibilityError: 'Unexpected visibility value "{value}". Use one of the valid: "members", "paid".'
 };
 
-const getFromAddress = () => {
-    let fromAddress = membersService.config.getEmailFromAddress();
-
+const getFromAddress = (senderName, fromAddress) => {
     if (/@localhost$/.test(fromAddress) || /@ghost.local$/.test(fromAddress)) {
         const localAddress = 'localhost@example.com';
         logging.warn(`Rewriting bulk email from address ${fromAddress} to ${localAddress}`);
         fromAddress = localAddress;
     }
 
-    const siteTitle = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : '';
-
-    return siteTitle ? `"${siteTitle}"<${fromAddress}>` : fromAddress;
+    return senderName ? `"${senderName}"<${fromAddress}>` : fromAddress;
 };
 
-const getReplyToAddress = () => {
-    const fromAddress = membersService.config.getEmailFromAddress();
+const getReplyToAddress = (fromAddress, replyAddressOption) => {
     const supportAddress = membersService.config.getEmailSupportAddress();
-    const replyAddressOption = settingsCache.get('members_reply_address');
 
     return (replyAddressOption === 'support') ? supportAddress : fromAddress;
 };
@@ -60,14 +54,25 @@ const getReplyToAddress = () => {
  * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
  */
 const getEmailData = async (postModel, options) => {
+    const newsletter = await postModel.related('newsletter').fetch();
     const {subject, html, plaintext} = await postEmailSerializer.serialize(postModel, options);
+
+    let senderName = settingsCache.get('title') ? settingsCache.get('title').replace(/"/g, '\\"') : '';
+    if (newsletter.get('sender_name')) {
+        senderName = newsletter.get('sender_name');
+    }
+
+    let fromAddress = membersService.config.getEmailFromAddress();
+    if (newsletter.get('sender_email')) {
+        fromAddress = newsletter.get('sender_email');
+    }
 
     return {
         subject,
         html,
         plaintext,
-        from: getFromAddress(),
-        replyTo: getReplyToAddress()
+        from: getFromAddress(senderName, fromAddress),
+        replyTo: getReplyToAddress(fromAddress, newsletter.get('sender_reply_to'))
     };
 };
 
@@ -601,7 +606,9 @@ module.exports = {
     // NOTE: below are only exposed for testing purposes
     _transformEmailRecipientFilter: transformEmailRecipientFilter,
     _partitionMembersBySegment: partitionMembersBySegment,
-    _getEmailMemberRows: getEmailMemberRows
+    _getEmailMemberRows: getEmailMemberRows,
+    _getFromAddress: getFromAddress,
+    _getReplyToAddress: getReplyToAddress
 };
 
 /**
