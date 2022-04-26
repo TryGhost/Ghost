@@ -59,6 +59,18 @@ function addTableColumn(tableName, table, columnName, columnSpec = schema[tableN
     }
 }
 
+function setNullable(tableName, column, transaction = db.knex) {
+    return transaction.schema.table(tableName, function (table) {
+        table.setNullable(column);
+    });
+}
+
+function dropNullable(tableName, column, transaction = db.knex) {
+    return transaction.schema.table(tableName, function (table) {
+        table.dropNullable(column);
+    });
+}
+
 function addColumn(tableName, column, transaction = db.knex, columnSpec) {
     return transaction.schema.table(tableName, function (table) {
         addTableColumn(tableName, table, column, columnSpec);
@@ -412,6 +424,8 @@ module.exports = {
     dropForeign: dropForeign,
     addColumn: addColumn,
     dropColumn: dropColumn,
+    setNullable: setNullable,
+    dropNullable: dropNullable,
     getColumns: getColumns,
     createColumnMigration,
     // NOTE: below are exposed for testing purposes only
