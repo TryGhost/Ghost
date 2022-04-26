@@ -175,7 +175,7 @@ const getTemplateSettings = async (newsletterId = null) => {
     if (newsletterId) {
         newsletter = await models.Newsletter.findOne({id: newsletterId, filter: 'status:active'});
     } else {
-        const newsletters = await models.Newsletter.findPage({status: 'active', limit: 1});
+        const newsletters = await models.Newsletter.findPage({filter: 'status:active', limit: 1});
         newsletter = newsletters.data[0];
     }
 
