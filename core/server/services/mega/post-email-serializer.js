@@ -171,40 +171,33 @@ const parseReplacements = (email) => {
 };
 
 const getTemplateSettings = async (newsletterId = null) => {
+    let newsletter;
+    if (newsletterId) {
+        newsletter = await models.Newsletter.findOne({id: newsletterId, status: 'active'});
+    } else {
+        const newsletters = await models.Newsletter.findPage({status: 'active', limit: 1});
+        newsletter = newsletters.data[0];
+    }
+
     const accentColor = settingsCache.get('accent_color');
     const adjustedAccentColor = accentColor && darkenToContrastThreshold(accentColor, '#ffffff', 2).hex();
     const adjustedAccentContrastColor = accentColor && textColorForBackgroundColor(adjustedAccentColor).hex();
 
     const templateSettings = {
-        headerImage: settingsCache.get('newsletter_header_image'),
-        showHeaderIcon: settingsCache.get('newsletter_show_header_icon') && settingsCache.get('icon'),
-        showHeaderTitle: settingsCache.get('newsletter_show_header_title'),
-        showFeatureImage: settingsCache.get('newsletter_show_feature_image'),
-        titleFontCategory: settingsCache.get('newsletter_title_font_category'),
-        titleAlignment: settingsCache.get('newsletter_title_alignment'),
-        bodyFontCategory: settingsCache.get('newsletter_body_font_category'),
-        showBadge: settingsCache.get('newsletter_show_badge'),
-        footerContent: settingsCache.get('newsletter_footer_content'),
+        headerImage: newsletter.get('header_image'),
+        showHeaderIcon: newsletter.get('show_header_icon') && settingsCache.get('icon'),
+        showHeaderTitle: newsletter.get('show_header_title'),
+        showFeatureImage: newsletter.get('show_feature_image'),
+        titleFontCategory: newsletter.get('title_font_category'),
+        titleAlignment: newsletter.get('title_alignment'),
+        bodyFontCategory: newsletter.get('body_font_category'),
+        showBadge: newsletter.get('show_badge'),
+        footerContent: newsletter.get('footer_content'),
+        showHeaderName: newsletter.get('show_header_name'),
         accentColor,
         adjustedAccentColor,
         adjustedAccentContrastColor
     };
-
-    if (newsletterId) {
-        const newsletter = await models.Newsletter.findOne({id: newsletterId, status: 'active'}, {require: false});
-        if (newsletter) {
-            templateSettings.headerImage = newsletter.get('header_image');
-            templateSettings.showHeaderIcon = newsletter.get('show_header_icon') && settingsCache.get('icon');
-            templateSettings.showHeaderTitle = newsletter.get('show_header_title');
-            templateSettings.showFeatureImage = newsletter.get('show_feature_image');
-            templateSettings.titleFontCategory = newsletter.get('title_font_category');
-            templateSettings.titleAlignment = newsletter.get('title_alignment');
-            templateSettings.bodyFontCategory = newsletter.get('body_font_category');
-            templateSettings.showBadge = newsletter.get('show_badge');
-            templateSettings.footerContent = newsletter.get('footer_content');
-            templateSettings.showHeaderName = newsletter.get('show_header_name');
-        }
-    }
 
     if (templateSettings.headerImage) {
         if (isUnsplashImage(templateSettings.headerImage)) {

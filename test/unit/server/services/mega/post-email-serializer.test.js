@@ -94,34 +94,46 @@ describe('Post Email Serializer', function () {
             sinon.restore();
         });
 
-        it('uses the gloal settings when no newsletter_id is defined', async function () {
+        it('uses the default newsletter settings when no newsletter_id is defined', async function () {
             sinon.stub(settingsCache, 'get').callsFake(function (key) {
                 return {
                     icon: 'icon',
-                    accent_color: '#990000',
-                    newsletter_header_image: 'image',
-                    newsletter_show_header_icon: true,
-                    newsletter_show_header_title: true,
-                    newsletter_show_feature_image: true,
-                    newsletter_title_font_category: 'sans-serif',
-                    newsletter_title_alignment: 'center',
-                    newsletter_body_font_category: 'serif',
-                    newsletter_show_badge: true,
-                    newsletter_footer_content: 'footer'
+                    accent_color: '#990000'
                 }[key];
             });
+            sinon.stub(models.Newsletter, 'findPage').returns(
+                Promise.resolve({
+                    data: [{
+                        get: function (key) {
+                            return {
+                                header_image: 'image',
+                                show_header_icon: true,
+                                show_header_title: true,
+                                show_feature_image: true,
+                                title_font_category: 'sans_serif',
+                                title_alignment: 'center',
+                                body_font_category: 'serif',
+                                show_badge: true,
+                                footer_content: '',
+                                show_header_name: true
+                            }[key];
+                        }
+                    }]
+                })
+            );
 
             const res = await _getTemplateSettings();
             should(res).eql({
                 headerImage: 'image',
                 showHeaderIcon: 'icon',
                 showHeaderTitle: true,
+                showHeaderName: true,
                 showFeatureImage: true,
-                titleFontCategory: 'sans-serif',
+                titleFontCategory: 'sans_serif',
                 titleAlignment: 'center',
                 bodyFontCategory: 'serif',
                 showBadge: true,
-                footerContent: 'footer',
+                footerContent: '',
                 accentColor: '#990000',
                 adjustedAccentColor: '#990000',
                 adjustedAccentContrastColor: '#FFFFFF'
