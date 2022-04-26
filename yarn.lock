@@ -236,7 +236,7 @@
     "@aws-sdk/types" "3.55.0"
     tslib "^2.3.1"
 
-"@aws-sdk/credential-provider-node@3.56.0", "@aws-sdk/credential-provider-node@^3.31.0":
+"@aws-sdk/credential-provider-node@3.56.0":
   version "3.56.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/credential-provider-node/-/credential-provider-node-3.56.0.tgz#b07d06cd6c5b7c5a206f27ff36f930bc6a30bd5f"
   integrity sha512-TSnjA1grdyTP8xNNgNxLmOvZMUT3zT9JLydBOqpQptLjLBbP90F32CCxKZWFOA/DXtZA0QK9Fjo+8t0Q3xZtiw==
@@ -1854,6 +1854,15 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
+"@tryghost/errors@^1.2.12":
+  version "1.2.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.12.tgz#906f2cf603dd90f6e386f4a95b963d613e4279e6"
+  integrity sha512-VRRsat58v+bNX/fsjDXc7EVcyoZnOdGmAqNe6mCxmPVLWO55qEic0M+AJFnBh1TOCCkx+kRvH46+C0JOomfKAw==
+  dependencies:
+    lodash "^4.17.21"
+    utils-copy-error "^1.0.1"
+    uuid "^8.3.2"
+
 "@tryghost/express-dynamic-redirects@0.2.8":
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.8.tgz#67b4f19c6210734e0226e6c8f18c0ad7ce2a75a2"
@@ -2215,14 +2224,13 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.28.tgz#6cddffa53e07a19c13cfc5a72071e59f42e65719"
   integrity sha512-1BXi+twPQVBbfm4NMRa9Ms5mHHZg0P8Z4oq1s0tnkJ+iNIWol2fkuJ5m6Mi6qXiWD0lPqpOL/as/aBGJsyoe7A==
 
-"@tryghost/nodemailer@0.3.20":
-  version "0.3.20"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.20.tgz#7bdc9e66b93286ed6feb7ba8799c5863d22d4817"
-  integrity sha512-sWpUkeCgSp+rifd7sLYwX2zCPUgnlr6Ip9GF0dbyCCUm6X+p64YEI6UNE4MsU29N4YoCUBYI5c07GVZtD+JDAA==
+"@tryghost/nodemailer@0.3.22":
+  version "0.3.22"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.22.tgz#c80151c70358a42cee1038746e5e2a1975811b95"
+  integrity sha512-nrBCfl0cQFCtLXVOpunb1Hfd+nv6nWCVy/SuFQGNzljKHHlkTJ1oL7ltCGsMxqsUGbZ1Ksyer4Il07syDAzDcw==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
-    "@aws-sdk/credential-provider-node" "^3.31.0"
-    "@tryghost/errors" "^1.2.10"
+    "@tryghost/errors" "^1.2.12"
     nodemailer "^6.6.3"
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
