@@ -251,14 +251,19 @@ module.exports = class MemberRepository {
             ...eventData
         }, options);
 
-        if (member.get('subscribed')) {
+        const newsletters = member.related('newsletters').models;
+
+        for (const newsletter of newsletters) {
             await this._MemberSubscribeEvent.add({
                 member_id: member.id,
+                newsletter_id: newsletter.id,
                 subscribed: true,
                 source,
                 ...eventData
             }, options);
+        }
 
+        if (newsletters && newsletters.length > 0) {
             DomainEvents.dispatch(MemberSubscribeEvent.create({
                 memberId: member.id,
                 source: source
@@ -337,6 +342,23 @@ module.exports = class MemberRepository {
             }
         }
 
+        // Keep track of the newsletters that were added and removed of a member so we can generate the corresponding events
+        let newslettersToAdd = [];
+        let newslettersToRemove = [];
+        if (data.newsletters) {
+            const member = await this._Member.findOne({
+                id: options.id
+            }, sharedOptions);
+
+            const existingNewsletters = await member.related('newsletters').fetch(sharedOptions);
+
+            const existingNewsletterIds = existingNewsletters.map(newsletter => newsletter.id);
+            const incomingNewsletterIds = data.newsletters.map(newsletter => newsletter.id);
+
+            newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
+            newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
+        }
+
         const member = await this._Member.edit({
             ...memberData,
             ...memberStatusData
@@ -358,25 +380,38 @@ module.exports = class MemberRepository {
             }, options);
         }
 
-        // member._changed.subscribed has a value if the `subscribed` attribute is passed in the update call, regardless of the previous value
-        if (member.attributes.subscribed !== member._previousAttributes.subscribed) {
-            const context = options && options.context || {};
-            let source;
-            if (context.internal) {
-                source = 'system';
-            } else if (context.user) {
-                source = 'admin';
-            } else if (context.api_key) {
-                source = 'api';
-            } else {
-                source = 'member';
-            }
+        // Add subscribe events for all (un)subscribed newsletters
+        const context = options && options.context || {};
+        let source;
+        if (context.internal) {
+            source = 'system';
+        } else if (context.user) {
+            source = 'admin';
+        } else if (context.api_key) {
+            source = 'api';
+        } else {
+            source = 'member';
+        }
+
+        for (const newsletterToAdd of newslettersToAdd) {
             await this._MemberSubscribeEvent.add({
                 member_id: member.id,
-                subscribed: member.get('subscribed'),
+                newsletter_id: newsletterToAdd,
+                subscribed: true,
                 source
             }, sharedOptions);
+        }
 
+        for (const newsletterToRemove of newslettersToRemove) {
+            await this._MemberSubscribeEvent.add({
+                member_id: member.id,
+                newsletter_id: newsletterToRemove,
+                subscribed: false,
+                source
+            }, sharedOptions);
+        }
+
+        if (newslettersToAdd.length > 0 || newslettersToRemove.length > 0) {
             DomainEvents.dispatch(MemberSubscribeEvent.create({
                 memberId: member.id,
                 source: source
