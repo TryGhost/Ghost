@@ -13,7 +13,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     });
     if (newsletter.paid) {
         return (
-            <section>
+            <section className='gh-portal-list-toggle-wrapper'>
                 <div className='gh-portal-list-detail gh-portal-list-big'>
                     <h3>{newsletter.name}</h3>
                     <p>{newsletter.description}</p>
@@ -25,7 +25,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
         );
     }
     return (
-        <section>
+        <section className='gh-portal-list-toggle-wrapper'>
             <div className='gh-portal-list-detail gh-portal-list-big'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter.description}</p>

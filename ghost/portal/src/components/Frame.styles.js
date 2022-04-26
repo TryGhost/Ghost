@@ -546,7 +546,8 @@ const FrameStyles = `
 .gh-portal-lock-icon-container {
     display: flex;
     justify-content: center;
-    width: 44px;
+    flex: 44px 0 0;
+    padding-top: 6px;
 }
 
 .gh-portal-lock-icon {
