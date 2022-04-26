@@ -29,6 +29,7 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: 'sans_serif'}) bodyFontCategory;
     @attr footerContent;
     @attr({defaultValue: true}) showBadge;
+    @attr count;
 
     // HACK - not a real model attribute but a workaround for Ember Data not
     //        exposing meta from save responses

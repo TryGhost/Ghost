@@ -116,7 +116,7 @@ export default class NewsletterManagementComponent extends Component {
 
     @task
     *loadNewslettersTask() {
-        const newsletters = yield this.store.findAll('newsletter', {reload: true});
+        const newsletters = yield this.store.query('newsletter', {include: 'count.members,count.posts'});
 
         this.updateFilteredNewsletters();
 
