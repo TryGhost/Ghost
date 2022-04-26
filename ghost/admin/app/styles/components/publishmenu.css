@@ -434,7 +434,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-width: 740px;
+    width: 740px;
     margin: 0 auto 8rem;
     padding-top: 11vw;
 }
@@ -455,16 +455,34 @@
 }
 
 .gh-publish-setting {
-    display: inline-block;
-    padding: 4px 8px;
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    padding: 0 8px;
     font-weight: 600;
     white-space: nowrap;
-    background: var(--whitegrey);
+    cursor: pointer;
+    background: var(--whitegrey-l1);
     border-radius: var(--border-radius);
 }
 
 .gh-publish-setting input[type="radio"]:disabled + label {
     color: var(--midlightgrey);
+}
+
+.gh-publish-setting-dropdown {
+    top: 46px;
+    min-width: 218px;
+    padding: 4px 16px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-m);
+}
+
+.gh-publish-setting-dropdown fieldset {
+    margin-bottom: 0;
 }
 
 .gh-publish-cta {
