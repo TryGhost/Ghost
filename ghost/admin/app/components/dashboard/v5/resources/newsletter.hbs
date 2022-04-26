@@ -9,19 +9,9 @@
                 <div class="gh-dashboard5-resource-smallarticles">
                     {{#each this.newsletters as |entry|}}
                         <a class="gh-dashboard5-resource-smallarticle" href={{set-query-params entry.url utm_source='admin'}} target="_blank" rel="noopener noreferrer">
-                            {{!-- {{#if entry.feature_image}}
-                                <div class="gh-dashboard5-newsletter-thumbnail" style={{background-image-style entry.feature_image}}></div>
-                            {{/if}} --}}
-
                             <img class="gh-dashboard5-resource-thumbnail" src="assets/img/newsletter-1.jpg" alt="{{entry.title}}" />
-                            
                             <div class="gh-dashboard5-resource-text">
                                 <h5>{{entry.title}}</h5>
-                                {{!-- {{#if entry.custom_excerpt}}
-                                    <p>{{entry.custom_excerpt}}</p>
-                                {{else if entry.excerpt}}
-                                    <p>{{entry.excerpt}}</p>
-                                {{/if}} --}}
                                 <div class="gh-dashboard5-resource-secondary">{{moment-format entry.published_at "D MMM YYYY"}}</div>
                             </div>
                         </a>
@@ -31,7 +21,7 @@
     
         </div>
         <div class="gh-dashboard5-resource-footer">
-            <a href="https://ghost.org/resources/" target="_blank" rel="noopener noreferrer">Sign up to the newsletter &rarr;</a>
+            <a href="https://ghost.org/resources/newsletter/" target="_blank" rel="noopener noreferrer">Sign up to the newsletter &rarr;</a>
         </div>
     </article>
 </section>

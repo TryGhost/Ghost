@@ -1,34 +1,44 @@
-{{#if this.hasMultipleTiers }}
-    <div class="gh-dashboard5-select">
-        <PowerSelect
-            @selected={{this.selectedModeOption}}
-            @options={{this.modeOptions}}
-            @searchEnabled={{false}}
-            @onChange={{this.onSwitchMode}}
-            @triggerComponent="gh-power-select/trigger"
-            @triggerClass="gh-contentfilter-menu-trigger"
-            @dropdownClass="gh-contentfilter-menu-dropdown"
-            @matchTriggerWidth={{false}}
-            as |option|
-        >
-            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-        </PowerSelect>
+<div class="gh-dashboard5-minichart gh-dashboard5-mix {{if this.isChartTiers 'is-tiers'}}">
+    <div class="gh-dashboard5-data">
+        <Dashboard::v5::Parts::Metric
+            @label="Paid mix" /> 
+
+        {{#if this.isChartCadence}}
+            <div class="gh-dashboard5-legend">
+                <div class="gh-dashboard5-legend-item">Monthly</div>
+                <div class="gh-dashboard5-legend-item">Annual</div>
+            </div>
+        {{/if}}
     </div>
-{{/if}}
 
-<Dashboard::v5::Parts::Metric
-    @label="Paid mix" /> 
+    <div class="gh-dashboard5-chart" {{did-insert this.loadCharts}}>
+        {{#if this.loading}}
+            <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+        {{else}}
+            <div class="gh-dashboard5-chart-container">
+                <EmberChart
+                    @type={{this.chartType}}
+                    @data={{this.chartData}}
+                    @options={{this.chartOptions}} />   
+            </div>
+        {{/if}}
+    </div>
 
-<div class="gh-dashboard5-chart" {{did-insert this.loadCharts}}>
-    {{#if this.loading}}
-        <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
-    {{else}}
-        <div class="gh-dashboard5-chart-container">
-            <EmberChart
-                @type={{this.chartType}}
-                @data={{this.chartData}}
-                @options={{this.chartOptions}}
-                @height={{this.chartHeight}} />
+    {{#if this.hasMultipleTiers }}
+        <div class="gh-dashboard5-select">
+            <PowerSelect
+                @selected={{this.selectedModeOption}}
+                @options={{this.modeOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onSwitchMode}}
+                @triggerComponent="gh-power-select/trigger"
+                @triggerClass="gh-contentfilter-menu-trigger"
+                @dropdownClass="gh-contentfilter-menu-dropdown"
+                @matchTriggerWidth={{false}}
+                as |option|
+            >
+                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
         </div>
     {{/if}}
 </div>

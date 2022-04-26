@@ -139,6 +139,20 @@ export default class Anchor extends Component {
             data = stats.map(stat => stat.paid + stat.free + stat.comped);
         }
 
+        // gradient for line
+        const canvasLine = document.createElement('canvas');
+        const ctxLine = canvasLine.getContext('2d');
+        const gradientLine = ctxLine.createLinearGradient(0, 0, 1000, 0);
+        gradientLine.addColorStop(0, 'rgba(250, 45, 142, 1');   
+        gradientLine.addColorStop(1, 'rgba(143, 66, 255, 1');
+  
+        // gradient for fill
+        const canvasFill = document.createElement('canvas');
+        const ctxFill = canvasFill.getContext('2d');
+        const gradientFill = ctxFill.createLinearGradient(0, 0, 1000, 0);
+        gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0.2');   
+        gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0.02');
+        
         return {
             labels: labels,
             datasets: [{
@@ -146,8 +160,8 @@ export default class Anchor extends Component {
                 tension: 0,
                 cubicInterpolationMode: 'monotone',
                 fill: true,
-                fillColor: 'rgba(142, 66, 255, 0.05)',
-                backgroundColor: 'rgba(142, 66, 255, 0.05)',
+                fillColor: gradientFill,
+                backgroundColor: gradientFill,
                 pointRadius: 0,
                 pointHitRadius: 10,
                 pointBorderColor: '#8E42FF',
@@ -155,7 +169,7 @@ export default class Anchor extends Component {
                 pointHoverBackgroundColor: '#8E42FF',
                 pointHoverBorderColor: '#8E42FF',
                 pointHoverRadius: 0,
-                borderColor: '#8E42FF',
+                borderColor: gradientLine,
                 borderJoinStyle: 'miter'
             }]
         };
@@ -172,7 +186,7 @@ export default class Anchor extends Component {
 
     get chartOptions() {
         let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
-    
+
         return {
             responsive: true,
             maintainAspectRatio: false,

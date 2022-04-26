@@ -1,15 +1,24 @@
-<Dashboard::v5::Parts::Metric
-    @label={{this.chartTitle}} /> 
+<div class="gh-dashboard5-minichart gh-dashboard5-breakdown">
+    <div class="gh-dashboard5-data">
+        <Dashboard::v5::Parts::Metric
+            @label={{this.chartTitle}} />
 
-<div class="gh-dashboard5-chart" {{did-insert this.loadCharts}}>
-    {{#if this.loading}}
-        <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
-    {{else}}
-        <EmberChart
-            @type={{this.chartType}}
-            @data={{this.chartData}}
-            @options={{this.chartOptions}}
-            @height={{this.chartHeight}} />
-    {{/if}}
+        <div class="gh-dashboard5-legend">
+            <div class="gh-dashboard5-legend-item">New</div>
+            <div class="gh-dashboard5-legend-item">Canceled</div>
+        </div>
+    </div>
+
+    <div class="gh-dashboard5-chart" {{did-insert this.loadCharts}}>
+        {{#if this.loading}}
+            <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+        {{else}}
+            <div class="gh-dashboard5-chart-container">
+                <EmberChart
+                    @type={{this.chartType}}
+                    @data={{this.chartData}}
+                    @options={{this.chartOptions}} />
+            </div>
+        {{/if}}
+    </div>
 </div>
- 

@@ -116,30 +116,24 @@ export default class PaidMix extends Component {
             responsive: true,
             maintainAspectRatio: false,
             legend: {
-                display: (this.mode === 'cadence' ? true : false),
-                position: 'left',
-                labels: {
-                    boxWidth: 13,
-                    fontFamily: '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif',
-                    fontColor: '#626d79',
-                    fontSize: 13
-                },
-                onClick: null
+                display: false
             },
             layout: {
                 padding: (this.mode === 'cadence' ? {
-                    left: 7,
+                    left: 0,
                     right: 21,
-                    top: 10
+                    top: 30
                 } : {
-                    top: 10,
-                    left: 23,
-                    right: 40
+                    top: 30,
+                    left: 21,
+                    right: 21,
+                    bottom: 30
                 })
             },
             animation: {
                 duration: 0
             },
+            responsiveAnimationDuration: 0,
             hover: {
                 onHover: function (e) {
                     e.target.style.cursor = 'pointer';
@@ -196,7 +190,11 @@ export default class PaidMix extends Component {
         };
     }
 
-    get chartHeight() {
-        return 130;
+    get isChartCadence() {
+        return (this.mode === 'cadence');
+    }
+
+    get isChartTiers() {
+        return (this.mode === 'tiers');
     }
 }

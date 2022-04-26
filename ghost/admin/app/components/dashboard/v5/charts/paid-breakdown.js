@@ -96,6 +96,10 @@ export default class PaidBreakdown extends Component {
                     e.target.style.cursor = 'pointer';
                 }
             },
+            animation: {
+                duration: 0
+            },
+            responsiveAnimationDuration: 0,
             tooltips: {
                 intersect: false,
                 mode: 'index',
@@ -172,9 +176,5 @@ export default class PaidBreakdown extends Component {
                 }]
             }
         };
-    }
-
-    get chartHeight() {
-        return 120;
     }
 }
