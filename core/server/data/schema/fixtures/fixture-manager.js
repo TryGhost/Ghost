@@ -74,13 +74,22 @@ class FixtureManager {
             migrating: true
         }, options);
 
-        await Promise.mapSeries(this.fixtures.models, (model) => {
+        const roleModel = this.fixtures.models.find(m => m.name === 'Role');
+        await this.addFixturesForModel(roleModel, localOptions);
+
+        const userModel = this.fixtures.models.find(m => m.name === 'User');
+        await this.addFixturesForModel(userModel, localOptions);
+
+        const userRolesRelation = this.fixtures.relations.find(r => r.from.relation === 'roles');
+        await this.addFixturesForRelation(userRolesRelation, localOptions);
+
+        await Promise.mapSeries(this.fixtures.models.filter(m => !['User', 'Role'].includes(m.name)), (model) => {
             logging.info('Model: ' + model.name);
 
             return this.addFixturesForModel(model, localOptions);
         });
 
-        await Promise.mapSeries(this.fixtures.relations, (relation) => {
+        await Promise.mapSeries(this.fixtures.relations.filter(r => r.from.relation !== 'roles'), (relation) => {
             logging.info('Relation: ' + relation.from.model + ' to ' + relation.to.model);
             return this.addFixturesForRelation(relation, localOptions);
         });
