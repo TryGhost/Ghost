@@ -86,12 +86,16 @@ const Newsletter = ghostBookshelf.Model.extend({
         };
     },
 
-    getDefaultNewsletter: async function getDefaultNewsletter() {
+    getDefaultNewsletter: async function getDefaultNewsletter(unfilteredOptions = {}) {
         const options = {
             filter: 'status:active',
             order: this.orderDefaultRaw(),
             limit: 1
         };
+
+        if (unfilteredOptions.transacting) {
+            options.transacting(unfilteredOptions.transacting);
+        }
 
         const newsletters = await this.findPage(options);
 
