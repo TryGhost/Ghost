@@ -152,7 +152,7 @@ Object {
       "key": "labs",
       "type": "object",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "value": "{\\"multipleProducts\\":true,\\"tierWelcomePages\\":true,\\"tierName\\":true,\\"selectablePortalLinks\\":true,\\"membersTableStatus\\":true,\\"improvedOnboarding\\":true,\\"membersActivityFeed\\":true,\\"members\\":true}",
+      "value": "{\\"multipleProducts\\":true,\\"tierWelcomePages\\":true,\\"tierName\\":true,\\"selectablePortalLinks\\":true,\\"membersTableStatus\\":true,\\"improvedOnboarding\\":true,\\"multipleNewsletters\\":true,\\"membersActivityFeed\\":true,\\"members\\":true}",
     },
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -192,7 +192,7 @@ exports[`Settings API Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3979",
+  "content-length": "4008",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -873,7 +873,7 @@ Object {
       "key": "labs",
       "type": "object",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "value": "{\\"activitypub\\":true,\\"oauthLogin\\":true,\\"membersActivity\\":true,\\"urlCache\\":true,\\"beforeAfterCard\\":true,\\"tweetGridCard\\":true,\\"multipleNewsletters\\":true,\\"multipleNewslettersUI\\":true,\\"dashboardV5\\":true,\\"publishingFlow\\":true,\\"multipleProducts\\":true,\\"tierWelcomePages\\":true,\\"tierName\\":true,\\"selectablePortalLinks\\":true,\\"membersTableStatus\\":true,\\"improvedOnboarding\\":true,\\"membersActivityFeed\\":true,\\"members\\":true}",
+      "value": "{\\"activitypub\\":true,\\"oauthLogin\\":true,\\"membersActivity\\":true,\\"urlCache\\":true,\\"beforeAfterCard\\":true,\\"tweetGridCard\\":true,\\"multipleNewslettersUI\\":true,\\"dashboardV5\\":true,\\"publishingFlow\\":true,\\"multipleProducts\\":true,\\"tierWelcomePages\\":true,\\"tierName\\":true,\\"selectablePortalLinks\\":true,\\"membersTableStatus\\":true,\\"improvedOnboarding\\":true,\\"multipleNewsletters\\":true,\\"membersActivityFeed\\":true,\\"members\\":true}",
     },
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,

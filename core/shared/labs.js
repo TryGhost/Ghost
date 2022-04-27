@@ -21,6 +21,7 @@ const GA_FEATURES = [
     'selectablePortalLinks',
     'membersTableStatus',
     'improvedOnboarding',
+    'multipleNewsletters',
     'membersActivityFeed'
 ];
 
@@ -36,7 +37,6 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'tweetGridCard',
-    'multipleNewsletters',
     'multipleNewslettersUI',
     'dashboardV5',
     'publishingFlow'
