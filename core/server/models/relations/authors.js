@@ -358,14 +358,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                         .transacting(trx)
                         .where('author_id', authorId)
                         .del();
-                    // --------- secondary author cleanup END
-
-                    // make the owner a primary author in post table
-                    // remove this statement once 'author' concept is gone
-                    await knex('posts')
-                        .transacting(trx)
-                        .where('author_id', authorId)
-                        .update('author_id', ownerId);
                 } catch (err) {
                     throw new errors.InternalServerError({err: err});
                 }
