@@ -16,7 +16,7 @@ module.exports = createTransactionalMigration(
             return;
         }
 
-        // Set susbcribe events
+        // Set subscribe events
         const updatedRows = await knex('members_subscribe_events')
             .update({
                 newsletter_id: newsletter.id
