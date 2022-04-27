@@ -199,8 +199,9 @@ export default class Anchor extends Component {
         let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
 
         return {
-            responsive: true,
             maintainAspectRatio: false,
+            responsiveAnimationDuration: 1,
+            animation: false,
             title: {
                 display: false
             },
@@ -211,8 +212,8 @@ export default class Anchor extends Component {
                 padding: {
                     top: 2,
                     bottom: 2,
-                    left: 16,
-                    right: 16
+                    left: 0,
+                    right: 0
                 }
             },
             hover: {

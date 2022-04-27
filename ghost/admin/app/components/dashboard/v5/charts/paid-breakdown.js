@@ -85,10 +85,10 @@ export default class PaidBreakdown extends Component {
             },
             layout: {
                 padding: {
-                    top: 8,
+                    top: 24,
                     bottom: 0,
-                    left: 16,
-                    right: 16
+                    left: 0,
+                    right: 0
                 }
             },
             hover: {

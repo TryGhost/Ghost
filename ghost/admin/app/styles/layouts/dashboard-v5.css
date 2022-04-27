@@ -67,6 +67,7 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-layout {
     max-width: 1230px;
+    min-width: 850px;
     margin: 0 auto;
 }
 
@@ -168,7 +169,7 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-box.is-secondary {
-    background: #f5f6f6;
+    background: var(--main-color-content-greybg);
     border: transparent;
 }
 
@@ -215,8 +216,6 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-minichart {
     flex: 1;
-    display: flex;
-    flex-direction: row;
     border-left: 1px solid var(--whitegrey);
     padding: 4px 24px;
     position: relative;
@@ -224,15 +223,20 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-minichart .gh-dashboard5-data {
-    flex: 40%;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 24px;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
 }
 
-.gh-dashboard5-minichart .gh-dashboard5-chart {
-    flex: 60%;
+.gh-dashboard5-minichart:first-child .gh-dashboard5-data {
+    left: 0;
 }
 
 .gh-dashboard5-minichart:first-child {
@@ -248,12 +252,8 @@ Dashboard v5 Layout */
     flex-direction: column;
 }
 
-.gh-dashboard5-minichart.is-tiers .gh-dashboard5-data {
-    flex: auto;
-}
-
 .gh-dashboard5-minichart.is-tiers .gh-dashboard5-chart {
-    flex: 1;
+    padding: 0;
 }
 
 .gh-dashboard5-legend {
@@ -378,6 +378,7 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-inner {
     max-width: 1230px;
+    min-width: 850px;
     margin: 0 auto;
 }
 
@@ -422,8 +423,37 @@ Dashboard v5 Chart */
 .gh-dashboard5-chart-container {
     flex: 1;
     position: relative;
-    width: 100%; /* hack for ChartJS responsive resizing */
+}
+
+.gh-dashboard5-chart-box {
+    position: relative;
+    height: 200px;
+    width: 99%; /* ChartJS hack to resize with window */
+}
+
+.gh-dashboard5-chart-gradient {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
     height: 100%;
+    background: rgb(21,23,25);
+    background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
+}
+
+.gh-dashboard5-chart-box canvas {
+    height: 100% !important;
+}
+
+.gh-dashboard5-minicharts .gh-dashboard5-chart {
+    width: 100%;
+    height: 100%;
+    padding: 0 0 0 30%;
+}
+
+.gh-dashboard5-minicharts .gh-dashboard5-chart-box {
+    height: 130px;
 }
 
 
@@ -761,50 +791,17 @@ Dashboard v5 Anchor */
 
 .gh-dashboard5-anchor .gh-dashboard5-chart {
     flex-direction: column;
-    margin-top: 24px;
-    margin-left: -16px;
-    margin-right: -16px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-chart-ticks {
     flex-direction: row;
-    padding: 10px 16px;
+    padding: 10px 0;
     font-size: 1.2rem;
     color: var(--midlightgrey);
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-minicharts {
     margin-top: 48px;
-}
-
-.gh-dashboard5-mrr .gh-dashboard5-chart {
-    margin-top: 0;
-    margin-left: -16px;
-    margin-right: -24px;
-}
-
-.gh-dashboard5-mrr .gh-dashboard5-chart-container {
-    width: 99%;
-}
-
-.gh-dashboard5-breakdown .gh-dashboard5-chart {
-    margin-top: 8px;
-    margin-left: -16px;
-    margin-right: -24px;
-}
-
-.gh-dashboard5-breakdown .gh-dashboard5-chart-container {
-    width: 99%;
-}
-
-.gh-dashboard5-mix .gh-dashboard5-chart {
-    margin-top: 0;
-    margin-left: -24px;
-    margin-right: -24px;
-}
-
-.gh-dashboard5-mix .gh-dashboard5-chart-container {
-    width: 99%;
 }
 
 .gh-dashboard5-mix .gh-dashboard5-select {
@@ -1316,44 +1313,6 @@ Dashboard v5 Misc */
     font-weight: 600;
 }
 
-.gh-dashboard5-rate-bar {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.gh-dashboard5-rate-amount {
-    height: 6px;
-    border-radius: 2.5px;
-    background: var(--whitegrey);
-    overflow: hidden;
-    position: relative;
-    display: block;
-    flex-grow: 1;
-    margin-left: 20px;
-}
-
-.gh-dashboard5-rate-amount + span {
-    flex-shrink: 0;
-    padding-left: 15px;
-}
-
-.gh-dashboard5-rate-amount > span {
-    /* background: var(--purple); */
-
-    background: rgb(213,184,255);
-    background: linear-gradient(90deg, rgba(213,184,255,1) 0%, rgba(142,66,255,1) 100%);
-
-    border-top-right-radius: 2.5px;
-    border-bottom-right-radius: 2.5px;
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-}
-
 
 /* --------------------------------- 
 Dashboard v5 Resources */
@@ -1382,6 +1341,12 @@ Dashboard v5 Resources */
     align-items: stretch;
     background: var(--white);
     box-shadow: 0px 2px 16px 0px rgba(0, 0, 0, 0.02);
+}
+
+.gh-dashboard5-resource-box.is-secondary {
+    background: var(--main-color-content-greybg);
+    border-color: transparent;
+    box-shadow: none;
 }
 
 .gh-dashboard5-resource-title {
@@ -1529,4 +1494,8 @@ Dashboard v5 Tooltips */
 
 .gh-dashboard5-mix .gh-dashboard5-tooltip-value {
     font-size: 1.4rem;
+}
+
+.gh-dashboard5-totals {
+    margin-top: 24px;
 }
