@@ -88,7 +88,7 @@ describe('NewslettersService', function () {
             let thrownError;
             try {
                 await newsletterService.add({
-                    name: 'Newsletter Name',
+                    name: 'Newsletter Name'
                 });
             } catch (err) {
                 thrownError = err;
