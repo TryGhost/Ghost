@@ -23,18 +23,25 @@ class TestTokenProvider {
 
 describe('NewslettersService', function () {
     let newsletterService, getStub, tokenProvider;
+    /** @type {NewslettersService.ILimitService} */
+    let limitService;
 
     before(function () {
         models.init();
 
         tokenProvider = new TestTokenProvider();
 
+        limitService = {
+            async errorIfWouldGoOverLimit() {}
+        };
+
         newsletterService = new NewslettersService({
             NewsletterModel: models.Newsletter,
             MemberModel: models.Member,
             mail,
             singleUseTokenProvider: tokenProvider,
-            urlUtils: urlUtils.stubUrlUtilsFromConfig()
+            urlUtils: urlUtils.stubUrlUtilsFromConfig(),
+            limitService
         });
     });
 
@@ -72,6 +79,22 @@ describe('NewslettersService', function () {
             addStub = sinon.stub(models.Newsletter, 'add').returns({get: getStub, subscribeMembersById: subscribeStub});
             fetchMembersStub = sinon.stub(models.Member, 'fetchAllSubscribed').returns([]);
             getNextAvailableSortOrderStub = sinon.stub(models.Newsletter, 'getNextAvailableSortOrder').returns(1);
+        });
+
+        it('rejects if the limit services determines it would be over the limit', async function () {
+            const error = new Error('No way, Jose!');
+            sinon.stub(limitService, 'errorIfWouldGoOverLimit').rejects(error);
+
+            let thrownError;
+            try {
+                await newsletterService.add({
+                    name: 'Newsletter Name',
+                });
+            } catch (err) {
+                thrownError = err;
+            }
+            assert(thrownError, 'It should have thrown an error');
+            assert(thrownError === error, 'It should have rethrown the error from limit service');
         });
 
         it('rejects if called with no data', async function () {

@@ -638,3 +638,22 @@ Object {
   ],
 }
 `;
+
+exports[`Newsletters API Host Settings: newsletter limits Request fails when newsletter limit is in place 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Nuh uh",
+      "details": Object {
+        "name": "newsletters",
+      },
+      "help": "https://ghost.org/help/",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Host Limit error, cannot save newsletter.",
+      "property": null,
+      "type": "HostLimitError",
+    },
+  ],
+}
+`;

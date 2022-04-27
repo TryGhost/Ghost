@@ -1,5 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyISODateTime, anyLocationFor} = matchers;
+const {anyEtag, anyObjectId, anyISODateTime, anyLocationFor, anyUuid} = matchers;
+const configUtils = require('../../utils/configUtils');
 
 const assert = require('assert');
 
@@ -255,5 +256,38 @@ describe('Newsletters API', function () {
             .matchBodySnapshot({
                 newsletters: [newsletterSnapshot]
             });
+    });
+
+    describe('Host Settings: newsletter limits', function () {
+        afterEach(function () {
+            configUtils.set('hostSettings:limits', undefined);
+        });
+
+        it('Request fails when newsletter limit is in place', async function () {
+            configUtils.set('hostSettings:limits', {
+                newsletters: {
+                    disabled: true,
+                    error: 'Nuh uh'
+                }
+            });
+
+            agent = await agentProvider.getAdminAPIAgent();
+            await fixtureManager.init('newsletters', 'members:newsletters');
+            await agent.loginAsOwner();
+
+            const newsletter = {
+                name: 'Naughty newsletter'
+            };
+
+            await agent
+                .post(`newsletters/?opt_in_existing=true`)
+                .body({newsletters: [newsletter]})
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyUuid
+                    }]
+                });
+        });
     });
 });
