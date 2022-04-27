@@ -604,7 +604,8 @@
                     "visibility": "public",
                     "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a72",
@@ -618,7 +619,8 @@
                     "visibility": "public",
                     "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a73",
@@ -631,7 +633,8 @@
                     "status": "published",
                     "visibility": "paid",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a74",
@@ -645,7 +648,8 @@
                     "visibility": "public",
                     "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a75",
@@ -659,7 +663,8 @@
                     "visibility": "public",
                     "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a76",
@@ -673,7 +678,8 @@
                     "visibility": "public",
                     "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a77",
@@ -687,7 +693,8 @@
                     "visibility": "public",
                     "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a78",
@@ -701,7 +708,8 @@
                     "visibility": "public",
                     "custom_excerpt": null,
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a79",
@@ -714,7 +722,8 @@
                     "status": "published",
                     "visibility": "public",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a7a",
@@ -727,7 +736,8 @@
                     "status": "published",
                     "visibility": "public",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 },
                 {
                     "id": "6194d3ce51e2700162531a7b",
@@ -740,7 +750,8 @@
                     "status": "published",
                     "visibility": "public",
                     "created_by": "5951f5fca366002ebd5dbef7",
-                    "published_by": "5951f5fca366002ebd5dbef7"
+                    "published_by": "5951f5fca366002ebd5dbef7",
+                    "authors": ["5951f5fca366002ebd5dbef7"]
                 }
             ]
         },
