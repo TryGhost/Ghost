@@ -94,7 +94,7 @@ const Newsletter = ghostBookshelf.Model.extend({
         };
 
         if (unfilteredOptions.transacting) {
-            options.transacting(unfilteredOptions.transacting);
+            options.transacting = unfilteredOptions.transacting;
         }
 
         const newsletters = await this.findPage(options);
