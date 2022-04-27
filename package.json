@@ -84,7 +84,7 @@
     "@tryghost/logging": "2.1.8",
     "@tryghost/magic-link": "1.0.21",
     "@tryghost/member-events": "0.4.1",
-    "@tryghost/members-api": "6.0.0-alpha.0",
+    "@tryghost/members-api": "6.0.0",
     "@tryghost/members-events-service": "0.3.3",
     "@tryghost/members-importer": "0.5.8",
     "@tryghost/members-offers": "0.11.1",
