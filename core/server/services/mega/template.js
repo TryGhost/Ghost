@@ -1,6 +1,6 @@
 /* eslint indent: warn, no-irregular-whitespace: warn */
 const iff = (cond, yes, no) => (cond ? yes : no);
-module.exports = ({post, site, templateSettings}) => {
+module.exports = ({post, site, newsletter, templateSettings}) => {
     const date = new Date();
     const hasFeatureImageCaption = templateSettings.showFeatureImage && post.feature_image && post.feature_image_caption;
     return `<!doctype html>
@@ -322,11 +322,21 @@ figure blockquote p {
     font-weight: 700;
     text-transform: uppercase;
     text-align: center;
+}
+
+.site-url-bottom-padding {
     padding-bottom: 50px;
 }
 
 .site-title {
     color: #15212A;
+}
+
+.site-subtitle {
+    color: #8695a4;
+    font-size: 14px;
+    font-weight: 400;
+    text-transform: none;
 }
 
 .post-title {
@@ -1158,7 +1168,7 @@ ${ templateSettings.showBadge ? `
                                     ` : ''}
 
 
-                                    ${ templateSettings.showHeaderIcon || templateSettings.showHeaderTitle ? `
+                                    ${ templateSettings.showHeaderIcon || templateSettings.showHeaderTitle || templateSettings.showHeaderName ? `
                                     <tr>
                                         <td class="${templateSettings.showHeaderTitle ? `site-info-bordered` : `site-info`}" width="100%" align="center">
                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
@@ -1169,9 +1179,20 @@ ${ templateSettings.showBadge ? `
                                                 ` : ``}
                                                 ${ templateSettings.showHeaderTitle ? `
                                                 <tr>
-                                                    <td class="site-url"><div style="width: 100% !important;"><a href="${site.url}" class="site-title">${site.title}</a></div></td>
+                                                    <td class="site-url ${!templateSettings.showHeaderName ? 'site-url-bottom-padding' : ''}"><div style="width: 100% !important;"><a href="${site.url}" class="site-title">${site.title}</a></div></td>
                                                 </tr>
                                                 ` : ``}
+                                                ${ templateSettings.showHeaderName && templateSettings.showHeaderTitle ? `
+                                                <tr>
+                                                    <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="${site.url}" class="site-subtitle">${newsletter.name}</a></div></td>
+                                                </tr>
+                                                ` : ``}
+                                                ${ templateSettings.showHeaderName && !templateSettings.showHeaderTitle ? `
+                                                <tr>
+                                                    <td class="site-url site-url-bottom-padding"><div style="width: 100% !important;"><a href="${site.url}" class="site-title">${newsletter.name}</a></div></td>
+                                                </tr>
+                                                ` : ``}
+
                                             </table>
                                         </td>
                                     </tr>
