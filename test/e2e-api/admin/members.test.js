@@ -1694,7 +1694,7 @@ describe('Members API', function () {
         await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
             memberId: newMember.id,
-            asserts: filteredNewsletters.map(n => {
+            asserts: filteredNewsletters.map((n) => {
                 return {
                     subscribed: true,
                     newsletter_id: n.id,
@@ -1770,7 +1770,6 @@ describe('Members API', function () {
             asserts: []
         });
     });
-
 
     it('Can unsubscribe by setting (old) subscribed property to false', async function () {
         const memberToChange = {
@@ -1917,7 +1916,7 @@ describe('Members API', function () {
         await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
             memberId: newMember.id,
-            asserts: filteredNewsletters.map(n => {
+            asserts: filteredNewsletters.map((n) => {
                 return {
                     subscribed: true,
                     source: 'admin',
