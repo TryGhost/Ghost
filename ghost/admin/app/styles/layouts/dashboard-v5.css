@@ -438,8 +438,8 @@ Dashboard v5 Chart */
     left: 0;
     width: 32px;
     height: 100%;
-    background: rgb(21,23,25);
-    background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
+    background: rgb(255,255,255);
+    background: linear-gradient(270deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
 }
 
 .gh-dashboard5-chart-box canvas {
@@ -543,6 +543,7 @@ Dashboard v5 Metric */
     white-space: nowrap;
     margin: 0 0 12px;
     gap: 10px;
+    color: var(--black);
 }
 
 .gh-dashboard5-metric.is-large .gh-dashboard5-metric-value {
