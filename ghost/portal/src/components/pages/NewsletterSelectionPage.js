@@ -1,7 +1,7 @@
 import AppContext from '../../AppContext';
 import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
-import {getProductFromPrice, getSiteNewsletters} from '../../utils/helpers';
+import {getSiteNewsletters} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as LockIcon} from '../../images/icons/lock.svg';
 
@@ -70,8 +70,8 @@ export default function NewsletterSelectionPage({pageData}) {
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
     });
-    const tier = getProductFromPrice({site, priceId: pageData.plan});
-    const tierName = tier?.name;
+    // const tier = getProductFromPrice({site, priceId: pageData.plan});
+    // const tierName = tier?.name;
     let isRunning = false;
     if (action === 'signup:running') {
         isRunning = true;
