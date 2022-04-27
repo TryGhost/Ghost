@@ -908,11 +908,6 @@ describe('Importer', function () {
                 value: 'Pacific/Auckland'
             });
 
-            exportData.data.settings[2] = testUtils.DataGenerator.forKnex.createSetting({
-                key: 'ghost_foot',
-                value: 'AVADA KEDAVRA'
-            });
-
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
                     imported.problems.length.should.eql(0);
@@ -926,12 +921,6 @@ describe('Importer', function () {
                 })
                 .then(function (result) {
                     result.attributes.value.should.eql('Pacific/Auckland');
-                })
-                .then(function () {
-                    return models.Settings.findOne(_.merge({key: 'codeinjection_foot'}, testUtils.context.internal));
-                })
-                .then(function (result) {
-                    result.attributes.value.should.eql('AVADA KEDAVRA');
                 });
         });
 
