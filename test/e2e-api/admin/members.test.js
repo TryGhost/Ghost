@@ -105,7 +105,6 @@ describe('Members API without Stripe', function () {
 
 describe('Members API', function () {
     let newsletters;
-    let clock;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -121,12 +120,10 @@ describe('Members API', function () {
         mockManager.mockLabsEnabled('membersActivityFeed');
         mockManager.mockStripe();
         mockManager.mockMail();
-        clock = sinon.useFakeTimers(Date.now());
     });
 
     afterEach(function () {
         mockManager.restore();
-        clock.restore();
     });
 
     // List Members
@@ -1194,6 +1191,7 @@ describe('Members API', function () {
     });
 
     it('Can subscribe to a newsletter', async function () {
+        const clock = sinon.useFakeTimers(Date.now());
         const memberToChange = {
             name: 'change me',
             email: 'member3change@test.com',
@@ -1324,6 +1322,8 @@ describe('Members API', function () {
                 type: 'signup_event'
             }
         ]);
+
+        clock.restore();
     });
 
     it('Subscribes to default newsletters', async function () {
