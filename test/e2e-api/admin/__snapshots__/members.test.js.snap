@@ -446,6 +446,7 @@ Object {
           "title_alignment": "center",
           "title_font_category": "sans_serif",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           "visibility": "members",
         },
         Object {
@@ -471,6 +472,7 @@ Object {
           "title_alignment": "center",
           "title_font_category": "serif",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           "visibility": "members",
         },
       ],
@@ -490,7 +492,7 @@ exports[`Members API Can add and send a signup confirmation email (old) 2: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1697",
+  "content-length": "1789",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -2433,6 +2435,7 @@ Object {
           "title_alignment": "center",
           "title_font_category": "sans_serif",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           "visibility": "members",
         },
         Object {
@@ -2458,6 +2461,7 @@ Object {
           "title_alignment": "center",
           "title_font_category": "serif",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           "visibility": "members",
         },
       ],
@@ -2477,7 +2481,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1681",
+  "content-length": "1773",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2710,148 +2714,6 @@ Object {
 }
 `;
 
-exports[`Members API Can subscribe to a newsletter 5: [body] 1`] = `
-Object {
-  "events": Array [
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "email": "member3change@test.com",
-          "email_count": 0,
-          "email_open_rate": null,
-          "email_opened_count": 0,
-          "geolocation": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "last_seen_at": null,
-          "name": "change me",
-          "note": null,
-          "status": "free",
-          "subscribed": true,
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "uuid": "afd6010c-53ab-4e33-a1f0-600d942fa1ae",
-        },
-        "member_id": "6267babe96506b05ae3a6285",
-        "newsletter_id": "6267babd96506b05ae3a6050",
-        "source": "admin",
-        "subscribed": true,
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "email": "member3change@test.com",
-          "email_count": 0,
-          "email_open_rate": null,
-          "email_opened_count": 0,
-          "geolocation": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "last_seen_at": null,
-          "name": "change me",
-          "note": null,
-          "status": "free",
-          "subscribed": true,
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "uuid": "afd6010c-53ab-4e33-a1f0-600d942fa1ae",
-        },
-        "member_id": "6267babe96506b05ae3a6285",
-        "newsletter_id": "6267baba96506b05ae3a5db9",
-        "source": "admin",
-        "subscribed": true,
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "email": "member3change@test.com",
-          "email_count": 0,
-          "email_open_rate": null,
-          "email_opened_count": 0,
-          "geolocation": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "last_seen_at": null,
-          "name": "change me",
-          "note": null,
-          "status": "free",
-          "subscribed": true,
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "uuid": "afd6010c-53ab-4e33-a1f0-600d942fa1ae",
-        },
-        "member_id": "6267babe96506b05ae3a6285",
-        "newsletter_id": "6267babd96506b05ae3a6050",
-        "source": "admin",
-        "subscribed": false,
-      },
-      "type": Any<String>,
-    },
-    Object {
-      "data": Object {
-        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-        "from_status": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "member": Object {
-          "avatar_image": null,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "email": "member3change@test.com",
-          "email_count": 0,
-          "email_open_rate": null,
-          "email_opened_count": 0,
-          "geolocation": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "last_seen_at": null,
-          "name": "change me",
-          "note": null,
-          "status": "free",
-          "subscribed": true,
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "uuid": "afd6010c-53ab-4e33-a1f0-600d942fa1ae",
-        },
-        "member_id": "6267babe96506b05ae3a6285",
-        "to_status": "free",
-      },
-      "type": Any<String>,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4260",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can subscribe to a newsletter 6: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2425",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API Can unsubscribe by setting (old) subscribed property to false 1: [body] 1`] = `
 Object {
   "members": Array [
@@ -2892,6 +2754,7 @@ Object {
           "title_alignment": "center",
           "title_font_category": "sans_serif",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           "visibility": "members",
         },
       ],
@@ -2911,7 +2774,7 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1083",
+  "content-length": "1129",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
