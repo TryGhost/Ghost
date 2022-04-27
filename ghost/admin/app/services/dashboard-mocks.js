@@ -283,6 +283,14 @@ export default class DashboardMocksService extends Service {
         }
 
         this.memberCountStats = stats;
+        this.subscriptionCountStats = stats.map((data) => {
+            return {
+                date: data.date,
+                count: data.paid,
+                positiveDelta: data.paidSubscribed,
+                negativeDelta: data.paidCanceled
+            };
+        });
         const currentCounts = {
             total: (stats[stats.length - 1]?.paid ?? 0) + (stats[stats.length - 1]?.free ?? 0) + (stats[stats.length - 1]?.comped ?? 0),
             paid: stats[stats.length - 1]?.paid ?? 0,
@@ -292,8 +300,8 @@ export default class DashboardMocksService extends Service {
         const cadenceRate = Math.random();
 
         this.paidMembersByCadence = {
-            annual: Math.floor(currentCounts.paid * cadenceRate),
-            monthly: Math.floor(currentCounts.paid * (1 - cadenceRate))
+            year: Math.floor(currentCounts.paid * cadenceRate),
+            month: Math.floor(currentCounts.paid * (1 - cadenceRate))
         };
 
         this.paidMembersByTier = [

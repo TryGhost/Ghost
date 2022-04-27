@@ -60,14 +60,14 @@ export default class PaidMix extends Component {
     }
 
     get chartData() {
-        const totalCadence = this.dashboardStats.paidMembersByCadence.monthly + this.dashboardStats.paidMembersByCadence.annual;
-        const monthlyPercentage = Math.round(this.dashboardStats.paidMembersByCadence.monthly / totalCadence * 100);
-        const annualPercentage = Math.round(this.dashboardStats.paidMembersByCadence.annual / totalCadence * 100);
+        const totalCadence = this.dashboardStats.paidMembersByCadence.month + this.dashboardStats.paidMembersByCadence.year;
+        const monthlyPercentage = Math.round(this.dashboardStats.paidMembersByCadence.month / totalCadence * 100);
+        const annualPercentage = Math.round(this.dashboardStats.paidMembersByCadence.year / totalCadence * 100);
         const barThickness = 5;
 
         if (this.mode === 'cadence') {
             return {
-                labels: ['Candence'],
+                labels: ['Cadence'],
                 datasets: [{
                     label: 'Monthly',
                     data: [monthlyPercentage],
