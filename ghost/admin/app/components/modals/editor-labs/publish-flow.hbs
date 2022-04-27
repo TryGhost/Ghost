@@ -46,7 +46,7 @@
                 {{/if}}
             </div>
 
-            {{#unless (eq @data.publishOptions.publishType "publish")}}
+            {{#if (not-eq @data.publishOptions.publishType "publish")}}
                 <div class="gh-publish-setting">
                     {{svg-jar "member"}} 
                     <div class="gh-publish-setting-trigger">
@@ -59,7 +59,7 @@
                         subscribers
                     </div>
                 </div>
-            {{/unless}}
+            {{/if}}
 
             <div class="gh-publish-setting">
                 {{svg-jar "clock"}}
