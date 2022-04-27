@@ -71,14 +71,6 @@ module.exports = {
     },
 
     read(apiConfig, frame) {
-        if (frame.options.key === 'ghost_head') {
-            frame.options.key = 'codeinjection_head';
-        }
-
-        if (frame.options.key === 'ghost_foot') {
-            frame.options.key = 'codeinjection_foot';
-        }
-
         if (frame.options.key === 'active_timezone') {
             frame.options.key = 'timezone';
         }
@@ -139,14 +131,6 @@ module.exports = {
             // CASE: Ensure we won't forward strings, otherwise model events or model interactions can fail
             if (settingType === 'boolean' && (setting.value === 'false' || setting.value === 'true')) {
                 setting.value = setting.value === 'true';
-            }
-
-            if (setting.key === 'ghost_head') {
-                setting.key = 'codeinjection_head';
-            }
-
-            if (setting.key === 'ghost_foot') {
-                setting.key = 'codeinjection_foot';
             }
 
             if (setting.key === 'active_timezone') {
