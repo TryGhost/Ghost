@@ -1,10 +1,12 @@
 const ghostBookshelf = require('./base');
 const ObjectID = require('bson-objectid');
+const uuid = require('uuid');
 
 const Newsletter = ghostBookshelf.Model.extend({
     tableName: 'newsletters',
 
     defaults: {
+        uuid: uuid.v4(),
         sender_reply_to: 'newsletter',
         status: 'active',
         visibility: 'members',
