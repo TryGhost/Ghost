@@ -256,7 +256,7 @@ const FrameStyles = `
 }
 
 .gh-portal-popup-background.preview {
-    background: #EDF0F2;
+    background: linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(249,249,250,1) 100%);
     animation: none;
     pointer-events: none;
 }
