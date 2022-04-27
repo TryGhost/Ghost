@@ -23,7 +23,7 @@
     "mocha": "9.2.2",
     "nock": "13.2.4",
     "should": "13.2.3",
-    "sinon": "13.0.1"
+    "sinon": "13.0.2"
   },
   "dependencies": {
     "@nexes/nql": "^0.6.0",

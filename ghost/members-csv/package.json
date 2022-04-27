@@ -22,7 +22,7 @@
     "c8": "7.11.0",
     "mocha": "9.2.2",
     "should": "13.2.3",
-    "sinon": "13.0.1"
+    "sinon": "13.0.2"
   },
   "dependencies": {
     "bluebird": "^3.7.2",
