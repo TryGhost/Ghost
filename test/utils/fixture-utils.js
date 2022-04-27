@@ -95,12 +95,12 @@ const fixtures = {
             // Let's insert posts with random authors
             for (i = 0; i < count; i += 1) {
                 const author = users[i % users.length];
-                posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, author));
+                posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, [{id: author}]));
                 k = k + 1;
             }
 
             return Promise.map(posts, function (post, index) {
-                posts[index].authors = [{id: posts[index].author_id}];
+                posts[index].authors = [{id: posts[index].authors[0].id}];
                 posts[index].tags = [tags[Math.floor(Math.random() * (tags.length - 1))]];
                 return models.Post.add(posts[index], context.internal);
             });

@@ -808,8 +808,8 @@ describe('Post Model', function () {
                 const newPost = testUtils.DataGenerator.forModel.posts[2];
                 const newPostDB = testUtils.DataGenerator.Content.posts[2];
 
-                models.Post.add(newPost, _.merge({withRelated: ['author']}, context)).then(function (createdPost) {
-                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                models.Post.add(newPost, _.merge({withRelated: ['authors']}, context)).then(function (createdPost) {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['authors']});
                 }).then(function (createdPost) {
                     should.exist(createdPost);
                     createdPost.has('uuid').should.equal(true);
@@ -832,9 +832,8 @@ describe('Post Model', function () {
 
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
                     createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('author_id').should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.has('author').should.equal(false);
-                    createdPost.get('created_by').should.equal(createdPost.get('author_id'));
+                    createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
                     createdPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     should.equal(createdPost.get('published_at'), null);
@@ -882,8 +881,8 @@ describe('Post Model', function () {
                 const newPost = testUtils.DataGenerator.forModel.posts[2];
                 const newPostDB = testUtils.DataGenerator.Content.posts[2];
 
-                models.Post.add(newPost, _.merge({withRelated: ['author']}, context)).then(function (createdPost) {
-                    return models.Post.findOne({id: createdPost.id, status: 'all'});
+                models.Post.add(newPost, _.merge({withRelated: ['authors']}, context)).then(function (createdPost) {
+                    return models.Post.findOne({id: createdPost.id, status: 'all'}, {withRelated: ['authors']});
                 }).then(function (createdPost) {
                     should.exist(createdPost);
                     createdPost.has('uuid').should.equal(true);
@@ -906,9 +905,8 @@ describe('Post Model', function () {
 
                     createdPost.get('created_at').should.be.above(new Date(0).getTime());
                     createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.get('author_id').should.equal(testUtils.DataGenerator.Content.users[0].id);
-                    createdPost.has('author').should.equal(false);
-                    createdPost.get('created_by').should.equal(createdPost.get('author_id'));
+                    createdPost.relations.authors.models[0].id.should.equal(testUtils.DataGenerator.Content.users[0].id);
+                    createdPost.get('created_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     createdPost.get('updated_at').should.be.above(new Date(0).getTime());
                     createdPost.get('updated_by').should.equal(testUtils.DataGenerator.Content.users[0].id);
                     should.equal(createdPost.get('published_at'), null);
@@ -986,7 +984,7 @@ describe('Post Model', function () {
                     }]
                 }, _.merge({withRelated: ['authors']}, context)).then(function (newPost) {
                     should.exist(newPost);
-                    newPost.toJSON().author.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
+                    newPost.toJSON().primary_author.id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
                     newPost.toJSON().authors.length.should.eql(1);
                     newPost.toJSON().authors[0].id.should.eql(testUtils.DataGenerator.forKnex.users[0].id);
                     done();
