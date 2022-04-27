@@ -14,6 +14,9 @@ const mailService = require('../../core/server/services/mail/index');
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 
+const fakedLabsFlags = {};
+const originalLabsIsSet = labs.isSet;
+
 /**
  * Stripe Mocks
  */
@@ -93,6 +96,15 @@ const emittedEvent = (name) => {
 /**
  * Labs Mocks
  */
+
+const fakeLabsIsSet = (flag) => {
+    if (fakedLabsFlags.hasOwnProperty(flag)) {
+        return fakedLabsFlags[flag];
+    }
+
+    return originalLabsIsSet(flag);
+};
+
 const mockLabsEnabled = (flag, alpha = true) => {
     // We assume we should enable alpha experiments unless explicitly told not to!
     if (!alpha) {
@@ -100,10 +112,10 @@ const mockLabsEnabled = (flag, alpha = true) => {
     }
 
     if (!mocks.labs) {
-        mocks.labs = sinon.stub(labs, 'isSet');
+        mocks.labs = sinon.stub(labs, 'isSet').callsFake(fakeLabsIsSet);
     }
 
-    mocks.labs.withArgs(flag).returns(true);
+    fakedLabsFlags[flag] = true;
 };
 
 const mockLabsDisabled = (flag, alpha = true) => {
@@ -113,10 +125,10 @@ const mockLabsDisabled = (flag, alpha = true) => {
     }
 
     if (!mocks.labs) {
-        mocks.labs = sinon.stub(labs, 'isSet');
+        mocks.labs = sinon.stub(labs, 'isSet').callsFake(fakeLabsIsSet);
     }
 
-    mocks.labs.withArgs(flag).returns(false);
+    fakedLabsFlags[flag] = false;
 };
 
 const restore = () => {
