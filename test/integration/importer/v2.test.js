@@ -437,7 +437,10 @@ describe('Importer', function () {
                     // Grab the data from tables
                     return Promise.all([
                         models.User.findPage(testUtils.context.internal),
-                        models.Post.findPage(testUtils.context.internal)
+                        models.Post.findPage({
+                            context: testUtils.context.internal,
+                            withRelated: ['authors']
+                        })
                     ]);
                 })
                 .then(function (importedData) {
@@ -457,7 +460,7 @@ describe('Importer', function () {
                     users[1].updated_by.should.eql(testUtils.DataGenerator.Content.users[0].id);
 
                     posts[0].slug.should.eql(exportData.data.posts[0].slug);
-                    posts[0].author.should.eql(testUtils.DataGenerator.Content.users[0].id);
+                    posts[0].primary_author.id.should.eql(testUtils.DataGenerator.Content.users[0].id);
                     posts[0].published_by.should.eql(testUtils.DataGenerator.Content.users[0].id);
                     posts[0].created_by.should.eql(users[1].id);
                 });
@@ -563,7 +566,9 @@ describe('Importer', function () {
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post1',
                 title: 'title1',
-                author_id: exportData.data.users[0].id,
+                authors: [{
+                    id: exportData.data.users[0].id
+                }],
                 created_by: exportData.data.users[0].id,
                 updated_by: exportData.data.users[1].id,
                 published_by: exportData.data.users[1].id
@@ -571,7 +576,9 @@ describe('Importer', function () {
             exportData.data.posts[1] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post2',
                 title: 'title2',
-                author_id: exportData.data.users[3].id,
+                authors: [{
+                    id: exportData.data.users[3].id
+                }],
                 created_by: exportData.data.users[2].id,
                 updated_by: exportData.data.users[0].id,
                 published_by: exportData.data.users[1].id
@@ -579,7 +586,9 @@ describe('Importer', function () {
             exportData.data.posts[2] = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'post3',
                 title: 'title3',
-                author_id: exportData.data.users[0].id,
+                authors: [{
+                    id: exportData.data.users[0].id
+                }],
                 created_by: exportData.data.users[3].id,
                 updated_by: exportData.data.users[3].id,
                 published_by: exportData.data.users[3].id
@@ -601,7 +610,7 @@ describe('Importer', function () {
                 updated_by: exportData.data.users[2].id
             });
 
-            const postOptions = Object.assign({withRelated: ['tags']}, testUtils.context.internal);
+            const postOptions = Object.assign({withRelated: ['tags', 'authors']}, testUtils.context.internal);
             const tagOptions = Object.assign({order: 'slug ASC'}, testUtils.context.internal);
             const userOptions = Object.assign({withRelated: ['roles']}, testUtils.context.internal);
 
@@ -628,9 +637,9 @@ describe('Importer', function () {
                     posts[1].slug.should.equal(exportData.data.posts[1].slug);
                     posts[2].slug.should.equal(exportData.data.posts[0].slug);
 
-                    posts[0].author.should.equal(users[1].id);
-                    posts[1].author.should.equal(users[4].id);
-                    posts[2].author.should.equal(users[1].id);
+                    posts[0].primary_author.id.should.equal(users[1].id);
+                    posts[1].primary_author.id.should.equal(users[4].id);
+                    posts[2].primary_author.id.should.equal(users[1].id);
 
                     posts[0].created_by.should.equal(users[4].id);
                     posts[1].created_by.should.equal(users[3].id);
@@ -1056,17 +1065,17 @@ describe('Importer', function () {
                     posts[0].slug.should.eql(exportData.data.posts[2].slug);
                     posts[0].authors.length.should.eql(1);
                     posts[0].authors[0].id.should.eql(users[4].id);
-                    posts[0].author.should.eql(users[4].id);
+                    posts[0].primary_author.id.should.eql(users[4].id);
 
                     // no valid authors reference, use owner author_id
                     posts[1].slug.should.eql(exportData.data.posts[1].slug);
                     posts[1].authors.length.should.eql(1);
-                    posts[1].author.should.eql(testUtils.DataGenerator.Content.users[0].id);
+                    posts[1].primary_author.id.should.eql(testUtils.DataGenerator.Content.users[0].id);
                     posts[1].authors[0].id.should.eql(testUtils.DataGenerator.Content.users[0].id);
 
                     posts[2].slug.should.eql(exportData.data.posts[0].slug);
                     posts[2].authors.length.should.eql(3);
-                    posts[2].author.should.eql(users[2].id);
+                    posts[2].primary_author.id.should.eql(users[2].id);
                     posts[2].authors.length.should.eql(3);
                     posts[2].authors[0].id.should.eql(users[2].id);
                     posts[2].authors[1].id.should.eql(users[1].id);
