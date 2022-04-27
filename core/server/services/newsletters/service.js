@@ -13,11 +13,14 @@ class NewslettersService {
      * @param {Object} options.mail
      * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
+     * @param {ILimitService} options.limitService
      */
-    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils}) {
+    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, limitService}) {
         this.NewsletterModel = NewsletterModel;
         this.MemberModel = MemberModel;
         this.urlUtils = urlUtils;
+        /** @private */
+        this.limitService = limitService;
 
         /* email verification setup */
 
@@ -95,6 +98,8 @@ class NewslettersService {
                 return this.add(attrs, options);
             });
         }
+
+        await this.limitService.errorIfWouldGoOverLimit('newsletters');
 
         // remove any email properties that are not allowed to be set without verification
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs);
@@ -241,5 +246,10 @@ class NewslettersService {
         return this.magicLinkService.sendMagicLink({email, tokenData: {id, property, value: email}});
     }
 }
+
+/**
+ * @typedef {object} ILimitService
+ * @prop {(name: string) => Promise<void>} errorIfWouldGoOverLimit
+ **/
 
 module.exports = NewslettersService;
