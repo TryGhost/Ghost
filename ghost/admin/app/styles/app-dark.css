@@ -1142,3 +1142,8 @@ kbd {
 .gh-dashboard5-community .gh-dashboard5-list-footer {
     border-color: transparent;
 }
+
+.gh-dashboard5-chart-gradient {
+    background: rgb(21,23,25);
+    background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
+}
