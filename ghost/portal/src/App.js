@@ -19,7 +19,7 @@ const DEV_MODE_DATA = {
     showPopup: true,
     site: Fixtures.site,
     member: Fixtures.member.free,
-    page: 'signup',
+    page: 'accountEmail',
     ...Fixtures.paidMemberOnTier(),
     pageData: Fixtures.offer
 };
@@ -393,6 +393,16 @@ export default class App extends React.Component {
 
     /** Fetch state from Portal Links */
     fetchLinkData() {
+        const qParams = new URLSearchParams(window.location.search);
+        if (qParams.get('uuid') && qParams.get('action') === 'unsubscribe') {
+            return {
+                showPopup: true,
+                page: 'unsubscribe',
+                pageData: {
+                    uuid: qParams.get('uuid')
+                }
+            };
+        }
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
         const offersRegex = /^offers\/(\w+?)\/?$/;

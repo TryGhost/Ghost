@@ -192,6 +192,43 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             });
         },
 
+        async newsletters({uuid}) {
+            let url = endpointFor({type: 'members', resource: `member/newsletters`});
+            url = url + `?uuid=${uuid}`;
+            return makeRequest({
+                url,
+                credentials: 'same-origin'
+            }).then(function (res) {
+                if (!res.ok || res.status === 204) {
+                    return null;
+                }
+                return res.json();
+            });
+        },
+
+        async updateNewsletters({uuid, newsletters}) {
+            let url = endpointFor({type: 'members', resource: `member/newsletters`});
+            url = url + `?uuid=${uuid}`;
+            const body = {
+                newsletters
+            };
+
+            return makeRequest({
+                url,
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to upadte newsletter preferences');
+                }
+            });
+        },
+
         async updateEmailAddress({email}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'member/email'});
