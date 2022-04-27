@@ -2314,10 +2314,10 @@
     lodash "^4.17.21"
     semver "^7.3.6"
 
-"@tryghost/mw-session-from-token@0.1.29":
-  version "0.1.29"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.29.tgz#b7a52753d4738f94f68104f8add55edafdf02acd"
-  integrity sha512-P0lq38a9Nu20+q7V/zpeea+k+fMglCsVCxDoy+GN2XVuUswe95sTk11vbni8L4AVgSn3RXUM7wqnu1TBrvScsQ==
+"@tryghost/mw-session-from-token@0.1.30":
+  version "0.1.30"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.30.tgz#2a07532f9c444521383290e5d7a01c786c524194"
+  integrity sha512-XyJckgYjp8Q7zxOpwqEddlASXhivKhXD3vGzP+KBP6d2y35tYUFM0U9tKmLNNKXfumalNJKjUyTZ4lCRanfxGA==
 
 "@tryghost/nodemailer@0.3.22":
   version "0.3.22"
