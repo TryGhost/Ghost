@@ -233,7 +233,8 @@ describe('Members Service Middleware', function () {
                     members_support_address: 'noreply@example.com',
                     prices: [],
                     products: [],
-                    portal_products: ''
+                    portal_products: '',
+                    newsletters: []
                 }
             }).should.be.true();
         });
