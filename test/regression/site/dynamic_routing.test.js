@@ -279,7 +279,9 @@ describe('Dynamic Routing', function () {
             }).then(function (insertedUser) {
                 return testUtils.fixtures.insertPosts([
                     testUtils.DataGenerator.forKnex.createPost({
-                        author_id: insertedUser.id
+                        authors: [{
+                            id: insertedUser.id
+                        }]
                     })
                 ]);
             }).then(function () {
@@ -287,7 +289,9 @@ describe('Dynamic Routing', function () {
             }).then(function (insertedUser) {
                 return testUtils.fixtures.insertPosts([
                     testUtils.DataGenerator.forKnex.createPost({
-                        author_id: insertedUser.id
+                        authors: [{
+                            id: insertedUser.id
+                        }]
                     })
                 ]);
             }).then(() => {
@@ -295,7 +299,9 @@ describe('Dynamic Routing', function () {
             }).then(function (insertedUser) {
                 return testUtils.fixtures.insertPosts([
                     testUtils.DataGenerator.forKnex.createPost({
-                        author_id: insertedUser.id
+                        authors: [{
+                            id: insertedUser.id
+                        }]
                     })
                 ]);
             }).then(function () {
