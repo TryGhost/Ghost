@@ -102,10 +102,10 @@ export default class Mrr extends Component {
             },
             layout: {
                 padding: {
-                    top: 4,
+                    top: 2,
                     bottom: 2,
-                    left: 16,
-                    right: 16
+                    left: 0,
+                    right: 0
                 }
             },
             hover: {

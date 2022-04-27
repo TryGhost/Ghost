@@ -63,6 +63,7 @@ export default class PaidMix extends Component {
         const totalCadence = this.dashboardStats.paidMembersByCadence.monthly + this.dashboardStats.paidMembersByCadence.annual;
         const monthlyPercentage = Math.round(this.dashboardStats.paidMembersByCadence.monthly / totalCadence * 100);
         const annualPercentage = Math.round(this.dashboardStats.paidMembersByCadence.annual / totalCadence * 100);
+        const barThickness = 5;
 
         if (this.mode === 'cadence') {
             return {
@@ -70,15 +71,13 @@ export default class PaidMix extends Component {
                 datasets: [{
                     label: 'Monthly',
                     data: [monthlyPercentage],
-                    fill: true,
                     backgroundColor: '#8E42FF',
-                    barThickness: 7
+                    barThickness
                 }, {
                     label: 'Annual',
                     data: [annualPercentage],
-                    fill: true,
                     backgroundColor: '#FB76B4',
-                    barThickness: 7
+                    barThickness
                 }]
             };
         }
@@ -99,9 +98,7 @@ export default class PaidMix extends Component {
                 data: [tierPercentage],
                 label: labels[i],
                 backgroundColor: colors[i],
-                fill: true,
-                borderRadius: 15,
-                barThickness: 7
+                barThickness
             });
         }
 
@@ -119,16 +116,12 @@ export default class PaidMix extends Component {
                 display: false
             },
             layout: {
-                padding: (this.mode === 'cadence' ? {
-                    left: 0,
-                    right: 21,
-                    top: 30
-                } : {
+                padding: {
                     top: 30,
-                    left: 21,
-                    right: 21,
-                    bottom: 30
-                })
+                    bottom: 0,
+                    left: 0,
+                    right: 0
+                }
             },
             animation: {
                 duration: 0
