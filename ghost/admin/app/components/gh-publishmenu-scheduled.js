@@ -26,6 +26,10 @@ export default class GhPublishmenuScheduledComponent extends Component {
         return publishedAtUTC.toNow(true);
     }
 
+    get selectedNewsletter() {
+        return this.args.availableNewsletters.find(n => n.id === this.args.post.newsletterId);
+    }
+
     constructor() {
         super(...arguments);
         this.minDate = new Date();

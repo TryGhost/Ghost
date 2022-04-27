@@ -3,7 +3,7 @@ module.exports = {
 
     rules: {
         'no-forbidden-elements': ['meta', 'html', 'script'],
-        'no-implicit-this': {allow: ['now', 'site-icon-style', 'accent-color-background']},
+        'no-implicit-this': {allow: ['noop', 'now', 'site-icon-style', 'accent-color-background']},
         'no-inline-styles': false
     }
 };

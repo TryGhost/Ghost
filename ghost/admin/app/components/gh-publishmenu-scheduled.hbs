@@ -38,6 +38,24 @@
                         <div class="gh-publishmenu-email-label pe-none">
                             <label class="gh-publishmenu-radio-label mb3 midgrey">Send by email to</label>
 
+                            {{#if (and (feature "multipleNewsletters") (gt @availableNewsletters.length 1))}}
+                                <div class="mb3">
+                                    <PowerSelect
+                                        @selected={{this.selectedNewsletter}}
+                                        @options={{@availableNewsletters}}
+                                        @onChange={{noop}}
+                                        @triggerComponent="gh-power-select/trigger"
+                                        @triggerClass="gh-publishmenu-newsletter-trigger"
+                                        @dropdownClass="gh-publishmenu-newsletter-dropdown"
+                                        @renderInPlace={{true}}
+                                        @disabled={{true}}
+                                        as |newsletter|
+                                    >
+                                        {{newsletter.name}}
+                                    </PowerSelect>
+                                </div>
+                            {{/if}}
+
                             <div class="form-group">
                                 <GhMembersRecipientSelect
                                     @filter={{@recipientsFilter}}
