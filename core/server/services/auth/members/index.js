@@ -1,4 +1,4 @@
-const jwt = require('express-jwt');
+const {expressjwt: jwt} = require('express-jwt');
 const {UnauthorizedError} = require('@tryghost/errors');
 const membersService = require('../../members');
 const config = require('../../../../shared/config');
