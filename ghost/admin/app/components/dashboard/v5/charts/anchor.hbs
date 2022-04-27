@@ -27,32 +27,33 @@
 
         <div class="gh-dashboard5-hero {{unless this.hasPaidTiers 'is-solo'}}">
             <div class="gh-dashboard5-chart gh-dashboard5-totals">
-                {{#if this.loading}}
-                    <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
-                {{else}}
-                    <div class="gh-dashboard5-chart-container">
-                        <div class="gh-dashboard5-chart-box">
+                <div class="gh-dashboard5-chart-container">
+                    <div class="gh-dashboard5-chart-box">
+                        {{#if this.loading}}
+                            <div class="gh-dashboard5-chart-loading">
+                                <div class="gh-loading-spinner"></div>
+                            </div>      
+                        {{else}}
                             <EmberChart
                                 @type="line"
                                 @data={{this.chartData}}
                                 @options={{this.chartOptions}}
                                 @height={{200}} />
+                        {{/if}}
+                    </div>
+                    <div id="gh-dashboard5-anchor-tooltip" class="gh-dashboard5-tooltip">
+                        <div class="gh-dashboard5-tooltip-label">
+                            -
                         </div>
-
-                        <div id="gh-dashboard5-anchor-tooltip" class="gh-dashboard5-tooltip">
-                            <div class="gh-dashboard5-tooltip-label">
-                                -
-                            </div>
-                            <div class="gh-dashboard5-tooltip-value">
-                                -
-                            </div>
+                        <div class="gh-dashboard5-tooltip-value">
+                            -
                         </div>
                     </div>
-                    <div class="gh-dashboard5-chart-ticks">
-                        <span id="gh-dashboard5-anchor-date-start"> </span>
-                        <span id="gh-dashboard5-anchor-date-end"> </span>
-                    </div>
-                {{/if}}
+                </div>
+                <div class="gh-dashboard5-chart-ticks">
+                    <span id="gh-dashboard5-anchor-date-start">-</span>
+                    <span id="gh-dashboard5-anchor-date-end">-</span>
+                </div>
             </div>
 
             {{#if this.hasPaidTiers}}

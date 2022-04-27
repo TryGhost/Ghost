@@ -1,7 +1,9 @@
 <div class="gh-dashboard5-minichart gh-dashboard5-mrr">
     <div class="gh-dashboard5-chart">
         {{#if this.loading}}
-            <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+            <div class="gh-dashboard5-chart-loading">
+                <div class="gh-loading-spinner"></div>
+            </div>
         {{else}}
             <div class="gh-dashboard5-chart-container">
                 <div class="gh-dashboard5-chart-box">
@@ -9,7 +11,7 @@
                         @type={{this.chartType}}
                         @data={{this.chartData}}
                         @options={{this.chartOptions}}
-                        @height={{130}} />
+                        @height={{110}} />
                 </div>
 
                 <div class="gh-dashboard5-chart-gradient"></div>
