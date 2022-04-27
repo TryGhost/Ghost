@@ -88,7 +88,7 @@ export default function NewsletterSelectionPage({pageData}) {
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     return (
         <div className='gh-portal-content with-footer gh-portal-newsletter-selection'>
-            <p className="gh-portal-text-center gh-portal-text-large">Pick which emails you want to receive with your <strong>{tierName}</strong> membership.</p>
+            <p className="gh-portal-text-center gh-portal-text-large">Choose your newsletters</p>
             <div className='gh-portal-section'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
