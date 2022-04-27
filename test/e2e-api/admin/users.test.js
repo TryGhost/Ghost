@@ -198,10 +198,11 @@ describe('User API', function () {
 
     it('Can destroy an active user and transfer posts to the owner', async function () {
         const userId = testUtils.getExistingData().users[1].id;
+        const userSlug = testUtils.getExistingData().users[1].slug;
         const ownerId = testUtils.getExistingData().users[0].id;
 
         const res = await request
-            .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${userId}`))
+            .get(localUtils.API.getApiQuery(`posts/?filter=authors:${userSlug}`))
             .set('Origin', config.get('url'))
             .expect(200);
 
@@ -243,7 +244,7 @@ describe('User API', function () {
             .expect(404);
 
         const res3 = await request
-            .get(localUtils.API.getApiQuery(`posts/?filter=author_id:${userId}`))
+            .get(localUtils.API.getApiQuery(`posts/?filter=authors:${userSlug}}`))
             .set('Origin', config.get('url'))
             .expect(200);
 
