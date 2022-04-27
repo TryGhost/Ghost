@@ -16,7 +16,7 @@ module.exports = createTransactionalMigration(
         }
 
         const toInsert = subscriptionsToUpdate.map((subscription) => {
-            let discountedAmount
+            let discountedAmount;
             if (subscription.offer_type === 'percent') {
                 discountedAmount = subscription.plan_amount * (100 - subscription.offer_amount) / 100;
             } else {
