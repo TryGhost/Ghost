@@ -10,6 +10,7 @@
 module.exports = {
     newsletters: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        uuid: {type: 'string', maxlength: 36, nullable: true, unique: true, validations: {isUUID: true}},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         description: {type: 'string', maxlength: 2000, nullable: true},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
