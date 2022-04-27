@@ -8,6 +8,10 @@ const MemberSubscribeEvent = ghostBookshelf.Model.extend({
         return this.belongsTo('Member', 'member_id', 'id');
     },
 
+    newsletter() {
+        return this.belongsTo('Newsletter', 'newsletter_id', 'id');
+    },
+
     customQuery(qb, options) {
         if (options.aggregateSubscriptionDeltas) {
             if (options.limit || options.filter) {
