@@ -492,6 +492,42 @@ DataGenerator.Content = {
         }
     ],
 
+    members_paid_subscription_events: [
+        {
+            id: ObjectId().toHexString(),
+            type: 'created',
+            mrr_delta: 1000,
+            currency: 'usd',
+            source: 'stripe',
+            created_at: null,
+            subscription_id: null,
+            member_id: null,
+            from_plan: null,
+            to_plan: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8'
+        }, {
+            id: ObjectId().toHexString(),
+            type: 'created',
+            mrr_delta: 0,
+            currency: 'usd',
+            source: 'stripe',
+            created_at: null,
+            subscription_id: null,
+            member_id: null,
+            from_plan: null,
+            to_plan: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9'
+        }, {
+            id: ObjectId().toHexString(),
+            type: 'created',
+            mrr_delta: 0,
+            currency: 'usd',
+            source: 'stripe',
+            created_at: null,
+            subscription_id: null,
+            member_id: null,
+            from_plan: null,
+            to_plan: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730ba0'
+        }
+    ],
     members_stripe_customers_subscriptions: [
         {
             id: ObjectId().toHexString(),
@@ -780,6 +816,9 @@ DataGenerator.Content.members_stripe_customers[1].member_id = DataGenerator.Cont
 DataGenerator.Content.members_stripe_customers[2].member_id = DataGenerator.Content.members[4].id;
 DataGenerator.Content.members_stripe_customers[3].member_id = DataGenerator.Content.members[6].id;
 DataGenerator.Content.members_stripe_customers[4].member_id = DataGenerator.Content.members[7].id;
+DataGenerator.Content.members_paid_subscription_events[0].member_id = DataGenerator.Content.members[2].id;
+DataGenerator.Content.members_paid_subscription_events[1].member_id = DataGenerator.Content.members[3].id;
+DataGenerator.Content.members_paid_subscription_events[2].member_id = DataGenerator.Content.members[4].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {
@@ -951,6 +990,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
+            uuid: uuid.v4(),
             slug: 'daily-newsletter',
             name: 'Daily Newsletter',
             sender_name: 'Jamie Larsen',
@@ -1472,6 +1512,12 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.members_stripe_customers_subscriptions[2])
     ];
 
+    const members_paid_subscription_events = [
+        createBasic(DataGenerator.Content.members_paid_subscription_events[0]),
+        createBasic(DataGenerator.Content.members_paid_subscription_events[1]),
+        createBasic(DataGenerator.Content.members_paid_subscription_events[2])
+    ];
+
     const snippets = [
         createBasic(DataGenerator.Content.snippets[0])
     ];
@@ -1536,7 +1582,9 @@ DataGenerator.forKnex = (function () {
         stripe_prices,
         stripe_products,
         snippets,
-        custom_theme_settings
+        custom_theme_settings,
+
+        members_paid_subscription_events
     };
 }());
 

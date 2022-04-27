@@ -1,4 +1,5 @@
 const ObjectId = require('bson-objectid');
+const uuid = require('uuid');
 const logging = require('@tryghost/logging');
 const startsWith = require('lodash/startsWith');
 const {createTransactionalMigration} = require('../../utils');
@@ -6,6 +7,7 @@ const {createTransactionalMigration} = require('../../utils');
 // This uses the default settings from core/server/data/schema/default-settings/default-settings.json
 const newsletter = {
     id: (new ObjectId()).toHexString(),
+    uuid: uuid.v4(),
     name: 'Ghost',
     description: '',
     slug: 'default-newsletter',

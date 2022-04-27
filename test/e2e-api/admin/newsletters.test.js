@@ -1,6 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyISODateTime, anyLocationFor, anyUuid} = matchers;
+const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor} = matchers;
 const configUtils = require('../../utils/configUtils');
+const uuid = require('uuid');
 
 const assert = require('assert');
 
@@ -14,6 +15,7 @@ const assertMemberRelationCount = async (newsletterId, expectedCount) => {
 
 const newsletterSnapshot = {
     id: anyObjectId,
+    uuid: anyUuid,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
 };
@@ -87,6 +89,7 @@ describe('Newsletters API', function () {
 
     it('Can add a newsletter', async function () {
         const newsletter = {
+            uuid: uuid.v4(),
             name: 'My test newsletter',
             sender_name: 'Test',
             sender_email: null,
@@ -116,6 +119,7 @@ describe('Newsletters API', function () {
 
     it('Can add a newsletter - with custom sender_email', async function () {
         const newsletter = {
+            uuid: uuid.v4(),
             name: 'My test newsletter with custom sender_email',
             sender_name: 'Test',
             sender_email: 'test@example.com',
@@ -153,6 +157,7 @@ describe('Newsletters API', function () {
 
     it('Can add a newsletter - and subscribe existing members', async function () {
         const newsletter = {
+            uuid: uuid.v4(),
             name: 'New newsletter with existing members subscribed',
             sender_name: 'Test',
             sender_email: null,

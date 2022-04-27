@@ -12,7 +12,12 @@ const models = require('../../../core/server/models');
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
-    events.map(e => e.toJSON()).should.match(asserts);
+    const eventsJSON = events.map(e => e.toJSON());
+    
+    // Order shouldn't matter here
+    for (const a of asserts) {
+        eventsJSON.should.matchAny(a);
+    }
     assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
 }
 
@@ -34,6 +39,7 @@ async function getNewsletters() {
 
 const newsletterSnapshot = {
     id: anyObjectId,
+    uuid: anyUuid,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
 };
@@ -45,6 +51,18 @@ function buildMemberWithoutIncludesSnapshot(options) {
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot)
+    };
+}
+
+function buildMemberWithIncludesSnapshot(options) {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
+        subscriptions: anyArray,
+        labels: anyArray
     };
 }
 
@@ -116,6 +134,7 @@ describe('Members API', function () {
     beforeEach(function () {
         mockManager.mockLabsEnabled('multipleProducts');
         mockManager.mockLabsEnabled('multipleNewsletters');
+        mockManager.mockLabsEnabled('membersActivityFeed');
         mockManager.mockStripe();
         mockManager.mockMail();
     });
@@ -345,71 +364,6 @@ describe('Members API', function () {
         });
     });
 
-    /*it('Can add and send a signup confirmation email (old)', async function () {
-        const member = {
-            name: 'Send Me Confirmation',
-            email: 'member_getting_confirmation@test.com',
-            subscribed: true
-        };
-
-        const queryParams = {
-            send_email: true,
-            email_type: 'signup'
-        };
-
-        const {body} = await agent
-            .post('/members/?send_email=true&email_type=signup')
-            .body({members: [member]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: [news]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                location: anyString
-            });
-
-        const newMember = body.members[0];
-
-        mockManager.assert.sentEmail({
-            subject: '🙌 Complete your sign up to Ghost!',
-            to: 'member_getting_confirmation@test.com'
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    subscribed: true,
-                    source: 'admin'
-                }
-            ]
-        });
-
-        // @TODO: do we really need to delete this member here?
-        await agent
-            .delete(`members/${body.members[0].id}/`)
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            })
-            .expectStatus(204);
-
-        const events = await models.MemberSubscribeEvent.findAll();
-        assert.equal(events.models.length, 0, 'There should be no MemberSubscribeEvent remaining.');
-    });*/
-
     it('Can add and send a signup confirmation email', async function () {
         const member = {
             name: 'Send Me Confirmation',
@@ -418,11 +372,6 @@ describe('Members API', function () {
                 newsletters[0],
                 newsletters[1]
             ]
-        };
-
-        const queryParams = {
-            send_email: true,
-            email_type: 'signup'
         };
 
         const {body} = await agent
@@ -484,8 +433,12 @@ describe('Members API', function () {
             })
             .expectStatus(204);
 
-        const events = await models.MemberSubscribeEvent.findAll();
-        assert.equal(events.models.length, 0, 'There should be no MemberSubscribeEvent remaining.');
+        // There should be no MemberSubscribeEvent remaining.
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
     });
 
     it('Add should fail when passing incorrect email_type query parameter', async function () {
@@ -493,6 +446,8 @@ describe('Members API', function () {
             name: 'test',
             email: 'memberTestAdd@test.com'
         };
+
+        const statusEventsBefore = await models.MemberStatusEvent.findAll();
 
         await agent
             .post(`members/?send_email=true&email_type=lel`)
@@ -508,7 +463,7 @@ describe('Members API', function () {
             });
 
         const statusEvents = await models.MemberStatusEvent.findAll();
-        assert.equal(statusEvents.models.length, 1, 'No MemberStatusEvent should have been added after failing to create a subscription.');
+        assert.equal(statusEvents.models.length, statusEventsBefore.models.length, 'No MemberStatusEvent should have been added after failing to create a subscription.');
     });
 
     // Edit a member
@@ -1189,6 +1144,7 @@ describe('Members API', function () {
     });
 
     it('Can subscribe to a newsletter', async function () {
+        const clock = sinon.useFakeTimers(Date.now());
         const memberToChange = {
             name: 'change me',
             email: 'member3change@test.com',
@@ -1215,6 +1171,8 @@ describe('Members API', function () {
                 location: anyLocationFor('members')
             });
         const newMember = body.members[0];
+        const before = new Date();
+        before.setMilliseconds(0);
 
         await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
@@ -1222,9 +1180,16 @@ describe('Members API', function () {
             asserts: [{
                 subscribed: true,
                 source: 'admin',
-                newsletter_id: newsletters[0].id
+                newsletter_id: newsletters[0].id,
+                created_at: before
             }]
         });
+
+        // Wait 5 second sto guarantee event ordering
+        clock.tick(5000);
+
+        const after = new Date();
+        after.setMilliseconds(0);
        
         await agent
             .put(`/members/${newMember.id}/`)
@@ -1244,18 +1209,74 @@ describe('Members API', function () {
                 {
                     subscribed: true,
                     source: 'admin',
-                    newsletter_id: newsletters[0].id
+                    newsletter_id: newsletters[0].id,
+                    created_at: before
                 }, {
                     subscribed: true,
                     source: 'admin',
-                    newsletter_id: newsletters[1].id
+                    newsletter_id: newsletters[1].id,
+                    created_at: after
                 }, {
                     subscribed: false,
                     source: 'admin',
-                    newsletter_id: newsletters[0].id
+                    newsletter_id: newsletters[0].id,
+                    created_at: after
                 }
             ]
         });
+
+        clock.tick(5000);
+
+        // Check activity feed
+        const {body: eventsBody} = await agent
+            .get(`/members/events?filter=data.member_id:${newMember.id}`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const events = eventsBody.events;
+        events.should.match([
+            {
+                type: 'newsletter_event',
+                data: {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[1].id,
+                    newsletter: {
+                        id: newsletters[1].id
+                    }
+                }
+            },
+            {
+                type: 'newsletter_event',
+                data: {
+                    subscribed: false,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id,
+                    newsletter: {
+                        id: newsletters[0].id
+                    }
+                }
+            },
+            {
+                type: 'newsletter_event',
+                data: {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id,
+                    newsletter: {
+                        id: newsletters[0].id
+                    }
+                }
+            },
+            {
+                type: 'signup_event'
+            }
+        ]);
+
+        clock.restore();
     });
 
     it('Subscribes to default newsletters', async function () {
@@ -1623,5 +1644,285 @@ describe('Members API', function () {
             .post(`/members/`)
             .body({members: [member]})
             .expectStatus(422);
+    });
+
+    it('Can add and send a signup confirmation email (old)', async function () {
+        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
+        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+
+        const member = {
+            name: 'Send Me Confirmation',
+            email: 'member_getting_confirmation_old@test.com',
+            // Mapped to subscribe_on_signup newsletters
+            subscribed: true
+        };
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: filteredNewsletters.length
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyString
+            });
+
+        const newMember = body.members[0];
+
+        mockManager.assert.sentEmail({
+            subject: '🙌 Complete your sign up to Ghost!',
+            to: 'member_getting_confirmation_old@test.com'
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: filteredNewsletters.map((n) => {
+                return {
+                    subscribed: true,
+                    newsletter_id: n.id,
+                    source: 'admin'
+                };
+            })
+        });
+
+        // @TODO: do we really need to delete this member here?
+        await agent
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .expectStatus(204);
+
+        // There should be no MemberSubscribeEvent remaining.
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
+    });
+
+    it('Can add a member that is not subscribed (old)', async function () {
+        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
+        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+
+        const member = {
+            name: 'Send Me Confirmation',
+            email: 'member_getting_confirmation_old_2@test.com',
+            // Mapped to empty newsletters
+            subscribed: false
+        };
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: 0
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyString
+            });
+
+        const newMember = body.members[0];
+
+        mockManager.assert.sentEmail({
+            subject: '🙌 Complete your sign up to Ghost!',
+            to: 'member_getting_confirmation_old_2@test.com'
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
+    });
+
+    it('Can unsubscribe by setting (old) subscribed property to false', async function () {
+        const memberToChange = {
+            name: 'change me',
+            email: 'member2unsusbcribeold@test.com',
+            note: 'initial note',
+            newsletters: [
+                newsletters[0]
+            ]
+        };
+
+        const memberChanged = {
+            subscribed: false
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [memberToChange]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithIncludesSnapshot({
+                        newsletters: 1
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+        const newMember = body.members[0];
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [{
+                subscribed: true,
+                source: 'admin',
+                newsletter_id: newsletters[0].id
+            }]
+        });
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [{
+                from_status: null,
+                to_status: 'free'
+            }]
+        });
+
+        await agent
+            .put(`/members/${newMember.id}/`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithIncludesSnapshot({
+                        newsletters: 0
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id
+                }, {
+                    subscribed: false,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id
+                }
+            ]
+        });
+    });
+
+    it('Can subscribe by setting (old) subscribed property to true', async function () {
+        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
+        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+
+        const memberToChange = {
+            name: 'change me',
+            email: 'member2subscribe@test.com',
+            note: 'initial note',
+            newsletters: []
+        };
+
+        const memberChanged = {
+            subscribed: true
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [memberToChange]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithIncludesSnapshot({
+                        newsletters: 0
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+        const newMember = body.members[0];
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [{
+                from_status: null,
+                to_status: 'free'
+            }]
+        });
+
+        await agent
+            .put(`/members/${newMember.id}/`)
+            .body({members: [memberChanged]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithIncludesSnapshot({
+                        newsletters: filteredNewsletters.length
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: filteredNewsletters.map((n) => {
+                return {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: n.id
+                };
+            })
+        });
     });
 });
