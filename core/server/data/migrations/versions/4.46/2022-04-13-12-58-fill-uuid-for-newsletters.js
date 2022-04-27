@@ -1,17 +1,17 @@
 const logging = require('@tryghost/logging');
 const uuid = require('uuid');
-
 const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
-        logging.info('Setting missing uuid values for existing newsletters');
-        const uuidV4 = uuid.v4();
-        const updatedRows = await knex('newsletters')
-            .where('uuid', null)
-            .update('uuid', uuidV4);
+        const newslettersWithoutUUID = await knex.select('id').from('newsletters').whereNull('uuid');
 
-        logging.info(`Updated ${updatedRows} newsletters with uuidV4 = ${uuidV4}`);
+        logging.info(`Adding uuid field value to ${newslettersWithoutUUID.length} newsletters.`);
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const newsletter of newslettersWithoutUUID) {
+            await knex('newsletters').update('uuid', uuid.v4()).where('id', newsletter.id);
+        }
     },
     async function down() {
         // Not required: we would lose information here.
