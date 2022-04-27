@@ -6,62 +6,65 @@
     </header>
 
     <div class="gh-publish-settings-container">
-        <div class="gh-publish-title">Ready?</div>
+        <div class="gh-publish-title"><span>Another masterpiece.</span> Ready to share it with the world?</div>
         <div class="gh-publish-settings">
-                <span class="gh-publish-setting">Right now</span>
-
-                , this {{@data.publishOptions.post.displayName}} will be
-
+            <div class="gh-publish-setting">
+                {{svg-jar "send-email"}}
                 {{#if @data.publishOptions.emailUnavailable}}
-                    published
+                    publish
                 {{else}}
-                <GhBasicDropdown
-                    class="gh-publish-setting"
-                    @verticalPosition="below"
-                    @horizintalPosition="right"
-                    @renderInPlace={{true}}
-                    as |dd|
-                >
-                    <dd.Trigger>
-                        <span>{{@data.publishOptions.selectedPublishTypeOption.display}}</span>
-                    </dd.Trigger>
-                    <dd.Content class="gh-publish-setting-dropdown">
-                        <fieldset>
-                            {{#each @data.publishOptions.publishTypeOptions as |option|}}
-                                <div class="radio-button">
-                                    <input
-                                        type="radio"
-                                        name="publish-type"
-                                        id="publish-type-{{option.value}}"
-                                        value={{option.value}}
-                                        checked={{eq option.value @data.publishOptions.publishType}}
-                                        disabled={{option.disabled}}
-                                        {{on "change" this.publishTypeChanged}}
-                                    >
-                                    <label for="publish-type-{{option.value}}">{{option.label}}</label>
-                                </div>
-                            {{/each}}
-                        </fieldset>
-                    </dd.Content>
-                </GhBasicDropdown>
+                    <GhBasicDropdown
+                        class="gh-publish-setting-trigger"
+                        @verticalPosition="below"
+                        @horizintalPosition="right"
+                        @renderInPlace={{true}}
+                        as |dd|
+                    >
+                        <dd.Trigger>
+                            {{@data.publishOptions.selectedPublishTypeOption.display}}
+                        </dd.Trigger>
+                        <dd.Content class="gh-publish-setting-dropdown">
+                            <fieldset>
+                                {{#each @data.publishOptions.publishTypeOptions as |option|}}
+                                    <div class="radio-button">
+                                        <input
+                                            type="radio"
+                                            name="publish-type"
+                                            id="publish-type-{{option.value}}"
+                                            value={{option.value}}
+                                            checked={{eq option.value @data.publishOptions.publishType}}
+                                            disabled={{option.disabled}}
+                                            {{on "change" this.publishTypeChanged}}
+                                        >
+                                        <label for="publish-type-{{option.value}}">{{option.label}}</label>
+                                    </div>
+                                {{/each}}
+                            </fieldset>
+                        </dd.Content>
+                    </GhBasicDropdown>
 
                 {{/if}}
+            </div>
 
-                {{#if (eq @data.publishOptions.publishType "publish")}}
-                    on your site.
-                {{else}}
-                    to
-                    <span class="gh-publish-setting">all subscribers</span>
+            {{#unless (eq @data.publishOptions.publishType "publish")}}
+                <div class="gh-publish-setting">
+                    {{svg-jar "member"}} 
+                    <div class="gh-publish-setting-trigger">
+                        235 
+                        {{#unless @data.publishOptions.onlyDefaultNewsletter}}
+                            <span class="gh-publish-setting-trigger">
+                                Charts of the Week
+                            </span>
+                        {{/unless}}
+                        subscribers
+                    </div>
+                </div>
+            {{/unless}}
 
-                    of
-
-                    {{#if @data.publishOptions.onlyDefaultNewsletter}}
-                        your site.
-                    {{else}}
-                        <span class="gh-publish-setting">The Weekly Roundup</span>.
-                    {{/if}}
-                {{/if}}
-
+            <div class="gh-publish-setting">
+                {{svg-jar "clock"}}
+                <div class="gh-publish-setting-trigger">Right now</div>
+            </div>
 
         </div>
 

@@ -29,16 +29,16 @@ export class PublishOptions {
         return [{
             value: 'publish+send',
             label: 'Publish and email',
-            display: 'published and sent',
+            display: 'Publish and email',
             disabled: this.emailDisabled
         }, {
             value: 'publish',
             label: 'Publish only',
-            display: 'published'
+            display: 'Publish on site'
         }, {
             value: 'send',
             label: 'Email only',
-            display: 'sent',
+            display: 'Send email',
             disabled: this.emailDisabled
         }];
     }

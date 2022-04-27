@@ -455,36 +455,60 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 740px;
+    width: 640px;
     margin: 0 auto 8rem;
     padding-top: 11vw;
 }
 
 .gh-publish-title {
-    margin-bottom: 3.6rem;
+    margin-bottom: 4.6rem;
     color: var(--black);
-    font-size: 3.2rem;
+    font-size: 3.6rem;
     font-weight: 700;
+    line-height: 1.3em;
+}
+
+.gh-publish-title span {
+    background: linear-gradient(135deg,#34b743 5%,#24db39);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .gh-publish-settings {
-    margin-bottom: 4.8rem;
-    color: var(--black);
-    font-size: 2.3rem;
-    font-weight: 400;
-    line-height: 2em;
+    margin-bottom: 6rem;
+    width: 100%;
 }
 
 .gh-publish-setting {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    height: 38px;
-    padding: 0 8px;
-    font-weight: 600;
-    white-space: nowrap;
+    margin-bottom: 1.6rem;
+}
+
+.gh-publish-setting svg {
+    width: 2rem;
+    height: 2rem;
+    margin-right: 1.6rem;
+}
+
+.gh-publish-setting svg path {
+    stroke: var(--black);
+    stroke-width: 2px;
+}
+
+.gh-publish-setting-trigger {
+    width: max-content;
+    border-bottom: 1.5px solid var(--black);
+    color: var(--black);
+    font-size: 2rem;
+    font-weight: 500;
+    line-height: 1.35em;
     cursor: pointer;
-    background: var(--whitegrey-l1);
-    border-radius: var(--border-radius);
+}
+
+.gh-publish-setting span {
+    border-bottom: 0;
+    font-weight: 700;
 }
 
 .gh-publish-setting input[type="radio"]:disabled + label {
