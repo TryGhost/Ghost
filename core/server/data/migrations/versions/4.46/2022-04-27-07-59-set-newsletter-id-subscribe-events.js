@@ -23,7 +23,7 @@ module.exports = createTransactionalMigration(
             })
             .where('newsletter_id', null);
 
-        logging.log(`Updated ${updatedRows} members_subscribe_events with default newsletter id`);
+        logging.info(`Updated ${updatedRows} members_subscribe_events with default newsletter id`);
     },
     async function down() {
         // Not required
