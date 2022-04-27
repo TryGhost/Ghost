@@ -2,6 +2,7 @@
     <article class="gh-dashboard5-resource-box is-secondary">
         <div class="gh-dashboard5-resource-title">
             <h4>Staff Picks</h4>
+            <p>Hand picked stories from around the web, published with Ghost.</p>
         </div> 
         <div class="gh-dashboard5-resource-body">
             <div class="gh-dashboard5-list" {{did-insert this.load}}>
@@ -10,7 +11,9 @@
                         {{#each this.staffPicks as |entry|}}
                             <div class="gh-dashboard5-list-item">
                                 <a class="gh-dashboard5-list-post permalink" href={{set-query-params entry.link utm_source='ghost'}} target="_blank" rel="noopener noreferrer">
-                                    <span class="gh-dashboard5-list-link">{{entry.title}}</span>
+                                    <span class="gh-dashboard5-list-link">
+                                        <span>{{entry.title}}</span>
+                                    </span>
                                     <div class="gh-dashboard5-resource-secondary">{{entry.creator}}</div>
                                 </a>
                             </div>
