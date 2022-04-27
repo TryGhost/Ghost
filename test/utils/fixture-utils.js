@@ -562,6 +562,10 @@ const fixtures = {
                     })}, {id: member.id});
                 }
             }
+        }).then(async function () {
+            for (const event of DataGenerator.forKnex.members_paid_subscription_events) {
+                await models.MemberPaidSubscriptionEvent.add(event);
+            }
         });
     },
 

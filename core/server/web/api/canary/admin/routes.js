@@ -140,6 +140,7 @@ module.exports = function apiRoutes() {
     // ## Stats
     router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));
     router.get('/stats/mrr', mw.authAdminApi, http(api.stats.mrr));
+    router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
 
     // ## Labels
     router.get('/labels', mw.authAdminApi, http(api.labels.browse));
