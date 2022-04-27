@@ -94,78 +94,30 @@ describe('Post Email Serializer', function () {
             sinon.restore();
         });
 
-        it('uses the default newsletter settings when no newsletter_id is defined', async function () {
-            sinon.stub(settingsCache, 'get').callsFake(function (key) {
-                return {
-                    icon: 'icon',
-                    accent_color: '#990000'
-                }[key];
-            });
-            sinon.stub(models.Newsletter, 'findPage').returns(
-                Promise.resolve({
-                    data: [{
-                        get: function (key) {
-                            return {
-                                header_image: 'image',
-                                show_header_icon: true,
-                                show_header_title: true,
-                                show_feature_image: true,
-                                title_font_category: 'sans_serif',
-                                title_alignment: 'center',
-                                body_font_category: 'serif',
-                                show_badge: true,
-                                footer_content: '',
-                                show_header_name: true
-                            }[key];
-                        }
-                    }]
-                })
-            );
-
-            const res = await _getTemplateSettings();
-            should(res).eql({
-                headerImage: 'image',
-                showHeaderIcon: 'icon',
-                showHeaderTitle: true,
-                showHeaderName: true,
-                showFeatureImage: true,
-                titleFontCategory: 'sans_serif',
-                titleAlignment: 'center',
-                bodyFontCategory: 'serif',
-                showBadge: true,
-                footerContent: '',
-                accentColor: '#990000',
-                adjustedAccentColor: '#990000',
-                adjustedAccentContrastColor: '#FFFFFF'
-            });
-        });
-
-        it('uses the newsletter settings when a newsletter_id is defined', async function () {
+        it('uses the newsletter settings', async function () {
             sinon.stub(settingsCache, 'get').callsFake(function (key) {
                 return {
                     icon: 'icon2',
                     accent_color: '#000099'
                 }[key];
             });
-            sinon.stub(models.Newsletter, 'findOne').returns(
-                Promise.resolve({
-                    get: function (key) {
-                        return {
-                            header_image: 'image',
-                            show_header_icon: true,
-                            show_header_title: true,
-                            show_feature_image: true,
-                            title_font_category: 'sans-serif',
-                            title_alignment: 'center',
-                            body_font_category: 'serif',
-                            show_badge: true,
-                            footer_content: 'footer',
-                            show_header_name: true
-                        }[key];
-                    }
-                })
-            );
-            const res = await _getTemplateSettings('123');
+            const newsletterMock = {
+                get: function (key) {
+                    return {
+                        header_image: 'image',
+                        show_header_icon: true,
+                        show_header_title: true,
+                        show_feature_image: true,
+                        title_font_category: 'sans-serif',
+                        title_alignment: 'center',
+                        body_font_category: 'serif',
+                        show_badge: true,
+                        footer_content: 'footer',
+                        show_header_name: true
+                    }[key];
+                }
+            };
+            const res = await _getTemplateSettings(newsletterMock);
             should(res).eql({
                 headerImage: 'image',
                 showHeaderIcon: 'icon2',

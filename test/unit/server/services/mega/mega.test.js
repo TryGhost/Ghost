@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const labs = require('../../../../../core/shared/labs');
 
-const {addEmail, _partitionMembersBySegment, _getEmailMemberRows, _transformEmailRecipientFilter, handleUnsubscribeRequest} = require('../../../../../core/server/services/mega/mega');
+const {addEmail, _partitionMembersBySegment, _getEmailMemberRows, _transformEmailRecipientFilter, handleUnsubscribeRequest, _getFromAddress, _getReplyToAddress} = require('../../../../../core/server/services/mega/mega');
 const membersService = require('../../../../../core/server/services/members');
 
 describe('MEGA', function () {
@@ -238,6 +238,40 @@ describe('MEGA', function () {
             should.throws(() => {
                 _partitionMembersBySegment(members, segments);
             }, errors.ValidationError);
+        });
+    });
+
+    describe('getFromAddress', function () {
+        it('Returns only the email when only fromAddress is specified', function () {
+            should(_getFromAddress('', 'test@example.com')).eql('test@example.com');
+        });
+
+        it('Adds a sender name when it\'s specified', function () {
+            should(_getFromAddress(' Unnamed sender!! ', 'test@example.com')).eql('" Unnamed sender!! "<test@example.com>');
+        });
+
+        it('Overwrites the fromAddress when the domain is localhost', function () {
+            should(_getFromAddress('Test', 'test@localhost')).eql('"Test"<localhost@example.com>');
+        });
+        it('Overwrites the fromAddress when the domain is ghost.local', function () {
+            should(_getFromAddress('123', '456@ghost.local')).eql('"123"<localhost@example.com>');
+        });
+    });
+
+    describe('getReplyToAddress', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('Returns the from address by default', function () {
+            should(_getReplyToAddress('test@example.com')).eql('test@example.com');
+            should(_getReplyToAddress('test2@example.com', 'invalid')).eql('test2@example.com');
+            should(_getReplyToAddress('test3@example.com', 'newsletter')).eql('test3@example.com');
+        });
+
+        it('Returns the support email when the option is set to "support"', function () {
+            sinon.stub(membersService.config, 'getEmailSupportAddress').returns('support@example.com');
+            should(_getReplyToAddress('test4@example.com', 'support')).eql('support@example.com');
         });
     });
 });
