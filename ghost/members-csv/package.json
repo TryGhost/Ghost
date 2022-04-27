@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-csv",
-  "version": "1.2.10",
+  "version": "1.2.11",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-csv",
   "author": "Ghost Foundation",
   "license": "MIT",
