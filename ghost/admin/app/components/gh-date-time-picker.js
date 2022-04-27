@@ -31,6 +31,10 @@ export default class GhDateTimePicker extends Component {
     // actions
     setTypedDateError() {}
 
+    get renderInPlaceWithFallback() {
+        return this.renderInPlace === undefined ? true : this.renderInPlace;
+    }
+
     @reads('settings.timezone')
         blogTimezone;
 

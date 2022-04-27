@@ -462,6 +462,7 @@
     width: 640px;
     margin: 0 auto 8rem;
     padding-top: 11vw;
+    margin-bottom: 11vw;
 }
 
 .gh-publish-title {
@@ -485,17 +486,22 @@
 
 .gh-publish-setting {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     margin-bottom: 1.6rem;
 }
 
-.gh-publish-setting svg {
+.gh-publish-setting-title {
+    display: flex;
+    align-items: center;
+}
+
+.gh-publish-setting-title svg {
     width: 2rem;
     height: 2rem;
     margin-right: 1.6rem;
 }
 
-.gh-publish-setting svg path {
+.gh-publish-setting-title svg path {
     stroke: var(--black);
     stroke-width: 2px;
 }
@@ -510,7 +516,7 @@
     cursor: pointer;
 }
 
-.gh-publish-setting span {
+.gh-publish-setting-title span {
     border-bottom: 0;
     font-weight: 700;
 }
@@ -519,19 +525,25 @@
     color: var(--midlightgrey);
 }
 
-.gh-publish-setting-dropdown {
-    top: 46px;
-    min-width: 218px;
-    padding: 4px 16px;
-    font-size: 1.4rem;
-    font-weight: 500;
-    background: var(--white);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-m);
+.gh-publish-setting fieldset {
+    margin: 0;
+    margin-top: 1.6rem;
+    background-color: var(--whitegrey);
 }
 
-.gh-publish-setting-dropdown fieldset {
-    margin-bottom: 0;
+.gh-publish-setting .radio-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 5px;
+    padding: 10px;
+    border-bottom: 1px solid var(--white);
+}
+
+.gh-publish-setting .gh-publishmenu-radio {
+    margin: 0;
+    padding: 20px 10px;
+    border-bottom: 1px solid var(--white);
 }
 
 .gh-publish-cta {

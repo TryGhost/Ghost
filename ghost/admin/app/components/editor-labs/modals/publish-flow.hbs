@@ -1,0 +1,75 @@
+<div class="flex flex-column h-100 items-center overflow-auto">
+    <header class="gh-publish-header" data-test-modal="publish">
+        <button class="gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
+            <span>{{svg-jar "close-stroke"}} Close</span>
+        </button>
+    </header>
+
+    <div class="gh-publish-settings-container">
+        <div class="gh-publish-title"><span>Another masterpiece.</span> Ready to share it with the world?</div>
+        <div class="gh-publish-settings">
+            <div class="gh-publish-setting">
+                <div class="gh-publish-setting-title">
+                    {{svg-jar "send-email"}}
+                    {{#if @data.publishOptions.emailUnavailable}}
+                        <span>Publish on site</span>
+                    {{else}}
+                        <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "publishType")}}>
+                            <span>{{@data.publishOptions.selectedPublishTypeOption.display}}</span>
+                        </button>
+                    {{/if}}
+                </div>
+                {{#liquid-if (eq this.openSection "publishType")}}
+                    <div class="gh-publish-setting-form">
+                        <EditorLabs::PublishOptions::PublishType
+                            @publishOptions={{@data.publishOptions}}
+                        />
+                    </div>
+                {{/liquid-if}}
+            </div>
+
+            {{#if (not-eq @data.publishOptions.publishType "publish")}}
+                <div class="gh-publish-setting">
+                    <div class="gh-publish-setting-title">
+                        {{svg-jar "member"}}
+                        <div class="gh-publish-setting-trigger">
+                            235
+                            {{#unless @data.publishOptions.onlyDefaultNewsletter}}
+                                <span>
+                                    Charts of the Week
+                                </span>
+                            {{/unless}}
+                            subscribers
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+
+            <div class="gh-publish-setting">
+                <div class="gh-publish-setting-title">
+                    {{svg-jar "clock"}}
+                    <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "publishAt")}}>
+                        <span>
+                            {{#if @data.publishOptions.isScheduled}}
+                                {{capitalize (gh-format-post-time @data.publishOptions.scheduledAtUTC draft=true)}}
+                            {{else}}
+                                Right now
+                            {{/if}}
+                        </span>
+                    </button>
+                </div>
+                {{#liquid-if (eq this.openSection "publishAt")}}
+                    <EditorLabs::PublishOptions::PublishAt
+                        @publishOptions={{@data.publishOptions}}
+                    />
+                {{/liquid-if}}
+            </div>
+
+        </div>
+
+        <div class="gh-publish-cta">
+            <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" (noop)}}><span>Continue &rarr;</span></button>
+            <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @close}}><span>Back to edit</span></button>
+        </div>
+    </div>
+</div>

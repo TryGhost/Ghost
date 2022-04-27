@@ -1,0 +1,16 @@
+<fieldset>
+    {{#each @publishOptions.publishTypeOptions as |option|}}
+        <div class="radio-button">
+            <input
+                type="radio"
+                name="publish-type"
+                id="publish-type-{{option.value}}"
+                value={{option.value}}
+                checked={{eq option.value @publishOptions.selectedPublishTypeOption.value}}
+                disabled={{option.disabled}}
+                {{on "change" this.onChange}}
+            >
+            <label for="publish-type-{{option.value}}">{{option.label}}</label>
+        </div>
+    {{/each}}
+</fieldset>

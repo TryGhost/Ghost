@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {tracked} from '@glimmer/tracking';
 
 export default class PublishModalComponent extends Component {
     static modalOptions = {
@@ -8,10 +9,14 @@ export default class PublishModalComponent extends Component {
         ignoreBackdropClick: true
     };
 
-    @action
-    publishTypeChanged(event) {
-        event.preventDefault();
+    @tracked openSection = null;
 
-        this.args.data.publishOptions.setPublishType(event.target.value);
+    @action
+    toggleSection(section) {
+        if (section === this.openSection) {
+            this.openSection = null;
+        } else {
+            this.openSection = section;
+        }
     }
 }

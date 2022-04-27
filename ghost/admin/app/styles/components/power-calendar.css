@@ -220,6 +220,7 @@
 .ember-power-datepicker-content {
   min-width: 212px;
   padding: 12px;
+  z-index: 99999;
 }
 
 .ember-power-datepicker-trigger:focus {
