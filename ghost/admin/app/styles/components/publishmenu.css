@@ -361,6 +361,10 @@
     padding: 7px 10px;
 }
 
+.gh-publishmenu-newsletter-trigger.disabled span {
+    opacity: .5;
+}
+
 .gh-publishmenu-newsletter-trigger svg {
     position: absolute;
     top: 50%;
