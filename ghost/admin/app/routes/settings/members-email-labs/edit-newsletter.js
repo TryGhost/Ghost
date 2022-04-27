@@ -1,6 +1,6 @@
 import AdminRoute from 'ghost-admin/routes/admin';
 import ConfirmUnsavedChangesModal from '../../../components/modals/confirm-unsaved-changes';
-import EditNewsletterModal from '../../../components/modals/edit-newsletter';
+import EditNewsletterModal from '../../../components/modals/newsletters/edit';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 

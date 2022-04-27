@@ -13,13 +13,11 @@
                 </div>
 
                 {{#if (eq this.tab "settings")}}
-                    <Modals::EditNewsletter::Settings
+                    <Modals::Newsletters::Edit::Settings
                         @newsletter={{@data.newsletter}}
-                        @optInExisting={{this.optInExisting}}
-                        @setOptInExisting={{this.setOptInExisting}}
                     />
                 {{else}}
-                    <Modals::EditNewsletter::Design @newsletter={{@data.newsletter}} />
+                    <Modals::Newsletters::Edit::Design @newsletter={{@data.newsletter}} />
                 {{/if}}
             </div>
 
@@ -39,7 +37,7 @@
                         data-test-button="save-newsletter"
                     />
                 </div>
-                <Modals::EditNewsletter::Preview @newsletter={{@data.newsletter}} />
+                <Modals::Newsletters::Edit::Preview @newsletter={{@data.newsletter}} />
             </div>
         </div>
     </div>

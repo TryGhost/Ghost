@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
-import ConfirmArchiveModal from '../../modals/edit-newsletter/confirm-archive';
-import ConfirmUnarchiveModal from '../../modals/edit-newsletter/confirm-unarchive';
+import ConfirmArchiveModal from '../../modals/newsletters/confirm-archive';
+import ConfirmUnarchiveModal from '../../modals/newsletters/confirm-unarchive';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';

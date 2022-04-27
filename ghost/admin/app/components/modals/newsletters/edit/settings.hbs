@@ -41,7 +41,7 @@
                 <GhErrorMessage @errors={{@newsletter.errors}} @property="senderName" />
             </GhFormGroup>
 
-            <GhFormGroup @classNames="vertical"  @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderEmail"> 
+            <GhFormGroup @classNames="vertical"  @errors={{@newsletter.errors}} @hasValidated={{@newsletter.hasValidated}} @property="senderEmail">
                 <span class="flex items-center justify-between">
                     <label for="newsletter-sender-email" class="modal-fullsettings-title ml2">Newsletter email address</label>
                     <span class="tooltip-top-left" data-tooltip="Defaults to {{full-email-address "noreply"}} if empty">{{svg-jar "info" class="fill-darkgrey w4 h4"}}</span>
@@ -88,23 +88,6 @@
                     </div>
                 </div>
             </GhFormGroup>
-
-            {{#if @newsletter.isNew}}
-                <GhFormGroup>
-                    <label for="opt-in-existing" class="modal-fullsettings-title">Opt-in existing subscribers</label>
-                    <div class="for-switch small">
-                        <div class="container">
-                            <input
-                                type="checkbox"
-                                id="opt-in-existing"
-                                checked={{@optInExisting}}
-                                {{on "check" this.setOptInExisting}}
-                            >
-                            <button type="button" class="input-toggle-component" {{on "click" this.toggleOptInExisting}}></button>
-                        </div>
-                    </div>
-                </GhFormGroup>
-            {{/if}}
         </div>
     </fieldset>
 </div>
