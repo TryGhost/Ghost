@@ -1147,3 +1147,8 @@ kbd {
     background: rgb(21,23,25);
     background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
+
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-body,
+.gh-dashboard5-resource-box.is-secondary .gh-dashboard5-resource-footer {
+    border-color: #2c2e32;
+}

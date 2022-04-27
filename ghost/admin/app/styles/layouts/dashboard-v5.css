@@ -219,7 +219,7 @@ Dashboard v5 Layout */
     border-left: 1px solid var(--whitegrey);
     padding: 4px 24px;
     position: relative;
-    height: 130px;
+    height: 110px;
 }
 
 .gh-dashboard5-minichart .gh-dashboard5-data {
@@ -267,8 +267,9 @@ Dashboard v5 Layout */
 .gh-dashboard5-legend-item {
     font-size: 1.3rem;
     font-weight: 600;
+    line-height: 1.4em;
     color: #626d79;
-    padding: 0 0 0 18px;
+    padding: 0 0 0 16px;
     position: relative;   
 }
 
@@ -279,8 +280,9 @@ Dashboard v5 Layout */
     border-radius: 8px;
     background: #8E42FF;
     position: absolute;
-    top: 6px;
+    top: 50%;
     left: 0;
+    transform: translateY(-50%);
 }
 
 .gh-dashboard5-legend-item:last-child::after {
@@ -327,9 +329,9 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-select .ember-power-select-selected-item {
-    font-size: 1.2rem;
-    font-weight: 700;
-    letter-spacing: .3px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -.1px;
     line-height: 1em;
     padding: 0;
     color: var(--middarkgrey);
@@ -339,16 +341,16 @@ Dashboard v5 Layout */
 .gh-dashboard5-select-title {
     display: flex;
     justify-content: flex-start;
-    margin: -12px 0 -12px -12px;
+    margin: -12px 0 -12px -13px;
 }
 
 .gh-dashboard5-select-title .ember-power-select-selected-item {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 700;
     line-height: 1em;
     margin: 0;
     padding: 0;
-    letter-spacing: .2px;
+    letter-spacing: -0.3px;
     white-space: nowrap;
     color: var(--black);
 }
@@ -404,6 +406,17 @@ Dashboard v5 Chart */
     align-items: center;
 }
 
+.gh-dashboard5-chart .gh-loading-spinner {
+    width: 24px;
+    height: 24px;
+}
+
+.gh-dashboard5-chart .gh-loading-spinner::before {
+    width: 4px;
+    height: 4px;
+    margin-top: 4px;
+}
+
 .gh-dashboard5-chart-ticks {
     flex: none;
     padding: 8px 24px 16px 0;
@@ -453,7 +466,7 @@ Dashboard v5 Chart */
 }
 
 .gh-dashboard5-minicharts .gh-dashboard5-chart-box {
-    height: 130px;
+    height: 110px;
 }
 
 
@@ -508,14 +521,14 @@ Dashboard v5 Metric */
 
 .gh-dashboard5-metric-label {
     align-items: center;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 700;
     line-height: 1em;
-    margin: 0 0 10px;
+    margin: 0 0 8px;
     padding: 0;
     color: var(--black);
     white-space: nowrap;
-    letter-spacing: .2px;
+    letter-spacing: -.3px;
 }
 
 .gh-dashboard5-metric.is-reverse .gh-dashboard5-metric-label {
@@ -538,7 +551,7 @@ Dashboard v5 Metric */
     align-items: flex-end;
     font-size: 2.6rem;
     font-weight: 700;
-    letter-spacing: -.1px;
+    letter-spacing: -.4px;
     line-height: 1em;
     white-space: nowrap;
     margin: 0 0 12px;
@@ -547,7 +560,8 @@ Dashboard v5 Metric */
 }
 
 .gh-dashboard5-metric.is-large .gh-dashboard5-metric-value {
-    font-size: 3rem;
+    font-size: 3.2rem;
+    letter-spacing: -0.8px;
     margin-bottom: 0;
 }
 
@@ -1065,6 +1079,17 @@ Dashboard v5 What's New */
     padding-top: 3px;
 }
 
+.gh-dashboard5-list-link {
+    display: flex;
+    width: 100%;
+}
+
+.gh-dashboard5-list-link span {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 .gh-dashboard5-whats-new .gh-dashboard5-list-item:first-child .gh-dashboard5-list-link::after {
     display: inline-block;
     content: "New";
@@ -1195,6 +1220,11 @@ Dashboard v5 Staff Picks */
     margin-left: -12px; /* layout adjustment */
 }
 
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-body {
+    border-top: 1px solid var(--whitegrey);
+    padding-top: 12px;
+}
+
 .gh-dashboard5-staff-picks .gh-dashboard5-list-header,
 .gh-dashboard5-staff-picks .gh-dashboard5-list-item {
     grid-template-columns: 100%;
@@ -1223,6 +1253,7 @@ Dashboard v5 Staff Picks */
     margin-bottom: 8px;
     color: var(--black);
     padding: 0;
+    min-width: 0;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-body {
@@ -1232,8 +1263,13 @@ Dashboard v5 Staff Picks */
     justify-content: space-between;
     color: #7c8b9a;
     font-size: 1.4rem;
-    padding: 8px 24px 16px 0;
+    padding: 0 32px 16px 0;
     transition: all .3s ease-in-out;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-body,
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-footer {
+    border-color: #dcdfe1;
 }
 
 
@@ -1314,6 +1350,44 @@ Dashboard v5 Misc */
     font-weight: 600;
 }
 
+.gh-dashboard5-rate-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.gh-dashboard5-rate-amount {
+    height: 6px;
+    border-radius: 2.5px;
+    background: var(--whitegrey);
+    overflow: hidden;
+    position: relative;
+    display: block;
+    flex-grow: 1;
+    margin-left: 20px;
+}
+
+.gh-dashboard5-rate-amount + span {
+    flex-shrink: 0;
+    padding-left: 15px;
+}
+
+.gh-dashboard5-rate-amount > span {
+    /* background: var(--purple); */
+
+    background: rgb(213,184,255);
+    background: linear-gradient(90deg, rgba(213,184,255,1) 0%, rgba(142,66,255,1) 100%);
+
+    border-top-right-radius: 2.5px;
+    border-bottom-right-radius: 2.5px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+
 
 /* --------------------------------- 
 Dashboard v5 Resources */
@@ -1352,18 +1426,23 @@ Dashboard v5 Resources */
 
 .gh-dashboard5-resource-title {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     margin: 0 0 20px;
 }
 
 .gh-dashboard5-resource-title h4 {
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     color: var(--black);
     margin: 0;
     padding: 0;
     transition: color .3s;
+}
+
+.gh-dashboard5-resource-title p {
+    margin: 16px 0 0;
+    padding: 0 64px 0 0;
 }
 
 .gh-dashboard5-resource-body {
@@ -1379,7 +1458,7 @@ Dashboard v5 Resources */
 }
 
 .gh-dashboard5-resource-footer a {
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .gh-dashboard5-resource-thumbnail {
@@ -1499,4 +1578,9 @@ Dashboard v5 Tooltips */
 
 .gh-dashboard5-totals {
     margin-top: 24px;
+}
+
+.gh-dashboard5-totals .gh-dashboard5-loading,
+.gh-dashboard5-totals .gh-dashboard5-chart-container {
+    height: 200px;
 }
