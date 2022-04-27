@@ -16,6 +16,9 @@ module.exports = function unsubscribeController(req, res) {
 
     const redirectUrl = new URL(urlUtils.urlFor('home', true));
     redirectUrl.searchParams.append('uuid', query.uuid);
+    if (query.newsletter) {
+        redirectUrl.searchParams.append('newsletter', query.newsletter);
+    }
     redirectUrl.searchParams.append('action', 'unsubscribe');
 
     return res.redirect(302, redirectUrl.href);
