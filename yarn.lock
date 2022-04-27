@@ -1939,15 +1939,6 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.11":
-  version "1.2.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.11.tgz#3b3725f5ae8c35d4f264386e1e8fe39009713900"
-  integrity sha512-C7zFxqP9QjGBOHd7nRMzsAU9OlK71dhYkqPInYgLFLyIT7j4fFKgn8Z4ZQ6ucs7v7qG3UKoo0U7vnMGJAOFuag==
-  dependencies:
-    lodash "^4.17.21"
-    utils-copy-error "^1.0.1"
-    uuid "^8.3.2"
-
 "@tryghost/errors@1.2.12", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.12", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
   version "1.2.12"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.12.tgz#906f2cf603dd90f6e386f4a95b963d613e4279e6"
@@ -2303,13 +2294,13 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.1.1.tgz#913c8941ebe274eac4c3ac872fbe6268534f0003"
   integrity sha512-N1H3P/ua7MCJTQrhFd6RjBFL95pjB+y3Ih1ZyKToBzicU3RShLUsgVlBC7YNaJVGFG/RYCImzlm09QCV8qwgpg==
 
-"@tryghost/mw-error-handler@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.2.1.tgz#6ce970a6b7f1ec8732ef083e674ee48604c8b4ba"
-  integrity sha512-lQq25Lw9RK6UoIOW1g/A/Vg7hGKXMthbBdc0+fPV0nM0KPqs3a1AXRaOpZA857KO+eDPY6tgY0jmLaKsPDRNcQ==
+"@tryghost/mw-error-handler@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.2.2.tgz#ab507e8b9079b6cbcbef2ac3fee4266342188165"
+  integrity sha512-9J6d1gce+PzdLkSGxap5oWjG3INb3J9QLoC4NHXOqIGZ+7GERlao3q6AFVBo5xUBoUzkd+Q7+3ZQfeLarNEwUA==
   dependencies:
     "@tryghost/debug" "^0.1.9"
-    "@tryghost/errors" "1.2.11"
+    "@tryghost/errors" "1.2.12"
     "@tryghost/tpl" "^0.1.8"
     lodash "^4.17.21"
     semver "^7.3.6"
