@@ -3,7 +3,7 @@
         @selected={{this._date}}
         @center={{this._date}}
         @onSelect={{action "setDateInternal" value="date"}}
-        @renderInPlace={{true}}
+        @renderInPlace={{this.renderInPlaceWithFallback}}
         @disabled={{this.disabled}} as |dp|
     >
         <dp.Trigger @tabindex="-1" data-test-date-time-picker-datepicker>

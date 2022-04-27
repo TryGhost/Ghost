@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
-import PublishFlowModal from '../modals/editor-labs/publish-flow';
+import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
+import moment from 'moment';
 import {action, get} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -13,12 +14,51 @@ export class PublishOptions {
     settings = null;
     store = null;
 
-    // passed in objects
+    // passed in models
     post = null;
     user = null;
 
     get isLoading() {
         return this.setupTask.isRunning;
+    }
+
+    // publish date ------------------------------------------------------------
+
+    @tracked isScheduled = false;
+    @tracked scheduledAtUTC = this.minScheduledAt;
+
+    get minScheduledAt() {
+        return moment.utc().add(5, 'minutes');
+    }
+
+    @action
+    toggleScheduled(shouldSchedule) {
+        if (shouldSchedule === undefined) {
+            shouldSchedule = !this.isScheduled;
+        }
+
+        this.isScheduled = shouldSchedule;
+
+        if (shouldSchedule && (!this.scheduledAtUTC || this.scheduledAtUTC.isBefore(this.minScheduledAt))) {
+            this.scheduledAtUTC = this.minScheduledAt;
+        }
+    }
+
+    @action
+    setScheduledAt(date) {
+        if (moment.utc(date).isBefore(this.minScheduledAt)) {
+            return;
+        }
+
+        this.scheduledAtUTC = moment.utc(date);
+    }
+
+    @action
+    resetPastScheduledAt() {
+        if (this.scheduledAtUTC.isBefore(this.minScheduledAt)) {
+            this.isScheduled = false;
+            this.scheduledAt = null;
+        }
     }
 
     // publish type ------------------------------------------------------------
@@ -67,14 +107,10 @@ export class PublishOptions {
     }
 
     @action
-    setPublishType(publishType) {
-        // TODO: validate publish type is allowed
-        this.publishType = publishType;
+    setPublishType(newValue) {
+        // TODO: validate option is allowed when setting?
+        this.publishType = newValue;
     }
-
-    // publish date ------------------------------------------------------------
-
-    @tracked publishDate = 'now';
 
     // newsletter --------------------------------------------------------------
 
@@ -153,6 +189,8 @@ export default class PublishManagement extends Component {
         event?.preventDefault();
 
         if (!this.publishFlowModal || this.publishFlowModal.isClosing) {
+            this.publishOptions.resetPastScheduledAt();
+
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
                 publishOptions: this.publishOptions
             });
