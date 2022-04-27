@@ -1,3 +1,4 @@
+const DatabaseInfo = require('@tryghost/database-info');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor} = matchers;
 const configUtils = require('../../utils/configUtils');
@@ -327,6 +328,47 @@ describe('Newsletters API', function () {
                         id: anyUuid
                     }]
                 });
+        });
+    });
+
+    it('Can add a newsletter - with custom sender_email and subscribe existing members', async function () {
+        const db = require('../../../core/server/data/db');
+        if (DatabaseInfo.isSQLite(db.knex)) {
+            return;
+        }
+        const newsletter = {
+            name: 'My test newsletter with custom sender_email and subscribe existing',
+            sender_name: 'Test',
+            sender_email: 'test@example.com',
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 0
+        };
+
+        await agent
+            .post(`newsletters/?opt_in_existing=true`)
+            .body({newsletters: [newsletter]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot],
+                meta: {
+                    sent_email_verification: ['sender_email']
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('newsletters')
+            });
+
+        mockManager.assert.sentEmail({
+            subject: 'Verify email address',
+            to: 'test@example.com'
         });
     });
 });
