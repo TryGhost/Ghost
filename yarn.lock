@@ -1892,10 +1892,15 @@
     "@tryghost/root-utils" "^0.3.14"
     debug "^4.3.1"
 
-"@tryghost/domain-events@0.1.9", "@tryghost/domain-events@^0.1.9":
+"@tryghost/domain-events@0.1.9":
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.9.tgz#f2de5189df2238bb72a53a76abcded0d84ae6fa7"
   integrity sha512-n2FEA5xBQBCHq02CNBMh8BkWV7zdy9yp/Y4dGWc2QQ58lcNTgSBqZBaPpfPURgTGJbLqO+xsNQgU0LYvUN9JTQ==
+
+"@tryghost/domain-events@^0.1.10", "@tryghost/domain-events@^0.1.9":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.10.tgz#1a657c7964b928ac63e7ada87902d6fa5d4f5a7a"
+  integrity sha512-C6xqg8VC5KgfgZ0X4zMUcoRBEDk7DS8xSepbIfZx61UZHbJRUMfbZ+AklGdnNQmQFxBc3eUCLAOByF6k1HXvTQ==
 
 "@tryghost/elasticsearch-bunyan@0.1.1":
   version "0.1.1"
@@ -2137,10 +2142,15 @@
     "@tryghost/tpl" "^0.1.4"
     bson-objectid "^2.0.1"
 
-"@tryghost/member-events@0.4.1", "@tryghost/member-events@^0.4.1":
+"@tryghost/member-events@0.4.1":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.1.tgz#d75c183e29c1d186bc8a584a1f05b6e7c05c23b0"
   integrity sha512-eYsDWrsLbdX5alZI9hsxsswN0XnlkOH6AvOmzeaX17pxDqzAhG7DN9rs0lDH3Ov3aniRfHc2UukcQ65oJbvA1A==
+
+"@tryghost/member-events@^0.4.1", "@tryghost/member-events@^0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.2.tgz#d1266abad38aa0b8f9b9f3395b083971e85221bf"
+  integrity sha512-4VlGlB9uq3xxgeW3OXx9//Yb1kiRm7HbVVGiBJ9LMMjeoKZnpUQA9zHyY5FUK4Aolvz/wyxjb4Ci7JNjvoMrJg==
 
 "@tryghost/members-analytics-ingress@^0.1.12":
   version "0.1.12"
@@ -2504,13 +2514,13 @@
     moment-timezone "^0.5.23"
     validator "7.2.0"
 
-"@tryghost/verification-trigger@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.2.0.tgz#cf9d22ea59be6fca8f8a54464663d8177e063e37"
-  integrity sha512-qsz7IWJ+LbKmSD6JeEkoa/ZCRMFjwUHwIfRWp2mTNf7WW+dA13T+4VsE14lxRtOsMnD9A12PqWIUQB6H6ef2UQ==
+"@tryghost/verification-trigger@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.2.1.tgz#8b371fee47dec57bfeb8ab61a4698aaae4d17974"
+  integrity sha512-ox47qz+aiUC70dy2oOqpuZ1AGHLawFB1DDE76US4vWVAEV0K8Ny+k/vR8Qtt5r8lVN+G8tFpsf8NtELFE2npdw==
   dependencies:
-    "@tryghost/domain-events" "^0.1.9"
-    "@tryghost/member-events" "^0.4.1"
+    "@tryghost/domain-events" "^0.1.10"
+    "@tryghost/member-events" "^0.4.2"
 
 "@tryghost/version-notifications-data-service@0.1.0":
   version "0.1.0"
