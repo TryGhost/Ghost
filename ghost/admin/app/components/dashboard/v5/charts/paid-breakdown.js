@@ -11,11 +11,11 @@ export default class PaidBreakdown extends Component {
 
     @action
     loadCharts() {
-        // todo: load the new data here
+        this.dashboardStats.loadSubscriptionCountStats();
     }
 
     get loading() {
-        return this.dashboardStats.memberCountStats === null;
+        return this.dashboardStats.subscriptionCountStats === null;
     }
 
     get chartTitle() {
@@ -27,11 +27,11 @@ export default class PaidBreakdown extends Component {
     }
 
     get chartData() {
-        const stats = this.dashboardStats.filledMemberCountStats;
+        const stats = this.dashboardStats.filledSubscriptionCountStats;
         const labels = stats.map(stat => stat.date);
-        const newData = stats.map(stat => stat.paidSubscribed);
-        const canceledData = stats.map(stat => -stat.paidCanceled);
-        const netData = stats.map(stat => stat.paidSubscribed - stat.paidCanceled);
+        const newData = stats.map(stat => stat.positiveDelta);
+        const canceledData = stats.map(stat => -stat.negativeDelta);
+        const netData = stats.map(stat => stat.positiveDelta - stat.negativeDelta);
         const barThickness = 5;
 
         return {
