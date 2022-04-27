@@ -9,6 +9,7 @@ module.exports = {
             return result.count;
         }
     },
+    newsletters: {},
     emails: {
         currentCountQuery: async (db, startDate) => {
             let result = await db.knex('emails')
