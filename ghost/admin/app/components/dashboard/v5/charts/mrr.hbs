@@ -1,19 +1,18 @@
 <div class="gh-dashboard5-minichart gh-dashboard5-mrr">
-    <Dashboard::v5::Parts::Metric
-        @label={{this.chartTitle}}
-        @value="{{this.currentMRRFormatted}}"
-        @trends={{this.hasTrends}}
-        @percentage={{this.mrrTrend}} /> 
-
     <div class="gh-dashboard5-chart">
         {{#if this.loading}}
             <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
         {{else}}
             <div class="gh-dashboard5-chart-container">
-                <EmberChart
-                    @type={{this.chartType}}
-                    @data={{this.chartData}}
-                    @options={{this.chartOptions}} />
+                <div class="gh-dashboard5-chart-box">
+                    <EmberChart
+                        @type={{this.chartType}}
+                        @data={{this.chartData}}
+                        @options={{this.chartOptions}}
+                        @height={{130}} />
+                </div>
+
+                <div class="gh-dashboard5-chart-gradient"></div>
     
                 <div id="gh-dashboard5-mrr-tooltip" class="gh-dashboard5-tooltip">
                     <div class="gh-dashboard5-tooltip-label">
@@ -25,5 +24,13 @@
                 </div> 
             </div>
         {{/if}}
+    </div>
+
+    <div class="gh-dashboard5-data">
+        <Dashboard::v5::Parts::Metric
+            @label={{this.chartTitle}}
+            @value="{{this.currentMRRFormatted}}"
+            @trends={{this.hasTrends}}
+            @percentage={{this.mrrTrend}} /> 
     </div>
 </div>

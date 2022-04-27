@@ -1,4 +1,26 @@
 <div class="gh-dashboard5-minichart gh-dashboard5-mix {{if this.isChartTiers 'is-tiers'}}">
+    <div class="gh-dashboard5-chart" {{did-insert this.loadCharts}}>
+        {{#if this.loading}}
+            <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
+        {{else}}
+            <div class="gh-dashboard5-chart-container">
+                <div class="gh-dashboard5-chart-box">
+                    <EmberChart
+                        @type={{this.chartType}}
+                        @data={{this.chartData}}
+                        @options={{this.chartOptions}}
+                        @height={{130}} /> 
+                </div>
+
+                <div id="gh-dashboard5-mix-tooltip" class="gh-dashboard5-tooltip">
+                    <div class="gh-dashboard5-tooltip-value">
+                        -
+                    </div>
+                </div> 
+            </div>
+        {{/if}}
+    </div>
+
     <div class="gh-dashboard5-data">
         <Dashboard::v5::Parts::Metric
             @label="Paid mix" /> 
@@ -7,25 +29,6 @@
             <div class="gh-dashboard5-legend">
                 <div class="gh-dashboard5-legend-item">Monthly</div>
                 <div class="gh-dashboard5-legend-item">Annual</div>
-            </div>
-        {{/if}}
-    </div>
-
-    <div class="gh-dashboard5-chart" {{did-insert this.loadCharts}}>
-        {{#if this.loading}}
-            <div class="gh-dashboard5-chart-loading" style={{html-safe (concat "height: " this.chartHeight "px;")}}/>
-        {{else}}
-            <div class="gh-dashboard5-chart-container">
-                <EmberChart
-                    @type={{this.chartType}}
-                    @data={{this.chartData}}
-                    @options={{this.chartOptions}} />  
-
-                <div id="gh-dashboard5-mix-tooltip" class="gh-dashboard5-tooltip">
-                    <div class="gh-dashboard5-tooltip-value">
-                        -
-                    </div>
-                </div> 
             </div>
         {{/if}}
     </div>
