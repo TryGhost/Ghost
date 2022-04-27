@@ -15,7 +15,10 @@ describe('MEGA', function () {
         // via transformEmailRecipientFilter
         it('throws when "free" or "paid" strings are used as a email_recipient_filter', async function () {
             const postModel = {
-                get: sinon.stub().returns('free')
+                get: sinon.stub().returns('free'),
+                related: sinon.stub().returns({
+                    fetch: sinon.stub().returns(null)
+                })
             };
 
             try {
@@ -30,7 +33,10 @@ describe('MEGA', function () {
         // via transformEmailRecipientFilter
         it('throws when "none" is used as a email_recipient_filter', async function () {
             const postModel = {
-                get: sinon.stub().returns('none')
+                get: sinon.stub().returns('none'),
+                related: sinon.stub().returns({
+                    fetch: sinon.stub().returns(null)
+                })
             };
 
             try {
