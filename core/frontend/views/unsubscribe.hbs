@@ -11,6 +11,9 @@
             Successfully Unsubscribed
         {{/if}}
     </title>
+    {{#if portalUrl}}
+        <script defer src="{{portalUrl}}" data-ghost="{{@site.url}}" crossorigin="anonymous"></script>
+    {{/if}}
     <link rel="stylesheet" href="{{asset "public/ghost.css" hasMinFile="true"}}" />
 </head>
 <body>
