@@ -129,6 +129,19 @@ describe('Front-end members behaviour', function () {
         });
     });
 
+    describe('Unsubscribe', function() {
+        it('should redirect with uuid and action param', async function () {
+            await request.get('/unsubscribe/?uuid=XXX')
+                .expect(302)
+                .expect('Location', 'http://127.0.0.1:2369/?uuid=XXX&action=unsubscribe');
+        });
+
+        it('should reject when missing a uuid', async function () {
+            await request.get('/unsubscribe/')
+                .expect(400);
+        });
+    });
+
     describe('Price data', function () {
         it('Can be used as a number, and with the price helper', async function () {
             // Check out test/utils/fixtures/themes/price-data-test-theme/index.hbs
