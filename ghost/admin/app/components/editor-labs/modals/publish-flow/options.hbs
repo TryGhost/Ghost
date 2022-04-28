@@ -1,0 +1,65 @@
+<div class="gh-publish-title"><span>Another masterpiece.</span> Ready to share it with the world?</div>
+<div class="gh-publish-settings">
+    <div class="gh-publish-setting">
+        <div class="gh-publish-setting-title">
+            {{svg-jar "send-email"}}
+            {{#if @publishOptions.emailUnavailable}}
+                <span>Publish on site</span>
+            {{else}}
+                <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "publishType")}}>
+                    <span>{{@publishOptions.selectedPublishTypeOption.display}}</span>
+                </button>
+            {{/if}}
+        </div>
+        {{#liquid-if (eq this.openSection "publishType")}}
+            <div class="gh-publish-setting-form">
+                <EditorLabs::PublishOptions::PublishType
+                    @publishOptions={{@publishOptions}}
+                />
+            </div>
+        {{/liquid-if}}
+    </div>
+
+    {{#if (not-eq @publishOptions.publishType "publish")}}
+        <div class="gh-publish-setting">
+            <div class="gh-publish-setting-title">
+                {{svg-jar "member"}}
+                <div class="gh-publish-setting-trigger">
+                    {{#let (members-count-fetcher query=(hash filter=@publishOptions.recipientFilter)) as |countFetcher|}}
+                        {{countFetcher.count}}
+                    {{/let}}
+                    {{#unless @publishOptions.onlyDefaultNewsletter}}
+                        <span>{{@publishOptions.newsletter.name}}</span>
+                    {{/unless}}
+                    subscribers
+                </div>
+            </div>
+        </div>
+    {{/if}}
+
+    <div class="gh-publish-setting">
+        <div class="gh-publish-setting-title">
+            {{svg-jar "clock"}}
+            <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "publishAt")}}>
+                <span>
+                    {{#if @publishOptions.isScheduled}}
+                        {{capitalize (gh-format-post-time @publishOptions.scheduledAtUTC draft=true)}}
+                    {{else}}
+                        Right now
+                    {{/if}}
+                </span>
+            </button>
+        </div>
+        {{#liquid-if (eq this.openSection "publishAt")}}
+            <EditorLabs::PublishOptions::PublishAt
+                @publishOptions={{@publishOptions}}
+            />
+        {{/liquid-if}}
+    </div>
+
+</div>
+
+<div class="gh-publish-cta">
+    <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}}><span>Continue &rarr;</span></button>
+    <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @close}}><span>Back to edit</span></button>
+</div>
