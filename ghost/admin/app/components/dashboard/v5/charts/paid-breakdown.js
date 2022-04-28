@@ -1,9 +1,38 @@
+/* globals Chart */
+
 import Component from '@glimmer/component';
 import moment from 'moment';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const DATE_FORMAT = 'D MMM';
+
+// custom ChartJS draw function
+Chart.defaults.hoverBar = Chart.defaults.bar;
+Chart.controllers.hoverBar = Chart.controllers.bar.extend({
+    draw: function (ease) {
+        Chart.controllers.line.prototype.draw.call(this, ease);
+
+        if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
+            let activePoint = this.chart.tooltip._active[0],
+                ctx = this.chart.ctx,
+                x = activePoint.tooltipPosition().x,
+                topY = this.chart.legend.bottom,
+                bottomY = this.chart.chartArea.bottom;
+
+            // draw line
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, bottomY);
+            ctx.setLineDash([3, 4]);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#7C8B9A';
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+});
 
 export default class PaidBreakdown extends Component {
     @service dashboardStats;
@@ -23,7 +52,7 @@ export default class PaidBreakdown extends Component {
     }
 
     get chartType() {
-        return 'bar';
+        return 'hoverBar';
     }
 
     get chartData() {
@@ -31,38 +60,19 @@ export default class PaidBreakdown extends Component {
         const labels = stats.map(stat => stat.date);
         const newData = stats.map(stat => stat.positiveDelta);
         const canceledData = stats.map(stat => -stat.negativeDelta);
-        const netData = stats.map(stat => stat.positiveDelta - stat.negativeDelta);
         const barThickness = 5;
 
         return {
             labels: labels,
             datasets: [
                 {
-                    type: 'line',
-                    data: netData,
-                    tension: 0,
-                    cubicInterpolationMode: 'monotone',
-                    fill: false,
-                    pointRadius: 0,
-                    pointHitRadius: 10,
-                    pointBorderColor: '#14B8FF',
-                    pointBackgroundColor: '#14B8FF',
-                    pointHoverBackgroundColor: '#14B8FF',
-                    pointHoverBorderColor: '#14B8FF',
-                    pointHoverRadius: 0,
-                    borderColor: 'rgba(189, 197, 204, 0.5)',
-                    borderJoinStyle: 'miter',
-                    borderWidth: 3
-                }, {
                     data: newData,
-                    fill: false,
                     backgroundColor: '#8E42FF',
                     cubicInterpolationMode: 'monotone',
                     barThickness: barThickness,
                     minBarLength: 3
                 }, {
                     data: canceledData,
-                    fill: false,
                     backgroundColor: '#FB76B4',
                     cubicInterpolationMode: 'monotone',
                     barThickness: barThickness,
@@ -120,15 +130,17 @@ export default class PaidBreakdown extends Component {
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
                     tooltipEl.style.left = tooltip.x + 'px';
-                    tooltipEl.style.top = tooltip.y + 'px';    
+                    tooltipEl.style.top = '70px';    
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        let newValue = data.datasets[1].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-2').innerHTML = `New ${newValue}`;
+                        // new data
+                        let newValue = parseInt(data.datasets[0].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-1').innerHTML = `New ${newValue}`;
 
-                        let canceldValue = data.datasets[2].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-3').innerHTML = `Canceled ${canceldValue}`;
+                        // canceld data
+                        let canceledValue = Math.abs(parseInt(data.datasets[1].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')));
+                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-2').innerHTML = `Canceled ${canceledValue}`;
                     },
                     title: (tooltipItems) => {
                         const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
