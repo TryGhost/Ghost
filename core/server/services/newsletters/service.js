@@ -3,6 +3,12 @@ const MagicLink = require('@tryghost/magic-link');
 const logging = require('@tryghost/logging');
 const verifyEmailTemplate = require('./emails/verify-email');
 const debug = require('@tryghost/debug')('services:newsletters');
+const tpl = require('@tryghost/tpl');
+const errors = require('@tryghost/errors');
+
+const messages = {
+    nameAlreadyExists: 'A newsletter with the same name already exists'
+};
 
 class NewslettersService {
     /**
@@ -108,8 +114,17 @@ class NewslettersService {
         const sortOrder = await this.NewsletterModel.getNextAvailableSortOrder(options);
         cleanedAttrs.sort_order = sortOrder;
 
-        // add the model now because we need the ID for sending verification emails
-        const newsletter = await this.NewsletterModel.add(cleanedAttrs, options);
+        let newsletter;
+        try {
+            // add the model now because we need the ID for sending verification emails
+            newsletter = await this.NewsletterModel.add(cleanedAttrs, options);
+        } catch (error) {
+            if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+                throw new errors.ValidationError({message: tpl(messages.nameAlreadyExists)});
+            }
+
+            throw error;
+        }
 
         // subscribe existing members if opt_in_existing=true
         if (options.opt_in_existing) {
@@ -144,8 +159,18 @@ class NewslettersService {
 
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs, originalNewsletter);
 
-        const updatedNewsletter = await this.NewsletterModel.edit(cleanedAttrs, options);
+        let updatedNewsletter;
+        
+        try {
+            updatedNewsletter = await this.NewsletterModel.edit(cleanedAttrs, options);
+        } catch (error) {
+            if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+                throw new errors.ValidationError({message: tpl(messages.nameAlreadyExists)});
+            }
 
+            throw error;
+        }
+        
         return this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
     }
 

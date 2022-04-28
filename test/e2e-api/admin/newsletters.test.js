@@ -371,4 +371,59 @@ describe('Newsletters API', function () {
             to: 'test@example.com'
         });
     });
+
+    it(`Can't add multiple newsletters with same name`, async function () {
+        const firstNewsletter = {
+            name: 'Duplicate newsletter'
+        };
+
+        const secondNewsletter = {...firstNewsletter};
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [firstNewsletter]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('newsletters')
+            });
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [secondNewsletter]})
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    message: 'Validation error, cannot save newsletter.',
+                    context: 'A newsletter with the same name already exists'
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it(`Can't edit multiple newsletters to existing name`, async function () {
+        const id = fixtureManager.get('newsletters', 0).id;
+
+        await agent.put(`newsletters/${id}`)
+            .body({
+                newsletters: [{
+                    name: 'Duplicate newsletter'
+                }]
+            })
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    message: 'Validation error, cannot edit newsletter.',
+                    context: 'A newsletter with the same name already exists'
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 });
