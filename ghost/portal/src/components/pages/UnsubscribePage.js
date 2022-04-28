@@ -26,6 +26,7 @@ export default function UnsubscribePage() {
         return d.subscribe_on_signup;
     });
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
+    const [showPrefs, setShowPrefs] = useState(false);
 
     useEffect(() => {
         const ghostApi = setupGhostApi({siteUrl: site.url});
@@ -64,7 +65,7 @@ export default function UnsubscribePage() {
     }
 
     // Case: Single active newsletter
-    if (siteNewsletters?.length === 1) {
+    if (siteNewsletters?.length === 1 && !showPrefs) {
         return (
             <div className='gh-portal-content with-footer'>
                 <CloseButton />
@@ -76,7 +77,24 @@ export default function UnsubscribePage() {
                 <h4 className="gh-portal-text-center gh-portal-text-large" style={{marginBottom: '8px', fontSize: '2rem'}}>Successfully unsubscribed</h4>
                 <div className='gh-portal-section'>
                     <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
-                    <p className='gh-portal-text-center'>Didn't mean to do this? Manage your email preferences <button className="gh-portal-btn-link" style={{display: 'inlineBlock', marginLeft: '4px', fontSize: '1.5rem', fontWeight: '600'}}>here.</button></p>
+                    <p className='gh-portal-text-center'>
+                        Didn't mean to do this? Manage your email preferences
+                        <button
+                            className="gh-portal-btn-link"
+                            style={{
+                                display: 'inlineBlock',
+                                marginLeft: '4px',
+                                fontSize: '1.5rem',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => {
+                                setShowPrefs(true);
+                            }}
+                        >
+                            here
+                        </button>
+                    </p>
                 </div>
             </div>
         );
