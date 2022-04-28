@@ -17,13 +17,7 @@ const messages = {
  * We fetch the `authors` relations when you either request `withRelated=['authors']` or `withRelated=['author`].
  * The old `author` relation was removed, but we still have to support this case.
  *
- * # CASE 2
- * We fetch when editing a post.
- * Imagine you change `author_id` and you have 3 existing `posts_authors`.
- * We now need to set `author_id` as primary author `post.authors[0]`.
- * Furthermore, we now longer have a `author` relationship.
- *
- * # CASE 3:
+ * # CASE 2:
  * If you request `include=author`, we have to fill this object with `post.authors[0]`.
  * Otherwise we can't return `post.author = User`.
  *
