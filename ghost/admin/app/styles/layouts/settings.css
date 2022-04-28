@@ -1071,6 +1071,14 @@
     background: var(--whitegrey-d1);
 }
 
+.gh-newsletters-labs .gh-stack-item .tooltip-top-left::before {
+    width: max-content;
+    max-width: 320px;
+    white-space: normal;
+    word-break: break-word;
+    text-align: left;
+}
+
 .gh-newsletters-labs .gh-members-emailsettings-footer {
     margin-top: auto;
     margin-bottom: 0;
