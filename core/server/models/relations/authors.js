@@ -154,14 +154,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                 }
 
                 attrs.author = attrs.authors[0];
-                delete attrs.author_id;
-            } else {
-                // CASE: we return `post.author=id` with or without requested columns.
-                // @NOTE: this serialization should be moved into api layer, it's not being moved as it's deprecated
-                if (!options.columns || (options.columns && options.columns.indexOf('author') !== -1)) {
-                    attrs.author = attrs.author_id;
-                    delete attrs.author_id;
-                }
             }
 
             // CASE: `posts.authors` was not requested, but fetched in specific cases (see top)
@@ -366,10 +358,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             isAdd = (action === 'add');
             isDestroy = (action === 'destroy');
 
-            function isChanging(attr) {
-                return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
-            }
-
             function isChangingAuthors() {
                 if (!unsafeAttrs.authors) {
                     return false;
@@ -385,12 +373,8 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             function isOwner() {
                 let isCorrectOwner = true;
 
-                if (!unsafeAttrs.author_id && !unsafeAttrs.authors) {
+                if (!unsafeAttrs.authors) {
                     return false;
-                }
-
-                if (unsafeAttrs.author_id) {
-                    isCorrectOwner = unsafeAttrs.author_id && unsafeAttrs.author_id === context.user;
                 }
 
                 if (unsafeAttrs.authors) {
@@ -409,13 +393,13 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             }
 
             if (isContributor && isEdit) {
-                hasUserPermission = !isChanging('author_id') && !isChangingAuthors() && isCoAuthor();
+                hasUserPermission = !isChangingAuthors() && isCoAuthor();
             } else if (isContributor && isAdd) {
                 hasUserPermission = isOwner();
             } else if (isContributor && isDestroy) {
                 hasUserPermission = isPrimaryAuthor();
             } else if (isAuthor && isEdit) {
-                hasUserPermission = isCoAuthor() && !isChanging('author_id') && !isChangingAuthors();
+                hasUserPermission = isCoAuthor() && !isChangingAuthors();
             } else if (isAuthor && isAdd) {
                 hasUserPermission = isOwner();
             } else if (postModel) {
@@ -435,7 +419,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     // @TODO: we need a concept for making a diff between incoming authors and existing authors
                     // @TODO: for now we simply re-use the new concept of `excludedAttrs`
                     // We only check the primary author of `authors`, any other change will be ignored.
-                    // By this we can deprecate `author_id` more easily.
                     if (isContributor || isAuthor) {
                         return {
                             excludedAttrs: ['authors'].concat(excludedAttrs)
