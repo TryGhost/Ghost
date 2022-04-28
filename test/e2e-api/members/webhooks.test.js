@@ -44,7 +44,6 @@ describe('Members API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockLabsEnabled('multipleProducts');
         mockManager.mockLabsDisabled('dashboardV5');
         mockManager.mockMail();
         mockManager.mockStripe();

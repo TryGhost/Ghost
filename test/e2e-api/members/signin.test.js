@@ -13,8 +13,6 @@ describe('Members Signin', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockLabsEnabled('multipleProducts');
-        mockManager.mockLabsEnabled('tierWelcomePages');
         mockManager.mockStripe();
     });
 
