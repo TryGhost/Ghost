@@ -2,7 +2,7 @@
     <article class="gh-dashboard5-resource-box">
 
         {{#if (not (or this.loading this.error))}}
-            <div class="gh-dashboard5-resource-thumbnail" style="background-image: url({{this.resource.feature_image}})"></div>
+            <div class="gh-dashboard5-resource-thumbnail" style={{html-safe (concat "background-image: url(" this.resource.feature_image ")")}}></div>
             <div class="gh-dashboard5-resource-body">
                 <div>
                     <div class="gh-dashboard5-resource-title">
