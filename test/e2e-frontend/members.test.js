@@ -10,6 +10,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
 const models = require('../../core/server/models');
 const {mockManager} = require('../utils/e2e-framework');
+const DataGenerator = require('../utils/fixtures/data-generator');
 
 function assertContentIsPresent(res) {
     res.text.should.containEql('<h2 id="markdown">markdown</h2>');
@@ -57,7 +58,8 @@ describe('Front-end members behaviour', function () {
             return originalSettingsCacheGetFn(key, options);
         });
         await testUtils.startGhost();
-        await testUtils.initFixtures('members');
+        await testUtils.initFixtures('newsletters', 'members:newsletters');
+
         request = supertest.agent(configUtils.config.get('url'));
     });
 
@@ -115,6 +117,53 @@ describe('Front-end members behaviour', function () {
         it('should error for invalid data on members subscription endpoint', async function () {
             await request.put('/members/api/subscriptions/123')
                 .expect(400);
+        });
+
+        it('should error for fetching member newsletters with missing uuid', async function () {
+            await request.get('/members/api/member/newsletters')
+                .expect(400);
+        });
+
+        it('should error for fetching member newsletters with invalid uuid', async function () {
+            await request.get('/members/api/member/newsletters?uuid=abc')
+                .expect(404);
+        });
+
+        it('should error for updating member newsletters with missing uuid', async function () {
+            await request.put('/members/api/member/newsletters')
+                .expect(400);
+        });
+
+        it('should error for updating member newsletters with invalid uuid', async function () {
+            await request.put('/members/api/member/newsletters?uuid=abc')
+                .expect(404);
+        });
+
+        it('should fetch and update member newsletters with valid uuid', async function () {
+            const memberUUID = DataGenerator.Content.members[0].uuid;
+
+            // Can fetch newsletter subscriptions
+            const getRes = await request.get(`/members/api/member/newsletters?uuid=${memberUUID}`)
+                .expect(200);
+            const getJsonResponse = getRes.body;
+
+            should.exist(getJsonResponse);
+            getJsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+            getJsonResponse.should.not.have.property('id');
+            getJsonResponse.newsletters.should.have.length(1);
+
+            // Can update newsletter subscription
+            const res = await request.put(`/members/api/member/newsletters?uuid=${memberUUID}`)
+                .send({
+                    newsletters: []
+                })
+                .expect(200);
+            const jsonResponse = res.body;
+
+            should.exist(jsonResponse);
+            jsonResponse.should.have.properties(['email', 'uuid', 'status', 'name', 'newsletters']);
+            jsonResponse.should.not.have.property('id');
+            jsonResponse.newsletters.should.have.length(0);
         });
 
         it('should serve theme 404 on members endpoint', async function () {
