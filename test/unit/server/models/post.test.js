@@ -417,35 +417,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     });
                 });
 
-                it('rejects if changing author id', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', author_id: 2};
-
-                    mockPostObj.get.withArgs('author_id').returns(1);
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.called).be.false();
-                        done();
-                    });
-                });
-
                 it('rejects if changing authors.0', function (done) {
                     const mockPostObj = {
                         get: sinon.stub(),
@@ -510,10 +481,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         related: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {status: 'published', author_id: 1};
+                    const unsafeAttrs = {status: 'published'};
 
                     mockPostObj.get.withArgs('status').returns('published');
-                    mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
                     models.Post.permissible(
@@ -529,7 +499,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.callCount).eql(3);
+                        should(mockPostObj.get.callCount).eql(2);
                         should(mockPostObj.related.callCount).eql(1);
                         done();
                     });
@@ -541,10 +511,8 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         related: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', author_id: 2};
+                    const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
-                    mockPostObj.get.withArgs('status').returns('draft');
-                    mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
                     models.Post.permissible(
@@ -560,8 +528,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.callCount).eql(1);
-                        should(mockPostObj.related.callCount).eql(0);
+                        should(mockPostObj.related.callCount).eql(1);
                         done();
                     });
                 });
@@ -572,10 +539,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         related: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', author_id: 1};
+                    const unsafeAttrs = {status: 'draft'};
 
                     mockPostObj.get.withArgs('status').returns('draft');
-                    mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
                     return models.Post.permissible(
@@ -590,7 +556,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     ).then((result) => {
                         should.exist(result);
                         should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.callCount).eql(3);
+                        should(mockPostObj.get.callCount).eql(2);
                         should(mockPostObj.related.callCount).eql(1);
                     });
                 });
@@ -602,7 +568,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         get: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {status: 'published', author_id: 1};
+                    const unsafeAttrs = {status: 'published', authors: [{id: 1}]};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -627,7 +593,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         get: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', author_id: 2};
+                    const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -672,56 +638,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     });
                 });
 
-                it('rejects if same logged in user and `authors.0`, but different author_id', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', author_id: 3, authors: [{id: 1}]};
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        done();
-                    });
-                });
-
-                it('rejects if different logged in user and `authors.0`, but correct author_id', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', author_id: 1, authors: [{id: 2}]};
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        done();
-                    });
-                });
-
                 it('resolves if same logged in user and `authors.0`', function (done) {
                     const mockPostObj = {
                         get: sinon.stub()
@@ -744,29 +660,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         should(mockPostObj.get.called).be.false();
                         done();
                     }).catch(done);
-                });
-
-                it('resolves if none of the above cases are true', function () {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', author_id: 1};
-
-                    return models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.called).be.false();
-                    });
                 });
             });
 
@@ -865,10 +758,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         related: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {author_id: 2};
+                    const unsafeAttrs = {authors: {id: 2}};
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
-                    mockPostObj.get.withArgs('author_id').returns(2);
 
                     models.Post.permissible(
                         mockPostObj,
@@ -948,36 +840,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     });
                 });
 
-                it('rejects if changing author', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {author_id: 2};
-
-                    mockPostObj.get.withArgs('author_id').returns(1);
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.calledOnce).be.true();
-                        done();
-                    });
-                });
-
                 it('rejects if changing authors', function (done) {
                     const mockPostObj = {
                         get: sinon.stub(),
@@ -1007,15 +869,13 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     });
                 });
 
-                it('rejects if changing authors and author_id', function (done) {
+                it('rejects if changing authors', function (done) {
                     const mockPostObj = {
-                        get: sinon.stub(),
                         related: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 1}], author_id: 2};
+                    const unsafeAttrs = {authors: [{id: 2}]};
 
-                    mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
                     models.Post.permissible(
@@ -1031,21 +891,18 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.calledOnce).be.true();
+                        should(mockPostObj.related.calledTwice).be.true();
                         done();
                     });
                 });
 
-                it('rejects if changing authors and author_id', function (done) {
+                it('rejects if changing authors', function (done) {
                     const mockPostObj = {
-                        get: sinon.stub(),
                         related: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}], author_id: 1};
+                    const unsafeAttrs = {authors: [{id: 2}]};
 
-                    mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
                     models.Post.permissible(
@@ -1061,7 +918,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         done(new Error('Permissible function should have rejected.'));
                     }).catch((error) => {
                         error.should.be.an.instanceof(errors.NoPermissionError);
-                        mockPostObj.get.callCount.should.eql(1);
                         mockPostObj.related.callCount.should.eql(2);
                         done();
                     });
@@ -1069,13 +925,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 it('resolves if none of the above cases are true', function () {
                     const mockPostObj = {
-                        get: sinon.stub(),
                         related: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {author_id: 1};
+                    const unsafeAttrs = {};
 
-                    mockPostObj.get.withArgs('author_id').returns(1);
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
                     return models.Post.permissible(
@@ -1088,7 +942,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         true
                     ).then(() => {
-                        should(mockPostObj.get.calledOnce).be.true();
                         should(mockPostObj.related.calledOnce).be.true();
                     });
                 });
@@ -1100,7 +953,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         get: sinon.stub()
                     };
                     const context = {user: 1};
-                    const unsafeAttrs = {author_id: 2};
+                    const unsafeAttrs = {authors: [{id: 2}]};
 
                     models.Post.permissible(
                         mockPostObj,
@@ -1147,27 +1000,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         done();
                     });
                 });
-
-                it('resolves if none of the above cases are true', function () {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {author_id: 1};
-
-                    return models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        should(mockPostObj.get.called).be.false();
-                    });
-                });
             });
         });
 
@@ -1178,10 +1010,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     related: sinon.stub()
                 };
                 const context = {user: 1};
-                const unsafeAttrs = {author_id: 2};
+                const unsafeAttrs = {authors: [{id: 2}]};
 
                 mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
-                mockPostObj.get.withArgs('author_id').returns(2);
 
                 models.Post.permissible(
                     mockPostObj,
@@ -1207,9 +1038,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     get: sinon.stub()
                 };
                 const context = {user: 1};
-                const unsafeAttrs = {author_id: 2};
-
-                mockPostObj.get.withArgs('author_id').returns(2);
+                const unsafeAttrs = {authors: [{id: 2}]};
 
                 return models.Post.permissible(
                     mockPostObj,
