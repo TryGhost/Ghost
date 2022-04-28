@@ -1892,15 +1892,10 @@
     "@tryghost/root-utils" "^0.3.14"
     debug "^4.3.1"
 
-"@tryghost/domain-events@0.1.10", "@tryghost/domain-events@^0.1.10":
+"@tryghost/domain-events@0.1.10", "@tryghost/domain-events@^0.1.10", "@tryghost/domain-events@^0.1.9":
   version "0.1.10"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.10.tgz#1a657c7964b928ac63e7ada87902d6fa5d4f5a7a"
   integrity sha512-C6xqg8VC5KgfgZ0X4zMUcoRBEDk7DS8xSepbIfZx61UZHbJRUMfbZ+AklGdnNQmQFxBc3eUCLAOByF6k1HXvTQ==
-
-"@tryghost/domain-events@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.9.tgz#f2de5189df2238bb72a53a76abcded0d84ae6fa7"
-  integrity sha512-n2FEA5xBQBCHq02CNBMh8BkWV7zdy9yp/Y4dGWc2QQ58lcNTgSBqZBaPpfPURgTGJbLqO+xsNQgU0LYvUN9JTQ==
 
 "@tryghost/elasticsearch-bunyan@0.1.1":
   version "0.1.1"
@@ -2105,7 +2100,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.1.5", "@tryghost/logging@2.1.7", "@tryghost/logging@2.1.8", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1", "@tryghost/logging@^2.0.5":
+"@tryghost/logging@2.1.5", "@tryghost/logging@2.1.8", "@tryghost/logging@^2.0.0", "@tryghost/logging@^2.0.1", "@tryghost/logging@^2.0.5":
   version "2.1.8"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.1.8.tgz#97a071125437b831ee9660d516bbd8ebb16414d8"
   integrity sha512-AdRlt10qG3WWmfKE6BShnLHmsfUJG0A6c60wNSGiMvSkGCIKrpmg2TAhlr9Tp0xbqLFSTocjuiVYptrjSd6paA==
@@ -2142,15 +2137,10 @@
     "@tryghost/tpl" "^0.1.4"
     bson-objectid "^2.0.1"
 
-"@tryghost/member-events@0.4.2", "@tryghost/member-events@^0.4.2":
+"@tryghost/member-events@0.4.2", "@tryghost/member-events@^0.4.1", "@tryghost/member-events@^0.4.2":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.2.tgz#d1266abad38aa0b8f9b9f3395b083971e85221bf"
   integrity sha512-4VlGlB9uq3xxgeW3OXx9//Yb1kiRm7HbVVGiBJ9LMMjeoKZnpUQA9zHyY5FUK4Aolvz/wyxjb4Ci7JNjvoMrJg==
-
-"@tryghost/member-events@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.1.tgz#d75c183e29c1d186bc8a584a1f05b6e7c05c23b0"
-  integrity sha512-eYsDWrsLbdX5alZI9hsxsswN0XnlkOH6AvOmzeaX17pxDqzAhG7DN9rs0lDH3Ov3aniRfHc2UukcQ65oJbvA1A==
 
 "@tryghost/members-analytics-ingress@^0.1.13":
   version "0.1.13"
@@ -8080,13 +8070,13 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-knex-migrator@4.2.7:
-  version "4.2.7"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.7.tgz#a54ca814cff9aea36be3011b4ad070ae270123ac"
-  integrity sha512-OCrFAi+LbK2X8AsNgi29FgRiTL7EciufbdtoDGpDWMap80lLHhv0uRMZg66t29kulkeQ6VIrZAdbNl7ELuWhag==
+knex-migrator@4.2.8:
+  version "4.2.8"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.8.tgz#ef797def311f265ca4bc873494d711ce75469da2"
+  integrity sha512-KUMS9DU95pE56w+8NOSZlQKYeSgW/7XqWQnzviyDhejGEbYqXw2IHWQWat8asqs4WWZLregWeqoL8L0KcYAljQ==
   dependencies:
     "@tryghost/database-info" "0.3.3"
-    "@tryghost/logging" "2.1.7"
+    "@tryghost/logging" "2.1.8"
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
@@ -8099,7 +8089,7 @@ knex-migrator@4.2.7:
     nconf "0.12.0"
     resolve "1.22.0"
   optionalDependencies:
-    sqlite3 "5.0.5"
+    sqlite3 "5.0.6"
 
 knex@2.0.0:
   version "2.0.0"
@@ -11606,17 +11596,6 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
-
-sqlite3@5.0.5:
-  version "5.0.5"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.5.tgz#e8768ffcb4800a72216846898cd6c363ba1d83c9"
-  integrity sha512-ZZFOMW31IOMbUeSiL23TuWSjNyS7Z83EDJ80HJxCe78OZ+5BJT6IhAwAUnQgPsUl5z+Er0DGx7VjuTP7PKPNcg==
-  dependencies:
-    "@mapbox/node-pre-gyp" "^1.0.0"
-    node-addon-api "^4.2.0"
-    tar "^6.1.11"
-  optionalDependencies:
-    node-gyp "8.x"
 
 sqlite3@5.0.6:
   version "5.0.6"
