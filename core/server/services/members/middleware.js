@@ -85,7 +85,7 @@ const getMemberNewsletters = async function (req, res) {
         });
         if (!memberData) {
             res.writeHead(400);
-            res.end('Email address not found.');
+            return res.end('Email address not found.');
         } else {
             const data = _.pick(memberData.toJSON(), 'uuid', 'email', 'name', 'newsletters', 'status');
             return res.json(data);
@@ -109,7 +109,7 @@ const updateMemberNewsletters = async function (req, res) {
         });
         if (!memberData) {
             res.writeHead(400);
-            res.end('Email address not found.');
+            return res.end('Email address not found.');
         }
         const options = {
             id: memberData.get('id'),
