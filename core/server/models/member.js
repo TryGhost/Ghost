@@ -373,6 +373,18 @@ const Member = ghostBookshelf.Model.extend({
         return query;
     },
 
+    getNewsletterRelations(data, unfilteredOptions = {}) {
+        const query = ghostBookshelf.knex('members_newsletters')
+            .select('id')
+            .whereIn('member_id', data.memberIds);
+
+        if (unfilteredOptions.transacting) {
+            query.transacting(unfilteredOptions.transacting);
+        }
+
+        return query;
+    },
+
     fetchAllSubscribed(unfilteredOptions = {}) {
         // we use raw queries instead of model relationships because model hydration is expensive
         const query = ghostBookshelf.knex('members_newsletters')

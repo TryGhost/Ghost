@@ -7,18 +7,28 @@ const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 
 const {mockManager} = require('../../utils/e2e-framework');
+const models = require('../../../core/server/models');
 
 let request;
 
+async function getNewsletters() {
+    return (await models.Newsletter.findAll({filter: 'status:active'})).models;
+}
+
 describe('Members Importer API', function () {
+    let newsletters;
+
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await localUtils.doAuth(request, 'members');
+        await localUtils.doAuth(request, 'newsletters', 'members:newsletters');
+
+        newsletters = await getNewsletters();
     });
 
     beforeEach(function () {
         mockManager.mockLabsEnabled('multipleProducts');
+        mockManager.mockLabsEnabled('multipleNewsletters');
     });
 
     afterEach(function () {
@@ -26,6 +36,9 @@ describe('Members Importer API', function () {
     });
 
     it('Can import CSV', async function () {
+        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
+        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+
         const res = await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .attach('membersfile', path.join(__dirname, '/../../utils/fixtures/csv/valid-members-import.csv'))
@@ -64,6 +77,7 @@ describe('Members Importer API', function () {
         importedMember1.name.should.equal('joe');
         should(importedMember1.note).equal(null);
         importedMember1.subscribed.should.equal(true);
+        importedMember1.newsletters.length.should.equal(filteredNewsletters.length);
         importedMember1.labels.length.should.equal(1);
         testUtils.API.isISO8601(importedMember1.created_at).should.be.true();
         importedMember1.comped.should.equal(false);
@@ -75,6 +89,7 @@ describe('Members Importer API', function () {
         importedMember2.name.should.equal('test');
         should(importedMember2.note).equal('test note');
         importedMember2.subscribed.should.equal(false);
+        importedMember2.newsletters.length.should.equal(0);
         importedMember2.labels.length.should.equal(2);
         testUtils.API.isISO8601(importedMember2.created_at).should.be.true();
         importedMember2.created_at.should.equal('1991-10-02T20:30:31.000Z');
@@ -163,6 +178,9 @@ describe('Members Importer API', function () {
     // });
 
     it('Can bulk unsubscribe members with filter', async function () {
+        const filteredNewsletters = newsletters.filter(n => n.get('subscribe_on_signup'));
+        filteredNewsletters.length.should.be.greaterThan(0, 'For this test to work, we need at least one newsletter fixture with subscribe_on_signup = true');
+
         // import our dummy data for deletion
         await request
             .post(localUtils.API.getApiQuery(`members/upload/`))
@@ -180,7 +198,7 @@ describe('Members Importer API', function () {
 
         browseResponse.body.members.should.have.length(8);
         const allMembersSubscribed = browseResponse.body.members.every((member) => {
-            return member.subscribed;
+            return member.subscribed && member.newsletters.length > 0;
         });
 
         should.ok(allMembersSubscribed);
@@ -201,7 +219,7 @@ describe('Members Importer API', function () {
         should.exist(bulkUnsubscribeResponse.body.bulk.meta);
         should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats);
         should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
-        should.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
+        should.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8 * filteredNewsletters.length);
 
         const postUnsubscribeBrowseResponse = await request
             .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
@@ -212,7 +230,7 @@ describe('Members Importer API', function () {
 
         postUnsubscribeBrowseResponse.body.members.should.have.length(8);
         const allMembersUnsubscribed = postUnsubscribeBrowseResponse.body.members.every((member) => {
-            return !member.subscribed;
+            return member.newsletters.length === 0;
         });
 
         should.ok(allMembersUnsubscribed);
