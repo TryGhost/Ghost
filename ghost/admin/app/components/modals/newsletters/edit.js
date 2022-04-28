@@ -62,8 +62,8 @@ export default class EditNewsletterModal extends Component {
             return result;
         } catch (e) {
             if (e === undefined) {
-                // ensure task button shows failed state
-                throw new Error('Validation failed');
+                // Validation error
+                return;
             }
 
             throw e;
