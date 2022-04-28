@@ -1,3 +1,5 @@
+/* global Chart */
+
 import Component from '@glimmer/component';
 import moment from 'moment';
 import {getSymbol} from 'ghost-admin/utils/currency';
@@ -5,6 +7,33 @@ import {ghPriceAmount} from '../../../../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 
 const DATE_FORMAT = 'D MMM';
+
+// custom ChartJS draw function
+Chart.defaults.hoverLine = Chart.defaults.line;
+Chart.controllers.hoverLine = Chart.controllers.line.extend({
+    draw: function (ease) {
+        Chart.controllers.line.prototype.draw.call(this, ease);
+
+        if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
+            let activePoint = this.chart.tooltip._active[0],
+                ctx = this.chart.ctx,
+                x = activePoint.tooltipPosition().x,
+                topY = this.chart.legend.bottom,
+                bottomY = this.chart.chartArea.bottom;
+
+            // draw line
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, bottomY);
+            ctx.setLineDash([3, 4]);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#7C8B9A';
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+});
 
 export default class Mrr extends Component {
     @service dashboardStats;
@@ -32,7 +61,7 @@ export default class Mrr extends Component {
     }
 
     get chartType() {
-        return 'line';
+        return 'hoverLine'; // uses custom ChartJS draw function
     }
 
     get mrrCurrencySymbol() {
