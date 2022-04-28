@@ -34,8 +34,15 @@ export default function UnsubscribePage() {
 
             setMember(memberData);
             setSubscribedNewsletters(memberData?.newsletters || []);
+            if (siteNewsletters?.length === 1) {
+                try {
+                    await ghostApi.member.updateNewsletters({uuid: pageData.uuid, newsletters: []});
+                } catch (e) {
+                    // ignore auto unsubscribe error
+                }
+            }
         })();
-    }, [pageData.uuid, site.url]);
+    }, [pageData.uuid, site.url, siteNewsletters?.length]);
 
     // Case: Email not found
     if (member === null) {
