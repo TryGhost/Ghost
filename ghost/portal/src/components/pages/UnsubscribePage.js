@@ -69,10 +69,7 @@ export default function UnsubscribePage() {
                 <h4 className="gh-portal-text-center gh-portal-text-large" style={{marginBottom: '8px', fontSize: '2rem'}}>Successfully unsubscribed</h4>
                 <div className='gh-portal-section'>
                     <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
-                    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'baseline'}}>
-                        <p className='gh-portal-text-center' style={{marginBottom: '0px', marginRight: '4px'}}>Didn't mean to do this? Manage your email preferences </p>
-                        <button className="gh-portal-btn gh-portal-btn-link">here.</button>
-                    </div>
+                    <p className='gh-portal-text-center'>Didn't mean to do this? Manage your email preferences <button className="gh-portal-btn-link" style={{display: 'inlineBlock', marginLeft: '4px', fontSize: '1.5rem', fontWeight: '600'}}>here.</button></p>
                 </div>
             </div>
         );
