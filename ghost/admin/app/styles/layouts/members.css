@@ -1713,6 +1713,7 @@ p.gh-members-import-errordetail:first-of-type {
     border: 1px solid var(--whitegrey-d1);
     background: var(--white);
     border-radius: 4px;
+    word-break: break-word;
 }
 
 .gh-members-emailsettings-footer-input p {
@@ -1971,6 +1972,7 @@ p.gh-members-import-errordetail:first-of-type {
     line-height: 1.5em;
     color: #738a94;
     padding: 10px 30px;
+    word-break: break-word;
 }
 
 .gh-members-emailpreview-footercontent p {
