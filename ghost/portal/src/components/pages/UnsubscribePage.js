@@ -50,9 +50,6 @@ export default function UnsubscribePage() {
                 <div className='gh-portal-section'>
                     <p className="gh-portal-text-center">Email address not found.</p>
                 </div>
-                <div className='gh-portal-action-footer'>
-                    <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor, margin: '0 auto'}}><span>← Back to {siteTitle}</span></button>
-                </div>
             </div>
         );
     }
@@ -66,13 +63,10 @@ export default function UnsubscribePage() {
                     <img className='gh-portal-signup-logo' src="https://static.ghost.org/v4.0.0/images/ghost-orb-1.png" alt="fdfkld" />
                     <h1 className="gh-portal-main-title">{siteTitle}</h1>
                 </header>
-                <h4 className="gh-portal-text-center gh-portal-text-large">Successfully unsubscribed</h4>
+                <h4 className="gh-portal-text-center gh-portal-text-large" style={{marginBottom: '8px', fontSize: '2rem'}}>Successfully unsubscribed</h4>
                 <div className='gh-portal-section'>
-                    <p><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
-                    <p>Didn't mean to do this? Manage your account here.</p>
-                </div>
-                <div className='gh-portal-action-footer'>
-                    <button className='gh-portal-btn gh-portal-btn-link' style={{color: brandColor, margin: '0 auto'}}><span>← Back to {siteTitle}</span></button>
+                    <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
+                    {/* <p className='gh-portal-text-center'>Didn't mean to do this? Manage your account here.</p> */}
                 </div>
             </div>
         );
