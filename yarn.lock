@@ -1892,15 +1892,10 @@
     "@tryghost/root-utils" "^0.3.14"
     debug "^4.3.1"
 
-"@tryghost/domain-events@0.1.10", "@tryghost/domain-events@^0.1.10":
+"@tryghost/domain-events@0.1.10", "@tryghost/domain-events@^0.1.10", "@tryghost/domain-events@^0.1.9":
   version "0.1.10"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.10.tgz#1a657c7964b928ac63e7ada87902d6fa5d4f5a7a"
   integrity sha512-C6xqg8VC5KgfgZ0X4zMUcoRBEDk7DS8xSepbIfZx61UZHbJRUMfbZ+AklGdnNQmQFxBc3eUCLAOByF6k1HXvTQ==
-
-"@tryghost/domain-events@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.9.tgz#f2de5189df2238bb72a53a76abcded0d84ae6fa7"
-  integrity sha512-n2FEA5xBQBCHq02CNBMh8BkWV7zdy9yp/Y4dGWc2QQ58lcNTgSBqZBaPpfPURgTGJbLqO+xsNQgU0LYvUN9JTQ==
 
 "@tryghost/elasticsearch-bunyan@0.1.1":
   version "0.1.1"
@@ -2142,15 +2137,10 @@
     "@tryghost/tpl" "^0.1.4"
     bson-objectid "^2.0.1"
 
-"@tryghost/member-events@0.4.2", "@tryghost/member-events@^0.4.2":
+"@tryghost/member-events@0.4.2", "@tryghost/member-events@^0.4.1", "@tryghost/member-events@^0.4.2":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.2.tgz#d1266abad38aa0b8f9b9f3395b083971e85221bf"
   integrity sha512-4VlGlB9uq3xxgeW3OXx9//Yb1kiRm7HbVVGiBJ9LMMjeoKZnpUQA9zHyY5FUK4Aolvz/wyxjb4Ci7JNjvoMrJg==
-
-"@tryghost/member-events@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.1.tgz#d75c183e29c1d186bc8a584a1f05b6e7c05c23b0"
-  integrity sha512-eYsDWrsLbdX5alZI9hsxsswN0XnlkOH6AvOmzeaX17pxDqzAhG7DN9rs0lDH3Ov3aniRfHc2UukcQ65oJbvA1A==
 
 "@tryghost/members-analytics-ingress@^0.1.13":
   version "0.1.13"
@@ -2208,10 +2198,10 @@
     "@tryghost/member-events" "^0.4.1"
     moment-timezone "^0.5.34"
 
-"@tryghost/members-importer@0.5.9":
-  version "0.5.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.5.9.tgz#c2cca9b414a252f088d76ad01d2b9643f16176ec"
-  integrity sha512-wNmBnizOUIqmfn6LCuBQJW+A99UyDv63jW9Juu2rEKkmRQo6VOZemcCGgKGZP2yFYB3PthckMoAfteBkUNyfLw==
+"@tryghost/members-importer@0.5.10":
+  version "0.5.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.5.10.tgz#4daf2306eccbcc36b72384eacde4cebd7b755e44"
+  integrity sha512-kf5QykVadbCNDQ7YeE6fz0Reiq+sz1q9dThh/kq9YqQ0V0qLOF4cRykCGUP00eh1ndOECz8zJWXxd2TIe+K52w==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     "@tryghost/members-csv" "^1.2.11"

@@ -86,7 +86,7 @@
     "@tryghost/member-events": "0.4.2",
     "@tryghost/members-api": "6.2.2",
     "@tryghost/members-events-service": "0.3.3",
-    "@tryghost/members-importer": "0.5.9",
+    "@tryghost/members-importer": "0.5.10",
     "@tryghost/members-offers": "0.11.2",
     "@tryghost/members-ssr": "1.0.24",
     "@tryghost/members-stripe-service": "0.10.1",
