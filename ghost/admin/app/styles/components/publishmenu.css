@@ -459,18 +459,19 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 640px;
+    width: 740px;
     margin: 0 auto 8rem;
     padding-top: 11vw;
     margin-bottom: 11vw;
 }
 
 .gh-publish-title {
-    margin-bottom: 4.6rem;
+    margin: 2px 0 4.6rem;
     color: var(--black);
-    font-size: 3.6rem;
+    font-size: 4.8rem;
     font-weight: 700;
-    line-height: 1.3em;
+    letter-spacing: -.017em;
+    line-height: 1.1em;
 }
 
 .gh-publish-title span {
@@ -488,6 +489,11 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 1.6rem;
+}
+
+.gh-publish-setting.disabled {
+    opacity: .3;
+    cursor: default;
 }
 
 .gh-publish-setting-title {
@@ -516,34 +522,29 @@
     cursor: pointer;
 }
 
-.gh-publish-setting-title span {
-    border-bottom: 0;
-    font-weight: 700;
-}
-
 .gh-publish-setting input[type="radio"]:disabled + label {
     color: var(--midlightgrey);
 }
 
-.gh-publish-setting fieldset {
-    margin: 0;
-    margin-top: 1.6rem;
-    background-color: var(--whitegrey);
+.gh-publish-setting-form {
+    margin: 2.4rem 0 2rem 3.6rem;
+    background-color: var(--white);
 }
 
-.gh-publish-setting .radio-button {
+.gh-publish-setting-form .gh-publish-types {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    column-gap: 5px;
-    padding: 10px;
-    border-bottom: 1px solid var(--white);
+    margin: 0;
 }
 
-.gh-publish-setting .gh-publishmenu-radio {
-    margin: 0;
-    padding: 20px 10px;
-    border-bottom: 1px solid var(--white);
+.gh-publish-types .gh-btn {
+    margin-right: 1.2rem;
+    cursor: pointer;
+    border-radius: 21px;
+    box-shadow: none;
+}
+
+.gh-publish-types .gh-radio-button {
+    display: none;
 }
 
 .gh-publish-cta {

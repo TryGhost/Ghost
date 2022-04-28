@@ -1,4 +1,4 @@
-<div class="gh-publish-title"><span>Another masterpiece.</span> Ready to share it with the world?</div>
+<div class="gh-publish-title"><span>Ready, set, publish.</span> Share it with the world.</div>
 <div class="gh-publish-settings">
     <div class="gh-publish-setting">
         <div class="gh-publish-setting-title">
@@ -20,11 +20,11 @@
         {{/liquid-if}}
     </div>
 
-    {{#if (not-eq @publishOptions.publishType "publish")}}
-        <div class="gh-publish-setting">
-            <div class="gh-publish-setting-title">
-                {{svg-jar "member"}}
-                <div class="gh-publish-setting-trigger">
+    <div class="gh-publish-setting {{if (eq @publishOptions.publishType "publish") "disabled"}}">
+        <div class="gh-publish-setting-title">
+            {{svg-jar "member"}}
+            <div class="gh-publish-setting-trigger">
+                {{#if (not-eq @publishOptions.publishType "publish")}}
                     {{#let (members-count-fetcher query=(hash filter=@publishOptions.recipientFilter)) as |countFetcher|}}
                         {{countFetcher.count}}
                     {{/let}}
@@ -32,10 +32,12 @@
                         <span>{{@publishOptions.newsletter.name}}</span>
                     {{/unless}}
                     subscribers
-                </div>
+                {{else}}
+                    Not sent to any members
+                {{/if}}
             </div>
         </div>
-    {{/if}}
+    </div>
 
     <div class="gh-publish-setting">
         <div class="gh-publish-setting-title">
@@ -51,9 +53,11 @@
             </button>
         </div>
         {{#liquid-if (eq this.openSection "publishAt")}}
-            <EditorLabs::PublishOptions::PublishAt
-                @publishOptions={{@publishOptions}}
-            />
+            <div class="gh-publish-setting-form">
+                <EditorLabs::PublishOptions::PublishAt
+                    @publishOptions={{@publishOptions}}
+                />
+            </div>
         {{/liquid-if}}
     </div>
 
