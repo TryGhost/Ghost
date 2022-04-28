@@ -987,7 +987,7 @@
     <header class="page-header">
         <a href="{{@site.url}}">
             {{#if @site.icon}}
-                <amp-img class="site-icon" src="{{img_url @site.icon absolute="true"}}" width="50" height="50" layout="fixed"></amp-img>
+                <amp-img class="site-icon" src="{{img_url @site.icon absolute="true"}}" width="50" height="50" layout="fixed" alt="{{@site.title}}"></amp-img>
             {{else}}
                 {{@site.title}}
             {{/if}}
@@ -1006,7 +1006,9 @@
             </header>
             {{#if feature_image}}
             <figure class="post-image">
-                <amp-img src="{{img_url feature_image absolute="true"}}" width="600" height="340" layout="responsive"></amp-img>
+                <amp-img src="{{img_url feature_image absolute="true"}}" width="600" height="340" layout="responsive" 
+                alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}"
+                ></amp-img>
             </figure>
             {{/if}}
             <section class="post-content">
@@ -1020,7 +1022,7 @@
     {{/post}}
     <footer class="page-footer">
         {{#if @site.icon}}
-            <amp-img class="site-icon" src="{{img_url @site.icon absolute="true"}}" width="50" height="50" layout="fixed"></amp-img>
+            <amp-img class="site-icon" src="{{img_url @site.icon absolute="true"}}" width="50" height="50" layout="fixed" alt="{{@site.title}}"></amp-img>
         {{/if}}
         <h3>{{@site.title}}</h3>
         {{#if @site.description}}
