@@ -73,6 +73,11 @@ const getMemberNewsletters = async function (req, res) {
     try {
         const memberUuid = req.query.uuid;
 
+        if (!memberUuid) {
+            res.writeHead(400);
+            return res.end('Invalid member uuid');
+        }
+
         const memberData = await membersService.api.members.get({
             uuid: memberUuid
         }, {
@@ -96,7 +101,7 @@ const updateMemberNewsletters = async function (req, res) {
         const memberUuid = req.query.uuid;
         if (!memberUuid) {
             res.writeHead(400);
-            return res.end('Missing member uuid');
+            return res.end('Invalid member uuid');
         }
         const data = _.pick(req.body, 'newsletters');
         const memberData = await membersService.api.members.get({
@@ -104,7 +109,7 @@ const updateMemberNewsletters = async function (req, res) {
         });
         if (!memberData) {
             res.writeHead(400);
-            return res.end('Member not found');
+            res.end('Email address not found.');
         }
         const options = {
             id: memberData.get('id'),
