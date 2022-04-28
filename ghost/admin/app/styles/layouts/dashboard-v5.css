@@ -219,7 +219,6 @@ Dashboard v5 Layout */
     border-left: 1px solid var(--whitegrey);
     padding: 4px 24px;
     position: relative;
-    height: 110px;
 }
 
 .gh-dashboard5-minichart .gh-dashboard5-data {
@@ -254,6 +253,10 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-minichart.is-tiers .gh-dashboard5-chart {
     padding: 0;
+}
+
+.gh-dashboard5-minichart .gh-dashboard5-chart-box {
+    height: 110px;
 }
 
 .gh-dashboard5-legend {
@@ -324,8 +327,12 @@ Dashboard v5 Layout */
 
 .gh-dashboard5-select {
     position: absolute;
-    top: 16px;
+    top: 14px;
     right: 4px;
+}
+
+.gh-dashboard5-select .gh-dashboard5-select {
+    height: 36px;
 }
 
 .gh-dashboard5-select .ember-power-select-selected-item {
@@ -333,7 +340,7 @@ Dashboard v5 Layout */
     font-weight: 600;
     letter-spacing: -.1px;
     line-height: 1em;
-    padding: 0;
+    padding: 0 0 10px;
     color: var(--middarkgrey);
     white-space: nowrap;
 }
@@ -463,10 +470,6 @@ Dashboard v5 Chart */
     width: 100%;
     height: 100%;
     padding: 0 0 0 30%;
-}
-
-.gh-dashboard5-minicharts .gh-dashboard5-chart-box {
-    height: 110px;
 }
 
 
@@ -816,11 +819,11 @@ Dashboard v5 Anchor */
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-minicharts {
-    margin-top: 48px;
+    margin-top: 32px;
 }
 
 .gh-dashboard5-mix .gh-dashboard5-select {
-    top: -8px;
+    top: -11px;
     right: -18px;
 }
 
@@ -833,10 +836,11 @@ Dashboard v5 Engagement */
 }
 
 .gh-dashboard5-engagement .gh-dashboard5-columns {
-    padding-top: 24px;
+    padding-top: 16px;
 }
 
 .gh-dashboard5-engagement .gh-dashboard5-select {
+    top: 16px;
     right: 6px;
 }
 
@@ -1015,7 +1019,7 @@ Dashboard v5 Recents */
 }
 
 .gh-dashboard5-recents .gh-dashboard5-list-header {
-    margin-top: 32px;
+    margin-top: 24px;
 }
 
 .gh-dashboard5-recents .gh-dashboard5-list-loading {
@@ -1602,10 +1606,9 @@ Dashboard v5 Tooltips */
     border: 1px solid var(--whitegrey);
     border-radius: 8px;
     padding: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
     z-index: 9999;
     pointer-events: none;
-    transition: top 50ms ease-out, left 50ms ease-out;
 }
 
 .gh-dashboard5-tooltip .gh-dashboard5-metric-value {

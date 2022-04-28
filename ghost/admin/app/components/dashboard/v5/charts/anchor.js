@@ -1,3 +1,5 @@
+/* global Chart */
+
 import Component from '@glimmer/component';
 import moment from 'moment';
 import {action} from '@ember/object';
@@ -31,6 +33,33 @@ const DISPLAY_OPTIONS = [{
     name: 'Free members',
     value: 'free'
 }];
+
+// custom ChartJS draw function
+Chart.defaults.hoverLine = Chart.defaults.line;
+Chart.controllers.hoverLine = Chart.controllers.line.extend({
+    draw: function (ease) {
+        Chart.controllers.line.prototype.draw.call(this, ease);
+
+        if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
+            let activePoint = this.chart.tooltip._active[0],
+                ctx = this.chart.ctx,
+                x = activePoint.tooltipPosition().x,
+                topY = this.chart.legend.bottom,
+                bottomY = this.chart.chartArea.bottom;
+
+            // draw line
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, bottomY);
+            ctx.setLineDash([3, 4]);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#7C8B9A';
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+});
 
 export default class Anchor extends Component {
     @service dashboardStats;
@@ -113,7 +142,7 @@ export default class Anchor extends Component {
     }
 
     get chartType() {
-        return 'line';
+        return 'hoverLine'; // uses custom ChartJS draw function
     }
 
     get chartTitle() {
@@ -212,8 +241,8 @@ export default class Anchor extends Component {
                 padding: {
                     top: 2,
                     bottom: 2,
-                    left: 0,
-                    right: 0
+                    left: 1,
+                    right: 1
                 }
             },
             hover: {
@@ -276,13 +305,13 @@ export default class Anchor extends Component {
                     },
                     gridLines: {
                         color: barColor,
-                        borderDash: [4,4],
+                        borderDash: [3,4],
                         display: true,
                         drawBorder: true,
                         drawTicks: false,
                         zeroLineWidth: 1,
                         zeroLineColor: barColor,
-                        zeroLineBorderDash: [4,4]
+                        zeroLineBorderDash: [3,4]
                     },
                     ticks: {
                         display: false,

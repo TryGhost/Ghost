@@ -35,7 +35,7 @@
                             </div>      
                         {{else}}
                             <EmberChart
-                                @type="line"
+                                @type={{this.chartType}}
                                 @data={{this.chartData}}
                                 @options={{this.chartOptions}}
                                 @height={{200}} />

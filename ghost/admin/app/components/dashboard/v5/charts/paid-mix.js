@@ -117,10 +117,10 @@ export default class PaidMix extends Component {
             },
             layout: {
                 padding: {
-                    top: 30,
+                    top: 45,
                     bottom: 0,
                     left: 0,
-                    right: 0
+                    right: 4
                 }
             },
             animation: {
