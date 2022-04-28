@@ -240,6 +240,10 @@ module.exports = class MemberRepository {
 
         const eventData = _.pick(data, ['created_at']);
 
+        if (!eventData.created_at) {
+            eventData.created_at = member.get('created_at');
+        }
+
         await this._MemberStatusEvent.add({
             member_id: member.id,
             from_status: null,
@@ -263,7 +267,7 @@ module.exports = class MemberRepository {
             DomainEvents.dispatch(MemberSubscribeEvent.create({
                 memberId: member.id,
                 source: source
-            }, memberData.created_at));
+            }, eventData.created_at));
         }
 
         return member;
