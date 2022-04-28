@@ -1,11 +1,12 @@
 const APIVersionCompatibilityService = require('@tryghost/api-version-compatibility-service');
 const VersionNotificationsDataService = require('@tryghost/version-notifications-data-service');
-const {GhostMailer} = require('../mail');
+// const {GhostMailer} = require('../mail');
 const settingsService = require('../../services/settings');
 const models = require('../../models');
+const logging = require('@tryghost/logging');
 
 const init = () => {
-    const ghostMailer = new GhostMailer();
+    //const ghostMailer = new GhostMailer();
     const versionNotificationsDataService = new VersionNotificationsDataService({
         UserModel: models.User,
         settingsService: settingsService.getSettingsBREADServiceInstance()
@@ -14,7 +15,9 @@ const init = () => {
     this.APIVersionCompatibilityServiceInstance = new APIVersionCompatibilityService({
         sendEmail: (options) => {
             // NOTE: not using bind here because mockMailer is having trouble mocking bound methods
-            return ghostMailer.send(options);
+            //return ghostMailer.send(options);
+            // For now log a warning, rather than sending an email
+            logging.warn(options.html);
         },
         fetchEmailsToNotify: versionNotificationsDataService.getNotificationEmails.bind(versionNotificationsDataService),
         fetchHandled: versionNotificationsDataService.fetchNotification.bind(versionNotificationsDataService),
