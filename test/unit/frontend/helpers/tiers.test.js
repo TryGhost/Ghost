@@ -3,10 +3,6 @@ const tiersHelper = require('../../../../core/frontend/helpers/tiers');
 const {mockManager} = require('../../../utils/e2e-framework');
 
 describe('{{tiers}} helper', function () {
-    beforeEach(function () {
-        mockManager.mockLabsEnabled('multipleProducts');
-    });
-
     it('can return string with tiers', function () {
         const tiers = [
             {name: 'tier 1'},

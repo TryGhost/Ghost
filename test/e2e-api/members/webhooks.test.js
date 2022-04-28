@@ -44,8 +44,7 @@ describe('Members API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockLabsEnabled('multipleProducts');
-        mockManager.mockLabsEnabled('multipleNewsletters');
+        mockManager.mockLabsDisabled('dashboardV5');
         mockManager.mockMail();
         mockManager.mockStripe();
     });
@@ -1105,7 +1104,7 @@ describe('Members API', function () {
                 set(coupon, {
                     id: couponId
                 });
-                
+
                 const {body} = await adminAgent
                     .post(`offers/`)
                     .body({offers: [newOffer]})
@@ -1114,7 +1113,7 @@ describe('Members API', function () {
             });
 
             /**
-             * Helper for repetitive tests. It tests the MRR and MRR delta given a discount + a price 
+             * Helper for repetitive tests. It tests the MRR and MRR delta given a discount + a price
              */
             async function testDiscount({discount, interval, unit_amount, assert_mrr, offer_id}) {
                 const customer_id = createStripeID('cust');
@@ -1172,7 +1171,7 @@ describe('Members API', function () {
                         }
                     }
                 });
-                
+
                 let webhookSignature = stripe.webhooks.generateTestHeaderString({
                     payload: webhookPayload,
                     secret: process.env.WEBHOOK_SECRET
@@ -1222,7 +1221,7 @@ describe('Members API', function () {
 
                 // Now cancel, and check if the discount is also applied for the cancellation
                 set(subscription, {
-                    ...subscription, 
+                    ...subscription,
                     status: 'canceled'
                 });
 
@@ -1320,7 +1319,7 @@ describe('Members API', function () {
                         promotion_code: null,
                         start: beforeNow / 1000,
                         subscription: null
-                    };    
+                    };
                     await testDiscount({
                         discount,
                         unit_amount: 500,
@@ -1330,7 +1329,7 @@ describe('Members API', function () {
                     });
                 });
 
-                it('Correctly includes yearly forever percentage discounts in MRR', async function () {    
+                it('Correctly includes yearly forever percentage discounts in MRR', async function () {
                     const discount = {
                         id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                         object: 'discount',
@@ -1358,7 +1357,7 @@ describe('Members API', function () {
                         promotion_code: null,
                         start: beforeNow / 1000,
                         subscription: null
-                    };    
+                    };
                     await testDiscount({
                         discount,
                         unit_amount: 1200,
@@ -1368,7 +1367,7 @@ describe('Members API', function () {
                     });
                 });
 
-                it('Correctly includes monthly forever amount off discounts in MRR', async function () {    
+                it('Correctly includes monthly forever amount off discounts in MRR', async function () {
                     const discount = {
                         id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                         object: 'discount',
@@ -1396,7 +1395,7 @@ describe('Members API', function () {
                         promotion_code: null,
                         start: beforeNow / 1000,
                         subscription: null
-                    };    
+                    };
                     await testDiscount({
                         discount,
                         unit_amount: 500,
@@ -1406,7 +1405,7 @@ describe('Members API', function () {
                     });
                 });
 
-                it('Correctly includes yearly forever amount off discounts in MRR', async function () {    
+                it('Correctly includes yearly forever amount off discounts in MRR', async function () {
                     const discount = {
                         id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                         object: 'discount',
@@ -1434,7 +1433,7 @@ describe('Members API', function () {
                         promotion_code: null,
                         start: beforeNow / 1000,
                         subscription: null
-                    };    
+                    };
                     await testDiscount({
                         discount,
                         unit_amount: 1200,
@@ -1444,7 +1443,7 @@ describe('Members API', function () {
                     });
                 });
 
-                it('Does not include repeating discounts in MRR', async function () {    
+                it('Does not include repeating discounts in MRR', async function () {
                     const discount = {
                         id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                         object: 'discount',
@@ -1472,7 +1471,7 @@ describe('Members API', function () {
                         promotion_code: null,
                         start: beforeNow / 1000,
                         subscription: null
-                    };    
+                    };
                     await testDiscount({
                         discount,
                         unit_amount: 500,
@@ -1572,7 +1571,7 @@ describe('Members API', function () {
                             }
                         }
                     });
-                    
+
                     let webhookSignature = stripe.webhooks.generateTestHeaderString({
                         payload: webhookPayload,
                         secret: process.env.WEBHOOK_SECRET
@@ -1619,7 +1618,7 @@ describe('Members API', function () {
 
                     // Now add the discount
                     set(subscription, {
-                        ...subscription, 
+                        ...subscription,
                         discount
                     });
 
@@ -1768,7 +1767,7 @@ describe('Members API', function () {
                             }
                         }
                     });
-                    
+
                     let webhookSignature = stripe.webhooks.generateTestHeaderString({
                         payload: webhookPayload,
                         secret: process.env.WEBHOOK_SECRET
@@ -1816,7 +1815,7 @@ describe('Members API', function () {
             });
 
             describe('Without the dashboardV5 flag', function () {
-                it('Does not include forever percentage discounts in MRR', async function () {    
+                it('Does not include forever percentage discounts in MRR', async function () {
                     const discount = {
                         id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                         object: 'discount',
@@ -1844,7 +1843,7 @@ describe('Members API', function () {
                         promotion_code: null,
                         start: beforeNow / 1000,
                         subscription: null
-                    };    
+                    };
                     await testDiscount({
                         discount,
                         unit_amount: 500,
@@ -1854,7 +1853,7 @@ describe('Members API', function () {
                     });
                 });
 
-                it('Does not include forever amount off discounts in MRR', async function () {    
+                it('Does not include forever amount off discounts in MRR', async function () {
                     const discount = {
                         id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                         object: 'discount',
@@ -1882,7 +1881,7 @@ describe('Members API', function () {
                         promotion_code: null,
                         start: beforeNow / 1000,
                         subscription: null
-                    };    
+                    };
                     await testDiscount({
                         discount,
                         unit_amount: 500,

@@ -26,11 +26,6 @@ describe('Members Importer API', function () {
         newsletters = await getNewsletters();
     });
 
-    beforeEach(function () {
-        mockManager.mockLabsEnabled('multipleProducts');
-        mockManager.mockLabsEnabled('multipleNewsletters');
-    });
-
     afterEach(function () {
         mockManager.restore();
     });
