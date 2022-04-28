@@ -1,28 +1,48 @@
 <div class="modal-content">
     <div class="modal-body modal-fullsettings">
         <div class="modal-fullsettings-body gh-newsletters-labs">
-            <div class="modal-fullsettings-sidebar">
-                <div class="flex items-center justify-between">
-                    <h2 class="modal-fullsettings-heading">
-                        {{if @data.newsletter.isNew "Create" "Edit"}} newsletter
-                    </h2>
-                    <div class="gh-btn-group">
-                        <button type="button" class="gh-btn gh-btn-icon {{if (eq this.tab "settings") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "settings")}}><span>Settings</span></button>
-                        <button type="button" class="gh-btn gh-btn-icon {{if (eq this.tab "design") "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "design")}}><span>Design</span></button>
+            <div class="modal-fullsettings-sidebar-labs">
+                <h2 class="modal-fullsettings-heading-labs">
+                    {{if @data.newsletter.isNew "Create" "Edit"}} newsletter
+                </h2>
+                <div class="modal-fullsettings-body-labs">
+                    <div class="modal-fullsettings-top">
+                        <Modals::Newsletters::Edit::Settings @newsletter={{@data.newsletter}} @openSection={{this.openSection}} @toggleSection={{this.toggleSection}} />
+                        <Modals::Newsletters::Edit::Design @newsletter={{@data.newsletter}} @openSection={{this.openSection}} @toggleSection={{this.toggleSection}} />
+                    </div>
+                    <div class="modal-fullsettings-bottom">
+                        <div class="modal-fullsettings-footer">
+                            <GhFormGroup>
+                                <div class="gh-members-emailsettings-promotelabel">
+                                    <span>{{svg-jar "heart"}}</span>
+                                    <div>
+                                        <h4 class="modal-fullsettings-title">Promote independent publishing</h4>
+                                        <p>Show you’re a part of the indie publishing movement with a small badge in the footer</p>
+                                    </div>
+                                </div>
+                                <div class="for-switch small">
+                                    <label
+                                        class="switch"
+                                        for="promote-ghost"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={{@data.newsletter.showBadge}}
+                                            id="promote-ghost"
+                                            name="promote-ghost"
+                                            {{on "click" (fn this.toggleSetting "showBadge")}}
+                                        >
+                                        <span class="input-toggle-component"></span>
+                                    </label>
+                                </div>
+                            </GhFormGroup>
+                        </div>
                     </div>
                 </div>
-
-                {{#if (eq this.tab "settings")}}
-                    <Modals::Newsletters::Edit::Settings
-                        @newsletter={{@data.newsletter}}
-                    />
-                {{else}}
-                    <Modals::Newsletters::Edit::Design @newsletter={{@data.newsletter}} />
-                {{/if}}
             </div>
 
             <div class="modal-fullsettings-main">
-                <div class="modal-fullsettings-main-topbar">
+                <div class="modal-fullsettings-main-topbar-labs">
                     <button class="gh-btn mr3" type="button" {{on "click" @close}}>
                         <span>Cancel</span>
                     </button>

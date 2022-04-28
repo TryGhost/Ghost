@@ -25,6 +25,7 @@ export default ModalComponent.extend({
     showLeaveSettingsModal: false,
     isPreloading: true,
     changedProducts: null,
+    openSection: null,
     portalPreviewGuid: 'modal-portal-settings',
 
     confirm() {},
@@ -135,6 +136,16 @@ export default ModalComponent.extend({
             {name: 'icon-only', label: 'Icon only'},
             {name: 'text-only', label: 'Text only'}
         ];
+        this.availablePages = [{
+            name: 'signup',
+            label: 'Signup'
+        }, {
+            name: 'accountHome',
+            label: 'Account'
+        }, {
+            name: 'links',
+            label: 'Links'
+        }];
         this.iconExtensions = ICON_EXTENSIONS;
         this.changedProducts = [];
         this.set('supportAddress', this.parseEmailAddress(this.settings.get('membersSupportAddress')));
@@ -162,6 +173,13 @@ export default ModalComponent.extend({
         togglePortalName(showSignupName) {
             this.settings.set('portalName', showSignupName);
         },
+        toggleSection(section) {
+            if (this.get('openSection') === section) {
+                this.set('openSection', null);
+            } else {
+                this.set('openSection', section);
+            }
+        },
 
         confirm() {
             return this.saveTask.perform();
@@ -173,12 +191,12 @@ export default ModalComponent.extend({
         },
 
         switchPreviewPage(page) {
-            if (page === 'links') {
+            if (page.name === 'links') {
                 this.set('showLinksPage', true);
                 this.set('page', '');
             } else {
                 this.set('showLinksPage', false);
-                this.set('page', page);
+                this.set('page', page.name);
             }
         },
 

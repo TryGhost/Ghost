@@ -1708,9 +1708,10 @@ p.gh-members-import-errordetail:first-of-type {
     padding: 0;
 }
 .gh-members-emailsettings-footer-input {
-    border: 1px solid var(--whitegrey-d1);
-    padding: 0 12px 6px 12px;
     height: 120px;
+    padding: 0 12px 6px 12px;
+    border: 1px solid var(--whitegrey-d1);
+    background: var(--white);
     border-radius: 4px;
 }
 

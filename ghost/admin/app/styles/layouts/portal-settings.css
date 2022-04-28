@@ -61,12 +61,12 @@
 
 .gh-portal-settings-sidebar {
     padding: 0;
-    width: 380px;
+    width: 400px;
 }
 
 .gh-portal-form-wrapper {
     overflow: hidden;
-    width: 380px;
+    width: 400px;
 }
 
 .gh-portal-settings-form {
@@ -390,22 +390,15 @@
 }
 
 .gh-portal-settings-title {
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    margin: 0;
-    height: 66px;
-    font-size: 1.9rem;
-    font-weight: 600;
-    letter-spacing: -0.1px;
+    padding-bottom: 28px;
 }
 
 .gh-portal-settings-previewheader {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
     position: relative;
-    height: 66px;
+    height: 84px;
     padding: 0 24px;
     margin: 0;
     width: 100%;
@@ -416,26 +409,24 @@
 }
 
 .gh-portal-settings-actions {
-    position: absolute;
-    top: 16px;
-    right: 24px;
     display: flex;
     align-items: center;
+    margin-left: 24px;
 }
 
 .gh-portal-preview-wrapper {
     overflow: hidden;
-    max-height: calc(100vh - 60px - 66px);
+    max-height: calc(100vh - 60px - 84px);
     height: 100%;
-    background: #EDF0F2;
+    background: linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(249,249,250,1) 100%);
 }
 
 .gh-portal-preview-container {
     position: relative;
     flex-grow: 1;
     overflow: hidden;
-    background: #EDF0F2;
-    max-height: calc(100vh - 60px - 66px);
+    background: linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(249,249,250,1) 100%);
+    max-height: calc(100vh - 60px - 84px);
 }
 
 .gh-portal-preview-wrapper .gh-portal-preview-container {
@@ -472,7 +463,8 @@
 }
 
 .gh-portal-links-main h2 {
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 1.9rem;
 }
 
 .gh-portal-links-main p {
@@ -634,4 +626,17 @@
     background: var(--whitegrey-d2) !important;
     color: var(--darkgrey) !important;
     cursor: auto;
+}
+
+.gh-portal-settings-sidebar .modal-fullsettings-tab-expanded {
+    padding-top: 16px;
+}
+
+.gh-portal-settings-previewheader .gh-preview-page-selector,
+.gh-portal-settings-previewheader .gh-preview-page-selector select {
+    width: 160px;
+}
+
+.gh-portal-settings-previewheader .gh-preview-page-selector svg {
+    top: 16px;
 }
