@@ -544,6 +544,7 @@ Dashboard v5 Metric */
     font-size: 1.3rem;
     font-weight: 600;
     color: var(--middarkgrey);
+    letter-spacing: 0;
 }
 
 .gh-dashboard5-metric-value {
@@ -1107,8 +1108,9 @@ Dashboard v5 What's New */
     line-height: 1;
     border-radius: 2px;
     margin-left: 8px;
-    margin-top: 1px;
+    margin-top: 3px;
     padding: 3px 4px;
+    height: 18px;
 }
 
 .gh-dashboard5-whats-new .gh-dashboard5-resource-body {
@@ -1383,13 +1385,14 @@ Dashboard v5 Community */
     background-image: url(img/community-background.jpg);
     color: var(--white);
     padding-top: 32px;
-}
+}   
 
 .gh-dashboard5-community .gh-dashboard5-list-body p {
     font-size: 4.0rem;
     font-weight: 700;
     line-height: 1.3em;
-    padding: 0 64px 0 0;
+    padding: 64px 0;
+    margin-bottom: 0;
     transition: color .3s;
     color: #fff;
 }
@@ -1482,7 +1485,7 @@ Dashboard v5 Resources */
 
 .gh-dashboard5-resource-box.is-secondary {
     background: linear-gradient(45deg, color-mod(var(--main-color-content-greybg) l(+2%)), var(--main-color-content-greybg));
-    border-color: transparent;
+    border: none;
     box-shadow: none;
 }
 
@@ -1522,6 +1525,12 @@ Dashboard v5 Resources */
     border-radius: 4px;
     width: 100%;
     height: auto;
+    background: transparent;
+    background-repeat: no-repeat;   
+    background-position: center;
+    background-size: cover;
+    background-image: url(img/resource-1.jpg);
+    padding-top: 32px;
 }
 
 .gh-dashboard5-resource-bigarticle {
