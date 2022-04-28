@@ -3,7 +3,7 @@
         <div class="gh-dashboard5-resource-title">
             <h4>Staff Picks</h4>
             <p>Hand picked stories from around the web, published with Ghost.</p>
-        </div> 
+        </div>
         <div class="gh-dashboard5-resource-body">
             <div class="gh-dashboard5-list" {{did-insert this.load}}>
                 {{#if (not (or this.loading this.error))}}
@@ -28,7 +28,7 @@
             </div>
         </div>
         <div class="gh-dashboard5-resource-footer">
-            <a href="https://twitter.com/ghoststaffpicks" target="_blank" rel="noopener noreferrer">Follow on Twitter →</a>
+            <a href="https://twitter.com/ghoststaffpicks" target="_blank" rel="noopener noreferrer">{{svg-jar "twitter"}} <span>Follow on Twitter</span></a>
         </div>
     </article>
 </section>
