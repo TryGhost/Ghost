@@ -22,6 +22,14 @@ export class PublishOptions {
         return this.setupTask.isRunning;
     }
 
+    get willEmail() {
+        return this.publishType !== 'publish';
+    }
+
+    get willPublish() {
+        return this.publishType !== 'send';
+    }
+
     // publish date ------------------------------------------------------------
 
     @tracked isScheduled = false;
@@ -70,15 +78,18 @@ export class PublishOptions {
             value: 'publish+send',
             label: 'Publish and email',
             display: 'Publish and email',
+            confirmButton: 'Publish and send',
             disabled: this.emailDisabled
         }, {
             value: 'publish',
             label: 'Publish only',
-            display: 'Publish on site'
+            display: 'Publish on site',
+            confirmButton: 'Publish'
         }, {
             value: 'send',
             label: 'Email only',
             display: 'Send email',
+            confirmButton: 'Send',
             disabled: this.emailDisabled
         }];
     }
@@ -180,6 +191,8 @@ export class PublishOptions {
 
         yield Promise.all([countTotalMembers, fetchNewsletters]);
     }
+
+    // saving ------------------------------------------------------------------
 }
 
 // This component exists for the duration of the editor screen being open.
