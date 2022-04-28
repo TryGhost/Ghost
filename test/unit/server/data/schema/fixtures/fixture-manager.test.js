@@ -97,6 +97,24 @@ describe('Migration Fixture Utils', function () {
         });
     });
 
+    describe('Add All Fixtures', function () {
+        it('should call add for main post fixture', async function () {
+            const addFixturesForModelStub = sinon.stub(fixtureManager, 'addFixturesForModel').returns(Promise.resolve({}));
+            const addFixturesForRelationStub = sinon.stub(fixtureManager, 'addFixturesForRelation').returns(Promise.resolve({}));
+
+            await fixtureManager.addAllFixtures();
+
+            addFixturesForModelStub.callCount.should.eql(fixtures.models.length);
+            addFixturesForRelationStub.callCount.should.eql(fixtures.relations.length);
+
+            // NOTE: users and roles have to be initialized first for the post fixtures to work
+            should.equal(addFixturesForModelStub.firstCall.args[0].name, 'Role');
+            should.equal(addFixturesForModelStub.secondCall.args[0].name, 'User');
+
+            should.equal(addFixturesForRelationStub.firstCall.args[0].from.relation, 'roles');
+        });
+    });
+
     describe('Add Fixtures For Model', function () {
         it('should call add for main post fixture', function (done) {
             const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve());
