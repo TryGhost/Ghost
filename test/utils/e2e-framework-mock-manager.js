@@ -14,7 +14,7 @@ const mailService = require('../../core/server/services/mail/index');
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 
-const fakedLabsFlags = {};
+let fakedLabsFlags = {};
 const originalLabsIsSet = labs.isSet;
 
 /**
@@ -135,6 +135,7 @@ const restore = () => {
     configUtils.restore();
     sinon.restore();
     mocks = {};
+    fakedLabsFlags = {};
     emailCount = 0;
     nock.cleanAll();
     nock.enableNetConnect();
