@@ -132,9 +132,6 @@ describe('Members API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockLabsEnabled('multipleProducts');
-        mockManager.mockLabsEnabled('multipleNewsletters');
-        mockManager.mockLabsEnabled('membersActivityFeed');
         mockManager.mockStripe();
         mockManager.mockMail();
     });
