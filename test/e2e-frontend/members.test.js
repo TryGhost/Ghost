@@ -126,7 +126,7 @@ describe('Front-end members behaviour', function () {
 
         it('should error for fetching member newsletters with invalid uuid', async function () {
             await request.get('/members/api/member/newsletters?uuid=abc')
-                .expect(400);
+                .expect(404);
         });
 
         it('should error for updating member newsletters with missing uuid', async function () {
@@ -136,7 +136,7 @@ describe('Front-end members behaviour', function () {
 
         it('should error for updating member newsletters with invalid uuid', async function () {
             await request.put('/members/api/member/newsletters?uuid=abc')
-                .expect(400);
+                .expect(404);
         });
 
         it('should fetch and update member newsletters with valid uuid', async function () {
