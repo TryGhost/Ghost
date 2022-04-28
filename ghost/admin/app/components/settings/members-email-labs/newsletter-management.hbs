@@ -85,11 +85,11 @@
                             </div>
                             <div class="gh-newsletter-card-block cta-block">
                                 {{#if this.displayingDefault}}
-                                    <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="gh-btn gh-btn-green"><span>Customize &rarr;</span></LinkTo>
+                                    <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="gh-btn gh-btn-green" data-test-button="customize-newsletter"><span>Customize &rarr;</span></LinkTo>
                                 {{else}}
                                     <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @renderInPlace={{true}} as |dd|>
                                         <dd.Trigger class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-product-card-actions-button icon-only">
-                                            <span>
+                                            <span data-test-newsletter-menu-trigger>
                                                 {{svg-jar "dotdotdot"}}
                                                 <span class="hidden">Actions</span>
                                             </span>
@@ -97,7 +97,7 @@
                                         <dd.Content class="relative-dropdown-menu gh-newsletter-actions-menu">
                                             <ul class="dropdown-menu dropdown-triangle-top-right" role="listbox" {{css-transition "anim-fade-in-scale"}}>
                                                 <li>
-                                                    <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="mr2"><span>Edit</span></LinkTo>
+                                                    <LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{newsletter.id}} class="mr2" data-test-button="customize-newsletter"><span>Edit</span></LinkTo>
                                                 </li>
                                                 {{#if (eq newsletter.status "active")}}
                                                     <li>
@@ -127,6 +127,6 @@
         </div>
     </section>
     {{#if (feature "multipleNewslettersUI")}}
-        <LinkTo @route="settings.members-email-labs.new-newsletter" class="gh-add-newsletter">{{svg-jar "add-stroke"}}Add newsletter</LinkTo>
+        <LinkTo @route="settings.members-email-labs.new-newsletter" class="gh-add-newsletter" data-test-button="add-newsletter">{{svg-jar "add-stroke"}}Add newsletter</LinkTo>
     {{/if}}
 </div>
