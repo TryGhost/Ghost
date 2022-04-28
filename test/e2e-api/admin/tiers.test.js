@@ -15,10 +15,6 @@ describe('Tiers API', function () {
         await agent.loginAsOwner();
     });
 
-    beforeEach(function () {
-        mockManager.mockLabsEnabled('multipleProducts');
-    });
-
     afterEach(function () {
         mockManager.restore();
     });
