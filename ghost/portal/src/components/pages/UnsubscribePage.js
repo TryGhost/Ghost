@@ -78,7 +78,7 @@ export default function UnsubscribePage() {
                 <div className='gh-portal-section'>
                     <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
                     <p className='gh-portal-text-center'>
-                        Didn't mean to do this? Manage your email preferences
+                        Didn't mean to do this? Manage your preferences
                         <button
                             className="gh-portal-btn-link"
                             style={{
