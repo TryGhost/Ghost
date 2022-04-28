@@ -4,6 +4,7 @@ import {useContext, useEffect, useState} from 'react';
 import {getSiteNewsletters} from '../../utils/helpers';
 import setupGhostApi from '../../utils/api';
 import NewsletterManagement from '../common/NewsletterManagement';
+import CloseButton from '../common/CloseButton';
 
 const React = require('react');
 
@@ -40,6 +41,7 @@ export default function UnsubscribePage() {
     if (member === null) {
         return (
             <div className='gh-portal-content with-footer'>
+                <CloseButton />
                 {/* <AccountHeader /> */}
                 {/* The header below should be in AccountHeader */}
                 <header className='gh-portal-signup-header'>
@@ -58,6 +60,7 @@ export default function UnsubscribePage() {
     if (siteNewsletters?.length === 1) {
         return (
             <div className='gh-portal-content with-footer'>
+                <CloseButton />
                 {/* <AccountHeader /> */}
                 <header className='gh-portal-signup-header'>
                     <img className='gh-portal-signup-logo' src="https://static.ghost.org/v4.0.0/images/ghost-orb-1.png" alt="fdfkld" />
