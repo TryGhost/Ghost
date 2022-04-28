@@ -234,10 +234,7 @@ module.exports = function MembersAPI({
             await MemberLoginEvent.add({member_id: member.id});
             if (oldEmail) {
                 // user exists but wants to change their email address
-                if (oldEmail) {
-                    member.email = email;
-                }
-                await users.update(member, {id: member.id});
+                await users.update({email}, {id: member.id});
                 return getMemberIdentityData(email);
             }
             return member;
@@ -279,8 +276,7 @@ module.exports = function MembersAPI({
         // max request time is 500ms so shouldn't slow requests down too much
         let geolocation = JSON.stringify(await geolocationService.getGeolocationFromIP(ip));
         if (geolocation) {
-            member.geolocation = geolocation;
-            await users.update(member, {id: member.id});
+            await users.update({geolocation}, {id: member.id});
         }
 
         return getMemberIdentityData(email);
