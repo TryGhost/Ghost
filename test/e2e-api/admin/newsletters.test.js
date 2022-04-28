@@ -397,6 +397,7 @@ describe('Newsletters API', function () {
             .expectStatus(422)
             .matchBodySnapshot({
                 errors: [{
+                    id: anyUuid,
                     message: 'Validation error, cannot save newsletter.',
                     context: 'A newsletter with the same name already exists'
                 }]
@@ -418,6 +419,7 @@ describe('Newsletters API', function () {
             .expectStatus(422)
             .matchBodySnapshot({
                 errors: [{
+                    id: anyUuid,
                     message: 'Validation error, cannot edit newsletter.',
                     context: 'A newsletter with the same name already exists'
                 }]
