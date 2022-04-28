@@ -1,22 +1,25 @@
-<section class="gh-dashboard5-resource gh-dashboard5-resources">
+<section class="gh-dashboard5-resource gh-dashboard5-resources" {{did-insert this.load}}>
     <article class="gh-dashboard5-resource-box">
-        <div class="gh-dashboard5-resource-thumbnail"></div>
-        <div class="gh-dashboard5-resource-body">
-            <div>
-                <div class="gh-dashboard5-resource-title">
-                    <h4>Resources</h4>
-                </div>
-                <a href="https://ghost.org/resources/build-audience-subscriber-signups/" target="_blank" class="gh-dashboard5-resource-bigarticle" rel="noopener noreferrer">
-                    <div class="gh-dashboard5-resource-text">
-                        <h3>Building your audience with subscriber signups</h3>
-                        <p>Learn how to turn anonymous visitors into logged-in members with memberships in Ghost.</p>
-                    </div>
-                </a>
-            </div>
 
-            <div class="gh-dashboard5-resource-footer">
-                <a href="https://ghost.org/resources/" target="_blank" rel="noopener noreferrer">Learn more &rarr;</a>
+        {{#if (not (or this.loading this.error))}}
+            <div class="gh-dashboard5-resource-thumbnail" style="background-image: url({{this.resource.feature_image}})"></div>
+            <div class="gh-dashboard5-resource-body">
+                <div>
+                    <div class="gh-dashboard5-resource-title">
+                        <h4>Resources</h4>
+                    </div>
+                    <a href="{{this.resource.url}}" target="_blank" class="gh-dashboard5-resource-bigarticle" rel="noopener noreferrer">
+                        <div class="gh-dashboard5-resource-text">
+                            <h3>{{this.resource.title}}</h3>
+                            <p>{{this.resource.excerpt}}</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="gh-dashboard5-resource-footer">
+                    <a href="https://ghost.org/resources/" target="_blank" rel="noopener noreferrer">Learn more &rarr;</a>
+                </div>
             </div>
-        </div>
+        {{/if}}
+
     </article>
 </section>
