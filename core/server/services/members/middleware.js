@@ -83,13 +83,14 @@ const getMemberNewsletters = async function (req, res) {
         }, {
             withRelated: ['newsletters']
         });
+
         if (!memberData) {
             res.writeHead(404);
             return res.end('Email address not found.');
-        } else {
-            const data = _.pick(memberData.toJSON(), 'uuid', 'email', 'name', 'newsletters', 'status');
-            return res.json(data);
         }
+
+        const data = _.pick(memberData.toJSON(), 'uuid', 'email', 'name', 'newsletters', 'status');
+        return res.json(data);
     } catch (err) {
         res.writeHead(400);
         res.end('Failed to unsubscribe this email address');
@@ -103,6 +104,7 @@ const updateMemberNewsletters = async function (req, res) {
             res.writeHead(400);
             return res.end('Invalid member uuid');
         }
+
         const data = _.pick(req.body, 'newsletters');
         const memberData = await membersService.api.members.get({
             uuid: memberUuid
@@ -111,6 +113,7 @@ const updateMemberNewsletters = async function (req, res) {
             res.writeHead(404);
             return res.end('Email address not found.');
         }
+
         const options = {
             id: memberData.get('id'),
             withRelated: ['newsletters']
