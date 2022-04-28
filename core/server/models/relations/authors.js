@@ -126,44 +126,6 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             }
 
             ops.push(() => {
-                // CASE: `post.author_id` has changed
-                if (model.hasChanged('author_id')) {
-                    // CASE: you don't send `post.authors`
-                    // SOLUTION: we have to update the primary author
-                    if (!model.get('authors')) {
-                        let existingAuthors = model.related('authors').toJSON();
-
-                        // CASE: override primary author
-                        existingAuthors[0] = {
-                            id: model.get('author_id')
-                        };
-
-                        model.set('authors', existingAuthors);
-                    } else {
-                        // CASE: you send `post.authors` next to `post.author_id`
-                        if (model.get('authors')[0].id !== model.get('author_id')) {
-                            model.set('author_id', model.get('authors')[0].id);
-                        }
-                    }
-                }
-
-                // CASE: if you change `post.author_id`, we have to update the primary author
-                // CASE: if the `author_id` has change and you pass `posts.authors`, we already check above that
-                //       the primary author id must be equal
-                if (model.hasChanged('author_id') && !model.get('authors')) {
-                    let existingAuthors = model.related('authors').toJSON();
-
-                    // CASE: override primary author
-                    existingAuthors[0] = {
-                        id: model.get('author_id')
-                    };
-
-                    model.set('authors', existingAuthors);
-                } else if (model.get('authors') && model.get('authors').length) {
-                    // ensure we update the primary author id
-                    model.set('author_id', model.get('authors')[0].id);
-                }
-
                 return proto.onSaving.call(this, model, attrs, options);
             });
 
