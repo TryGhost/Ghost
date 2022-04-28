@@ -873,7 +873,7 @@ Object {
       "key": "labs",
       "type": "object",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "value": "{\\"activitypub\\":true,\\"oauthLogin\\":true,\\"membersActivity\\":true,\\"urlCache\\":true,\\"beforeAfterCard\\":true,\\"tweetGridCard\\":true,\\"multipleNewslettersUI\\":true,\\"dashboardV5\\":true,\\"publishingFlow\\":true,\\"multipleProducts\\":true,\\"tierWelcomePages\\":true,\\"tierName\\":true,\\"selectablePortalLinks\\":true,\\"membersTableStatus\\":true,\\"improvedOnboarding\\":true,\\"multipleNewsletters\\":true,\\"membersActivityFeed\\":true,\\"members\\":true}",
+      "value": "{\\"multipleNewslettersUI\\":true,\\"activitypub\\":true,\\"oauthLogin\\":true,\\"membersActivity\\":true,\\"urlCache\\":true,\\"beforeAfterCard\\":true,\\"tweetGridCard\\":true,\\"dashboardV5\\":true,\\"publishingFlow\\":true,\\"multipleProducts\\":true,\\"tierWelcomePages\\":true,\\"tierName\\":true,\\"selectablePortalLinks\\":true,\\"membersTableStatus\\":true,\\"improvedOnboarding\\":true,\\"multipleNewsletters\\":true,\\"membersActivityFeed\\":true,\\"members\\":true}",
     },
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
