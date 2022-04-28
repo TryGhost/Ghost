@@ -9,14 +9,11 @@ export default class PublishModalComponent extends Component {
         ignoreBackdropClick: true
     };
 
-    @tracked openSection = null;
+    @tracked isConfirming = false;
 
     @action
-    toggleSection(section) {
-        if (section === this.openSection) {
-            this.openSection = null;
-        } else {
-            this.openSection = section;
-        }
+    toggleConfirm() {
+        // TODO: validate?
+        this.isConfirming = !this.isConfirming;
     }
 }
