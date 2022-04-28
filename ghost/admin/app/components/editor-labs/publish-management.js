@@ -83,12 +83,12 @@ export class PublishOptions {
         }, {
             value: 'publish',
             label: 'Publish only',
-            display: 'Publish on site',
+            display: 'Publish',
             confirmButton: 'Publish'
         }, {
             value: 'send',
             label: 'Email only',
-            display: 'Send email',
+            display: 'Email',
             confirmButton: 'Send',
             disabled: this.emailDisabled
         }];
