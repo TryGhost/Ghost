@@ -637,7 +637,6 @@ Dashboard v5 List */
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    padding: 8px 0;
 }
 
 .gh-dashboard5-list-item {
@@ -1056,7 +1055,14 @@ Dashboard v5 What's New */
 
 .gh-dashboard5-whats-new {
     position: relative;
-    margin-left: -12px; /* layout adjustment */
+}
+
+.gh-dashboard5-whats-new .gh-dashboard5-resource-title h4 {
+    margin-bottom: 0px;
+}
+
+.gh-dashboard5-whats-new .gh-dashboard5-resource-title p {
+    margin-top: 8px;
 }
 
 .gh-dashboard5-whats-new .gh-dashboard5-list-header,
@@ -1105,13 +1111,32 @@ Dashboard v5 What's New */
     padding: 3px 4px;
 }
 
+.gh-dashboard5-whats-new .gh-dashboard5-resource-body {
+    border-top: 1px solid #ebeef0;
+    padding-top: 12px;
+}
+
 
 /* --------------------------------- 
 Dashboard v5 Resources */
 
 .gh-dashboard5-resources {
     position: relative;
-    margin-right: 12px; /* layout adjustment */
+}
+
+.gh-dashboard5-resources .gh-dashboard5-resource-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.gh-dashboard5-resource-text {
+    color: var(--black);
+}
+
+.gh-dashboard5-resources .gh-dashboard5-resource-body {
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .gh-dashboard5-resources .gh-dashboard5-articles {
@@ -1153,6 +1178,11 @@ Dashboard v5 Resources */
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
+}
+
+.gh-dashboard5-resources .gh-dashboard5-resource-footer a {
+    display: inline-block;
+    padding: 8px 0;
 }
 
 
@@ -1217,7 +1247,14 @@ Dashboard v5 Staff Picks */
 
 .gh-dashboard5-staff-picks {
     position: relative;
-    margin-left: -12px; /* layout adjustment */
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-title h4 {
+    margin-bottom: 8px;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-title p {
+    margin-top: 8px;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-resource-body {
@@ -1263,7 +1300,7 @@ Dashboard v5 Staff Picks */
     justify-content: space-between;
     color: #7c8b9a;
     font-size: 1.4rem;
-    padding: 0 32px 16px 0;
+    padding: 0 32px 0 0;
     transition: all .3s ease-in-out;
 }
 
@@ -1272,13 +1309,38 @@ Dashboard v5 Staff Picks */
     border-color: #dcdfe1;
 }
 
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-footer a {
+    display: flex;
+    align-items: center;
+    color: var(--middarkgrey);
+    font-weight: 400;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-footer a span {
+    opacity: 0;
+    transition: 0.15s all ease-in-out;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-footer a:hover span {
+    opacity: 1;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-footer svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-footer svg path {
+    fill: var(--middarkgrey);
+}
+
 
 /* --------------------------------- 
 Dashboard v5 Latest Newsletters */
 
 .gh-dashboard5-newsletter {
     position: relative;
-    margin-right: 12px; /* layout adjustment */
 }
 
 .gh-dashboard5-newsletter .gh-dashboard5-newsletter-items {
@@ -1294,12 +1356,23 @@ Dashboard v5 Latest Newsletters */
     padding: 0 32px 0 0;
 }
 
+.gh-dashboard5-subscribe-button {
+    display: flex;
+    padding: 8px 12px;
+    align-items: center;
+    justify-content: center;
+    background: var(--black);
+    color: var(--white);
+    border-radius: 4px;
+}
+
 
 /* --------------------------------- 
 Dashboard v5 Community */
 
 .gh-dashboard5-community {
     position: relative;
+    grid-column: 1 / 3;
 }
 
 .gh-dashboard5-community .gh-dashboard5-resource-box {
@@ -1313,7 +1386,7 @@ Dashboard v5 Community */
 }
 
 .gh-dashboard5-community .gh-dashboard5-list-body p {
-    font-size: 3.4rem;
+    font-size: 4.0rem;
     font-weight: 700;
     line-height: 1.3em;
     padding: 0 64px 0 0;
@@ -1394,17 +1467,7 @@ Dashboard v5 Resources */
 
 .gh-dashboard5-resource {
     display: flex;
-    margin-bottom: 24px;
 }
-
-.gh-dashboard5-resource-main {
-    margin-right: 8px; /* grid layout adjustments */
-}
-
-.gh-dashboard5-resource-aside {
-    margin-left: -8px; /* grid layout adjustments */
-}
-
 .gh-dashboard5-resource-box {
     flex: 1;
     border: 1px solid var(--whitegrey);
@@ -1415,45 +1478,39 @@ Dashboard v5 Resources */
     position: relative;
     align-items: stretch;
     background: var(--white);
-    box-shadow: 0px 2px 16px 0px rgba(0, 0, 0, 0.02);
 }
 
 .gh-dashboard5-resource-box.is-secondary {
-    background: var(--main-color-content-greybg);
+    background: linear-gradient(45deg, color-mod(var(--main-color-content-greybg) l(+2%)), var(--main-color-content-greybg));
     border-color: transparent;
     box-shadow: none;
 }
 
-.gh-dashboard5-resource-title {
-    display: flex;
-    flex-direction: column;
-    margin: 0 0 20px;
-}
-
 .gh-dashboard5-resource-title h4 {
-    font-size: 1.2rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 600;
     text-transform: uppercase;
-    color: var(--black);
-    margin: 0;
+    letter-spacing: 0.3px;
+    color: var(--darkgrey);
+    margin: 0 0 16px;
     padding: 0;
     transition: color .3s;
 }
 
 .gh-dashboard5-resource-title p {
-    margin: 16px 0 0;
-    padding: 0 64px 0 0;
+    margin: 16px 0;
+    padding: 0;
+    color: var(--middarkgrey);
+    font-size: 1.55rem;
 }
 
 .gh-dashboard5-resource-body {
     flex: 1;
     display: flex;
-    align-items: center;
     justify-content: flex-start;
 }
 
 .gh-dashboard5-resource-footer {
-    border-top: 1px solid var(--whitegrey);
     padding: 20px 0 0;
 }
 
@@ -1480,6 +1537,16 @@ Dashboard v5 Resources */
     align-items: center;
 }
 
+.gh-dashboard5-resource-bigarticle h3 {
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+.gh-dashboard5-resource-bigarticle p {
+    font-size: 1.5rem;
+    color: var(--middarkgrey);
+}
+
 .gh-dashboard5-resource-smallarticles {
     flex: 1;
     display: flex;
@@ -1504,19 +1571,10 @@ Dashboard v5 Resources */
     margin-right: 0;
 }
 
-.gh-dashboard5-resource-bigarticle .gh-dashboard5-resource-text {
-    width: 60%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 24px;
-}
-
 .gh-dashboard5-resource-secondary {
     font-size: 1.3rem;
     line-height: 1.5em;
-    font-weight: 600;
+    font-weight: 400;
     color: var(--midlightgrey);
     padding: 3px 0 0 0;
     white-space: nowrap;
