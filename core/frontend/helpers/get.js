@@ -80,7 +80,7 @@ function resolvePaths(globals, data, value) {
         path = path.replace(/\.\[/g, '[');
 
         if (path.charAt(0) === '@') {
-            result = jsonpath.query(globals, path.substr(1));
+            result = jsonpath.query(globals, path.slice(1));
         } else {
             // Do the query, which always returns an array of matches
             result = jsonpath.query(data, path);
