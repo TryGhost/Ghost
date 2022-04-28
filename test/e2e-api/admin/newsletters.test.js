@@ -117,6 +117,40 @@ describe('Newsletters API', function () {
             });
     });
 
+    it('Can add multiple newsletters', async function () {
+        const firstNewsletter = {
+            name: 'My first test newsletter'
+        };
+
+        const secondNewsletter = {
+            name: 'My second test newsletter'
+        };
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [firstNewsletter]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('newsletters')
+            });
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [secondNewsletter]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('newsletters')
+            });
+    });
+
     it('Can add a newsletter - with custom sender_email', async function () {
         const newsletter = {
             uuid: uuid.v4(),
