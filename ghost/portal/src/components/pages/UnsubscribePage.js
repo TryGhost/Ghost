@@ -16,7 +16,7 @@ const React = require('react');
 // }
 
 export default function UnsubscribePage() {
-    const {site, pageData, brandColor, onAction} = useContext(AppContext);
+    const {site, pageData, onAction} = useContext(AppContext);
     const api = setupGhostApi({siteUrl: site.url});
     const [member, setMember] = useState();
     const siteNewsletters = getSiteNewsletters({site});
