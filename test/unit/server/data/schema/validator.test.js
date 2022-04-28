@@ -29,7 +29,7 @@ describe('Validate Schema', function () {
                         return object.message;
                     }).join(',');
 
-                    // NOTE: Some of these fields are auto-filled in the model layer (e.g. author_id, created_at etc.)
+                    // NOTE: Some of these fields are auto-filled in the model layer (e.g. created_at, created_at etc.)
                     ['id', 'uuid', 'slug', 'title', 'created_at', 'created_by'].forEach(function (attr) {
                         errorMessages.should.match(new RegExp('posts.' + attr));
                     });
