@@ -337,7 +337,7 @@ module.exports = function (grunt) {
                 // A list of files and patterns to include when creating a release zip.
                 // This is read from the `.npmignore` file and all patterns are inverted as we want to define what to include
                 src: fs.readFileSync('.npmignore', 'utf8').split('\n').filter(Boolean).map(function (pattern) {
-                    return pattern[0] === '!' ? pattern.substr(1) : '!' + pattern;
+                    return pattern[0] === '!' ? pattern.slice(1) : '!' + pattern;
                 }),
                 dest: '<%= paths.releaseBuild %>/'
             });

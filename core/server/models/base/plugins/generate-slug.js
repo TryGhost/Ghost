@@ -79,7 +79,7 @@ module.exports = function (Bookshelf) {
             // If it's a user, let's try to cut it down (unless this is a human request)
             if (baseName === 'user' && options && options.shortSlug && slugTryCount === 1 && slug !== 'ghost-owner') {
                 longSlug = slug;
-                slug = (slug.indexOf('-') > -1) ? slug.substr(0, slug.indexOf('-')) : slug;
+                slug = (slug.indexOf('-') > -1) ? slug.slice(0, slug.indexOf('-')) : slug;
             }
 
             if (!_.has(options, 'importing') || !options.importing) {
