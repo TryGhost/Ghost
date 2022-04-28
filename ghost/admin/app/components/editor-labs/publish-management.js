@@ -112,19 +112,30 @@ export class PublishOptions {
         this.publishType = newValue;
     }
 
-    // newsletter --------------------------------------------------------------
+    // recipients --------------------------------------------------------------
 
-    newsletters = []; // set in constructor
+    // set in constructor because services are not injected
+    allNewsletters = [];
+
+    @tracked newsletter = null; // set to default in constructor
+
+    get newsletters() {
+        return this.allNewsletters
+            .filter(n => n.status === 'active')
+            .sort(({sortOrder: a}, {sortOrder: b}) => a - b);
+    }
 
     get defaultNewsletter() {
-        return this.newsletters.sort(({sortOrder: a}, {sortOrder: b}) => b - a)[0];
+        return this.newsletters[0];
     }
 
     get onlyDefaultNewsletter() {
         return this.newsletters.length === 1;
     }
 
-    // recipients --------------------------------------------------------------
+    get recipientFilter() {
+        return `newsletters:${this.newsletter.slug}`;
+    }
 
     // setup -------------------------------------------------------------------
 
@@ -138,7 +149,7 @@ export class PublishOptions {
         // these need to be set here rather than class-level properties because
         // unlike Ember-based classes the services are not injected so can't be
         // used until after they are assigned above
-        this.newsletters = this.store.peekAll('newsletter').filter(n => n.status === 'active');
+        this.allNewsletters = this.store.peekAll('newsletter');
 
         this.setupTask.perform();
     }
@@ -148,6 +159,8 @@ export class PublishOptions {
         yield this.fetchRequiredDataTask.perform();
 
         // TODO: set up initial state / defaults
+
+        this.newsletter = this.defaultNewsletter;
 
         if (this.emailUnavailable || this.emailDisabled) {
             this.publishType = 'publish';
@@ -163,7 +176,7 @@ export class PublishOptions {
         // TODO: query limit service
 
         // newsletters
-        const fetchNewsletters = this.store.findAll('newsletter', {reload: true});
+        const fetchNewsletters = this.store.query('newsletter', {status: 'active', limit: 'all'});
 
         yield Promise.all([countTotalMembers, fetchNewsletters]);
     }
