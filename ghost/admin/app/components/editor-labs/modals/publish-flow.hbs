@@ -33,11 +33,11 @@
                     <div class="gh-publish-setting-title">
                         {{svg-jar "member"}}
                         <div class="gh-publish-setting-trigger">
-                            235
+                            {{#let (members-count-fetcher query=(hash filter=@data.publishOptions.recipientFilter)) as |countFetcher|}}
+                                {{countFetcher.count}}
+                            {{/let}}
                             {{#unless @data.publishOptions.onlyDefaultNewsletter}}
-                                <span>
-                                    Charts of the Week
-                                </span>
+                                <span>{{@data.publishOptions.newsletter.name}}</span>
                             {{/unless}}
                             subscribers
                         </div>
