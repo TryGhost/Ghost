@@ -9,6 +9,7 @@ const settingsCache = require('../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
 const models = require('../../core/server/models');
+const {mockManager} = require('../utils/e2e-framework');
 
 function assertContentIsPresent(res) {
     res.text.should.containEql('<h2 id="markdown">markdown</h2>');
@@ -126,6 +127,33 @@ describe('Front-end members behaviour', function () {
             await request.get('/members/?token=abc&action=signup')
                 .expect(302)
                 .expect('Location', '/?action=signup&success=false');
+        });
+    });
+
+    describe('Unsubscribe', function () {
+        beforeEach(function () {
+            mockManager.mockLabsEnabled('multipleNewslettersUI');
+        });
+
+        afterEach(function () {
+            mockManager.restore();
+        });
+
+        it('should redirect with uuid and action param', async function () {
+            await request.get('/unsubscribe/?uuid=XXX')
+                .expect(302)
+                .expect('Location', 'http://127.0.0.1:2369/?uuid=XXX&action=unsubscribe');
+        });
+
+        it('should pass through an optional newsletter param', async function () {
+            await request.get('/unsubscribe/?uuid=XXX&newsletter=YYY')
+                .expect(302)
+                .expect('Location', 'http://127.0.0.1:2369/?uuid=XXX&newsletter=YYY&action=unsubscribe');
+        });
+
+        it('should reject when missing a uuid', async function () {
+            await request.get('/unsubscribe/')
+                .expect(400);
         });
     });
 
