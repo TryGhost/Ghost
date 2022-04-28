@@ -117,6 +117,26 @@ describe('Front-end members behaviour', function () {
                 .expect(400);
         });
 
+        it('should error for fetching member newsletters with missing uuid', async function () {
+            await request.get('/members/api/member/newsletters')
+                .expect(400);
+        });
+
+        it('should error for fetching member newsletters with invalid uuid', async function () {
+            await request.get('/members/api/member/newsletters?uuid=abc')
+                .expect(400);
+        });
+
+        it('should error for updating member newsletters with missing uuid', async function () {
+            await request.put('/members/api/member/newsletters')
+                .expect(400);
+        });
+
+        it('should error for updating member newsletters with invalid uuid', async function () {
+            await request.put('/members/api/member/newsletters?uuid=abc')
+                .expect(400);
+        });
+
         it('should serve theme 404 on members endpoint', async function () {
             await request.get('/members/')
                 .expect(404)

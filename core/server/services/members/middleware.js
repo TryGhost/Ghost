@@ -69,6 +69,57 @@ const getOfferData = async function (req, res) {
     });
 };
 
+const getMemberNewsletters = async function (req, res) {
+    try {
+        const memberUuid = req.query.uuid;
+
+        const memberData = await membersService.api.members.get({
+            uuid: memberUuid
+        }, {
+            withRelated: ['newsletters']
+        });
+        if (!memberData) {
+            res.writeHead(400);
+            res.end('Email address not found.');
+        } else {
+            const data = _.pick(memberData.toJSON(), 'uuid', 'email', 'name', 'newsletters', 'status');
+            return res.json(data);
+        }
+    } catch (err) {
+        res.writeHead(400);
+        res.end('Failed to unsubscribe this email address');
+    }
+};
+
+const updateMemberNewsletters = async function (req, res) {
+    try {
+        const memberUuid = req.query.uuid;
+        if (!memberUuid) {
+            res.writeHead(400);
+            return res.end('Missing member uuid');
+        }
+        const data = _.pick(req.body, 'newsletters');
+        const memberData = await membersService.api.members.get({
+            uuid: memberUuid
+        });
+        if (!memberData) {
+            res.writeHead(400);
+            return res.end('Member not found');
+        }
+        const options = {
+            id: memberData.get('id'),
+            withRelated: ['newsletters']
+        };
+
+        const updatedMember = await membersService.api.members.update(data, options);
+        const updatedMemberData = _.pick(updatedMember.toJSON(), ['uuid', 'email', 'name', 'newsletters', 'status']);
+        res.json(updatedMemberData);
+    } catch (err) {
+        res.writeHead(400);
+        res.end('Failed to update newsletters');
+    }
+};
+
 const updateMemberData = async function (req, res) {
     try {
         const data = _.pick(req.body, 'name', 'subscribed', 'newsletters');
@@ -270,9 +321,11 @@ module.exports = {
     loadMemberSession,
     createSessionFromMagicLink,
     getIdentityToken,
+    getMemberNewsletters,
     getMemberData,
     getOfferData,
     updateMemberData,
+    updateMemberNewsletters,
     getMemberSiteData,
     deleteSession
 };
