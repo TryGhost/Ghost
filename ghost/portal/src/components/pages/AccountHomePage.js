@@ -393,7 +393,7 @@ function EmailPreferencesAction() {
     return (
         <section>
             <div className='gh-portal-list-detail'>
-                <h3>Email Preferences</h3>
+                <h3>Newsletters</h3>
                 <p>Update email preferences</p>
             </div>
             <button className='gh-portal-btn gh-portal-btn-list' onClick={(e) => {
