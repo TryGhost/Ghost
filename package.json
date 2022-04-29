@@ -131,7 +131,7 @@
     "cookie-session": "2.0.0",
     "cors": "2.8.5",
     "downsize": "0.0.8",
-    "express": "4.18.0",
+    "express": "4.18.1",
     "express-brute": "1.0.1",
     "express-hbs": "2.4.0",
     "express-jwt": "7.5.2",
