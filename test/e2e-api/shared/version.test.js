@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyErrorId, anyString, stringMatching} = matchers;
+const {anyErrorId, stringMatching, anyEtag} = matchers;
 
 describe('API Versioning', function () {
     describe('Admin API', function () {
@@ -29,7 +29,7 @@ describe('API Versioning', function () {
                     }
                 })
                 .matchHeaderSnapshot({
-                    etag: anyString
+                    etag: anyEtag
                 });
         });
 
@@ -44,7 +44,7 @@ describe('API Versioning', function () {
                     }
                 })
                 .matchHeaderSnapshot({
-                    etag: anyString,
+                    etag: anyEtag,
                     'content-version': stringMatching(/v\d+\.\d+/)
                 });
         });
@@ -60,7 +60,7 @@ describe('API Versioning', function () {
                     }
                 })
                 .matchHeaderSnapshot({
-                    etag: anyString,
+                    etag: anyEtag,
                     'content-version': stringMatching(/v\d+\.\d+/)
                 });
         });
@@ -72,7 +72,7 @@ describe('API Versioning', function () {
                 .header('Accept-Version', 'v999.1')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyString
+                    etag: anyEtag
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -90,7 +90,7 @@ describe('API Versioning', function () {
                 .header('User-Agent', 'Zapier 1.3')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyString
+                    etag: anyEtag
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -114,7 +114,7 @@ describe('API Versioning', function () {
                 .header('User-Agent', 'Zapier 1.4')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyString
+                    etag: anyEtag
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -136,7 +136,7 @@ describe('API Versioning', function () {
                 .header('User-Agent', 'Zapier 1.4')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyString
+                    etag: anyEtag
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -155,7 +155,7 @@ describe('API Versioning', function () {
                 .header('Accept-Version', 'v4.1')
                 .expectStatus(404)
                 .matchHeaderSnapshot({
-                    etag: anyString
+                    etag: anyEtag
                 })
                 .matchBodySnapshot({
                     errors: [{
