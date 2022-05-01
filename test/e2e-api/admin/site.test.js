@@ -1,5 +1,5 @@
 const {agentProvider, matchers} = require('../../utils/e2e-framework');
-const {anyString, stringMatching} = matchers;
+const {anyEtag, stringMatching} = matchers;
 
 describe('Site API', function () {
     let agent;
@@ -17,7 +17,7 @@ describe('Site API', function () {
                 }
             })
             .matchHeaderSnapshot({
-                etag: anyString
+                etag: anyEtag
             });
     });
 });
