@@ -183,6 +183,56 @@ describe('API Versioning', function () {
                 })
                 .expectEmptyBody();
         });
+
+        it('Returns a 404 for an unknown version', async function () {
+            await agentAdminAPI
+                .get('/site/', {baseUrl: '/ghost/api/v5/admin/'})
+                .expectStatus(404)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({errors: [{
+                    id: anyErrorId
+                }]});
+        });
+
+        it('Returns a 406 for an unknown version with accept-version set ahead', async function () {
+            await agentAdminAPI
+                .get('/site/', {baseUrl: '/ghost/api/v99/admin/'})
+                .header('Accept-Version', 'v99.0')
+                .expectStatus(406)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({errors: [{
+                    id: anyErrorId
+                }]});
+        });
+
+        it('Returns a 406 for an unknown version with accept-version set behind', async function () {
+            await agentAdminAPI
+                .get('/site/', {baseUrl: '/ghost/api/v1/admin/'})
+                .header('Accept-Version', 'v1.0')
+                .expectStatus(406)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({errors: [{
+                    id: anyErrorId
+                }]});
+        });
+
+        it('Returns a 404 for an unknown api', async function () {
+            await agentAdminAPI
+                .get('/site/', {baseUrl: '/ghost/api/not-admin/'})
+                .expectStatus(404)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({errors: [{
+                    id: anyErrorId
+                }]});
+        });
     });
 
     describe('Content API', function () {
@@ -219,6 +269,18 @@ describe('API Versioning', function () {
                     location: stringMatching(/^\/ghost\/api\/content\/posts\//)
                 })
                 .expectEmptyBody();
+        });
+
+        it('Returns a 404 for an unknown version', async function () {
+            await agentContentAPI
+                .get('/posts/', {baseUrl: '/ghost/api/v5/content/'})
+                .expectStatus(404)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({errors: [{
+                    id: anyErrorId
+                }]});
         });
     });
 });
