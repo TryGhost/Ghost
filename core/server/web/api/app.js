@@ -3,8 +3,7 @@ const config = require('../../../shared/config');
 const express = require('../../../shared/express');
 const sentry = require('../../../shared/sentry');
 const errorHandler = require('@tryghost/mw-error-handler');
-const versionMissmatchHandler = require('@tryghost/mw-api-version-mismatch');
-const {APIVersionCompatibilityServiceInstance} = require('../../services/api-version-compatibility');
+const APIVersionCompatibilityService = require('../../services/api-version-compatibility');
 
 module.exports = function setupApiApp() {
     debug('Parent API setup start');
@@ -32,7 +31,7 @@ module.exports = function setupApiApp() {
 
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);
-    apiApp.use(versionMissmatchHandler(APIVersionCompatibilityServiceInstance));
+    apiApp.use(APIVersionCompatibilityService.errorHandler);
     apiApp.use(errorHandler.handleJSONResponseV2(sentry));
 
     debug('Parent API setup end');
