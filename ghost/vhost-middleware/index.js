@@ -1,9 +1,13 @@
+// This a fork of expressjs/vhost with trust proxy support
+/* eslint-disable */
+
 /*!
  * vhost
  * Copyright(c) 2014 Jonathan Ong
  * Copyright(c) 2014-2015 Douglas Christopher Wilson
  * MIT Licensed
  */
+
 
 'use strict';
 
@@ -68,7 +72,7 @@ function vhost(hostname, handle) {
 /**
  * Get hostname of request.
  *
- * @param (object} req
+ * @param {object} req
  * @return {string}
  * @private
  */
@@ -96,7 +100,7 @@ function hostnameof(req) {
 /**
  * Determine if object is RegExp.
  *
- * @param (object} val
+ * @param {object} val
  * @return {boolean}
  * @private
  */
@@ -108,7 +112,7 @@ function isregexp(val) {
 /**
  * Generate RegExp for given hostname value.
  *
- * @param (string|RegExp} val
+ * @param {string|RegExp} val
  * @private
  */
 
@@ -133,8 +137,8 @@ function hostregexp(val) {
 /**
  * Get the vhost data of the request for RegExp
  *
- * @param (object} req
- * @param (RegExp} regexp
+ * @param {object} req
+ * @param {RegExp} regexp
  * @return {object}
  * @private
  */
