@@ -9,6 +9,7 @@
                 <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "publishType")}}>
                     <span>{{@publishOptions.selectedPublishTypeOption.display}}</span>
                 </button>
+                {{svg-jar "arrow-down" class="icon-expand"}}
             {{/if}}
         </div>
         {{#liquid-if (eq this.openSection "publishType")}}
@@ -20,8 +21,8 @@
         {{/liquid-if}}
     </div>
 
-    <div class="gh-publish-setting {{if (eq @publishOptions.publishType "publish") "disabled"}}">
-        <div class="gh-publish-setting-title">
+    <div class="gh-publish-setting">
+        <div class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}">
             {{svg-jar "member"}}
             <div class="gh-publish-setting-trigger">
                 {{#if (not-eq @publishOptions.publishType "publish")}}
@@ -36,10 +37,11 @@
                     Not sent to any members
                 {{/if}}
             </div>
+            {{svg-jar "arrow-down" class="icon-expand"}}
         </div>
     </div>
 
-    <div class="gh-publish-setting">
+    <div class="gh-publish-setting last">
         <div class="gh-publish-setting-title">
             {{svg-jar "clock"}}
             <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "publishAt")}}>
@@ -51,6 +53,7 @@
                     {{/if}}
                 </span>
             </button>
+            {{svg-jar "arrow-down" class="icon-expand"}}
         </div>
         {{#liquid-if (eq this.openSection "publishAt")}}
             <div class="gh-publish-setting-form">
