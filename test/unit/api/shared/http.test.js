@@ -87,27 +87,4 @@ describe('Unit: api/shared/http', function () {
 
         shared.http(apiImpl)(req, res, next);
     });
-
-    it('adds content-version header to the response when accept-version header is present in the request', function (done) {
-        const apiImpl = sinon.stub().resolves('data');
-        req.headers = {
-            'accept-version': 'v5.1'
-        };
-        apiImpl.headers = {
-            'Content-Type': 'application/json'
-        };
-        res.locals = {
-            safeVersion: '5.4'
-        };
-        next.callsFake(done);
-
-        res.json.callsFake(function () {
-            shared.headers.get.calledOnce.should.be.true();
-            res.status.calledOnce.should.be.true();
-            res.headers['Content-Version'].should.equal('v5.4');
-            done();
-        });
-
-        shared.http(apiImpl)(req, res, next);
-    });
 });

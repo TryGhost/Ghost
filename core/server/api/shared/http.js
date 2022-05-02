@@ -82,9 +82,6 @@ const http = (apiImpl) => {
             res.status(statusCode);
 
             // CASE: generate headers based on the api ctrl configuration
-            if (req && req.headers && req.headers['accept-version'] && res.locals) {
-                headers['Content-Version'] = `v${res.locals.safeVersion}`;
-            }
             res.set(headers);
 
             const send = (format) => {

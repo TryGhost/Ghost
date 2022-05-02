@@ -14,6 +14,8 @@ module.exports = function setupApiApp() {
         apiApp.use(require('./testmode')());
     }
 
+    apiApp.use(APIVersionCompatibilityService.contentVersion);
+
     apiApp.lazyUse(urlUtils.getVersionPath({version: 'v2', type: 'content'}), require('./v2/content/app'));
     apiApp.lazyUse(urlUtils.getVersionPath({version: 'v2', type: 'admin'}), require('./v2/admin/app'));
 
