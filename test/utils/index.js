@@ -76,11 +76,6 @@ const createUser = function createUser(options) {
 const createPost = function createPost(options) {
     const post = DataGenerator.forKnex.createPost(options.post);
 
-    if (options.author) {
-        post.author_id = options.author.id;
-    }
-
-    post.authors = [{id: post.author_id}];
     return models.Post.add(post, context.internal);
 };
 
