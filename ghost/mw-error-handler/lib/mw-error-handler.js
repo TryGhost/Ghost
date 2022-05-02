@@ -230,6 +230,9 @@ module.exports.pageNotFound = (req, res, next) => {
     next(new errors.NotFoundError({message: tpl(messages.pageNotFound)}));
 };
 
+/**
+ * @deprecated: not used as of Ghost v5 and should be removed in a major bump
+ */
 module.exports.handleJSONResponse = sentry => [
     // Make sure the error can be served
     module.exports.prepareError,
@@ -241,6 +244,10 @@ module.exports.handleJSONResponse = sentry => [
     jsonErrorRenderer
 ];
 
+/**
+ * @deprecated with above
+ * @TODO: rename this without the v2 in a major bump
+ */
 module.exports.handleJSONResponseV2 = sentry => [
     // Make sure the error can be served
     module.exports.prepareError,
