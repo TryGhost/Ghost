@@ -19,9 +19,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "mocha": "9.2.2",
+    "mocha": "10.0.0",
     "should": "13.2.3",
-    "sinon": "11.1.2"
+    "sinon": "13.0.2"
   },
   "dependencies": {
     "@tryghost/debug": "^0.1.5",
