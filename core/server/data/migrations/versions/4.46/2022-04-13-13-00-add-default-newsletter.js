@@ -4,35 +4,35 @@ const logging = require('@tryghost/logging');
 const startsWith = require('lodash/startsWith');
 const {createTransactionalMigration} = require('../../utils');
 
-// This uses the default settings from core/server/data/schema/default-settings/default-settings.json
-const newsletter = {
-    id: (new ObjectId()).toHexString(),
-    uuid: uuid.v4(),
-    name: 'Ghost',
-    description: '',
-    slug: 'default-newsletter',
-    sender_name: null,
-    sender_email: null,
-    sender_reply_to: 'newsletter',
-    status: 'active',
-    visibility: 'members',
-    subscribe_on_signup: true,
-    sort_order: 0,
-    body_font_category: 'sans_serif',
-    footer_content: '',
-    header_image: null,
-    show_badge: true,
-    show_feature_image: true,
-    show_header_icon: true,
-    show_header_title: true,
-    show_header_name: false,
-    title_alignment: 'center',
-    title_font_category: 'sans_serif',
-    created_at: new Date()
-};
-
 module.exports = createTransactionalMigration(
     async function up(knex) {
+        // This uses the default settings from core/server/data/schema/default-settings/default-settings.json
+        const newsletter = {
+            id: (new ObjectId()).toHexString(),
+            uuid: uuid.v4(),
+            name: 'Ghost',
+            description: '',
+            slug: 'default-newsletter',
+            sender_name: null,
+            sender_email: null,
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            visibility: 'members',
+            subscribe_on_signup: true,
+            sort_order: 0,
+            body_font_category: 'sans_serif',
+            footer_content: '',
+            header_image: null,
+            show_badge: true,
+            show_feature_image: true,
+            show_header_icon: true,
+            show_header_title: true,
+            show_header_name: false,
+            title_alignment: 'center',
+            title_font_category: 'sans_serif',
+            created_at: knex.raw('CURRENT_TIMESTAMP')
+        };
+
         // Make sure the newsletter table is empty
         const newsletters = await knex('newsletters').count('*', {as: 'total'});
 
@@ -68,6 +68,13 @@ module.exports = createTransactionalMigration(
             if (startsWith(key, 'newsletter_')) {
                 key = key.slice(11);
             }
+
+            if (value === null && ['name', 'body_font_category', 'show_badge', 'show_feature_image', 'show_header_icon', 'show_header_title', 'title_alignment', 'title_font_category'].includes(key)) {
+                // Prevent setting null to non-nullable columns
+                // Default to defaults above in that case
+                continue;
+            }
+
             if (typeof newsletter[key] === 'boolean') {
                 newsletter[key] = value === 'true';
             } else {
